@@ -68,28 +68,21 @@
 /*
   Rock Theme Styles
 
-  1.
-  2. HTML Overrides
-  3. Bootstrap Overides
-  4. Rock Overrides
-  5. Theme Styling
-  6. Utilities
-  7. Responsive Overrides
-  8. Side Navbar
-  9. Person Details
-  10. First Word Weight
+  1. HTML Overrides
+  2. Bootstrap Overides
+  3. Rock Overrides
+  4. Theme Styling
+  5. Utilities
+  6. Responsive Overrides
+  7. Side Navbar
+  8. Person Details
+  9. First Word Weight
 
 */
 
-/*#region
-// 1.         */
-// -------------------------
-
-/*#endregion */
-
 
 /*#region
-// 2. HTML Overrides         */
+// 1. HTML Overrides         */
 // -------------------------
 
 html {
@@ -102,7 +95,7 @@ main {
 }
 
 body {
-  background-color: @accent-bold-color;
+  background-color: @nav-bg;
 }
 
 h1, h2, h3, h4 {
@@ -144,7 +137,7 @@ hr {
 
 
 /*#region
-// 3. Bootstrap Overrides    */
+// 2. Bootstrap Overrides    */
 // -------------------------
 
 // nav-pill hover text color
@@ -261,7 +254,7 @@ h4, .h4 {
 
 
 /*#region
-// 4. Rock Overrides         */
+// 3. Rock Overrides         */
 // -------------------------
 
 .person-image {
@@ -283,7 +276,7 @@ h4, .h4 {
 }
 
 .panel-follow-status.following {
-    background-color: @header-bg;
+    background-color: @panel-following-active-bg;
 }
 
 .smartsearch {
@@ -336,12 +329,6 @@ h4, .h4 {
   }
 }
 
-.personprofilebar-bio .actions a.btn-action {
-  background-color: @accent-semibold-color;
-  color: @accent-semibold-text-color;
-  border: 1px solid darken(@accent-semibold-color, 5%);
-}
-
 .updateprogress-status {
   left: 50%;
   padding: 15px 10px;
@@ -376,45 +363,6 @@ h4, .h4 {
     }
 }
 
-
-
-.list-as-blocks {
-
-  ul {
-
-    li {
-
-      a {
-        -webkit-transition: background-color 200ms linear;
-        -moz-transition: background-color 200ms linear;
-        -o-transition: background-color 200ms linear;
-        -ms-transition: background-color 200ms linear;
-        transition: background-color 200ms linear;
-
-        &:hover {
-          background-color: lighten(@accent-semibold-color, 5%);
-          border-color: darken(@accent-semibold-color, 5%);
-          color: #fff;
-        }
-
-      }
-
-      &.active {
-        a {
-          background-color: @accent-semibold-color;
-          border-color: darken(@accent-semibold-color, 5%);
-          color: #fff;
-        }
-      }
-    }
-  }
-}
-
-.table-hover tbody tr:hover td,
-.table-hover tbody tr:hover th {
-  background-color: @grid-hover-bg;
-}
-
 // personal notes styling
 .panel-note {
   article.personal {
@@ -431,25 +379,11 @@ h4, .h4 {
    color: #fff;
 }
 
-.discchart {
-
-  li {
-    background-color: lighten(@brand-primary, 10%);
-    color: #fff;
-  }
-
-  .discbar {
-    &.discbar-primary {
-      background: @brand-primary;
-    }
-  }
-}
-
 /*#endregion */
 
 
 /*#region
-// 5. Theme Styling          */
+// 4. Theme Styling          */
 // -------------------------
 
 // Notifications
@@ -509,7 +443,6 @@ a.link-block,
 
 #page-wrapper {
   width: 100%;
-  //overflow: hidden;
 }
 
 #content-wrapper {
@@ -523,9 +456,9 @@ a.link-block,
 
   header {
     .navbar-default {
-      background-color: @accent-bold-color;
-      border-color: darken(@accent-bold-color, 5%);
-      color: @accent-bold-text-color;
+      background-color: @nav-bg;
+      border-color: darken(@nav-bg, 5%);
+      color: @nav-color;
 
       .navbar-header {
         padding: 10px 0 0 12px;
@@ -559,12 +492,12 @@ a.link-block,
       }
 
       .navbar-nav > li > a {
-        color: @accent-bold-text-color;
+        color: @nav-color;
       }
 
       .dropdown-menu {
         li.divider {
-          background-color: lighten(@accent-bold-color, 5%);
+          background-color: lighten(@nav-color, 5%);
         }
       }
 
@@ -572,8 +505,8 @@ a.link-block,
   }
 
   #page-title {
-    background-color: @accent-color;
-    color: @accent-text-color;
+    background-color: @pagetitle-bg;
+    color: @pagetitle-text-color;
     padding: 15px;
 
     h1 {
@@ -584,7 +517,7 @@ a.link-block,
 
       .page-icon {
         display: inline;
-        color: lighten(@accent-text-color, 10%);
+        opacity: .8;
       }
 
     }
@@ -595,19 +528,19 @@ a.link-block,
       margin: 4px 0 0;
 
       a {
-          color: lighten(@accent-text-color, 30%);
+          color: lighten(@pagetitle-text-color, 30%);
 
           &:hover {
-              color: lighten(@accent-text-color, 40%);
+              color: lighten(@pagetitle-text-color, 40%);
           }
       }
 
       > .active {
-        color: lighten(@accent-text-color, 30%);
+        color: lighten(@pagetitle-text-color, 30%);
       }
 
       li + li:before {
-        color: lighten(@accent-text-color, 30%);
+        color: lighten(@pagetitle-text-color, 30%);
       }
     }
 
@@ -704,7 +637,7 @@ body#splash {
 
 
 /*#region
-// 6. Utilities              */
+// 5. Utilities              */
 // -------------------------
 
 .navbar-minimize {
@@ -722,7 +655,7 @@ body#splash {
 
 
 /*#region
-// 7. Responsive Overrides  */
+// 6. Responsive Overrides  */
 // -------------------------
 
 // default styling should be for phones 767px or less
@@ -772,7 +705,7 @@ body#splash {
         }
 
         & .navbar-nav > li > a {
-          color: @accent-semibold-color;
+          color: @header-text-color;
         }
 
         .dropdown-menu {
@@ -794,14 +727,14 @@ body#splash {
 
 
 /*#region
-// 8. Side Navbar             */
+// 7. Side Navbar             */
 // -------------------------
 
 
 // base styles
 .navbar-static-side {
-  background-color: @accent-bold-color;
-  color: @accent-bold-text-color;
+  background-color: @nav-bg;
+  color: @nav-color;
   display: none;
   position: absolute;
   width: 70px;
@@ -809,7 +742,7 @@ body#splash {
   .navbar-header {
     height: @navbar-height;
     width: 100%;
-    background-color: darken(@accent-bold-color, 5%);
+    background-color: @nav-logo-bg;
 
     .logo {
       background: url(../../../Assets/Images/rock-logo-sm.svg) no-repeat top left;
@@ -832,16 +765,16 @@ body#splash {
       > i {
         padding: 11px 0;
         font-size: 24px;
-        color: @accent-bold-text-color;
         display: block;
 
         &:hover {
-          background-color: lighten(@accent-bold-color, 5%);
+          background-color: @nav-sub-bg;
+          color: @nav-sub-color;
         }
       }
 
       &.open {
-        background-color: lighten(@accent-bold-color, 5%);
+        background-color: @nav-sub-bg;
       }
 
       .nav-childpages {
@@ -849,7 +782,7 @@ body#splash {
         left: 70px;
         position: absolute;
         z-index: 9999;
-        background-color: lighten(@accent-bold-color, 5%);
+        background-color: @nav-sub-bg;
         display: none;
         font-size: 14px;
         width: 220px;
@@ -859,31 +792,33 @@ body#splash {
         li a {
           line-height: 1.1em;
           padding: 6px;
-          color: @accent-bold-text-color;
+          color: @nav-sub-color;
 
           &:focus {
-            background-color: lighten(@accent-bold-color, 5%);
+            background-color: @nav-sub-text-rollover-bg;
+            color: @nav-sub-text-rollover-color;
           }
 
           &:hover {
-            background-color: darken(@accent-bold-color, 5%);
+            background-color: @nav-sub-text-rollover-bg;
+            color: @nav-sub-text-rollover-color;
           }
         }
 
         li.title {
           font-size: 18px;
           font-weight: @font-weight-light;
-          color: #ee7624;
+          color: @nav-sub-title-color;
           margin-bottom: -8px;
         }
 
         li.header {
           margin-top: 14px;
-          color: darken(@accent-bold-text-color, 20%);
+          color: @nav-sub-heading-color;
           margin-left: 4px;
           font-weight: @font-weight-semibold;
           padding-bottom: 2px;
-          border-bottom: 1px solid lighten(@accent-bold-color, 10%);
+          border-bottom: 1px solid @nav-sub-heading-border;
           font-weight: 400;
         }
 
@@ -943,7 +878,7 @@ body.navbar-side-close {
 
 
 /*#region
-// 9. Person Details  */
+// 8. Person Details  */
 // -------------------------
 
 .personprofile {
@@ -968,7 +903,7 @@ body.navbar-side-close {
 /*#endregion */
 
 /*#region
-// 10. First Word Weight  */
+// 9. First Word Weight  */
 // -------------------------
 .title {
   font-weight: @font-weight-light;

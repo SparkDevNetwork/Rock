@@ -73,15 +73,15 @@
         margin-right: -52px;
 
         a.btn-action {
-            color: @accent-bold-text-color;
-            background-color: @accent-bold-color;
-            border-color: darken(@accent-bold-color, 5%);
+            color: @persondetails-bio-action-color;
+            background-color: @persondetails-bio-action-bg;
+            border-color: darken(@persondetails-bio-action-border, 5%);
         }
     }
 
     .photo {
         padding: 5px 5px 5px 5px;
-        background-color: @header-bg;
+        background-color: @persondetails-bio-photo-border;
         border: 1px solid #bdbdbd;
         display: table;
         max-width: 200px;
@@ -96,7 +96,7 @@
             width: 40px;
             height: 40px;
             z-index: 500;
-            border-top: 70px solid @persondetails-badge-color;
+            border-top: 70px solid @persondetails-bio-photo-following;
             border-right: 70px solid transparent;
             transition: 1s;
             opacity: .4;
@@ -144,7 +144,7 @@
         text-align: center;
 
         .icon {
-            background-color: @accent-bold-color;
+            background-color: @gray;
             margin: 0 2px;
             border-radius: @border-radius-base;
             font-size: 16px;
@@ -199,7 +199,7 @@
 
         .email {
             .email-status i {
-                color: @accent-semibold-color;
+                color: @persondetails-bio-color;
             }
 
             .email-status.do-not-email i {
@@ -557,9 +557,9 @@
         z-index: 999;
 
         a.btn-action {
-            color: @accent-semibold-text-color;
-            background-color: @accent-semibold-color;
-            border-color: darken(@accent-semibold-color, 5%);
+            color: @persondetails-familybar-action-color;
+            background-color: @persondetails-familybar-action-bg;
+            border-color: @persondetails-familybar-action-border;
         }
     }
 
@@ -755,9 +755,9 @@ span.field-value {
 
 
 .table thead th.merge-personselect {
-    background-color: @accent-bold-color;
-    color: @accent-bold-text-color;
-    border-color: lighten(@accent-bold-color, 5%);
+    background-color: @boldheader-bg;
+    color: @boldheader-color;
+    border-color: lighten(@boldheader-bg, 5%);
     vertical-align: top !important;
 
     .merge-header-summary {
@@ -774,7 +774,7 @@ span.field-value {
     }
 
     small {
-        color: darken(@accent-bold-text-color, 15%);
+        color: darken(@boldheader-color, 15%);
     }
 
     .merge-heading-family {
@@ -787,7 +787,7 @@ span.field-value {
 }
 
 .merge-photo {
-    border: 3px solid @accent-semibold-color;
+    border: 3px solid lighten(@boldheader-bg, 30%);
 }
 
 // 12. Person Page Views
@@ -795,7 +795,6 @@ span.field-value {
 .panel-widget.pageviewsession {
 
     .pageviewsession-client {
-        color: @accent-bold-color;
         text-align: right;
         line-height: 1;
     }
@@ -946,8 +945,8 @@ tr.inactive {
         text-align: center;
         vertical-align: bottom;
         border-radius: @border-radius-large @border-radius-large 0 0;
-        background-color: @accent-bold-color;
-        color: @accent-bold-text-color;
+        background-color: lighten(@brand-primary, 10%);
+        color: @btn-primary-color;
 
         &.discchart-midpoint {
             height: 70%;
@@ -989,7 +988,7 @@ tr.inactive {
         }
 
         &.discbar-primary {
-            background: darken(@accent-bold-color, 30%);
+            background: @brand-primary;
         }
     }
 }

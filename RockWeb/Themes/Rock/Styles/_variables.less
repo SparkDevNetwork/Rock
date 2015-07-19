@@ -1,21 +1,77 @@
-// Custom Theme Variables
-@accent-blue: @accent-semibold-color;// #567d8c; //5e99a9
-@accent-blue-light: #eaf7fc;
-//#6a6a6a
-//
-// Rock 1.0 Variables
-// --------------------------------------------------
+// core variables
 
-// Constants
-@const-border-darken-amt: 10%; // creates a border color by darkening the background by this amount
+// Page Areas
+@body-bg:           #fff;
 
-// Font Weights
-@font-weight-light:     300;
-@font-weight-bold:      900;
-@font-weight-semibold:  700;
+@header-bg:         #d2cbc0;
+@header-text-color: #616161;
 
+@pagetitle-bg: #f2ede5; 
+@pagetitle-text-color: #6B645C;
+
+@footer-bg: @header-bg;
+@footer-color: @header-text-color;
+
+@nav-bg: #282526;                   // The background color of the main navigation.
+@nav-color: #d3cec5;                // The text color of the main navigation.
+@nav-logo-bg: darken(@nav-bg, 5%);  // The background color of the icon corner.
+
+@nav-sub-bg: lighten(@accent-bold-color, 5%);
+@nav-sub-color: @accent-bold-text-color;
+@nav-sub-title-color: #ee7624;
+@nav-sub-heading-color: #a79d8b;
+@nav-sub-heading-border: #423e3f;
+@nav-sub-text-rollover-color: @nav-sub-color;
+@nav-sub-text-rollover-bg: @nav-bg;
+
+
+// Global Settings
+@border-radius-base:       4px;      // The global setting for rounding corners.
+@autocomplete-rollover-bg: #d5e6ed;  // the background color of the rollover for autocompletes.
+
+@scroll-track-color: #aaa; // Color of the scrollbar track line.
+@scroll-thumb-color: #ccc; // Color of the scrollbar thumb which moves up and down the track line.
+
+@boldheader-bg: @nav-bg;       // Background color for bold table headers like the merge person page.
+@boldheader-color: @nav-color; // The text color for bold table headers like the merge person page.
+
+@well-bg:                       @body-bg;
+
+@input-bg:                       #fff;
+@input-bg-disabled:              @gray-lighter;
+
+@input-color:                    @gray;
+@input-border:                   #ccc;
+@input-border-radius:            @border-radius-base;
+@input-border-focus:             #66afe9;
+@input-color-placeholder:        lighten(@text-color, 40%);
+@input-group-addon-bg:           #F0F0F0;       // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker backgrounds.
+@input-group-addon-border-color: @input-border; // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker borders (highly recommended that you use the same color as the input border).
+
+@picker-action-bg: #e3ded7;     // The background color of the actions bar at the bottom of the picker dropdown.
+
+@legend-color:                   @gray-dark;
+@legend-border-color:            @input-border;
+
+@help-color: #86b8cc;
+@required-field-color: #eca9a7;
+
+
+// Text Colors
+@text-color:             #6a6a6a; // The default text color.
+@link-color:             #4f89bd; // The color for all links.
+@link-hover-color:       lighten(@link-color, 15%); // The rollover color for all links.
+@text-selection-bg:      #afd074; // Text selection background color (used when people select text with the mouse).
+@text-selection-color:   #fff;    // Text selection text color (used when people select text with the mouse).
+@font-family-sans-serif: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif; // The base font to use for text. Be sure when defining this font that the various weights are configured.
 
 // Standard Colors
+@brand-primary:         #ee7624;
+@brand-success:         #5C9E7D; // #43be81;
+@brand-warning:         #ECC759; //#f3d066;
+@brand-danger:          #BB5454; // #c84b4b;
+@brand-info:            #4099AD; // #3bc2df;
+
 @accent-color: #dbd5cb;
 @accent-text-color: #413c35;
 @accent-light-color: #e3ded7;
@@ -25,39 +81,74 @@
 @accent-bold-color: #282526;
 @accent-bold-text-color: #d3cec5;
 
-@panel-top-border-color: @header-bg;
 
-@text-light-color: lighten(@text-color, 20%);
-@text-selection-color: #afd074;
-@text-selection-text-color: #fff;
+// Panel
+@panel-bg:                    #f9f9f9;          // The background color of the panel body.
+@panel-text:                  @accent-light-text-color;
+@panel-footer-bg:             @body-bg;          // The background color of the panel's footer.
+@panel-footer-color:          @text-color;       // The color text of the panel's footer.
+@panel-border:                #DDDDDD;          // The panel's border color.
+@panel-top-border-color:      @brand-primary; // Color of the panel's top border often used as an accent color.
+@panel-heading-bg:            #F0F0F0;       // The background color of the panel's header.
+@panel-heading-text-color:    @text-color;
+@panel-heading-border:        darken(@panel-heading-bg, 5%);
+@panel-following-active-bg:   @brand-primary;
 
+
+// Grid
+@grid-border-color: #ddd;
+@grid-filter-bg: #f1f1f1;
+@grid-filter-color: @text-color;
+
+@grid-column-header-bg: #f1f1f1;
+@grid-column-header-text-color: @accent-text-color;
+@grid-column-header-font-size: 14px;
+@grid-column-header-font-weight: @font-weight-semibold;
+
+@grid-row-even-bg: #f1f1f1;// @body-bg;
+@grid-row-even-color: @text-color;// @text-color;
+@grid-row-odd-bg: @body-bg;
+@grid-row-odd-color: @text-color;
+
+@grid-hover-bg: #D5E6ED;
+@grid-hover-color: @text-color;
+
+@grid-pager-bg: #f1f1f1;
+@grid-pager-color: @text-color;
+@grid-pager-button-bg: darken(@grid-pager-bg, 5%);
+@grid-pager-button-color: @text-color;
+@grid-pager-button-border: darken(@grid-pager-button-bg, 20%);
+@grid-pager-button-active-bg: #fff;
+
+@grid-footer-bg: #f1f1f1;
+@grid-footer-text-color: @text-color;
+@grid-footer-font-size: 10px;
+@grid-footer-font-weight: 300;
+
+@grid-footer-button-bg: darken(@grid-footer-bg, 5%);
+@grid-footer-button-text-color: @text-color;
+@grid-footer-button-border: darken(@grid-footer-bg, 20%);
+
+// Person Profile
 @persondetails-bio-bg: @accent-color;
 @persondetails-bio-color: @accent-text-color;
+@persondetails-bio-action-color: #fff;
+@persondetails-bio-action-bg: #6a6a6a;
+@persondetails-bio-action-border: darken(@persondetails-bio-action-bg, 5%);
+@persondetails-bio-photo-border: @header-bg;
+@persondetails-bio-photo-following: #817b72; 
+
 @persondetails-badge-bg: @accent-light-color;
-@persondetails-badge-color: @accent-light-text-color;
+@persondetails-badge-color: #817b72;
+
 @persondetails-familybar-bg: @body-bg;
 @persondetails-familybar-color: @text-color;
+@persondetails-familybar-action-color: #fff;
+@persondetails-familybar-action-bg: #6a6a6a;
+@persondetails-familybar-action-border: darken(@persondetails-bio-action-bg, 5%);
 
-@help-color: #86b8cc;
-@required-field-color: #eca9a7;
 
-// spacing multipliers / used to multiply by the grid-gutter-width to get spacing sizes
-@spacing-sm: 0.25;
-@spacing-md: 0.5;
-@spacing-lg: 1;
-@spacing-xl: 2;
-
-// Page Styling
-// -------------------------
-
-@pagetitle-bg: #c7cacd;
-
-@header-bg:     #c2b8a7;
-@header-text-color: @accent-semibold-color;
-
-@footer-bg: @header-bg;
-@footer-text-color: @header-text-color;
-
+// Modals
 @modal-header-bg: @accent-bold-color;
 @modal-header-text-color: @accent-bold-text-color;
 @modal-body-bg: @body-bg;
@@ -65,36 +156,6 @@
 @modal-footer-bg: @accent-color;
 @modal-footer-text-color: @accent-text-color;
 @modal-dropshadow-color: rgba(0,0,0,0.6);
-// see bootstrap variables for additional modal styles
-
-// Components
-// -------------------------
-
-// Autocomplete
-@autocomplete-rollover-bg: #d5e6ed;
-
-// Grid
-@grid-filter-bg: @accent-color;
-
-@grid-column-header-bg: @body-bg;
-@grid-column-header-text-color: @accent-text-color;
-@grid-column-header-font-size: 14px;
-@grid-column-header-font-weight: @font-weight-semibold;
-
-@grid-hover-bg: #D5E6ED;
-
-@grid-pager-bg: @body-bg;
-
-@grid-filter-bg: @body-bg;
-@grid-footer-bg: @grid-filter-bg;
-@grid-footer-text-color: @accent-text-color;
-@grid-footer-font-size: 10px;
-@grid-footer-font-weight: 300;
-@grid-footer-button-bg: darken(@grid-footer-bg, 5%);
-@grid-footer-button-text-color: @text-color;
-@grid-footer-button-border: darken(@header-bg, 10%);
-
-// tip: see pagination variables below in the bootstrap section
 
 // Admin Bar
 @adminbar-bg: @accent-bold-color;
@@ -105,19 +166,31 @@
 @tooltip-header-text-color: @accent-text-color;
 @tooltip-bg: @body-bg;
 
+// Pills
+@nav-pills-active-link-hover-bg:            #8cc63e;
+@nav-pills-active-link-hover-color:         #fff;
+
+
+// Components
+// -------------------------
+
 // Widget
 @widget-header-bg: @accent-light-color;
 @widget-header-text-color: @accent-light-text-color;
 @widget-header-bg-dark: @accent-bold-color;
 @widget-header-text-color-dark: @accent-bold-text-color;
 
-// Page List
-@pagelist-bg: #F5F2EF;
-@pagelist-border-color: #E2E2E2;
-@pagelist-text-color: @text-color;
-@pagelist-rollover-bg: @accent-bold-color;
-@pagelist-rollover-text-color: #fff;
-@pagelist-rollover-border-color: darken(@pagelist-rollover-bg, 5%);
+// List As Blocks
+@listasblocks-bg: #F5F2EF;
+@listasblocks-border-color: #E2E2E2;
+@listasblocks-color: @text-color;
+@listasblocks-rollover-bg: @accent-bold-color;
+@listasblocks-rollover-text-color: #fff;
+@listasblocks-rollover-border-color: darken(@listasblocks-rollover-bg, 5%);
+@listasblocks-active-bg: #8cc63e;
+@listasblocks-active-border-color: darken(@listasblocks-active-bg, 10%);
+@listasblocks-active-color: #fff;
+
 
 // Tags
 @tag-bg: #c2b8a7;
@@ -133,6 +206,7 @@
 @smartsearch-input-text-color: @header-text-color;
 @smartsearch-input-selection-background: #2e2e2e;
 @smartsearch-input-selection-text-color: #fff;
+@smartsearch-text-color: @header-text-color;
 
 // wizard styles
 @wizard-bg: @gray-lighter;
@@ -154,6 +228,12 @@
 @label-campus-bg: #83758f;
 @label-type-bg: @accent-semibold-color;
 
+// Tree Viewer
+@tree-rollover-bg: #bbdd8d;         // Background color of the rollover for items in the treeview.
+@tree-rollover-color: #ffffff;      // Text color of the rollover for items in the treeview.
+@tree-selected-bg: #6a6a6a;         // Background color of selected items in the treeview.
+@tree-selected-color: #ffffff;      // Text color of selected items in the treeview.
+
 // Custom Buttons
 @btn-action-color:              #fff;
 @btn-action-bg:                 #6a6a6a;
@@ -167,9 +247,32 @@
 @btn-authenication-bg:          @accent-color;
 @btn-authenication-border:      darken(@accent-color, 5%);
 
-// Scrollbar Items
-@scroll-track-color: #aaa;
-@scroll-thumb-color: #ccc;
+
+
+
+
+
+
+
+//
+// Rock 1.0 Variables
+// --------------------------------------------------
+
+// Constants
+@const-border-darken-amt: 10%; // creates a border color by darkening the background by this amount
+
+// Font Weights
+@font-weight-light:     300;
+@font-weight-bold:      900;
+@font-weight-semibold:  700;
+
+
+
+// spacing multipliers / used to multiply by the grid-gutter-width to get spacing sizes
+@spacing-sm: 0.25;
+@spacing-md: 0.5;
+@spacing-lg: 1;
+@spacing-xl: 2;
 
 //
 // Bootstrap 3.0 Variables
@@ -188,31 +291,11 @@
 @gray-light:             #f3f3f4;   // #999
 @gray-lighter:           #efefef; // #eee
 
-// Brand colors
-// -------------------------
 
-@brand-primary:         #ee7624;
-@brand-success:         #5C9E7D; // #43be81;
-@brand-warning:         #ECC759; //#f3d066;
-@brand-danger:          #BB5454; // #c84b4b;
-@brand-info:            #4099AD; // #3bc2df;
-
-// Scaffolding
-// -------------------------
-
-@body-bg:               #edeae6;
-@text-color:            #6a6a6a;
-
-// Links
-// -------------------------
-
-@link-color:            #4f89bd; // #817b72;//#a0886e; //#478bae;
-@link-hover-color:      darken(@link-color, 15%);
 
 // Typography
 // -------------------------
 
-@font-family-sans-serif:  'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 @font-family-serif:       Georgia, "Times New Roman", Times, serif;
 @font-family-monospace:   Monaco, Menlo, Consolas, "Courier New", monospace;
 @font-family-base:        @font-family-sans-serif;
@@ -260,7 +343,7 @@
 @line-height-large:              1.33;
 @line-height-small:              1.5;
 
-@border-radius-base:             4px;
+
 @border-radius-large:            6px;
 @border-radius-small:            3px;
 
@@ -276,12 +359,12 @@
 @table-cell-padding:                 8px;
 @table-condensed-cell-padding:       5px;
 
-@table-bg:                           transparent; // overall background-color
-@table-bg-accent:                    #F5F2EE; // for striping
+@table-bg:                           @grid-row-even-bg; // overall background-color
+@table-bg-accent:                    @grid-row-odd-bg; // for striping
 @table-bg-hover:                     #f5f5f5;
 @table-bg-active:                    @table-bg-hover;
 
-@table-border-color:                 #ddd; // table and cell border
+@table-border-color:                 @grid-border-color; // table and cell border
 
 
 // Buttons
@@ -319,25 +402,11 @@
 // Forms
 // -------------------------
 
-@input-bg:                       #fff;
-@input-bg-disabled:              @gray-lighter;
 
-@input-color:                    @gray;
-@input-border:                   #ccc;
-@input-border-radius:            @border-radius-base;
-@input-border-focus:             #66afe9;
-
-@input-color-placeholder:        lighten(@text-color, 40%);
 
 @input-height-base:              (@line-height-computed + (@padding-base-vertical * 2) + 2);
 @input-height-large:             (floor(@font-size-large * @line-height-large) + (@padding-large-vertical * 2) + 2);
 @input-height-small:             (floor(@font-size-small * @line-height-small) + (@padding-small-vertical * 2) + 2);
-
-@legend-color:                   @gray-dark;
-@legend-border-color:            #e5e5e5;
-
-@input-group-addon-bg:           @body-bg;
-@input-group-addon-border-color: darken(@input-group-addon-bg, 10%);
 
 
 // Dropdowns
@@ -488,7 +557,7 @@
 // -------------------------
 
 @nav-link-padding:                          10px 15px;
-@nav-link-hover-bg:                         lighten(@nav-pills-active-link-hover-bg, 25%);
+@nav-link-hover-bg:                         lighten(@nav-pills-active-link-hover-bg, 20%);
 
 @nav-disabled-link-color:                   @gray-light;
 @nav-disabled-link-hover-color:             @gray-light;
@@ -507,10 +576,6 @@
 
 @nav-tabs-justified-link-border-color:            #ddd;
 @nav-tabs-justified-active-link-border-color:     @body-bg;
-
-// Pills
-@nav-pills-active-link-hover-bg:            #8cc63e;
-@nav-pills-active-link-hover-color:         #fff;
 
 
 // Pagination
@@ -679,19 +744,18 @@
 
 // Panels
 // -------------------------
-@panel-bg:                    #fcfaf8;
+
 @panel-body-padding:          15px;
 @panel-heading-padding:       10px 15px;
 @panel-footer-padding:        @panel-heading-padding;
 @panel-border-radius:         @border-radius-base;
 
+@panel-default-heading-bg:    @panel-heading-bg;
+@panel-default-text:          @panel-text;
+@panel-default-border:        @panel-border;
+
 @panel-inner-border:          #ddd;
 @panel-border-radius:         @border-radius-base;
-@panel-footer-bg:             #f5f5f5;
-
-@panel-default-text:          @accent-light-text-color;
-@panel-default-border:        darken(@body-bg, 15%);
-@panel-default-heading-bg:    @body-bg;
 
 @panel-primary-text:          #fff;
 @panel-primary-border:        @brand-primary;
@@ -723,11 +787,6 @@
 
 @thumbnail-caption-color:     @text-color;
 @thumbnail-caption-padding:   9px;
-
-
-// Wells
-// -------------------------
-@well-bg:                     @body-bg;
 
 
 // Badges

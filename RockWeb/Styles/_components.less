@@ -127,9 +127,9 @@
   }
 
   .picker-actions {
-    background-color: @accent-light-color;
+    background-color: @picker-action-bg;
     padding: 10px;
-    border-top: 1px solid @accent-color;
+    border-top: 1px solid darken(@picker-action-bg, 10%);
     border-radius: 0 0 @border-radius-base @border-radius-base;
     margin: 10px -10px -10px -10px;
   }
@@ -291,14 +291,14 @@ ul.rocktree ul {
   .rocktree-name:hover,
   span:hover,
   span:hover a {
-    background: @accent-bold-color;
-    color: @accent-bold-text-color;
+    background: @tree-rollover-bg;
+    color: @tree-rollover-color;
   }
 
   .selected,
   .selected a {
-    background: @accent-semibold-color;
-    color: @accent-semibold-text-color
+    background: @tree-selected-bg;
+    color: @tree-selected-color;
   }
 
   .rocktree-name {
@@ -425,7 +425,7 @@ ul.rocktree ul {
 
     li {
       border-radius: @border-radius-base;
-      border: 1px solid @pagelist-border-color;
+      border: 1px solid @listasblocks-border-color;
       float: left;
       margin: 0 1.25% @spacing-md-px;
       width: 47.5%;
@@ -435,26 +435,31 @@ ul.rocktree ul {
       text-align: center;
 
       a {
-        background-color: @pagelist-bg;
+        background-color: @listasblocks-bg;
         display: block;
-        color: @pagelist-text-color;
+        color: @listasblocks-color;
         height: 80px;
         padding: @spacing-md-px;
         border-radius: @border-radius-base;
+        -webkit-transition: background-color 200ms linear;
+        -moz-transition: background-color 200ms linear;
+        -o-transition: background-color 200ms linear;
+        -ms-transition: background-color 200ms linear;
+        transition: background-color 200ms linear;
 
         i {
             font-size: 26px;
-            color: lighten(@pagelist-text-color, 10%);
+            color: lighten(@listasblocks-color, 10%);
             margin-top: 6px;
         }
 
         &:hover {
-          background-color: @pagelist-rollover-bg;
-          color: @pagelist-rollover-text-color;
-          border-color: @pagelist-rollover-border-color;
+          background-color: @listasblocks-rollover-bg;
+          color: @listasblocks-rollover-text-color;
+          border-color: @listasblocks-rollover-border-color;
 
           i {
-            color: @pagelist-rollover-text-color;
+            color: lighten(@listasblocks-rollover-text-color, 10%);
           }
         }
 
@@ -472,8 +477,13 @@ ul.rocktree ul {
 
       &.active {
         a {
-          background-color: @accent-bold-color;
-          color: @accent-bold-text-color;
+          background-color: @listasblocks-active-bg;
+          color: @listasblocks-active-color;
+          border-color: @listasblocks-active-border-color;
+
+          i {
+            color: lighten(@listasblocks-active-color, 10%);
+          }
         }
       }
 
@@ -525,14 +535,9 @@ ul.rocktree ul {
 
 .nav.nav-pagelist {
   margin: 10px 0;
-  background-color: @accent-light-color;
-  border: 1px solid darken(@accent-light-color, 10%);
+  background-color: @well-bg;
+  border: 1px solid darken(@well-bg, 10%);
   border-radius: @border-radius-base;
-
-  .panel-default & {
-    background-color: @accent-color;
-    border: 1px solid darken(@accent-color, 10%);
-  }
 
   .pill-help {
     a {
@@ -832,7 +837,7 @@ div.tagsinput
   border-radius: @border-radius-base;
   padding: 2px 6px;
   position: relative;
-  color: @accent-semibold-color;
+  color: @smartsearch-text-color;
 
   &:focus {
     border-color: #595959;
@@ -883,7 +888,7 @@ div.tagsinput
 
   input.searchinput {
     padding: 4px 4px 4px 25px;
-    color: @header-text-color;
+    color: @smartsearch-input-text-color;
     width: 100%;
     border: 0 !important;
     box-shadow: none !important;
@@ -893,6 +898,7 @@ div.tagsinput
 
     .navbar-link {
       text-align: right;
+      color: @smartsearch-text-color;
 
       span {
         padding-right: 4px;
