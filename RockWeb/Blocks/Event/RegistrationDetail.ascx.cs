@@ -117,8 +117,6 @@ namespace RockWeb.Blocks.Event
 
             RegisterClientScript();
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Registration.FriendlyTypeName );
-
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlRegistrationDetail );
@@ -211,12 +209,6 @@ namespace RockWeb.Blocks.Event
                     if ( !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                     {
                         mdDeleteWarning.Show( "You are not authorized to delete this registration.", ModalAlertType.Information );
-                        return;
-                    }
-
-                    if ( registration.Payments.Any() )
-                    {
-                        mdDeleteWarning.Show( "This registration has payments and cannot be deleted.", ModalAlertType.Information );
                         return;
                     }
 
@@ -784,6 +776,7 @@ namespace RockWeb.Blocks.Event
             BuildRegistrationControls( true );
 
             bool anyPayments = registration.Payments.Any();
+            hfHasPayments.Value = anyPayments.ToString();
             foreach ( RockWeb.Blocks.Finance.TransactionList block in RockPage.RockBlocks.Where( a => a is RockWeb.Blocks.Finance.TransactionList ) )
             {
                 block.SetVisible( anyPayments );
@@ -840,6 +833,27 @@ namespace RockWeb.Blocks.Event
     $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
 ";
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registration-detail-card-info", script, true );
+
+            string deleteScript = @"
+
+    $('a.js-delete-registration').click(function( e ){
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this Registration? All of the registrants will also be deleted!', function (result) {
+            if (result) {
+                if ( $('input.js-has-payments').val() == 'True' ) {
+                    Rock.dialogs.confirm('This registration also has payments. Are you really sure that you want to delete the registration?<br/><small>(payments will not be deleted, but they will no longer be associated with a registration)</small>', function (result) {
+                        if (result) {
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                        }
+                    });
+                } else {
+                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                }
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( btnDelete, btnDelete.GetType(), "deleteRegistrationScript", deleteScript, true );
         }
 
         #endregion
