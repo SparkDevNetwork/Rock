@@ -121,7 +121,10 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     if ( workflowType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                     {
-                        workflowNavigationCategory.WorkflowTypes.Add( new WorkflowNavigationWorkflowType( workflowType, workflowType.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) ) );
+                        workflowNavigationCategory.WorkflowTypes.Add( 
+                            new WorkflowNavigationWorkflowType( workflowType, 
+                                workflowType.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ),
+                                workflowType.IsAuthorized( "ViewList", CurrentPerson ) ) );
                     }
                 }
 
@@ -212,7 +215,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     aNew.Controls.Add( new LiteralControl( workflowType.Name ) );
 
-                    if ( workflowType.CanManage || IsUserAuthorized( Rock.Security.Authorization.EDIT ) || IsUserAuthorized("ViewList") )
+                    if ( workflowType.CanManage || workflowType.CanViewList || IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
                     {
                         li.Controls.Add( new LiteralControl( " " ) );
 
@@ -372,6 +375,14 @@ namespace RockWeb.Blocks.WorkFlow
         public bool CanManage { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance can view list.
+        /// </summary>
+        /// <value>
+        /// 	<c>true</c> if this instance can view list; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanViewList { get; set; }
+
+        /// <summary>
         /// Gets or sets whether or not the workflow type is active.
         /// </summary>
         /// <value>
@@ -387,10 +398,12 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowNavigationWorkflowType"/> class.
+        /// Initializes a new instance of the <see cref="WorkflowNavigationWorkflowType" /> class.
         /// </summary>
         /// <param name="workflowType">Type of the workflow.</param>
-        public WorkflowNavigationWorkflowType( WorkflowType workflowType, bool canManage )
+        /// <param name="canManage">if set to <c>true</c> [can manage].</param>
+        /// <param name="canViewList">if set to <c>true</c> [can view list].</param>
+        public WorkflowNavigationWorkflowType( WorkflowType workflowType, bool canManage, bool canViewList )
         {
             Id = workflowType.Id;
             Name = workflowType.Name;
@@ -400,6 +413,7 @@ namespace RockWeb.Blocks.WorkFlow
             HasForms = workflowType.HasActiveForms;
             HighlightColor = string.Empty;
             CanManage = canManage;
+            CanViewList = canViewList;
 
             if ( workflowType.IsActive.HasValue )
             {
