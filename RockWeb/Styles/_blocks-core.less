@@ -11,7 +11,9 @@
 // -------------------------
 .panel-note {
     // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
-    .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 5%););
+    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+
+    border-top-color: @panel-top-border-color;
 
     .panel-body {
         background-color: #fffs;
@@ -193,7 +195,7 @@
 
 .panel-noteentry
 {
-    .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 5%););
+    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
     .createDate {
           margin-top:10px;
@@ -383,7 +385,7 @@
 .panel-group {
     .panel-workflowitem {
         // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
-        .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 5%););
+        .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
         margin-bottom: 30px;
 

@@ -11,26 +11,28 @@
     8. Column Types
     9. Row Types
     10. Responsive Columns
-
+    11. Hover Colors
 */
 
 
 // 1. Bootstrap Overrides
 // -------------------------
-/*.table-responsive > .table-bordered,
-.table-responsive[data-pattern="priority-columns"] > .table-bordered {
-    border: 1px solid @table-border-color;
-}*/
 
-.table-hover tbody tr:hover td,
-.table-hover tbody tr:hover th {
-    background-color: rgba(0,0,0,.03);
+
+
+.table > tbody > tr > td {
+    color: @grid-row-even-color;
 }
+
+.table-striped > tbody > tr:nth-child(odd) > td, .table-striped > tbody > tr:nth-child(odd) > th {
+  background-color: @grid-row-odd-bg;
+  color: @grid-row-odd-color;
+}
+
 
 td.grid-select-cell {
     cursor: pointer;
 }
-
 
 td.wrap-contents { // keep cells from scrolling off screen
     -ms-word-break: break-all;
@@ -49,7 +51,7 @@ td.wrap-contents { // keep cells from scrolling off screen
     margin-bottom: 20px;
 
     .grid-table {
-        border: 1px solid @table-border-color;
+        border: 1px solid @grid-border-color;
     }
 
     .grid-table.table-light {
@@ -84,11 +86,6 @@ td.wrap-contents { // keep cells from scrolling off screen
     position: static; // the default for this is relative, but this causes the scrollbar to always show until you resize the window, then it goes away
 }
 
-/*.table-responsive[data-pattern="priority-columns"] {
-    margin-bottom: inherit;
-    border: inherit;
-    border-radius: inherit;
-}*/
 
 // 2. Core Table
 // -------------------------
@@ -99,7 +96,6 @@ td.wrap-contents { // keep cells from scrolling off screen
 }
 
 
-
 // 3. Filter
 // -------------------------
 .grid-filter {
@@ -107,6 +103,7 @@ td.wrap-contents { // keep cells from scrolling off screen
     border-radius: @border-radius-base;
     padding: 6px 12px;
 	border-bottom: 1px solid @table-border-color;
+    color: @grid-filter-color;
 
     header {
         border-radius: @border-radius-base @border-radius-base 0 0;
@@ -124,7 +121,7 @@ td.wrap-contents { // keep cells from scrolling off screen
         }
 
         i {
-            color: lighten(@text-color, 20%);
+            color: lighten(@grid-filter-color, 20%);
         }
 
         fieldset {
@@ -135,7 +132,6 @@ td.wrap-contents { // keep cells from scrolling off screen
      h4 {
         margin: 12px 0 20px;
         padding-bottom: 8px;
-        //border-bottom: 1px solid darken(@grid-filter-bg, 8%);
         font-weight: @font-weight-light;
     }
 
@@ -150,11 +146,6 @@ td.wrap-contents { // keep cells from scrolling off screen
         border-color: darken(@grid-filter-bg, 10%)
     }
 }
-
-/*.grid-filter +  div .grid-table {
-    margin-top: -12px;   
-}*/
-
 
 
  .grid-filter-entry legend + .control-group {
@@ -199,10 +190,25 @@ td.wrap-contents { // keep cells from scrolling off screen
 // pagination
 .grid-paging {
     background-color: @grid-pager-bg;
+    color: @grid-pager-color;
 
     .pagination {
         margin-top: 0;
         margin-bottom: 0;
+
+        li {
+             > a {
+                background-color: @grid-pager-button-bg;
+                color: @grid-pager-button-color;
+                border-color: @grid-pager-button-border;
+            }
+
+            &.active > a {
+                background-color: @grid-pager-button-active-bg;
+            }
+        }
+            
+           
     }
 
     .grid-pager {
@@ -361,8 +367,8 @@ td.grid-col-actions {
 
 tr.row-highlight {
     td {
-        background-color: @accent-bold-color !important;
-        color: @accent-bold-text-color !important;
+        background-color: @grid-hover-bg !important;
+        color: @grid-hover-color !important;
     }
 }
 
@@ -426,4 +432,14 @@ tr.row-highlight {
             display: table-cell;
         }
     }
+}
+
+// 11. Hover Colors (best if left at the end to ensure they are not overwritten)
+// -------------------------
+
+// hover colors
+.table-hover tbody tr:hover td,
+.table-hover tbody tr:hover th {
+  background-color: @grid-hover-bg;
+  color: @grid-hover-color;
 }

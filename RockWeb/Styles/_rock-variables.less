@@ -20,16 +20,30 @@
 @accent-bold-color: #428bca; // overrides brand color
 @accent-bold-text-color: #ecf0f3;
 
-@text-light-color: lighten(@text-color, 20%);
-@text-selection-color: #5279a0;
-@text-selection-text-color: #fff;
+@boldheader-bg: #282526; // Background color for bold table headers like the merge person page.
+@boldheader-color: #d3cec5; // The text color for bold table headers like the merge person page.
+
+@picker-action-bg: #e3ded7;     // The background color of the actions bar at the bottom of the picker dropdown.
+
+@text-selection-bg: #afd074; // Text Selection (these colors are used when people select text with the mouse)
+@text-selection-color: #fff;
 
 @persondetails-bio-bg: #dbd5cb;
 @persondetails-bio-color: #231f20;
+@persondetails-bio-action-color: #fff;
+@persondetails-bio-action-bg: #6a6a6a;
+@persondetails-bio-action-border: darken(@persondetails-bio-action-bg, 5%);
+@persondetails-bio-photo-border: @header-bg;
+@persondetails-bio-photo-following: #817b72; 
+
 @persondetails-badge-bg: #e3ded7;
 @persondetails-badge-color: #817b72;
+
 @persondetails-familybar-bg: @body-bg;
 @persondetails-familybar-color: @text-color;
+@persondetails-familybar-action-color: #fff;
+@persondetails-familybar-action-bg: #6a6a6a;
+@persondetails-familybar-action-border: darken(@persondetails-bio-action-bg, 5%);
 
 @help-color: #86b8cc;
 @required-field-color: #eca9a7;
@@ -44,7 +58,7 @@
 @header-text-color: #bbb;
 
 @footer-bg: @header-bg;
-@footer-text-color: @header-text-color;
+@footer-color: @header-text-color;
 
 @modal-header-bg: @header-bg;
 @modal-header-text-color: @header-text-color;
@@ -62,8 +76,17 @@
 // Autocomplete
 @autocomplete-rollover-bg: #d5e6ed;
 
+// Tree Viewer
+@tree-rollover-bg: #BADB8B;
+@tree-rollover-color: #ffffff;
+@tree-selected-bg: #6a6a6a;
+@tree-selected-color: #ffffff;
+
 // Grid
+@grid-border-color: #ddd;
+
 @grid-filter-bg: @accent-color;
+@grid-filter-color: @text-color;
 
 @grid-column-header-bg: @accent-bold-color;
 @grid-column-header-text-color: @accent-bold-text-color;
@@ -71,11 +94,21 @@
 @grid-column-header-font-weight: @font-weight-light;
 
 @grid-hover-bg: @accent-light-color;
+@grid-hover-color: @text-color;
+
+@grid-row-even-bg: green;// @body-bg;
+@grid-row-even-color: white;// @text-color;
+@grid-row-odd-bg: pink;
+@grid-row-odd-color: red;
 
 @grid-pager-bg: @accent-color;
+@grid-pager-color: @text-color;
+@grid-pager-button-bg: @gray;
+@grid-pager-button-color: @text-color;
+@grid-pager-button-border: darken(@accent-color, 20%);
+@grid-pager-button-active-bg: lighten(@gray, 10%);
+@panel-following-active-bg:   @header-bg;
 
-@grid-filter-bg: @accent-color;
-@grid-filter-color: @text-color;
 @grid-footer-bg: @accent-color;
 @grid-footer-text-color: @accent-text-color;
 @grid-footer-font-size: 10px;
@@ -90,8 +123,16 @@
 @pagination-border: darken(@accent-light-color, 10%);
 @pagination-active-bg: @accent-semibold-color;
 
-// Panels
-@panel-top-border-color: @accent-color;
+// Panel
+@panel-bg:                    red;// #fcfaf8;
+@panel-footer-bg:             blue; // #f5f5f5;
+@panel-footer-color:     @text-color;
+@panel-text:                  @accent-light-text-color;
+@panel-border:                green;// darken(@body-bg, 15%);
+@panel-top-border-color:      orange; // @header-bg;
+@panel-heading-bg:            cyan; // @body-bg;
+@panel-heading-text-color:    @text-color;
+@panel-heading-border:        darken(@panel-heading-bg, 5%);
 
 // Alerts
 @alert-success-link-border-bottom: 1px dotted @alert-success-text;
@@ -116,12 +157,15 @@
 
 
 // Page List
-@pagelist-bg: @accent-color;
-@pagelist-border-color: darken(@accent-color, 5%);
-@pagelist-text-color: @accent-text-color;
-@pagelist-rollover-bg: @accent-bold-color;
-@pagelist-rollover-text-color: #fff;
-@pagelist-rollover-border-color: darken(@pagelist-rollover-bg, 5%);
+@listasblocks-bg: @accent-color;
+@listasblocks-border-color: darken(@accent-color, 5%);
+@listasblocks-color: @accent-text-color;
+@listasblocks-rollover-bg: @accent-bold-color;
+@listasblocks-rollover-text-color: #fff;
+@listasblocks-rollover-border-color: darken(@listasblocks-rollover-bg, 5%);
+@listasblocks-active-bg: #F5F2EF;
+@listasblocks-active-border-color: #E2E2E2;
+@listasblocks-active-color: @text-color;
 
 // Tags
 @tag-bg: #c4ced6;
@@ -137,6 +181,7 @@
 @smartsearch-input-text-color: @header-text-color;
 @smartsearch-input-selection-background: #2e2e2e;
 @smartsearch-input-selection-text-color: #fff;
+@smartsearch-text-color: @header-text-color;
 
 // wizard styles
 @wizard-bg: @gray-lighter;
