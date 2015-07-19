@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Event
 
                 eventItemCampus.ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnPhone.Number );
                 eventItemCampus.ContactEmail = tbEmail.Text;
-                eventItemCampus.CampusNote = tbCampusNote.Text;
+                eventItemCampus.CampusNote = htmlCampusNote.Text;
 
                 // Remove any linkage no longer in UI
                 Guid uiLinkageGuid = LinkageState != null ? LinkageState.Guid : Guid.Empty;
@@ -733,7 +733,7 @@ namespace RockWeb.Blocks.Event
             pnPhone.Text = eventItemCampus.ContactPhone;
             tbEmail.Text = eventItemCampus.ContactEmail;
 
-            tbCampusNote.Text = eventItemCampus.CampusNote;
+            htmlCampusNote.Text = eventItemCampus.CampusNote;
 
             LinkageState = new EventItemCampusGroupMap { Guid = Guid.Empty };
             var registration = eventItemCampus.Linkages.FirstOrDefault();
