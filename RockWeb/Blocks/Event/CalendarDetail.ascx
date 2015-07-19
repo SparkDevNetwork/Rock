@@ -11,12 +11,23 @@
 
         <div class="wizard">
 
+             <div class="wizard-item complete">
+                <asp:LinkButton ID="lbCalendars" runat="server" OnClick="lbCalendarsDetail_Click" CausesValidation="false" >
+                    <div class="wizard-item-icon">
+                        <i class="fa fa-fw fa-calendar"></i>
+                    </div>
+                    <div class="wizard-item-label">
+                        All Calendars
+                    </div>
+                </asp:LinkButton>
+            </div>
+            
             <div class="wizard-item active">
                 <div class="wizard-item-icon">
                     <i class="fa fa-fw fa-calendar"></i>
                 </div>
                 <div class="wizard-item-label">
-                    Calendar
+                    <asp:Literal ID="lWizardCalenderName" runat="server" />
                 </div>
             </div>
     
