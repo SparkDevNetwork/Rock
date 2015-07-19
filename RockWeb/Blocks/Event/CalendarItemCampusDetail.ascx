@@ -11,8 +11,19 @@
 
         <div class="wizard">
     
+             <div class="wizard-item complete">
+                <asp:LinkButton ID="lbCalendars" runat="server" OnClick="lbCalendarsDetail_Click" CausesValidation="false" >
+                    <div class="wizard-item-icon">
+                        <i class="fa fa-fw fa-calendar"></i>
+                    </div>
+                    <div class="wizard-item-label">
+                        All Calendars
+                    </div>
+                </asp:LinkButton>
+            </div>
+    
             <div class="wizard-item complete">
-                <asp:LinkButton ID="lbCalendarDetail" runat="server" OnClick="lbCalendarDetail_Click">
+                <asp:LinkButton ID="lbCalendarDetail" runat="server" OnClick="lbCalendarDetail_Click" CausesValidation="false" >
                     <div class="wizard-item-icon">
                         <i class="fa fa-fw fa-calendar"></i>
                     </div>
@@ -23,7 +34,7 @@
             </div>
     
             <div class="wizard-item complete">
-                <asp:LinkButton ID="lbCalendarItem" runat="server" OnClick="lbCalendarItem_Click">
+                <asp:LinkButton ID="lbCalendarItem" runat="server" OnClick="lbCalendarItem_Click" CausesValidation="false" >
                     <div class="wizard-item-icon">
                         <i class="fa fa-fw fa-calendar-o"></i>
                     </div>

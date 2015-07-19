@@ -336,6 +336,20 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbCalendarsDetail control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbCalendarsDetail_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            var pageCache = PageCache.Read( RockPage.PageId );
+            if ( pageCache != null && pageCache.ParentPage != null )
+            {
+                NavigateToPage( pageCache.ParentPage.Guid, qryParams );
+            }
+        }
         #endregion
 
         #region Attribute Events
@@ -518,10 +532,12 @@ namespace RockWeb.Blocks.Event
             if ( eventCalendar.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( EventCalendar.FriendlyTypeName ).FormatAsHtmlTitle();
+                lWizardCalenderName.Text = "New Calendar";
             }
             else
             {
                 lReadOnlyTitle.Text = eventCalendar.Name.FormatAsHtmlTitle();
+                lWizardCalenderName.Text = eventCalendar.Name;
             }
 
             lCalendarIcon.Text = string.Format( "<i class='{0}'></i>", string.IsNullOrWhiteSpace( eventCalendar.IconCssClass ) ? "fa fa-calendar" : eventCalendar.IconCssClass );
@@ -549,6 +565,8 @@ namespace RockWeb.Blocks.Event
             AttributesState = null;
 
             lReadOnlyTitle.Text = eventCalendar.Name.FormatAsHtmlTitle();
+            lWizardCalenderName.Text = eventCalendar.Name;
+
             lCalendarIcon.Text = string.Format( "<i class='{0}'></i>", string.IsNullOrWhiteSpace( eventCalendar.IconCssClass ) ? "fa fa-calendar" : eventCalendar.IconCssClass );
             lEventCalendarDescription.Text = eventCalendar.Description;
         }
