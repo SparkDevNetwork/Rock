@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.WorkFlow
                         aManage.Attributes.Add( "href", LinkedPageUrl( "ManagePage", qryParms ) );
                         var iManageIcon = new HtmlGenericControl( "i" );
                         aManage.Controls.Add( iManageIcon );
-                        iManageIcon.AddCssClass( "fa fa-wrench" );
+                        iManageIcon.AddCssClass( "fa fa-list" );
                         li.Controls.Add( aManage );
                     }
                 }
