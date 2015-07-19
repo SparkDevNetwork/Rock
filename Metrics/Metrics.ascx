@@ -8,9 +8,12 @@
             <asp:HiddenField ID="metricWidth" runat="server" />
             <asp:HiddenField ID="metricClass" runat="server" />
             <asp:HiddenField ID="metricDisplay" runat="server" />
-            <asp:HiddenField ID="metricNumber" runat="server" />
+            
             <asp:HiddenField ID="metricTitle" runat="server" />
             <asp:HiddenField ID="metricBlockId" runat="server" />
+
+            <asp:HiddenField ID="currentMetricValue" runat="server" />
+            <asp:HiddenField ID="previousMetricValue" runat="server" />
 
             <% if ( metricDisplay.Value.Equals( "Text" ) )
                { %>
@@ -19,8 +22,13 @@
                     <h1 class="panel-title pull-left"><%= metricTitle.Value %></h1>
                 </div>
                 <div class="panel-body">
-                    <h1 class="flush"><%= metricNumber.Value %><% if ( metricClass.Value != "" )
+                    <h1 <% if ( previousMetricValue.Value == "" || previousMetricValue.Value == "0" ) { %> class="flush" <% } %>><%= currentMetricValue.Value %><% if ( metricClass.Value != "" )
                                                                   { %> <i class="fa fa-fw <%= metricClass.Value %> pull-right"></i><% } %></h1>
+
+                    <% if ( previousMetricValue.Value != "" && previousMetricValue.Value != "0" ) { %>
+                    <h4>Last Year</h4>
+                    <h3><%= previousMetricValue.Value %></h3>
+                    <% } %>
                 </div>
             </div>
             <% }
@@ -50,28 +58,27 @@
                     datasets: [
                         {
                             label: "<%= currentYear.Value %>",
-                            fillColor: "rgba(28,104,62,0)",
-                            strokeColor: "rgba(28,104,62,1)",
-                            pointColor: "rgba(28,104,62,1)",
-                            pointStrokeColor: "#fff",
-                            data: [<%= metricDataPointsCurrent.Value %>]
-                        },
-                        {
-                            label: "<%= previousYear.Value %>",
                             fillColor: "rgba(89,161,46,0)",
                             strokeColor: "rgba(89,161,46,1)",
                             pointColor: "rgba(89,161,46,1)",
                             pointStrokeColor: "#fff",
+                            data: [<%= metricDataPointsCurrent.Value %>]
+                        }<% if ( MetricCompareLastYear.Equals("Yes") ) { %>,
+                        {
+                            label: "<%= previousYear.Value %>",
+                            fillColor: "rgba(28,104,62,0)",
+                            strokeColor: "rgba(28,104,62,1)",
+                            pointColor: "rgba(28,104,62,1)",
+                            pointStrokeColor: "#fff",
                             data: [<%= metricDataPointsPrevious.Value %>]
-                        }
+                        }<% } %>
                     ]
                 }
 
-                window.onload = function () {
-                    var <%= metricBlockId.Value %> = document.getElementById("<%= metricBlockId.Value %>").getContext("2d");
-
+                $( document ).ready(function() {
+                    var <%= metricBlockId.Value %> = document.getElementById("<%= metricBlockId.Value %>Chart").getContext("2d");
                     window.<%= metricBlockId.Value %>Chart = new Chart(<%= metricBlockId.Value %>).Line(<%= metricBlockId.Value %>Data, lineOptions);
-                }
+                });
             </script>
 
             <div class="panel panel-block panel-chart">
@@ -98,10 +105,10 @@
                     pointDotStrokeWidth: 3,
                 }
 
-                window.onload = function () {
+                $( document ).ready( function() {
                     var <%= metricBlockId.Value %> = document.getElementById("<%= metricBlockId.Value %>Chart").getContext("2d");
                     window.<%= metricBlockId.Value %>Chart = new Chart(<%= metricBlockId.Value %>).Doughnut(<%= metricBlockValues %>, pieOptions);
-                    }
+                });
             </script>
 
             <div class="panel panel-block panel-chart">
@@ -109,7 +116,7 @@
                     <h1 class="panel-title pull-left"><%= metricTitle.Value %></h1>
                 </div>
                 <div class="panel-body">
-                    <canvas id="<%= metricBlockId.Value %>Chart"></canvas>
+                    <canvas id="<%= metricBlockId.Value %>Chart" class="HotAndNow"></canvas>
                 </div>
             </div>
 
