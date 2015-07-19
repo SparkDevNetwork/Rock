@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     aNew.Controls.Add( new LiteralControl( workflowType.Name ) );
 
-                    if ( workflowType.CanManage || IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
+                    if ( workflowType.CanManage || IsUserAuthorized( Rock.Security.Authorization.EDIT ) || IsUserAuthorized("ViewList") )
                     {
                         li.Controls.Add( new LiteralControl( " " ) );
 
