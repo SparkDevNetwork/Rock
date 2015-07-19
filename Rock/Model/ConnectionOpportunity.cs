@@ -136,15 +136,6 @@ namespace Rock.Model
         public int? GroupMemberRoleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member status identifier.
-        /// </summary>
-        /// <value>
-        /// The group member status identifier.
-        /// </value>
-        [DataMember]
-        public int? GroupMemberStatusId { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [use all groups of type].
         /// </summary>
         /// <value>
@@ -229,7 +220,6 @@ namespace Rock.Model
         [DataMember]
         public virtual BinaryFile Photo { get; set; }
 
-
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionOpportunityGroup">ConnectionOpportunityGroups</see> who are associated with the ConnectionOpportunity.
         /// </summary>
@@ -276,6 +266,21 @@ namespace Rock.Model
         private ICollection<ConnectionRequest> _connectionRequests;
 
         /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionOpportunityGroupCampus">ConnectionOpportunityGroupCampuses</see> who are associated with the ConnectionOpportunity.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionOpportunityGroupCampus">ConnectionOpportunityGroupCampuses</see> who are associated with the ConnectionOpportunity.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<ConnectionOpportunityGroupCampus> ConnectionOpportunityGroupCampuses
+        {
+            get { return _connectionOpportunityGroupCampuses ?? ( _connectionOpportunityGroupCampuses = new Collection<ConnectionOpportunityGroupCampus>() ); }
+            set { _connectionOpportunityGroupCampuses = value; }
+        }
+
+        private ICollection<ConnectionOpportunityGroupCampus> _connectionOpportunityGroupCampuses;
+
+        /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionOpportunityCampus">ConnectionOpportunityCampuses</see> who are associated with the ConnectionOpportunity.
         /// </summary>
         /// <value>
@@ -293,8 +298,6 @@ namespace Rock.Model
         #endregion
 
         #region Methods
-
-
 
         /// <summary>
         /// Gets the photo URL.

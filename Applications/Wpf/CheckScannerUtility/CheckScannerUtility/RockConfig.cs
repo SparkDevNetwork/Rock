@@ -263,13 +263,13 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// <c>true</c> if [prompt to scan rear image]; otherwise, <c>false</c>.
         /// </value>
-        [DefaultSettingValueAttribute( "true" )]
+        [DefaultSettingValueAttribute( "false" )]
         [UserScopedSetting]
         public bool PromptToScanRearImage
         {
             get
             {
-                return this["PromptToScanRearImage"] as bool? ?? true;
+                return this["PromptToScanRearImage"] as bool? ?? false;
             }
 
             set
@@ -296,6 +296,28 @@ namespace Rock.Apps.CheckScannerUtility
             set
             {
                 this["EnableDoubleDocDetection"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether check scanning should warn when a bad MICR is detected. 
+        /// This should normally be set to true, but they might want to set it to false if they are scanning a mixture of checks and envelopes, etc
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable smart scan]; otherwise, <c>false</c>.
+        /// </value>
+        [DefaultSettingValueAttribute( "true" )]
+        [UserScopedSetting]
+        public bool EnableSmartScan
+        {
+            get
+            {
+                return this["EnableSmartScan"] as bool? ?? true;
+            }
+
+            set
+            {
+                this["EnableSmartScan"] = value;
             }
         }
 

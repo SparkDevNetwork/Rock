@@ -1103,6 +1103,7 @@ namespace RockWeb.Blocks.Groups
             // hide sync and requirements panel if no admin access
             wpGroupSync.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             wpGroupRequirements.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            wpGroupMemberAttributes.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
 
             var systemEmails = new SystemEmailService( new RockContext() ).Queryable().OrderBy( e => e.Title );
 

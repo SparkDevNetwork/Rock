@@ -98,7 +98,6 @@ namespace Rock.Model
             target.ConnectorGroupId = source.ConnectorGroupId;
             target.Description = source.Description;
             target.GroupMemberRoleId = source.GroupMemberRoleId;
-            target.GroupMemberStatusId = source.GroupMemberStatusId;
             target.GroupTypeId = source.GroupTypeId;
             target.IconCssClass = source.IconCssClass;
             target.IsActive = source.IsActive;

@@ -123,7 +123,6 @@ namespace Rock.Model
 
         private ICollection<ConnectionStatus> _connectionStatuses;
 
-
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionWorkflow">ConnectionWorkflows</see> who are associated with the ConnectionType.
         /// </summary>

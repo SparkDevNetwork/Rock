@@ -31,13 +31,13 @@ namespace Rock.Net
     /// Used by Apps.CheckScannerUtility
     /// </summary>
     [System.ComponentModel.DesignerCategory( "Code" )]
-    [Obsolete("The RestSharp library should be used instead of this class.  This class will eventually be removed.")]
+    //[Obsolete("The RestSharp library should be used instead of this class.  This class will eventually be removed.")]
     public class RockRestClient : WebClient
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RockRestClient"/> class.
-        /// </summary>
-        [Obsolete( "The RestSharp library should be used instead of this class.  This class will eventually be removed." )]
+        //// </summary>
+        //[Obsolete( "The RestSharp library should be used instead of this class.  This class will eventually be removed." )]
         public RockRestClient( string rockBaseUrl )
             : this( rockBaseUrl, new CookieContainer() )
         {
@@ -49,7 +49,7 @@ namespace Rock.Net
         /// </summary>
         /// <param name="rockBaseUrl">The rock base URL.</param>
         /// <param name="c">The c.</param>
-        [Obsolete( "The RestSharp library should be used instead of this class.  This class will eventually be removed." )]
+        //[Obsolete( "The RestSharp library should be used instead of this class.  This class will eventually be removed." )]
         public RockRestClient( string rockBaseUrl, CookieContainer c )
         {
             this.CookieContainer = c;
@@ -315,9 +315,9 @@ namespace Rock.Net
         /// <typeparam name="T"></typeparam>
         /// <param name="postPath">The post path.</param>
         /// <param name="data">The data.</param>
-        public void PostData<T>( string postPath, T data )
+        public string PostData<T>( string postPath, T data )
         {
-            PostPutData( postPath, data, HttpMethod.Post );
+            return PostPutData( postPath, data, HttpMethod.Post );
         }
 
         /// <summary>
@@ -326,21 +326,38 @@ namespace Rock.Net
         /// <typeparam name="T"></typeparam>
         /// <param name="postPath">The post path.</param>
         /// <param name="data">The data.</param>
-        public void PutData<T>( string postPath, T data )
+        public string PutData<T>( string postPath, T data )
         {
-            PostPutData( postPath, data, HttpMethod.Put );
+            return PostPutData( postPath, data, HttpMethod.Put );
         }
 
         /// <summary>
-        /// Posts or Puts the data depending on httpMethod
+        /// Deletes the specified delete path.
+        /// </summary>
+        /// <param name="deletePath">The delete path.</param>
+        public void Delete( string deletePath )
+        {
+            RestSharp.RestClient restClient = new RestSharp.RestClient( this.rockBaseUri );
+            restClient.CookieContainer = this.CookieContainer;
+            RestSharp.RestRequest request = new RestSharp.RestRequest( deletePath, RestSharp.Method.DELETE );
+            var response = restClient.Execute( request );
+            if ( response.ErrorException != null )
+            {
+                throw response.ErrorException;
+            }
+        }
+
+        /// <summary>
+        /// Posts or Puts the data depending on httpMethod returning result as a string (if there is a result)
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="postPath">The post path.</param>
         /// <param name="data">The data.</param>
         /// <param name="httpMethod">The HTTP method.</param>
         /// <exception cref="Rock.Net.HttpErrorException"></exception>
-        private void PostPutData<T>( string postPath, T data, HttpMethod httpMethod )
+        private string PostPutData<T>( string postPath, T data, HttpMethod httpMethod )
         {
+            string contentResult = null;
             Uri requestUri = new Uri( rockBaseUri, postPath );
 
             HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
@@ -361,7 +378,7 @@ namespace Rock.Net
 
                     postTask.Result.Content.ReadAsStringAsync().ContinueWith( c =>
                     {
-                        var contentResult = c.Result;
+                        contentResult = c.Result;
                     } ).Wait();
 
                     httpMessage = postTask.Result;
@@ -405,6 +422,8 @@ namespace Rock.Net
             {
                 httpMessage.EnsureSuccessStatusCode();
             }
+
+            return contentResult;
         }
 
         /// <summary>
@@ -544,7 +563,21 @@ namespace Rock.Net
                     }
                     else
                     {
-                        throw new HttpErrorException( new HttpError( postTask.Result.ReasonPhrase ) );
+
+                        HttpError httpError = null;
+                        postTask.Result.Content.ReadAsStringAsync().ContinueWith( s =>
+                        {
+                            httpError = GetHttpError( requestUri, httpError, postTask, s );
+                        } ).Wait();
+
+                        if ( httpError != null )
+                        {
+                            throw new HttpErrorException( httpError );
+                        }
+                        else
+                        {
+                            throw new HttpErrorException( new HttpError( postTask.Result.ReasonPhrase ) );
+                        }
                     }
                 } ).Wait();
             }

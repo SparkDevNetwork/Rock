@@ -7,6 +7,8 @@
 
         <Rock:RockTextBox ID="tbSearchName" runat="server" Label="Name" />
 
+        <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
+
         <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
 
         <Rock:BootstrapButton ID="btnSearch" CssClass="btn btn-primary" runat="server" OnClick="btnSearch_Click" Text="Search" />

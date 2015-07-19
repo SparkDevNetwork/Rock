@@ -45,6 +45,7 @@ namespace Rock.Web.UI.Controls
         NumberBox _nbMaxAttendees;
         AccountPicker _apAccount;
         RockTextBox _tbContactName;
+        PhoneNumberBox _pnContactPhone;
         EmailBox _ebContactEmail;
         DateTimePicker _dtpSendReminder;
         RockCheckBox _cbReminderSent;
@@ -272,6 +273,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the contact phone.
+        /// </summary>
+        /// <value>
+        /// The contact phone.
+        /// </value>
+        public string ContactPhone
+        {
+            get
+            {
+                EnsureChildControls();
+                return _pnContactPhone.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _pnContactPhone.Text = value;
+            }
+        }
+        /// <summary>
         /// Gets or sets the contact email.
         /// </summary>
         /// <value>
@@ -396,6 +416,7 @@ namespace Rock.Web.UI.Controls
                 _dtpEnd.ValidationGroup = value;
                 _nbMaxAttendees.ValidationGroup = value;
                 _tbContactName.ValidationGroup = value;
+                _pnContactPhone.ValidationGroup = value;
                 _ebContactEmail.ValidationGroup = value;
                 _apAccount.ValidationGroup = value;
                 _dtpSendReminder.ValidationGroup = value;
@@ -425,6 +446,7 @@ namespace Rock.Web.UI.Controls
                 _dtpEnd.SelectedDateTime = instance.EndDateTime;
                 _nbMaxAttendees.Text = instance.MaxAttendees.ToString();
                 _tbContactName.Text = instance.ContactName;
+                _pnContactPhone.Text = instance.ContactPhone;
                 _ebContactEmail.Text = instance.ContactEmail;
                 _apAccount.SetValue( instance.AccountId );
                 _dtpSendReminder.SelectedDateTime = instance.SendReminderDateTime;
@@ -441,6 +463,7 @@ namespace Rock.Web.UI.Controls
                 _dtpEnd.SelectedDateTime = null;
                 _nbMaxAttendees.Text = string.Empty;
                 _tbContactName.Text = string.Empty;
+                _pnContactPhone.Text = string.Empty;
                 _ebContactEmail.Text = string.Empty;
                 _apAccount.SetValue( null );
                 _dtpSendReminder.SelectedDateTime = null;
@@ -470,6 +493,7 @@ namespace Rock.Web.UI.Controls
                 instance.EndDateTime = _dtpEnd.SelectedDateTime;
                 instance.MaxAttendees = _nbMaxAttendees.Text.AsInteger();
                 instance.ContactName = _tbContactName.Text;
+                instance.ContactPhone = _pnContactPhone.Text;
                 instance.ContactEmail = _ebContactEmail.Text;
                 instance.AccountId = _apAccount.SelectedValue.AsInteger();
                 instance.SendReminderDateTime = _dtpSendReminder.SelectedDateTime;
@@ -540,6 +564,11 @@ namespace Rock.Web.UI.Controls
                 _tbContactName.ID = this.ID + "_tbContactName";
                 _tbContactName.Label = "Contact Name";
                 Controls.Add( _tbContactName );
+
+                _pnContactPhone = new PhoneNumberBox();
+                _pnContactPhone.ID = this.ID + "_pnContactPhone";
+                _pnContactPhone.Label = "Contact Phone";
+                Controls.Add( _pnContactPhone );
 
                 _ebContactEmail = new EmailBox();
                 _ebContactEmail.ID = this.ID + "_ebContactEmail";
@@ -615,6 +644,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _apAccount.RenderControl( writer );
             _tbContactName.RenderControl( writer );
+            _pnContactPhone.RenderControl( writer );
             _ebContactEmail.RenderControl( writer );
             writer.RenderEndTag();  // col-md-6
 

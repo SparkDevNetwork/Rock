@@ -43,9 +43,24 @@ namespace RockWeb.Blocks.Core
     [Description( "Takes a entity type and displays a person's following items for that entity using a Lava template." )]
     [EntityTypeField("Entity Type", "The type of entity to show following for.", order: 0)]
     [TextField("Link URL", "The address to use for the link. The text '[Id]' will be replaced with the Id of the entity '[Guid]' will be replaced with the Guid.", false, "/samplepage/[Id]", "", 1, "LinkUrl")]
-    [CodeEditorField("Lava Template", "Lava template to use to display content", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% for definedValue in DefinedValues %}
-    {{ definedValue.Value }}
-{% endfor %}", "", 2, "LavaTemplate" )]
+    [CodeEditorField("Lava Template", "Lava template to use to display content", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"<div class=""panel panel-block""> 
+    <div class=""panel-heading"">
+       <h4 class=""panel-title"">Followed {{ EntityType | Pluralize }}</h4>
+    </div>
+    <div class=""panel-body"">
+
+        <ul>
+        {% for item in FollowingItems %}
+            {% if LinkUrl != '' %}
+                <li><a href=""{{ LinkUrl | Replace:'[Id]',item.Id }}"">{{ item.Name }}</a></li>
+            {% else %}
+                <li>{{ item.Name }}</li>
+            {% endif %}
+        {% endfor %}
+        </ul>
+        
+    </div>
+</div>", "", 2, "LavaTemplate" )]
     [BooleanField("Enable Debug", "Show merge data to help you see what's available to you.", order: 3)]
     [IntegerField("Max Results", "The maximum number of results to display.", true, 100, order: 4)]
     public partial class FollowingByEntityLava : Rock.Web.UI.RockBlock
@@ -97,8 +112,6 @@ namespace RockWeb.Blocks.Core
             LoadContent();
         }
 
-        
-
         #endregion
 
         #region Methods
@@ -111,75 +124,37 @@ namespace RockWeb.Blocks.Core
             globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
             
             var entityType = EntityTypeCache.Read(GetAttributeValue("EntityType").AsGuid());
-            string tableName = entityType.Name.Replace( "Rock.Model.", "" );
 
-
-            if ( entityType == null || !entityType.Name.StartsWith( "Rock.Model" ) )
-            {
-                lContent.Text = string.Format( "<div class='alert alert-warning'>This entity is not supported. Only entities of type Rock.Modle are supported." );
-            } else
+            if ( entityType != null )
             {
 
                 RockContext rockContext = new RockContext();
-                
-                switch ( entityType.Name )
+
+                int entityTypeId = EntityTypeCache.GetId<Group>().Value;
+                int personId = this.CurrentPersonId.Value;
+
+                var followingService = new FollowingService( rockContext );
+                IQueryable<IEntity> qryFollowedItems = followingService.GetFollowedItems( entityTypeId, personId );
+
+                mergeFields.Add( "FollowingItems", qryFollowedItems );
+
+                mergeFields.Add( "EntityType", entityType.FriendlyName );
+                mergeFields.Add( "LinkUrl", GetAttributeValue( "LinkUrl" ) );
+
+                string template = GetAttributeValue( "LavaTemplate" );
+                lContent.Text = template.ResolveMergeFields( mergeFields );
+
+                // show debug info
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
-                    /*case "Rock.Model.Group":
-                        {
-                            string sql = string.Format( @"SELECT 
-                                                        TOP {0} g.*, gt.* 
-                                                    FROM [Group] g 
-                                                        INNER JOIN [Following] f ON f.[EntityId] = g.[Id]
-                                                        INNER JOIN [PersonAlias] pa ON pa.[Id] = f.[PersonAliasId]
-                                                        INNER JOIN [GroupType] gt ON gt.[Id] = g.[GroupTypeId] 
-                                                        INNER JOIN [Person] p ON p.[Id] = pa.[PersonId] AND p.[Id] = {1}", GetAttributeValue( "MaxResults" ).AsInteger(), CurrentPersonId );
-
-                            var results = rockContext.Database.SqlQuery<Group>( sql );
-                            
-                            /*var followingItems = new FollowingService(rockContext).Queryable()
-                                                    .Where(f => f.EntityTypeId == entityType.Id 
-                                                                && f.PersonAlias.PersonId == CurrentPersonId)
-                                                    .Select( f => f.EntityId);
-
-                            var results = new GroupService(rockContext).Queryable()
-                                                .Where( g => followingItems.Contains( g.Id))
-                                                
-                                                .ToList();
-                            mergeFields.Add( "FollowingItems", results );
-                            break;
-                        }*/
-                    default:
-                        {
-                            Type type = Type.GetType( entityType.AssemblyName );
-                            
-                            string sql = string.Format( @"SELECT 
-                                                        TOP {0} t.* 
-                                                    FROM [{1}] t 
-                                                        INNER JOIN [Following] f ON f.[EntityId] = t.[Id]
-                                                        INNER JOIN [PersonAlias] pa ON pa.[Id] = f.[PersonAliasId]
-                                                        INNER JOIN [Person] p ON p.[Id] = pa.[PersonId] AND p.[Id] = {2}", GetAttributeValue( "MaxResults" ).AsInteger(), tableName, CurrentPersonId );
-
-                            var results = rockContext.Database.SqlQuery( type, sql );
-
-                            mergeFields.Add( "FollowingItems", results );
-                            break;
-                        }
+                    lDebug.Visible = true;
+                    lDebug.Text = mergeFields.lavaDebugInfo();
                 }
-
-                
             }
-
-            mergeFields.Add( "EntityType", tableName );
-            mergeFields.Add( "LinkUrl", GetAttributeValue( "LinkUrl" ) );
-
-            string template = GetAttributeValue( "LavaTemplate" );
-            lContent.Text = template.ResolveMergeFields( mergeFields );
-
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+            else
             {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
+                lContent.Text = string.Format( "<div class='alert alert-warning'>Please configure an entity in the block settings." );
+
             }
         }
 

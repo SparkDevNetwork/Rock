@@ -308,14 +308,26 @@ namespace Rock.Model
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunity.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
+            if ( new Service<ConnectionOpportunityGroupCampus>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunityGroupCampus.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ConnectionOpportunityGroupCampus>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunityGroupCampus.FriendlyTypeName );
+                return false;
+            } 
+            
             if ( new Service<ConnectionOpportunityCampus>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunityCampus.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<ConnectionOpportunityCampus>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunityCampus.FriendlyTypeName );

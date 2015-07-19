@@ -166,4 +166,10 @@
   <data name="_201507121943445_RegistrationEmails" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201507121943445_registrationemails.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201507171137229_RegistrationInstanceContactPhone" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201507171137229_registrationinstancecontactphone.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201507181918494_ConnectionChangesAndSampleData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201507181918494_connectionchangesandsampledata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

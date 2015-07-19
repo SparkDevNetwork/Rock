@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Examples
     [IntegerField("Minutes To Cache", "Numer of whole minutes to cache the class data (since reflecting on the assembly can be time consuming).", false, 60 )]
     public partial class ModelMap : RockBlock
     {
-        XDocument _docuDoc = new XDocument();
+        Dictionary<string, XElement> _docuDocMembers;
         ObjectCache cache = MemoryCache.Default;
 
         /// <summary>
@@ -151,7 +151,6 @@ namespace RockWeb.Blocks.Examples
         {
             List<MClass> list = cache.Get( "classes" ) as List<MClass>;
 
-            //cache.Remove( "classes" );
             if ( list == null )
             {
                 list = ReadClassesFromAssembly();
@@ -220,7 +219,8 @@ namespace RockWeb.Blocks.Examples
 
             if ( File.Exists( docuPath ) )
             {
-                _docuDoc = XDocument.Load( docuPath );
+                var _docuDoc = XDocument.Load( docuPath );
+                _docuDocMembers = _docuDoc.Descendants( "member" ).ToDictionary( a => a.Attribute( "name" ).Value, v => v );
             }
         }
 
@@ -301,12 +301,9 @@ namespace RockWeb.Blocks.Examples
 
             string path = string.Format( "{0}{1}.{2}", prefix, ( p.DeclaringType != null ) ? p.DeclaringType.FullName : "Rock.Model", p.Name );
 
-            var name = _docuDoc.Descendants( "member" ).FirstOrDefault( x => x.Attribute( "name" ).Value == path );
+            var name = _docuDocMembers.ContainsKey( path ) ? _docuDocMembers[path] : null;
             if ( name != null )
             {
-                //xmlComment.Summary = System.Text.RegularExpressions.Regex.Replace( name.Element( "summary" ).ToString(), @"\s+", " " );
-                //xmlComment.Summary = System.Text.RegularExpressions.Regex.Replace( name.Element( "summary" ).Nodes().Aggregate( "", ( b, node ) => b += node.ToString()), @"\s+", " " );
-
                 // Read the InnerXml contents of the summary Element.
                 var reader = name.Element( "summary" ).CreateReader();
                 reader.MoveToContent();
@@ -315,7 +312,6 @@ namespace RockWeb.Blocks.Examples
                 xmlComment.Value = name.Element( "value" ).ValueSafe();
                 xmlComment.Remarks = name.Element( "remarks" ).ValueSafe();
                 xmlComment.Returns = name.Element( "returns" ).ValueSafe();
-                //xmlComment.Params = name.Elements("param").SelectMany( p.Name ).ToArray(); //  new { i.category_id, i.category_name }
             }
 
             return xmlComment;

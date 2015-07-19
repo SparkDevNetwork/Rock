@@ -152,10 +152,6 @@ namespace RockWeb.Blocks.Connection
             {
                 ShowDetail( PageParameter( "ConnectionTypeId" ).AsInteger() );
             }
-            else
-            {
-                ShowDialog();
-            }
         }
 
         /// <summary>
@@ -230,6 +226,7 @@ namespace RockWeb.Blocks.Connection
 
             LoadStateDetails( connectionType, rockContext );
             ShowEditDetails( connectionType );
+
         }
 
         /// <summary>
@@ -241,7 +238,6 @@ namespace RockWeb.Blocks.Connection
         {
             using ( var rockContext = new RockContext() )
             {
-
                 ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
                 ConnectionTypeService connectionTypeService = new ConnectionTypeService( rockContext );
                 AuthService authService = new AuthService( rockContext );
@@ -304,135 +300,141 @@ namespace RockWeb.Blocks.Connection
             ConnectionType connectionType;
             using ( var rockContext = new RockContext() )
             {
-                ConnectionTypeService connectionTypeService = new ConnectionTypeService( rockContext );
-                ConnectionActivityTypeService connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
-                ConnectionStatusService connectionStatusService = new ConnectionStatusService( rockContext );
-                ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
-                AttributeService attributeService = new AttributeService( rockContext );
-                AttributeQualifierService qualifierService = new AttributeQualifierService( rockContext );
-
-                int connectionTypeId = int.Parse( hfConnectionTypeId.Value );
-
-                if ( connectionTypeId == 0 )
+                if ( StatusesState.Any( s => s.IsDefault ) && ActivityTypesState.Any() )
                 {
-                    connectionType = new ConnectionType();
-                    connectionTypeService.Add( connectionType );
-                }
-                else
-                {
-                    connectionType = connectionTypeService.Queryable( "ConnectionActivityTypes, ConnectionWorkflows" ).Where( c => c.Id == connectionTypeId ).FirstOrDefault();
+                    ConnectionTypeService connectionTypeService = new ConnectionTypeService( rockContext );
+                    ConnectionActivityTypeService connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
+                    ConnectionStatusService connectionStatusService = new ConnectionStatusService( rockContext );
+                    ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
+                    AttributeService attributeService = new AttributeService( rockContext );
+                    AttributeQualifierService qualifierService = new AttributeQualifierService( rockContext );
 
-                    var uiWorkflows = WorkflowsState.Select( l => l.Guid );
-                    foreach ( var connectionWorkflow in connectionType.ConnectionWorkflows.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
+                    int connectionTypeId = int.Parse( hfConnectionTypeId.Value );
+
+                    if ( connectionTypeId == 0 )
                     {
-                        connectionType.ConnectionWorkflows.Remove( connectionWorkflow );
-                        connectionWorkflowService.Delete( connectionWorkflow );
-                    }
-
-                    var uiActivityTypes = ActivityTypesState.Select( r => r.Guid );
-                    foreach ( var connectionActivityType in connectionType.ConnectionActivityTypes.Where( r => !uiActivityTypes.Contains( r.Guid ) ).ToList() )
-                    {
-                        connectionType.ConnectionActivityTypes.Remove( connectionActivityType );
-                        connectionActivityTypeService.Delete( connectionActivityType );
-                    }
-
-                    var uiStatuses = StatusesState.Select( r => r.Guid );
-                    foreach ( var connectionStatus in connectionType.ConnectionStatuses.Where( r => !uiStatuses.Contains( r.Guid ) ).ToList() )
-                    {
-                        connectionType.ConnectionStatuses.Remove( connectionStatus );
-                        connectionStatusService.Delete( connectionStatus );
-                    }
-                }
-
-                connectionType.Name = tbName.Text;
-                connectionType.Description = tbDescription.Text;
-                connectionType.IconCssClass = tbIconCssClass.Text;
-                connectionType.EnableFutureFollowup = cbFutureFollowUp.Checked;
-                connectionType.EnableFullActivityList = cbFullActivityList.Checked;
-
-                foreach ( var connectionActivityTypeState in ActivityTypesState )
-                {
-                    ConnectionActivityType connectionActivityType = connectionType.ConnectionActivityTypes.Where( a => a.Guid == connectionActivityTypeState.Guid ).FirstOrDefault();
-                    if ( connectionActivityType == null )
-                    {
-                        connectionActivityType = new ConnectionActivityType();
-                        connectionType.ConnectionActivityTypes.Add( connectionActivityType );
-                    }
-
-                    connectionActivityType.CopyPropertiesFrom( connectionActivityTypeState );
-                }
-
-                foreach ( var connectionStatusState in StatusesState )
-                {
-                    ConnectionStatus connectionStatus = connectionType.ConnectionStatuses.Where( a => a.Guid == connectionStatusState.Guid ).FirstOrDefault();
-                    if ( connectionStatus == null )
-                    {
-                        connectionStatus = new ConnectionStatus();
-                        connectionType.ConnectionStatuses.Add( connectionStatus );
-                    }
-
-                    connectionStatus.CopyPropertiesFrom( connectionStatusState );
-                    connectionStatus.ConnectionTypeId = connectionType.Id;
-                }
-
-                foreach ( ConnectionWorkflow connectionWorkflowState in WorkflowsState )
-                {
-                    ConnectionWorkflow connectionWorkflow = connectionType.ConnectionWorkflows.Where( a => a.Guid == connectionWorkflowState.Guid ).FirstOrDefault();
-                    if ( connectionWorkflow == null )
-                    {
-                        connectionWorkflow = new ConnectionWorkflow();
-                        connectionType.ConnectionWorkflows.Add( connectionWorkflow );
+                        connectionType = new ConnectionType();
+                        connectionTypeService.Add( connectionType );
                     }
                     else
                     {
-                        connectionWorkflowState.Id = connectionWorkflow.Id;
-                        connectionWorkflowState.Guid = connectionWorkflow.Guid;
+                        connectionType = connectionTypeService.Queryable( "ConnectionActivityTypes, ConnectionWorkflows" ).Where( c => c.Id == connectionTypeId ).FirstOrDefault();
+
+                        var uiWorkflows = WorkflowsState.Select( l => l.Guid );
+                        foreach ( var connectionWorkflow in connectionType.ConnectionWorkflows.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
+                        {
+                            connectionType.ConnectionWorkflows.Remove( connectionWorkflow );
+                            connectionWorkflowService.Delete( connectionWorkflow );
+                        }
+
+                        var uiActivityTypes = ActivityTypesState.Select( r => r.Guid );
+                        foreach ( var connectionActivityType in connectionType.ConnectionActivityTypes.Where( r => !uiActivityTypes.Contains( r.Guid ) ).ToList() )
+                        {
+                            connectionType.ConnectionActivityTypes.Remove( connectionActivityType );
+                            connectionActivityTypeService.Delete( connectionActivityType );
+                        }
+
+                        var uiStatuses = StatusesState.Select( r => r.Guid );
+                        foreach ( var connectionStatus in connectionType.ConnectionStatuses.Where( r => !uiStatuses.Contains( r.Guid ) ).ToList() )
+                        {
+                            connectionType.ConnectionStatuses.Remove( connectionStatus );
+                            connectionStatusService.Delete( connectionStatus );
+                        }
                     }
 
-                    connectionWorkflow.CopyPropertiesFrom( connectionWorkflowState );
-                    connectionWorkflow.ConnectionTypeId = connectionTypeId;
-                }
+                    connectionType.Name = tbName.Text;
+                    connectionType.Description = tbDescription.Text;
+                    connectionType.IconCssClass = tbIconCssClass.Text;
+                    connectionType.EnableFutureFollowup = cbFutureFollowUp.Checked;
+                    connectionType.EnableFullActivityList = cbFullActivityList.Checked;
 
-                if ( !connectionType.IsValid )
-                {
-                    // Controls will render the error messages
-                    return;
-                }
-
-                // need WrapTransaction due to Attribute saves
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-
-                    /* Save Attributes */
-                    string qualifierValue = connectionType.Id.ToString();
-                    SaveAttributes( new ConnectionOpportunity().TypeId, "ConnectionTypeId", qualifierValue, AttributesState, rockContext );
-
-                    connectionType = connectionTypeService.Get( connectionType.Id );
-                    if ( connectionType != null )
+                    foreach ( var connectionActivityTypeState in ActivityTypesState )
                     {
-                        if ( !connectionType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        ConnectionActivityType connectionActivityType = connectionType.ConnectionActivityTypes.Where( a => a.Guid == connectionActivityTypeState.Guid ).FirstOrDefault();
+                        if ( connectionActivityType == null )
                         {
-                            connectionType.AllowPerson( Authorization.VIEW, CurrentPerson, rockContext );
+                            connectionActivityType = new ConnectionActivityType();
+                            connectionType.ConnectionActivityTypes.Add( connectionActivityType );
                         }
 
-                        if ( !connectionType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
-                        {
-                            connectionType.AllowPerson( Authorization.EDIT, CurrentPerson, rockContext );
-                        }
-
-                        if ( !connectionType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
-                        {
-                            connectionType.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
-                        }
+                        connectionActivityType.CopyPropertiesFrom( connectionActivityTypeState );
                     }
-                } );
+
+                    foreach ( var connectionStatusState in StatusesState )
+                    {
+                        ConnectionStatus connectionStatus = connectionType.ConnectionStatuses.Where( a => a.Guid == connectionStatusState.Guid ).FirstOrDefault();
+                        if ( connectionStatus == null )
+                        {
+                            connectionStatus = new ConnectionStatus();
+                            connectionType.ConnectionStatuses.Add( connectionStatus );
+                        }
+
+                        connectionStatus.CopyPropertiesFrom( connectionStatusState );
+                        connectionStatus.ConnectionTypeId = connectionType.Id;
+                    }
+
+                    foreach ( ConnectionWorkflow connectionWorkflowState in WorkflowsState )
+                    {
+                        ConnectionWorkflow connectionWorkflow = connectionType.ConnectionWorkflows.Where( a => a.Guid == connectionWorkflowState.Guid ).FirstOrDefault();
+                        if ( connectionWorkflow == null )
+                        {
+                            connectionWorkflow = new ConnectionWorkflow();
+                            connectionType.ConnectionWorkflows.Add( connectionWorkflow );
+                        }
+                        else
+                        {
+                            connectionWorkflowState.Id = connectionWorkflow.Id;
+                            connectionWorkflowState.Guid = connectionWorkflow.Guid;
+                        }
+
+                        connectionWorkflow.CopyPropertiesFrom( connectionWorkflowState );
+                        connectionWorkflow.ConnectionTypeId = connectionTypeId;
+                    }
+
+                    if ( !connectionType.IsValid )
+                    {
+                        // Controls will render the error messages
+                        return;
+                    }
+
+                    // need WrapTransaction due to Attribute saves
+                    rockContext.WrapTransaction( () =>
+                    {
+                        rockContext.SaveChanges();
+
+                        /* Save Attributes */
+                        string qualifierValue = connectionType.Id.ToString();
+                        SaveAttributes( new ConnectionOpportunity().TypeId, "ConnectionTypeId", qualifierValue, AttributesState, rockContext );
+
+                        connectionType = connectionTypeService.Get( connectionType.Id );
+                        if ( connectionType != null )
+                        {
+                            if ( !connectionType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                            {
+                                connectionType.AllowPerson( Authorization.VIEW, CurrentPerson, rockContext );
+                            }
+
+                            if ( !connectionType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                            {
+                                connectionType.AllowPerson( Authorization.EDIT, CurrentPerson, rockContext );
+                            }
+
+                            if ( !connectionType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+                            {
+                                connectionType.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
+                            }
+                        }
+                    } );
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams["ConnectionTypeId"] = connectionType.Id.ToString();
+
+                    NavigateToPage( RockPage.Guid, qryParams );
+                }
+                else
+                {
+                    nbRequired.Visible = true;
+                }
             }
-
-            var qryParams = new Dictionary<string, string>();
-            qryParams["ConnectionTypeId"] = connectionType.Id.ToString();
-
-            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -687,7 +689,17 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddConnectionActivityType_Click( object sender, EventArgs e )
         {
-            ConnectionActivityType connectionActivityType = new ConnectionActivityType();
+            ConnectionActivityType connectionActivityType = null;
+            Guid guid = hfConnectionTypeAddConnectionActivityTypeGuid.Value.AsGuid();
+            if ( !guid.IsEmpty() )
+            {
+                connectionActivityType = ActivityTypesState.FirstOrDefault( l => l.Guid.Equals( guid ) );
+            }
+
+            if ( connectionActivityType == null )
+            {
+                connectionActivityType = new ConnectionActivityType();
+            }
             connectionActivityType.Name = tbConnectionActivityTypeName.Text;
             if ( !connectionActivityType.IsValid )
             {
@@ -721,9 +733,36 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gActivityTypes_Add( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-            tbConnectionActivityTypeName.Text = string.Empty;
+            gActivityTypes_ShowEdit( Guid.Empty );
+        }
 
+        /// <summary>
+        /// Handles the Edit event of the gActivityTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gActivityTypes_Edit( object sender, RowEventArgs e )
+        {
+            Guid connectionActivityTypeGuid = (Guid)e.RowKeyValue;
+            gActivityTypes_ShowEdit( connectionActivityTypeGuid );
+        }
+
+        /// <summary>
+        /// gs the statuses_ show edit.
+        /// </summary>
+        /// <param name="connectionActivityTypeGuid">The connection status unique identifier.</param>
+        protected void gActivityTypes_ShowEdit( Guid connectionActivityTypeGuid )
+        {
+            ConnectionActivityType connectionActivityType = ActivityTypesState.FirstOrDefault( l => l.Guid.Equals( connectionActivityTypeGuid ) );
+            if ( connectionActivityType != null )
+            {
+                tbConnectionActivityTypeName.Text = connectionActivityType.Name;
+            }
+            else
+            {
+                tbConnectionActivityTypeName.Text = string.Empty;
+            }
+            hfConnectionTypeAddConnectionActivityTypeGuid.Value = connectionActivityTypeGuid.ToString();
             ShowDialog( "ConnectionActivityTypes", true );
         }
 
@@ -776,7 +815,17 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddConnectionStatus_Click( object sender, EventArgs e )
         {
-            ConnectionStatus connectionStatus = new ConnectionStatus();
+            ConnectionStatus connectionStatus = null;
+            Guid guid = hfConnectionTypeAddConnectionStatusGuid.Value.AsGuid();
+            if ( !guid.IsEmpty() )
+            {
+                connectionStatus = StatusesState.FirstOrDefault( l => l.Guid.Equals( guid ) );
+            }
+
+            if ( connectionStatus == null )
+            {
+                connectionStatus = new ConnectionStatus();
+            }
             connectionStatus.Name = tbConnectionStatusName.Text;
             connectionStatus.Description = tbConnectionStatusDescription.Text;
             if ( cbIsDefault.Checked == true )
@@ -815,19 +864,54 @@ namespace RockWeb.Blocks.Connection
             BindConnectionStatusesGrid();
         }
 
-        /// <summary>
+        /// <summar>ymod
         /// Handles the Add event of the gStatuses control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gStatuses_Add( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-            tbConnectionStatusName.Text = string.Empty;
-            tbConnectionStatusDescription.Text = string.Empty;
-            cbIsActive.Checked = true;
-            cbIsDefault.Checked = false;
-            cbIsCritical.Checked = false;
+            gStatuses_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gStatuses control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gStatuses_Edit( object sender, RowEventArgs e )
+        {
+            Guid connectionStatusGuid = (Guid)e.RowKeyValue;
+            gStatuses_ShowEdit( connectionStatusGuid );
+        }
+
+        /// <summary>
+        /// gs the statuses_ show edit.
+        /// </summary>
+        /// <param name="connectionStatusGuid">The connection status unique identifier.</param>
+        protected void gStatuses_ShowEdit( Guid connectionStatusGuid )
+        {
+            ConnectionStatus connectionStatus = StatusesState.FirstOrDefault( l => l.Guid.Equals( connectionStatusGuid ) );
+            if ( connectionStatus != null )
+            {
+                tbConnectionStatusName.Text = connectionStatus.Name;
+                tbConnectionStatusDescription.Text = connectionStatus.Description;
+                cbIsActive.Checked = connectionStatus.IsActive;
+                cbIsDefault.Checked = connectionStatus.IsDefault;
+                cbIsCritical.Checked = connectionStatus.IsCritical;
+            }
+            else
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    tbConnectionStatusName.Text = string.Empty;
+                    tbConnectionStatusDescription.Text = string.Empty;
+                    cbIsActive.Checked = true;
+                    cbIsDefault.Checked = false;
+                    cbIsCritical.Checked = false;
+                }
+            }
+            hfConnectionTypeAddConnectionStatusGuid.Value = connectionStatusGuid.ToString();
             ShowDialog( "ConnectionStatuses", true );
         }
 
@@ -1012,116 +1096,119 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void UpdateTriggerQualifiers()
         {
-            RockContext rockContext = new RockContext();
-            String[] qualifierValues = new String[2];
-            ConnectionWorkflow connectionWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( hfAddConnectionWorkflowGuid.Value.AsGuid() ) );
-            ConnectionWorkflowTriggerType connectionWorkflowTriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
-            int connectionTypeId = int.Parse( hfConnectionTypeId.Value );
-            switch ( connectionWorkflowTriggerType )
+            using ( var rockContext = new RockContext() )
             {
-                case ConnectionWorkflowTriggerType.RequestStarted:
-                    ddlPrimaryQualifier.Visible = false;
-                    ddlPrimaryQualifier.Items.Clear();
-                    ddlSecondaryQualifier.Visible = false;
-                    ddlSecondaryQualifier.Items.Clear();
-                    break;
-
-                case ConnectionWorkflowTriggerType.RequestCompleted:
-                    ddlPrimaryQualifier.Visible = false;
-                    ddlPrimaryQualifier.Items.Clear();
-                    ddlSecondaryQualifier.Visible = false;
-                    ddlSecondaryQualifier.Items.Clear();
-                    break;
-
-                case ConnectionWorkflowTriggerType.Manual:
-                    ddlPrimaryQualifier.Visible = false;
-                    ddlPrimaryQualifier.Items.Clear();
-                    ddlSecondaryQualifier.Visible = false;
-                    ddlSecondaryQualifier.Items.Clear();
-                    break;
-
-                case ConnectionWorkflowTriggerType.StateChanged:
-                    ddlPrimaryQualifier.Label = "From";
-                    ddlPrimaryQualifier.Visible = true;
-                    ddlPrimaryQualifier.BindToEnum<ConnectionState>();
-                    ddlPrimaryQualifier.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-                    ddlSecondaryQualifier.Label = "To";
-                    ddlSecondaryQualifier.Visible = true;
-                    ddlSecondaryQualifier.BindToEnum<ConnectionState>();
-                    ddlSecondaryQualifier.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-                    if ( !cbFutureFollowUp.Checked )
-                    {
-                        ddlPrimaryQualifier.Items.RemoveAt( 3 );
-                        ddlSecondaryQualifier.Items.RemoveAt( 3 );
-                    }
-                    break;
-
-                case ConnectionWorkflowTriggerType.StatusChanged:
-                    var statusList = new ConnectionStatusService( rockContext ).Queryable().Where( s => s.ConnectionTypeId == connectionTypeId || s.ConnectionTypeId == null ).ToList();
-                    ddlPrimaryQualifier.Label = "From";
-                    ddlPrimaryQualifier.Visible = true;
-                    ddlPrimaryQualifier.Items.Clear();
-                    ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                    foreach ( var status in statusList )
-                    {
-                        ddlPrimaryQualifier.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
-                    }
-                    ddlSecondaryQualifier.Label = "To";
-                    ddlSecondaryQualifier.Visible = true;
-                    ddlSecondaryQualifier.Items.Clear();
-                    ddlSecondaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                    foreach ( var status in statusList )
-                    {
-                        ddlSecondaryQualifier.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
-                    }
-                    break;
-
-                case ConnectionWorkflowTriggerType.ActivityAdded:
-                    var activityList = new ConnectionActivityTypeService( rockContext ).Queryable().Where( a => a.ConnectionTypeId == connectionTypeId || a.ConnectionTypeId == null ).ToList();
-                    ddlPrimaryQualifier.Label = "Activity Type";
-                    ddlPrimaryQualifier.Visible = true;
-                    ddlPrimaryQualifier.Items.Clear();
-                    ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                    foreach ( var activity in activityList )
-                    {
-                        ddlPrimaryQualifier.Items.Add( new ListItem( activity.Name, activity.Id.ToString().ToUpper() ) );
-                    }
-                    ddlSecondaryQualifier.Visible = false;
-                    ddlSecondaryQualifier.Items.Clear();
-                    break;
-
-                case ConnectionWorkflowTriggerType.ActivityGroupAssigned:
-                    var groupList = new GroupService( rockContext ).Queryable().ToList();
-                    ddlPrimaryQualifier.Label = "Activity Group";
-                    ddlPrimaryQualifier.Visible = true;
-                    ddlPrimaryQualifier.Items.Clear();
-                    ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                    foreach ( var group in groupList )
-                    {
-                        ddlPrimaryQualifier.Items.Add( new ListItem( group.Name, group.Id.ToString().ToUpper() ) );
-                    }
-                    ddlSecondaryQualifier.Visible = false;
-                    ddlSecondaryQualifier.Items.Clear();
-                    break;
-
-            }
-
-            if ( connectionWorkflow != null )
-            {
-                if ( connectionWorkflow.TriggerType == ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() )
+                String[] qualifierValues = new String[2];
+                ConnectionWorkflow connectionWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( hfAddConnectionWorkflowGuid.Value.AsGuid() ) );
+                ConnectionWorkflowTriggerType connectionWorkflowTriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
+                int connectionTypeId = int.Parse( hfConnectionTypeId.Value );
+                switch ( connectionWorkflowTriggerType )
                 {
-                    qualifierValues = connectionWorkflow.QualifierValue.SplitDelimitedValues();
-                    if ( ddlPrimaryQualifier.Visible )
-                    {
-                        ddlPrimaryQualifier.SelectedValue = qualifierValues[0];
-                    }
+                    case ConnectionWorkflowTriggerType.RequestStarted:
+                        ddlPrimaryQualifier.Visible = false;
+                        ddlPrimaryQualifier.Items.Clear();
+                        ddlSecondaryQualifier.Visible = false;
+                        ddlSecondaryQualifier.Items.Clear();
+                        break;
 
-                    if ( ddlSecondaryQualifier.Visible )
+                    case ConnectionWorkflowTriggerType.RequestCompleted:
+                        ddlPrimaryQualifier.Visible = false;
+                        ddlPrimaryQualifier.Items.Clear();
+                        ddlSecondaryQualifier.Visible = false;
+                        ddlSecondaryQualifier.Items.Clear();
+                        break;
+
+                    case ConnectionWorkflowTriggerType.Manual:
+                        ddlPrimaryQualifier.Visible = false;
+                        ddlPrimaryQualifier.Items.Clear();
+                        ddlSecondaryQualifier.Visible = false;
+                        ddlSecondaryQualifier.Items.Clear();
+                        break;
+
+                    case ConnectionWorkflowTriggerType.StateChanged:
+                        ddlPrimaryQualifier.Label = "From";
+                        ddlPrimaryQualifier.Visible = true;
+                        ddlPrimaryQualifier.BindToEnum<ConnectionState>();
+                        ddlPrimaryQualifier.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+                        ddlSecondaryQualifier.Label = "To";
+                        ddlSecondaryQualifier.Visible = true;
+                        ddlSecondaryQualifier.BindToEnum<ConnectionState>();
+                        ddlSecondaryQualifier.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+                        if ( !cbFutureFollowUp.Checked )
+                        {
+                            ddlPrimaryQualifier.Items.RemoveAt( 3 );
+                            ddlSecondaryQualifier.Items.RemoveAt( 3 );
+                        }
+                        break;
+
+                    case ConnectionWorkflowTriggerType.StatusChanged:
+                        var statusList = new ConnectionStatusService( rockContext ).Queryable().Where( s => s.ConnectionTypeId == connectionTypeId || s.ConnectionTypeId == null ).ToList();
+                        ddlPrimaryQualifier.Label = "From";
+                        ddlPrimaryQualifier.Visible = true;
+                        ddlPrimaryQualifier.Items.Clear();
+                        ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                        foreach ( var status in statusList )
+                        {
+                            ddlPrimaryQualifier.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
+                        }
+                        ddlSecondaryQualifier.Label = "To";
+                        ddlSecondaryQualifier.Visible = true;
+                        ddlSecondaryQualifier.Items.Clear();
+                        ddlSecondaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                        foreach ( var status in statusList )
+                        {
+                            ddlSecondaryQualifier.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
+                        }
+                        break;
+
+                    case ConnectionWorkflowTriggerType.ActivityAdded:
+                        var activityList = new ConnectionActivityTypeService( rockContext ).Queryable().Where( a => a.ConnectionTypeId == connectionTypeId || a.ConnectionTypeId == null ).ToList();
+                        ddlPrimaryQualifier.Label = "Activity Type";
+                        ddlPrimaryQualifier.Visible = true;
+                        ddlPrimaryQualifier.Items.Clear();
+                        ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                        foreach ( var activity in activityList )
+                        {
+                            ddlPrimaryQualifier.Items.Add( new ListItem( activity.Name, activity.Id.ToString().ToUpper() ) );
+                        }
+                        ddlSecondaryQualifier.Visible = false;
+                        ddlSecondaryQualifier.Items.Clear();
+                        break;
+
+                    case ConnectionWorkflowTriggerType.ActivityGroupAssigned:
+                        var groupList = new GroupService( rockContext ).Queryable().ToList();
+                        ddlPrimaryQualifier.Label = "Activity Group";
+                        ddlPrimaryQualifier.Visible = true;
+                        ddlPrimaryQualifier.Items.Clear();
+                        ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                        foreach ( var group in groupList )
+                        {
+                            ddlPrimaryQualifier.Items.Add( new ListItem( group.Name, group.Id.ToString().ToUpper() ) );
+                        }
+                        ddlSecondaryQualifier.Visible = false;
+                        ddlSecondaryQualifier.Items.Clear();
+                        break;
+
+                }
+
+                if ( connectionWorkflow != null )
+                {
+                    if ( connectionWorkflow.TriggerType == ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() )
                     {
-                        ddlSecondaryQualifier.SelectedValue = qualifierValues[1];
+                        qualifierValues = connectionWorkflow.QualifierValue.SplitDelimitedValues();
+                        if ( ddlPrimaryQualifier.Visible )
+                        {
+                            ddlPrimaryQualifier.SelectedValue = qualifierValues[0];
+                        }
+
+                        if ( ddlSecondaryQualifier.Visible )
+                        {
+                            ddlSecondaryQualifier.SelectedValue = qualifierValues[1];
+                        }
                     }
                 }
             }
+
         }
 
         /// <summary>
@@ -1170,56 +1257,57 @@ namespace RockWeb.Blocks.Connection
             pnlDetails.Visible = false;
 
             ConnectionType connectionType = null;
-            RockContext rockContext = new RockContext();
-
-            if ( !connectionTypeId.Equals( 0 ) )
+            using ( var rockContext = new RockContext() )
             {
-                connectionType = GetConnectionType( connectionTypeId, rockContext );
-            }
-
-            if ( connectionType == null )
-            {
-                connectionType = new ConnectionType { Id = 0 };
-            }
-
-            // Admin rights are needed to edit a connection type ( Edit rights only allow adding/removing items )
-            bool adminAllowed = UserCanAdministrate || connectionType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
-            pnlDetails.Visible = true;
-            hfConnectionTypeId.Value = connectionType.Id.ToString();
-            lIcon.Text = string.Format( "<i class='{0}'></i>", connectionType.IconCssClass );
-            bool readOnly = false;
-
-            nbEditModeMessage.Text = string.Empty;
-            if ( !adminAllowed )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ConnectionType.FriendlyTypeName );
-            }
-
-            if ( readOnly )
-            {
-                btnEdit.Visible = false;
-                btnDelete.Visible = false;
-                btnSecurity.Visible = false;
-                ShowReadonlyDetails( connectionType );
-            }
-            else
-            {
-                btnEdit.Visible = true;
-                btnDelete.Visible = true;
-                btnSecurity.Visible = true;
-
-                btnSecurity.Title = "Secure " + connectionType.Name;
-                btnSecurity.EntityId = connectionType.Id;
-
                 if ( !connectionTypeId.Equals( 0 ) )
                 {
+                    connectionType = GetConnectionType( connectionTypeId, rockContext );
+                }
+
+                if ( connectionType == null )
+                {
+                    connectionType = new ConnectionType { Id = 0 };
+                }
+
+                // Admin rights are needed to edit a connection type ( Edit rights only allow adding/removing items )
+                bool adminAllowed = UserCanAdministrate || connectionType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                pnlDetails.Visible = true;
+                hfConnectionTypeId.Value = connectionType.Id.ToString();
+                lIcon.Text = string.Format( "<i class='{0}'></i>", connectionType.IconCssClass );
+                bool readOnly = false;
+
+                nbEditModeMessage.Text = string.Empty;
+                if ( !adminAllowed )
+                {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ConnectionType.FriendlyTypeName );
+                }
+
+                if ( readOnly )
+                {
+                    btnEdit.Visible = false;
+                    btnDelete.Visible = false;
+                    btnSecurity.Visible = false;
                     ShowReadonlyDetails( connectionType );
                 }
                 else
                 {
-                    LoadStateDetails( connectionType, rockContext );
-                    ShowEditDetails( connectionType );
+                    btnEdit.Visible = true;
+                    btnDelete.Visible = true;
+                    btnSecurity.Visible = true;
+
+                    btnSecurity.Title = "Secure " + connectionType.Name;
+                    btnSecurity.EntityId = connectionType.Id;
+
+                    if ( !connectionTypeId.Equals( 0 ) )
+                    {
+                        ShowReadonlyDetails( connectionType );
+                    }
+                    else
+                    {
+                        LoadStateDetails( connectionType, rockContext );
+                        ShowEditDetails( connectionType );
+                    }
                 }
             }
         }
@@ -1278,7 +1366,7 @@ namespace RockWeb.Blocks.Connection
             StatusesState = null;
 
             lReadOnlyTitle.Text = connectionType.Name.FormatAsHtmlTitle();
-            lConnectionTypeDescription.Text = connectionType.Description;
+            lConnectionTypeDescription.Text = connectionType.Description.ScrubHtmlAndConvertCrLfToBr();
         }
 
         /// <summary>

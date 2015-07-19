@@ -43,7 +43,15 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The financial transaction.
         /// </value>
-        public IEnumerable<FinancialTransactionImage> FinancialTransactionImages { get; set; }
+        public FinancialTransaction FinancialTransaction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the batch page.
+        /// </summary>
+        /// <value>
+        /// The batch page.
+        /// </value>
+        public BatchPage batchPage { get; set; }
 
         /// <summary>
         /// Handles the Click event of the btnClose control.
@@ -62,7 +70,8 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
-            var images = FinancialTransactionImages.OrderBy( a => a.Order ).ToList();
+            var financialTransaction = this.FinancialTransaction;
+            var images = financialTransaction.Images.OrderBy( a => a.Order ).ToList();
 
             RockConfig config = RockConfig.Load();
             RockRestClient client = new RockRestClient( config.RockBaseUrl );
@@ -99,6 +108,18 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 imgBack.Source = null;
             }
+
+            lblScannedDateTime.Content = financialTransaction.CreatedDateTime.HasValue ? financialTransaction.CreatedDateTime.Value.ToString( "g" ) : null;
+            lblTransactionDateTime.Content = financialTransaction.TransactionDateTime.HasValue ? financialTransaction.TransactionDateTime.Value.ToString( "g" ) : null;
+            lblBatch.Content = batchPage.SelectedFinancialBatch.Name;
+
+            financialTransaction.SourceTypeValue = financialTransaction.SourceTypeValue ?? batchPage.SourceTypeValueList.FirstOrDefault( a => a.Id == financialTransaction.SourceTypeValueId );
+            lblSource.Content = financialTransaction.SourceTypeValue != null ? financialTransaction.SourceTypeValue.Value : null;
+
+            lblTransactionCode.Content = financialTransaction.TransactionCode;
+
+            financialTransaction.CurrencyTypeValue = financialTransaction.CurrencyTypeValue ?? batchPage.CurrencyValueList.FirstOrDefault( a => a.Id == financialTransaction.CurrencyTypeValueId );
+            lblCurrencyType.Content = financialTransaction.CurrencyTypeValue != null ? financialTransaction.CurrencyTypeValue.Value : null;
         }
     }
 }

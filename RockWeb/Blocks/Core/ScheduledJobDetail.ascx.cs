@@ -113,7 +113,16 @@ namespace RockWeb.Blocks.Administration
             job.Name = tbName.Text;
             job.Description = tbDescription.Text;
             job.IsActive = cbActive.Checked;
-            job.Class = ddlJobTypes.SelectedValue;
+            
+            if (job.Class != ddlJobTypes.SelectedValue)
+            {
+                job.Class = ddlJobTypes.SelectedValue;
+
+                //// if the Class has changed, the current Assembly value might not match, 
+                //// so set the Assembly to null to have Rock figure it out automatically
+                job.Assembly = null;
+            }
+
             job.NotificationEmails = tbNotificationEmails.Text;
             job.NotificationStatus = (JobNotificationStatus)int.Parse( ddlNotificationStatus.SelectedValue );
             job.CronExpression = tbCronExpression.Text;
@@ -137,6 +146,11 @@ namespace RockWeb.Blocks.Administration
             NavigateToParentPage();
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlJobTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlJobTypes_SelectedIndexChanged( object sender, EventArgs e )
         {
             ServiceJob job;
