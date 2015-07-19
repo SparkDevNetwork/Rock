@@ -42,7 +42,15 @@ namespace Rock.Wpf
             Storyboard.SetTargetName( fadeInAnimation, control.Name );
             Storyboard.SetTargetProperty( fadeInAnimation, new PropertyPath( "Opacity", 1 ) );
             storyboard.Children.Add( fadeInAnimation );
-            storyboard.Begin( control );
+
+            EventHandler handleCompleted = new EventHandler( ( sender, e ) =>
+            {
+                control.Visibility = Visibility.Visible;
+            } );
+
+            storyboard.Completed += handleCompleted;
+            storyboard.Begin( control, HandoffBehavior.SnapshotAndReplace, true );
+            
         }
 
         /// <summary>
@@ -65,7 +73,7 @@ namespace Rock.Wpf
             } );
 
             storyboard.Completed += handleCompleted;
-            storyboard.Begin( control );
+            storyboard.Begin( control, HandoffBehavior.SnapshotAndReplace, true  );
         }
     }
 }

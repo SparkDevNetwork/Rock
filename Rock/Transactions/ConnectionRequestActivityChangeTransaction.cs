@@ -240,6 +240,8 @@ namespace Rock.Transactions
                 connectionRequestWorkflow.ConnectionRequestId = connectionRequestActivity.ConnectionRequestId;
                 connectionRequestWorkflow.WorkflowId = workflow.Id;
                 connectionRequestWorkflow.ConnectionWorkflowId = connectionWorkflow.Id;
+                connectionRequestWorkflow.TriggerType = connectionWorkflow.TriggerType;
+                connectionRequestWorkflow.TriggerQualifier = connectionWorkflow.QualifierValue;
                 new ConnectionRequestWorkflowService( rockContext ).Add( connectionRequestWorkflow );
                 rockContext.SaveChanges();
             }

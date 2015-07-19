@@ -195,11 +195,11 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Handles the Edit event of the gCampusDetails control.
+        /// Handles the RowSelected event of the gCalendarItemCampusList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gCalendarItemCampusList_Edit( object sender, RowEventArgs e )
+        protected void gCalendarItemCampusList_RowSelected( object sender, RowEventArgs e )
         {
             using ( RockContext rockContext = new RockContext() )
             {
@@ -427,5 +427,6 @@ namespace RockWeb.Blocks.Event
             public DateTime? NextStartDateTime { get; set; }
             public List<DateTime> StartDateTimes { get; set; }
         }
-    }
+
+}
 }

@@ -76,90 +76,113 @@
                     </li>
                 </ul>
 
-                <asp:Panel ID="pnlRegistrations" runat="server" Visible="false">
-                    <Rock:ModalAlert ID="mdRegistrationsGridWarning" runat="server" />
-                    <div class="grid grid-panel">
-                        <Rock:GridFilter ID="fRegistrations" runat="server" OnDisplayFilterValue="fRegistrations_DisplayFilterValue">
-                            <Rock:DateRangePicker ID="drpRegistrationDateRange" runat="server" Label="Date Range" />
-                            <Rock:RockDropDownList ID="ddlRegistrationPaymentStatus" runat="server" Label="Payment Status">
-                                <asp:ListItem Text="" Value="" />
-                                <asp:ListItem Text="Paid in Full" Value="Paid in Full" />
-                                <asp:ListItem Text="Balance Owed" Value="Balance Owed" />
-                            </Rock:RockDropDownList>
-                            <Rock:RockTextBox ID="tbRegistrationRegisteredByFirstName" runat="server" Label="Registered By First Name" />
-                            <Rock:RockTextBox ID="tbRegistrationRegisteredByLastName" runat="server" Label="Registered By Last Name" />
-                            <Rock:RockTextBox ID="tbRegistrationRegistrantFirstName" runat="server" Label="Registrant First Name" />
-                            <Rock:RockTextBox ID="tbRegistrationRegistrantLastName" runat="server" Label="Registrant Last Name" />
-                        </Rock:GridFilter>
-                        <Rock:Grid ID="gRegistrations" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrations_RowSelected" RowItemText="Registration">
-                            <Columns>
-                                <Rock:RockTemplateField HeaderText="Registered By">
-                                    <ItemTemplate>
-                                        <asp:Literal ID="lRegisteredBy" runat="server"></asp:Literal></ItemTemplate>
-                                </Rock:RockTemplateField>
-                                <Rock:RockTemplateField HeaderText="Registrants">
-                                    <ItemTemplate>
-                                        <asp:Literal ID="lRegistrants" runat="server"></asp:Literal></ItemTemplate>
-                                </Rock:RockTemplateField>
-                                <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="When" SortExpression="CreatedDateTime" />
-                                <Rock:RockTemplateField HeaderText="Total Cost" ItemStyle-HorizontalAlign="Right" SortExpression="TotalCost">
-                                    <ItemTemplate>
-                                        <asp:Label ID="lCost" runat="server" CssClass="label label-info"></asp:Label></ItemTemplate>
-                                </Rock:RockTemplateField>
-                                <Rock:RockTemplateField HeaderText="Balance Due" ItemStyle-HorizontalAlign="Right" SortExpression="BalanceDue">
-                                    <ItemTemplate>
-                                        <asp:Label ID="lBalance" runat="server" CssClass="label"></asp:Label></ItemTemplate>
-                                </Rock:RockTemplateField>
-                                <Rock:DeleteField OnClick="gRegistrations_Delete" />
-                            </Columns>
-                        </Rock:Grid>
+                <asp:Panel ID="pnlRegistrations" runat="server" Visible="false" CssClass="panel panel-block">
+
+                    <div class="panel-heading">
+                        <h1 class="panel-title">Registrations</h1>
                     </div>
+
+                    <div class="panel-body">
+                        <Rock:ModalAlert ID="mdRegistrationsGridWarning" runat="server" />
+                        <div class="grid grid-panel">
+                            <Rock:GridFilter ID="fRegistrations" runat="server" OnDisplayFilterValue="fRegistrations_DisplayFilterValue">
+                                <Rock:DateRangePicker ID="drpRegistrationDateRange" runat="server" Label="Date Range" />
+                                <Rock:RockDropDownList ID="ddlRegistrationPaymentStatus" runat="server" Label="Payment Status">
+                                    <asp:ListItem Text="" Value="" />
+                                    <asp:ListItem Text="Paid in Full" Value="Paid in Full" />
+                                    <asp:ListItem Text="Balance Owed" Value="Balance Owed" />
+                                </Rock:RockDropDownList>
+                                <Rock:RockTextBox ID="tbRegistrationRegisteredByFirstName" runat="server" Label="Registered By First Name" />
+                                <Rock:RockTextBox ID="tbRegistrationRegisteredByLastName" runat="server" Label="Registered By Last Name" />
+                                <Rock:RockTextBox ID="tbRegistrationRegistrantFirstName" runat="server" Label="Registrant First Name" />
+                                <Rock:RockTextBox ID="tbRegistrationRegistrantLastName" runat="server" Label="Registrant Last Name" />
+                            </Rock:GridFilter>
+                            <Rock:Grid ID="gRegistrations" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrations_RowSelected" RowItemText="Registration">
+                                <Columns>
+                                    <Rock:RockTemplateField HeaderText="Registered By">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lRegisteredBy" runat="server"></asp:Literal></ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField HeaderText="Registrants">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lRegistrants" runat="server"></asp:Literal></ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="When" SortExpression="CreatedDateTime" />
+                                    <Rock:RockTemplateField HeaderText="Total Cost" ItemStyle-HorizontalAlign="Right" SortExpression="TotalCost">
+                                        <ItemTemplate>
+                                            <asp:Label ID="lCost" runat="server" CssClass="label label-info"></asp:Label></ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField HeaderText="Balance Due" ItemStyle-HorizontalAlign="Right" SortExpression="BalanceDue">
+                                        <ItemTemplate>
+                                            <asp:Label ID="lBalance" runat="server" CssClass="label"></asp:Label></ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:DeleteField OnClick="gRegistrations_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                    </div>
+
                 </asp:Panel>
 
-                <asp:Panel ID="pnlRegistrants" runat="server" Visible="false">
-                    <Rock:ModalAlert ID="mdRegistrantsGridWarning" runat="server" />
-                    <div class="grid grid-panel">
-                        <Rock:GridFilter ID="fRegistrants" runat="server" OnDisplayFilterValue="fRegistrants_DisplayFilterValue">
-                            <Rock:DateRangePicker ID="drpRegistrantDateRange" runat="server" Label="Date Range" />
-                            <Rock:RockTextBox ID="tbRegistrantFirstName" runat="server" Label="First Name" />
-                            <Rock:RockTextBox ID="tbRegistrantLastName" runat="server" Label="Last Name" />
-                            <asp:PlaceHolder ID="phRegistrantFormFieldFilters" runat="server" />
-                        </Rock:GridFilter>
-                        <Rock:Grid ID="gRegistrants" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrants_RowSelected" RowItemText="Registrant">
-                            <Columns>
-                                <Rock:RockTemplateField HeaderText="Registrant">
-                                    <ItemTemplate>
-                                        <asp:Literal ID="lRegistrant" runat="server"></asp:Literal></ItemTemplate>
-                                </Rock:RockTemplateField>
-                                <Rock:RockTemplateFieldUnselected HeaderText="Group" >
-                                    <ItemTemplate>
-                                        <asp:Literal ID="lGroup" runat="server"></asp:Literal></ItemTemplate>
-                                </Rock:RockTemplateFieldUnselected>
-                            </Columns>
-                        </Rock:Grid>
+                <asp:Panel ID="pnlRegistrants" runat="server" Visible="false" CssClass="panel panel-block">
+
+                    <div class="panel-heading">
+                        <h1 class="panel-title">Registrants</h1>
                     </div>
+
+                    <div class="panel-body">
+                        <Rock:ModalAlert ID="mdRegistrantsGridWarning" runat="server" />
+                        <div class="grid grid-panel">
+                            <Rock:GridFilter ID="fRegistrants" runat="server" OnDisplayFilterValue="fRegistrants_DisplayFilterValue">
+                                <Rock:DateRangePicker ID="drpRegistrantDateRange" runat="server" Label="Date Range" />
+                                <Rock:RockTextBox ID="tbRegistrantFirstName" runat="server" Label="First Name" />
+                                <Rock:RockTextBox ID="tbRegistrantLastName" runat="server" Label="Last Name" />
+                                <asp:PlaceHolder ID="phRegistrantFormFieldFilters" runat="server" />
+                            </Rock:GridFilter>
+                            <Rock:Grid ID="gRegistrants" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrants_RowSelected" RowItemText="Registrant">
+                                <Columns>
+                                    <Rock:RockTemplateField HeaderText="Registrant">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lRegistrant" runat="server"></asp:Literal></ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateFieldUnselected HeaderText="Group" >
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lGroup" runat="server"></asp:Literal></ItemTemplate>
+                                    </Rock:RockTemplateFieldUnselected>
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                    </div>
+
                 </asp:Panel>
 
-                <asp:Panel ID="pnlLinkages" runat="server" Visible="false">
-                    <Rock:ModalAlert ID="mdLinkagesGridWarning" runat="server" />
-                    <div class="grid grid-panel">
-                        <Rock:GridFilter ID="fLinkages" runat="server" OnDisplayFilterValue="fLinkages_DisplayFilterValue">
-                            <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" />
-                        </Rock:GridFilter>
-                        <Rock:Grid ID="gLinkages" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Linkage">
-                            <Columns> 
-                                <asp:TemplateField HeaderText="Calendar Item">
-                                    <ItemTemplate><asp:Literal ID="lCalendarItem" runat="server" /></ItemTemplate>
-                                </asp:TemplateField>
-                                <asp:BoundField HeaderText="Campus" DataField="EventItemCampus.Campus.Name" SortExpression="EventItemCampus.Campus.Name" NullDisplayText="All Campuses" />
-                                <asp:HyperLinkField HeaderText="Group" DataTextField="Group" DataNavigateUrlFields="GroupID" SortExpression="Group" />
-                                <asp:BoundField HeaderText="Public Name" DataField="PublicName" SortExpression="PublicName" />
-                                <asp:BoundField HeaderText="URL Slug" DataField="UrlSlug" SortExpression="UrlSlug" />
-                                <Rock:EditField OnClick="gLinkages_Edit" />
-                                <Rock:DeleteField OnClick="gLinkages_Delete" />
-                            </Columns>
-                        </Rock:Grid>
+                <asp:Panel ID="pnlLinkages" runat="server" Visible="false" CssClass="panel panel-block">
+
+                    <div class="panel-heading">
+                        <h1 class="panel-title">Linkages</h1>
                     </div>
+
+                    <div class="panel-body">
+                        <Rock:ModalAlert ID="mdLinkagesGridWarning" runat="server" />
+                        <div class="grid grid-panel">
+                            <Rock:GridFilter ID="fLinkages" runat="server" OnDisplayFilterValue="fLinkages_DisplayFilterValue">
+                                <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" />
+                            </Rock:GridFilter>
+                            <Rock:Grid ID="gLinkages" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gLinkages_RowSelected" RowItemText="Linkage">
+                                <Columns> 
+                                    <Rock:TemplateFieldUnselected HeaderText="Calendar Item">
+                                        <ItemTemplate><asp:Literal ID="lCalendarItem" runat="server" /></ItemTemplate>
+                                    </Rock:TemplateFieldUnselected>
+                                    <asp:BoundField HeaderText="Campus" DataField="EventItemCampus.Campus.Name" SortExpression="EventItemCampus.Campus.Name" NullDisplayText="All Campuses" />
+                                    <asp:HyperLinkField HeaderText="Group" DataTextField="Group" DataNavigateUrlFields="GroupID" SortExpression="Group" />
+                                    <asp:BoundField HeaderText="Public Name" DataField="PublicName" SortExpression="PublicName" />
+                                    <asp:BoundField HeaderText="URL Slug" DataField="UrlSlug" SortExpression="UrlSlug" />
+                                    <Rock:DeleteField OnClick="gLinkages_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                    </div>
+
                 </asp:Panel>
 
             </asp:Panel>

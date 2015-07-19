@@ -56,15 +56,6 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public int CampusId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the connector group identifier.
-        /// </summary>
-        /// <value>
-        /// The connector group identifier.
-        /// </value>
-        [DataMember]
-        public int? ConnectorGroupId { get; set; }
-
         #endregion
 
         #region Virtual Properties
@@ -87,15 +78,6 @@ namespace Rock.Model
         [DataMember]
         public virtual Campus Campus { get; set; }
 
-        /// <summary>
-        /// Gets or sets the connector group.
-        /// </summary>
-        /// <value>
-        /// The connector group.
-        /// </value>
-        [DataMember]
-        public virtual Group ConnectorGroup { get; set; }
-
         #endregion
     }
 
@@ -113,7 +95,6 @@ namespace Rock.Model
         {
             this.HasRequired( p => p.ConnectionOpportunity ).WithMany( p => p.ConnectionOpportunityCampuses ).HasForeignKey( p => p.ConnectionOpportunityId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( true );
-            this.HasOptional( p => p.ConnectorGroup ).WithMany().HasForeignKey( p => p.ConnectorGroupId ).WillCascadeOnDelete( true );
         }
     }
 

@@ -252,6 +252,7 @@
     <Compile Include="Jobs\SendGroupRequirementsNotification.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionActivityTypeService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionOpportunityCampusService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionOpportunityGroupCampusService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionOpportunityGroupService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionOpportunityService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionRequestActivityService.cs" />
@@ -317,9 +318,10 @@
     <Compile Include="Model\BenevolenceResult.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\ConnectionOpportunityCampus.cs" />
     <Compile Include="Model\ConnectionRequest.cs" />
     <Compile Include="Model\ConnectionOpportunityGroup.cs" />
-    <Compile Include="Model\ConnectionOpportunityCampus.cs" />
+    <Compile Include="Model\ConnectionOpportunityGroupCampus.cs" />
     <Compile Include="Model\ConnectionActivityType.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -467,6 +469,7 @@
     <Compile Include="Store\StoreImage.cs" />
     <Compile Include="Store\StoreModel.cs" />
     <Compile Include="Store\StoreServiceBase.cs" />
+    <Compile Include="SystemGuid\ConnectionActivityType.cs" />
     <Compile Include="SystemGuid\Attribute.cs" />
     <Compile Include="SystemGuid\NoteType.cs" />
     <Compile Include="SystemGuid\ServiceJob.cs" />

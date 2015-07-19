@@ -333,7 +333,10 @@ namespace RockWeb.Blocks.Event
                     ppPerson.SetValue( null );
                 }
 
-                cbCost.Text = RegistrantState.Cost.ToString( "N2" );
+                if ( RegistrantState != null )
+                {
+                    cbCost.Text = RegistrantState.Cost.ToString( "N2" );
+                }
             }
         }
 

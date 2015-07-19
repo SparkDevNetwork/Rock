@@ -823,6 +823,12 @@ namespace RockWeb.Blocks.Event
                             rieNewLinkage.ContactName = person.FullName;
                         }
                     }
+
+                    if ( !string.IsNullOrWhiteSpace( pnPhone.Text))
+                    {
+                        rieNewLinkage.ContactPhone = pnPhone.Text;
+                    }
+
                     if ( !string.IsNullOrWhiteSpace( tbEmail.Text ) )
                     {
                         rieNewLinkage.ContactEmail = tbEmail.Text;

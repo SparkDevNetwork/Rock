@@ -14,6 +14,7 @@
 @font-weight-bold:      900;
 @font-weight-semibold:  700;
 
+
 // Standard Colors
 @accent-color: #dbd5cb;
 @accent-text-color: #413c35;
@@ -69,6 +70,9 @@
 // Components
 // -------------------------
 
+// Autocomplete
+@autocomplete-rollover-bg: #d5e6ed;
+
 // Grid
 @grid-filter-bg: @accent-color;
 
@@ -108,8 +112,12 @@
 @widget-header-text-color-dark: @accent-bold-text-color;
 
 // Page List
-@pagelist-bg: lighten(@accent-color, 5%);
+@pagelist-bg: #F5F2EF;
+@pagelist-border-color: #E2E2E2;
 @pagelist-text-color: @text-color;
+@pagelist-rollover-bg: @accent-bold-color;
+@pagelist-rollover-text-color: #fff;
+@pagelist-rollover-border-color: darken(@pagelist-rollover-bg, 5%);
 
 // Tags
 @tag-bg: #c2b8a7;
@@ -328,8 +336,8 @@
 @legend-color:                   @gray-dark;
 @legend-border-color:            #e5e5e5;
 
-@input-group-addon-bg:           @gray-lighter;
-@input-group-addon-border-color: @input-border;
+@input-group-addon-bg:           @body-bg;
+@input-group-addon-border-color: darken(@input-group-addon-bg, 10%);
 
 
 // Dropdowns
@@ -719,7 +727,7 @@
 
 // Wells
 // -------------------------
-@well-bg:                     #f5f5f5;
+@well-bg:                     @body-bg;
 
 
 // Badges

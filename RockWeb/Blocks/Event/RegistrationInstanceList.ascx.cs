@@ -175,6 +175,12 @@ namespace RockWeb.Blocks.Event
             RegistrationInstance instance = instanceService.Get( e.RowKeyId );
             if ( instance != null )
             {
+                if ( instance.Registrations.Any() )
+                {
+                    mdGridWarning.Show( "This instance has registrations and cannot be deleted until all the registrations have been deleted.", ModalAlertType.Information );
+                    return;
+                }
+
                 string errorMessage;
                 if ( !instanceService.CanDelete( instance, out errorMessage ) )
                 {

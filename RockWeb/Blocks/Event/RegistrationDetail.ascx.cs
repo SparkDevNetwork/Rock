@@ -216,7 +216,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( registration.Payments.Any() )
                     {
-                        mdDeleteWarning.Show( "This registration has existing payments and cannot be deleted.", ModalAlertType.Information );
+                        mdDeleteWarning.Show( "This registration has payments and cannot be deleted.", ModalAlertType.Information );
                         return;
                     }
 
@@ -232,7 +232,9 @@ namespace RockWeb.Blocks.Event
                     rockContext.SaveChanges();
                 }
 
-                NavigateToParentPage();
+                var pageParams = new Dictionary<string, string>();
+                pageParams.Add( "RegistrationInstanceId", RegistrationInstanceId.ToString() );
+                NavigateToParentPage( pageParams );
             }
         }
 
@@ -250,6 +252,8 @@ namespace RockWeb.Blocks.Event
 
                 var registrationService = new RegistrationService( rockContext );
 
+                bool newRegistration = false;
+
                 if ( RegistrationId.Value != 0 )
                 {
                     registration = registrationService.Queryable().Where( g => g.Id == RegistrationId.Value ).FirstOrDefault();
@@ -259,11 +263,12 @@ namespace RockWeb.Blocks.Event
                 {
                     registration = new Registration { RegistrationInstanceId = RegistrationInstanceId ?? 0 };
                     registrationService.Add( registration );
+                    newRegistration = true;
                 }
 
                 if ( registration != null && RegistrationInstanceId > 0 )
                 {
-                    registration.PersonAliasId = ppPerson.PersonAliasId.Value;
+                    registration.PersonAliasId = ppPerson.PersonAliasId;
                     registration.FirstName = tbFirstName.Text;
                     registration.LastName = tbLastName.Text;
                     registration.ConfirmationEmail = ebConfirmationEmail.Text;
@@ -288,10 +293,20 @@ namespace RockWeb.Blocks.Event
                         rockContext.SaveChanges();
                     } );
 
-                    // Reload registration
-                    ShowReadonlyDetails( GetRegistration( registration.Id ) );
+                    if ( newRegistration )
+                    {
+                        var pageRef = CurrentPageReference;
+                        pageRef.Parameters.AddOrReplace("RegistrationId", registration.Id.ToString());
+                        NavigateToPage( pageRef );
+                    }
+                    else
+                    {
+                        // Reload registration
+                        ShowReadonlyDetails( GetRegistration( registration.Id ) );
+                    }
                 }
             }
+
         }
 
         /// <summary>
@@ -398,6 +413,7 @@ namespace RockWeb.Blocks.Event
 
         protected void lbAddPayment_Click( object sender, EventArgs e )
         {
+
             if ( Registration != null && Registration.PersonAliasId.HasValue && RegistrationTemplateState != null && RegistrationTemplateState.FinancialGateway != null )
             {
                 var component = RegistrationTemplateState.FinancialGateway.GetGatewayComponent();
@@ -410,6 +426,10 @@ namespace RockWeb.Blocks.Event
 
                     cbPaymentAmount.Text = string.Empty;
                     cbPaymentAmount.Placeholder = Registration.BalanceDue.ToString( "N2" );
+
+                    txtCreditCard.Text = string.Empty;
+                    mypExpiration.SelectedDate = null;
+                    txtCVV.Text = string.Empty;
 
                     if ( Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
                     {
@@ -424,8 +444,10 @@ namespace RockWeb.Blocks.Event
 
                     pnlCosts.Visible = false;
                     pnlPaymentInfo.Visible = true;
+                    return;
                 }
             }
+
         }
 
         protected void lbCancelPayment_Click( object sender, EventArgs e )
@@ -453,11 +475,14 @@ namespace RockWeb.Blocks.Event
 
                     // reload registration
                     Registration = GetRegistration( Registration.Id, rockContext );
-                    ShowReadonlyDetails( Registration );
+
                     RockPage.UpdateBlocks( "~/Blocks/Finance/TransactionList.ascx" );
+
+                    ShowReadonlyDetails( Registration );
 
                     pnlPaymentInfo.Visible = false;
                     pnlCosts.Visible = true;
+
                 }
                 catch ( Exception ex )
                 {
@@ -596,7 +621,7 @@ namespace RockWeb.Blocks.Event
 
                 var registration = new RegistrationService( rockContext )
                     .Queryable( "RegistrationInstance.RegistrationTemplate.Forms.Fields,PersonAlias.Person,Group,Registrants.Fees" ).AsNoTracking()
-                    .Where( r => r.Id == RegistrationId.Value )
+                    .Where( r => r.Id == registrationId.Value )
                     .FirstOrDefault();
 
                 return registration;
@@ -758,6 +783,12 @@ namespace RockWeb.Blocks.Event
             BuildFeeTable( registration );
             BuildRegistrationControls( true );
 
+            bool anyPayments = registration.Payments.Any();
+            foreach ( RockWeb.Blocks.Finance.TransactionList block in RockPage.RockBlocks.Where( a => a is RockWeb.Blocks.Finance.TransactionList ) )
+            {
+                block.SetVisible( anyPayments );
+            }
+
             lbAddRegistrant.Visible = EditAllowed;
         }
 
@@ -899,6 +930,8 @@ namespace RockWeb.Blocks.Event
                         History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
                     }
                 }
+
+                transaction.Summary = Registration.GetSummary();
 
                 var transactionDetail = new FinancialTransactionDetail();
                 transactionDetail.Amount = amount;
@@ -1069,7 +1102,12 @@ namespace RockWeb.Blocks.Event
                 lTotalCost.Text = registration.DiscountedCost.ToString( "C2" );
                 lPreviouslyPaid.Text = registration.TotalPaid.ToString( "C2" );
                 lRemainingDue.Text = balanceDue.ToString( "C2" );
-                lbAddPayment.Visible = balanceDue > 0.0m;
+
+                lbAddPayment.Visible = ( balanceDue > 0.0m &&
+                    Registration != null &&
+                    Registration.PersonAliasId.HasValue &&
+                    RegistrationTemplateState != null &&
+                    RegistrationTemplateState.FinancialGateway != null );
             }
             else
             {
@@ -1209,7 +1247,7 @@ namespace RockWeb.Blocks.Event
             if ( feeInfo.Quantity > 0 )
             {
                 var rlField = new RockLiteral();
-                rlField.ID = string.Format( "rlFee_{0}_{1}", registrant.Id, fee.Id );
+                rlField.ID = string.Format( "rlFee_{0}_{1}_{2}", registrant.Id, fee.Id, feeInfo.Option );
                 rlField.Label = fee.Name;
 
                 if ( !string.IsNullOrWhiteSpace( feeInfo.Option ) )

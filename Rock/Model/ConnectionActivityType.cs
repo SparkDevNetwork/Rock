@@ -69,7 +69,6 @@ namespace Rock.Model
 
         #region Virtual Properties
 
-
         /// <summary>
         /// Gets or sets the type of the connection.
         /// </summary>

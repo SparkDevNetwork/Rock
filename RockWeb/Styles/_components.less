@@ -425,7 +425,7 @@ ul.rocktree ul {
 
     li {
       border-radius: @border-radius-base;
-      border: 1px solid #bbb;
+      border: 1px solid @pagelist-border-color;
       float: left;
       margin: 0 1.25% @spacing-md-px;
       width: 47.5%;
@@ -442,9 +442,20 @@ ul.rocktree ul {
         padding: @spacing-md-px;
         border-radius: @border-radius-base;
 
+        i {
+            font-size: 26px;
+            color: lighten(@pagelist-text-color, 10%);
+            margin-top: 6px;
+        }
+
         &:hover {
-          background-color: @accent-bold-color;
-          color: @accent-bold-text-color;
+          background-color: @pagelist-rollover-bg;
+          color: @pagelist-rollover-text-color;
+          border-color: @pagelist-rollover-border-color;
+
+          i {
+            color: @pagelist-rollover-text-color;
+          }
         }
 
         div.notification {
@@ -471,12 +482,39 @@ ul.rocktree ul {
   }
 }
 
-@media (min-width: @screen-sm-min) { // tablet portrait and larger
+@media @sm-only { // tablet portrait and larger
   .list-as-blocks {
     ul {
       li {
-        margin: 0 2.5% @spacing-md-px;
-        width: 20%;
+        margin: 0 1% @spacing-md-px;
+        width: 32%;
+
+        &:nth-child(3n) {
+            margin-right: 0;
+        }
+
+        &:nth-child(3n+1) {
+            margin-left: 0;
+        }
+      }
+    }
+  }
+}
+
+@media @md { // tablet portrait and larger
+  .list-as-blocks {
+    ul {
+      li {
+        margin: 0 1% @spacing-md-px;
+        width: 18.4%;
+
+        &:nth-child(5n) {
+            margin-right: 0;
+        }
+
+        &:nth-child(5n+1) {
+            margin-left: 0;
+        }
       }
     }
   }
@@ -840,6 +878,7 @@ div.tagsinput
     min-width: 290px;
     margin-left: -6px;
     border: 0;
+    margin-top: 2px;
   }
 
   input.searchinput {
@@ -1651,7 +1690,7 @@ ul.rocklist {
     border-radius: @border-radius-base;
 
     &:hover {
-      background-color: darken(@accent-light-color, 5%);
+      background-color: @autocomplete-rollover-bg;
     }
   }
 }
