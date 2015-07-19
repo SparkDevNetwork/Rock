@@ -183,41 +183,41 @@ INSERT [dbo].[ConnectionOpportunityGroup] ( [ConnectionOpportunityId], [GroupId]
 	VALUES ( @ChildrensOpportunityId, @ChildrensGroupId, @Date, @Date, @PersonAliasId, @PersonAliasId, N'4ab434ed-3504-4c35-b7c3-78894fa0b479', NULL)
 
 
-INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId], [ValueAsDateTime])
+INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId])
      VALUES
-           (0, @PreferenceAttributeId, @GreeterOpportunityId, N'2', N'45C4C1B5-9957-449D-AC39-9321F8FB1E8D', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL, NULL)
+           (0, @PreferenceAttributeId, @GreeterOpportunityId, N'2', N'45C4C1B5-9957-449D-AC39-9321F8FB1E8D', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL)
 
-INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId], [ValueAsDateTime])
+INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId])
      VALUES
-           (0, @PreferenceAttributeId, @UsherOpportunityId, N'2', N'EB26600D-CA51-48BB-B7C6-8A0C4C66C714', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL, NULL)
+           (0, @PreferenceAttributeId, @UsherOpportunityId, N'2', N'EB26600D-CA51-48BB-B7C6-8A0C4C66C714', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL)
 
-INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId], [ValueAsDateTime])
+INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId])
      VALUES
-           (0, @PreferenceAttributeId, @ChildrensOpportunityId, N'1', N'27F95FB6-3B3F-474F-98D3-24BF9601D452', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL, NULL)
+           (0, @PreferenceAttributeId, @ChildrensOpportunityId, N'1', N'27F95FB6-3B3F-474F-98D3-24BF9601D452', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL)
 
-INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId], [ValueAsDateTime])
+INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId])
      VALUES
-           (0, @DayAttributeId, @GreeterOpportunityId, N'6,7', N'86FE0CCC-D512-4956-9473-3F615F9E7C31', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL, NULL)
+           (0, @DayAttributeId, @GreeterOpportunityId, N'6,7', N'86FE0CCC-D512-4956-9473-3F615F9E7C31', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL)
 
-INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId], [ValueAsDateTime])
+INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId])
      VALUES
-           (0, @DayAttributeId, @UsherOpportunityId, N'6,7', N'F6E45A4E-E488-4F54-893F-9BD577FC98A3', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL, NULL)
+           (0, @DayAttributeId, @UsherOpportunityId, N'6,7', N'F6E45A4E-E488-4F54-893F-9BD577FC98A3', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL)
 
-INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId], [ValueAsDateTime])
+INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId])
      VALUES
-           (0, @DayAttributeId, @ChildrensOpportunityId, N'6,7', N'AC057832-C2D9-4095-9073-4E0F435FF808', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL, NULL)
+           (0, @DayAttributeId, @ChildrensOpportunityId, N'6,7', N'AC057832-C2D9-4095-9073-4E0F435FF808', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL)
 
-INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId], [ValueAsDateTime])
+INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId])
      VALUES
-           (0, @RoleAttributeId, @GreeterOpportunityId, N'1', N'8EFEDEDC-867E-4714-8A38-2510C0003007', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL, NULL)
+           (0, @RoleAttributeId, @GreeterOpportunityId, N'1', N'8EFEDEDC-867E-4714-8A38-2510C0003007', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL)
 
-INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId], [ValueAsDateTime])
+INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId])
      VALUES
-           (0, @RoleAttributeId, @UsherOpportunityId, N'1', N'22A5D15F-B5E9-42F4-9C13-F45EF47B5BB4', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL, NULL)
+           (0, @RoleAttributeId, @UsherOpportunityId, N'1', N'22A5D15F-B5E9-42F4-9C13-F45EF47B5BB4', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL)
 
-INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId], [ValueAsDateTime])
+INSERT INTO [dbo].[AttributeValue]([IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [ForeignId])
      VALUES
-           (0, @RoleAttributeId, @ChildrensOpportunityId, N'1', N'A46A9C85-A371-47E3-B50E-86D8FC126BB0', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL, NULL)
+           (0, @RoleAttributeId, @ChildrensOpportunityId, N'1', N'A46A9C85-A371-47E3-B50E-86D8FC126BB0', @Date, @Date, @PersonAliasId, @PersonAliasId, NULL)
 END
 -- Delete breadcrumb names
         UPDATE [Page] SET
