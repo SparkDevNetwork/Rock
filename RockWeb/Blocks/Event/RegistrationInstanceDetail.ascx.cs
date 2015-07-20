@@ -141,8 +141,6 @@ namespace RockWeb.Blocks.Event
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RegistrationTemplate ) ).Id;
-
             string deleteScript = @"
     $('a.js-delete-instance').click(function( e ){
         e.preventDefault();
@@ -412,6 +410,21 @@ namespace RockWeb.Blocks.Event
                 ActiveTab = lb.ID;
                 ShowTab();
             }
+        }
+
+        protected void lbTemplate_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new RegistrationInstanceService( rockContext );
+                var registrationInstance = service.Get( hfRegistrationInstanceId.Value.AsInteger() );
+                if ( registrationInstance != null )
+                {
+                    qryParams.Add( "RegistrationTemplateId", registrationInstance.RegistrationTemplateId.ToString() );
+                }
+            }
+            NavigateToParentPage( qryParams );
         }
 
         #endregion
@@ -848,7 +861,6 @@ namespace RockWeb.Blocks.Event
             var registrant = e.Row.DataItem as RegistrationRegistrant;
             if ( registrant != null )
             {
-
                 // Set the registrant name value
                 var lRegistrant = e.Row.FindControl( "lRegistrant" ) as Literal;
                 if ( lRegistrant != null )
@@ -1229,6 +1241,8 @@ namespace RockWeb.Blocks.Event
                 hlType.Visible = registrationInstance.RegistrationTemplate != null;
                 hlType.Text = registrationInstance.RegistrationTemplate != null ? registrationInstance.RegistrationTemplate.Name : string.Empty;
 
+                lWizardTemplateName.Text = hlType.Text;
+
                 pnlDetails.Visible = true;
                 hfRegistrationInstanceId.Value = registrationInstance.Id.ToString();
                 SetHasPayments( registrationInstance.Id, rockContext );
@@ -1249,15 +1263,11 @@ namespace RockWeb.Blocks.Event
                 if ( readOnly )
                 {
                     btnEdit.Visible = false;
-                    btnSecurity.Visible = false;
                     ShowReadonlyDetails( registrationInstance );
                 }
                 else
                 {
                     btnEdit.Visible = true;
-
-                    btnSecurity.Title = "Secure " + registrationInstance.Name;
-                    btnSecurity.EntityId = registrationInstance.Id;
 
                     if ( registrationInstance.Id > 0 )
                     {
@@ -1288,6 +1298,11 @@ namespace RockWeb.Blocks.Event
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( RegistrationInstance.FriendlyTypeName ).FormatAsHtmlTitle();
                 hlInactive.Visible = false;
+                lWizardInstanceName.Text = "New Instance";
+            }
+            else
+            {
+                lWizardInstanceName.Text = instance.Name;
             }
 
             SetEditMode( true );
@@ -1308,6 +1323,7 @@ namespace RockWeb.Blocks.Event
             lReadOnlyTitle.Text = RegistrationInstance.Name.FormatAsHtmlTitle();
             hlInactive.Visible = RegistrationInstance.IsActive == false;
 
+            lWizardInstanceName.Text = RegistrationInstance.Name;
             lName.Text = RegistrationInstance.Name;
 
             lAccount.Visible = RegistrationInstance.Account != null;
