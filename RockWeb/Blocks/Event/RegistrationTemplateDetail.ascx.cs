@@ -486,7 +486,23 @@ namespace RockWeb.Blocks.Event
                             newFormField.Guid = Guid.NewGuid();
                             newFormFieldsState[newForm.Guid].Add( newFormField );
 
-                            //TODO: if this is for a registration attribute, then the attribute needs to be cloned also...
+                            if ( formField.FieldSource == RegistrationFieldSource.RegistrationAttribute && formField.Attribute != null )
+                            {
+                                var newAttribute = formField.Attribute.Clone( false );
+                                newAttribute.Id = 0;
+                                newAttribute.Guid = Guid.NewGuid();
+                                newAttribute.IsSystem = false;
+                                newFormField.Attribute = newAttribute;
+
+                                foreach ( var qualifier in formField.Attribute.AttributeQualifiers )
+                                {
+                                    var newQualifier = qualifier.Clone( false );
+                                    newQualifier.Id = 0;
+                                    newQualifier.Guid = Guid.NewGuid();
+                                    newQualifier.IsSystem = false;
+                                    newAttribute.AttributeQualifiers.Add( qualifier );
+                                }
+                            }
                         }
                     }
                 }
@@ -509,12 +525,13 @@ namespace RockWeb.Blocks.Event
                     newFeeState.Add( newFee );
                 }
 
-                RegistrationTemplate = newRegistrationTemplate;
+                FormState = newFormState;
+                FormFieldsState = newFormFieldsState;
                 DiscountState = newDiscountState;
                 FeeState = newFeeState;
 
-                hfRegistrationTemplateId.Value = RegistrationTemplate.Id.ToString();
-                ShowEditDetails( RegistrationTemplate, rockContext );
+                hfRegistrationTemplateId.Value = newRegistrationTemplate.Id.ToString();
+                ShowEditDetails( newRegistrationTemplate, rockContext );
             }
         }
 
