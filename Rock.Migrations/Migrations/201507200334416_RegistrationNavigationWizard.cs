@@ -145,9 +145,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            RockMigrationHelper.DeleteAttribute( "ACC82748-157F-BF8E-4E34-FFD3C05269B3" );
-            RockMigrationHelper.DeleteDefinedValue( "18B0F890-59D2-CF88-4F48-5B51097FDA0B" );
-            RockMigrationHelper.DeleteDefinedType( "251D752B-0595-C3A6-4E2A-AD0264DAFCCD" );
+
         }
     }
 }
