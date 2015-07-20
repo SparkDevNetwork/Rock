@@ -434,17 +434,17 @@ namespace Rock.Apps.CheckScannerUtility
                     {
                         int accountNumberDigitPosition = lastOnUsPosition - 1;
 
-                        // read all digits to the left of the last 'c' until you run into a non-numeric (except for '!' whichs means invalid)
+                        // read all digits to the left of the last 'c' until you run into another 'c'
                         while ( accountNumberDigitPosition >= 0 )
                         {
                             char accountNumberDigit = remainingMicr[accountNumberDigitPosition];
-                            if ( char.IsNumber( accountNumberDigit ) || accountNumberDigit.Equals( '!' ) || accountNumberDigit.Equals( ' ' ) )
+                            if ( accountNumberDigit == 'c' )
                             {
-                                accountNumber = accountNumberDigit + accountNumber.Trim();
+                                break;
                             }
                             else
                             {
-                                break;
+                                accountNumber = accountNumberDigit + accountNumber.Trim();
                             }
 
                             accountNumberDigitPosition--;
@@ -455,16 +455,18 @@ namespace Rock.Apps.CheckScannerUtility
 
                     // any remaining digits that aren't the account number and transit number are probably the check number
                     string[] remainingMicrParts = remainingMicr.Split( new char[] { 'c', ' ' }, StringSplitOptions.RemoveEmptyEntries );
-                    if ( remainingMicrParts.Length == 1 )
+                    if ( remainingMicrParts.Any() )
                     {
-                        checkNumber = remainingMicrParts[0];
+                        checkNumber = remainingMicrParts.Last();
                     }
 
                     scannedDoc.RoutingNumber = routingNumber;
                     scannedDoc.AccountNumber = accountNumber;
                     scannedDoc.CheckNumber = checkNumber;
 
-                    if ( routingNumber.Length != 9 || string.IsNullOrEmpty( accountNumber ) || checkMicr.Contains( '!' ) || string.IsNullOrEmpty( checkNumber ) )
+                    // look for the "can't read" symbol to detect if the check micr couldn't be read
+                    // from http://www.sbulletsupport.com/forum/index.php?topic=172.0
+                    if ( checkMicr.Contains('!') )
                     {
                         scannedDoc.BadMicr = true;
                         scannedDoc.Upload = false;
