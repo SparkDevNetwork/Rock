@@ -218,7 +218,75 @@
       result += '</div>'
       return result
     }
+
+
+    // Infowindow map with geolocation
+
+    // Inherit campusInfoWindowMap and add initial infowindow
+    CCV.campusInfoWindowMapGeo = function (holder, campusToDraw) {
+      CCV.campusInfoWindowMap.call(this, holder, campusToDraw)
+      this.infowindow = new google.maps.InfoWindow({ content: 'Loading...' })
+    }
+    CCV.campusInfoWindowMapGeo.prototype = new CCV.campusInfoWindowMap()
+    CCV.campusInfoWindowMapGeo.prototype.constructor = CCV.campusInfoWindowMapGeo
+
+    // Custom & override methods
+    CCV.campusInfoWindowMapGeo.prototype.findNearestCampus = function (callback, trigger) {
+      var _this = this,
+          $trigger = $(trigger),
+          userLocation,
+          service = new google.maps.DistanceMatrixService(),
+          result
+
+      if(navigator.geolocation) {
+        $trigger.addClass('is-loading')
+        navigator.geolocation.getCurrentPosition(function(p) {
+          userLocation = new google.maps.LatLng(p.coords.latitude, p.coords.longitude)
+          service.getDistanceMatrix(
+            {
+              origins: [userLocation],
+              destinations: _this.allLocationsGeoArray(),
+              travelMode: google.maps.TravelMode.DRIVING,
+            }, parseResults);
+        })
+      }
+
+      function parseResults(response, status) {
+        if (status == google.maps.DistanceMatrixStatus.OK) {
+
+          var lowest = Number.POSITIVE_INFINITY,
+            lowestArrayIndex,
+            tmp,
+            responseArray = response.rows[0].elements
+
+          for (var i = 0; i < responseArray.length; i++) {
+            tmp = responseArray[i].duration.value
+            if (tmp < lowest) {
+              lowest = tmp
+              lowestArrayIndex = i
+            }
+          }
+
+          $trigger.removeClass('is-loading')
+          _this.nearestCampus = CCV.locations[lowestArrayIndex]
+          typeof callback === 'function' && callback.call(_this, _this.nearestCampus)
+        }
+      }
+    }
+    CCV.campusInfoWindowMapGeo.prototype.allLocationsGeoArray = function() {
+      var r = []
+      for (var i = 0; i < CCV.locations.length; i++) {
+        var location = CCV.locations[i].geo
+        var geo = new google.maps.LatLng(location.lat,location.lng)
+        r.push(geo)
+      }
+      return r
+    }
+
   }
+
+
+  // Load google maps api dynamically to avoid double loading
 
   if (typeof google == 'object' && typeof google.maps == 'object')
     loadMap()
