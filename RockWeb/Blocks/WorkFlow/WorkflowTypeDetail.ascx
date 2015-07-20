@@ -123,7 +123,7 @@
                         <span class="pull-right">
                             <asp:LinkButton ID="btnCopy" runat="server" Text="Copy" CssClass="btn btn-link" OnClick="btnCopy_Click" />
                             <asp:LinkButton ID="lbLaunchWorkflow" runat="server" CssClass="btn btn-sm btn-default" OnClick="btnLaunch_Click" ToolTip="Launch Workflow"><i class="fa fa-play"></i></asp:LinkButton>
-                            <asp:LinkButton ID="lbManage" runat="server" CssClass="btn btn-sm btn-default" OnClick="btnManage_Click" ToolTip="Manage Workflows"><i class="fa fa-wrench"></i></asp:LinkButton>
+                            <asp:LinkButton ID="lbManage" runat="server" CssClass="btn btn-sm btn-default" OnClick="btnManage_Click" ToolTip="Manage Workflows"><i class="fa fa-list"></i></asp:LinkButton>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </span>
 
