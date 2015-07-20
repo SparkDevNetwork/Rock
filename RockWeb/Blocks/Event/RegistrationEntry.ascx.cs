@@ -317,23 +317,40 @@ namespace RockWeb.Blocks.Event
 
                 if ( RegistrationTemplate != null )
                 {
-                    // Check Login Requirement
-                    if ( RegistrationTemplate.LoginRequired && CurrentUser == null )
+                    bool instanceFull = false;
+                    if ( RegistrationInstanceState.MaxAttendees > 0 )
                     {
-                        var site = RockPage.Site;
-                        if ( site.LoginPageId.HasValue )
-                        {
-                            site.RedirectToLoginPage( true );
-                        }
-                        else
-                        {
-                            System.Web.Security.FormsAuthentication.RedirectToLoginPage();
-                        }
+                        int registrants = RegistrationInstanceState.Registrations.Sum( r => r.Registrants.Count() );
+                        instanceFull = registrants >= RegistrationInstanceState.MaxAttendees;
+                    }
+
+                    if ( instanceFull )
+                    {
+                        ShowWarning(
+                            string.Format( "{0} Full", RegistrationTerm ),
+                            string.Format( "There are not any more {0} available for {1}.", RegistrationTerm.ToLower().Pluralize(), RegistrationInstanceState.Name ) );
+
                     }
                     else
                     {
-                        // show the panel for asking how many registrants ( it may be skipped )
-                        ShowHowMany();
+                        // Check Login Requirement
+                        if ( RegistrationTemplate.LoginRequired && CurrentUser == null )
+                        {
+                            var site = RockPage.Site;
+                            if ( site.LoginPageId.HasValue )
+                            {
+                                site.RedirectToLoginPage( true );
+                            }
+                            else
+                            {
+                                System.Web.Security.FormsAuthentication.RedirectToLoginPage();
+                            }
+                        }
+                        else
+                        {
+                            // show the panel for asking how many registrants ( it may be skipped )
+                            ShowHowMany();
+                        }
                     }
                 }
                 else
@@ -662,7 +679,6 @@ namespace RockWeb.Blocks.Event
             // Not inside a "using" due to serialization needing context to still be active
             var rockContext = new RockContext();
 
-
             // An existing registration id was specified
             if ( registrationId.HasValue )
             {
@@ -753,6 +769,7 @@ namespace RockWeb.Blocks.Event
                     RegistrationState = new RegistrationInfo( CurrentPerson );
                 }
             }
+
             if ( RegistrationState != null && !RegistrationState.Registrants.Any() )
             {
                 SetRegistrantState( 1 );

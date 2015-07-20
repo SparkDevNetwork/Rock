@@ -53,6 +53,7 @@ namespace RockWeb.Blocks.Event
 
         private RegistrationTemplate TemplateState { get; set; }
         private RegistrantInfo RegistrantState { get; set; }
+        private int RegistrationInstanceId { get; set; }
 
         #endregion
 
@@ -77,6 +78,8 @@ namespace RockWeb.Blocks.Event
             {
                 RegistrantState = JsonConvert.DeserializeObject<RegistrantInfo>( json );
             }
+
+            RegistrationInstanceId = ViewState["RegistrationInstanceId"] as int? ?? 0;
 
             BuildControls( false );
         }
@@ -129,7 +132,7 @@ namespace RockWeb.Blocks.Event
 
             ViewState["Template"] = JsonConvert.SerializeObject( TemplateState, Formatting.None, jsonSetting );
             ViewState["Registrant"] = JsonConvert.SerializeObject( RegistrantState, Formatting.None, jsonSetting );
-
+            ViewState["RegistrationInstanceId"] = RegistrationInstanceId;
             return base.SaveViewState();
         }
 
@@ -259,6 +262,43 @@ namespace RockWeb.Blocks.Event
             NavigateToRegistration();
         }
 
+        protected void lbWizardTemplate_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            var pageCache = PageCache.Read( RockPage.PageId );
+            if ( pageCache != null && 
+                pageCache.ParentPage != null && 
+                pageCache.ParentPage.ParentPage != null &&
+                pageCache.ParentPage.ParentPage.ParentPage != null )
+            {
+                qryParams.Add( "RegistrationTemplateId", TemplateState != null ? TemplateState.Id.ToString() : "0" );
+                NavigateToPage( pageCache.ParentPage.ParentPage.ParentPage.Guid, qryParams );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbWizardInstance control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbWizardInstance_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            var pageCache = PageCache.Read( RockPage.PageId );
+            if ( pageCache != null &&
+                pageCache.ParentPage != null &&
+                pageCache.ParentPage.ParentPage != null )
+            {
+                qryParams.Add( "RegistrationInstanceId", RegistrationInstanceId.ToString() );
+                NavigateToPage( pageCache.ParentPage.ParentPage.Guid, qryParams );
+            }
+        }
+
+        protected void lbWizardRegistration_Click( object sender, EventArgs e )
+        {
+            NavigateToRegistration();
+        }
+
         /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
@@ -298,7 +338,14 @@ namespace RockWeb.Blocks.Event
                         registrant.Registration.RegistrationInstance.RegistrationTemplate != null )
                     {
                         RegistrantState = new RegistrantInfo( registrant, rockContext );
-                        TemplateState = registrant.Registration.RegistrationInstance.RegistrationTemplate;
+                        TemplateState = registrant.Registration.RegistrationInstance.RegistrationTemplate; 
+                        
+                        RegistrationInstanceId = registrant.Registration.RegistrationInstanceId;
+
+                        lWizardTemplateName.Text = registrant.Registration.RegistrationInstance.RegistrationTemplate.Name;
+                        lWizardInstanceName.Text = registrant.Registration.RegistrationInstance.Name;
+                        lWizardRegistrationName.Text = registrant.Registration.ToString();
+                        lWizardRegistrantName.Text = registrant.ToString();
                     }
                 }
 
@@ -314,6 +361,13 @@ namespace RockWeb.Blocks.Event
                         registration.RegistrationInstance.RegistrationTemplate != null )
                     {
                         TemplateState = registration.RegistrationInstance.RegistrationTemplate;
+                        
+                        RegistrationInstanceId = registration.RegistrationInstanceId;
+
+                        lWizardTemplateName.Text = registration.RegistrationInstance.RegistrationTemplate.Name;
+                        lWizardInstanceName.Text = registration.RegistrationInstance.Name;
+                        lWizardRegistrationName.Text = registration.ToString();
+                        lWizardRegistrantName.Text = "New Registrant";
                     }
                 }
 

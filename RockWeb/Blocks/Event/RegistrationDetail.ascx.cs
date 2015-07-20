@@ -294,7 +294,9 @@ namespace RockWeb.Blocks.Event
                     else
                     {
                         // Reload registration
-                        ShowReadonlyDetails( GetRegistration( registration.Id ) );
+                        var reloadedRegistration = GetRegistration( registration.Id );
+                        lWizardRegistrationName.Text = reloadedRegistration.ToString();
+                        ShowReadonlyDetails( reloadedRegistration );
                     }
                 }
             }
@@ -318,6 +320,57 @@ namespace RockWeb.Blocks.Event
             {
                 // Cancelling on Edit.  Return to Details
                 ShowReadonlyDetails( GetRegistration( RegistrationId.Value ) );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbWizardTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbWizardTemplate_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            var pageCache = PageCache.Read( RockPage.PageId );
+            int templateId = 0;
+            if ( Registration != null && Registration.RegistrationInstance != null )
+            {
+                templateId = Registration.RegistrationInstance.RegistrationTemplateId;
+            }
+            else
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    int instanceId = PageParameter( "RegistrationInstanceId" ).AsInteger();
+                    templateId = new RegistrationInstanceService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( i => i.Id == instanceId )
+                        .Select( i => i.RegistrationTemplateId )
+                        .FirstOrDefault();
+                }
+            }
+            
+            if ( pageCache != null && pageCache.ParentPage != null && pageCache.ParentPage.ParentPage != null  )
+            {
+                qryParams.Add( "RegistrationTemplateId", templateId.ToString() );
+                NavigateToPage( pageCache.ParentPage.ParentPage.Guid, qryParams );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbWizardInstance control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbWizardInstance_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            var pageCache = PageCache.Read( RockPage.PageId );
+            var instanceId = Registration != null ? Registration.RegistrationInstanceId.ToString() : PageParameter("RegistrationInstanceId");
+            if ( pageCache != null && pageCache.ParentPage != null )
+            {
+                qryParams.Add( "RegistrationInstanceId", instanceId );
+                NavigateToPage( pageCache.ParentPage.Guid, qryParams );
             }
         }
 
@@ -417,7 +470,7 @@ namespace RockWeb.Blocks.Event
                     mypExpiration.MinimumYear = RockDateTime.Now.Year;
 
                     cbPaymentAmount.Text = string.Empty;
-                    cbPaymentAmount.Placeholder = Registration.BalanceDue.ToString( "N2" );
+                    cbPaymentAmount.Text = Registration.BalanceDue.ToString( "N2" );
 
                     txtCreditCard.Text = string.Empty;
                     mypExpiration.SelectedDate = null;
@@ -580,6 +633,9 @@ namespace RockWeb.Blocks.Event
                         Title = Registration.ToString();
                         RegistrationInstanceId = Registration.RegistrationInstanceId;
                         RegistrationTemplateState = Registration.RegistrationInstance.RegistrationTemplate;
+                        lWizardTemplateName.Text = Registration.RegistrationInstance.RegistrationTemplate.Name;
+                        lWizardInstanceName.Text = Registration.RegistrationInstance.Name;
+                        lWizardRegistrationName.Text = Registration.ToString();
                     }
                 }
 
@@ -593,6 +649,9 @@ namespace RockWeb.Blocks.Event
                         .FirstOrDefault();
                     if ( registrationInstance != null )
                     {
+                        lWizardTemplateName.Text = registrationInstance.RegistrationTemplate.Name;
+                        lWizardInstanceName.Text = registrationInstance.Name;
+                        lWizardRegistrationName.Text = "New Registration";
                         RegistrationTemplateState = registrationInstance.RegistrationTemplate;
                         EditAllowed = EditAllowed || registrationInstance.RegistrationTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
                     }
