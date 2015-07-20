@@ -16,23 +16,28 @@
 
              <div class="wizard-item complete">
                 <asp:LinkButton ID="lbCalendars" runat="server" OnClick="lbCalendarsDetail_Click" CausesValidation="false" >
-                    <div class="wizard-item-icon">
-                        <i class="fa fa-fw fa-calendar"></i>
-                    </div>
-                    <div class="wizard-item-label">
-                        All Calendars
-                    </div>
+                    <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-calendar"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            Event Calendars
+                        </div>
+                    </asp:PlaceHolder>
                 </asp:LinkButton>
             </div>
     
             <div class="wizard-item complete">
                 <asp:LinkButton ID="lbCalendarDetail" runat="server" OnClick="lbCalendarDetail_Click" CausesValidation="false" >
-                    <div class="wizard-item-icon">
-                        <i class="fa fa-fw fa-calendar"></i>
-                    </div>
-                    <div class="wizard-item-label">
-                        <asp:Literal ID="lWizardCalendarName" runat="server" />
-                    </div>
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-calendar"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            <asp:Literal ID="lWizardCalendarName" runat="server" />
+                        </div>
+                    </asp:PlaceHolder>
                 </asp:LinkButton>
             </div>
     

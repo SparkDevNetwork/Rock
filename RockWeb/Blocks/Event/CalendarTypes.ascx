@@ -10,7 +10,7 @@
                     <i class="fa fa-fw fa-calendar"></i>
                 </div>
                 <div class="wizard-item-label">
-                    All Calendars
+                    Event Calendars
                 </div>
             </div>
             
