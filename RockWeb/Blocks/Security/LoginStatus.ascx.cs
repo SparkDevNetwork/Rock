@@ -18,9 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Web.Security;
+using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Security;
+using System.Text;
 
 namespace RockWeb.Blocks.Security
 {
@@ -34,6 +36,8 @@ namespace RockWeb.Blocks.Security
     [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)" )]
     [LinkedPage( "My Profile Page", "Page for user to view their person profile (if blank option will not be displayed)" )]
     [LinkedPage( "My Settings Page", "Page for user to view their settings (if blank option will not be displayed)" )]
+    [KeyValueListField( "Logged In Page List", "List of pages to show in the dropdown when the user is logged in. The link field takes Lava with the CurrentPerson merge fields. Place the text 'divider' in the title field to add a divider.", false, "", "Title", "Link" )]
+    
     public partial class LoginStatus : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -105,6 +109,35 @@ namespace RockWeb.Blocks.Security
                 lbLoginLogout.Text = "Logout";
                 
                 divProfilePhoto.Attributes.Add( "style", String.Format( "background-image: url('{0}'); background-size: cover; background-repeat: no-repeat;", Rock.Model.Person.GetPhotoUrl( currentPerson.PhotoId, currentPerson.Age, currentPerson.Gender )));
+
+                var navPagesString = GetAttributeValue( "LoggedInPageList" );
+
+                if ( !string.IsNullOrWhiteSpace( navPagesString ) )
+                {
+                    var mergeFields = new Dictionary<string, object>();
+                    mergeFields.Add( "CurrentPerson", CurrentPerson );
+
+                    navPagesString = navPagesString.TrimEnd( '|' );
+                    var navPages = navPagesString.Split( '|' )
+                                    .Select( s => s.Split( '^' ) )
+                                    .Select( p => new { Title = p[0], Link = p[1] } );
+
+                    StringBuilder sbPageMarkup = new StringBuilder();
+                    foreach ( var page in navPages )
+                    {
+                        if ( page.Title.Trim() == "divider" )
+                        {
+                            sbPageMarkup.Append( "<li class='divider'></li>" );
+                        }
+                        else
+                        {
+                            sbPageMarkup.Append( string.Format( "<li><a href='{0}'>{1}</a>", Page.ResolveUrl(page.Link.ResolveMergeFields(mergeFields)), page.Title ) );
+                        }
+                    }
+
+                    lDropdownItems.Text = sbPageMarkup.ToString();
+                }
+            
             }
             else
             {
