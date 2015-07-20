@@ -121,6 +121,7 @@ namespace RockWeb.Blocks.Event
             gRegistrations.Actions.AddClick += gRegistrations_AddClick;
             gRegistrations.RowDataBound += gRegistrations_RowDataBound;
             gRegistrations.GridRebind += gRegistrations_GridRebind;
+            gRegistrations.ShowConfirmDeleteDialog = false;
 
             fRegistrants.ApplyFilterClick += fRegistrants_ApplyFilterClick;
             gRegistrants.DataKeyNames = new string[] { "Id" };
@@ -140,8 +141,43 @@ namespace RockWeb.Blocks.Event
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", RegistrationInstance.FriendlyTypeName );
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RegistrationTemplate ) ).Id;
+            string deleteScript = @"
+    $('a.js-delete-instance').click(function( e ){
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this registration instance? All of the registrations and registrants will also be deleted!', function (result) {
+            if (result) {
+                if ( $('input.js-instance-has-payments').val() == 'True' ) {
+                    Rock.dialogs.confirm('This registration instance also has registrations with payments. Are you really sure that you want to delete the instance?<br/><small>(payments will not be deleted, but they will no longer be associated with a registration)</small>', function (result) {
+                        if (result) {
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                        }
+                    });
+                } else {
+                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                }
+            }
+        });
+    });
+    
+    $('table.js-grid-registration a.grid-delete-button').click(function( e ){
+        e.preventDefault();
+        var $hfHasPayments = $(this).closest('tr').find('input.js-has-payments').first();
+        Rock.dialogs.confirm('Are you sure you want to delete this registration? All of the registrants will also be deleted!', function (result) {
+            if (result) {
+                if ( $hfHasPayments.val() == 'True' ) {
+                    Rock.dialogs.confirm('This registration also has payments. Are you really sure that you want to delete the registration?<br/><small>(payments will not be deleted, but they will no longer be associated with a registration)</small>', function (result) {
+                        if (result) {
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                        }
+                    });
+                } else {
+                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                }
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( btnDelete, btnDelete.GetType(), "deleteInstanceScript", deleteScript, true );
         }
 
         /// <summary>
@@ -258,27 +294,25 @@ namespace RockWeb.Blocks.Event
 
                 if ( registrationInstance != null )
                 {
+                    int registrationTemplateId = registrationInstance.RegistrationTemplateId;
+
                     if ( !registrationInstance.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
                     {
                         mdDeleteWarning.Show( "You are not authorized to delete this registration instance.", ModalAlertType.Information );
                         return;
                     }
 
-                    if ( registrationInstance.Registrations.Any() )
+                    rockContext.WrapTransaction( () =>
                     {
-                        mdDeleteWarning.Show( "This instance has registrations and cannot be deleted until all the registrations have been deleted.", ModalAlertType.Information );
-                        return;
-                    }
+                        new RegistrationService( rockContext ).DeleteRange( registrationInstance.Registrations );
+                        service.Delete( registrationInstance );
+                        rockContext.SaveChanges();
+                    } );
 
-                    service.Delete( registrationInstance );
-
-                    rockContext.SaveChanges();
+                    var qryParams = new Dictionary<string, string> { { "RegistrationTemplateId", registrationTemplateId.ToString() } };
+                    NavigateToParentPage( qryParams );
                 }
             }
-
-            // reload page
-            var qryParams = new Dictionary<string, string>();
-            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -376,6 +410,21 @@ namespace RockWeb.Blocks.Event
                 ActiveTab = lb.ID;
                 ShowTab();
             }
+        }
+
+        protected void lbTemplate_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new RegistrationInstanceService( rockContext );
+                var registrationInstance = service.Get( hfRegistrationInstanceId.Value.AsInteger() );
+                if ( registrationInstance != null )
+                {
+                    qryParams.Add( "RegistrationTemplateId", registrationInstance.RegistrationTemplateId.ToString() );
+                }
+            }
+            NavigateToParentPage( qryParams );
         }
 
         #endregion
@@ -488,6 +537,16 @@ namespace RockWeb.Blocks.Event
                     lRegistrants.Text = registrantNames;
                 }
 
+                var payments = RegistrationPayments.Where( p => p.EntityId == registration.Id );
+                bool hasPayments = payments.Any();
+                decimal totalPaid = hasPayments ? payments.Select( p => p.Amount ).DefaultIfEmpty().Sum() : 0.0m;
+
+                var hfHasPayments = e.Row.FindControl( "hfHasPayments") as HiddenFieldWithClass;
+                if ( hfHasPayments != null )
+                {
+                    hfHasPayments.Value = hasPayments.ToString();
+                }
+
                 // Set the Cost
                 decimal discountedCost = registration.DiscountedCost;
                 if ( discountedCost > 0.0M )
@@ -502,7 +561,7 @@ namespace RockWeb.Blocks.Event
                     var lBalance = e.Row.FindControl( "lBalance" ) as Label;
                     if ( lBalance != null )
                     {
-                        decimal balanceDue = registration.BalanceDue;
+                        decimal balanceDue = registration.DiscountedCost - totalPaid;
                         lBalance.Visible = discountedCost > 0.0M;
                         lBalance.Text = balanceDue.ToString( "C2" );
                         if ( balanceDue > 0.0m )
@@ -552,15 +611,11 @@ namespace RockWeb.Blocks.Event
                 var registration = registrationService.Get( e.RowKeyId );
                 if ( registration != null )
                 {
+                    int registrationInstanceId = registration.RegistrationInstanceId;
+
                     if ( !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                     {
                         mdDeleteWarning.Show( "You are not authorized to delete this registration.", ModalAlertType.Information );
-                        return;
-                    }
-
-                    if ( registration.Payments.Any() )
-                    {
-                        mdDeleteWarning.Show( "This registration has payments and cannot be deleted.", ModalAlertType.Information );
                         return;
                     }
 
@@ -573,6 +628,8 @@ namespace RockWeb.Blocks.Event
 
                     registrationService.Delete( registration );
                     rockContext.SaveChanges();
+
+                    SetHasPayments( registrationInstanceId, rockContext );
                 }
             }
 
@@ -804,7 +861,6 @@ namespace RockWeb.Blocks.Event
             var registrant = e.Row.DataItem as RegistrationRegistrant;
             if ( registrant != null )
             {
-
                 // Set the registrant name value
                 var lRegistrant = e.Row.FindControl( "lRegistrant" ) as Literal;
                 if ( lRegistrant != null )
@@ -1185,8 +1241,11 @@ namespace RockWeb.Blocks.Event
                 hlType.Visible = registrationInstance.RegistrationTemplate != null;
                 hlType.Text = registrationInstance.RegistrationTemplate != null ? registrationInstance.RegistrationTemplate.Name : string.Empty;
 
+                lWizardTemplateName.Text = hlType.Text;
+
                 pnlDetails.Visible = true;
                 hfRegistrationInstanceId.Value = registrationInstance.Id.ToString();
+                SetHasPayments( registrationInstance.Id, rockContext );
 
                 // render UI based on Authorized 
                 bool readOnly = false;
@@ -1204,15 +1263,11 @@ namespace RockWeb.Blocks.Event
                 if ( readOnly )
                 {
                     btnEdit.Visible = false;
-                    btnSecurity.Visible = false;
                     ShowReadonlyDetails( registrationInstance );
                 }
                 else
                 {
                     btnEdit.Visible = true;
-
-                    btnSecurity.Title = "Secure " + registrationInstance.Name;
-                    btnSecurity.EntityId = registrationInstance.Id;
 
                     if ( registrationInstance.Id > 0 )
                     {
@@ -1243,6 +1298,11 @@ namespace RockWeb.Blocks.Event
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( RegistrationInstance.FriendlyTypeName ).FormatAsHtmlTitle();
                 hlInactive.Visible = false;
+                lWizardInstanceName.Text = "New Instance";
+            }
+            else
+            {
+                lWizardInstanceName.Text = instance.Name;
             }
 
             SetEditMode( true );
@@ -1263,6 +1323,7 @@ namespace RockWeb.Blocks.Event
             lReadOnlyTitle.Text = RegistrationInstance.Name.FormatAsHtmlTitle();
             hlInactive.Visible = RegistrationInstance.IsActive == false;
 
+            lWizardInstanceName.Text = RegistrationInstance.Name;
             lName.Text = RegistrationInstance.Name;
 
             lAccount.Visible = RegistrationInstance.Account != null;
@@ -1330,6 +1391,24 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        private void SetHasPayments ( int registrationInstanceId, RockContext rockContext )
+        {
+            var registrationIdQry = new RegistrationService( rockContext )
+                .Queryable().AsNoTracking()
+                .Where( r => r.RegistrationInstanceId == registrationInstanceId )
+                .Select( r => r.Id );
+
+            var registrationEntityType = EntityTypeCache.Read( typeof( Rock.Model.Registration ) );
+            hfHasPayments.Value = new FinancialTransactionDetailService( rockContext )
+                .Queryable().AsNoTracking()
+                .Where( d =>
+                    d.EntityTypeId.HasValue &&
+                    d.EntityId.HasValue &&
+                    d.EntityTypeId.Value == registrationEntityType.Id &&
+                    registrationIdQry.Contains( d.EntityId.Value ) )
+                .Any().ToString();
+        }
+
         #endregion
 
         #region Registration Tab
@@ -1360,7 +1439,7 @@ namespace RockWeb.Blocks.Event
                     var registrationEntityType = EntityTypeCache.Read( typeof( Rock.Model.Registration ) );
 
                     var qry = new RegistrationService( rockContext )
-                        .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person,Registrants.Fees" )
+                        .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person,Registrants.Fees.RegistrationTemplateFee" )
                         .AsNoTracking()
                         .Where( r => r.RegistrationInstanceId == instanceId.Value );
 

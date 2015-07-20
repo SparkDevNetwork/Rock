@@ -460,6 +460,21 @@ namespace RockWeb.Blocks.Event
         #region Control Events
 
         /// <summary>
+        /// Handles the Click event of the lbCalendarsDetail control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbCalendarsDetail_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            var pageCache = PageCache.Read( RockPage.PageId );
+            if ( pageCache != null && pageCache.ParentPage != null && pageCache.ParentPage.ParentPage != null )
+            {
+                NavigateToPage( pageCache.ParentPage.ParentPage.Guid, qryParams );
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbCalendarDetail control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -578,6 +593,10 @@ namespace RockWeb.Blocks.Event
             {
                 eventItem = new EventItem { Id = 0, IsActive = true, Name = "" };
             }
+
+            var calendar = new EventCalendarService( rockContext ).Get( _calendarId );
+            lWizardCalendarName.Text = calendar != null ? calendar.Name : "Calendar";
+            lWizardCalendarItemName.Text = string.IsNullOrWhiteSpace( eventItem.Name ) ? "New Calendar Item" : eventItem.Name;
 
             eventItem.LoadAttributes( rockContext );
 

@@ -40,7 +40,7 @@
                 <asp:Repeater ID="rptActions" runat="server">
                     <ItemTemplate>
                         <li class='<%# GetTabClass( Eval( "Key" ) ) %>'>
-                            <asp:LinkButton ID="lbAction" runat="server" Text='<%# Eval( "Key" ) %>' OnClick="lbAction_Click"></asp:LinkButton>
+                            <asp:LinkButton ID="lbAction" runat="server" Text='<%# SplitCase( Eval( "Key" ) ) %>' OnClick="lbAction_Click"></asp:LinkButton>
                         </li>
                     </ItemTemplate>
                 </asp:Repeater>

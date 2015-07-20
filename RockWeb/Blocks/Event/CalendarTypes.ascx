@@ -3,6 +3,46 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
+        <div class="wizard">
+
+             <div class="wizard-item active">
+                <div class="wizard-item-icon">
+                    <i class="fa fa-fw fa-calendar"></i>
+                </div>
+                <div class="wizard-item-label">
+                    Event Calendars
+                </div>
+            </div>
+            
+            <div class="wizard-item">
+                <div class="wizard-item-icon">
+                    <i class="fa fa-fw fa-calendar"></i>
+                </div>
+                <div class="wizard-item-label">
+                    Calendar
+                </div>
+            </div>
+    
+            <div class="wizard-item">
+                <div class="wizard-item-icon">
+                    <i class="fa fa-fw fa-calendar-o"></i>
+                </div>
+                <div class="wizard-item-label">
+                    Calendar Item
+                </div>
+            </div>
+    
+            <div class="wizard-item">
+                <div class="wizard-item-icon">
+                    <i class="fa fa-fw fa-building-o"></i>
+                </div>
+                <div class="wizard-item-label">
+                    Campus Detail
+                </div>
+            </div>
+
+        </div>
+
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-calendar"></i> Event Calendars</h1>
