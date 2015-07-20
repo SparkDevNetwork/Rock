@@ -443,7 +443,8 @@ namespace Rock.Data
                     return false;
                 }
 
-                var currentValue = propertyInfo.GetValue( item.Entity, null ).ToString();
+                var currentProperty = propertyInfo.GetValue( item.Entity, null );
+                var currentValue = currentProperty != null ? currentProperty.ToString() : string.Empty;
                 var previousValue = string.Empty;
 
                 var dbPropertyEntry = dbEntity.Property( propertyInfo.Name );
@@ -452,7 +453,12 @@ namespace Rock.Data
                     previousValue = dbEntity.State == EntityState.Added ? string.Empty : dbPropertyEntry.OriginalValue.ToStringSafe();
                 }
 
-                if ( hasCurrent && !hasPrevious )
+                if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PreDelete || 
+                    trigger.WorkflowTriggerType == WorkflowTriggerType.PostDelete )
+                {
+                    match = ( previousValue == trigger.EntityTypeQualifierValue );
+                }
+                else if ( hasCurrent && !hasPrevious )
                 {
                     // ...and previous cannot be the same as the current (must be a change)
                     match = ( currentValue == trigger.EntityTypeQualifierValue &&

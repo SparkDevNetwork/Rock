@@ -323,6 +323,10 @@
     <Compile Include="Migrations\201507181918494_ConnectionChangesAndSampleData.Designer.cs">
       <DependentUpon>201507181918494_ConnectionChangesAndSampleData.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201507200334416_RegistrationNavigationWizard.cs" />
+    <Compile Include="Migrations\201507200334416_RegistrationNavigationWizard.Designer.cs">
+      <DependentUpon>201507200334416_RegistrationNavigationWizard.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1977,6 +1981,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201507181918494_ConnectionChangesAndSampleData.resx">
       <DependentUpon>201507181918494_ConnectionChangesAndSampleData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507200334416_RegistrationNavigationWizard.resx">
+      <DependentUpon>201507200334416_RegistrationNavigationWizard.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>

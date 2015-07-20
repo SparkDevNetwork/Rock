@@ -555,13 +555,16 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             };
 
+            if ( _canView )
+            {
+                var manageField = new LinkButtonField();
+                gWorkflows.Columns.Add( manageField );
+                manageField.CssClass = "btn btn-default btn-sm fa fa-file-text-o";
+                manageField.Click += gWorkflows_Manage;
+            }
+
             if ( _canEdit )
             {
-                var manageField = new EditField();
-                gWorkflows.Columns.Add( manageField );
-                manageField.IconCssClass = "fa fa-edit";
-                manageField.Click += gWorkflows_Manage;
-
                 var deleteField = new DeleteField();
                 gWorkflows.Columns.Add( deleteField );
                 deleteField.Click += gWorkflows_Delete;

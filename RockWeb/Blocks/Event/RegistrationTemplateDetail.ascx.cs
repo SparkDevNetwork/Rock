@@ -266,8 +266,27 @@ namespace RockWeb.Blocks.Event
             gFees.GridRebind += gFees_GridRebind;
             gFees.GridReorder += gFees_GridReorder;
             
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the registration instances of this type!');", RegistrationTemplate.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RegistrationTemplate ) ).Id;
+
+            string deleteScript = @"
+    $('a.js-delete-template').click(function( e ){
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this registration template? All of the instances, and the registrations and registrants from each instance will also be deleted!', function (result) {
+            if (result) {
+                if ( $('input.js-has-registrations').val() == 'True' ) {
+                    Rock.dialogs.confirm('This template has existing instances with existing registrations. Are you really sure that you want to delete the template?<br/><small>(payments will not be deleted, but they will no longer be associated with a registration)</small>', function (result) {
+                        if (result) {
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                        }
+                    });
+                } else {
+                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                }
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( btnDelete, btnDelete.GetType(), "deleteInstanceScript", deleteScript, true );
         }
 
         /// <summary>
@@ -401,15 +420,13 @@ namespace RockWeb.Blocks.Event
                     return;
                 }
 
-                if ( registrationTemplate.Instances.Any( i => i.Registrations.Any() ) )
+                rockContext.WrapTransaction( () =>
                 {
-                    mdDeleteWarning.Show( "This template has instances with registrations and cannot be deleted until all the registrations have been deleted.", ModalAlertType.Information );
-                    return;
-                }
-
-                service.Delete( registrationTemplate );
-
-                rockContext.SaveChanges();
+                    new RegistrationService( rockContext ).DeleteRange( registrationTemplate.Instances.SelectMany( i => i.Registrations ) );
+                    new RegistrationInstanceService( rockContext ).DeleteRange( registrationTemplate.Instances );
+                    service.Delete( registrationTemplate );
+                    rockContext.SaveChanges();
+                } );
             }
 
             // reload page
@@ -469,7 +486,23 @@ namespace RockWeb.Blocks.Event
                             newFormField.Guid = Guid.NewGuid();
                             newFormFieldsState[newForm.Guid].Add( newFormField );
 
-                            //TODO: if this is for a registration attribute, then the attribute needs to be cloned also...
+                            if ( formField.FieldSource == RegistrationFieldSource.RegistrationAttribute && formField.Attribute != null )
+                            {
+                                var newAttribute = formField.Attribute.Clone( false );
+                                newAttribute.Id = 0;
+                                newAttribute.Guid = Guid.NewGuid();
+                                newAttribute.IsSystem = false;
+                                newFormField.Attribute = newAttribute;
+
+                                foreach ( var qualifier in formField.Attribute.AttributeQualifiers )
+                                {
+                                    var newQualifier = qualifier.Clone( false );
+                                    newQualifier.Id = 0;
+                                    newQualifier.Guid = Guid.NewGuid();
+                                    newQualifier.IsSystem = false;
+                                    newAttribute.AttributeQualifiers.Add( qualifier );
+                                }
+                            }
                         }
                     }
                 }
@@ -492,12 +525,13 @@ namespace RockWeb.Blocks.Event
                     newFeeState.Add( newFee );
                 }
 
-                RegistrationTemplate = newRegistrationTemplate;
+                FormState = newFormState;
+                FormFieldsState = newFormFieldsState;
                 DiscountState = newDiscountState;
                 FeeState = newFeeState;
 
-                hfRegistrationTemplateId.Value = RegistrationTemplate.Id.ToString();
-                ShowEditDetails( RegistrationTemplate, rockContext );
+                hfRegistrationTemplateId.Value = newRegistrationTemplate.Id.ToString();
+                ShowEditDetails( newRegistrationTemplate, rockContext );
             }
         }
 
@@ -1624,6 +1658,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( registrationTemplate.Id > 0 )
                 {
+                    SetHasRegistrations( registrationTemplate.Id, rockContext );
                     ShowReadonlyDetails( registrationTemplate );
                 }
                 else
@@ -1710,6 +1745,20 @@ namespace RockWeb.Blocks.Event
                 DiscountState = new List<RegistrationTemplateDiscount>();
                 FeeState = new List<RegistrationTemplateFee>();
             }
+        }
+
+        /// <summary>
+        /// Sets the has registrations.
+        /// </summary>
+        /// <param name="registrationTemplateId">The registration template identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void SetHasRegistrations( int registrationTemplateId, RockContext rockContext )
+        {
+            hfHasRegistrations.Value = new RegistrationInstanceService( rockContext )
+                .Queryable().AsNoTracking()
+                .Any( i =>
+                    i.RegistrationTemplateId == registrationTemplateId &&
+                    i.Registrations.Any() ).ToString();
         }
 
         /// <summary>

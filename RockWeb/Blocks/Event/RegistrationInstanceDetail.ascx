@@ -3,6 +3,50 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
+        <div class="wizard">
+
+            <div class="wizard-item complete">
+                <asp:LinkButton ID="lbWizardTemplate" runat="server" OnClick="lbTemplate_Click">
+                    <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-clipboard"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            <asp:Literal ID="lWizardTemplateName" runat="server" />
+                        </div>
+                    </asp:PlaceHolder>
+                </asp:LinkButton>
+            </div>
+
+            <div class="wizard-item active">
+                <div class="wizard-item-icon">
+                    <i class="fa fa-fw fa-file-o"></i>
+                </div>
+                <div class="wizard-item-label">
+                    <asp:Literal ID="lWizardInstanceName" runat="server" />
+                </div>
+            </div>
+
+            <div class="wizard-item">
+                <div class="wizard-item-icon">
+                    <i class="fa fa-fw fa-group"></i>
+                </div>
+                <div class="wizard-item-label">
+                    Registration
+                </div>
+            </div>
+
+            <div class="wizard-item">
+                <div class="wizard-item-icon">
+                    <i class="fa fa-fw fa-user"></i>
+                </div>
+                <div class="wizard-item-label">
+                    Registrant
+                </div>
+            </div>
+        </div>
+
         <asp:Panel ID="pnlDetails" runat="server">
 
             <asp:HiddenField ID="hfRegistrationInstanceId" runat="server" />
@@ -49,10 +93,10 @@
                         <div class="actions">
                             <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                            <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
+                            <Rock:HiddenFieldWithClass ID="hfHasPayments" runat="server" CssClass="js-instance-has-payments" />
+                            <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-instance" OnClick="btnDelete_Click" CausesValidation="false" />
                             <span class="pull-right">
-                                <asp:LinkButton ID="btnPreview" runat="server" Text="Preview" CssClass="btn btn-link" OnClick="btnPreview_Click" />
-                                <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
+                                <asp:LinkButton ID="btnPreview" runat="server" Text="Preview" CssClass="btn btn-link" OnClick="btnPreview_Click" Visible="false" />
                             </span>
                         </div>
 
@@ -97,24 +141,29 @@
                                 <Rock:RockTextBox ID="tbRegistrationRegistrantFirstName" runat="server" Label="Registrant First Name" />
                                 <Rock:RockTextBox ID="tbRegistrationRegistrantLastName" runat="server" Label="Registrant Last Name" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gRegistrations" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrations_RowSelected" RowItemText="Registration">
+                            <Rock:Grid ID="gRegistrations" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrations_RowSelected" RowItemText="Registration" CssClass="js-grid-registration">
                                 <Columns>
                                     <Rock:RockTemplateField HeaderText="Registered By">
                                         <ItemTemplate>
-                                            <asp:Literal ID="lRegisteredBy" runat="server"></asp:Literal></ItemTemplate>
+                                            <asp:Literal ID="lRegisteredBy" runat="server"></asp:Literal>
+                                        </ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockTemplateField HeaderText="Registrants">
                                         <ItemTemplate>
-                                            <asp:Literal ID="lRegistrants" runat="server"></asp:Literal></ItemTemplate>
+                                            <asp:Literal ID="lRegistrants" runat="server"></asp:Literal>
+                                        </ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="When" SortExpression="CreatedDateTime" />
                                     <Rock:RockTemplateField HeaderText="Total Cost" ItemStyle-HorizontalAlign="Right" SortExpression="TotalCost">
                                         <ItemTemplate>
-                                            <asp:Label ID="lCost" runat="server" CssClass="label label-info"></asp:Label></ItemTemplate>
+                                            <asp:Label ID="lCost" runat="server" CssClass="label label-info"></asp:Label>
+                                        </ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockTemplateField HeaderText="Balance Due" ItemStyle-HorizontalAlign="Right" SortExpression="BalanceDue">
                                         <ItemTemplate>
-                                            <asp:Label ID="lBalance" runat="server" CssClass="label"></asp:Label></ItemTemplate>
+                                            <Rock:HiddenFieldWithClass ID="hfHasPayments" runat="server" CssClass="js-has-payments" />
+                                            <asp:Label ID="lBalance" runat="server" CssClass="label"></asp:Label>
+                                        </ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:DeleteField OnClick="gRegistrations_Delete" />
                                 </Columns>
@@ -143,11 +192,13 @@
                                 <Columns>
                                     <Rock:RockTemplateField HeaderText="Registrant">
                                         <ItemTemplate>
-                                            <asp:Literal ID="lRegistrant" runat="server"></asp:Literal></ItemTemplate>
+                                            <asp:Literal ID="lRegistrant" runat="server"></asp:Literal>
+                                        </ItemTemplate>
                                     </Rock:RockTemplateField>
-                                    <Rock:RockTemplateFieldUnselected HeaderText="Group" >
+                                    <Rock:RockTemplateFieldUnselected HeaderText="Group">
                                         <ItemTemplate>
-                                            <asp:Literal ID="lGroup" runat="server"></asp:Literal></ItemTemplate>
+                                            <asp:Literal ID="lGroup" runat="server"></asp:Literal>
+                                        </ItemTemplate>
                                     </Rock:RockTemplateFieldUnselected>
                                 </Columns>
                             </Rock:Grid>
@@ -169,9 +220,10 @@
                                 <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" />
                             </Rock:GridFilter>
                             <Rock:Grid ID="gLinkages" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gLinkages_RowSelected" RowItemText="Linkage">
-                                <Columns> 
+                                <Columns>
                                     <Rock:TemplateFieldUnselected HeaderText="Calendar Item">
-                                        <ItemTemplate><asp:Literal ID="lCalendarItem" runat="server" /></ItemTemplate>
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lCalendarItem" runat="server" /></ItemTemplate>
                                     </Rock:TemplateFieldUnselected>
                                     <asp:BoundField HeaderText="Campus" DataField="EventItemCampus.Campus.Name" SortExpression="EventItemCampus.Campus.Name" NullDisplayText="All Campuses" />
                                     <asp:HyperLinkField HeaderText="Group" DataTextField="Group" DataNavigateUrlFields="GroupID" SortExpression="Group" />

@@ -4,6 +4,54 @@
 <asp:UpdatePanel ID="upnlRegistrationDetail" runat="server">
     <ContentTemplate>
 
+        <div class="wizard">
+
+            <div class="wizard-item complete">
+                <asp:LinkButton ID="lbWizardTemplate" runat="server" OnClick="lbWizardTemplate_Click" CausesValidation="false">
+                    <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-clipboard"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            <asp:Literal ID="lWizardTemplateName" runat="server" Text="Template" />
+                        </div>
+                    </asp:PlaceHolder>
+                </asp:LinkButton>
+            </div>
+
+            <div class="wizard-item complete">
+                <asp:LinkButton ID="lbWizardInstance" runat="server" OnClick="lbWizardInstance_Click" CausesValidation="false">
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-file-o"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            <asp:Literal ID="lWizardInstanceName" runat="server" Text="Instance" />
+                        </div>
+                    </asp:PlaceHolder>
+                </asp:LinkButton>
+            </div>
+
+            <div class="wizard-item active">
+                <div class="wizard-item-icon">
+                    <i class="fa fa-fw fa-group"></i>
+                </div>
+                <div class="wizard-item-label">
+                    <asp:Literal ID="lWizardRegistrationName" runat="server" Text="Registration" />
+                </div>
+            </div>
+
+            <div class="wizard-item">
+                <div class="wizard-item-icon">
+                    <i class="fa fa-fw fa-user"></i>
+                </div>
+                <div class="wizard-item-label">
+                    Registrant
+                </div>
+            </div>
+        </div>
+
         <asp:Panel ID="pnlDetails" runat="server">
 
             <div class="panel panel-block">
@@ -44,7 +92,7 @@
                             </div>
                         </div>
 
-                        <div class="actions">
+                        <div class="actions margin-t-md">
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                             <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                         </div>
@@ -57,7 +105,7 @@
                             <div class="col-md-6">
                                 <Rock:RockLiteral ID="lName" runat="server" Label="Registered By" />
                                 <Rock:RockLiteral ID="lConfirmationEmail" runat="server" Label="Confirmation Email" />
-                                <asp:LinkButton ID="lbResendConfirmation" runat="server" CssClass="btn btn-default btn-xs" Text="Resend Confirmation" OnClick="lbResendConfirmation_Click" CausesValidation="false"></asp:LinkButton>
+                                <asp:LinkButton ID="lbResendConfirmation" runat="server" CssClass="btn btn-default btn-xs margin-b-sm" Text="Resend Confirmation" OnClick="lbResendConfirmation_Click" CausesValidation="false"></asp:LinkButton>
                                 <Rock:NotificationBox ID="nbConfirmationQueued" runat="server" NotificationBoxType="Success" Text="A new confirmation email has been sent." Visible="false" Dismissable="true"  />
                                 <Rock:RockLiteral ID="lGroup" runat="server" Label="Group" />
                             </div>
@@ -70,41 +118,43 @@
                                 <asp:Panel ID="pnlCosts" runat="server" Visible="false" CssClass="well">
 
                                     <div class="fee-table">
-                                        <h4>Cost/Fee Summary</h4>
-                                        <asp:Repeater ID="rptFeeSummary" runat="server">
-                                            <HeaderTemplate>
-                                                <div class="row hidden-xs fee-header">
-                                                    <div class="col-sm-6">
-                                                        <strong>Description</strong>
-                                                    </div>
+                                        <h4>Payment Summary</h4>
+                                        <div class="registrationentry-summary">
+                                            <asp:Repeater ID="rptFeeSummary" runat="server">
+                                                <HeaderTemplate>
+                                                    <div class="row hidden-xs fee-header">
+                                                        <div class="col-sm-6">
+                                                            <strong>Description</strong>
+                                                        </div>
 
-                                                    <div runat="server" class="col-sm-3 fee-value" visible='<%# PercentageDiscountExists %>'>
-                                                        <strong>Discounted Amount</strong>
-                                                    </div>
+                                                        <div runat="server" class="col-sm-3 fee-value" visible='<%# PercentageDiscountExists %>'>
+                                                            <strong>Discounted Amount</strong>
+                                                        </div>
 
-                                                    <div class="col-sm-3 fee-value">
-                                                        <strong>Amount</strong>
-                                                    </div>
+                                                        <div class="col-sm-3 fee-value">
+                                                            <strong>Amount</strong>
+                                                        </div>
 
-                                                </div>
-                                            </HeaderTemplate>
-                                            <ItemTemplate>
-                                                <div class="row fee-row-<%# Eval("Type").ToString().ToLower() %>">
-                                                    <div class="col-sm-6 fee-caption">
-                                                        <%# Eval("Description") %>
                                                     </div>
+                                                </HeaderTemplate>
+                                                <ItemTemplate>
+                                                    <div class="row fee-row-<%# Eval("Type").ToString().ToLower() %>">
+                                                        <div class="col-sm-6 fee-caption">
+                                                            <%# Eval("Description") %>
+                                                        </div>
 
-                                                    <div runat="server" class="col-sm-3 fee-value" visible='<%# PercentageDiscountExists %>'>
-                                                        <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("DiscountedCost")) %>
+                                                        <div runat="server" class="col-sm-3 fee-value" visible='<%# PercentageDiscountExists %>'>
+                                                            <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("DiscountedCost")) %>
+                                                        </div>
+
+                                                        <div class="col-sm-3 fee-value">
+                                                            <span class="visible-xs-inline">Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("Cost")) %>
+                                                        </div>
+
                                                     </div>
-
-                                                    <div class="col-sm-3 fee-value">
-                                                        <span class="visible-xs-inline">Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("Cost")) %>
-                                                    </div>
-
-                                                </div>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                        </div>
                                     </div>
 
                                     <div class="row fee-totals">
@@ -164,10 +214,11 @@
                             </div>
                         </div>
 
-                        <div class="actions">
+                        <div class="actions margin-t-md">
                             <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                            <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
+                            <Rock:HiddenFieldWithClass ID="hfHasPayments" runat="server" CssClass="js-has-payments" />
+                            <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-registration" OnClick="btnDelete_Click" CausesValidation="false" />
                         </div>
 
                     </div>
@@ -179,7 +230,7 @@
 
             <div class="row">
                 <div class="col-md-12">
-                    <asp:LinkButton ID="lbAddRegistrant" runat="server" CssClass="btn btn-default btn-xs pull-right" OnClick="lbAddRegistrant_Click"><i class="fa fa-plus"></i> Add New Registrant</asp:LinkButton>
+                    <asp:LinkButton ID="lbAddRegistrant" runat="server" CssClass="btn btn-default btn-xs pull-right margin-b-sm" OnClick="lbAddRegistrant_Click"><i class="fa fa-plus"></i> Add New Registrant</asp:LinkButton>
                 </div>
             </div>
 

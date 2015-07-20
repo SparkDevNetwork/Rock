@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Event
 
                 eventItemCampus.ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnPhone.Number );
                 eventItemCampus.ContactEmail = tbEmail.Text;
-                eventItemCampus.CampusNote = tbCampusNote.Text;
+                eventItemCampus.CampusNote = htmlCampusNote.Text;
 
                 // Remove any linkage no longer in UI
                 Guid uiLinkageGuid = LinkageState != null ? LinkageState.Guid : Guid.Empty;
@@ -312,6 +312,21 @@ namespace RockWeb.Blocks.Event
         #endregion Edit Events
 
         #region Control Events
+
+        /// <summary>
+        /// Handles the Click event of the lbCalendarsDetail control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbCalendarsDetail_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            var pageCache = PageCache.Read( RockPage.PageId );
+            if ( pageCache != null && pageCache.ParentPage != null && pageCache.ParentPage.ParentPage != null && pageCache.ParentPage.ParentPage.ParentPage != null )
+            {
+                NavigateToPage( pageCache.ParentPage.ParentPage.ParentPage.Guid, qryParams );
+            }
+        }
 
         /// <summary>
         /// Handles the Click event of the lbCalendarDetail control.
@@ -733,7 +748,7 @@ namespace RockWeb.Blocks.Event
             pnPhone.Text = eventItemCampus.ContactPhone;
             tbEmail.Text = eventItemCampus.ContactEmail;
 
-            tbCampusNote.Text = eventItemCampus.CampusNote;
+            htmlCampusNote.Text = eventItemCampus.CampusNote;
 
             LinkageState = new EventItemCampusGroupMap { Guid = Guid.Empty };
             var registration = eventItemCampus.Linkages.FirstOrDefault();
