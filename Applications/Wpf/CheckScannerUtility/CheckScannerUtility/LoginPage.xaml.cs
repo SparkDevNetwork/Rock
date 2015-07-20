@@ -107,6 +107,24 @@ namespace Rock.Apps.CheckScannerUtility
                     }
                     else
                     {
+                        try
+                        {
+                            batchPage.LoadFinancialBatchesGrid();
+                        }
+                        catch ( HttpErrorException ex )
+                        {
+                            if ( ex.Response != null && ex.Response.StatusCode.Equals( HttpStatusCode.Unauthorized ) )
+                            {
+                                lblLoginWarning.Content = "Not Authorized for Financial Batches";
+                                lblLoginWarning.Visibility = Visibility.Visible;
+                                return;
+                            }
+                            else
+                            {
+                                throw ex;
+                            }
+                        }
+
                         this.NavigationService.Navigate( batchPage );
                     }
                 }
