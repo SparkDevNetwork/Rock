@@ -45,12 +45,5 @@ landingMap.selectCampus = function (campusId) {
     }
   })
 }
-landingMap.openInfoWindow = function (campus) {
-  var marker = this.markers.filter(function (marker) {
-    return marker.campusid == campus.id
-  })[0]
-  this.infowindow.setContent(this.buildInfoWindow(campus))
-  this.infowindow.open(this.map, marker)
-}
 
 landingMap.draw();

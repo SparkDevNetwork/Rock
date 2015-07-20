@@ -1,0 +1,128 @@
+{% comment %}
+
+{% include 'LocationsPage-dev.lava' %}
+
+{% endcomment %}
+
+<style>
+  .locationsmap {
+    min-height: 70vh;
+    position: relative;
+  }
+  .locationsmap-nearest {
+    z-index: 10;
+    position: relative;
+    bottom: -50px;
+    left: 10px;
+  }
+</style>
+
+<a class="btn btn-default js-find-nearest locationsmap-nearest"><i class="fa fa-fw fa-location-arrow"></i> Find Nearest Campus</a>
+<div id="locationsmap" class="locationsmap">
+</div>
+
+<h2 class="page-header">Our Campuses</h2>
+
+<div class="row">
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <h4 class="margin-t-none">Peoria Campus</h4>
+        <h5 class="margin-t-md margin-b-sm text-muted">Service Times</h5>
+        <p class="text-muted">
+          <strong>Saturday</strong> 4:30pm & 6:00pm <br>
+          <strong>Sunday</strong> 9:30am, 11:00am & 12:00pm
+        </p>
+      </div>
+      <div class="panel-footer clearfix">
+        <a href="#" class="btn btn-default btn-sm pull-left">Learn More</a>
+        <a href="#" class="btn btn-link btn-sm pull-right text-muted padding-r-none">Get Directions</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <h4 class="margin-t-none">Peoria Campus</h4>
+        <h5 class="margin-t-md margin-b-sm text-muted">Service Times</h5>
+        <p class="text-muted">
+          <strong>Saturday</strong> 4:30pm & 6:00pm <br>
+          <strong>Sunday</strong> 9:30am, 11:00am & 12:00pm
+        </p>
+      </div>
+      <div class="panel-footer clearfix">
+        <a href="#" class="btn btn-default btn-sm pull-left">Learn More</a>
+        <a href="#" class="btn btn-link btn-sm pull-right text-muted padding-r-none">Get Directions</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <h4 class="margin-t-none">Peoria Campus</h4>
+        <h5 class="margin-t-md margin-b-sm text-muted">Service Times</h5>
+        <p class="text-muted">
+          <strong>Saturday</strong> 4:30pm & 6:00pm <br>
+          <strong>Sunday</strong> 9:30am, 11:00am & 12:00pm
+        </p>
+      </div>
+      <div class="panel-footer clearfix">
+        <a href="#" class="btn btn-default btn-sm pull-left">Learn More</a>
+        <a href="#" class="btn btn-link btn-sm pull-right text-muted padding-r-none">Get Directions</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <h4 class="margin-t-none">Peoria Campus</h4>
+        <h5 class="margin-t-md margin-b-sm text-muted">Service Times</h5>
+        <p class="text-muted">
+          <strong>Saturday</strong> 4:30pm & 6:00pm <br>
+          <strong>Sunday</strong> 9:30am, 11:00am & 12:00pm
+        </p>
+      </div>
+      <div class="panel-footer clearfix">
+        <a href="#" class="btn btn-default btn-sm pull-left">Learn More</a>
+        <a href="#" class="btn btn-link btn-sm pull-right text-muted padding-r-none">Get Directions</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <h4 class="margin-t-none">Peoria Campus</h4>
+        <h5 class="margin-t-md margin-b-sm text-muted">Service Times</h5>
+        <p class="text-muted">
+          <strong>Saturday</strong> 4:30pm & 6:00pm <br>
+          <strong>Sunday</strong> 9:30am, 11:00am & 12:00pm
+        </p>
+      </div>
+      <div class="panel-footer clearfix">
+        <a href="#" class="btn btn-default btn-sm pull-left">Learn More</a>
+        <a href="#" class="btn btn-link btn-sm pull-right text-muted padding-r-none">Get Directions</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <h4 class="margin-t-none">Peoria Campus</h4>
+        <h5 class="margin-t-md margin-b-sm text-muted">Service Times</h5>
+        <p class="text-muted">
+          <strong>Saturday</strong> 4:30pm & 6:00pm <br>
+          <strong>Sunday</strong> 9:30am, 11:00am & 12:00pm
+        </p>
+      </div>
+      <div class="panel-footer clearfix">
+        <a href="#" class="btn btn-default btn-sm pull-left">Learn More</a>
+        <a href="#" class="btn btn-link btn-sm pull-right text-muted padding-r-none">Get Directions</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
+
+<script src="~~/Scripts/_map.js"></script>
+<script src="~~/Scripts/map-locations-page.js"></script>

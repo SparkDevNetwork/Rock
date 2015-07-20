@@ -77,3 +77,10 @@ h1, h2, h3, h4, h5, h6,
 .list-flush {
   padding-left: @line-height-computed;
 }
+
+
+// MISC - don't have a better spot for this yet
+.is-loading > .fa {
+  .fa-spin;
+  &:before { content: "\f013"; }
+}

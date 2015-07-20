@@ -71,6 +71,7 @@
       this.zoom = this.zoom || 12
       this.useZoom = this.useZoom || false
       this.useScrollZoom = this.useScrollZoom || true
+      this.usePanControl = this.usePanControl || true
     }
     CCV.baseMap.prototype = {
       draw: function () {
@@ -85,6 +86,7 @@
           options = {
             mapTypeId: 'CCV',
             scrollwheel: false,
+            panControl: this.usePanControl,
             zoomControl: true,
             zoomControlOptions: {
               style: google.maps.ZoomControlStyle.SMALL,
@@ -281,6 +283,13 @@
         r.push(geo)
       }
       return r
+    }
+    CCV.campusInfoWindowMapGeo.prototype.openInfoWindow = function (campus) {
+      var marker = this.markers.filter(function (marker) {
+        return marker.campusid == campus.id
+      })[0]
+      this.infowindow.setContent(this.buildInfoWindow(campus))
+      this.infowindow.open(this.map, marker)
     }
 
   }

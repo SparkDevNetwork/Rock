@@ -7994,6 +7994,9 @@ button.close {
   text-transform: uppercase;
   font-weight: 700;
 }
+.btn-link.text-muted {
+  color: #777777;
+}
 .btn-group-justified > .btn {
   border-left-width: 1px;
   border-right-width: 1px;
