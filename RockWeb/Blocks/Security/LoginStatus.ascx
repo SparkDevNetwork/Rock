@@ -26,6 +26,7 @@
                     <asp:HyperLink ID="hlMyProfile" runat="server" Text="My Profile" />
                 </li>
             </asp:PlaceHolder>
+            <asp:Literal ID="lDropdownItems" runat="server" />
             <li class="divider"></li>
             <li><asp:LinkButton ID="lbLoginLogout" runat="server" OnClick="lbLoginLogout_Click" CausesValidation="false"></asp:LinkButton></li>
         </ul>
