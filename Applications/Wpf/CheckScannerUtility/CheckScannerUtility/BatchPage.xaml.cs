@@ -356,7 +356,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <summary>
         /// Loads the financial batches grid.
         /// </summary>
-        private void LoadFinancialBatchesGrid()
+        public void LoadFinancialBatchesGrid()
         {
             RockConfig config = RockConfig.Load();
             RockRestClient client = new RockRestClient( config.RockBaseUrl );
@@ -377,6 +377,10 @@ namespace Rock.Apps.CheckScannerUtility
                 {
                     grdBatches.SelectedIndex = 0;
                 }
+            }
+            else
+            {
+                SelectedFinancialBatch = null;
             }
 
             bool startWithNewBatch = !pendingBatches.Any();
@@ -685,6 +689,7 @@ namespace Rock.Apps.CheckScannerUtility
                 }
 
                 LoadFinancialBatchesGrid();
+                UpdateBatchUI( financialBatch );
 
                 ShowBatch( false );
             }
@@ -725,6 +730,8 @@ namespace Rock.Apps.CheckScannerUtility
         {
             if ( selectedBatch == null )
             {
+                grdBatchItems.DataContext = null;
+                DisplayTransactionCount();
                 HideBatch();
                 return;
             }
@@ -826,7 +833,7 @@ namespace Rock.Apps.CheckScannerUtility
             }
             else
             {
-                lblCount.Content = "count";
+                lblCount.Content = "none";
             }
 
             Rock.Wpf.WpfHelper.FadeIn( lblCount );
@@ -852,6 +859,7 @@ namespace Rock.Apps.CheckScannerUtility
         private void btnRefreshBatchList_Click( object sender, RoutedEventArgs e )
         {
             LoadFinancialBatchesGrid();
+            UpdateBatchUI( this.SelectedFinancialBatch );
         }
 
         /// <summary>
@@ -920,7 +928,7 @@ namespace Rock.Apps.CheckScannerUtility
                         RockRestClient client = new RockRestClient( config.RockBaseUrl );
                         client.Login( config.Username, config.Password );
                         client.Delete( string.Format( "api/FinancialTransactions/{0}", transactionId ) );
-                        btnRefreshBatchList_Click( sender, e );
+                        UpdateBatchUI( this.SelectedFinancialBatch );
                     }
                 }
                 catch ( Exception ex )
