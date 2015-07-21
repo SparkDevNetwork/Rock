@@ -125,10 +125,12 @@ namespace Rock.Model
             target.GlCode = source.GlCode;
             target.ImageBinaryFileId = source.ImageBinaryFileId;
             target.IsActive = source.IsActive;
+            target.IsPublic = source.IsPublic;
             target.IsTaxDeductible = source.IsTaxDeductible;
             target.Name = source.Name;
             target.Order = source.Order;
             target.ParentAccountId = source.ParentAccountId;
+            target.PublicDescription = source.PublicDescription;
             target.PublicName = source.PublicName;
             target.StartDate = source.StartDate;
             target.Url = source.Url;

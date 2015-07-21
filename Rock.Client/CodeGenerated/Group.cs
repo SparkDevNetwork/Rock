@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public bool AcceptAlternatePlacements { get; set; }
+
+        /// <summary />
         public bool? AddUserAccountsDuringSync { get; set; }
 
         /// <summary />
@@ -98,6 +101,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Group source )
         {
             this.Id = source.Id;
+            this.AcceptAlternatePlacements = source.AcceptAlternatePlacements;
             this.AddUserAccountsDuringSync = source.AddUserAccountsDuringSync;
             this.AllowGuests = source.AllowGuests;
             this.CampusId = source.CampusId;
