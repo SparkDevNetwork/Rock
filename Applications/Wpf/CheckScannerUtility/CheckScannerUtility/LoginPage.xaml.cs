@@ -109,6 +109,7 @@ namespace Rock.Apps.CheckScannerUtility
                     {
                         try
                         {
+                            batchPage.LoadLookups();
                             batchPage.LoadFinancialBatchesGrid();
                         }
                         catch ( HttpErrorException ex )

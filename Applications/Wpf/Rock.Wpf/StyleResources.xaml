@@ -210,7 +210,7 @@
                 <ControlTemplate TargetType="{x:Type Label}">
                     <Border CornerRadius="4,4,4,4"
                             BorderThickness="1"
-                            BorderBrush="#bce8f1"
+                            BorderBrush="#d6e9c6"
                             Padding="14,8,35,8"
                             Background="#dff0d8"
                             Margin="10">

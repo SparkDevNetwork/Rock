@@ -319,8 +319,6 @@ namespace Rock.Apps.CheckScannerUtility
                     NavigateToOptionsPage();
                 }
 
-                LoadComboBoxes();
-                LoadFinancialBatchesGrid();
                 this.FirstPageLoad = false;
             }
         }
@@ -328,7 +326,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <summary>
         /// Loads the combo boxes.
         /// </summary>
-        private void LoadComboBoxes()
+        public void LoadLookups()
         {
             RockConfig rockConfig = RockConfig.Load();
             RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
@@ -363,7 +361,8 @@ namespace Rock.Apps.CheckScannerUtility
             client.Login( config.Username, config.Password );
             List<FinancialBatch> pendingBatches = client.GetDataByEnum<List<FinancialBatch>>( "api/FinancialBatches", "Status", BatchStatus.Pending );
 
-            grdBatches.DataContext = pendingBatches.OrderByDescending( a => a.BatchStartDateTime ).ThenBy( a => a.Name );
+            // Order by Batch Id starting with most recent
+            grdBatches.DataContext = pendingBatches.OrderByDescending( a => a.Id );
             if ( pendingBatches.Count > 0 )
             {
                 if ( SelectedFinancialBatch != null )
@@ -700,6 +699,44 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
+        /// Handles the Click event of the btnDeleteBatch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnDeleteBatch_Click( object sender, RoutedEventArgs e )
+        {
+            if ( MessageBox.Show( "Are you sure you want to delete this batch and all of its transactions?", "Confirm", MessageBoxButton.OKCancel ) == MessageBoxResult.OK )
+            {
+                try
+                {
+                    if ( this.SelectedFinancialBatch != null )
+                    {
+                        RockConfig config = RockConfig.Load();
+                        RockRestClient client = new RockRestClient( config.RockBaseUrl );
+                        client.Login( config.Username, config.Password );
+
+                        var transactions = grdBatchItems.DataContext as BindingList<FinancialTransaction>;
+                        if ( transactions != null )
+                        {
+                            foreach ( var transaction in transactions )
+                            {
+                                client.Delete( string.Format( "api/FinancialTransactions/{0}", transaction.Id ) );
+                            }
+                        }
+
+                        client.Delete( string.Format( "api/FinancialBatches/{0}", this.SelectedFinancialBatch.Id ) );
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+                }
+
+                LoadFinancialBatchesGrid();
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnCancel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -749,7 +786,16 @@ namespace Rock.Apps.CheckScannerUtility
 
             lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : None.Text;
             lblBatchDateReadOnly.Content = selectedBatch.BatchStartDateTime.Value.ToString( "d" );
-            lblBatchCreatedByReadOnly.Content = client.GetData<Person>( string.Format( "api/People/GetByPersonAliasId/{0}", selectedBatch.CreatedByPersonAliasId ) ).FullName;
+            var createdByPerson = client.GetData<Person>( string.Format( "api/People/GetByPersonAliasId/{0}", selectedBatch.CreatedByPersonAliasId ) );
+            if ( createdByPerson != null )
+            {
+                lblBatchCreatedByReadOnly.Content = createdByPerson.FullName;
+            }
+            else
+            {
+                lblBatchCreatedByReadOnly.Content = string.Empty;
+            }
+
             lblBatchControlAmountReadOnly.Content = selectedBatch.ControlAmount.ToString( "F" );
 
             txtBatchName.Text = selectedBatch.Name;
@@ -768,7 +814,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             // start a background thread to download transactions since this could take a little while and we want a Wait cursor
             BackgroundWorker bw = new BackgroundWorker();
-            Rock.Wpf.WpfHelper.FadeOut(lblCount, 0);
+            Rock.Wpf.WpfHelper.FadeOut( lblCount, 0 );
             lblCount.Content = "Loading...";
             Rock.Wpf.WpfHelper.FadeIn( lblCount, 300 );
             List<FinancialTransaction> transactions = null;

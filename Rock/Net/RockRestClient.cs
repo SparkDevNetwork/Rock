@@ -351,6 +351,14 @@ namespace Rock.Net
             {
                 throw response.ErrorException;
             }
+
+            if ( response.StatusCode != HttpStatusCode.NoContent )
+            {
+                if ( !string.IsNullOrWhiteSpace( response.StatusDescription ) )
+                {
+                    throw new HttpErrorException( new HttpError( response.StatusDescription ), null );
+                }
+            }
         }
 
         /// <summary>

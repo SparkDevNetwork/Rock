@@ -90,7 +90,7 @@ namespace Rock.Apps.CheckScannerUtility
                     if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.RangerApi )
                     {
                         lblScanCheckWarningBadMicr.Content = @"Unable to read check information
-    Click 'Skip' to reject this check and continue scanning.    
+    Click 'Skip' to reject this check and continue scanning. To retry this check, put the check back into the feed tray.   
     Click 'Upload' to upload the check as-is.
     Click 'Stop' to reject this check and stop scanning.";
                     }
@@ -331,16 +331,23 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         public void rangerScanner_TransportFeedingStopped( object sender, AxRANGERLib._DRangerEvents_TransportFeedingStoppedEvent e )
         {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportFeedingStopped", DateTime.Now.ToString( "o" ) ) );
             btnStart.IsEnabled = true;
             btnClose.IsEnabled = true;
             if ( pnlPromptForUpload.Visibility != Visibility.Visible )
             {
                 btnStopScanning.IsEnabled = false;
             }
-
-            // show a "No Items" warning if they clicked Start but no items were scanned, and this is the 2nd+ time they tried
+            
             if ( _itemsScanned == 0 )
             {
+                // show the Startup Info "Welcome" message if no check images are shown yet
+                if ( lblFront.Visibility != Visibility.Visible )
+                {
+                    lblStartupInfo.Visibility = Visibility.Visible;
+                }
+
+                // show a "No Items" warning if they clicked Start but no items were scanned, and this is the 2nd+ time they tried
                 if ( !_firstNoItemsWarning )
                 {
                     lblNoItemsFound.Visibility = Visibility.Visible;
@@ -357,6 +364,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         public void rangerScanner_TransportNewItem( object sender, EventArgs e )
         {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportNewItem", DateTime.Now.ToString( "o" ) ) );
             _itemsScanned++;
         }
 
@@ -367,6 +375,8 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         public void rangerScanner_TransportFeedingState( object sender, EventArgs e )
         {
+            lblStartupInfo.Visibility = Visibility.Collapsed;
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportFeedingState", DateTime.Now.ToString( "o" ) ) );
             lblNoItemsFound.Visibility = Visibility.Collapsed;
             btnStart.IsEnabled = false;
             btnClose.IsEnabled = false;
@@ -380,6 +390,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         public void rangerScanner_TransportSetItemOutput( object sender, AxRANGERLib._DRangerEvents_TransportSetItemOutputEvent e )
         {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportSetItemOutput", DateTime.Now.ToString( "o" ) ) );
             var currentPage = Application.Current.MainWindow.Content;
 
             if ( currentPage != this )
