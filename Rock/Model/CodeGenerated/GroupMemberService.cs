@@ -101,6 +101,7 @@ namespace Rock.Model
             target.GuestCount = source.GuestCount;
             target.IsNotified = source.IsNotified;
             target.IsSystem = source.IsSystem;
+            target.Note = source.Note;
             target.PersonId = source.PersonId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
