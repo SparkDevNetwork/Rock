@@ -47,9 +47,6 @@ namespace Rock.Client
         public int? GroupMemberRoleId { get; set; }
 
         /// <summary />
-        public int? GroupMemberStatusId { get; set; }
-
-        /// <summary />
         public int GroupTypeId { get; set; }
 
         /// <summary />
@@ -87,7 +84,6 @@ namespace Rock.Client
             this.ConnectorGroupId = source.ConnectorGroupId;
             this.Description = source.Description;
             this.GroupMemberRoleId = source.GroupMemberRoleId;
-            this.GroupMemberStatusId = source.GroupMemberStatusId;
             this.GroupTypeId = source.GroupTypeId;
             this.IconCssClass = source.IconCssClass;
             this.IsActive = source.IsActive;
@@ -108,6 +104,9 @@ namespace Rock.Client
     {
         /// <summary />
         public ICollection<ConnectionOpportunityCampus> ConnectionOpportunityCampuses { get; set; }
+
+        /// <summary />
+        public ICollection<ConnectionOpportunityGroupCampus> ConnectionOpportunityGroupCampuses { get; set; }
 
         /// <summary />
         public ICollection<ConnectionOpportunityGroup> ConnectionOpportunityGroups { get; set; }

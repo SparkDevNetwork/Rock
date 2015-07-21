@@ -41,9 +41,6 @@ namespace Rock.Client
         public int ConnectionOpportunityId { get; set; }
 
         /// <summary />
-        public int? ConnectorGroupId { get; set; }
-
-        /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
@@ -58,7 +55,6 @@ namespace Rock.Client
             this.Id = source.Id;
             this.CampusId = source.CampusId;
             this.ConnectionOpportunityId = source.ConnectionOpportunityId;
-            this.ConnectorGroupId = source.ConnectorGroupId;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 
@@ -75,9 +71,6 @@ namespace Rock.Client
 
         /// <summary />
         public ConnectionOpportunity ConnectionOpportunity { get; set; }
-
-        /// <summary />
-        public Group ConnectorGroup { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

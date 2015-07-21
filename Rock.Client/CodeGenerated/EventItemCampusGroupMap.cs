@@ -79,9 +79,6 @@ namespace Rock.Client
     public partial class EventItemCampusGroupMap : EventItemCampusGroupMapEntity
     {
         /// <summary />
-        public EventItemCampus EventItemCampus { get; set; }
-
-        /// <summary />
         public Group Group { get; set; }
 
         /// <summary />

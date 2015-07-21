@@ -93,9 +93,6 @@ namespace Rock.Client
         public PersonAlias ContactPersonAlias { get; set; }
 
         /// <summary />
-        public EventItem EventItem { get; set; }
-
-        /// <summary />
         public ICollection<EventItemSchedule> EventItemSchedules { get; set; }
 
         /// <summary />
