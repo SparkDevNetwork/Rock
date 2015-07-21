@@ -169,7 +169,7 @@ namespace Rock.Apps.CheckScannerUtility
             lblScanCheckWarningBadMicr.Visibility = scannedDocInfo.BadMicr ? Visibility.Visible : Visibility.Collapsed;
             lblScanItemUploadSuccess.Visibility = Visibility.Collapsed;
             pnlPromptForUpload.Visibility = scannedDocInfo.Duplicate || scannedDocInfo.BadMicr ? Visibility.Visible : Visibility.Collapsed;
-            btnStart.Visibility = Visibility.Hidden;
+            btnStart.IsEnabled = false;
             btnStopScanning.IsEnabled = true;
         }
 
@@ -183,10 +183,14 @@ namespace Rock.Apps.CheckScannerUtility
                 lblScanCheckWarningDuplicate.Visibility = Visibility.Collapsed;
                 lblScanCheckWarningBadMicr.Visibility = Visibility.Collapsed;
             }
+            else
+            {
+                // update the bad micr warning to not include the btn instructions
+                lblScanCheckWarningBadMicr.Content = @"Unable to read check information";
+            }
 
             lblScanItemUploadSuccess.Visibility = Visibility.Collapsed;
             pnlPromptForUpload.Visibility = Visibility.Collapsed;
-            btnStart.Visibility = Visibility.Visible;
         }
 
         /// <summary>
@@ -198,7 +202,6 @@ namespace Rock.Apps.CheckScannerUtility
             lblScanCheckWarningBadMicr.Visibility = Visibility.Collapsed;
             lblScanItemUploadSuccess.Visibility = Visibility.Visible;
             pnlPromptForUpload.Visibility = Visibility.Collapsed;
-            btnStart.Visibility = Visibility.Visible;
         }
 
         /// <summary>
@@ -292,6 +295,8 @@ namespace Rock.Apps.CheckScannerUtility
             if ( RockConfig.Load().ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 )
             {
                 lblStartupInfo.Content = string.Format( "Ready to scan next {0}.", scanningChecks ? "check" : "item" );
+                
+                // no need for a stop/start button when in MagTek mode
                 btnStart.Visibility = Visibility.Hidden;
                 btnStopScanning.Visibility = Visibility.Hidden;
             }
@@ -332,7 +337,11 @@ namespace Rock.Apps.CheckScannerUtility
         public void rangerScanner_TransportFeedingStopped( object sender, AxRANGERLib._DRangerEvents_TransportFeedingStoppedEvent e )
         {
             System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportFeedingStopped", DateTime.Now.ToString( "o" ) ) );
-            btnStart.IsEnabled = true;
+            if ( pnlPromptForUpload.Visibility != Visibility.Visible )
+            {
+                btnStart.IsEnabled = true;
+            }
+
             btnClose.IsEnabled = true;
             if ( pnlPromptForUpload.Visibility != Visibility.Visible )
             {
@@ -921,6 +930,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             HideUploadWarningPrompts( false );
             StopScanning();
+            btnStart.IsEnabled = true;
         }
 
         /// <summary>
