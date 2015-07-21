@@ -3194,7 +3194,6 @@ ul.rocktree ul {
 .list-as-blocks ul li a i {
   font-size: 26px;
   color: #4d4d4d;
-  margin-top: 6px;
 }
 .list-as-blocks ul li a:hover {
   background-color: #428bca;
@@ -5553,6 +5552,10 @@ h5.condensed,
 h6.condensed {
   margin-top: 0;
   margin-bottom: 0;
+}
+.col-md-2-10 {
+  padding-right: 15px;
+  padding-left: 15px;
 }
 @media (min-width: 992px) {
   .col-md-2-10 {
