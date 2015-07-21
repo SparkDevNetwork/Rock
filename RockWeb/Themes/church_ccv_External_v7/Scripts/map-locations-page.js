@@ -36,6 +36,23 @@ $(window).on('googleMapsIsLoaded', function(){
     })
   }
 
+  locationsMap.buildInfoWindow = function(campus) {
+    var result
+    result  = '<div class="infowindow">'
+    result += '  <div class="name">'+campus.name+' Campus</div>'
+    result += '  <div class="group">'
+    result += '    <img class="photo" src="'+campus.photo+'&width=75" style="width: 75px; height: 75px;">'
+    result += '    <div class="details">'
+    result += '      <span class="address">'+campus.street+'<br>'+campus.city+', '+campus.state+' '+campus.zip+'</span>'
+    result += '      <span class="phone">'+campus.phone+'</span>'
+    result += '    </div>'
+    result += '  </div>'
+    if (typeof this.selectCampus == 'function')
+      result += '  <a class="select" href="'+campus.url+'">Learn More</a>'
+    result += '</div>'
+    return result
+  }
+
   locationsMap.useScrollZoom = false;
   locationsMap.usePanControl = false;
 

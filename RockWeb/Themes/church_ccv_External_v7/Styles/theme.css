@@ -5705,6 +5705,16 @@ h6,
 .list-flush {
   padding-left: 20px;
 }
+.commalist-item {
+  margin-right: -0.15em;
+}
+.commalist-item + .commalist-item:before {
+  content: ', ';
+}
+.commalist-item + .commalist-item + .commalist-item:before {
+  margin-left: .15em;
+  content: ' & ';
+}
 .is-loading > .fa {
   -webkit-animation: fa-spin 2s infinite linear;
   animation: fa-spin 2s infinite linear;

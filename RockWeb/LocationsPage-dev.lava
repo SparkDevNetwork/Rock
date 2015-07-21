@@ -21,105 +21,63 @@
 <div id="locationsmap" class="locationsmap">
 </div>
 
-<h2 class="page-header">Our Campuses</h2>
+<h2 class="page-header margin-b-lg">Our Campuses</h2>
 
 <div class="row">
-  <div class="col-md-4">
-    <div class="panel panel-default">
+{% for campus in Campuses %}
+  <div class="col-sm-6 col-md-4">
+    <div class="panel panel-default margin-b-lg">
       <div class="panel-body">
-        <h4 class="margin-t-none">Peoria Campus</h4>
+        <h4 class="margin-t-none">{{ campus.Name }} Campus</h4>
         <h5 class="margin-t-md margin-b-sm text-muted">Service Times</h5>
-        <p class="text-muted">
-          <strong>Saturday</strong> 4:30pm & 6:00pm <br>
-          <strong>Sunday</strong> 9:30am, 11:00am & 12:00pm
+        <p class="text-muted commalist">
+          {% assign times = campus.RawServiceTimes | Split: '|' %}{% assign hasSaturday = false %}{% assign hasSunday = false %}
+
+          {% for time in times %}
+            {% assign split = time | Split: '^' %}
+            {% if split[0] == 'Saturday' %}
+              {% assign hasSaturday = true %}
+            {% endif %}
+            {% if split[0] == 'Sunday' %}
+              {% assign hasSunday = true %}
+            {% endif %}
+          {% endfor %}
+
+          {% if hasSaturday %}
+            <strong class="margin-r-sm">Saturday</strong>
+            {% for time in times %}
+              {% assign split = time | Split: '^' %}
+              {% if split[0] == 'Saturday' %}
+                <span class="commalist-item">{{ split[1] }}</span>
+              {% endif %}
+            {% endfor %}
+            <br>
+          {% endif %}
+
+          {% if hasSunday %}
+            <strong class="margin-r-sm">Sunday</strong>
+            {% for time in times %}
+              {% assign split = time | Split: '^' %}
+              {% if split[0] == 'Sunday' %}
+                <span class="commalist-item">{{ split[1] }}</span>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+
+          {% if hasSaturday == false and hasSunday %}
+            <br><br>
+          {% endif %}
         </p>
       </div>
+      {% capture urlString %}{{ campus.Location.Street1 }} {{ campus.Location.Street2 }} {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}{% endcapture %}
+      {% assign urlString = urlString | Replace: '  ', ' ' | Replace: ' ', '+' %}
       <div class="panel-footer clearfix">
-        <a href="#" class="btn btn-default btn-sm pull-left">Learn More</a>
-        <a href="#" class="btn btn-link btn-sm pull-right text-muted padding-r-none">Get Directions</a>
+        <a href="{{ campus.Url }}" class="btn btn-default btn-sm pull-left">Learn More</a>
+        <a href="http://maps.apple.com/maps?daddr={{ urlString }}" class="btn btn-link btn-sm pull-right text-muted padding-r-none">Get Directions</a>
       </div>
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="panel panel-default">
-      <div class="panel-body">
-        <h4 class="margin-t-none">Peoria Campus</h4>
-        <h5 class="margin-t-md margin-b-sm text-muted">Service Times</h5>
-        <p class="text-muted">
-          <strong>Saturday</strong> 4:30pm & 6:00pm <br>
-          <strong>Sunday</strong> 9:30am, 11:00am & 12:00pm
-        </p>
-      </div>
-      <div class="panel-footer clearfix">
-        <a href="#" class="btn btn-default btn-sm pull-left">Learn More</a>
-        <a href="#" class="btn btn-link btn-sm pull-right text-muted padding-r-none">Get Directions</a>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="panel panel-default">
-      <div class="panel-body">
-        <h4 class="margin-t-none">Peoria Campus</h4>
-        <h5 class="margin-t-md margin-b-sm text-muted">Service Times</h5>
-        <p class="text-muted">
-          <strong>Saturday</strong> 4:30pm & 6:00pm <br>
-          <strong>Sunday</strong> 9:30am, 11:00am & 12:00pm
-        </p>
-      </div>
-      <div class="panel-footer clearfix">
-        <a href="#" class="btn btn-default btn-sm pull-left">Learn More</a>
-        <a href="#" class="btn btn-link btn-sm pull-right text-muted padding-r-none">Get Directions</a>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="panel panel-default">
-      <div class="panel-body">
-        <h4 class="margin-t-none">Peoria Campus</h4>
-        <h5 class="margin-t-md margin-b-sm text-muted">Service Times</h5>
-        <p class="text-muted">
-          <strong>Saturday</strong> 4:30pm & 6:00pm <br>
-          <strong>Sunday</strong> 9:30am, 11:00am & 12:00pm
-        </p>
-      </div>
-      <div class="panel-footer clearfix">
-        <a href="#" class="btn btn-default btn-sm pull-left">Learn More</a>
-        <a href="#" class="btn btn-link btn-sm pull-right text-muted padding-r-none">Get Directions</a>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="panel panel-default">
-      <div class="panel-body">
-        <h4 class="margin-t-none">Peoria Campus</h4>
-        <h5 class="margin-t-md margin-b-sm text-muted">Service Times</h5>
-        <p class="text-muted">
-          <strong>Saturday</strong> 4:30pm & 6:00pm <br>
-          <strong>Sunday</strong> 9:30am, 11:00am & 12:00pm
-        </p>
-      </div>
-      <div class="panel-footer clearfix">
-        <a href="#" class="btn btn-default btn-sm pull-left">Learn More</a>
-        <a href="#" class="btn btn-link btn-sm pull-right text-muted padding-r-none">Get Directions</a>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="panel panel-default">
-      <div class="panel-body">
-        <h4 class="margin-t-none">Peoria Campus</h4>
-        <h5 class="margin-t-md margin-b-sm text-muted">Service Times</h5>
-        <p class="text-muted">
-          <strong>Saturday</strong> 4:30pm & 6:00pm <br>
-          <strong>Sunday</strong> 9:30am, 11:00am & 12:00pm
-        </p>
-      </div>
-      <div class="panel-footer clearfix">
-        <a href="#" class="btn btn-default btn-sm pull-left">Learn More</a>
-        <a href="#" class="btn btn-link btn-sm pull-right text-muted padding-r-none">Get Directions</a>
-      </div>
-    </div>
-  </div>
+{% endfor %}
 </div>
 
 {% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
