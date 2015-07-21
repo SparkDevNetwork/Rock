@@ -56,6 +56,9 @@ namespace Rock.Client
         public bool IsSystem { get; set; }
 
         /// <summary />
+        public string Note { get; set; }
+
+        /// <summary />
         public int PersonId { get; set; }
 
         /// <summary />
@@ -78,6 +81,7 @@ namespace Rock.Client
             this.GuestCount = source.GuestCount;
             this.IsNotified = source.IsNotified;
             this.IsSystem = source.IsSystem;
+            this.Note = source.Note;
             this.PersonId = source.PersonId;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;

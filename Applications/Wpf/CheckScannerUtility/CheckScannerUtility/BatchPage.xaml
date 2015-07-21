@@ -209,14 +209,24 @@
                                    Style="{StaticResource labelStyleDd}"
                                    Content="Home Campus" />
 
-                            <Button Style="{StaticResource buttonStylePrimary}"
-                                    Grid.Row="4"
-                                    Grid.Column="0"
-                                    HorizontalAlignment="Left"
-                                    x:Name="btnEdit"
-                                    Margin="4,4,0,0"
-                                    Content="Edit"
-                                    Click="btnEdit_Click" />
+                            <StackPanel Orientation="Horizontal"
+                                        Grid.Row="4"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Left">
+                                <Button Style="{StaticResource buttonStylePrimary}"
+                                        x:Name="btnEdit"
+                                        Margin="4,4,0,0"
+                                        Content="Edit"
+                                        Click="btnEdit_Click" />
+                                <Button Style="{StaticResource buttonStyle}"
+                                        Grid.Row="4"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Left"
+                                        x:Name="btnDeleteBatch"
+                                        Margin="4,4,0,0"
+                                        Content="Delete"
+                                        Click="btnDeleteBatch_Click" />
+                            </StackPanel>
                             <Button x:Name="btnScan"
                                     Grid.Row="4"
                                     Grid.Column="1"

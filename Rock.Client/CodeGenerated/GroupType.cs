@@ -53,6 +53,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool EnableAlternatePlacements { get; set; }
+
+        /// <summary />
         public bool? EnableLocationSchedules { get; set; }
 
         /// <summary />
@@ -113,6 +116,7 @@ namespace Rock.Client
             this.AttendanceRule = source.AttendanceRule;
             this.DefaultGroupRoleId = source.DefaultGroupRoleId;
             this.Description = source.Description;
+            this.EnableAlternatePlacements = source.EnableAlternatePlacements;
             this.EnableLocationSchedules = source.EnableLocationSchedules;
             this.GroupMemberTerm = source.GroupMemberTerm;
             this.GroupTerm = source.GroupTerm;

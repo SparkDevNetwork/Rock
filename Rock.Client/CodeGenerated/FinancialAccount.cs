@@ -56,6 +56,9 @@ namespace Rock.Client
         public bool IsActive { get; set; }
 
         /// <summary />
+        public bool? IsPublic { get; set; }
+
+        /// <summary />
         public bool IsTaxDeductible { get; set; }
 
         /// <summary />
@@ -66,6 +69,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? ParentAccountId { get; set; }
+
+        /// <summary />
+        public string PublicDescription { get; set; }
 
         /// <summary />
         public string PublicName { get; set; }
@@ -96,10 +102,12 @@ namespace Rock.Client
             this.GlCode = source.GlCode;
             this.ImageBinaryFileId = source.ImageBinaryFileId;
             this.IsActive = source.IsActive;
+            this.IsPublic = source.IsPublic;
             this.IsTaxDeductible = source.IsTaxDeductible;
             this.Name = source.Name;
             this.Order = source.Order;
             this.ParentAccountId = source.ParentAccountId;
+            this.PublicDescription = source.PublicDescription;
             this.PublicName = source.PublicName;
             this.StartDate = source.StartDate;
             this.Url = source.Url;

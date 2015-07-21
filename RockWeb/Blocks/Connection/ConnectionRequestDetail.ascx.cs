@@ -348,9 +348,9 @@ namespace RockWeb.Blocks.Connection
             {
                 ddlTransferStatus.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
             }
-            if ( _connectionRequest.ConnectionStatusId != null )
+            if ( _connectionRequest.ConnectionStatusId != 0 )
             {
-                ddlTransferStatus.SelectedValue = _connectionRequest.ConnectionStatusId.ToString();
+                ddlTransferStatus.SetValue( _connectionRequest.ConnectionStatusId.ToString() );
             }
 
             ddlTransferOpportunity.Items.Clear();

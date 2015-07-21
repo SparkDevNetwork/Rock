@@ -98,6 +98,12 @@ namespace Rock.Client
         public PersonAlias ApprovedByPersonAlias { get; set; }
 
         /// <summary />
+        public ICollection<EventItemCampus> EventItemCampuses { get; set; }
+
+        /// <summary />
+        public BinaryFile Photo { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

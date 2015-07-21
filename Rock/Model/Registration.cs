@@ -266,7 +266,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets a summary of the registration
         /// </summary>
-        /// <param name="rockUrlRoot">The rock URL root.</param>
+        /// <param name="registrationInstance">The registration instance.</param>
         /// <returns></returns>
         public string GetSummary( RegistrationInstance registrationInstance = null )
         {
@@ -780,6 +780,8 @@ Registration By: {0} Total Cost/Fees:{1:C2}
         /// Gets the existing value for a specific field for the given registrant.
         /// </summary>
         /// <param name="registrant">The registrant.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="family">The family.</param>
         /// <param name="Field">The field.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
