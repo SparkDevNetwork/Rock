@@ -43,7 +43,12 @@ namespace Rock.Migrations
 			// Add My Dashboard Page
             RockMigrationHelper.AddPage("20F97A93-7949-4C2A-8A5E-C756FE8585CA","22D220B5-0D34-429A-B9E3-59D80AE423E7","My Dashboard","","AE1818D8-581C-4599-97B9-509EA450376A","fa fa-tachometer"); // Site:Rock RMS
             RockMigrationHelper.AddPageRoute("AE1818D8-581C-4599-97B9-509EA450376A","MyDashboard");// for Page:My Dashboard
-                     
+            
+            // hide page from nav
+            Sql( @"  UPDATE [Page]
+  SET [DisplayInNavWhen] = 2
+  WHERE [Guid] = 'AE1818D8-581C-4599-97B9-509EA450376A'" );
+
 			// Add Block to Page: My Dashboard, Site: Rock RMS
             RockMigrationHelper.AddBlock("AE1818D8-581C-4599-97B9-509EA450376A","","36B56055-7AA2-4169-82DD-CCFBD2C7B4CC","Following Groups","Sidebar1","","",0,"AA11F703-FF26-4DA3-8CAE-E95989013135"); 
 
