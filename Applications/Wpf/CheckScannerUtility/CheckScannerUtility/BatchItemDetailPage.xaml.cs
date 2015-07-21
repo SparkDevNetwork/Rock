@@ -19,7 +19,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using Rock.Model;
+using Rock.Client;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
