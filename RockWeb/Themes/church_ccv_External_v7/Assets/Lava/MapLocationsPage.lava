@@ -1,9 +1,3 @@
-{% comment %}
-
-{% include 'LocationsPage-dev.lava' %}
-
-{% endcomment %}
-
 <style>
   .locationsmap {
     min-height: 70vh;
