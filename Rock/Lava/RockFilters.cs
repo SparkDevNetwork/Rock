@@ -84,6 +84,28 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Possessives the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string Possessive( string input )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( input.EndsWith( "s" ) )
+            {
+                return input + "'";
+            }
+            else
+            {
+                return input + "'s";
+            }
+        }
+
+        /// <summary>
         /// pluralizes string based on the value for quantity
         /// </summary>
         /// <param name="input">The input.</param>

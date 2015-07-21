@@ -20,7 +20,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Text;
 
 using Rock;
 using Rock.Constants;
@@ -97,7 +96,6 @@ namespace RockWeb.Blocks.Connection
             rptSearchResult.ItemCommand += rptSearchResult_ItemCommand;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upDetail );
         }
 
@@ -148,19 +146,21 @@ namespace RockWeb.Blocks.Connection
         /// <returns></returns>
         public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
         {
+            var rockContext = new RockContext();
             var breadCrumbs = new List<BreadCrumb>();
 
             int? connectionRequestId = PageParameter( pageReference, "ConnectionRequestId" ).AsIntegerOrNull();
             if ( connectionRequestId != null )
             {
-                ConnectionRequest connectionRequest = new ConnectionRequestService( new RockContext() ).Get( connectionRequestId.Value );
+                ConnectionRequest connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId.Value );
                 if ( connectionRequest != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( connectionRequest.PersonAlias.Person.FullName, pageReference ) );
                 }
                 else
                 {
-                    breadCrumbs.Add( new BreadCrumb( "New ConnectionOpportunity Member", pageReference ) );
+                    ConnectionOpportunity connectionOpportunity = new ConnectionOpportunityService( rockContext ).Get( PageParameter( "ConnectionOpportunityId" ).AsInteger() );
+                    breadCrumbs.Add( new BreadCrumb( String.Format( "New {0} Connection Request", connectionOpportunity.Name ), pageReference ) );
                 }
             }
             else
@@ -169,16 +169,6 @@ namespace RockWeb.Blocks.Connection
             }
 
             return breadCrumbs;
-        }
-
-        /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-
         }
 
         #endregion
@@ -197,12 +187,11 @@ namespace RockWeb.Blocks.Connection
                 using ( var rockContext = new RockContext() )
                 {
                     ConnectionRequestService connectionRequestService = new ConnectionRequestService( rockContext );
-                    GroupMemberRequirementService connectionRequestRequirementService = new GroupMemberRequirementService( rockContext );
                     ConnectionRequest connectionRequest;
 
                     int connectionRequestId = int.Parse( hfConnectionRequestId.Value );
 
-                    // if adding a new connectionOpportunity member 
+                    // if adding a new connection request
                     if ( connectionRequestId.Equals( 0 ) )
                     {
                         connectionRequest = new ConnectionRequest { Id = 0 };
@@ -210,16 +199,17 @@ namespace RockWeb.Blocks.Connection
                     }
                     else
                     {
-                        // load existing connectionOpportunity member
+                        // load existing connection request
                         connectionRequest = connectionRequestService.Get( connectionRequestId );
                     }
 
-                    connectionRequest.ConnectorPersonAliasId = ppConnectionRequestPerson.PersonAliasId;
+                    connectionRequest.ConnectorPersonAliasId = ppConnectorEdit.PersonAliasId;
+                    connectionRequest.PersonAlias = new PersonAliasService( rockContext ).Get( ppRequestor.PersonAliasId.Value );
                     connectionRequest.ConnectionState = rblState.SelectedValueAsEnum<ConnectionState>();
                     connectionRequest.ConnectionStatusId = rblStatus.SelectedValueAsId().Value;
                     connectionRequest.AssignedGroupId = ddlAssignedGroup.SelectedValueAsId();
                     connectionRequest.CampusId = ddlCampus.SelectedValueAsId().Value;
-                    connectionRequest.Comments = tbComments.Text;
+                    connectionRequest.Comments = tbComments.Text.ScrubHtmlAndConvertCrLfToBr();
                     connectionRequest.FollowupDate = dpFollowUp.SelectedDate;
 
                     if ( !Page.IsValid )
@@ -238,30 +228,21 @@ namespace RockWeb.Blocks.Connection
                         return;
                     }
 
-                    // using WrapTransaction because there are three Saves
-                    rockContext.WrapTransaction( () =>
+                    if ( connectionRequest.Id.Equals( 0 ) )
                     {
-                        if ( connectionRequest.Id.Equals( 0 ) )
-                        {
-                            connectionRequestService.Add( connectionRequest );
-                        }
-
-                        rockContext.SaveChanges();
-                        connectionRequest.SaveAttributeValues( rockContext );
-
-                    } );
-
-                    if ( connectionRequest.ConnectionState == ConnectionState.Active )
-                    {
-                        hlState.Visible = false;
+                        connectionRequestService.Add( connectionRequest );
                     }
+
+                    rockContext.SaveChanges();
+
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams["ConnectionRequestId"] = connectionRequest.Id.ToString();
+                    qryParams["ConnectionOpportunityId"] = connectionRequest.ConnectionOpportunityId.ToString();
+
+                    NavigateToPage( RockPage.Guid, qryParams );
                 }
             }
-            pnlReadDetails.Visible = true;
-            wpConnectionRequestActivities.Visible = true;
-            wpConnectionRequestWorkflow.Visible = true;
-            pnlEditDetails.Visible = false;
-            ShowDetail( PageParameter( "ConnectionRequestId" ).AsInteger(), PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() );
+
         }
 
         /// <summary>
@@ -271,11 +252,19 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            pnlReadDetails.Visible = true;
-            wpConnectionRequestActivities.Visible = true;
-            wpConnectionRequestWorkflow.Visible = true;
-            pnlEditDetails.Visible = false;
-            pnlTransferDetails.Visible = false;
+            if ( PageParameter( "ConnectionRequestId" ).AsInteger() > 0 )
+            {
+                pnlReadDetails.Visible = true;
+                wpConnectionRequestActivities.Visible = true;
+                wpConnectionRequestWorkflow.Visible = true;
+                pnlEditDetails.Visible = false;
+                pnlTransferDetails.Visible = false;
+            }
+            else
+            {
+                NavigateToParentPage();
+            }
+
         }
 
         #endregion
@@ -284,83 +273,22 @@ namespace RockWeb.Blocks.Connection
 
         #region ReadPanel Events
 
+        /// <summary>
+        /// Handles the Click event of the lbEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            if ( _connectionRequest == null )
+            using ( var rockContext = new RockContext() )
             {
-                _connectionRequest = new ConnectionRequestService( new RockContext() ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
-            }
-
-            pnlReadDetails.Visible = false;
-            wpConnectionRequestActivities.Visible = false;
-            wpConnectionRequestWorkflow.Visible = false;
-            pnlEditDetails.Visible = true;
-            lConnectionOpportunityIconHtmlEdit.Text = string.Format( "<i class='{0}' ></i> ", _connectionRequest.ConnectionOpportunity.IconCssClass );
-
-            ddlAssignedGroup.Items.Clear();
-            var groups = new GroupService( new RockContext() ).Queryable().Where( g => g.GroupTypeId == _connectionRequest.ConnectionOpportunity.GroupTypeId ).ToList();
-            foreach ( var g in groups )
-            {
-                ddlAssignedGroup.Items.Add( new ListItem( String.Format( "{0} ({1})", g.Name, g.Campus != null ? g.Campus.Name : "No Campus" ), g.Id.ToString().ToUpper() ) );
-            }
-
-            if ( _connectionRequest.AssignedGroupId != null )
-            {
-                try
+                if ( _connectionRequest == null )
                 {
-                    ddlAssignedGroup.SelectedValue = _connectionRequest.AssignedGroupId.ToString();
-                }
-                catch
-                {
-
+                    var connectionOpportunityId = PageParameter( "ConnectionRequestId" ).AsInteger();
+                    _connectionRequest = new ConnectionRequestService( new RockContext() ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
                 }
             }
-            ddlAssignedGroup.DataBind();
-
-            ddlCampus.Items.Clear();
-            foreach ( var campus in CampusCache.All() )
-            {
-                ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString().ToUpper() ) );
-            }
-
-            ddlCampus.SelectedValue = _connectionRequest.CampusId.ToString();
-            ddlCampus.DataBind();
-
-            rblState.BindToEnum<ConnectionState>();
-            if ( !_connectionRequest.ConnectionOpportunity.ConnectionType.EnableFutureFollowup )
-            {
-                rblState.Items.RemoveAt( 2 );
-            }
-
-            rblState.SetValue( _connectionRequest.ConnectionState.ConvertToInt().ToString() );
-
-            rblStatus.Items.Clear();
-            foreach ( var status in _connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses )
-            {
-                rblStatus.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
-            }
-
-            rblStatus.SelectedValue = _connectionRequest.ConnectionStatusId.ToString();
-
-            if ( _connectionRequest.ConnectionState == ConnectionState.FutureFollowUp )
-            {
-                dpFollowUp.Visible = true;
-                if ( _connectionRequest.FollowupDate != null )
-                {
-                    dpFollowUp.SelectedDate = _connectionRequest.FollowupDate;
-                }
-                else
-                {
-                    dpFollowUp.Visible = false;
-                }
-            }
-
-            hlOpportunityEdit.Text = _connectionRequest.ConnectionOpportunity.Name;
-            if ( _connectionRequest.ConnectionStatus.IsCritical )
-            {
-                hlStatusEdit.Text = _connectionRequest.ConnectionStatus.Name;
-                hlStatusEdit.Visible = true;
-            }
+            ShowEditDetails( _connectionRequest );
         }
 
         /// <summary>
@@ -386,12 +314,16 @@ namespace RockWeb.Blocks.Connection
                 groupMemberService.Add( groupMember );
 
                 var connectionRequestActivity = new ConnectionRequestActivity();
-                connectionRequestActivity.ConnectionActivityTypeId = new ConnectionActivityTypeService( rockContext ).Queryable().Where( t => t.Guid == "04c61230-97b6-4702-89c0-634e5ae57d6f".AsGuid() ).FirstOrDefault().Id;
+                var connectedGuid = Rock.SystemGuid.ConnectionActivityType.CONNECTED.AsGuid();
+                connectionRequestActivity.ConnectionActivityTypeId = new ConnectionActivityTypeService( rockContext ).Queryable().Where( t => t.Guid == connectedGuid ).FirstOrDefault().Id;
+                connectionRequestActivity.ConnectionOpportunityId = _connectionRequest.ConnectionOpportunityId;
                 _connectionRequest.ConnectionRequestActivities.Add( connectionRequestActivity );
 
                 _connectionRequest.ConnectionState = ConnectionState.Inactive;
 
                 rockContext.SaveChanges();
+                ShowDetail( _connectionRequest.Id, _connectionRequest.ConnectionOpportunityId );
+
             }
         }
 
@@ -411,18 +343,15 @@ namespace RockWeb.Blocks.Connection
             wpConnectionRequestActivities.Visible = false;
             wpConnectionRequestWorkflow.Visible = false;
             pnlTransferDetails.Visible = true;
-            hlOpportunityTransfer.Text = _connectionRequest.ConnectionOpportunity.Name;
-            lConnectionOpportunityIconHtmlTransfer.Text = string.Format( "<i class='{0}' ></i> ", _connectionRequest.ConnectionOpportunity.IconCssClass );
-
-            lReadOnlyTitleTransfer.Text = _connectionRequest.PersonAlias.Person.FullName.FormatAsHtmlTitle();
-
             ddlTransferStatus.Items.Clear();
             foreach ( var status in _connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses )
             {
                 ddlTransferStatus.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
             }
-
-            ddlTransferStatus.SelectedValue = _connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.FirstOrDefault( s => s.IsDefault == true ).Id.ToString();
+            if ( _connectionRequest.ConnectionStatusId != 0 )
+            {
+                ddlTransferStatus.SetValue( _connectionRequest.ConnectionStatusId.ToString() );
+            }
 
             ddlTransferOpportunity.Items.Clear();
 
@@ -442,16 +371,18 @@ namespace RockWeb.Blocks.Connection
             int? connectionWorkflowId = e.CommandArgument.ToString().AsIntegerOrNull();
             if ( connectionWorkflowId.HasValue )
             {
-                RockContext rockContext = new RockContext();
-                if ( _connectionRequest == null )
+                using ( var rockContext = new RockContext() )
                 {
-                    _connectionRequest = new ConnectionRequestService( rockContext ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
+                    if ( _connectionRequest == null )
+                    {
+                        _connectionRequest = new ConnectionRequestService( rockContext ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
+                    }
+
+                    var connectionWorkflow = new ConnectionWorkflowService( rockContext ).Get( connectionWorkflowId.Value );
+
+                    LaunchWorkflow( rockContext, connectionWorkflow, connectionWorkflow.WorkflowType.Name );
+                    nbWorkflow.Visible = true;
                 }
-
-                var connectionWorkflow = new ConnectionWorkflowService( rockContext ).Get( connectionWorkflowId.Value );
-
-                LaunchWorkflow( rockContext, connectionWorkflow, connectionWorkflow.WorkflowType.Name );
-                ShowDetail( PageParameter( "ConnectionRequestId" ).AsInteger(), PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() );
             }
         }
 
@@ -474,29 +405,36 @@ namespace RockWeb.Blocks.Connection
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnTransferSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnTransferSave_Click( object sender, EventArgs e )
         {
-            RockContext rockContext = new RockContext();
-            if ( _connectionRequest == null )
+            using ( var rockContext = new RockContext() )
             {
-                _connectionRequest = new ConnectionRequestService( rockContext ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
+                if ( _connectionRequest == null )
+                {
+                    _connectionRequest = new ConnectionRequestService( rockContext ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
+                }
+
+                ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
+                connectionRequestActivity.ConnectionOpportunityId = ddlTransferOpportunity.SelectedValueAsId().Value;
+                var transferGuid = Rock.SystemGuid.ConnectionActivityType.TRANSFERRED.AsGuid();
+                connectionRequestActivity.ConnectionActivityTypeId = new ConnectionActivityTypeService( rockContext ).Queryable().Where( t => t.Guid == transferGuid ).FirstOrDefault().Id;
+                connectionRequestActivity.Note = tbTransferNote.Text;
+                _connectionRequest.ConnectionRequestActivities.Add( connectionRequestActivity );
+                _connectionRequest.ConnectionOpportunityId = ddlTransferOpportunity.SelectedValueAsId().Value;
+                _connectionRequest.ConnectionStatusId = ddlTransferStatus.SelectedValueAsId().Value;
+                rockContext.SaveChanges();
+
+                pnlReadDetails.Visible = true;
+                wpConnectionRequestActivities.Visible = true;
+                wpConnectionRequestWorkflow.Visible = true;
+                pnlTransferDetails.Visible = false;
+                ShowDetail( _connectionRequest.Id, _connectionRequest.ConnectionOpportunityId );
             }
-
-            ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
-            connectionRequestActivity.ConnectionOpportunityId = ddlTransferOpportunity.SelectedValueAsId().Value;
-            var guid = "6e7c8475-2a03-42eb-a883-5b2cc6cae519".AsGuid();
-            connectionRequestActivity.ConnectionActivityTypeId = new ConnectionActivityTypeService( rockContext ).Queryable().Where( t => t.Guid == guid ).FirstOrDefault().Id;
-            connectionRequestActivity.Note = tbTransferNote.Text;
-            _connectionRequest.ConnectionRequestActivities.Add( connectionRequestActivity );
-            _connectionRequest.ConnectionOpportunityId = ddlTransferOpportunity.SelectedValueAsId().Value;
-            _connectionRequest.ConnectionStatusId = ddlTransferStatus.SelectedValueAsId().Value;
-            rockContext.SaveChanges();
-
-            pnlReadDetails.Visible = true;
-            wpConnectionRequestActivities.Visible = true;
-            wpConnectionRequestWorkflow.Visible = true;
-            pnlTransferDetails.Visible = false;
-            ShowDetail( PageParameter( "ConnectionRequestId" ).AsInteger(), PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() );
         }
 
         /// <summary>
@@ -506,18 +444,21 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSearch_Click( object sender, EventArgs e )
         {
-            RockContext rockContext = new RockContext();
-            if ( _connectionRequest == null )
+            using ( var rockContext = new RockContext() )
             {
-                _connectionRequest = new ConnectionRequestService( rockContext ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
+                if ( _connectionRequest == null )
+                {
+                    _connectionRequest = new ConnectionRequestService( rockContext ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
+                }
+                cblCampus.DataSource = CampusCache.All();
+                cblCampus.DataBind();
+                BindAttributes();
+                AddDynamicControls();
+
+                rptSearchResult.DataSource = _connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities.ToList();
+                rptSearchResult.DataBind();
+                ShowDialog( "Search", true );
             }
-
-            BindAttributes();
-            AddDynamicControls();
-
-            rptSearchResult.DataSource = _connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities.ToList();
-            rptSearchResult.DataBind();
-            ShowDialog( "Search", true );
         }
 
         /// <summary>
@@ -527,47 +468,55 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgSearch_SaveClick( object sender, EventArgs e )
         {
-            RockContext rockContext = new RockContext();
-            if ( _connectionRequest == null )
+            using ( var rockContext = new RockContext() )
             {
-                _connectionRequest = new ConnectionRequestService( rockContext ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
-            }
-
-            var qrySearch = _connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities.ToList();
-
-            if ( !string.IsNullOrWhiteSpace( tbSearchName.Text ) )
-            {
-                var searchTerms = tbSearchName.Text.ToLower().SplitDelimitedValues( true );
-                qrySearch = qrySearch.Where( o => searchTerms.Any( t => t.Contains( o.Name.ToLower() ) || o.Name.ToLower().Contains( t ) ) ).ToList();
-            }
-            // Filter query by any configured attribute filters
-            if ( AvailableAttributes != null && AvailableAttributes.Any() )
-            {
-                var attributeValueService = new AttributeValueService( rockContext );
-                var parameterExpression = attributeValueService.ParameterExpression;
-
-                foreach ( var attribute in AvailableAttributes )
+                if ( _connectionRequest == null )
                 {
-                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
-                    if ( filterControl != null )
+                    _connectionRequest = new ConnectionRequestService( rockContext ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
+                }
+
+                var qrySearch = _connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities.ToList();
+
+                if ( !string.IsNullOrWhiteSpace( tbSearchName.Text ) )
+                {
+                    var searchTerms = tbSearchName.Text.ToLower().SplitDelimitedValues( true );
+                    qrySearch = qrySearch.Where( o => searchTerms.Any( t => t.Contains( o.Name.ToLower() ) || o.Name.ToLower().Contains( t ) ) ).ToList();
+                }
+
+                var searchCampuses = cblCampus.SelectedValuesAsInt;
+                if ( searchCampuses.Count > 0 )
+                {
+                    qrySearch = qrySearch.Where( o => o.ConnectionOpportunityCampuses.Any( c => searchCampuses.Contains( c.CampusId ) ) ).ToList();
+                }
+                // Filter query by any configured attribute filters
+                if ( AvailableAttributes != null && AvailableAttributes.Any() )
+                {
+                    var attributeValueService = new AttributeValueService( rockContext );
+                    var parameterExpression = attributeValueService.ParameterExpression;
+
+                    foreach ( var attribute in AvailableAttributes )
                     {
-                        var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
-                        var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
-                        if ( expression != null )
+                        var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                        if ( filterControl != null )
                         {
-                            var attributeValues = attributeValueService
-                                .Queryable()
-                                .Where( v => v.Attribute.Id == attribute.Id );
+                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
+                            var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
+                            if ( expression != null )
+                            {
+                                var attributeValues = attributeValueService
+                                    .Queryable()
+                                    .Where( v => v.Attribute.Id == attribute.Id );
 
-                            attributeValues = attributeValues.Where( parameterExpression, expression, null );
+                                attributeValues = attributeValues.Where( parameterExpression, expression, null );
 
-                            qrySearch = qrySearch.Where( w => attributeValues.Select( v => v.EntityId ).Contains( w.Id ) ).ToList();
+                                qrySearch = qrySearch.Where( w => attributeValues.Select( v => v.EntityId ).Contains( w.Id ) ).ToList();
+                            }
                         }
                     }
                 }
+                rptSearchResult.DataSource = qrySearch;
+                rptSearchResult.DataBind();
             }
-            rptSearchResult.DataSource = qrySearch;
-            rptSearchResult.DataBind();
         }
 
         /// <summary>
@@ -575,24 +524,26 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void BindAttributes()
         {
-            RockContext rockContext = new RockContext();
-            if ( _connectionRequest == null )
+            using ( var rockContext = new RockContext() )
             {
-                _connectionRequest = new ConnectionRequestService( rockContext ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
-            }
-            // Parse the attribute filters 
-            AvailableAttributes = new List<AttributeCache>();
+                if ( _connectionRequest == null )
+                {
+                    _connectionRequest = new ConnectionRequestService( rockContext ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
+                }
+                // Parse the attribute filters 
+                AvailableAttributes = new List<AttributeCache>();
 
-            int entityTypeId = new ConnectionOpportunity().TypeId;
-            foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
-                .Where( a =>
-                    a.EntityTypeId == entityTypeId &&
-                    a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                    a.EntityTypeQualifierValue.Equals( _connectionRequest.ConnectionOpportunity.ConnectionTypeId.ToString() ) )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Name ) )
-            {
-                AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                int entityTypeId = new ConnectionOpportunity().TypeId;
+                foreach ( var attributeModel in new AttributeService( rockContext ).Queryable()
+                    .Where( a =>
+                        a.EntityTypeId == entityTypeId &&
+                        a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( _connectionRequest.ConnectionOpportunity.ConnectionTypeId.ToString() ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name ) )
+                {
+                    AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                }
             }
         }
 
@@ -665,8 +616,11 @@ namespace RockWeb.Blocks.Connection
                 Trigger = c.TriggerType.ConvertToString(),
                 CurrentActivity = c.Workflow.ActiveActivityNames,
                 Date = c.Workflow.ActivatedDateTime.Value.ToShortDateString(),
+                OrderByDate = c.Workflow.ActivatedDateTime.Value,
                 Status = c.Workflow.Status == "Completed" ? "<span class='label label-success'>Complete</span>" : "<span class='label label-info'>Running</span>"
-            } ).ToList();
+            } )
+            .OrderByDescending( c => c.OrderByDate )
+            .ToList();
             gConnectionRequestWorkflows.DataBind();
 
             if ( !instantiatedWorkflows.Any() )
@@ -675,7 +629,7 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                wpConnectionRequestWorkflow.Title = String.Format( "Workflows <span class='label label-danger'>{0}</span>", instantiatedWorkflows.Count.ToString() );
+                wpConnectionRequestWorkflow.Title = String.Format( "Workflows <span class='badge badge-info'>{0}</span>", instantiatedWorkflows.Count.ToString() );
             }
         }
 
@@ -716,31 +670,33 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddConnectionRequestActivity_Click( object sender, EventArgs e )
         {
-            RockContext rockContext = new RockContext();
-            if ( _connectionRequest == null )
+            using ( var rockContext = new RockContext() )
             {
-                _connectionRequest = new ConnectionRequestService( new RockContext() ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
+                if ( _connectionRequest == null )
+                {
+                    _connectionRequest = new ConnectionRequestService( new RockContext() ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
+                }
+
+                ConnectionRequestService connectionRequestService = new ConnectionRequestService( rockContext );
+                ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
+                connectionRequestActivity.ConnectionActivityTypeId = ddlActivity.SelectedValueAsId().Value;
+                connectionRequestActivity.ConnectionOpportunityId = _connectionRequest.ConnectionOpportunityId;
+                connectionRequestActivity.ConnectorPersonAliasId = ppConnector.PersonAliasId.Value;
+                connectionRequestActivity.ConnectionRequestId = PageParameter( "ConnectionRequestId" ).AsInteger();
+                connectionRequestActivity.Note = tbNote.Text;
+
+                // Controls will show warnings
+                if ( !connectionRequestActivity.IsValid )
+                {
+                    return;
+                }
+
+                new ConnectionRequestActivityService( rockContext ).Add( connectionRequestActivity );
+                rockContext.SaveChanges();
+
+                BindConnectionRequestActivitiesGrid();
+                HideDialog();
             }
-
-            ConnectionRequestService connectionRequestService = new ConnectionRequestService( rockContext );
-            ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
-            connectionRequestActivity.ConnectionActivityTypeId = ddlActivity.SelectedValueAsId().Value;
-            connectionRequestActivity.ConnectionOpportunityId = _connectionRequest.ConnectionOpportunityId;
-            connectionRequestActivity.ConnectorPersonAliasId = ppConnector.PersonAliasId.Value;
-            connectionRequestActivity.ConnectionRequestId = PageParameter( "ConnectionRequestId" ).AsInteger();
-            connectionRequestActivity.Note = tbNote.Text;
-
-            // Controls will show warnings
-            if ( !connectionRequestActivity.IsValid )
-            {
-                return;
-            }
-
-            new ConnectionRequestActivityService( rockContext ).Add( connectionRequestActivity );
-            rockContext.SaveChanges();
-
-            BindConnectionRequestActivitiesGrid();
-            HideDialog();
         }
 
         /// <summary>
@@ -765,7 +721,6 @@ namespace RockWeb.Blocks.Connection
                 _connectionRequest = new ConnectionRequestService( new RockContext() ).Get( PageParameter( "ConnectionRequestId" ).AsInteger() );
             }
 
-            var rockContext = new RockContext();
             ddlActivity.Items.Clear();
             ddlActivity.Items.Add( new ListItem( string.Empty, string.Empty ) );
 
@@ -856,7 +811,7 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="connectionRequestId">The connectionOpportunity member identifier.</param>
+        /// <param name="connectionRequestId">The connection request identifier.</param>
         public void ShowDetail( int connectionRequestId )
         {
             ShowDetail( connectionRequestId, null );
@@ -865,7 +820,7 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="connectionRequestId">The connectionOpportunity member identifier.</param>
+        /// <param name="connectionRequestId">The connection request identifier.</param>
         /// <param name="connectionOpportunityId">The connectionOpportunity id.</param>
         public void ShowDetail( int connectionRequestId, int? connectionOpportunityId )
         {
@@ -885,62 +840,86 @@ namespace RockWeb.Blocks.Connection
 
             });", true );
 
-            var rockContext = new RockContext();
-
-            _connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId );
-
-            if ( _connectionRequest == null )
+            using ( var rockContext = new RockContext() )
             {
-                nbErrorMessage.Title = "Invalid Request";
-                nbErrorMessage.Text = "An incorrect querystring parameter was used.  A valid ConnectionRequestId or ConnectionOpportunityId parameter is required.";
-                pnlReadDetails.Visible = false;
-                return;
+                ConnectionOpportunity connectionOpportunity = null;
+                _connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId );
+
+                if ( _connectionRequest == null )
+                {
+                    _connectionRequest = new ConnectionRequest { Id = 0 };
+                    connectionOpportunity = new ConnectionOpportunityService( rockContext ).Get( connectionOpportunityId.Value );
+                    _connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
+                    _connectionRequest.ConnectionOpportunity = connectionOpportunity;
+                    _connectionRequest.ConnectionState = ConnectionState.Active;
+                    _connectionRequest.ConnectionStatus = new ConnectionStatusService( rockContext ).Queryable().FirstOrDefault( s => s.IsDefault == true && s.ConnectionTypeId == connectionOpportunity.ConnectionTypeId );
+                    _connectionRequest.ConnectionStatusId = _connectionRequest.ConnectionStatus.Id;
+                }
+
+                hfConnectionOpportunityId.Value = _connectionRequest.ConnectionOpportunityId.ToString();
+                hfConnectionRequestId.Value = _connectionRequest.Id.ToString();
+
+                connectionOpportunity = _connectionRequest.ConnectionOpportunity;
+
+                lConnectionOpportunityIconHtml.Text = string.Format( "<i class='{0}' ></i>", connectionOpportunity.IconCssClass );
+                pnlReadDetails.Visible = true;
+                if ( _connectionRequest.PersonAlias != null )
+                {
+                    lTitle.Text = _connectionRequest.PersonAlias.Person.FullName.FormatAsHtmlTitle();
+                }
+                else
+                {
+                    lTitle.Text = String.Format( "New {0} Connection Request", connectionOpportunity.Name );
+                }
+
+                // Only users that have Edit rights to block, or edit rights to the opportunity
+                if ( !editAllowed )
+                {
+                    editAllowed = _connectionRequest.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
+                }
+
+                // Grants edit access to those in the opportunity's connector groups
+                if ( !editAllowed )
+                {
+                    var userGroupIds = CurrentPerson.Members.Select( m => m.GroupId ).ToList();
+                    if ( ( connectionOpportunity.ConnectorGroupId.HasValue && userGroupIds.Contains( connectionOpportunity.ConnectorGroupId.Value ) )
+                    || connectionOpportunity.ConnectionOpportunityGroupCampuses.Any( c => userGroupIds.Contains( c.ConnectorGroupId.Value ) ) )
+                    {
+                        editAllowed = true;
+                    }
+                }
+
+                if ( !editAllowed )
+                {
+                    // User is not authorized
+                    lbConnect.Visible = false;
+                    lbEdit.Visible = false;
+                    lbTransfer.Visible = false;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ConnectionRequest.FriendlyTypeName );
+                    ShowReadonlyDetails( _connectionRequest );
+                }
+                else
+                {
+                    nbEditModeMessage.Text = string.Empty;
+                    if ( _connectionRequest.Id > 0 )
+                    {
+                        ShowReadonlyDetails( _connectionRequest );
+                    }
+                    else
+                    {
+                        ShowEditDetails( _connectionRequest );
+                    }
+                }
             }
+        }
 
-            pnlReadDetails.Visible = true;
-
-            hfConnectionOpportunityId.Value = _connectionRequest.ConnectionOpportunityId.ToString();
-            hfConnectionRequestId.Value = _connectionRequest.Id.ToString();
-
-            var connectionOpportunity = _connectionRequest.ConnectionOpportunity;
-
-            lConnectionOpportunityIconHtml.Text = string.Format( "<i class='{0}' ></i>", connectionOpportunity.IconCssClass );
-
-            lReadOnlyTitle.Text = _connectionRequest.PersonAlias.Person.FullName.FormatAsHtmlTitle();
-
-            // Only users that have Edit rights to block, or edit rights to the calendar (from query string) should be able to edit
-            if ( !editAllowed )
-            {
-                editAllowed = _connectionRequest.IsAuthorized( Authorization.EDIT, CurrentPerson );
-            }
-
-            bool readOnly = true;
-
-            if ( !editAllowed )
-            {
-                // User is not authorized
-                lbConnect.Visible = false;
-                lbEdit.Visible = false;
-                lbTransfer.Visible = false;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ConnectionRequest.FriendlyTypeName );
-            }
-            else
-            {
-                nbEditModeMessage.Text = string.Empty;
-                readOnly = false;
-            }
-
-            btnSave.Visible = !readOnly;
-            if ( _connectionRequest.ConnectorPersonAlias != null )
-            {
-                ppConnectionRequestPerson.SetValue( _connectionRequest.ConnectorPersonAlias.Person );
-            }
-            ppConnectionRequestPerson.Enabled = !readOnly;
-
-            rblStatus.SetValue( (int)_connectionRequest.ConnectionStatus.Id );
-            rblStatus.Enabled = !readOnly;
-            rblStatus.Label = "Status";
-
+        /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="_connectionRequest">The _connection request.</param>
+        private void ShowReadonlyDetails( ConnectionRequest _connectionRequest )
+        {
             if ( _connectionRequest.AssignedGroupId != null )
             {
                 pnlRequirements.Visible = true;
@@ -952,6 +931,7 @@ namespace RockWeb.Blocks.Connection
                 lbConnect.Enabled = false;
             }
 
+            btnSave.Visible = false;
             Person person = _connectionRequest.PersonAlias.Person;
             if ( person.PhoneNumbers.Any() || !String.IsNullOrWhiteSpace( person.Email ) )
             {
@@ -986,7 +966,7 @@ namespace RockWeb.Blocks.Connection
                 lPortrait.Text = imgTag;
             }
 
-            lComments.Text = _connectionRequest.Comments;
+            lComments.Text = _connectionRequest.Comments.ScrubHtmlAndConvertCrLfToBr();
             lRequestDate.Text = _connectionRequest.CreatedDateTime.Value.ToShortDateString();
             if ( _connectionRequest.AssignedGroup != null )
             {
@@ -997,46 +977,64 @@ namespace RockWeb.Blocks.Connection
                 lAssignedGroup.Text = "No assigned group";
             }
 
+            if ( _connectionRequest.ConnectorPersonAlias != null )
+            {
+                lConnector.Text = _connectionRequest.ConnectorPersonAlias.Person.FullName;
+            }
+            else
+            {
+                lConnector.Text = "No assigned connector";
+            }
+
+            hlState.Visible = true;
+
             if ( _connectionRequest.ConnectionState == ConnectionState.Inactive )
             {
                 hlState.Text = "Inactive";
                 hlState.LabelType = Rock.Web.UI.Controls.LabelType.Danger;
-                hlState.Visible = true;
             }
-
-            if ( _connectionRequest.ConnectionState == ConnectionState.FutureFollowUp )
+            else if ( _connectionRequest.ConnectionState == ConnectionState.FutureFollowUp )
             {
                 hlState.Text = String.Format( "Follow-up: {0}", _connectionRequest.FollowupDate.Value.ToShortDateString() );
                 hlState.LabelType = Rock.Web.UI.Controls.LabelType.Success;
-                hlState.Visible = true;
             }
+            else
+            {
+                hlState.Text = "Active";
+                hlState.LabelType = Rock.Web.UI.Controls.LabelType.Success;
+            }
+
+            hlStatus.Visible = true;
+            hlStatus.Text = _connectionRequest.ConnectionStatus.Name;
 
             if ( _connectionRequest.ConnectionStatus.IsCritical )
             {
-                hlStatus.Text = _connectionRequest.ConnectionStatus.Name;
-                hlStatus.Visible = true;
+                hlStatus.LabelType = Rock.Web.UI.Controls.LabelType.Warning;
+            }
+            else
+            {
+                hlStatus.LabelType = Rock.Web.UI.Controls.LabelType.Type;
             }
 
             hlOpportunity.Text = _connectionRequest.ConnectionOpportunity.Name;
             hlCampus.Text = _connectionRequest.Campus.Name;
 
             var manualWorkflows = _connectionRequest.ConnectionOpportunity.ConnectionWorkflows.Union( _connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionWorkflows );
-            manualWorkflows = manualWorkflows.Where( w => _connectionRequest.ConnectionRequestWorkflows.Any( rw => rw.TriggerType == ConnectionWorkflowTriggerType.Manual ) );
+            manualWorkflows = manualWorkflows.Where( w => w.TriggerType == ConnectionWorkflowTriggerType.Manual );
             if ( manualWorkflows.Any() )
             {
                 rptRequestWorkflows.DataSource = manualWorkflows.Select( w => new
-                    {
-                        w.Id,
-                        w.Guid,
-                        Name = w.WorkflowType.Name
-                    } ).ToList();
+                {
+                    w.Id,
+                    w.Guid,
+                    Name = w.WorkflowType.Name
+                } ).ToList();
                 rptRequestWorkflows.DataBind();
             }
             else
             {
                 lblWorkflows.Visible = false;
             }
-
 
             if ( _connectionRequest.ConnectionState == ConnectionState.Inactive )
             {
@@ -1049,108 +1047,216 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
+        /// Shows the edit details.
+        /// </summary>
+        /// <param name="_connectionRequest">The _connection request.</param>
+        private void ShowEditDetails( ConnectionRequest _connectionRequest )
+        {
+            if ( _connectionRequest.Id > 0 )
+            {
+                _connectionRequest = new ConnectionRequestService( new RockContext() ).Get( _connectionRequest.Id );
+            }
+
+            btnSave.Visible = true;
+            pnlReadDetails.Visible = false;
+            wpConnectionRequestActivities.Visible = false;
+            wpConnectionRequestWorkflow.Visible = false;
+            pnlEditDetails.Visible = true;
+
+            tbComments.Text = _connectionRequest.Comments.ScrubHtmlAndConvertCrLfToBr();
+
+            ddlAssignedGroup.Items.Clear();
+            ddlAssignedGroup.Items.Add( new ListItem( String.Empty, String.Empty ) );
+            var groups = new GroupService( new RockContext() ).Queryable().Where( g => g.GroupTypeId == _connectionRequest.ConnectionOpportunity.GroupTypeId ).ToList();
+            foreach ( var g in groups )
+            {
+                ddlAssignedGroup.Items.Add( new ListItem( String.Format( "{0} ({1})", g.Name, g.Campus != null ? g.Campus.Name : "No Campus" ), g.Id.ToString().ToUpper() ) );
+            }
+
+            if ( _connectionRequest.ConnectorPersonAlias != null )
+            {
+                ppConnectorEdit.SetValue( _connectionRequest.ConnectorPersonAlias.Person );
+            }
+            else
+            {
+                ppConnectorEdit.SetValue( CurrentPerson );
+            }
+            ppConnectorEdit.Enabled = true;
+
+            if ( _connectionRequest.PersonAlias != null )
+            {
+                ppRequestor.SetValue( _connectionRequest.PersonAlias.Person );
+                ppRequestor.Enabled = false;
+            }
+            else
+            {
+                ppRequestor.Enabled = true;
+            }
+
+
+            rblStatus.SetValue( (int)_connectionRequest.ConnectionStatus.Id );
+            rblStatus.Enabled = true;
+            rblStatus.Label = "Status";
+
+            if ( _connectionRequest.AssignedGroupId != null )
+            {
+                try
+                {
+                    ddlAssignedGroup.SelectedValue = _connectionRequest.AssignedGroupId.ToString();
+                }
+                catch
+                {
+
+                }
+            }
+            ddlAssignedGroup.DataBind();
+
+            ddlCampus.Items.Clear();
+            foreach ( var campus in CampusCache.All() )
+            {
+                ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString().ToUpper() ) );
+            }
+            if ( _connectionRequest.CampusId != null )
+            {
+                ddlCampus.SelectedValue = _connectionRequest.CampusId.ToString();
+            }
+            ddlCampus.DataBind();
+
+            rblState.BindToEnum<ConnectionState>();
+            if ( !_connectionRequest.ConnectionOpportunity.ConnectionType.EnableFutureFollowup )
+            {
+                rblState.Items.RemoveAt( 2 );
+            }
+
+            rblState.SetValue( _connectionRequest.ConnectionState.ConvertToInt().ToString() );
+
+            rblStatus.Items.Clear();
+            foreach ( var status in _connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses )
+            {
+                rblStatus.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
+            }
+
+            rblStatus.SelectedValue = _connectionRequest.ConnectionStatusId.ToString();
+
+            if ( _connectionRequest.ConnectionState == ConnectionState.FutureFollowUp )
+            {
+                dpFollowUp.Visible = true;
+                if ( _connectionRequest.FollowupDate != null )
+                {
+                    dpFollowUp.SelectedDate = _connectionRequest.FollowupDate;
+                }
+                else
+                {
+                    dpFollowUp.Visible = false;
+                }
+            }
+        }
+
+        /// <summary>
         /// Shows the connectionOpportunity requirements statuses.
         /// </summary>
         private void ShowConnectionOpportunityRequirementsStatuses()
         {
-            var rockContext = new RockContext();
-            int connectionRequestId = hfConnectionRequestId.Value.AsInteger();
-            var connectionOpportunityId = hfConnectionOpportunityId.Value.AsInteger();
-            ConnectionRequest connectionRequest = null;
-            bool passedAllRequirements = true;
-            connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId );
-
-            var groupMember = new GroupMember { Id = 0 };
-            groupMember.GroupId = connectionRequest.AssignedGroupId.Value;
-            groupMember.Group = new GroupService( rockContext ).Get( groupMember.GroupId );
-            groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
-            groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-
-            cblManualRequirements.Items.Clear();
-            lRequirementsLabels.Text = string.Empty;
-
-            IEnumerable<GroupRequirementStatus> requirementsResults;
-
-            if ( groupMember.IsNewOrChangedGroupMember( rockContext ) )
+            using ( var rockContext = new RockContext() )
             {
-                requirementsResults = groupMember.Group.PersonMeetsGroupRequirements( connectionRequest.PersonAlias.PersonId, connectionRequest.ConnectionOpportunity.GroupMemberRoleId );
-            }
-            else
-            {
-                requirementsResults = groupMember.GetGroupRequirementsStatuses().ToList();
-            }
+                int connectionRequestId = hfConnectionRequestId.Value.AsInteger();
+                var connectionOpportunityId = hfConnectionOpportunityId.Value.AsInteger();
+                ConnectionRequest connectionRequest = null;
+                bool passedAllRequirements = true;
+                connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId );
 
-            // hide requirements section if there are none
-            if ( !requirementsResults.Where( a => a.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable ).Any() )
-            {
-                rcwRequirements.Visible = false;
-            }
+                var groupMember = new GroupMember { Id = 0 };
+                groupMember.GroupId = connectionRequest.AssignedGroupId.Value;
+                groupMember.Group = new GroupService( rockContext ).Get( groupMember.GroupId );
+                groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
+                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
 
-            // only show the requirements that apply to the GroupRole (or all Roles)
-            foreach ( var requirementResult in requirementsResults.Where( a => a.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable ) )
-            {
-                if ( requirementResult.GroupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual )
+                cblManualRequirements.Items.Clear();
+                lRequirementsLabels.Text = string.Empty;
+
+                IEnumerable<GroupRequirementStatus> requirementsResults;
+
+                if ( groupMember.IsNewOrChangedGroupMember( rockContext ) )
                 {
-                    var checkboxItem = new ListItem( requirementResult.GroupRequirement.GroupRequirementType.CheckboxLabel, requirementResult.GroupRequirement.Id.ToString() );
-                    if ( string.IsNullOrEmpty( checkboxItem.Text ) )
-                    {
-                        checkboxItem.Text = requirementResult.GroupRequirement.GroupRequirementType.Name;
-                    }
-
-                    checkboxItem.Selected = requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets;
-                    cblManualRequirements.Items.Add( checkboxItem );
+                    requirementsResults = groupMember.Group.PersonMeetsGroupRequirements( connectionRequest.PersonAlias.PersonId, connectionRequest.ConnectionOpportunity.GroupMemberRoleId );
                 }
                 else
                 {
-                    bool meets = requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets;
-                    string labelText;
-                    if ( meets )
+                    requirementsResults = groupMember.GetGroupRequirementsStatuses().ToList();
+                }
+
+                // hide requirements section if there are none
+                if ( !requirementsResults.Where( a => a.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable ).Any() )
+                {
+                    rcwRequirements.Visible = false;
+                }
+
+                // only show the requirements that apply to the GroupRole (or all Roles)
+                foreach ( var requirementResult in requirementsResults.Where( a => a.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable ) )
+                {
+                    if ( requirementResult.GroupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual )
                     {
-                        labelText = requirementResult.GroupRequirement.GroupRequirementType.PositiveLabel;
+                        var checkboxItem = new ListItem( requirementResult.GroupRequirement.GroupRequirementType.CheckboxLabel, requirementResult.GroupRequirement.Id.ToString() );
+                        if ( string.IsNullOrEmpty( checkboxItem.Text ) )
+                        {
+                            checkboxItem.Text = requirementResult.GroupRequirement.GroupRequirementType.Name;
+                        }
+
+                        checkboxItem.Selected = requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets;
+                        cblManualRequirements.Items.Add( checkboxItem );
                     }
                     else
                     {
-                        passedAllRequirements = false;
-                        labelText = requirementResult.GroupRequirement.GroupRequirementType.NegativeLabel;
-                    }
+                        bool meets = requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets;
+                        string labelText;
+                        if ( meets )
+                        {
+                            labelText = requirementResult.GroupRequirement.GroupRequirementType.PositiveLabel;
+                        }
+                        else
+                        {
+                            passedAllRequirements = false;
+                            labelText = requirementResult.GroupRequirement.GroupRequirementType.NegativeLabel;
+                        }
 
-                    if ( string.IsNullOrEmpty( labelText ) )
-                    {
-                        labelText = requirementResult.GroupRequirement.GroupRequirementType.Name;
-                    }
+                        if ( string.IsNullOrEmpty( labelText ) )
+                        {
+                            labelText = requirementResult.GroupRequirement.GroupRequirementType.Name;
+                        }
 
-                    lRequirementsLabels.Text += string.Format(
-                        @"<span class='label label-{1}'>{0}</span>
+                        lRequirementsLabels.Text += string.Format(
+                            @"<span class='label label-{1}'>{0}</span>
                         ",
-                        labelText,
-                        meets ? "success" : "danger" );
+                            labelText,
+                            meets ? "success" : "danger" );
+                    }
                 }
-            }
 
-            var requirementsWithErrors = requirementsResults.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.Error ).ToList();
-            if ( requirementsWithErrors.Any() )
-            {
-                nbRequirementsErrors.Visible = true;
-                nbRequirementsErrors.Text = string.Format(
-                    "An error occurred in one or more of the requirement calculations: <br /> {0}",
-                    requirementsWithErrors.AsDelimited( "<br />" ) );
-            }
-            else
-            {
-                nbRequirementsErrors.Visible = false;
-            }
-
-            if ( passedAllRequirements || ( groupMember.Group.MustMeetRequirementsToAddMember.HasValue && !groupMember.Group.MustMeetRequirementsToAddMember.Value ) )
-            {
-                if ( groupMember.Group.MustMeetRequirementsToAddMember.HasValue && !groupMember.Group.MustMeetRequirementsToAddMember.Value )
+                var requirementsWithErrors = requirementsResults.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.Error ).ToList();
+                if ( requirementsWithErrors.Any() )
                 {
-                    lbConnect.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'Warning: This person currently does not meet all of the requirements of the group. Are you sure you wish to add them to the group?');", ConnectionRequest.FriendlyTypeName );
+                    nbRequirementsErrors.Visible = true;
+                    nbRequirementsErrors.Text = string.Format(
+                        "An error occurred in one or more of the requirement calculations: <br /> {0}",
+                        requirementsWithErrors.AsDelimited( "<br />" ) );
                 }
-                lbConnect.Enabled = true;
-            }
-            else
-            {
-                lbConnect.Enabled = false;
+                else
+                {
+                    nbRequirementsErrors.Visible = false;
+                }
+
+                if ( passedAllRequirements || ( groupMember.Group.MustMeetRequirementsToAddMember.HasValue && !groupMember.Group.MustMeetRequirementsToAddMember.Value ) )
+                {
+                    if ( groupMember.Group.MustMeetRequirementsToAddMember.HasValue && !groupMember.Group.MustMeetRequirementsToAddMember.Value )
+                    {
+                        lbConnect.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'Warning: This person currently does not meet all of the requirements of the group. Are you sure you wish to add them to the group?');", ConnectionRequest.FriendlyTypeName );
+                    }
+                    lbConnect.Enabled = true;
+                }
+                else
+                {
+                    lbConnect.Enabled = false;
+                }
             }
         }
 
@@ -1189,7 +1295,6 @@ namespace RockWeb.Blocks.Connection
                 case "SEARCH":
                     dlgSearch.Show();
                     break;
-
             }
         }
 
@@ -1207,7 +1312,6 @@ namespace RockWeb.Blocks.Connection
                 case "SEARCH":
                     dlgSearch.Hide();
                     break;
-
             }
 
             hfActiveDialog.Value = string.Empty;
@@ -1271,9 +1375,10 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 List<string> workflowErrors;
+                var workflowService = new Rock.Model.WorkflowService( rockContext );
+
                 if ( workflow.Process( rockContext, _connectionRequest, out workflowErrors ) )
                 {
-                    var workflowService = new Rock.Model.WorkflowService( rockContext );
                     workflowService.Add( workflow );
 
                     rockContext.WrapTransaction( () =>
@@ -1286,13 +1391,16 @@ namespace RockWeb.Blocks.Connection
                         }
                     } );
                 }
-
+                workflow = workflowService.Get( workflow.Guid );
                 ConnectionRequestWorkflow connectionRequestWorkflow = new ConnectionRequestWorkflow();
                 connectionRequestWorkflow.ConnectionRequestId = _connectionRequest.Id;
                 connectionRequestWorkflow.WorkflowId = workflow.Id;
                 connectionRequestWorkflow.ConnectionWorkflowId = connectionWorkflow.Id;
+                connectionRequestWorkflow.TriggerType = connectionWorkflow.TriggerType;
+                connectionRequestWorkflow.TriggerQualifier = connectionWorkflow.QualifierValue;
                 new ConnectionRequestWorkflowService( rockContext ).Add( connectionRequestWorkflow );
                 rockContext.SaveChanges();
+                ShowDetail( PageParameter( "ConnectionRequestId" ).AsInteger(), PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() );
             }
         }
 

@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Data;
 using Rock.Security;
@@ -306,7 +307,7 @@ namespace RockWeb.Blocks.Administration
             LinkButton lb = sender as LinkButton;
             if ( lb != null )
             {
-                CurrentAction = lb.Text;
+                CurrentAction = lb.Text.Replace( " ", "" );
 
                 rptActions.DataSource = iSecured.SupportedActions;
                 rptActions.DataBind();
@@ -627,13 +628,24 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
+        /// Splits the case.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        protected string SplitCase( object action )
+        {
+            return action.ToString().SplitCase();
+        }
+
+        /// <summary>
         /// Sets the role actions.
         /// </summary>
         private void SetRoleActions()
         {
             cblRoleActionList.Items.Clear();
 
-            foreach ( var action in iSecured.SupportedActions )
+            var actions = iSecured.SupportedActions;
+            foreach ( var action in actions )
             {
                 if ( action.Key == CurrentAction )
                 {

@@ -11,25 +11,43 @@
 
         <div class="wizard">
     
-            <div class="wizard-item complete">
-                <asp:LinkButton ID="lbCalendarDetail" runat="server" OnClick="lbCalendarDetail_Click">
-                    <div class="wizard-item-icon">
-                        <i class="fa fa-fw fa-calendar"></i>
-                    </div>
-                    <div class="wizard-item-label">
-                        Calendar
-                    </div>
+             <div class="wizard-item complete">
+                <asp:LinkButton ID="lbCalendars" runat="server" OnClick="lbCalendarsDetail_Click" CausesValidation="false" >
+                    <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-calendar"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            Event Calendars
+                        </div>
+                    </asp:PlaceHolder>
                 </asp:LinkButton>
             </div>
     
             <div class="wizard-item complete">
-                <asp:LinkButton ID="lbCalendarItem" runat="server" OnClick="lbCalendarItem_Click">
-                    <div class="wizard-item-icon">
-                        <i class="fa fa-fw fa-calendar-o"></i>
-                    </div>
-                    <div class="wizard-item-label">
-                        Calendar Item
-                    </div>
+                <asp:LinkButton ID="lbCalendarDetail" runat="server" OnClick="lbCalendarDetail_Click" CausesValidation="false" >
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-calendar"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            Calendar
+                        </div>
+                    </asp:PlaceHolder>
+                </asp:LinkButton>
+            </div>
+    
+            <div class="wizard-item complete">
+                <asp:LinkButton ID="lbCalendarItem" runat="server" OnClick="lbCalendarItem_Click" CausesValidation="false" >
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-calendar-o"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            Calendar Item
+                        </div>
+                    </asp:PlaceHolder>
                 </asp:LinkButton>
             </div>
     
@@ -97,8 +115,8 @@
 
                 </div>
 
-                <Rock:RockTextBox ID="tbCampusNote" runat="server" Label="Campus Note" TextMode="MultiLine" Rows="2" />
-
+                <Rock:HtmlEditor ID="htmlCampusNote" runat="server" Label="Campus Note" />
+                
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />

@@ -3,6 +3,58 @@
 <asp:UpdatePanel ID="upnlRegistrantDetail" runat="server">
     <ContentTemplate>
 
+        <div class="wizard">
+
+            <div class="wizard-item complete">
+                <asp:LinkButton ID="lbWizardTemplate" runat="server" OnClick="lbWizardTemplate_Click" CausesValidation="false">
+                    <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-clipboard"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            <asp:Literal ID="lWizardTemplateName" runat="server" Text="Template" />
+                        </div>
+                    </asp:PlaceHolder>
+                </asp:LinkButton>
+            </div>
+
+            <div class="wizard-item complete">
+                <asp:LinkButton ID="lbWizardInstance" runat="server" OnClick="lbWizardInstance_Click" CausesValidation="false">
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-file-o"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            <asp:Literal ID="lWizardInstanceName" runat="server" Text="Instance" />
+                        </div>
+                    </asp:PlaceHolder>
+                </asp:LinkButton>
+            </div>
+
+            <div class="wizard-item complete">
+                <asp:LinkButton ID="lbWizardRegistration" runat="server" OnClick="lbWizardRegistration_Click" CausesValidation="false">
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-group"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            <asp:Literal ID="lWizardRegistrationName" runat="server" Text="Registration" />
+                        </div>
+                    </asp:PlaceHolder>
+                </asp:LinkButton>
+            </div>
+
+            <div class="wizard-item active">
+                <div class="wizard-item-icon">
+                    <i class="fa fa-fw fa-user"></i>
+                </div>
+                <div class="wizard-item-label">
+                    <asp:Literal ID="lWizardRegistrantName" runat="server" Text="Registration" />
+                </div>
+            </div>
+        </div>
+
         <asp:Panel ID="pnlDetails" runat="server">
 
             <div class="panel panel-block">

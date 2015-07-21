@@ -168,7 +168,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbRegistrationTerm" runat="server" Label="Registration Term" Placeholder="Registration" />
-                                <Rock:RockTextBox ID="tbRegistrantTerm" runat="server" Label="Registrant Term" Placeholder="Person" />
+                                <Rock:RockTextBox ID="tbRegistrantTerm" runat="server" Label="Registrant Term" Placeholder="Registrant" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbFeeTerm" runat="server" Label="Fee Term" Placeholder="Additional Options" />
@@ -224,7 +224,8 @@
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
+                        <Rock:HiddenFieldWithClass ID="hfHasRegistrations" runat="server" CssClass="js-has-registrations" />
+                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-template" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
                             <asp:LinkButton ID="btnCopy" runat="server" Text="Copy" CssClass="btn btn-link" OnClick="btnCopy_Click" />
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
@@ -284,7 +285,7 @@
             <Content>
                 <asp:HiddenField ID="hfDiscountGuid" runat="server" />
                 <asp:ValidationSummary ID="ValidationSummaryDiscount" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Discount" />
-                <Rock:RockTextBox ID="tbDiscountCode" runat="server" Label="Discount Code" ValidationGroup="Discount" Required="true" />
+                <Rock:RockTextBox ID="tbDiscountCode" runat="server" CssClass="input-width-xl" Label="Discount Code" ValidationGroup="Discount" Required="true" />
                 <Rock:RockRadioButtonList ID="rblDiscountType" runat="server" Label="Discount Type" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblDiscountType_SelectedIndexChanged">
                     <asp:ListItem Text="Percentage" Value="Percentage" />
                     <asp:ListItem Text="Amount" Value="Amount" />

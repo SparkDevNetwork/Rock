@@ -113,6 +113,10 @@ a.help {
     color: @help-color;
 }
 
+.help-message {
+    font-weight: normal;
+}
+
 .photo {
     img {
         width: 100%;
@@ -249,6 +253,10 @@ a.help {
 
         .form-group {
             margin-bottom: 0;
+        }
+
+        i.fa {
+            color: lighten(@text-color, 10%);
         }
     }
 
@@ -590,6 +598,11 @@ h6.condensed {
 }
 
 // add 10 column row
+.col-md-2-10 {
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
 @media (min-width: 992px) {
     .col-md-2-10 {
         width: 20%;

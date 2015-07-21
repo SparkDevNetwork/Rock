@@ -117,8 +117,6 @@ namespace RockWeb.Blocks.Event
 
             RegisterClientScript();
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Registration.FriendlyTypeName );
-
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlRegistrationDetail );
@@ -214,12 +212,6 @@ namespace RockWeb.Blocks.Event
                         return;
                     }
 
-                    if ( registration.Payments.Any() )
-                    {
-                        mdDeleteWarning.Show( "This registration has existing payments and cannot be deleted.", ModalAlertType.Information );
-                        return;
-                    }
-
                     string errorMessage;
                     if ( !registrationService.CanDelete( registration, out errorMessage ) )
                     {
@@ -232,7 +224,9 @@ namespace RockWeb.Blocks.Event
                     rockContext.SaveChanges();
                 }
 
-                NavigateToParentPage();
+                var pageParams = new Dictionary<string, string>();
+                pageParams.Add( "RegistrationInstanceId", RegistrationInstanceId.ToString() );
+                NavigateToParentPage( pageParams );
             }
         }
 
@@ -250,6 +244,8 @@ namespace RockWeb.Blocks.Event
 
                 var registrationService = new RegistrationService( rockContext );
 
+                bool newRegistration = false;
+
                 if ( RegistrationId.Value != 0 )
                 {
                     registration = registrationService.Queryable().Where( g => g.Id == RegistrationId.Value ).FirstOrDefault();
@@ -259,11 +255,12 @@ namespace RockWeb.Blocks.Event
                 {
                     registration = new Registration { RegistrationInstanceId = RegistrationInstanceId ?? 0 };
                     registrationService.Add( registration );
+                    newRegistration = true;
                 }
 
                 if ( registration != null && RegistrationInstanceId > 0 )
                 {
-                    registration.PersonAliasId = ppPerson.PersonAliasId.Value;
+                    registration.PersonAliasId = ppPerson.PersonAliasId;
                     registration.FirstName = tbFirstName.Text;
                     registration.LastName = tbLastName.Text;
                     registration.ConfirmationEmail = ebConfirmationEmail.Text;
@@ -288,10 +285,22 @@ namespace RockWeb.Blocks.Event
                         rockContext.SaveChanges();
                     } );
 
-                    // Reload registration
-                    ShowReadonlyDetails( GetRegistration( registration.Id ) );
+                    if ( newRegistration )
+                    {
+                        var pageRef = CurrentPageReference;
+                        pageRef.Parameters.AddOrReplace("RegistrationId", registration.Id.ToString());
+                        NavigateToPage( pageRef );
+                    }
+                    else
+                    {
+                        // Reload registration
+                        var reloadedRegistration = GetRegistration( registration.Id );
+                        lWizardRegistrationName.Text = reloadedRegistration.ToString();
+                        ShowReadonlyDetails( reloadedRegistration );
+                    }
                 }
             }
+
         }
 
         /// <summary>
@@ -311,6 +320,57 @@ namespace RockWeb.Blocks.Event
             {
                 // Cancelling on Edit.  Return to Details
                 ShowReadonlyDetails( GetRegistration( RegistrationId.Value ) );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbWizardTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbWizardTemplate_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            var pageCache = PageCache.Read( RockPage.PageId );
+            int templateId = 0;
+            if ( Registration != null && Registration.RegistrationInstance != null )
+            {
+                templateId = Registration.RegistrationInstance.RegistrationTemplateId;
+            }
+            else
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    int instanceId = PageParameter( "RegistrationInstanceId" ).AsInteger();
+                    templateId = new RegistrationInstanceService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( i => i.Id == instanceId )
+                        .Select( i => i.RegistrationTemplateId )
+                        .FirstOrDefault();
+                }
+            }
+            
+            if ( pageCache != null && pageCache.ParentPage != null && pageCache.ParentPage.ParentPage != null  )
+            {
+                qryParams.Add( "RegistrationTemplateId", templateId.ToString() );
+                NavigateToPage( pageCache.ParentPage.ParentPage.Guid, qryParams );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbWizardInstance control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbWizardInstance_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            var pageCache = PageCache.Read( RockPage.PageId );
+            var instanceId = Registration != null ? Registration.RegistrationInstanceId.ToString() : PageParameter("RegistrationInstanceId");
+            if ( pageCache != null && pageCache.ParentPage != null )
+            {
+                qryParams.Add( "RegistrationInstanceId", instanceId );
+                NavigateToPage( pageCache.ParentPage.Guid, qryParams );
             }
         }
 
@@ -398,6 +458,7 @@ namespace RockWeb.Blocks.Event
 
         protected void lbAddPayment_Click( object sender, EventArgs e )
         {
+
             if ( Registration != null && Registration.PersonAliasId.HasValue && RegistrationTemplateState != null && RegistrationTemplateState.FinancialGateway != null )
             {
                 var component = RegistrationTemplateState.FinancialGateway.GetGatewayComponent();
@@ -409,7 +470,11 @@ namespace RockWeb.Blocks.Event
                     mypExpiration.MinimumYear = RockDateTime.Now.Year;
 
                     cbPaymentAmount.Text = string.Empty;
-                    cbPaymentAmount.Placeholder = Registration.BalanceDue.ToString( "N2" );
+                    cbPaymentAmount.Text = Registration.BalanceDue.ToString( "N2" );
+
+                    txtCreditCard.Text = string.Empty;
+                    mypExpiration.SelectedDate = null;
+                    txtCVV.Text = string.Empty;
 
                     if ( Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
                     {
@@ -424,8 +489,10 @@ namespace RockWeb.Blocks.Event
 
                     pnlCosts.Visible = false;
                     pnlPaymentInfo.Visible = true;
+                    return;
                 }
             }
+
         }
 
         protected void lbCancelPayment_Click( object sender, EventArgs e )
@@ -453,11 +520,14 @@ namespace RockWeb.Blocks.Event
 
                     // reload registration
                     Registration = GetRegistration( Registration.Id, rockContext );
-                    ShowReadonlyDetails( Registration );
+
                     RockPage.UpdateBlocks( "~/Blocks/Finance/TransactionList.ascx" );
+
+                    ShowReadonlyDetails( Registration );
 
                     pnlPaymentInfo.Visible = false;
                     pnlCosts.Visible = true;
+
                 }
                 catch ( Exception ex )
                 {
@@ -563,6 +633,9 @@ namespace RockWeb.Blocks.Event
                         Title = Registration.ToString();
                         RegistrationInstanceId = Registration.RegistrationInstanceId;
                         RegistrationTemplateState = Registration.RegistrationInstance.RegistrationTemplate;
+                        lWizardTemplateName.Text = Registration.RegistrationInstance.RegistrationTemplate.Name;
+                        lWizardInstanceName.Text = Registration.RegistrationInstance.Name;
+                        lWizardRegistrationName.Text = Registration.ToString();
                     }
                 }
 
@@ -576,6 +649,9 @@ namespace RockWeb.Blocks.Event
                         .FirstOrDefault();
                     if ( registrationInstance != null )
                     {
+                        lWizardTemplateName.Text = registrationInstance.RegistrationTemplate.Name;
+                        lWizardInstanceName.Text = registrationInstance.Name;
+                        lWizardRegistrationName.Text = "New Registration";
                         RegistrationTemplateState = registrationInstance.RegistrationTemplate;
                         EditAllowed = EditAllowed || registrationInstance.RegistrationTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
                     }
@@ -596,7 +672,7 @@ namespace RockWeb.Blocks.Event
 
                 var registration = new RegistrationService( rockContext )
                     .Queryable( "RegistrationInstance.RegistrationTemplate.Forms.Fields,PersonAlias.Person,Group,Registrants.Fees" ).AsNoTracking()
-                    .Where( r => r.Id == RegistrationId.Value )
+                    .Where( r => r.Id == registrationId.Value )
                     .FirstOrDefault();
 
                 return registration;
@@ -758,6 +834,13 @@ namespace RockWeb.Blocks.Event
             BuildFeeTable( registration );
             BuildRegistrationControls( true );
 
+            bool anyPayments = registration.Payments.Any();
+            hfHasPayments.Value = anyPayments.ToString();
+            foreach ( RockWeb.Blocks.Finance.TransactionList block in RockPage.RockBlocks.Where( a => a is RockWeb.Blocks.Finance.TransactionList ) )
+            {
+                block.SetVisible( anyPayments );
+            }
+
             lbAddRegistrant.Visible = EditAllowed;
         }
 
@@ -809,6 +892,27 @@ namespace RockWeb.Blocks.Event
     $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
 ";
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registration-detail-card-info", script, true );
+
+            string deleteScript = @"
+
+    $('a.js-delete-registration').click(function( e ){
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this Registration? All of the registrants will also be deleted!', function (result) {
+            if (result) {
+                if ( $('input.js-has-payments').val() == 'True' ) {
+                    Rock.dialogs.confirm('This registration also has payments. Are you really sure that you want to delete the registration?<br/><small>(payments will not be deleted, but they will no longer be associated with a registration)</small>', function (result) {
+                        if (result) {
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                        }
+                    });
+                } else {
+                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                }
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( btnDelete, btnDelete.GetType(), "deleteRegistrationScript", deleteScript, true );
         }
 
         #endregion
@@ -899,6 +1003,8 @@ namespace RockWeb.Blocks.Event
                         History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
                     }
                 }
+
+                transaction.Summary = Registration.GetSummary();
 
                 var transactionDetail = new FinancialTransactionDetail();
                 transactionDetail.Amount = amount;
@@ -1069,7 +1175,12 @@ namespace RockWeb.Blocks.Event
                 lTotalCost.Text = registration.DiscountedCost.ToString( "C2" );
                 lPreviouslyPaid.Text = registration.TotalPaid.ToString( "C2" );
                 lRemainingDue.Text = balanceDue.ToString( "C2" );
-                lbAddPayment.Visible = balanceDue > 0.0m;
+
+                lbAddPayment.Visible = ( balanceDue > 0.0m &&
+                    Registration != null &&
+                    Registration.PersonAliasId.HasValue &&
+                    RegistrationTemplateState != null &&
+                    RegistrationTemplateState.FinancialGateway != null );
             }
             else
             {
@@ -1209,7 +1320,7 @@ namespace RockWeb.Blocks.Event
             if ( feeInfo.Quantity > 0 )
             {
                 var rlField = new RockLiteral();
-                rlField.ID = string.Format( "rlFee_{0}_{1}", registrant.Id, fee.Id );
+                rlField.ID = string.Format( "rlFee_{0}_{1}_{2}", registrant.Id, fee.Id, feeInfo.Option );
                 rlField.Label = fee.Name;
 
                 if ( !string.IsNullOrWhiteSpace( feeInfo.Option ) )

@@ -76,6 +76,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<AttributeValue>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AttributeValue.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<AttributeValue>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AttributeValue.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Auth>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Auth.FriendlyTypeName );
@@ -331,6 +343,18 @@ namespace Rock.Model
             if ( new Service<ConnectionOpportunityGroup>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunityGroup.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<ConnectionOpportunityGroupCampus>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunityGroupCampus.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<ConnectionOpportunityGroupCampus>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunityGroupCampus.FriendlyTypeName );
                 return false;
             }  
  

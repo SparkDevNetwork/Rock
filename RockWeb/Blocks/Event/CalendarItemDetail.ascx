@@ -14,14 +14,30 @@
 
         <div class="wizard">
 
+             <div class="wizard-item complete">
+                <asp:LinkButton ID="lbCalendars" runat="server" OnClick="lbCalendarsDetail_Click" CausesValidation="false" >
+                    <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-calendar"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            Event Calendars
+                        </div>
+                    </asp:PlaceHolder>
+                </asp:LinkButton>
+            </div>
+    
             <div class="wizard-item complete">
-                <asp:LinkButton ID="lbCalendarDetail" runat="server" OnClick="lbCalendarDetail_Click" >
-                    <div class="wizard-item-icon">
-                        <i class="fa fa-fw fa-calendar"></i>
-                    </div>
-                    <div class="wizard-item-label">
-                        Calendar
-                    </div>
+                <asp:LinkButton ID="lbCalendarDetail" runat="server" OnClick="lbCalendarDetail_Click" CausesValidation="false" >
+                    <asp:PlaceHolder runat="server">
+                        <div class="wizard-item-icon">
+                            <i class="fa fa-fw fa-calendar"></i>
+                        </div>
+                        <div class="wizard-item-label">
+                            <asp:Literal ID="lWizardCalendarName" runat="server" />
+                        </div>
+                    </asp:PlaceHolder>
                 </asp:LinkButton>
             </div>
     
@@ -30,7 +46,7 @@
                     <i class="fa fa-fw fa-calendar-o"></i>
                 </div>
                 <div class="wizard-item-label">
-                     Calendar Item
+                    <asp:Literal ID="lWizardCalendarItemName" runat="server" />
                 </div>
             </div>
     
@@ -134,9 +150,11 @@
                                 </div>
                             </Rock:RockControlWrapper>
                             <Rock:RockCheckBoxList ID="cblAdditionalCalendars" runat="server" Label="Additional Calendars" 
+                                Help="Any other calendars that this item should be added to also."
                                 OnSelectedIndexChanged="cblAdditionalCalendars_SelectedIndexChanged" AutoPostBack="true"
                                 RepeatDirection="Horizontal" />
-                            <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Details URL" />
+                            <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Details URL" 
+                                Help="A custom url to use for showing details of the calendar item (if the default item detail page should not be used)."/>
                         </div>
                         <div class="col-md-6">
                             <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />

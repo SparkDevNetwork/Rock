@@ -2,7 +2,11 @@
 
 <script type="text/javascript">
     function clearActiveDialog() {
-        $('#<%=btnHideDialog.ClientID %>').click();
+        $('#<%= btnHideDialog.ClientID %>').click();
+    }
+
+    function updateField(obj) {
+        $("#<%= tbPublicName.ClientID %>").val($(obj).val());
     }
 </script>
 
@@ -39,14 +43,14 @@
 
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.ConnectionOpportunity, Rock" PropertyName="Name" />
+                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.ConnectionOpportunity, Rock" PropertyName="Name" OnBlur='updateField(this)' />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                             </div>
                         </div>
 
-                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.ConnectionOpportunity, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.ConnectionOpportunity, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" ValidateRequestMode="Disabled" />
 
                         <div class="row">
                             <div class="col-md-6">
@@ -66,6 +70,7 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />
+                                <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                             </div>
                         </div>
 
@@ -85,17 +90,17 @@
                             </div>
                         </Rock:PanelWidget>
 
-                        <Rock:PanelWidget ID="wpConnectionOpportunityCampuses" runat="server" Title="Connector Groups">
+                        <Rock:PanelWidget ID="wpConnectionOpportunityGroupCampuses" runat="server" Title="Connector Groups">
                             <div class="col-md-6">
                                 <Rock:GroupPicker ID="gpConnectorGroup" runat="server" Label="Global Connector Group" Help="The group in charge of managing requests for this opportunity" />
                             </div>
                             <div class="grid">
-                                <Rock:Grid ID="gConnectionOpportunityCampuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Campus Connector Group">
+                                <Rock:Grid ID="gConnectionOpportunityGroupCampuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Campus Connector Group">
                                     <Columns>
                                         <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
                                         <Rock:RockBoundField DataField="Group" HeaderText="Group" />
-                                        <Rock:EditField OnClick="gConnectionOpportunityCampuses_Edit" />
-                                        <Rock:DeleteField OnClick="gConnectionOpportunityCampuses_Delete" />
+                                        <Rock:EditField OnClick="gConnectionOpportunityGroupCampuses_Edit" />
+                                        <Rock:DeleteField OnClick="gConnectionOpportunityGroupCampuses_Delete" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -126,7 +131,7 @@
         <asp:Button ID="btnHideDialog" runat="server" Style="display: none" OnClick="btnHideDialog_Click" />
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="dlgWorkflowDetails" runat="server" Title="Campus Select" OnSaveClick="dlgWorkflowDetails_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="WorkflowDetails">
+        <Rock:ModalDialog ID="dlgWorkflowDetails" runat="server" Title="Select Workflow" OnSaveClick="dlgWorkflowDetails_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="WorkflowDetails">
             <Content>
 
                 <asp:HiddenField ID="hfWorkflowGuid" runat="server" />
@@ -167,7 +172,7 @@
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgCampusDetails" runat="server" ValidationGroup="CampusDetails" SaveButtonText="Add" OnSaveClick="dlgCampusDetails_SaveClick" Title="Select Group">
+        <Rock:ModalDialog ID="dlgGroupCampusDetails" runat="server" ValidationGroup="CampusDetails" SaveButtonText="Add" OnSaveClick="dlgGroupCampusDetails_SaveClick" Title="Select Group">
             <Content>
                 <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" ValidationGroup="CampusDetails" Required="true" />
                 <Rock:GroupPicker ID="gpGroup" runat="server" Label="Connector Group" ValidationGroup="CampusDetails" />

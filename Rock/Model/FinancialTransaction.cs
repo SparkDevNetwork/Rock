@@ -372,6 +372,7 @@ namespace Rock.Model
     /// </summary>
     [DataContract]
     [NotMapped]
+    [RockClientInclude("Special Class to use when uploading a FinancialTransaction from a Scanned Check thru the Rest API")]
     public class FinancialTransactionScannedCheck
     {
         /// <summary>
