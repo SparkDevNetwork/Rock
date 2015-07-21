@@ -1,0 +1,76 @@
+<style>
+  .locationsmap {
+    min-height: 70vh;
+    position: relative;
+  }
+  .locationsmap-nearest {
+    z-index: 10;
+    position: relative;
+    bottom: -50px;
+    left: 10px;
+  }
+</style>
+
+<a class="btn btn-default js-find-nearest locationsmap-nearest"><i class="fa fa-fw fa-location-arrow"></i> Find Nearest Campus</a>
+<div id="locationsmap" class="locationsmap">
+</div>
+
+<h2 class="page-header margin-b-lg">Our Campuses</h2>
+
+<div class="row">
+{% for campus in Campuses %}
+  <div class="col-sm-6 col-md-4">
+    <div class="panel panel-default margin-b-lg">
+      <div class="panel-body">
+        <h4 class="margin-t-none">{{ campus.Name }} Campus</h4>
+        <h5 class="margin-t-md margin-b-sm text-muted">Service Times</h5>
+        <p class="text-muted commalist">
+          {% assign hasSaturday = false %}{% assign hasSunday = false %}
+          {% for time in campus.ServiceTimes %}
+            {% if time.Day == 'Saturday' %}
+              {% assign hasSaturday = true %}
+            {% endif %}
+            {% if time.Day == 'Sunday' %}
+              {% assign hasSunday = true %}
+            {% endif %}
+          {% endfor %}
+
+          {% if hasSaturday %}
+            <strong class="margin-r-sm">Saturday</strong>
+            {% for time in campus.ServiceTimes %}
+              {% if time.Day == 'Saturday' %}
+                <span class="commalist-item">{{ time.Time | Remove: ' ' }}</span>
+              {% endif %}
+            {% endfor %}
+            <br>
+          {% endif %}
+
+          {% if hasSunday %}
+            <strong class="margin-r-sm">Sunday</strong>
+            {% for time in campus.ServiceTimes %}
+              {% if time.Day == 'Sunday' %}
+                <span class="commalist-item">{{ time.Time | Remove: ' ' }}</span>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+
+          {% if hasSaturday == false and hasSunday %}
+            <br><br>
+          {% endif %}
+        </p>
+      </div>
+      {% capture urlString %}{{ campus.Location.Street1 }} {{ campus.Location.Street2 }} {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}{% endcapture %}
+      {% assign urlString = urlString | Replace: '  ', ' ' | Replace: ' ', '+' %}
+      <div class="panel-footer clearfix">
+        <a href="{{ campus.Url }}" class="btn btn-default btn-sm pull-left">Learn More</a>
+        <a href="http://maps.apple.com/maps?daddr={{ urlString }}" class="btn btn-link btn-sm pull-right text-muted padding-r-none">Get Directions</a>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+
+{% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
+
+<script src="~~/Scripts/_map.js"></script>
+<script src="~~/Scripts/map-locations-page.js"></script>

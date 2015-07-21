@@ -26,23 +26,20 @@ CCV.locations = [
     facebook: '{{ campus.FacebookURL }}',
     serviceTimes: {
       {% capture renderedTimes %}
-      {% assign times = campus.RawServiceTimes | Split: '|' %}
-      {% for time in times %}
-        {% assign split = time | Split: '^' %}
-        {% if split[0] == 'Saturday' %}
+      {% for time in campus.ServiceTimes %}
+        {% if time.Day == 'Saturday' %}
           {% assign hasSaturday = true %}
         {% endif %}
-        {% if split[0] == 'Sunday' %}
+        {% if time.Day == 'Sunday' %}
           {% assign hasSunday = true %}
         {% endif %}
       {% endfor %}
 
       {% if hasSaturday %}
         saturday: [
-        {% for time in times %}
-          {% assign split = time | Split: '^' %}
-          {% if split[0] == 'Saturday' %}
-            '{{ split[1] }}',
+        {% for time in campus.ServiceTimes %}
+          {% if time.Day == 'Saturday' %}
+            '{{ time.Time }}',
           {% endif %}
         {% endfor %}
         ],
@@ -50,10 +47,9 @@ CCV.locations = [
 
       {% if hasSunday %}
         sunday: [
-        {% for time in times %}
-          {% assign split = time | Split: '^' %}
-          {% if split[0] == 'Sunday' %}
-            '{{ split[1] }}',
+        {% for time in campus.ServiceTimes %}
+          {% if time.Day == 'Sunday' %}
+            '{{ time.Time }}',
           {% endif %}
         {% endfor %}
         ]

@@ -26,6 +26,9 @@
 
 {% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
 
-<!-- @TODO use minified version in production -->
+{% comment %}
 <script src="~~/Scripts/_map.js"></script>
 <script src="~~/Scripts/map-landing-page.js"></script>
+{% endcomment %}
+
+<script src="~~/Scripts/min/map-landing-page.min.js"></script>
