@@ -27,39 +27,21 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for EventItem that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for ConnectionOpportunityGroupCampus that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class EventItemEntity
+    public partial class ConnectionOpportunityGroupCampusEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? ApprovedByPersonAliasId { get; set; }
+        public int CampusId { get; set; }
 
         /// <summary />
-        public DateTime? ApprovedOnDateTime { get; set; }
+        public int ConnectionOpportunityId { get; set; }
 
         /// <summary />
-        public string Description { get; set; }
-
-        /// <summary />
-        public string DetailsUrl { get; set; }
-
-        /// <summary />
-        public bool IsActive { get; set; }
-
-        /// <summary />
-        public bool IsApproved { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public int? PhotoId { get; set; }
-
-        /// <summary />
-        public string Summary { get; set; }
+        public int? ConnectorGroupId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -68,21 +50,15 @@ namespace Rock.Client
         public string ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source EventItem object
+        /// Copies the base properties from a source ConnectionOpportunityGroupCampus object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( EventItem source )
+        public void CopyPropertiesFrom( ConnectionOpportunityGroupCampus source )
         {
             this.Id = source.Id;
-            this.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
-            this.ApprovedOnDateTime = source.ApprovedOnDateTime;
-            this.Description = source.Description;
-            this.DetailsUrl = source.DetailsUrl;
-            this.IsActive = source.IsActive;
-            this.IsApproved = source.IsApproved;
-            this.Name = source.Name;
-            this.PhotoId = source.PhotoId;
-            this.Summary = source.Summary;
+            this.CampusId = source.CampusId;
+            this.ConnectionOpportunityId = source.ConnectionOpportunityId;
+            this.ConnectorGroupId = source.ConnectorGroupId;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 
@@ -90,18 +66,18 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for EventItem that includes all the fields that are available for GETs. Use this for GETs (use EventItemEntity for POST/PUTs)
+    /// Client model for ConnectionOpportunityGroupCampus that includes all the fields that are available for GETs. Use this for GETs (use ConnectionOpportunityGroupCampusEntity for POST/PUTs)
     /// </summary>
-    public partial class EventItem : EventItemEntity
+    public partial class ConnectionOpportunityGroupCampus : ConnectionOpportunityGroupCampusEntity
     {
         /// <summary />
-        public PersonAlias ApprovedByPersonAlias { get; set; }
+        public Campus Campus { get; set; }
 
         /// <summary />
-        public ICollection<EventItemCampus> EventItemCampuses { get; set; }
+        public ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary />
-        public BinaryFile Photo { get; set; }
+        public Group ConnectorGroup { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

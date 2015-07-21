@@ -44,6 +44,15 @@ namespace Rock.Client
         public string ConfirmationEmailTemplate { get; set; }
 
         /// <summary />
+        public string ConfirmationFromEmail { get; set; }
+
+        /// <summary />
+        public string ConfirmationFromName { get; set; }
+
+        /// <summary />
+        public string ConfirmationSubject { get; set; }
+
+        /// <summary />
         public decimal Cost { get; set; }
 
         /// <summary />
@@ -80,7 +89,7 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public bool NotifyGroupLeaders { get; set; }
+        public Rock.Client.Enums.RegistrationNotify Notify { get; set; }
 
         /// <summary />
         public Rock.Client.Enums.RegistrantsSameFamily RegistrantsSameFamily { get; set; }
@@ -95,6 +104,15 @@ namespace Rock.Client
         public string ReminderEmailTemplate { get; set; }
 
         /// <summary />
+        public string ReminderFromEmail { get; set; }
+
+        /// <summary />
+        public string ReminderFromName { get; set; }
+
+        /// <summary />
+        public string ReminderSubject { get; set; }
+
+        /// <summary />
         public string RequestEntryName { get; set; }
 
         /// <summary />
@@ -102,9 +120,6 @@ namespace Rock.Client
 
         /// <summary />
         public string SuccessTitle { get; set; }
-
-        /// <summary />
-        public bool UseDefaultConfirmationEmail { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -122,6 +137,9 @@ namespace Rock.Client
             this.AllowMultipleRegistrants = source.AllowMultipleRegistrants;
             this.CategoryId = source.CategoryId;
             this.ConfirmationEmailTemplate = source.ConfirmationEmailTemplate;
+            this.ConfirmationFromEmail = source.ConfirmationFromEmail;
+            this.ConfirmationFromName = source.ConfirmationFromName;
+            this.ConfirmationSubject = source.ConfirmationSubject;
             this.Cost = source.Cost;
             this.DiscountCodeTerm = source.DiscountCodeTerm;
             this.FeeTerm = source.FeeTerm;
@@ -134,15 +152,17 @@ namespace Rock.Client
             this.MaxRegistrants = source.MaxRegistrants;
             this.MinimumInitialPayment = source.MinimumInitialPayment;
             this.Name = source.Name;
-            this.NotifyGroupLeaders = source.NotifyGroupLeaders;
+            this.Notify = source.Notify;
             this.RegistrantsSameFamily = source.RegistrantsSameFamily;
             this.RegistrantTerm = source.RegistrantTerm;
             this.RegistrationTerm = source.RegistrationTerm;
             this.ReminderEmailTemplate = source.ReminderEmailTemplate;
+            this.ReminderFromEmail = source.ReminderFromEmail;
+            this.ReminderFromName = source.ReminderFromName;
+            this.ReminderSubject = source.ReminderSubject;
             this.RequestEntryName = source.RequestEntryName;
             this.SuccessText = source.SuccessText;
             this.SuccessTitle = source.SuccessTitle;
-            this.UseDefaultConfirmationEmail = source.UseDefaultConfirmationEmail;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 

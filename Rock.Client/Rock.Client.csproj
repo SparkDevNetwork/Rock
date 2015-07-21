@@ -60,6 +60,7 @@
     <Compile Include="CodeGenerated\ConnectionOpportunity.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunityCampus.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunityGroup.cs" />
+    <Compile Include="CodeGenerated\ConnectionOpportunityGroupCampus.cs" />
     <Compile Include="CodeGenerated\ConnectionRequest.cs" />
     <Compile Include="CodeGenerated\ConnectionRequestActivity.cs" />
     <Compile Include="CodeGenerated\ConnectionRequestWorkflow.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="CodeGenerated\FinancialTransactionDetail.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionImage.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionRefund.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionScannedCheck.cs" />
     <Compile Include="CodeGenerated\Following.cs" />
     <Compile Include="CodeGenerated\Group.cs" />
     <Compile Include="CodeGenerated\GroupLocation.cs" />

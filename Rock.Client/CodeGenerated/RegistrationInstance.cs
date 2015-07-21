@@ -44,13 +44,13 @@ namespace Rock.Client
         public string AdditionalReminderDetails { get; set; }
 
         /// <summary />
-        public DateTime? ConfirmationSentDateTime { get; set; }
-
-        /// <summary />
         public string ContactEmail { get; set; }
 
         /// <summary />
         public string ContactName { get; set; }
+
+        /// <summary />
+        public string ContactPhone { get; set; }
 
         /// <summary />
         public string Details { get; set; }
@@ -71,7 +71,10 @@ namespace Rock.Client
         public int RegistrationTemplateId { get; set; }
 
         /// <summary />
-        public DateTime? ReminderSentDateTime { get; set; }
+        public bool ReminderSent { get; set; }
+
+        /// <summary />
+        public DateTime? SendReminderDateTime { get; set; }
 
         /// <summary />
         public DateTime? StartDateTime { get; set; }
@@ -92,16 +95,17 @@ namespace Rock.Client
             this.AccountId = source.AccountId;
             this.AdditionalConfirmationDetails = source.AdditionalConfirmationDetails;
             this.AdditionalReminderDetails = source.AdditionalReminderDetails;
-            this.ConfirmationSentDateTime = source.ConfirmationSentDateTime;
             this.ContactEmail = source.ContactEmail;
             this.ContactName = source.ContactName;
+            this.ContactPhone = source.ContactPhone;
             this.Details = source.Details;
             this.EndDateTime = source.EndDateTime;
             this.IsActive = source.IsActive;
             this.MaxAttendees = source.MaxAttendees;
             this.Name = source.Name;
             this.RegistrationTemplateId = source.RegistrationTemplateId;
-            this.ReminderSentDateTime = source.ReminderSentDateTime;
+            this.ReminderSent = source.ReminderSent;
+            this.SendReminderDateTime = source.SendReminderDateTime;
             this.StartDateTime = source.StartDateTime;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
