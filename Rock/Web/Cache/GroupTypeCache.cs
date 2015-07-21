@@ -433,7 +433,6 @@ namespace Rock.Web.Cache
                 this.InheritedGroupTypeId = groupType.InheritedGroupTypeId;
                 this.LocationSelectionMode = groupType.LocationSelectionMode;
                 this.EnableLocationSchedules = groupType.EnableLocationSchedules;
-                this.EnableAlternatePlacements = groupType.EnableAlternatePlacements;
                 this.GroupTypePurposeValueId = groupType.GroupTypePurposeValueId;
                 this.locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId ).ToList();
 
