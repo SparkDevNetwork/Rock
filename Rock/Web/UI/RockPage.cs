@@ -771,7 +771,8 @@ namespace Rock.Web.UI
 
                     // Load the blocks and insert them into page zones
                     Page.Trace.Warn( "Loading Blocks" );
-                    foreach ( Rock.Web.Cache.BlockCache block in _pageCache.Blocks )
+                    var pageBlocks = _pageCache.Blocks;
+                    foreach ( Rock.Web.Cache.BlockCache block in pageBlocks )
                     {
                         Page.Trace.Warn( string.Format( "\tLoading '{0}' block", block.Name ) );
 
@@ -861,7 +862,14 @@ namespace Rock.Web.UI
                                     if ( !block.BlockType.IsInstancePropertiesVerified )
                                     {
                                         Page.Trace.Warn( "\tCreating block attributes" );
-                                        blockControl.CreateAttributes( rockContext );
+                                        if ( blockControl.CreateAttributes( rockContext ) )
+                                        {
+                                            // If attributes were updated, update the block attributes for all blocks in page of same type
+                                            pageBlocks
+                                                .Where( b => b.BlockTypeId == block.BlockTypeId )
+                                                .ToList()
+                                                .ForEach( b => b.ReloadAttributeValues() );
+                                        }
                                         block.BlockType.IsInstancePropertiesVerified = true;
                                     }
 
