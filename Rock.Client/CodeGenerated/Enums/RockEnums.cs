@@ -251,6 +251,7 @@ namespace Rock.Client.Enums
         MemberStatusChanged = 0x2,
         MemberRoleChanged = 0x3,
         MemberAttendedGroup = 0x4,
+        MemberPlacedElsewhere = 0x5,
     }
 
     /// <summary>
