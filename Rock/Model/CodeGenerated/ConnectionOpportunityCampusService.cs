@@ -36,8 +36,7 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="ConnectionOpportunityCampusService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public ConnectionOpportunityCampusService( RockContext context )
-            : base( context )
+        public ConnectionOpportunityCampusService(RockContext context) : base(context)
         {
         }
 

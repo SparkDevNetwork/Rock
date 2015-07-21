@@ -11,10 +11,12 @@
       Style="{StaticResource pageBackground}">
 
     <Grid>
-        <StackPanel>
-
-            <StackPanel Grid.Row="0"
-                        Orientation="Horizontal"
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0">
+            <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right">
                 <Ellipse Name="shapeStatus"
                          Grid.Column="2"
@@ -208,38 +210,34 @@
                        Content="Scanner is not ready. Verify that the scanner is powered on and connected.">
                 </Label>
             </StackPanel>
-            <StackPanel Name="pnlStartStopClose"
-                        Orientation="Horizontal"
-                        Margin="0,0,0,8"
-                        Grid.Row="3"
-                        Grid.Column="0">
-                <Button x:Name="btnStart"
-                        Style="{StaticResource buttonStylePrimary}"
-                        Margin="8,0,0,0"
-                        Content="Start"
-                        Click="btnStart_Click" />
-                <Button Grid.Row="3"
-                        Margin="8,0,0,0"
-                        x:Name="btnStopScanning"
-                        Style="{StaticResource buttonStyleAction}"
-                        Content="Stop"
-                        Click="btnStopScanning_Click"
-                        Height="Auto" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal"
-                        Grid.Row="3"
-                        Grid.Column="1"
-                        FlowDirection="RightToLeft">
-                <Button Style="{StaticResource buttonStyle}"
-                        x:Name="btnClose"
-                        Margin="4,4,0,0"
-                        Content="Close"
-                        IsCancel="True"
-                        HorizontalAlignment="Left"
-                        Click="btnClose_Click" />
-            </StackPanel>
 
         </Grid>
 
+        <StackPanel Name="pnlStartStopClose"
+                    Orientation="Horizontal"
+                    Margin="8"
+                    Grid.Row="1">
+            <Button x:Name="btnStart"
+                    Style="{StaticResource buttonStylePrimary}"
+                    Margin="0"
+                    Content="Start"
+                    Click="btnStart_Click" />
+            <Button x:Name="btnStopScanning"
+                    Style="{StaticResource buttonStyleAction}"
+                    Margin="8,0,0,0"
+                    Content="Stop"
+                    Click="btnStopScanning_Click" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal"
+                    Grid.Row="1"
+                    FlowDirection="RightToLeft">
+            <Button Style="{StaticResource buttonStyle}"
+                    x:Name="btnClose"
+                    Margin="4,4,0,0"
+                    Content="Close"
+                    IsCancel="True"
+                    HorizontalAlignment="Left"
+                    Click="btnClose_Click" />
+        </StackPanel>
     </Grid>
 </Page>

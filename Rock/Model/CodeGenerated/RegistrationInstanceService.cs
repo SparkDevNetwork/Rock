@@ -99,12 +99,15 @@ namespace Rock.Model
             target.AdditionalReminderDetails = source.AdditionalReminderDetails;
             target.ContactEmail = source.ContactEmail;
             target.ContactName = source.ContactName;
+            target.ContactPhone = source.ContactPhone;
             target.Details = source.Details;
             target.EndDateTime = source.EndDateTime;
             target.IsActive = source.IsActive;
             target.MaxAttendees = source.MaxAttendees;
             target.Name = source.Name;
             target.RegistrationTemplateId = source.RegistrationTemplateId;
+            target.ReminderSent = source.ReminderSent;
+            target.SendReminderDateTime = source.SendReminderDateTime;
             target.StartDateTime = source.StartDateTime;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

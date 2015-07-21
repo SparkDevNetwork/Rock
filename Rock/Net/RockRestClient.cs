@@ -36,6 +36,8 @@ namespace Rock.Net
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RockRestClient"/> class.
+        /// </summary>
+        /// <param name="rockBaseUrl">The rock base URL.</param>
         //// </summary>
         //[Obsolete( "The RestSharp library should be used instead of this class.  This class will eventually be removed." )]
         public RockRestClient( string rockBaseUrl )
@@ -177,10 +179,12 @@ namespace Rock.Net
 
             HttpContent resultContent;
             HttpError httpError = null;
+            HttpResponseMessage responseMessage = null;
             int result = 0;
 
             httpClient.GetAsync( requestUri ).ContinueWith( ( postTask ) =>
             {
+                responseMessage = postTask.Result;
                 resultContent = postTask.Result.Content;
 
                 if ( postTask.Result.IsSuccessStatusCode )
@@ -203,7 +207,7 @@ namespace Rock.Net
 
             if ( httpError != null )
             {
-                throw new HttpErrorException( httpError );
+                throw new HttpErrorException( httpError, responseMessage );
             }
 
             return result;
@@ -254,10 +258,12 @@ namespace Rock.Net
 
             HttpContent resultContent;
             HttpError httpError = null;
+            HttpResponseMessage responseMessage = null;
             T result = default( T );
 
             httpClient.GetAsync( requestUri ).ContinueWith( ( postTask ) =>
                 {
+                    responseMessage = postTask.Result;
                     resultContent = postTask.Result.Content;
 
                     if ( postTask.Result.IsSuccessStatusCode )
@@ -278,7 +284,7 @@ namespace Rock.Net
 
             if ( httpError != null )
             {
-                throw new HttpErrorException( httpError );
+                throw new HttpErrorException( httpError, responseMessage );
             }
 
             return result;
@@ -345,6 +351,14 @@ namespace Rock.Net
             {
                 throw response.ErrorException;
             }
+
+            if ( response.StatusCode != HttpStatusCode.NoContent )
+            {
+                if ( !string.IsNullOrWhiteSpace( response.StatusDescription ) )
+                {
+                    throw new HttpErrorException( new HttpError( response.StatusDescription ), null );
+                }
+            }
         }
 
         /// <summary>
@@ -362,10 +376,12 @@ namespace Rock.Net
 
             HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
             HttpError httpError = null;
-            HttpResponseMessage httpMessage = null;
+            HttpResponseMessage httpResponseMessage = null;
 
             Action<Task<HttpResponseMessage>> handleContinue = new Action<Task<HttpResponseMessage>>( postTask =>
             {
+                httpResponseMessage = postTask.Result;
+
                 if ( postTask.Result.IsSuccessStatusCode )
                 {
                     postTask.Result.Content.ReadAsAsync<object>().ContinueWith( c =>
@@ -380,8 +396,6 @@ namespace Rock.Net
                     {
                         contentResult = c.Result;
                     } ).Wait();
-
-                    httpMessage = postTask.Result;
                 }
                 else
                 {
@@ -415,12 +429,12 @@ namespace Rock.Net
 
             if ( httpError != null )
             {
-                throw new HttpErrorException( httpError );
+                throw new HttpErrorException( httpError, httpResponseMessage );
             }
 
-            if ( httpMessage != null )
+            if ( httpResponseMessage != null )
             {
-                httpMessage.EnsureSuccessStatusCode();
+                httpResponseMessage.EnsureSuccessStatusCode();
             }
 
             return contentResult;
@@ -443,6 +457,7 @@ namespace Rock.Net
 
             Action<Task<HttpResponseMessage>> handleContinue = new Action<Task<HttpResponseMessage>>( postTask =>
             {
+                httpMessage = postTask.Result;
                 if ( postTask.Result.IsSuccessStatusCode )
                 {
                     postTask.Result.Content.ReadAsAsync<object>().ContinueWith( c =>
@@ -457,8 +472,6 @@ namespace Rock.Net
                     {
                         var contentResult = c.Result;
                     } ).Wait();
-
-                    httpMessage = postTask.Result;
                 }
                 else
                 {
@@ -474,7 +487,7 @@ namespace Rock.Net
 
             if ( httpError != null )
             {
-                throw new HttpErrorException( httpError );
+                throw new HttpErrorException( httpError, httpMessage );
             }
 
             if ( httpMessage != null )
@@ -547,12 +560,14 @@ namespace Rock.Net
             }
 
             HttpContent resultContent;
+            HttpResponseMessage httpResponseMessage = null;
             string result = null;
 
             try
             {
                 httpClient.GetAsync( requestUri ).ContinueWith( ( postTask ) =>
                 {
+                    httpResponseMessage = postTask.Result;
                     if ( postTask.Result.IsSuccessStatusCode )
                     {
                         resultContent = postTask.Result.Content;
@@ -572,11 +587,11 @@ namespace Rock.Net
 
                         if ( httpError != null )
                         {
-                            throw new HttpErrorException( httpError );
+                            throw new HttpErrorException( httpError, httpResponseMessage );
                         }
                         else
                         {
-                            throw new HttpErrorException( new HttpError( postTask.Result.ReasonPhrase ) );
+                            throw new HttpErrorException( new HttpError( postTask.Result.ReasonPhrase ), httpResponseMessage );
                         }
                     }
                 } ).Wait();
@@ -627,12 +642,31 @@ namespace Rock.Net
         private string _message { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpErrorException"/> class.
+        /// Gets or sets the HTTP error.
+        /// </summary>
+        /// <value>
+        /// The HTTP error.
+        /// </value>
+        public HttpError HttpError { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response.
+        /// </summary>
+        /// <value>
+        /// The response.
+        /// </value>
+        public HttpResponseMessage Response { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpErrorException" /> class.
         /// </summary>
         /// <param name="httpError">The HTTP error.</param>
-        public HttpErrorException( HttpError httpError )
+        /// <param name="response">The response.</param>
+        public HttpErrorException( HttpError httpError, HttpResponseMessage response )
             : base()
         {
+            this.HttpError = httpError;
+            this.Response = response;
             _message = string.Empty;
 
             foreach ( var error in httpError )

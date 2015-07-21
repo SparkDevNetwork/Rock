@@ -136,6 +136,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Group target, Group source )
         {
             target.Id = source.Id;
+            target.AcceptAlternatePlacements = source.AcceptAlternatePlacements;
             target.AddUserAccountsDuringSync = source.AddUserAccountsDuringSync;
             target.AllowGuests = source.AllowGuests;
             target.CampusId = source.CampusId;

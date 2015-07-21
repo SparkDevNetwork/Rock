@@ -320,6 +320,16 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum RegistrationCostSummaryType
+    {
+        Cost = 0x0,
+        Fee = 0x1,
+        Discount = 0x2,
+        Total = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum RegistrationFeeType
     {
         Single = 0x0,
@@ -334,6 +344,18 @@ namespace Rock.Client.Enums
         PersonAttribute = 0x1,
         GroupMemberAttribute = 0x2,
         RegistrationAttribute = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    [Flags]
+    public enum RegistrationNotify
+    {
+        None = 0x0,
+        RegistrationContact = 0x1,
+        GroupFollowers = 0x2,
+        GroupLeaders = 0x4,
+        All = 0x7,
     }
 
     /// <summary>

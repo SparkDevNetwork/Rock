@@ -71,9 +71,6 @@ namespace Rock.Client
     public partial class EventItemSchedule : EventItemScheduleEntity
     {
         /// <summary />
-        public EventItemCampus EventItemCampus { get; set; }
-
-        /// <summary />
         public Schedule Schedule { get; set; }
 
         /// <summary />

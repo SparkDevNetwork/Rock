@@ -90,7 +90,7 @@ namespace Rock.Apps.CheckScannerUtility
                     if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.RangerApi )
                     {
                         lblScanCheckWarningBadMicr.Content = @"Unable to read check information
-    Click 'Skip' to reject this check and continue scanning.    
+    Click 'Skip' to reject this check and continue scanning. To retry this check, put the check back into the feed tray.   
     Click 'Upload' to upload the check as-is.
     Click 'Stop' to reject this check and stop scanning.";
                     }
@@ -169,7 +169,7 @@ namespace Rock.Apps.CheckScannerUtility
             lblScanCheckWarningBadMicr.Visibility = scannedDocInfo.BadMicr ? Visibility.Visible : Visibility.Collapsed;
             lblScanItemUploadSuccess.Visibility = Visibility.Collapsed;
             pnlPromptForUpload.Visibility = scannedDocInfo.Duplicate || scannedDocInfo.BadMicr ? Visibility.Visible : Visibility.Collapsed;
-            btnStart.Visibility = Visibility.Hidden;
+            btnStart.IsEnabled = false;
             btnStopScanning.IsEnabled = true;
         }
 
@@ -183,10 +183,14 @@ namespace Rock.Apps.CheckScannerUtility
                 lblScanCheckWarningDuplicate.Visibility = Visibility.Collapsed;
                 lblScanCheckWarningBadMicr.Visibility = Visibility.Collapsed;
             }
+            else
+            {
+                // update the bad micr warning to not include the btn instructions
+                lblScanCheckWarningBadMicr.Content = @"Unable to read check information";
+            }
 
             lblScanItemUploadSuccess.Visibility = Visibility.Collapsed;
             pnlPromptForUpload.Visibility = Visibility.Collapsed;
-            btnStart.Visibility = Visibility.Visible;
         }
 
         /// <summary>
@@ -198,7 +202,6 @@ namespace Rock.Apps.CheckScannerUtility
             lblScanCheckWarningBadMicr.Visibility = Visibility.Collapsed;
             lblScanItemUploadSuccess.Visibility = Visibility.Visible;
             pnlPromptForUpload.Visibility = Visibility.Collapsed;
-            btnStart.Visibility = Visibility.Visible;
         }
 
         /// <summary>
@@ -292,6 +295,8 @@ namespace Rock.Apps.CheckScannerUtility
             if ( RockConfig.Load().ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 )
             {
                 lblStartupInfo.Content = string.Format( "Ready to scan next {0}.", scanningChecks ? "check" : "item" );
+                
+                // no need for a stop/start button when in MagTek mode
                 btnStart.Visibility = Visibility.Hidden;
                 btnStopScanning.Visibility = Visibility.Hidden;
             }
@@ -331,16 +336,27 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         public void rangerScanner_TransportFeedingStopped( object sender, AxRANGERLib._DRangerEvents_TransportFeedingStoppedEvent e )
         {
-            btnStart.IsEnabled = true;
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportFeedingStopped", DateTime.Now.ToString( "o" ) ) );
+            if ( pnlPromptForUpload.Visibility != Visibility.Visible )
+            {
+                btnStart.IsEnabled = true;
+            }
+
             btnClose.IsEnabled = true;
             if ( pnlPromptForUpload.Visibility != Visibility.Visible )
             {
                 btnStopScanning.IsEnabled = false;
             }
-
-            // show a "No Items" warning if they clicked Start but no items were scanned, and this is the 2nd+ time they tried
+            
             if ( _itemsScanned == 0 )
             {
+                // show the Startup Info "Welcome" message if no check images are shown yet
+                if ( lblFront.Visibility != Visibility.Visible )
+                {
+                    lblStartupInfo.Visibility = Visibility.Visible;
+                }
+
+                // show a "No Items" warning if they clicked Start but no items were scanned, and this is the 2nd+ time they tried
                 if ( !_firstNoItemsWarning )
                 {
                     lblNoItemsFound.Visibility = Visibility.Visible;
@@ -357,6 +373,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         public void rangerScanner_TransportNewItem( object sender, EventArgs e )
         {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportNewItem", DateTime.Now.ToString( "o" ) ) );
             _itemsScanned++;
         }
 
@@ -367,6 +384,8 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         public void rangerScanner_TransportFeedingState( object sender, EventArgs e )
         {
+            lblStartupInfo.Visibility = Visibility.Collapsed;
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportFeedingState", DateTime.Now.ToString( "o" ) ) );
             lblNoItemsFound.Visibility = Visibility.Collapsed;
             btnStart.IsEnabled = false;
             btnClose.IsEnabled = false;
@@ -380,6 +399,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         public void rangerScanner_TransportSetItemOutput( object sender, AxRANGERLib._DRangerEvents_TransportSetItemOutputEvent e )
         {
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportSetItemOutput", DateTime.Now.ToString( "o" ) ) );
             var currentPage = Application.Current.MainWindow.Content;
 
             if ( currentPage != this )
@@ -434,17 +454,17 @@ namespace Rock.Apps.CheckScannerUtility
                     {
                         int accountNumberDigitPosition = lastOnUsPosition - 1;
 
-                        // read all digits to the left of the last 'c' until you run into a non-numeric (except for '!' whichs means invalid)
+                        // read all digits to the left of the last 'c' until you run into another 'c'
                         while ( accountNumberDigitPosition >= 0 )
                         {
                             char accountNumberDigit = remainingMicr[accountNumberDigitPosition];
-                            if ( char.IsNumber( accountNumberDigit ) || accountNumberDigit.Equals( '!' ) || accountNumberDigit.Equals( ' ' ) )
+                            if ( accountNumberDigit == 'c' )
                             {
-                                accountNumber = accountNumberDigit + accountNumber.Trim();
+                                break;
                             }
                             else
                             {
-                                break;
+                                accountNumber = accountNumberDigit + accountNumber.Trim();
                             }
 
                             accountNumberDigitPosition--;
@@ -455,16 +475,18 @@ namespace Rock.Apps.CheckScannerUtility
 
                     // any remaining digits that aren't the account number and transit number are probably the check number
                     string[] remainingMicrParts = remainingMicr.Split( new char[] { 'c', ' ' }, StringSplitOptions.RemoveEmptyEntries );
-                    if ( remainingMicrParts.Length == 1 )
+                    if ( remainingMicrParts.Any() )
                     {
-                        checkNumber = remainingMicrParts[0];
+                        checkNumber = remainingMicrParts.Last();
                     }
 
                     scannedDoc.RoutingNumber = routingNumber;
                     scannedDoc.AccountNumber = accountNumber;
                     scannedDoc.CheckNumber = checkNumber;
 
-                    if ( routingNumber.Length != 9 || string.IsNullOrEmpty( accountNumber ) || checkMicr.Contains( '!' ) || string.IsNullOrEmpty( checkNumber ) )
+                    // look for the "can't read" symbol to detect if the check micr couldn't be read
+                    // from http://www.sbulletsupport.com/forum/index.php?topic=172.0
+                    if ( checkMicr.Contains('!') )
                     {
                         scannedDoc.BadMicr = true;
                         scannedDoc.Upload = false;
@@ -908,6 +930,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             HideUploadWarningPrompts( false );
             StopScanning();
+            btnStart.IsEnabled = true;
         }
 
         /// <summary>

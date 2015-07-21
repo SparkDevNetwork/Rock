@@ -122,6 +122,7 @@ namespace Rock.Model
             target.AttendanceRule = source.AttendanceRule;
             target.DefaultGroupRoleId = source.DefaultGroupRoleId;
             target.Description = source.Description;
+            target.EnableAlternatePlacements = source.EnableAlternatePlacements;
             target.EnableLocationSchedules = source.EnableLocationSchedules;
             target.GroupMemberTerm = source.GroupMemberTerm;
             target.GroupTerm = source.GroupTerm;
