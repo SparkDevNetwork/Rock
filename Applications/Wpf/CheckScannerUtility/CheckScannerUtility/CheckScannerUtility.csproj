@@ -110,6 +110,7 @@
     <Compile Include="BatchItemDetailPage.xaml.cs">
       <DependentUpon>BatchItemDetailPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="MicrImageHostPage.xaml.cs">
       <DependentUpon>MicrImageHostPage.xaml</DependentUpon>
     </Compile>
@@ -235,13 +236,13 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\DotLiquid\DotLiquid.csproj">
-      <Project>{cb9372cd-9c1d-47ab-92d8-702d4d68324f}</Project>
-      <Name>DotLiquid</Name>
+    <ProjectReference Include="..\..\..\..\Rock.Client\Rock.Client.csproj">
+      <Project>{6ea64bb9-9740-453a-939b-df43ad9ac164}</Project>
+      <Name>Rock.Client</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Rock\Rock.csproj">
-      <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
-      <Name>Rock</Name>
+    <ProjectReference Include="..\..\..\..\Rock.RestClient\Rock.RestClient.csproj">
+      <Project>{7794b7f5-b449-46d5-94cc-1c58eb726d3f}</Project>
+      <Name>Rock.RestClient</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Rock.Wpf\Rock.Wpf.csproj">
       <Project>{90440596-fa0a-45e7-8872-3da47786f6a7}</Project>

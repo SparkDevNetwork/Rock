@@ -80,7 +80,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The currency type value.
         /// </value>
-        public Rock.Model.DefinedValue CurrencyTypeValue { get; set; }
+        public Rock.Client.DefinedValue CurrencyTypeValue { get; set; }
 
         /// <summary>
         /// Gets or sets the source type value.
@@ -88,7 +88,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The source type value.
         /// </value>
-        public Rock.Model.DefinedValue SourceTypeValue { get; set; }
+        public Rock.Client.DefinedValue SourceTypeValue { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="ScannedDocInfo"/> should be uploaded
@@ -118,7 +118,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                return this.CurrencyTypeValue != null && this.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+                return this.CurrencyTypeValue != null && this.CurrencyTypeValue.Guid == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
             }
         }
 

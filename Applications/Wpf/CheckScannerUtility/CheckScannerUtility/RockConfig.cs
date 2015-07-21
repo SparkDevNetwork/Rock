@@ -197,7 +197,7 @@ namespace Rock.Apps.CheckScannerUtility
                 string result = this["TenderTypeValueGuid"] as string;
                 if ( string.IsNullOrWhiteSpace( result ) )
                 {
-                    result = Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK;
+                    result = Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK;
                 }
 
                 return result;
@@ -224,7 +224,7 @@ namespace Rock.Apps.CheckScannerUtility
                 string result = this["SourceTypeValueGuid"] as string;
                 if ( string.IsNullOrWhiteSpace( result ) )
                 {
-                    result = Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION;
+                    result = Rock.Client.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION;
                 }
 
                 return result;
