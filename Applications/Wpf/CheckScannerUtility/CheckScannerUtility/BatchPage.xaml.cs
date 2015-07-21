@@ -694,8 +694,18 @@ namespace Rock.Apps.CheckScannerUtility
             }
             catch ( Exception ex )
             {
-                MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+                ShowException( ex );
             }
+        }
+
+        /// <summary>
+        /// Shows the exception.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        private static void ShowException( Exception ex )
+        {
+            App.LogException( ex );
+            MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
         }
 
         /// <summary>
@@ -729,7 +739,7 @@ namespace Rock.Apps.CheckScannerUtility
                 }
                 catch ( Exception ex )
                 {
-                    MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+                    ShowException( ex );
                 }
 
                 LoadFinancialBatchesGrid();
@@ -940,7 +950,7 @@ namespace Rock.Apps.CheckScannerUtility
             }
             catch ( Exception ex )
             {
-                MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+                ShowException( ex );
             }
         }
 
@@ -979,7 +989,7 @@ namespace Rock.Apps.CheckScannerUtility
                 }
                 catch ( Exception ex )
                 {
-                    MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+                    ShowException( ex );
                 }
             }
         }
