@@ -52,7 +52,6 @@
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
                                 <Rock:RockCheckBox ID="cbIsPublic" runat="server" Text="Public" />
-                                <Rock:RockCheckBox ID="cbAcceptAlternatePlacements" runat="server" Text="Accept Alternate Placement" />
                             </div>
                         </div>
 

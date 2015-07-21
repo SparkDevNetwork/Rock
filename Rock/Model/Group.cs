@@ -227,15 +227,6 @@ namespace Rock.Model
         }
         private bool _isPublic = true;
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [accept alternate placements].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [accept alternate placements]; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool AcceptAlternatePlacements { get; set; }
-
         #endregion
 
         #region Virtual Properties

@@ -115,6 +115,15 @@ namespace Rock.Model
         [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public decimal ControlAmount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the note.
+        /// </summary>
+        /// <value>
+        /// The note.
+        /// </value>
+        [DataMember]
+        public string Note { get; set; }
+
         #endregion
 
         #region Constructors
