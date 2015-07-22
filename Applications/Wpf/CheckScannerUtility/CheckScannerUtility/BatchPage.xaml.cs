@@ -670,6 +670,9 @@ namespace Rock.Apps.CheckScannerUtility
                     financialBatch.ControlAmount = 0.00M;
                 }
 
+                txtNote.Text = txtNote.Text.Trim();
+                financialBatch.Note = txtNote.Text;
+
                 if ( financialBatch.Id == 0 )
                 {
                     client.PostData<FinancialBatch>( "api/FinancialBatches/", financialBatch );
@@ -694,8 +697,18 @@ namespace Rock.Apps.CheckScannerUtility
             }
             catch ( Exception ex )
             {
-                MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+                ShowException( ex );
             }
+        }
+
+        /// <summary>
+        /// Shows the exception.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        private static void ShowException( Exception ex )
+        {
+            App.LogException( ex );
+            MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
         }
 
         /// <summary>
@@ -729,7 +742,7 @@ namespace Rock.Apps.CheckScannerUtility
                 }
                 catch ( Exception ex )
                 {
-                    MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+                    ShowException( ex );
                 }
 
                 LoadFinancialBatchesGrid();
@@ -811,6 +824,7 @@ namespace Rock.Apps.CheckScannerUtility
             dpBatchDate.SelectedDate = selectedBatch.BatchStartDateTime;
             lblCreatedBy.Content = lblBatchCreatedByReadOnly.Content as string;
             txtControlAmount.Text = selectedBatch.ControlAmount.ToString( "F" );
+            txtNote.Text = selectedBatch.Note;
 
             // start a background thread to download transactions since this could take a little while and we want a Wait cursor
             BackgroundWorker bw = new BackgroundWorker();
@@ -940,7 +954,7 @@ namespace Rock.Apps.CheckScannerUtility
             }
             catch ( Exception ex )
             {
-                MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+                ShowException( ex );
             }
         }
 
@@ -979,7 +993,7 @@ namespace Rock.Apps.CheckScannerUtility
                 }
                 catch ( Exception ex )
                 {
-                    MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+                    ShowException( ex );
                 }
             }
         }

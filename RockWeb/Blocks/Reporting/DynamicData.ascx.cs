@@ -57,6 +57,8 @@ namespace RockWeb.Blocks.Reporting
     [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false, "", "CustomSetting" )]
     [CodeEditorField( "Page Title Lava", "Optional Lava for setting the page title. If nothing is provided then the page's title will be used.",
         CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
+
+    [BooleanField("Paneled Grid", "Add the 'grid-panel' class to the grid to allow it to fit nicely in a block.", false, "Advanced")]
     public partial class DynamicData : RockBlockCustomSettings
     {
         #region Fields
@@ -348,6 +350,12 @@ namespace RockWeb.Blocks.Reporting
                         {
                             var div = new HtmlGenericControl( "div" );
                             div.AddCssClass( "grid" );
+
+                            if ( GetAttributeValue( "PaneledGrid" ).AsBoolean() )
+                            {
+                                div.AddCssClass( "grid-panel" );
+                            }
+
                             phContent.Controls.Add( div );
 
                             var grid = new Grid();
@@ -355,6 +363,7 @@ namespace RockWeb.Blocks.Reporting
                             grid.ID = string.Format( "dynamic_data_{0}", tableId++ );
                             grid.AllowSorting = true;
                             grid.EmptyDataText = "No Results";
+
                             grid.GridRebind += gReport_GridRebind;
                             grid.RowSelected += gReport_RowSelected;
                             if ( personReport )

@@ -483,7 +483,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            if ( _group != null && _group.GroupType != null && _group.GroupType.EnableAlternatePlacements )
+            if ( _group != null && _group.GroupType != null && false )//TODO_group.GroupType.EnableAlternatePlacements )
             {
                 AddAlternatePlacementColumn();
             }
@@ -541,33 +541,14 @@ namespace RockWeb.Blocks.Groups
         protected void btnAlternatePlacement_Click( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-
-            Group targetGroup = null;
-            if ( _group != null )
-            {
-                var groupService = new GroupService( rockContext );
-                var ancestorGroupIdList = groupService.GetAllAncestorIds( _group.Id );
-
-                // get first ancestor Group that accepts Alternate Placements. 
-                // If we get all the way to the top without finding one, use the top group, even if it doesn't accept alternate placements
-                foreach ( var ancestorGroupId in ancestorGroupIdList )
-                {
-                    targetGroup = groupService.Get( ancestorGroupId );
-                    if ( targetGroup.AcceptAlternatePlacements )
-                    {
-                        break;
-                    }
-                }
-            }
-
+           
+            // TODO
             var groupMemberPerson = new GroupMemberService( rockContext ).GetPerson( e.RowKeyId );
-            if ( groupMemberPerson != null && targetGroup != null )
+            if ( groupMemberPerson != null )
             {
                 nbAlternatePlacementWarning.Text = string.Empty;
-                hfAlternatePlacementTargetGroupId.Value = targetGroup.Id.ToString();
                 hfAlternatePlacementGroupMemberId.Value = e.RowKeyId.ToString();
                 lAlternatePlacementGroupMemberName.Text = groupMemberPerson.ToString();
-                lAlternatePlacementTargetGroupName.Text = targetGroup.ToString();
                 mdAlternatePlacement.Visible = true;
                 mdAlternatePlacement.Show();
             }
@@ -587,6 +568,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             // TODO
+            /*
             using ( var rockContext = new RockContext() )
             {
                 var groupService = new GroupService( rockContext );
@@ -629,6 +611,7 @@ namespace RockWeb.Blocks.Groups
                 mdAlternatePlacement.Visible = false;
                 BindGroupMembersGrid();
             }
+             * */
         }
 
         /// <summary>

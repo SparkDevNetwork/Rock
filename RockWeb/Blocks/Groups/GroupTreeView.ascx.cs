@@ -62,7 +62,30 @@ namespace RockWeb.Blocks.Groups
 
             _groupId = PageParameter( "GroupId" );
 
-            hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
+            var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( "DetailPage" ) );
+            
+            // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavoir)
+            if ( detailPageReference == null || detailPageReference.PageId == this.RockPage.PageId )
+            {
+                hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
+                hfDetailPageUrl.Value = new Rock.Web.PageReference( this.RockPage.PageId ).BuildUrl().RemoveLeadingForwardslash();
+            }
+            else
+            {
+                hfPageRouteTemplate.Value = string.Empty;
+                var pageCache = PageCache.Read( detailPageReference.PageId );
+                if ( pageCache != null )
+                {
+                    var route = pageCache.PageRoutes.FirstOrDefault( a => a.Id == detailPageReference.RouteId );
+                    if ( route != null )
+                    {
+                        hfPageRouteTemplate.Value = route.Route;
+                    }
+                }
+
+                hfDetailPageUrl.Value = detailPageReference.BuildUrl().RemoveLeadingForwardslash();
+            }
+
             hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
             Guid? rootGroupGuid = GetAttributeValue( "RootGroup" ).AsGuidOrNull();
             if ( rootGroupGuid.HasValue )

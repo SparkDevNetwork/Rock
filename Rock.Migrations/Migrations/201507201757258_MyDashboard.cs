@@ -29,17 +29,16 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+			// Add new block types
+			RockMigrationHelper.UpdateBlockType("Following By Entity","Takes a entity type and displays a person's following items for that entity using a Lava template.","~/Blocks/Core/FollowingByEntityLava.ascx","Core","36B56055-7AA2-4169-82DD-CCFBD2C7B4CC");
+            RockMigrationHelper.UpdateBlockType("Event Calendar Item Personalized Registration","Simplifies the registration process for a given person and event calendar item.","~/Blocks/Event/EventCalendarItemPersonalizedRegistration.ascx","Event","1A1FFACC-D74C-4061-B6A7-34150C462DB7");
+  
             // Attrib for BlockType: Following By Entity:Link URL
             RockMigrationHelper.AddBlockTypeAttribute( "36B56055-7AA2-4169-82DD-CCFBD2C7B4CC", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Link URL", "LinkUrl", "", "The address to use for the link. The text '[Id]' will be replaced with the Id of the entity '[Guid]' will be replaced with the Guid.", 1, @"/samplepage/[Id]", "9981ABB3-7130-41DB-87AF-973722FBD54E" );
 
             // Attrib for BlockType: Following By Entity:Enable Debug
             RockMigrationHelper.AddBlockTypeAttribute( "36B56055-7AA2-4169-82DD-CCFBD2C7B4CC", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Debug", "EnableDebug", "", "Show merge data to help you see what's available to you.", 3, @"False", "D7094B16-B237-4D97-B1FC-F680C0701583" );
-
 			
-			// Add new block types
-			RockMigrationHelper.UpdateBlockType("Following By Entity","Takes a entity type and displays a person's following items for that entity using a Lava template.","~/Blocks/Core/FollowingByEntityLava.ascx","Core","36B56055-7AA2-4169-82DD-CCFBD2C7B4CC");
-            RockMigrationHelper.UpdateBlockType("Event Calendar Item Personalized Registration","Simplifies the registration process for a given person and event calendar item.","~/Blocks/Event/EventCalendarItemPersonalizedRegistration.ascx","Event","1A1FFACC-D74C-4061-B6A7-34150C462DB7");
-  
 			// Add My Dashboard Page
             RockMigrationHelper.AddPage("20F97A93-7949-4C2A-8A5E-C756FE8585CA","22D220B5-0D34-429A-B9E3-59D80AE423E7","My Dashboard","","AE1818D8-581C-4599-97B9-509EA450376A","fa fa-tachometer"); // Site:Rock RMS
             RockMigrationHelper.AddPageRoute("AE1818D8-581C-4599-97B9-509EA450376A","MyDashboard");// for Page:My Dashboard
@@ -62,7 +61,11 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlock("AE1818D8-581C-4599-97B9-509EA450376A","","19B61D65-37E3-459F-A44F-DEF0089118A3","Intro","Feature","","",0,"6DE44644-65FE-4321-A09D-36B329D6AE04"); 
 
             // Add/Update HtmlContent for Block: Intro
-            RockMigrationHelper.UpdateHtmlContentBlock("6DE44644-65FE-4321-A09D-36B329D6AE04",@"<h1>{{ CurrentPerson.NickName | Possessive}} Homepage</h1>","F0BCB32C-CEB0-41CC-B43A-26FC66CCBD36"); 
+            RockMigrationHelper.UpdateHtmlContentBlock("6DE44644-65FE-4321-A09D-36B329D6AE04",@"<h1>{{ CurrentPerson.NickName | Possessive}} Homepage</h1>","F0BCB32C-CEB0-41CC-B43A-26FC66CCBD36");
+
+
+            // disable cache on html block
+            RockMigrationHelper.AddBlockAttributeValue( "6DE44644-65FE-4321-A09D-36B329D6AE04", "4DFDB295-6D0F-40A1-BEF9-7B70C56F66C4", "0" );
 
             
             // Attrib for BlockType: Group Member List:Require Note on Alternate Placement

@@ -52,9 +52,7 @@
                 <Content>
                     <Rock:NotificationBox ID="nbAlternatePlacementWarning" runat="server" NotificationBoxType="Warning" />
                     <asp:HiddenField ID="hfAlternatePlacementGroupMemberId" runat="server" />
-                    <asp:HiddenField ID="hfAlternatePlacementTargetGroupId" runat="server" />
                     <Rock:RockLiteral ID="lAlternatePlacementGroupMemberName" runat="server" Label="Group Member" />
-                    <Rock:RockLiteral ID="lAlternatePlacementTargetGroupName" runat="server" Label="Place in group" />
                     <Rock:RockTextBox ID="tbAlternatePlacementNote" runat="server" Label="Note" Rows="4" TextMode="MultiLine" />
                 </Content>
             </Rock:ModalDialog>
