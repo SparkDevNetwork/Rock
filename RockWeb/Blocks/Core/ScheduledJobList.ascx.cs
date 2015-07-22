@@ -192,10 +192,12 @@ namespace RockWeb.Blocks.Administration
                 System.Threading.Tasks.Task.Run( () => transaction.Execute() );
 
                 mdGridWarning.Show( string.Format( "The '{0}' job has been started.", job.Name ), ModalAlertType.Information );
+
+                // wait a split second for the job to start so that the grid will show the status (if it changed)
+                System.Threading.Thread.Sleep( 250 );
             }
 
             BindGrid();
-
         }
 
         /// <summary>
