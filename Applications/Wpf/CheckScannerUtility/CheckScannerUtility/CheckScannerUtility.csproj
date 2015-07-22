@@ -107,10 +107,18 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="..\..\..\..\Rock\Utility\ExtensionMethods\BooleanExtensions.cs">
+      <Link>RockExtensions\BooleanExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\Rock\Utility\ExtensionMethods\EnumExtensions.cs">
+      <Link>RockExtensions\EnumExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\Rock\Utility\ExtensionMethods\StringExtensions.cs">
+      <Link>RockExtensions\StringExtensions.cs</Link>
+    </Compile>
     <Compile Include="BatchItemDetailPage.xaml.cs">
       <DependentUpon>BatchItemDetailPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="MicrImageHostPage.xaml.cs">
       <DependentUpon>MicrImageHostPage.xaml</DependentUpon>
     </Compile>
