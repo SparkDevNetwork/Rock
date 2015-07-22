@@ -861,7 +861,7 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             lblScanItemCountInfo.Visibility = statsList.Any() ? Visibility.Visible : Visibility.Collapsed;
-            lblScanItemCountInfo.Content = statsList.AsDelimited( ", " );
+            lblScanItemCountInfo.Content = string.Join(", ", statsList);
         }
 
         //
