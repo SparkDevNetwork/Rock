@@ -503,6 +503,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     string labelText;
                     string labelType;
+                    string labelTooltip;
                     if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
                     {
                         labelText = requirementResult.GroupRequirement.GroupRequirementType.PositiveLabel;
@@ -525,11 +526,26 @@ namespace RockWeb.Blocks.Groups
                         labelText = requirementResult.GroupRequirement.GroupRequirementType.Name;
                     }
 
+                    if ( requirementResult.WarningIncluded )
+                    {
+                        labelTooltip = requirementResult.RequirementWarningDateTime.HasValue
+                            ? "Last Checked: " + requirementResult.RequirementWarningDateTime.Value.ToString( "g" )
+                            : "Not calculated yet";
+                    }
+                    else
+                    {
+                        labelTooltip = requirementResult.LastRequirementCheckDateTime.HasValue
+                            ? "Last Checked: " + requirementResult.LastRequirementCheckDateTime.Value.ToString( "g" )
+                            : "Not calculated yet";
+                    }
+
+
                     lRequirementsLabels.Text += string.Format(
-                        @"<span class='label label-{1}'>{0}</span>
+                        @"<span class='label label-{1}' title='{2}'>{0}</span>
                         ",
                         labelText,
-                        labelType );
+                        labelType,
+                        labelTooltip);
                 }
             }
 
@@ -580,6 +596,8 @@ namespace RockWeb.Blocks.Groups
         protected void btnReCheckRequirements_Click( object sender, EventArgs e )
         {
             CalculateRequirements();
+            nbRecheckedNotification.Text = string.Format( "Successfully re-checked requirements at {0}", RockDateTime.Now );
+            nbRecheckedNotification.Visible = true;
         }
 
         /// <summary>
