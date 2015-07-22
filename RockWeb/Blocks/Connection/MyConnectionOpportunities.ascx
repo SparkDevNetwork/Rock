@@ -20,7 +20,7 @@
 
                 <asp:Repeater ID="rptConnnectionTypes" runat="server" OnItemDataBound="rptConnnectionTypes_ItemDataBound">
                     <ItemTemplate>
-                        <Rock:RockLiteral ID="lConnectionTypeName" runat="server" />
+                        <asp:Literal ID="lConnectionTypeName" runat="server" />
                             <ul>
                                 <asp:Repeater ID="rptConnectionOpportunities" runat="server">
                                     <ItemTemplate>
