@@ -413,18 +413,25 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="groupType">Type of the group.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private static bool IsInheritedGroupTypeRecursive( GroupTypeCache groupType, RockContext rockContext )
+        private static bool IsInheritedGroupTypeRecursive( GroupTypeCache groupType, RockContext rockContext, List<int> typesChecked = null )
         {
-            if ( new GroupTypeService( rockContext ).Queryable().Any( a => a.InheritedGroupType.Guid == groupType.Guid ) )
+            // Track the groups that have been checked since group types can have themselves as a child
+            typesChecked = typesChecked ?? new List<int>();
+            if ( !typesChecked.Contains( groupType.Id ) )
             {
-                return true;
-            }
+                typesChecked.Add( groupType.Id );
 
-            foreach ( var childGroupType in groupType.ChildGroupTypes )
-            {
-                if ( IsInheritedGroupTypeRecursive( childGroupType, rockContext ) )
+                if ( new GroupTypeService( rockContext ).Queryable().Any( a => a.InheritedGroupType.Guid == groupType.Guid ) )
                 {
                     return true;
+                }
+
+                foreach ( var childGroupType in groupType.ChildGroupTypes.Where( t => !typesChecked.Contains( t.Id ) ) )
+                {
+                    if ( IsInheritedGroupTypeRecursive( childGroupType, rockContext, typesChecked ) )
+                    {
+                        return true;
+                    }
                 }
             }
 
