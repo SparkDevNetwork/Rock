@@ -133,7 +133,6 @@ namespace Rock.Model
         /// <value>
         /// The type of the group.
         /// </value>
-        [DataMember]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
@@ -142,7 +141,9 @@ namespace Rock.Model
         /// <value>
         /// The group.
         /// </value>
-        [DataMember]
+        /// <remarks>
+        /// NOTE: [DataMember] attribute is intentionally ommited to prevent having to serialize all group members (times out on large groups)
+        /// </remarks>
         public virtual Group Group { get; set; }
 
         /// <summary>
