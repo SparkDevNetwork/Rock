@@ -877,7 +877,7 @@ namespace RockWeb.Blocks.Groups
                         role.LoadAttributes();
                     }
 
-                    Helper.AddEditControls( role, phGroupTypeRoleAttributes, setValues );
+                    Helper.AddEditControls( role, phGroupTypeRoleAttributes, setValues, dlgGroupTypeRoles.ValidationGroup );
                     SetValidationGroup( phGroupTypeRoleAttributes.Controls, dlgGroupTypeRoles.ValidationGroup );
 
                     dlgGroupTypeRoles.Show();
