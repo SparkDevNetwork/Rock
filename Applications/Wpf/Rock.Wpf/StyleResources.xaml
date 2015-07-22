@@ -783,6 +783,17 @@
            BasedOn="{StaticResource ResourceKey=inputStyleBase}">
     </Style>
 
+    <Style x:Key="textboxStyleMultiline"
+           TargetType="{x:Type TextBox}"
+           BasedOn="{StaticResource ResourceKey=textboxStyle}">
+        <Setter Property="Height"
+                Value="48" />
+        <Setter Property="AcceptsReturn"
+                Value="True" />
+        <Setter Property="TextWrapping"
+                Value="Wrap" />
+    </Style>
+
     <Style x:Key="textboxStyleError"
            BasedOn="{StaticResource ResourceKey=textboxStyle}"
            TargetType="{x:Type Control}">

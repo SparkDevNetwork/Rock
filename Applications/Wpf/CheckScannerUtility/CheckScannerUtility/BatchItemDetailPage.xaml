@@ -46,9 +46,10 @@
                    Content="7/16/9999 12:00 AM"
                    Style="{StaticResource labelStyleDd}" />
 
-            <Label Content="Transaction Code"
+            <Label Name="lblTransactionCodeLabel"
+                Content="Transaction Code"
                    Style="{StaticResource labelStyleDt}" />
-            <Label Name="lblTransactionCode"
+            <Label Name="lblTransactionCodeValue"
                    Content="7/16/9999 12:00 AM"
                    Style="{StaticResource labelStyleDd}" />
 

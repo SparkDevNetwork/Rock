@@ -116,7 +116,11 @@ namespace Rock.Apps.CheckScannerUtility
             financialTransaction.SourceTypeValue = financialTransaction.SourceTypeValue ?? batchPage.SourceTypeValueList.FirstOrDefault( a => a.Id == financialTransaction.SourceTypeValueId );
             lblSource.Content = financialTransaction.SourceTypeValue != null ? financialTransaction.SourceTypeValue.Value : null;
 
-            lblTransactionCode.Content = financialTransaction.TransactionCode;
+            // only show Transaction Code if it has one
+            lblTransactionCodeValue.Content = financialTransaction.TransactionCode;
+            bool hasTransactionCode = !string.IsNullOrWhiteSpace( financialTransaction.TransactionCode );
+            lblTransactionCodeLabel.Visibility = hasTransactionCode ? Visibility.Visible : Visibility.Collapsed;
+            lblTransactionCodeValue.Visibility = hasTransactionCode ? Visibility.Visible : Visibility.Collapsed;
 
             financialTransaction.CurrencyTypeValue = financialTransaction.CurrencyTypeValue ?? batchPage.CurrencyValueList.FirstOrDefault( a => a.Id == financialTransaction.CurrencyTypeValueId );
             lblCurrencyType.Content = financialTransaction.CurrencyTypeValue != null ? financialTransaction.CurrencyTypeValue.Value : null;

@@ -201,7 +201,7 @@ namespace Rock.Model
     public enum GroupMemberWorkflowTriggerType
     {
         /// <summary>
-        ///AddedToGroup
+        /// AddedToGroup
         /// </summary>
         MemberAddedToGroup = 0,
 
@@ -223,7 +223,12 @@ namespace Rock.Model
         /// <summary>
         /// Attended
         /// </summary>
-        MemberAttendedGroup = 4
+        MemberAttendedGroup = 4,
+
+        /// <summary>
+        /// Placed Elsewhere
+        /// </summary>
+        MemberPlacedElsewhere = 5
     }
 
     #endregion

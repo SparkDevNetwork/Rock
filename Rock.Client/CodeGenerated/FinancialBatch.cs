@@ -53,6 +53,9 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public string Note { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.BatchStatus Status { get; set; }
 
         /// <summary />
@@ -74,6 +77,7 @@ namespace Rock.Client
             this.CampusId = source.CampusId;
             this.ControlAmount = source.ControlAmount;
             this.Name = source.Name;
+            this.Note = source.Note;
             this.Status = source.Status;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
