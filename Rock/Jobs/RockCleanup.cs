@@ -190,8 +190,12 @@ namespace Rock.Jobs
             {
                 if ( binaryFile.ModifiedDateTime < RockDateTime.Now.AddDays( -1 ) )
                 {
-                    binaryFileService.Delete( binaryFile );
-                    binaryFileRockContext.SaveChanges();
+                    string errorMessage;
+                    if ( binaryFileService.CanDelete( binaryFile, out errorMessage ) )
+                    {
+                        binaryFileService.Delete( binaryFile );
+                        binaryFileRockContext.SaveChanges();
+                    }
                 }
             }
         }

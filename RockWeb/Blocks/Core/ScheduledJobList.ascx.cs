@@ -141,6 +141,9 @@ namespace RockWeb.Blocks.Administration
                         case "Success":
                             lLastStatus.Text = "<span class='label label-success'>Success</span>";
                             break;
+                        case "Running":
+                            lLastStatus.Text = "<span class='label label-info'>Running</span>";
+                            break;
                         case "Exception":
                             lLastStatus.Text = "<span class='label label-danger'>Failed</span>";
                             break;

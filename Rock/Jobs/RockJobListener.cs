@@ -70,7 +70,7 @@ namespace Rock.Jobs
             var jobService = new ServiceJobService( rockContext );
             var job = jobService.Get( jobId );
 
-            if (job != null)
+            if (job != null && job.Guid != Rock.SystemGuid.ServiceJob.JOB_PULSE.AsGuid())
             {
                 job.LastStatus = "Running";
                 job.LastStatusMessage = "started at " + RockDateTime.Now.ToString();
