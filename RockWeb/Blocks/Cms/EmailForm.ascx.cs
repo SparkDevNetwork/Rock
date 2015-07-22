@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Cms
     <input type=""file"" id=""attachment"" name=""attachment"" /> <br />
     <input type=""file"" id=""attachment2"" name=""attachment2"" />
 </div>
-", "", 5 )]
+", "", 4 )]
     [CodeEditorField( "Message Body", "The email message body. <span class='tip tip-lava'></span>", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, false, @"{{ GlobalAttribute.EmailHeader }}
 
 <p>
@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Cms
 <p>&nbsp;</p>
 
 {{ GlobalAttribute.EmailFooter }}", "", 5 )]  
-    [CodeEditorField("Response Message", "The message the user will see when they submit the form if no response page if provided.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"<div class=""alert alert-info"">
+    [CodeEditorField("Response Message", "The message the user will see when they submit the form if no response page if provided. Lava merege fields are available for you to use in your message.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"<div class=""alert alert-info"">
     Thank you for your response. We appreciate your feedback!
 </div>","",6)]
     [LinkedPage("Response Page", "The page the use will be taken to after submitting the form. Use the 'Response Message' field if you just need a simple message.", false, "", "", 7)]
