@@ -77,6 +77,11 @@ namespace RockWeb.Blocks.Administration
 
         #region Grid Events
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gScheduledJobs control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gScheduledJobs_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
         {
             var site = RockPage.Site;
@@ -86,24 +91,36 @@ namespace RockWeb.Blocks.Administration
                 Guid? jobGuid = e.Row.DataItem.GetPropertyValue( "Guid" ).ToString().AsGuidOrNull();
                 if ( jobGuid.HasValue && jobGuid.Value.Equals( Rock.SystemGuid.ServiceJob.JOB_PULSE.AsGuid() ))
                 {
-                    e.Row.Cells[8].Text = string.Empty;
+                    var runNowColumn = gScheduledJobs.ColumnsOfType<EditField>().Where( a => a.HeaderText == "Run Now" ).FirstOrDefault();
+                    e.Row.Cells[gScheduledJobs.Columns.IndexOf(runNowColumn)].Text = string.Empty;
                 }
-
+                
                 // format duration
                 if ( e.Row.DataItem.GetPropertyValue( "LastRunDurationSeconds" ) != null )
                 {
-                    int durationSeconds = 0;
-                    int.TryParse( e.Row.DataItem.GetPropertyValue( "LastRunDurationSeconds" ).ToString(), out durationSeconds );
+                    int durationSeconds = e.Row.DataItem.GetPropertyValue( "LastRunDurationSeconds" ).ToString().AsIntegerOrNull() ?? 0;
+                    TimeSpan duration = TimeSpan.FromSeconds( durationSeconds );
 
-                    TimeSpan duration = new TimeSpan( 0, 0, durationSeconds );
+                    var lLastRunDurationSeconds = e.Row.FindControl( "lLastRunDurationSeconds" ) as Literal;
 
-                    if ( durationSeconds >= 60 )
+                    if ( lLastRunDurationSeconds != null )
                     {
-                        e.Row.Cells[3].Text = String.Format( "{0:%m}m {0:%s}s", duration );
-                    }
-                    else
-                    {
-                        e.Row.Cells[3].Text = String.Format( "{0:%s}s", duration );
+                        if ( duration.Days > 0 )
+                        {
+                            lLastRunDurationSeconds.Text = duration.TotalHours.ToString( "F2" ) + " hours";
+                        }
+                        else if ( duration.Hours > 0 )
+                        {
+                            lLastRunDurationSeconds.Text = String.Format( "{0:%h}h {0:%m}m {0:%s}s", duration );
+                        }
+                        else if ( duration.Minutes > 0 )
+                        {
+                            lLastRunDurationSeconds.Text = String.Format( "{0:%m}m {0:%s}s", duration );
+                        }
+                        else
+                        {
+                            lLastRunDurationSeconds.Text = String.Format( "{0:%s}s", duration );
+                        }
                     }
                 }
 
@@ -114,28 +131,27 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 // format last status
-                if ( e.Row.DataItem.GetPropertyValue( "LastStatus" ) != null )
+                var lLastStatus = e.Row.FindControl( "lLastStatus" ) as Literal;
+                if ( e.Row.DataItem.GetPropertyValue( "LastStatus" ) != null && lLastStatus != null)
                 {
                     string lastStatus = e.Row.DataItem.GetPropertyValue( "LastStatus" ).ToString();
 
                     switch ( lastStatus )
                     {
                         case "Success":
-                            e.Row.Cells[4].Text = "<span class='label label-success'>Success</span>";
+                            lLastStatus.Text = "<span class='label label-success'>Success</span>";
                             break;
                         case "Exception":
-                            e.Row.Cells[4].Text = "<span class='label label-danger'>Failed</span>";
+                            lLastStatus.Text = "<span class='label label-danger'>Failed</span>";
                             break;
                         case "":
-                            e.Row.Cells[4].Text = "";
+                            lLastStatus.Text = "";
                             break;
                         default:
-                            e.Row.Cells[4].Text = String.Format( "<span class='label label-warning'>{0}</span>", lastStatus );
+                            lLastStatus.Text = String.Format( "<span class='label label-warning'>{0}</span>", lastStatus );
                             break;
                     }
                 }
-                    
-
             }
         }
 
