@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Core
                     {
                         binaryFile.LoadAttributes();
                         phAttributes.Controls.Clear();
-                        Rock.Attribute.Helper.AddEditControls( binaryFile, phAttributes, false );
+                        Rock.Attribute.Helper.AddEditControls( binaryFile, phAttributes, false, BlockValidationGroup );
                     }
                 }
             }
@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                Rock.Attribute.Helper.AddEditControls( binaryFile, phAttributes, true );
+                Rock.Attribute.Helper.AddEditControls( binaryFile, phAttributes, true, BlockValidationGroup );
             }
 
             tbName.ReadOnly = readOnly;
