@@ -1339,6 +1339,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Ensures the leading forward slash. Handy when combining url paths.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string RemoveLeadingForwardslash( this string value )
+        {
+            return value.TrimStart( new char[] { '/' } );
+        }
+
+        /// <summary>
         /// Evaluates string, and if null or empty, returns nullValue instead.
         /// </summary>
         /// <param name="value">The value.</param>

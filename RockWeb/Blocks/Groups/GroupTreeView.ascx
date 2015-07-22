@@ -11,6 +11,7 @@
         <asp:HiddenField ID="hfLimitToSecurityRoleGroups" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfSelectedGroupId" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfPageRouteTemplate" runat="server" ClientIDMode="Static" />
+        <asp:HiddenField ID="hfDetailPageUrl" runat="server" ClientIDMode="Static" />
 
         <div class="treeview">
             <div class="treeview-actions" id="divTreeviewActions" runat="server">
@@ -86,7 +87,14 @@
                                 locationUrl += "?ExpandedIds=" + encodeURIComponent(expandedDataIds);
                             }
                             else {
-                                locationUrl = window.location.href.split('?')[0] + groupSearch;
+                                var detailPageUrl = $('#hfDetailPageUrl').val();
+                                if (detailPageUrl) {
+                                    locationUrl = Rock.settings.get('baseUrl') + detailPageUrl + groupSearch;
+                                }
+                                else {
+                                    locationUrl = window.location.href.split('?')[0] + groupSearch;
+                                }
+                                
                                 locationUrl += "&ExpandedIds=" + encodeURIComponent(expandedDataIds);
                             }
 
