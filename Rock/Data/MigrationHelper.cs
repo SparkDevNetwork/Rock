@@ -1293,6 +1293,74 @@ namespace Rock.Data
             );
         }
 
+
+        public void UpdateEntityAttribute( string modelEntityTypeName, string  componentEntityTypeName, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid, string key = null )
+        {
+            EnsureEntityTypeExists( modelEntityTypeName, true, true );
+            EnsureEntityTypeExists( componentEntityTypeName, false, true );
+
+            if ( string.IsNullOrWhiteSpace( key ) )
+            {
+                key = name.Replace( " ", string.Empty );
+            }
+
+            Migration.Sql( string.Format( @"
+
+                DECLARE @ModelEntityTypeId int
+                SET @ModelEntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
+
+                DECLARE @ComponentEntityTypeId int
+                SET @ComponentEntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{1}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{2}')
+
+                IF EXISTS (
+                    SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [EntityTypeId] = @ModelEntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'EntityTypeId'
+                    AND [EntityTypeQualifierValue] = CAST( @ComponentEntityTypeId AS varchar )
+                    AND [Key] = '{3}' )
+                BEGIN
+                    UPDATE [Attribute] SET
+                        [Name] = '{4}',
+                        [Description] = '{5}',
+                        [Order] = {6},
+                        [DefaultValue] = '{7}',
+                        [Guid] = '{8}'
+                    WHERE [EntityTypeId] = @ModelEntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'EntityTypeId'
+                    AND [EntityTypeQualifierValue] = CAST( @ComponentEntityTypeId AS varchar )
+                    AND [Key] = '{3}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Key],[Name],[Description],
+                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId,@ModelEntityTypeId,'EntityTypeId',CAST( @ComponentEntityTypeId AS varchar ),
+                        '{3}','{4}','{5}',
+                        {6},0,'{7}',0,0,
+                        '{8}')
+                END
+",
+                    modelEntityTypeName,
+                    componentEntityTypeName,
+                    fieldTypeGuid,
+                    key,
+                    name,
+                    description.Replace( "'", "''" ),
+                    order,
+                    defaultValue,
+                    guid)
+            );
+        }
+
+
         /// <summary>
         /// Adds a global Attribute for the given FieldType, entityTypeQualifierColumn, entityTypeQualifierValue and name (key).
         /// Note: This method delets the Attribute first if it had already existed.
@@ -1353,7 +1421,7 @@ namespace Rock.Data
         /// Ensures the entity type exists by adding it by name if it did not already exist.
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
-        private void EnsureEntityTypeExists( string entityTypeName )
+        private void EnsureEntityTypeExists( string entityTypeName, bool isEntity = true, bool isSecured = true )
         {
             // NOTE: If it doesn't exist, add it assuming that IsEntity=True and IsSecured=True.  The framework will correct it if those assumptions are incorrect
             Migration.Sql( string.Format( @"
@@ -1376,7 +1444,10 @@ namespace Rock.Data
                            ,newid()
                            )
                 end"
-                , entityTypeName, 1, 1 )
+                , entityTypeName
+                , isEntity ? 1 : 0
+                , isSecured ? 1 : 0 
+                )
             );
         }
 

@@ -413,7 +413,8 @@ namespace Rock.Model
                 MeetsGroupRequirement = a.RequirementMetDateTime.HasValue
                     ? MeetsGroupRequirement.Meets
                     : MeetsGroupRequirement.NotMet,
-                a.RequirementWarningDateTime
+                a.RequirementWarningDateTime,
+                a.LastRequirementCheckDateTime,
             } );
 
             // get all the group requirements that apply the group member's role
@@ -427,7 +428,9 @@ namespace Rock.Model
                          {
                              GroupRequirement = groupRequirement,
                              MeetsGroupRequirement = metRequirement != null ? metRequirement.MeetsGroupRequirement : MeetsGroupRequirement.NotMet,
-                             WarningIncluded = metRequirement != null ? metRequirement.RequirementWarningDateTime.HasValue : false
+                             WarningIncluded = metRequirement != null ? metRequirement.RequirementWarningDateTime.HasValue : false,
+                             RequirementWarningDateTime = metRequirement != null ? metRequirement.RequirementWarningDateTime : null,
+                             LastRequirementCheckDateTime = metRequirement != null ? metRequirement.LastRequirementCheckDateTime : null
                          };
 
             return result;
