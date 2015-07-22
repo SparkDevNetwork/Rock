@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Examples
 
     [TextField( "XML Document URL", "The URL for the input sample data XML document.", false, "http://storage.rockrms.com/sampledata/sampledata.xml", "", 1 )]
     [BooleanField( "Fabricate Attendance", "If true, then fake attendance data will be fabricated (if the right parameters are in the xml)", true, "", 2 )]
-    [BooleanField( "Enable Stopwatch", "If true, a stopwatch will be used to time each of the major operations.", true, "", 3 )]
+    [BooleanField( "Enable Stopwatch", "If true, a stopwatch will be used to time each of the major operations.", false, "", 3 )]
     public partial class SampleData : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -213,6 +213,7 @@ namespace RockWeb.Blocks.Examples
             ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 300;
             if ( !IsPostBack )
             {
+                tbPassword.Focus();
                 VerifyXMLDocumentExists();
             }
             else
