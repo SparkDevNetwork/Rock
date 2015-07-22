@@ -211,6 +211,7 @@ namespace Rock.Apps.CheckScannerUtility
             }
             catch ( Exception ex )
             {
+                App.LogException( ex );
                 lblAlert.Content = ex.Message;
                 lblAlert.Visibility = Visibility.Visible;
                 return;

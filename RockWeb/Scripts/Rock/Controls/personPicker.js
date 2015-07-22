@@ -19,9 +19,17 @@
 
             var includeBusinesses = $('#' + controlId).find('.js-include-businesses').val() == '1' ? 'true' : 'false';
 
+            var promise = null;
+
             $('#' + controlId + '_personPicker').autocomplete({
                 source: function (request, response) {
-                    var promise = $.ajax({
+
+                    // abort any searches that haven't returned yet, so that we don't get a pile of results in random order
+                    if (promise && promise.state() === 'pending') {
+                        promise.abort();
+                    }
+
+                    promise = $.ajax({
                         url: restUrl + "?name=" + encodeURIComponent(request.term) + "&includeHtml=false&includeDetails=false&includeBusinesses=" + includeBusinesses + "&includeDeceased=true",
                         dataType: 'json'
                     });

@@ -64,6 +64,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="ex">The ex.</param>
         public void ShowException( Exception ex )
         {
+            App.LogException( ex );
             lblExceptions.Content = "ERROR: " + ex.Message;
             lblExceptions.Visibility = Visibility.Visible;
         }
@@ -104,6 +105,7 @@ namespace Rock.Apps.CheckScannerUtility
             }
             else
             {
+                // if Enable Smart Scan is disabled, upload even if there is a bad or missing MICR
                 if ( !scannedDocInfo.Upload )
                 {
                     scannedDocInfo.Upload = true;
@@ -484,9 +486,9 @@ namespace Rock.Apps.CheckScannerUtility
                     scannedDoc.AccountNumber = accountNumber;
                     scannedDoc.CheckNumber = checkNumber;
 
-                    // look for the "can't read" symbol to detect if the check micr couldn't be read
+                    // look for the "can't read" symbol (or completely blank read ) to detect if the check micr couldn't be read
                     // from http://www.sbulletsupport.com/forum/index.php?topic=172.0
-                    if ( checkMicr.Contains('!') )
+                    if ( checkMicr.Contains('!') || string.IsNullOrWhiteSpace(checkMicr) )
                     {
                         scannedDoc.BadMicr = true;
                         scannedDoc.Upload = false;

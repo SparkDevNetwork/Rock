@@ -62,7 +62,11 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlock("AE1818D8-581C-4599-97B9-509EA450376A","","19B61D65-37E3-459F-A44F-DEF0089118A3","Intro","Feature","","",0,"6DE44644-65FE-4321-A09D-36B329D6AE04"); 
 
             // Add/Update HtmlContent for Block: Intro
-            RockMigrationHelper.UpdateHtmlContentBlock("6DE44644-65FE-4321-A09D-36B329D6AE04",@"<h1>{{ CurrentPerson.NickName | Possessive}} Homepage</h1>","F0BCB32C-CEB0-41CC-B43A-26FC66CCBD36"); 
+            RockMigrationHelper.UpdateHtmlContentBlock("6DE44644-65FE-4321-A09D-36B329D6AE04",@"<h1>{{ CurrentPerson.NickName | Possessive}} Homepage</h1>","F0BCB32C-CEB0-41CC-B43A-26FC66CCBD36");
+
+
+            // disable cache on html block
+            RockMigrationHelper.AddBlockAttributeValue( "6DE44644-65FE-4321-A09D-36B329D6AE04", "4DFDB295-6D0F-40A1-BEF9-7B70C56F66C4", "0" );
 
             
             // Attrib for BlockType: Group Member List:Require Note on Alternate Placement

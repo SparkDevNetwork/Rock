@@ -91,6 +91,9 @@ namespace Rock.Model
             target.AllowMultipleRegistrants = source.AllowMultipleRegistrants;
             target.CategoryId = source.CategoryId;
             target.ConfirmationEmailTemplate = source.ConfirmationEmailTemplate;
+            target.ConfirmationFromEmail = source.ConfirmationFromEmail;
+            target.ConfirmationFromName = source.ConfirmationFromName;
+            target.ConfirmationSubject = source.ConfirmationSubject;
             target.Cost = source.Cost;
             target.DiscountCodeTerm = source.DiscountCodeTerm;
             target.FeeTerm = source.FeeTerm;
@@ -108,6 +111,9 @@ namespace Rock.Model
             target.RegistrantTerm = source.RegistrantTerm;
             target.RegistrationTerm = source.RegistrationTerm;
             target.ReminderEmailTemplate = source.ReminderEmailTemplate;
+            target.ReminderFromEmail = source.ReminderFromEmail;
+            target.ReminderFromName = source.ReminderFromName;
+            target.ReminderSubject = source.ReminderSubject;
             target.RequestEntryName = source.RequestEntryName;
             target.SuccessText = source.SuccessText;
             target.SuccessTitle = source.SuccessTitle;
