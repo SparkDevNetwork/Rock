@@ -146,7 +146,7 @@ namespace Rock.Jobs
                             }
                         }
 
-                        if ( rescheduleJob || true ) // DEBUG!!!!!
+                        if ( rescheduleJob )
                         {
                             const string errorReschedulingStatus = "Error re-scheduling Job";
                             try
