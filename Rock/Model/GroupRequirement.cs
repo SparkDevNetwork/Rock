@@ -375,6 +375,22 @@ namespace Rock.Model
         public bool WarningIncluded { get; set; }
 
         /// <summary>
+        /// Gets or sets the requirement warning date time.
+        /// </summary>
+        /// <value>
+        /// The requirement warning date time.
+        /// </value>
+        public DateTime? RequirementWarningDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last requirement check date time.
+        /// </summary>
+        /// <value>
+        /// The last requirement check date time.
+        /// </value>
+        public DateTime? LastRequirementCheckDateTime { get; set; }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
