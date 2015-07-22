@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Activities.Statements;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
@@ -997,7 +998,8 @@ namespace RockWeb.Blocks.Crm
                     bool isAlert = cbIsAlert.Checked;
                     bool isPrivate = cbIsPrivate.Checked;
 
-                    var noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE.AsGuid() );
+                    var noteTypeService = new NoteTypeService( rockContext );
+                    var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE.AsGuid() );
                     if ( noteType != null )
                     {
                         var notes = new List<Note>();
@@ -1011,7 +1013,7 @@ namespace RockWeb.Blocks.Crm
                             note.Caption = isPrivate ? "You - Personal Note" : string.Empty;
                             note.Text = tbNote.Text;
                             note.IsAlert = cbIsAlert.Checked;
-                            note.NoteTypeId = noteType.Id;
+                            note.NoteType = noteType;
                             notes.Add( note );
                             noteService.Add( note );
                         }
@@ -1045,7 +1047,8 @@ namespace RockWeb.Blocks.Crm
                         var groupMemberService = new GroupMemberService( rockContext );
 
                         var existingMembersQuery = groupMemberService.Queryable("Group")
-                                                                     .Where(m => m.GroupId == group.Id && ids.Contains(m.PersonId));
+                                                                     .Where(m => m.GroupId == group.Id
+                                                                                 && ids.Contains(m.PersonId));
 
                         string action = ddlGroupAction.SelectedValue;
                         if ( action == "Remove" )
@@ -1134,14 +1137,11 @@ namespace RockWeb.Blocks.Crm
                             }
                             else // Update
                             {
-                                // Materialize the Query result so we can iterate over the collection without holding the database connection open.
-                                var existingMembers = existingMembersQuery.ToList();
-
                                 if ( SelectedFields.Contains( ddlGroupRole.ClientID ) && roleId.HasValue )
                                 {
-                                    foreach ( var member in existingMembers.Where( m => m.GroupRoleId != roleId.Value ) )
+                                    foreach ( var member in existingMembersQuery.Where( m => m.GroupRoleId != roleId.Value ) )
                                     {
-                                        if ( !existingMembers.Any( m => m.PersonId == member.PersonId && m.GroupRoleId == roleId.Value ) )
+                                        if ( !existingMembersQuery.Any( m => m.PersonId == member.PersonId && m.GroupRoleId == roleId.Value ) )
                                         {
                                             member.GroupRoleId = roleId.Value;
                                         }
@@ -1150,7 +1150,7 @@ namespace RockWeb.Blocks.Crm
 
                                 if ( SelectedFields.Contains( ddlGroupMemberStatus.ClientID ) )
                                 {
-                                    foreach ( var member in existingMembers )
+                                    foreach ( var member in existingMembersQuery )
                                     {
                                         member.GroupMemberStatus = status;
                                     }
@@ -1160,13 +1160,23 @@ namespace RockWeb.Blocks.Crm
 
                                 if ( selectedGroupAttributes.Any() )
                                 {
-                                    foreach ( var groupMember in existingMembers )
+                                    Action<RockContext, List<GroupMember>> updateAction = ( context, items ) =>
                                     {
-                                        foreach ( var attribute in selectedGroupAttributes )
+                                        foreach ( var groupMember in items )
                                         {
-                                            Rock.Attribute.Helper.SaveAttributeValue( groupMember, attribute, selectedGroupAttributeValues[attribute.Key], rockContext );
+                                            foreach (var attribute in selectedGroupAttributes)
+                                            {
+                                                Rock.Attribute.Helper.SaveAttributeValue( groupMember, attribute, selectedGroupAttributeValues[attribute.Key], context );
+                                            }
                                         }
-                                    }
+
+                                        context.SaveChanges();
+                                    };
+
+                                    // Process the Attribute updates in batches.
+                                    var existingMembers = existingMembersQuery.ToList();
+
+                                    ProcessBatchUpdate( existingMembers, 50, updateAction );
                                 }
                             }
                         }
