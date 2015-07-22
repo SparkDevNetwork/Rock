@@ -203,57 +203,7 @@ namespace Rock
             return truncatedString + "...";
         }
 
-        /// <summary>
-        /// Pluralizes the specified string.
-        /// </summary>
-        /// <param name="str">The string to pluralize.</param>
-        /// <returns></returns>
-        public static string Pluralize( this string str )
-        {
-            // Pluralization services handles most words, but there are some exceptions (i.e. campus)
-            switch ( str )
-            {
-                case "Campus":
-                case "campus":
-                    return str + "es";
-
-                case "CAMPUS":
-                    return str + "ES";
-
-                default:
-                    var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
-                    return pluralizationService.Pluralize( str );
-            }
-        }
-
-        /// <summary>
-        /// Pluralizes if the condition is true
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <param name="condition">if set to <c>true</c> [condition].</param>
-        /// <returns></returns>
-        public static string PluralizeIf( this string str, bool condition )
-        {
-            if ( condition )
-            {
-                return str.Pluralize();
-            }
-            else
-            {
-                return str;
-            }
-        }
-
-        /// <summary>
-        /// Singularizes the specified string.
-        /// </summary>
-        /// <param name="str">The string to singularize.</param>
-        /// <returns></returns>
-        public static string Singularize( this string str )
-        {
-            var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
-            return pluralizationService.Singularize( str );
-        }
+        
 
         /// <summary>
         /// Removes any non-numeric characters.
