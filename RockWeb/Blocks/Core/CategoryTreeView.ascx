@@ -5,6 +5,7 @@
         <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfSelectedItemId" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfPageRouteTemplate" runat="server" ClientIDMode="Static" />
+        <asp:HiddenField ID="hfDetailPageUrl" runat="server" ClientIDMode="Static" />
 
         <div class="treeview">
 
@@ -130,7 +131,14 @@
                                 locationUrl += "?ExpandedIds=" + encodeURIComponent(expandedDataIds);
                             }
                             else {
-                                locationUrl = window.location.href.split('?')[0] + itemSearch;
+                                var detailPageUrl = $('#hfDetailPageUrl').val();
+                                if (detailPageUrl) {
+                                    locationUrl = Rock.settings.get('baseUrl') + detailPageUrl + itemSearch;
+                                }
+                                else {
+                                    locationUrl = window.location.href.split('?')[0] + itemSearch;
+                                }
+
                                 locationUrl += "&ExpandedIds=" + encodeURIComponent(expandedDataIds);
                             }
 

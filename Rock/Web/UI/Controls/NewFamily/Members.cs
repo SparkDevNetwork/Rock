@@ -96,7 +96,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _lbAddFamilyMember );
             _lbAddFamilyMember.ID = this.ID + "_btnAddFamilyMember";
             _lbAddFamilyMember.Click += lbAddFamilyMember_Click;
-            _lbAddFamilyMember.AddCssClass( "add btn btn-action" );
+            _lbAddFamilyMember.AddCssClass( "add btn btn-sm btn-action" );
             _lbAddFamilyMember.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );

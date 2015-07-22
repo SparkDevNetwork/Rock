@@ -38,6 +38,7 @@
                             <Rock:CampusPicker ID="campCampus" runat="server" Label="Campus" />
                             <Rock:DataTextBox ID="tbAccountingCode" runat="server" Label="Accounting Code" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="AccountingSystemCode"
                                 Help="Optional id or code from an external accounting system." />
+                            <Rock:DataTextBox ID="tbNote" runat="server" Label="Notes" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="Note" TextMode="MultiLine" Rows="4"/>
                         </div>
                     </div>
 

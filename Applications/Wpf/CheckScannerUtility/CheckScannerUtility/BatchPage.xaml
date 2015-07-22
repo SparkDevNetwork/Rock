@@ -241,7 +241,7 @@
 
                 <!-- Batch Edit UI  -->
                 <StackPanel Name="spBatchDetailEdit"
-                            Visibility="Collapsed">
+                            Visibility="Visible">
                     <Border Style="{StaticResource borderStylePanelTitle}">
                         <StackPanel Orientation="Horizontal">
                             <Label Style="{StaticResource labelStyleIcon}"
@@ -310,8 +310,19 @@
                                    Content="Control Amount" />
                             <TextBox Grid.Row="5"
                                      Grid.Column="0"
+                                     VerticalAlignment="Top"
                                      x:Name="txtControlAmount"
                                      Style="{StaticResource textboxStyle}"
+                                     Text="$123.45" />
+
+                            <Label Grid.Row="4"
+                                   Grid.Column="1"
+                                   Style="{StaticResource labelStyle}"
+                                   Content="Notes" />
+                            <TextBox Grid.Row="5"
+                                     Grid.Column="1"
+                                     x:Name="txtNote"
+                                     Style="{StaticResource textboxStyleMultiline}"
                                      Text="$123.45" />
 
                             <StackPanel Grid.Row="6"

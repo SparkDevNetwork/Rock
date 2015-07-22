@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <div class="panel panel-block">
+        <div class="panel panel-block list-as-blocks">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-bullhorn"></i> My Content</h1>
 
@@ -14,25 +14,21 @@
             </div>
             <div class="panel-body">
 
-                <div class="list-as-blocks margin-t-lg clearfix">
-                    <ul class="list-unstyled">
-                        <asp:Repeater ID="rptChannels" runat="server">
-                            <ItemTemplate>
-                                <li class='<%# Eval("Class") %>'>
-                                    <asp:LinkButton ID="lbChannel" runat="server" CommandArgument='<%# Eval("Channel.Id") %>' CommandName="Display">
-                                        <i class='<%# Eval("Channel.IconCssClass") %>'></i>
-                                        <h3><%# Eval("Channel.Name") %> </h3>
-                                        <div class="notification">
-                                            <span class="label label-danger"><%# ((int)Eval("Count")).ToString("#,###,###") %></span>
-                                        </div>
-                                    </asp:LinkButton>
-                                </li>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                    </ul>
-                </div>
-
-                
+                <ul>
+                    <asp:Repeater ID="rptChannels" runat="server">
+                        <ItemTemplate>
+                            <li class='<%# Eval("Class") %>'>
+                                <asp:LinkButton ID="lbChannel" runat="server" CommandArgument='<%# Eval("Channel.Id") %>' CommandName="Display">
+                                    <i class='<%# Eval("Channel.IconCssClass") %>'></i>
+                                    <h3><%# Eval("Channel.Name") %> </h3>
+                                    <div class="notification">
+                                        <span class="label label-danger"><%# ((int)Eval("Count")).ToString("#,###,###") %></span>
+                                    </div>
+                                </asp:LinkButton>
+                            </li>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </ul>
 
             </div>
         </div>

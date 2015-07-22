@@ -268,15 +268,6 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.GROUPTYPE_PURPOSE )]
         public int? GroupTypePurposeValueId { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [enable alternate placements].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [enable alternate placements]; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool EnableAlternatePlacements { get; set; }
-
         #endregion
 
         #region Virtual Properties
