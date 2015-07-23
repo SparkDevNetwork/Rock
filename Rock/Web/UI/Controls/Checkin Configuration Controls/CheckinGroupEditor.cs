@@ -631,7 +631,7 @@ $('.checkin-group > .panel-body').on('validation-error', function() {
             }
 
             _phGroupAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( group, _phGroupAttributes, true );
+            Rock.Attribute.Helper.AddEditControls( group, _phGroupAttributes, true, this.ValidationGroup );
         }
 
         /// <summary>

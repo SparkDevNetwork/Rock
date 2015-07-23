@@ -1666,6 +1666,9 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ShowSuccess( int registrationId )
         {
+            lSuccessTitle.Text = "Congratulations";
+            lSuccess.Text = "You have succesfully completed this registration.";
+
             try
             {
                 using ( var rockContext = new RockContext() )
@@ -1674,8 +1677,9 @@ namespace RockWeb.Blocks.Event
                         .Queryable( "RegistrationInstance.RegistrationTemplate" )
                         .FirstOrDefault( r => r.Id == registrationId );
 
-                    if ( registration != null && !string.IsNullOrEmpty( registration.ConfirmationEmail ) &&
-                        registration.RegistrationInstance != null && registration.RegistrationInstance.RegistrationTemplate != null )
+                    if ( registration != null &&
+                        registration.RegistrationInstance != null && 
+                        registration.RegistrationInstance.RegistrationTemplate != null )
                     {
                         var template = registration.RegistrationInstance.RegistrationTemplate;
 
@@ -1715,8 +1719,6 @@ namespace RockWeb.Blocks.Event
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
-                lSuccessTitle.Text = "Congratulations";
-                lSuccess.Text = "You have succesfully completed this registration.";
             }
 
             SetPanel( 3 );
