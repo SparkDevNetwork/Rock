@@ -39,7 +39,6 @@ namespace RockWeb.Blocks.Groups
     [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
     [LinkedPage( "Detail Page" )]
     [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
-    [BooleanField( "Require Note on Alternate Placement", "Flag that indicates whether a note is required to save the alternate placement.", false, "", 3, "RequireAlternatePlacementNote")]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
@@ -717,17 +716,11 @@ namespace RockWeb.Blocks.Groups
 
                     SortProperty sortProperty = gGroupMembers.SortProperty;
 
-                    // If there are group requirements that that member doesn't meet, show a warning in the grid
-                    List<int> groupMemberIdsThatLackGroupRequirements = null;
-                    var qryGroupRequirementIds = new GroupRequirementService( rockContext ).Queryable().Where( a => a.GroupId == _group.Id ).Select( a => a.Id );
-                    bool hasGroupRequirements = qryGroupRequirementIds.Any();
-                    if ( hasGroupRequirements )
-                    {
-                        var groupMemberIdsThatLackGroupRequirementsQry = qry.Where(
-                            a => !qryGroupRequirementIds.All( r => a.GroupMemberRequirements.Where( mr => mr.RequirementMetDateTime.HasValue ).Select( x => x.GroupRequirementId ).Contains( r ) ) ).Select( a => a.Id );
+                    bool hasGroupRequirements = new GroupRequirementService( rockContext ).Queryable().Where( a => a.GroupId == _group.Id ).Any();
 
-                        groupMemberIdsThatLackGroupRequirements = groupMemberIdsThatLackGroupRequirementsQry.ToList();
-                    }
+                    // If there are group requirements that that member doesn't meet, show an icon in the grid
+                    bool includeWarnings = false;
+                    var groupMemberIdsThatLackGroupRequirements = new GroupService( rockContext ).GroupMembersNotMeetingRequirements( _group.Id, includeWarnings ).Select( a => a.Key.Id );
 
                     List<GroupMember> groupMembersList = null;
 
