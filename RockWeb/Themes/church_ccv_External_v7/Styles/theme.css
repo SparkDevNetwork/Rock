@@ -6429,6 +6429,65 @@ h6,
   text-align: center;
   font-weight: 800;
 }
+.panel-card {
+  border-width: 0;
+  margin-bottom: 30px;
+}
+.panel-card .panel-body {
+  display: block;
+  height: 267px;
+  position: relative;
+  background: #777777;
+  color: #fff;
+  border-radius: 4px 4px 0 0;
+}
+.panel-card .panel-body a {
+  color: inherit;
+}
+.panel-card .panel-title {
+  font-size: 31px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 15px;
+  line-height: 30px;
+}
+.panel-card .panel-footer {
+  border-top: none;
+  border-left: 2px solid #dddddd;
+  border-bottom: 2px solid #dddddd;
+  border-right: 2px solid #dddddd;
+  line-height: 35px;
+}
+.panel-card-withimg .panel-body {
+  background-position: center center;
+  background-size: cover;
+  background-repeat: none;
+}
+.panel-card-withimg .panel-body:hover .panel-title {
+  background: rgba(0, 0, 0, 0.25);
+}
+.panel-card-withimg .panel-title {
+  -webkit-transition: background 0.3s;
+  -o-transition: background 0.3s;
+  transition: background 0.3s;
+}
+.panel-card-half .panel-body {
+  height: 90px;
+}
+.panel-card-light .panel-body {
+  color: #333333;
+}
+.panel-card-light .panel-body:hover .panel-title {
+  background: rgba(255, 255, 255, 0.5);
+}
+.panel-card-primary .panel-body {
+  background-color: #7a1315;
+}
+.panel-card-black .panel-body {
+  background-color: #222222;
+}
 .slide-control {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
