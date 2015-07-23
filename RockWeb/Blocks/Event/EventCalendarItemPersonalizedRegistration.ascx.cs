@@ -116,11 +116,11 @@ namespace RockWeb.Blocks.Event
         protected void lbRegister_Click( object sender, EventArgs e )
         {
             // get registered group
-            int eventItemCampusId = hfSelectedEventId.Value.AsInteger();
+            int eventItemOccurrenceId = hfSelectedEventId.Value.AsInteger();
 
             // look for the group for this event item
-            var eventGroup = new EventItemCampusGroupMapService( _rockContext ).Queryable()
-                                .Where( m => m.EventItemCampusId == eventItemCampusId )
+            var eventGroup = new EventItemOccurrenceGroupMapService( _rockContext ).Queryable()
+                                .Where( m => m.EventItemOccurrenceId == eventItemOccurrenceId )
                                 .Select(m => m.Group)
                                 .FirstOrDefault();
 
@@ -294,7 +294,7 @@ namespace RockWeb.Blocks.Event
             }
 
             // get list of upcoming events for the current campus
-            var campusEvents = eventItem.EventItemCampuses
+            var campusEvents = eventItem.EventItemOccurrences
                                     .Where( c => c.CampusId == _campusId || c.CampusId == null).ToList();
 
             List<EventSummary> eventSummaries = new List<EventSummary>();

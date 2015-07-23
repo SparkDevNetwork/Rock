@@ -27,9 +27,9 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for EventItemCampus that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for EventItemOccurrence that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class EventItemCampusEntity
+    public partial class EventItemOccurrenceEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -62,10 +62,10 @@ namespace Rock.Client
         public string ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source EventItemCampus object
+        /// Copies the base properties from a source EventItemOccurrence object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( EventItemCampus source )
+        public void CopyPropertiesFrom( EventItemOccurrence source )
         {
             this.Id = source.Id;
             this.CampusId = source.CampusId;
@@ -82,9 +82,9 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for EventItemCampus that includes all the fields that are available for GETs. Use this for GETs (use EventItemCampusEntity for POST/PUTs)
+    /// Client model for EventItemOccurrence that includes all the fields that are available for GETs. Use this for GETs (use EventItemOccurrenceEntity for POST/PUTs)
     /// </summary>
-    public partial class EventItemCampus : EventItemCampusEntity
+    public partial class EventItemOccurrence : EventItemOccurrenceEntity
     {
         /// <summary />
         public Campus Campus { get; set; }
@@ -96,7 +96,7 @@ namespace Rock.Client
         public ICollection<EventItemSchedule> EventItemSchedules { get; set; }
 
         /// <summary />
-        public ICollection<EventItemCampusGroupMap> Linkages { get; set; }
+        public ICollection<EventItemOccurrenceGroupMap> Linkages { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

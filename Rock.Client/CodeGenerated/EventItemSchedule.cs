@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int EventItemCampusId { get; set; }
+        public int EventItemOccurrenceId { get; set; }
 
         /// <summary />
         public int ScheduleId { get; set; }
@@ -56,7 +56,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( EventItemSchedule source )
         {
             this.Id = source.Id;
-            this.EventItemCampusId = source.EventItemCampusId;
+            this.EventItemOccurrenceId = source.EventItemOccurrenceId;
             this.ScheduleId = source.ScheduleId;
             this.ScheduleName = source.ScheduleName;
             this.Guid = source.Guid;

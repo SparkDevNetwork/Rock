@@ -58,9 +58,9 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<EventItemCampus>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
+            if ( new Service<EventItemOccurrence>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, EventItemCampus.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, EventItemOccurrence.FriendlyTypeName );
                 return false;
             }  
  

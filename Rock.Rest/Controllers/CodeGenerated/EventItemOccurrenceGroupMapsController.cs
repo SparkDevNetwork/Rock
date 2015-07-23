@@ -26,10 +26,10 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// EventItemCampusGroupMaps REST API
+    /// EventItemOccurrenceGroupMaps REST API
     /// </summary>
-    public partial class EventItemCampusGroupMapsController : Rock.Rest.ApiController<Rock.Model.EventItemCampusGroupMap>
+    public partial class EventItemOccurrenceGroupMapsController : Rock.Rest.ApiController<Rock.Model.EventItemOccurrenceGroupMap>
     {
-        public EventItemCampusGroupMapsController() : base( new Rock.Model.EventItemCampusGroupMapService( new Rock.Data.RockContext() ) ) { } 
+        public EventItemOccurrenceGroupMapsController() : base( new Rock.Model.EventItemOccurrenceGroupMapService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -28,27 +28,28 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an event item campus.
+    /// Represents an event item occurrence.
     /// </summary>
-    [Table( "EventItemCampus" )]
+    [Table( "EventItemOccurrence" )]
     [DataContract]
-    public partial class EventItemCampus : Model<EventItemCampus>
+    public partial class EventItemOccurrence : Model<EventItemOccurrence>
     {
+
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.EventItem"/> that this EventItemCampus is associated with. This property is required.
+        /// Gets or sets the event item identifier.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EventItem"/> that the EventItemCampus is associated with.
+        /// The event item identifier.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int EventItemId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that this EventItemCampus is associated with. when null it is a church-wide event.
+        /// Gets or sets the campus identifier.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that the EventItemCampus is associated with.
+        /// The campus identifier.
         /// </value>
         [DataMember]
         [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
@@ -65,10 +66,10 @@ namespace Rock.Model
         public string Location { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.PersonAlias"/> for the EventItemCampus's contact person. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.PersonAlias"/> for the EventItemOccurrence's contact person. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.PersonAlias"/> who is the EventItemCampus's contact person.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.PersonAlias"/> who is the EventItemOccurrence's contact person.
         /// </value>
         [DataMember( IsRequired = true )]
         public int? ContactPersonAliasId { get; set; }
@@ -108,18 +109,18 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EventItem"/> that this EventItemCampus is a member of.
+        /// Gets or sets the <see cref="Rock.Model.EventItem"/> that this EventItemOccurrence is a member of.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.EventItem"/> that this EventItemCampus is a member of.
+        /// The <see cref="Rock.Model.EventItem"/> that this EventItemOccurrence is a member of.
         /// </value>
         public virtual EventItem EventItem { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Campus"/> that this EventItemCampus is a member of.
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> that this EventItemOccurrence is a member of.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Campus"/> that this EventItemCampus is a member of.
+        /// The <see cref="Rock.Model.Campus"/> that this EventItemOccurrence is a member of.
         /// </value>
         [DataMember]
         public virtual Campus Campus { get; set; }
@@ -140,12 +141,12 @@ namespace Rock.Model
         /// The linkages.
         /// </value>
         [DataMember]
-        public virtual ICollection<EventItemCampusGroupMap> Linkages
+        public virtual ICollection<EventItemOccurrenceGroupMap> Linkages
         {
-            get { return _linkages ?? ( _linkages = new Collection<EventItemCampusGroupMap>() ); }
+            get { return _linkages ?? ( _linkages = new Collection<EventItemOccurrenceGroupMap>() ); }
             set { _linkages = value; }
         }
-        private ICollection<EventItemCampusGroupMap> _linkages;
+        private ICollection<EventItemOccurrenceGroupMap> _linkages;
 
         /// <summary>
         /// Gets or sets a collection of the <see cref="Rock.Model.EventItemSchedule">EventItemSchedules</see> that belong to this EventItem.
@@ -253,16 +254,16 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// EventItemCampus Configuration class.
+    /// EventItemOccurrence Configuration class.
     /// </summary>
-    public partial class EventItemCampusConfiguration : EntityTypeConfiguration<EventItemCampus>
+    public partial class EventItemOccurrenceConfiguration : EntityTypeConfiguration<EventItemOccurrence>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EventItemCampusConfiguration" /> class.
+        /// Initializes a new instance of the <see cref="EventItemOccurrenceConfiguration" /> class.
         /// </summary>
-        public EventItemCampusConfiguration()
+        public EventItemOccurrenceConfiguration()
         {
-            this.HasRequired( p => p.EventItem ).WithMany( p => p.EventItemCampuses ).HasForeignKey( p => p.EventItemId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.EventItem ).WithMany( p => p.EventItemOccurrences ).HasForeignKey( p => p.EventItemId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ContactPersonAlias ).WithMany().HasForeignKey( p => p.ContactPersonAliasId ).WillCascadeOnDelete( false );
         }

@@ -38,16 +38,16 @@ using Attribute = Rock.Model.Attribute;
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Displays the campus details for a given calendar item.
+    /// Displays the occurrence details for a given calendar item.
     /// </summary>
-    [DisplayName( "Calendar Item Campus List" )]
+    [DisplayName( "Calendar Item Occurrence List" )]
     [Category( "Event" )]
-    [Description( "Displays the campus details for a given calendar item." )]
+    [Description( "Displays the occurrence details for a given calendar item." )]
 
     [LinkedPage( "Detail Page", "The page to view linkage details", true, "", "", 0 )]
     [LinkedPage( "Registration Instance Page", "The page to view registration details", true, "", "", 1 )]
     [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 2 )]
-    public partial class CalendarItemCampusList : RockBlock, ISecondaryBlock
+    public partial class CalendarItemOccurrenceList : RockBlock, ISecondaryBlock
     {
         #region Properties
 
@@ -82,15 +82,15 @@ namespace RockWeb.Blocks.Event
                 {
                     rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
-                    gCalendarItemCampusList.DataKeyNames = new string[] { "Id" };
-                    gCalendarItemCampusList.Actions.ShowAdd = true;
-                    gCalendarItemCampusList.Actions.AddClick += gCalendarItemCampusList_Add;
-                    gCalendarItemCampusList.GridRebind += gCalendarItemCampusList_GridRebind;
+                    gCalendarItemOccurrenceList.DataKeyNames = new string[] { "Id" };
+                    gCalendarItemOccurrenceList.Actions.ShowAdd = true;
+                    gCalendarItemOccurrenceList.Actions.AddClick += gCalendarItemOccurrenceList_Add;
+                    gCalendarItemOccurrenceList.GridRebind += gCalendarItemOccurrenceList_GridRebind;
 
-                    var registrationCol = gCalendarItemCampusList.Columns[3] as HyperLinkField;
+                    var registrationCol = gCalendarItemOccurrenceList.Columns[3] as HyperLinkField;
                     registrationCol.DataNavigateUrlFormatString = LinkedPageUrl("RegistrationInstancePage") + "?RegistrationInstanceId={0}";
 
-                    var groupCol = gCalendarItemCampusList.Columns[4] as HyperLinkField;
+                    var groupCol = gCalendarItemOccurrenceList.Columns[4] as HyperLinkField;
                     groupCol.DataNavigateUrlFormatString = LinkedPageUrl("GroupDetailPage") + "?GroupId={0}";
 
                 }
@@ -185,32 +185,32 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gCalendarItemCampusList_Add( object sender, EventArgs e )
+        private void gCalendarItemOccurrenceList_Add( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
             qryParams.Add( "EventCalendarId", PageParameter( "EventCalendarId" ) );
             qryParams.Add( "EventItemId", _eventItem.Id.ToString() );
-            qryParams.Add( "EventItemCampusId", "0" );
+            qryParams.Add( "EventItemOccurrenceId", "0" );
             NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
         /// <summary>
-        /// Handles the RowSelected event of the gCalendarItemCampusList control.
+        /// Handles the RowSelected event of the gCalendarItemOccurrenceList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gCalendarItemCampusList_RowSelected( object sender, RowEventArgs e )
+        protected void gCalendarItemOccurrenceList_RowSelected( object sender, RowEventArgs e )
         {
             using ( RockContext rockContext = new RockContext() )
             {
-                EventItemCampusService eventItemCampusService = new EventItemCampusService( rockContext );
-                EventItemCampus eventItemCampus = eventItemCampusService.Get( e.RowKeyId );
-                if ( eventItemCampus != null )
+                EventItemOccurrenceService eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
+                EventItemOccurrence eventItemOccurrence = eventItemOccurrenceService.Get( e.RowKeyId );
+                if ( eventItemOccurrence != null )
                 {
                     var qryParams = new Dictionary<string, string>();
                     qryParams.Add( "EventCalendarId", PageParameter( "EventCalendarId" ) );
                     qryParams.Add( "EventItemId", _eventItem.Id.ToString() );
-                    qryParams.Add( "EventItemCampusId", eventItemCampus.Id.ToString() );
+                    qryParams.Add( "EventItemOccurrenceId", eventItemOccurrence.Id.ToString() );
                     NavigateToLinkedPage( "DetailPage", qryParams );
                 }
             }
@@ -221,22 +221,22 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gCalendarItemCampusList_Delete( object sender, RowEventArgs e )
+        protected void gCalendarItemOccurrenceList_Delete( object sender, RowEventArgs e )
         {
             using ( RockContext rockContext = new RockContext() )
             {
-                EventItemCampusService eventItemCampusService = new EventItemCampusService( rockContext );
-                EventItemCampus eventItemCampus = eventItemCampusService.Get( e.RowKeyId );
-                if ( eventItemCampus != null )
+                EventItemOccurrenceService eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
+                EventItemOccurrence eventItemOccurrence = eventItemOccurrenceService.Get( e.RowKeyId );
+                if ( eventItemOccurrence != null )
                 {
                     string errorMessage;
-                    if ( !eventItemCampusService.CanDelete( eventItemCampus, out errorMessage ) )
+                    if ( !eventItemOccurrenceService.CanDelete( eventItemOccurrence, out errorMessage ) )
                     {
                         mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                         return;
                     }
 
-                    eventItemCampusService.Delete( eventItemCampus );
+                    eventItemOccurrenceService.Delete( eventItemOccurrence );
                     rockContext.SaveChanges();
                 }
             }
@@ -249,7 +249,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gCalendarItemCampusList_GridRebind( object sender, EventArgs e )
+        private void gCalendarItemOccurrenceList_GridRebind( object sender, EventArgs e )
         {
             BindCampusGrid();
         }
@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Event
 
                 var rockContext = new RockContext();
 
-                var qry = new EventItemCampusService(  rockContext )
+                var qry = new EventItemOccurrenceService(  rockContext )
                     .Queryable().AsNoTracking()
                     .Where( c => c.EventItemId == _eventItem.Id );
 
@@ -301,31 +301,31 @@ namespace RockWeb.Blocks.Event
                             campusIds.Contains( i.CampusId.Value ) );
                 }
 
-                SortProperty sortProperty = gCalendarItemCampusList.SortProperty;
+                SortProperty sortProperty = gCalendarItemOccurrenceList.SortProperty;
 
                 // Sort and query db
-                List<EventItemCampus> eventItemCampuses = null;
+                List<EventItemOccurrence> eventItemOccurrences = null;
                 if ( sortProperty != null )
                 {
                     // If sorting on date, wait until after checking to see if date range was specified
                     if ( sortProperty.Property == "Date" )
                     {
-                        eventItemCampuses = qry.ToList();
+                        eventItemOccurrences = qry.ToList();
                     }
                     else
                     {
-                        eventItemCampuses = qry.Sort( sortProperty ).ToList();
+                        eventItemOccurrences = qry.Sort( sortProperty ).ToList();
                     }
                 }
                 else
                 {
-                    eventItemCampuses = qry.ToList().OrderBy( a => a.NextStartDateTime ).ToList();
+                    eventItemOccurrences = qry.ToList().OrderBy( a => a.NextStartDateTime ).ToList();
                 }
 
                 // Contact filter
                 if ( !string.IsNullOrWhiteSpace( tbContact.Text ) )
                 {
-                    eventItemCampuses = eventItemCampuses
+                    eventItemOccurrences = eventItemOccurrences
                         .Where( i => 
                             i.ContactPersonAlias != null &&
                             i.ContactPersonAlias.Person != null &&
@@ -334,15 +334,15 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // Now that items have been loaded and ordered from db, calculate the next start date for each item
-                var eventItemCampusesWithDates = eventItemCampuses
-                    .Select( i => new EventItemCampusWithDates
+                var eventItemOccurrencesWithDates = eventItemOccurrences
+                    .Select( i => new EventItemOccurrenceWithDates
                     {
-                        EventItemCampus = i,
+                        EventItemOccurrence = i,
                         NextStartDateTime = i.NextStartDateTime,
                     } )
                     .ToList();
 
-                var dateCol = gCalendarItemCampusList.Columns.OfType<BoundField>().Where( c => c.DataField == "Date" ).FirstOrDefault();
+                var dateCol = gCalendarItemOccurrenceList.Columns.OfType<BoundField>().Where( c => c.DataField == "Date" ).FirstOrDefault();
 
                 // if a date range was specified, need to get all dates for items and filter based on any that have an occurrence withing the date range
                 DateTime? lowerDateRange = drpDate.LowerValue;
@@ -354,14 +354,14 @@ namespace RockWeb.Blocks.Event
                     upperDateRange = upperDateRange ?? lowerDateRange.Value.AddYears( 1 ).AddDays( -1 );
 
                     // Get the start datetimes within the selected date range
-                    eventItemCampusesWithDates.ForEach( i => i.StartDateTimes = i.EventItemCampus.GetStartTimes( lowerDateRange.Value, upperDateRange.Value.AddDays( 1 ) ) );
+                    eventItemOccurrencesWithDates.ForEach( i => i.StartDateTimes = i.EventItemOccurrence.GetStartTimes( lowerDateRange.Value, upperDateRange.Value.AddDays( 1 ) ) );
 
                     // Filter out calendar items with no dates within range
-                    eventItemCampusesWithDates = eventItemCampusesWithDates.Where( i => i.StartDateTimes.Any() ).ToList();
+                    eventItemOccurrencesWithDates = eventItemOccurrencesWithDates.Where( i => i.StartDateTimes.Any() ).ToList();
 
                     // Update the Next Start Date to be the next date in range instead
                     dateCol.HeaderText = "Next Date In Range";
-                    eventItemCampusesWithDates.ForEach( i => i.NextStartDateTime = i.StartDateTimes.Min() );
+                    eventItemOccurrencesWithDates.ForEach( i => i.NextStartDateTime = i.StartDateTimes.Min() );
                 }
                 else
                 {
@@ -373,32 +373,32 @@ namespace RockWeb.Blocks.Event
                 {
                     if ( sortProperty.Direction == SortDirection.Ascending )
                     {
-                        eventItemCampusesWithDates = eventItemCampusesWithDates.OrderBy( a => a.NextStartDateTime ).ToList();
+                        eventItemOccurrencesWithDates = eventItemOccurrencesWithDates.OrderBy( a => a.NextStartDateTime ).ToList();
                     }
                     else
                     {
-                        eventItemCampusesWithDates = eventItemCampusesWithDates.OrderByDescending( a => a.NextStartDateTime ).ToList();
+                        eventItemOccurrencesWithDates = eventItemOccurrencesWithDates.OrderByDescending( a => a.NextStartDateTime ).ToList();
                     }
                 }
 
-                gCalendarItemCampusList.DataSource = eventItemCampusesWithDates
+                gCalendarItemOccurrenceList.DataSource = eventItemOccurrencesWithDates
                     .Select( c => new
                     {
-                        c.EventItemCampus.Id,
-                        c.EventItemCampus.Guid,
-                        Campus = c.EventItemCampus.Campus != null ? c.EventItemCampus.Campus.Name : "All Campuses",
+                        c.EventItemOccurrence.Id,
+                        c.EventItemOccurrence.Guid,
+                        Campus = c.EventItemOccurrence.Campus != null ? c.EventItemOccurrence.Campus.Name : "All Campuses",
                         Date = c.NextStartDateTime.HasValue ? c.NextStartDateTime.Value.ToShortDateString() : "N/A",
-                        Location = c.EventItemCampus.Location,
-                        RegistrationInstanceId = c.EventItemCampus.Linkages.Any() ? c.EventItemCampus.Linkages.FirstOrDefault().RegistrationInstanceId : (int?)null,
-                        RegistrationInstance = c.EventItemCampus.Linkages.Any() ? c.EventItemCampus.Linkages.FirstOrDefault().RegistrationInstance : null,
-                        GroupId = c.EventItemCampus.Linkages.Any() ? c.EventItemCampus.Linkages.FirstOrDefault().GroupId : (int?)null,
-                        Group = c.EventItemCampus.Linkages.Any() ? c.EventItemCampus.Linkages.FirstOrDefault().Group : null,
-                        Contact = c.EventItemCampus.ContactPersonAlias != null ? c.EventItemCampus.ContactPersonAlias.Person.FullName : "",
-                        Phone = c.EventItemCampus.ContactPhone,
-                        Email = c.EventItemCampus.ContactEmail,
+                        Location = c.EventItemOccurrence.Location,
+                        RegistrationInstanceId = c.EventItemOccurrence.Linkages.Any() ? c.EventItemOccurrence.Linkages.FirstOrDefault().RegistrationInstanceId : (int?)null,
+                        RegistrationInstance = c.EventItemOccurrence.Linkages.Any() ? c.EventItemOccurrence.Linkages.FirstOrDefault().RegistrationInstance : null,
+                        GroupId = c.EventItemOccurrence.Linkages.Any() ? c.EventItemOccurrence.Linkages.FirstOrDefault().GroupId : (int?)null,
+                        Group = c.EventItemOccurrence.Linkages.Any() ? c.EventItemOccurrence.Linkages.FirstOrDefault().Group : null,
+                        Contact = c.EventItemOccurrence.ContactPersonAlias != null ? c.EventItemOccurrence.ContactPersonAlias.Person.FullName : "",
+                        Phone = c.EventItemOccurrence.ContactPhone,
+                        Email = c.EventItemOccurrence.ContactEmail,
                     } )
                     .ToList();
-                gCalendarItemCampusList.DataBind();
+                gCalendarItemOccurrenceList.DataBind();
             }
             else
             {
@@ -421,9 +421,9 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
-        public class EventItemCampusWithDates
+        public class EventItemOccurrenceWithDates
         {
-            public EventItemCampus EventItemCampus { get; set; }
+            public EventItemOccurrence EventItemOccurrence { get; set; }
             public DateTime? NextStartDateTime { get; set; }
             public List<DateTime> StartDateTimes { get; set; }
         }

@@ -225,7 +225,7 @@
                                         <ItemTemplate>
                                             <asp:Literal ID="lCalendarItem" runat="server" /></ItemTemplate>
                                     </Rock:TemplateFieldUnselected>
-                                    <asp:BoundField HeaderText="Campus" DataField="EventItemCampus.Campus.Name" SortExpression="EventItemCampus.Campus.Name" NullDisplayText="All Campuses" />
+                                    <asp:BoundField HeaderText="Campus" DataField="EventItemOccurrence.Campus.Name" SortExpression="EventItemOccurrence.Campus.Name" NullDisplayText="All Campuses" />
                                     <asp:HyperLinkField HeaderText="Group" DataTextField="Group" DataNavigateUrlFields="GroupID" SortExpression="Group" />
                                     <asp:BoundField HeaderText="Public Name" DataField="PublicName" SortExpression="PublicName" />
                                     <asp:BoundField HeaderText="URL Slug" DataField="UrlSlug" SortExpression="UrlSlug" />

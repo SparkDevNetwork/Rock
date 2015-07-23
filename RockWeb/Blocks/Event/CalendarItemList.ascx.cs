@@ -504,7 +504,7 @@ namespace RockWeb.Blocks.Event
 
                 EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
                 var qry = eventCalendarItemService
-                    .Queryable( "EventCalendar,EventItem.EventItemAudiences,EventItem.EventItemCampuses.EventItemSchedules.Schedule" )
+                    .Queryable( "EventCalendar,EventItem.EventItemAudiences,EventItem.EventItemOccurrences.EventItemSchedules.Schedule" )
                     .Where( m =>
                         m.EventItem != null &&
                         m.EventCalendarId == _eventCalendar.Id );
@@ -541,7 +541,7 @@ namespace RockWeb.Blocks.Event
                 {
                     qry = qry
                         .Where( i =>
-                            i.EventItem.EventItemCampuses
+                            i.EventItem.EventItemOccurrences
                                 .Any( c =>
                                     !c.CampusId.HasValue ||
                                     campusIds.Contains( c.CampusId.Value ) ) );
@@ -662,7 +662,7 @@ namespace RockWeb.Blocks.Event
                     i.EventCalendarItem.EventItem.Guid,
                     Date = i.NextStartDateTime.HasValue ? i.NextStartDateTime.Value.ToShortDateString() : "N/A",
                     Name = i.EventCalendarItem.EventItem.Name,
-                    Campus = i.EventCalendarItem.EventItem.EventItemCampuses.ToList().Select( c => c.Campus != null ? c.Campus.Name : "All Campuses" ).ToList().AsDelimited( "<br>" ),
+                    Campus = i.EventCalendarItem.EventItem.EventItemOccurrences.ToList().Select( c => c.Campus != null ? c.Campus.Name : "All Campuses" ).ToList().AsDelimited( "<br>" ),
                     Calendar = i.EventCalendarItem.EventItem.EventCalendarItems.ToList().Select( c => c.EventCalendar.Name ).ToList().AsDelimited( "<br>" ),
                     Audience = i.EventCalendarItem.EventItem.EventItemAudiences.ToList().Select( a => a.DefinedValue.Value ).ToList().AsDelimited( "<br>" ),
                     Status = i.EventCalendarItem.EventItem.IsActive ? "<span class='label label-success'>Active</span>" : "<span class='label label-default'>Inactive</span>",

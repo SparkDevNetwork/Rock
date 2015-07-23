@@ -27,15 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for EventItemCampusGroupMap that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for EventItemOccurrenceGroupMap that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class EventItemCampusGroupMapEntity
+    public partial class EventItemOccurrenceGroupMapEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? EventItemCampusId { get; set; }
+        public int? EventItemOccurrenceId { get; set; }
 
         /// <summary />
         public int? GroupId { get; set; }
@@ -56,13 +56,13 @@ namespace Rock.Client
         public string ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source EventItemCampusGroupMap object
+        /// Copies the base properties from a source EventItemOccurrenceGroupMap object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( EventItemCampusGroupMap source )
+        public void CopyPropertiesFrom( EventItemOccurrenceGroupMap source )
         {
             this.Id = source.Id;
-            this.EventItemCampusId = source.EventItemCampusId;
+            this.EventItemOccurrenceId = source.EventItemOccurrenceId;
             this.GroupId = source.GroupId;
             this.PublicName = source.PublicName;
             this.RegistrationInstanceId = source.RegistrationInstanceId;
@@ -74,9 +74,9 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for EventItemCampusGroupMap that includes all the fields that are available for GETs. Use this for GETs (use EventItemCampusGroupMapEntity for POST/PUTs)
+    /// Client model for EventItemOccurrenceGroupMap that includes all the fields that are available for GETs. Use this for GETs (use EventItemOccurrenceGroupMapEntity for POST/PUTs)
     /// </summary>
-    public partial class EventItemCampusGroupMap : EventItemCampusGroupMapEntity
+    public partial class EventItemOccurrenceGroupMap : EventItemOccurrenceGroupMapEntity
     {
         /// <summary />
         public Group Group { get; set; }

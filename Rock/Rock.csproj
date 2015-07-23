@@ -257,8 +257,8 @@
     <Compile Include="Model\CodeGenerated\EventCalendarItemService.cs" />
     <Compile Include="Model\CodeGenerated\EventCalendarService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemAudienceService.cs" />
-    <Compile Include="Model\CodeGenerated\EventItemCampusGroupMapService.cs" />
-    <Compile Include="Model\CodeGenerated\EventItemCampusService.cs" />
+    <Compile Include="Model\CodeGenerated\EventItemOccurrenceGroupMapService.cs" />
+    <Compile Include="Model\CodeGenerated\EventItemOccurrenceService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemService.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
@@ -331,7 +331,7 @@
     </Compile>
     <Compile Include="Model\CodeGenerated\RegistrationRegistrantFeeService.cs" />
     <Compile Include="Model\EventItemAudience.cs" />
-    <Compile Include="Model\EventItemCampusGroupMap.cs" />
+    <Compile Include="Model\EventItemOccurrenceGroupMap.cs" />
     <Compile Include="Model\EventItemSchedule.cs" />
     <Compile Include="Model\CampusService.partial.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceRequestService.cs" />
@@ -373,7 +373,7 @@
     <Compile Include="Model\EventCalendar.cs" />
     <Compile Include="Model\EventCalendarItem.cs" />
     <Compile Include="Model\EventItem.cs" />
-    <Compile Include="Model\EventItemCampus.cs" />
+    <Compile Include="Model\EventItemOccurrence.cs" />
     <Compile Include="Model\FinancialGateway.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\EntitySet.cs" />

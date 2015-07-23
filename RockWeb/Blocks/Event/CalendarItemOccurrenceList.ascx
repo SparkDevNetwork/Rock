@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CalendarItemCampusList.ascx.cs" Inherits="RockWeb.Blocks.Event.CalendarItemCampusList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CalendarItemOccurrenceList.ascx.cs" Inherits="RockWeb.Blocks.Event.CalendarItemOccurrenceList" %>
 
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>
@@ -10,7 +10,7 @@
                 <div class="panel panel-block">
 
                     <div class="panel-heading clearfix">
-                        <h1 class="panel-title pull-left">Campus Details</h1>
+                        <h1 class="panel-title pull-left">Event Occurrences</h1>
                     </div>
 
                     <div class="panel-body">
@@ -21,7 +21,7 @@
                                 <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" />
                                 <Rock:RockTextBox ID="tbContact" runat="server" Label="Contact" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gCalendarItemCampusList" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gCalendarItemCampusList_RowSelected" RowItemText="Campus Detail">
+                            <Rock:Grid ID="gCalendarItemOccurrenceList" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gCalendarItemOccurrenceList_RowSelected" RowItemText="Campus Detail">
                                 <Columns>
                                     <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
                                     <Rock:RockBoundField DataField="Date" HeaderText="Next Start Date" SortExpression="Date" />
@@ -31,7 +31,7 @@
                                     <Rock:RockBoundField DataField="Contact" HeaderText="Contact" />
                                     <Rock:RockBoundField DataField="Phone" HeaderText="Phone" />
                                     <Rock:RockBoundField DataField="Email" HeaderText="Email" />
-                                    <Rock:DeleteField OnClick="gCalendarItemCampusList_Delete" />
+                                    <Rock:DeleteField OnClick="gCalendarItemOccurrenceList_Delete" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

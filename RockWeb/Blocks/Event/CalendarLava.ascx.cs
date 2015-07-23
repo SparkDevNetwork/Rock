@@ -509,24 +509,24 @@ namespace RockWeb.Blocks.Event
                     .ToList();
             }
 
-            var eventCampusSummaries = new List<EventCampusSummary>();
+            var eventCampusSummaries = new List<EventOccurrenceSummary>();
             foreach ( var eventCampusDate in eventCampusDates )
             {
-                var eventItemCampus = eventCampusDate.EventItemCampus;
+                var eventItemOccurrence = eventCampusDate.EventItemOccurrence;
 
                 foreach ( var datetime in eventCampusDate.Dates )
                 {
-                    eventCampusSummaries.Add( new EventCampusSummary
+                    eventCampusSummaries.Add( new EventOccurrenceSummary
                     {
-                        EventItemCampus = eventItemCampus,
-                        Name = eventItemCampus.EventItem.Name,
+                        EventItemOccurrence = eventItemOccurrence,
+                        Name = eventItemOccurrence.EventItem.Name,
                         DateTime = datetime,
                         Date = datetime.ToShortDateString(),
                         Time = datetime.ToShortTimeString(),
-                        Location = eventItemCampus.Campus != null ? eventItemCampus.Campus.Name : "All Campuses",
-                        Description = eventItemCampus.EventItem.Description,
-                        Summary = eventItemCampus.EventItem.Summary,
-                        DetailPage = String.IsNullOrWhiteSpace( eventItemCampus.EventItem.DetailsUrl ) ? null : eventItemCampus.EventItem.DetailsUrl
+                        Location = eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All Campuses",
+                        Description = eventItemOccurrence.EventItem.Description,
+                        Summary = eventItemOccurrence.EventItem.Summary,
+                        DetailPage = String.IsNullOrWhiteSpace( eventItemOccurrence.EventItem.DetailsUrl ) ? null : eventItemOccurrence.EventItem.DetailsUrl
                     } );
                 }
             }
@@ -564,7 +564,7 @@ namespace RockWeb.Blocks.Event
         /// Loads the event item campus data.
         /// </summary>
         /// <returns>A list of filtered event campus dates</returns>
-        private List<EventCampusDate> LoadData()
+        private List<EventOccurrenceDate> LoadData()
         {
             // get eventCalendar id
             int eventCalendarId = -1;
@@ -582,10 +582,10 @@ namespace RockWeb.Blocks.Event
                 nbConfiguration.Visible = true;
             }
 
-            EventItemCampusService eventItemCampusService = new EventItemCampusService( rockContext );
+            EventItemOccurrenceService eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
 
             // Grab events
-            var qry = eventItemCampusService
+            var qry = eventItemOccurrenceService
                     .Queryable( "EventItem, EventItem.EventItemAudiences,EventItemSchedules.Schedule" )
                     .Where( m =>
                         m.EventItem.EventCalendarItems.Select( i => i.EventCalendarId ).Contains( eventCalendarId ) &&
@@ -616,21 +616,21 @@ namespace RockWeb.Blocks.Event
 
             qryList = qryList.Where( c => c.GetStartTimes( beginDateTime, endDateTime ).Any() ).ToList();
 
-            return qryList.Select( c => new EventCampusDate
+            return qryList.Select( c => new EventOccurrenceDate
             {
-                EventItemCampus = c,
+                EventItemOccurrence = c,
                 Dates = c.GetStartTimes( beginDateTime, endDateTime ).ToList()
             } )
             .ToList();
         }
 
         /// <summary>
-        /// A class to store event item campus data for liquid
+        /// A class to store event item occurrence data for liquid
         /// </summary>
-        [DotLiquid.LiquidType( "EventItemCampus", "DateTime", "Name", "Date", "Time", "Location", "Description", "Summary", "DetailPage" )]
-        public class EventCampusSummary
+        [DotLiquid.LiquidType( "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "Location", "Description", "Summary", "DetailPage" )]
+        public class EventOccurrenceSummary
         {
-            public EventItemCampus EventItemCampus { get; set; }
+            public EventItemOccurrence EventItemOccurrence { get; set; }
             public DateTime DateTime { get; set; }
             public String Name { get; set; }
             public String Date { get; set; }
@@ -642,11 +642,11 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// A class to store the event item campuses' dates
+        /// A class to store the event item occurrences dates
         /// </summary>
-        public class EventCampusDate
+        public class EventOccurrenceDate
         {
-            public EventItemCampus EventItemCampus { get; set; }
+            public EventItemOccurrence EventItemOccurrence { get; set; }
             public List<DateTime> Dates { get; set; }
         }
 

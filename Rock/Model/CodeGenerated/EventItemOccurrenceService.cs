@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// EventItemCampus Service class
+    /// EventItemOccurrence Service class
     /// </summary>
-    public partial class EventItemCampusService : Service<EventItemCampus>
+    public partial class EventItemOccurrenceService : Service<EventItemOccurrence>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EventItemCampusService"/> class
+        /// Initializes a new instance of the <see cref="EventItemOccurrenceService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public EventItemCampusService(RockContext context) : base(context)
+        public EventItemOccurrenceService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( EventItemCampus item, out string errorMessage )
+        public bool CanDelete( EventItemOccurrence item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,34 +58,34 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class EventItemCampusExtensionMethods
+    public static partial class EventItemOccurrenceExtensionMethods
     {
         /// <summary>
-        /// Clones this EventItemCampus object to a new EventItemCampus object
+        /// Clones this EventItemOccurrence object to a new EventItemOccurrence object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static EventItemCampus Clone( this EventItemCampus source, bool deepCopy )
+        public static EventItemOccurrence Clone( this EventItemOccurrence source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as EventItemCampus;
+                return source.Clone() as EventItemOccurrence;
             }
             else
             {
-                var target = new EventItemCampus();
+                var target = new EventItemOccurrence();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another EventItemCampus object to this EventItemCampus object
+        /// Copies the properties from another EventItemOccurrence object to this EventItemOccurrence object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this EventItemCampus target, EventItemCampus source )
+        public static void CopyPropertiesFrom( this EventItemOccurrence target, EventItemOccurrence source )
         {
             target.Id = source.Id;
             target.CampusId = source.CampusId;

@@ -55,7 +55,7 @@
                     <i class="fa fa-fw fa-building-o"></i>
                 </div>
                 <div class="wizard-item-label">
-                    Campus Detail
+                    Event Occurrence
                 </div>
             </div>
         </div>

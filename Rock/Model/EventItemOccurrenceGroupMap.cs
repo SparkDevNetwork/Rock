@@ -29,18 +29,19 @@ namespace Rock.Model
     /// <summary>
     /// Represents the linkage between event campus, registration instance, and group.
     /// </summary>
-    [Table( "EventItemCampusGroupMap" )]
+    [Table( "EventItemOccurrenceGroupMap" )]
     [DataContract]
-    public partial class EventItemCampusGroupMap : Model<EventItemCampusGroupMap>
+    public partial class EventItemOccurrenceGroupMap : Model<EventItemOccurrenceGroupMap>
     {
+
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.EventItem"/> that this EventItemCampus is associated with. This property is required.
+        /// Gets or sets the event item occurrence identifier.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EventItem"/> that the EventItemCampus is associated with.
+        /// The event item occurrence identifier.
         /// </value>
         [DataMember]
-        public int? EventItemCampusId { get; set; }
+        public int? EventItemOccurrenceId { get; set; }
 
         /// <summary>
         /// Gets or sets the registration instance identifier.
@@ -49,13 +50,13 @@ namespace Rock.Model
         /// The registration instance identifier.
         /// </value>
         [DataMember]
-        public int? RegistrationInstanceId { get; set; }        
-        
+        public int? RegistrationInstanceId { get; set; }
+
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that this EventItemCampus is associated with. when null it is a church-wide event.
+        /// Gets or sets the group identifier.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that the EventItemCampus is associated with.
+        /// The group identifier.
         /// </value>
         [DataMember]
         [FieldType( Rock.SystemGuid.FieldType.GROUP )]
@@ -85,12 +86,12 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the event item campus.
+        /// Gets or sets the event item occurrence.
         /// </summary>
         /// <value>
-        /// The event item campus.
+        /// The event item occurrence.
         /// </value>
-        public virtual EventItemCampus EventItemCampus { get; set; }
+        public virtual EventItemOccurrence EventItemOccurrence { get; set; }
 
         /// <summary>
         /// Gets or sets the group.
@@ -138,9 +139,9 @@ namespace Rock.Model
         { 
             var parts = new List<string>();
 
-            if ( includeEventItem && EventItemCampus != null )
+            if ( includeEventItem && EventItemOccurrence != null )
             {
-                parts.Add( EventItemCampus.ToString() );
+                parts.Add( EventItemOccurrence.ToString() );
             }
 
             if ( includeRegistrationInstance && RegistrationInstance != null )
@@ -164,16 +165,16 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// EventItemCampus Configuration class.
+    /// EventItemOccurrenceGroupMap Configuration class.
     /// </summary>
-    public partial class EventItemCampusGroupMapConfiguration : EntityTypeConfiguration<EventItemCampusGroupMap>
+    public partial class EventItemOccurrenceGroupMapConfiguration : EntityTypeConfiguration<EventItemOccurrenceGroupMap>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EventItemCampusConfiguration" /> class.
+        /// Initializes a new instance of the <see cref="EventItemOccurrenceGroupMapConfiguration" /> class.
         /// </summary>
-        public EventItemCampusGroupMapConfiguration()
+        public EventItemOccurrenceGroupMapConfiguration()
         {
-            this.HasOptional( p => p.EventItemCampus ).WithMany( e => e.Linkages ).HasForeignKey( p => p.EventItemCampusId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.EventItemOccurrence ).WithMany( e => e.Linkages ).HasForeignKey( p => p.EventItemOccurrenceId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.RegistrationInstance ).WithMany( r => r.Linkages ).HasForeignKey( p => p.RegistrationInstanceId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.Group ).WithMany( g => g.Linkages ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
         }
