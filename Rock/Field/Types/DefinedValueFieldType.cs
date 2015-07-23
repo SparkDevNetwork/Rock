@@ -434,15 +434,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Sets the filter compare value.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="value">The value.</param>
-        public override void SetFilterCompareValue( Control control, string value )
-        {
-        }
-
-        /// <summary>
         /// Formats the filter value value.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
