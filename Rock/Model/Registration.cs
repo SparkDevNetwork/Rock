@@ -196,6 +196,8 @@ namespace Rock.Model
         /// <value>
         /// The discounted cost.
         /// </value>
+        [NotMapped]
+        [LavaInclude]
         public virtual decimal DiscountedCost
         {
             get

@@ -50,15 +50,15 @@
             <h4>Your Information</h4>
             <div class="row">
                 <div class="col-md-6">
-                    <Rock:RockTextBox ID="tbYourFirstName" runat="server" Label="First Name" />
+                    <Rock:RockTextBox ID="tbYourFirstName" runat="server" Label="First Name" Required="true" />
                 </div>
                 <div class="col-md-6">
-                    <Rock:RockTextBox ID="tbYourLastName" runat="server" Label="Last Name" />
+                    <Rock:RockTextBox ID="tbYourLastName" runat="server" Label="Last Name" Required="true" />
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6">
-                    <Rock:EmailBox ID="tbConfirmationEmail" runat="server" Label="Send Confirmation Emails To" />
+                    <Rock:EmailBox ID="tbConfirmationEmail" runat="server" Label="Send Confirmation Emails To" Required="true" />
                 </div>
                 <div class="col-md-6">
                 </div>
