@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Event
         {{ registrant.PersonAlias.Person.FullName }}
         
         {% if registrant.Cost > 0 %}
-            - {{ currencySymbol }}{{ registrant.Cost | Format'#,##0.00' }}
+            - {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
         {% endif %}
         
         {% assign feeCount = registrant.Fees | Size %}
@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Event
             {% for fee in registrant.Fees %}
                 <li>
                     {{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
-                    {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format'#,##0.00' }}
+                    {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format:'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format:'#,##0.00' }}
                 </li>
             {% endfor %}
             </ul>
@@ -81,18 +81,21 @@ namespace RockWeb.Blocks.Event
 
 {% if Registration.TotalCost > 0 %}
 <p>
-    Total Due: {{ currencySymbol }}{{ Registration.TotalCost | Format'#,##0.00' }}<br/>
+    Total Cost: {{ currencySymbol }}{{ Registration.TotalCost | Format:'#,##0.00' }}<br/>
+    {% if Registration.DiscountedCost != Registration.TotalCost %}
+        Discounted Cost: {{ currencySymbol }}{{ Registration.DiscountedCost | Format:'#,##0.00' }}<br/>
+    {% endif %}
     {% for payment in Registration.Payments %}
-        Paid {{ currencySymbol }}{{ payment.Amount | Format'#,##0.00' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }} <small>(Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
+        Paid {{ currencySymbol }}{{ payment.Amount | Format:'#,##0.00' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }} <small>(Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
     {% endfor %}
     
     {% assign paymentCount = Registration.Payments | Size %}
     
     {% if paymentCount > 1 %}
-        Total Paid: {{ currencySymbol }}{{ Registration.TotalPaid | Format'#,##0.00' }}<br/>
+        Total Paid: {{ currencySymbol }}{{ Registration.TotalPaid | Format:'#,##0.00' }}<br/>
     {% endif %}
     
-    Balance Due: {{ currencySymbol }}{{ Registration.BalanceDue | Format'#,##0.00' }}
+    Balance Due: {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}
 </p>
 {% endif %}
 
@@ -124,7 +127,7 @@ namespace RockWeb.Blocks.Event
         <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
         
         {% if registrant.Cost > 0 %}
-            - {{ currencySymbol }}{{ registrant.Cost | Format'#,##0.00' }}
+            - {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
         {% endif %}
         
         {% assign feeCount = registrant.Fees | Size %}
@@ -134,7 +137,7 @@ namespace RockWeb.Blocks.Event
             {% for fee in registrant.Fees %}
                 <li>
                     {{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
-                    {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format'#,##0.00' }}
+                    {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format:'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format:'#,##0.00' }}
                 </li>
             {% endfor %}
             </ul>
@@ -146,16 +149,19 @@ namespace RockWeb.Blocks.Event
 
 {% if Registration.TotalCost > 0 %}
 <p>
-    Total Due: {{ currencySymbol }}{{ Registration.TotalCost | Format''#,##0.00'' }}<br/>
+    Total Cost: {{ currencySymbol }}{{ Registration.TotalCost | Format:'#,##0.00' }}<br/>
+    {% if Registration.DiscountedCost != Registration.TotalCost %}
+        Discounted Cost: {{ currencySymbol }}{{ Registration.DiscountedCost | Format:'#,##0.00' }}<br/>
+    {% endif %}
     {% for payment in Registration.Payments %}
-        Paid {{ currencySymbol }}{{ payment.Amount | Format''#,##0.00'' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }} 
+        Paid {{ currencySymbol }}{{ payment.Amount | Format:'#,##0.00' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }} 
         <small>(Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
     {% endfor %}
     {% assign paymentCount = Registration.Payments | Size %}
     {% if paymentCount > 1 %}
-        Total Paid: {{ currencySymbol }}{{ Registration.TotalPaid | Format''#,##0.00'' }}<br/>
+        Total Paid: {{ currencySymbol }}{{ Registration.TotalPaid | Format:'#,##0.00' }}<br/>
     {% endif %}
-    Balance Due: {{ currencySymbol }}{{ Registration.BalanceDue | Format''#,##0.00'' }}
+    Balance Due: {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}
 </p>
 {% endif %}
 
