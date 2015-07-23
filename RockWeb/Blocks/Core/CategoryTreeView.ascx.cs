@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Core
     [TextField( "Entity type Qualifier Value", "", false )]
     [BooleanField( "Show Unnamed Entity Items", "Set to false to hide any EntityType items that have a blank name.", true )]
     [TextField( "Page Parameter Key", "The page parameter to look for" )]
+    [TextField("Default Icon CSS Class", "The icon CSS class to use when the treeview displays items that do not have an IconCSSClass property", false, "fa fa-list-ol" )]
 
     [CategoryField( "Root Category", "Select the root category to use as a starting point for the tree view.", false, Category = "CustomSetting" )]
     [CategoryField( "Exclude Categories", "Select any category that you need to exclude from the tree view", true, Category = "CustomSetting" )]
@@ -184,6 +185,12 @@ namespace RockWeb.Blocks.Core
                     }
                     
                     parms += string.Format( "&excludedCategoryIds={0}", excludedCategoriesIds.AsDelimited(",") );
+                }
+
+                string defaultIconCssClass = GetAttributeValue("DefaultIconCSSClass");
+                if ( !string.IsNullOrWhiteSpace( defaultIconCssClass ) )
+                {
+                    parms += string.Format( "&defaultIconCssClass={0}", defaultIconCssClass );
                 }
 
                 RestParms = parms;
