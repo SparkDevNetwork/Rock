@@ -1,80 +1,59 @@
-.card {
-  border-radius: 5px;
-  overflow: hidden;
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+.panel-card {
+  border-width: 0;
   margin-bottom: 30px;
 }
-.card-title {
-  color: inherit;
-  position: relative;
-  overflow: hidden;
+.panel-card .panel-body {
   display: block;
-  height: 270px;
+  height: 267px;
+  position: relative;
   background: #777777;
+  color: #fff;
+  border-radius: 4px 4px 0 0;
 }
-.card-title:hover {
-  text-decoration: none;
+.panel-card .panel-body a {
   color: inherit;
 }
-.card-titletext {
+.panel-card .panel-title {
+  font-size: 31px;
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  color: #fff;
-  margin: 0;
-  width: 100%;
-  padding: 15px 15px;
+  padding: 15px;
   line-height: 30px;
-  -webkit-transition: background 0.3s;
-  -o-transition: background 0.3s;
-  transition: background 0.3s;
-  overflow: hidden;
-  max-height: 100%;
 }
-.card-footer {
-  height: 60px;
-  background: #fff;
-  border-bottom-right-radius: 5px;
-  border-bottom-left-radius: 5px;
-  line-height: 60px;
-  padding: 0 15px;
+.panel-card .panel-footer {
+  border-top: none;
+  border-left: 2px solid #dddddd;
+  border-bottom: 2px solid #dddddd;
+  border-right: 2px solid #dddddd;
+  line-height: 35px;
 }
-.card-btn {
-  float: right;
-}
-.card-btn i {
-  -webkit-transition: margin 0.3s;
-  -o-transition: margin 0.3s;
-  transition: margin 0.3s;
-}
-.card-btn:hover {
-  text-decoration: none;
-}
-.card-btn:hover i {
-  margin-right: -2px;
-  margin-left: 2px;
-}
-.card-half .card-title {
-  height: 90px;
-}
-.card-primary .card-title {
-  background: #7a1315;
-}
-.card-black .card-title {
-  background: #222222;
-}
-.card-title-withimg {
+.panel-card-withimg .panel-body {
   background-position: center center;
   background-size: cover;
   background-repeat: none;
 }
-.card-title-withimg:hover .card-titletext {
+.panel-card-withimg .panel-body:hover .panel-title {
   background: rgba(0, 0, 0, 0.25);
 }
-.card-title-dark .card-titletext {
+.panel-card-withimg .panel-title {
+  -webkit-transition: background 0.3s;
+  -o-transition: background 0.3s;
+  transition: background 0.3s;
+}
+.panel-card-half .panel-body {
+  height: 90px;
+}
+.panel-card-light .panel-body {
   color: #333333;
 }
-.card-title-dark:hover .card-titletext {
+.panel-card-light .panel-body:hover .panel-title {
   background: rgba(255, 255, 255, 0.5);
+}
+.panel-card-primary .panel-body {
+  background-color: #7a1315;
+}
+.panel-card-black .panel-body {
+  background-color: #222222;
 }
