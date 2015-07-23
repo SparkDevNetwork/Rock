@@ -466,6 +466,7 @@
     <Compile Include="SystemGuid\NoteType.cs" />
     <Compile Include="SystemGuid\ServiceJob.cs" />
     <Compile Include="Transactions\ConnectionRequestActivityChangeTransaction.cs" />
+    <Compile Include="Transactions\GroupMemberPlacedElsewhereTransaction.cs" />
     <Compile Include="Transactions\GroupAttendedTransaction.cs" />
     <Compile Include="Transactions\ConnectionRequestChangeTransaction.cs" />
     <Compile Include="Transactions\GroupMemberChangeTransaction.cs" />

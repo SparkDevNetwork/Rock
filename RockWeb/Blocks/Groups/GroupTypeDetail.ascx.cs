@@ -2148,6 +2148,8 @@ namespace RockWeb.Blocks.Groups
             ddlTriggerFromStatus.SetValue( qualifierParts.Length > 2 ? qualifierParts[2] : string.Empty );
             ddlTriggerFromRole.SetValue( qualifierParts.Length > 3 ? qualifierParts[3] : string.Empty );
             cbTriggerFirstTime.Checked = qualifierParts.Length > 4 ? qualifierParts[4].AsBoolean() : false;
+            cbTriggerPlacedElsewhereShowNote.Checked = qualifierParts.Length > 5 ? qualifierParts[5].AsBoolean() : false;
+            cbTriggerPlacedElsewhereRequireNote.Checked = qualifierParts.Length > 6 ? qualifierParts[6].AsBoolean() : false;
 
             ShowTriggerQualifierControls();
             ShowDialog( "MemberWorkflowTriggers", true );
@@ -2174,6 +2176,9 @@ namespace RockWeb.Blocks.Groups
 
                         cbTriggerFirstTime.Visible = false;
 
+                        cbTriggerPlacedElsewhereShowNote.Visible = false;
+                        cbTriggerPlacedElsewhereRequireNote.Visible = false;
+
                         break;
                     }
 
@@ -2186,6 +2191,25 @@ namespace RockWeb.Blocks.Groups
                         ddlTriggerToRole.Visible = false;
 
                         cbTriggerFirstTime.Visible = true;
+
+                        cbTriggerPlacedElsewhereShowNote.Visible = false;
+                        cbTriggerPlacedElsewhereRequireNote.Visible = false;
+
+                        break;
+                    }
+
+                case GroupMemberWorkflowTriggerType.MemberPlacedElsewhere:
+                    {
+                        ddlTriggerFromStatus.Visible = false;
+                        ddlTriggerToStatus.Visible = false;
+
+                        ddlTriggerFromRole.Visible = false;
+                        ddlTriggerToRole.Visible = false;
+
+                        cbTriggerFirstTime.Visible = false;
+
+                        cbTriggerPlacedElsewhereShowNote.Visible = true;
+                        cbTriggerPlacedElsewhereRequireNote.Visible = true;
 
                         break;
                     }
@@ -2201,6 +2225,9 @@ namespace RockWeb.Blocks.Groups
 
                         cbTriggerFirstTime.Visible = false;
 
+                        cbTriggerPlacedElsewhereShowNote.Visible = false;
+                        cbTriggerPlacedElsewhereRequireNote.Visible = false;
+
                         break;
                     }
 
@@ -2214,6 +2241,9 @@ namespace RockWeb.Blocks.Groups
                         ddlTriggerToRole.Visible = false;
 
                         cbTriggerFirstTime.Visible = false;
+
+                        cbTriggerPlacedElsewhereShowNote.Visible = false;
+                        cbTriggerPlacedElsewhereRequireNote.Visible = false;
 
                         break;
                     }
@@ -2317,12 +2347,14 @@ namespace RockWeb.Blocks.Groups
             memberWorkflowTrigger.TriggerType = ddlTriggerType.SelectedValueAsEnum<GroupMemberWorkflowTriggerType>();
 
             memberWorkflowTrigger.TypeQualifier = string.Format(
-                "{0}|{1}|{2}|{3}|{4}",
+                "{0}|{1}|{2}|{3}|{4}|{5}|{6}",
                 ddlTriggerToStatus.SelectedValue,
                 ddlTriggerToRole.SelectedValue,
                 ddlTriggerFromStatus.SelectedValue,
                 ddlTriggerFromRole.SelectedValue,
-                cbTriggerFirstTime.Checked.ToString() );
+                cbTriggerFirstTime.Checked.ToString(),
+                cbTriggerPlacedElsewhereShowNote.Checked.ToString(),
+                cbTriggerPlacedElsewhereRequireNote.Checked.ToString() );
 
             // Controls will show warnings
             if ( !memberWorkflowTrigger.IsValid )

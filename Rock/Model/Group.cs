@@ -410,6 +410,16 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
+        /// Gets all the group member workflow triggers from the group and the group type sorted by order
+        /// </summary>
+        /// <param name="includeGroupTypeTriggers">if set to <c>true</c> [include group type triggers].</param>
+        /// <returns></returns>
+        public IOrderedEnumerable<GroupMemberWorkflowTrigger> GetGroupMemberWorkflowTriggers( bool includeGroupTypeTriggers = true )
+        {
+            return this.GroupMemberWorkflowTriggers.Union( this.GroupType.GroupMemberWorkflowTriggers ).OrderBy( a => a.Order ).ThenBy( a => a.Name );
+        }
+
+        /// <summary>
         /// Determines whether the specified action is authorized.
         /// </summary>
         /// <param name="action">The action.</param>
