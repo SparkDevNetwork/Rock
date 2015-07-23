@@ -661,7 +661,11 @@ END:VCALENDAR
                         DateTime newDate;
                         if ( DateTime.TryParse( dateString, out newDate ) )
                         {
-                            recurrenceDates.Add( new iCalDateTime( newDate.Date ) );
+                            if ( _dpStartDateTime.SelectedTime != null )
+                            {
+                                newDate = newDate.Add( _dpStartDateTime.SelectedTime.Value );
+                            }
+                            recurrenceDates.Add( new iCalDateTime( newDate ) );
                         }
                     }
 
@@ -1058,7 +1062,7 @@ END:VCALENDAR
                         _radEndByDate.Checked = false;
                         _radEndByOccurrenceCount.Checked = false;
                         IPeriodList dates = calendarEvent.RecurrenceDates[0];
-                        _hfSpecificDateListValues.Value = dates.Select( a => a.StartTime ).ToList().AsDelimited( "," );
+                        _hfSpecificDateListValues.Value = dates.Select( a => new iCalDateTime( a.StartTime.Date ) ).ToList().AsDelimited( "," ).Replace( " UTC", "" );
                     }
 
                     _radEndByNone.Checked = true;
