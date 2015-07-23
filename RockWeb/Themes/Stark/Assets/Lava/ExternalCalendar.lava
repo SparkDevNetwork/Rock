@@ -19,7 +19,7 @@
           <i> View page -> </i>
         </a>
 		{% else %}
-		<a href="{{ DetailsPage }}?EventCampusId={{ eventCampus.EventItemCampus.Id }}">
+		<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventCampus.EventItemOccurrence.Id }}">
             View Details <i class="fa fa-chevron-right"></i>
         </a>
         {% endif %}

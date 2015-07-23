@@ -95,12 +95,6 @@ namespace Rock.Client
     public partial class GroupMemberWorkflowTrigger : GroupMemberWorkflowTriggerEntity
     {
         /// <summary />
-        public Group Group { get; set; }
-
-        /// <summary />
-        public GroupType GroupType { get; set; }
-
-        /// <summary />
         public WorkflowType WorkflowType { get; set; }
 
     }

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CalendarItemCampusDetail.ascx.cs" Inherits="RockWeb.Blocks.Event.CalendarItemCampusDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CalendarItemOccurrenceDetail.ascx.cs" Inherits="RockWeb.Blocks.Event.CalendarItemOccurrenceDetail" %>
 
 <script type="text/javascript">
     function clearActiveDialog() {
@@ -56,7 +56,7 @@
                     <i class="fa fa-fw fa-building-o"></i>
                 </div>
                 <div class="wizard-item-label">
-                    Campus Detail
+                    Event Occurrence
                 </div>
             </div>
 
@@ -64,7 +64,7 @@
 
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block">
 
-            <asp:HiddenField ID="hfEventItemCampusId" runat="server" />
+            <asp:HiddenField ID="hfEventItemOccurrenceId" runat="server" />
 
             <div class="panel-heading clearfix">
                 <h1 class="panel-title"><asp:Literal ID="lActionTitle" runat="server" /></h1>

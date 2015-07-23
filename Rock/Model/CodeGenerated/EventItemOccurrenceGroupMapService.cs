@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// EventItemCampusGroupMap Service class
+    /// EventItemOccurrenceGroupMap Service class
     /// </summary>
-    public partial class EventItemCampusGroupMapService : Service<EventItemCampusGroupMap>
+    public partial class EventItemOccurrenceGroupMapService : Service<EventItemOccurrenceGroupMap>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EventItemCampusGroupMapService"/> class
+        /// Initializes a new instance of the <see cref="EventItemOccurrenceGroupMapService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public EventItemCampusGroupMapService(RockContext context) : base(context)
+        public EventItemOccurrenceGroupMapService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( EventItemCampusGroupMap item, out string errorMessage )
+        public bool CanDelete( EventItemOccurrenceGroupMap item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,37 +58,37 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class EventItemCampusGroupMapExtensionMethods
+    public static partial class EventItemOccurrenceGroupMapExtensionMethods
     {
         /// <summary>
-        /// Clones this EventItemCampusGroupMap object to a new EventItemCampusGroupMap object
+        /// Clones this EventItemOccurrenceGroupMap object to a new EventItemOccurrenceGroupMap object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static EventItemCampusGroupMap Clone( this EventItemCampusGroupMap source, bool deepCopy )
+        public static EventItemOccurrenceGroupMap Clone( this EventItemOccurrenceGroupMap source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as EventItemCampusGroupMap;
+                return source.Clone() as EventItemOccurrenceGroupMap;
             }
             else
             {
-                var target = new EventItemCampusGroupMap();
+                var target = new EventItemOccurrenceGroupMap();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another EventItemCampusGroupMap object to this EventItemCampusGroupMap object
+        /// Copies the properties from another EventItemOccurrenceGroupMap object to this EventItemOccurrenceGroupMap object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this EventItemCampusGroupMap target, EventItemCampusGroupMap source )
+        public static void CopyPropertiesFrom( this EventItemOccurrenceGroupMap target, EventItemOccurrenceGroupMap source )
         {
             target.Id = source.Id;
-            target.EventItemCampusId = source.EventItemCampusId;
+            target.EventItemOccurrenceId = source.EventItemOccurrenceId;
             target.GroupId = source.GroupId;
             target.PublicName = source.PublicName;
             target.RegistrationInstanceId = source.RegistrationInstanceId;

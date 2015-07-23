@@ -85,13 +85,13 @@ namespace RockWeb.Blocks.Event
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? eventCampusId = PageParameter( pageReference, "EventCampusId" ).AsIntegerOrNull();
+            int? eventCampusId = PageParameter( pageReference, "EventOccurrenceId" ).AsIntegerOrNull();
             if ( eventCampusId != null )
             {
-                EventItemCampus eventItemCampus = new EventItemCampusService( new RockContext() ).Get( eventCampusId.Value );
-                if ( eventItemCampus != null )
+                EventItemOccurrence eventItemOccurrence = new EventItemOccurrenceService( new RockContext() ).Get( eventCampusId.Value );
+                if ( eventItemOccurrence != null )
                 {
-                    breadCrumbs.Add( new BreadCrumb( eventItemCampus.EventItem.Name, pageReference ) );
+                    breadCrumbs.Add( new BreadCrumb( eventItemOccurrence.EventItem.Name, pageReference ) );
                 }
             }
             else
@@ -122,27 +122,27 @@ namespace RockWeb.Blocks.Event
 
         private void DisplayDetails()
         {
-            int eventItemCampusId = 0;
+            int eventItemOccurrenceId = 0;
 
             // get the calendarItem id
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "EventCampusId" ) ) )
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "EventOccurrenceId" ) ) )
             {
-                eventItemCampusId = Convert.ToInt32( PageParameter( "EventCampusId" ) );
+                eventItemOccurrenceId = Convert.ToInt32( PageParameter( "EventOccurrenceId" ) );
             }
-            if ( eventItemCampusId > 0 )
+            if ( eventItemOccurrenceId > 0 )
             {
                 bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
 
-                var eventItemCampusService = new EventItemCampusService( new RockContext() );
-                var qry = eventItemCampusService
+                var eventItemOccurrenceService = new EventItemOccurrenceService( new RockContext() );
+                var qry = eventItemOccurrenceService
                     .Queryable( "EventItem, EventItem.Photo, Campus, Linkages" )
-                    .Where( i => i.Id == eventItemCampusId );
+                    .Where( i => i.Id == eventItemOccurrenceId );
 
                 if ( !enableDebug )
                 {
                     qry = qry.AsNoTracking();
                 }
-                var eventItemCampus = qry.FirstOrDefault();
+                var eventItemOccurrence = qry.FirstOrDefault();
 
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
@@ -155,8 +155,8 @@ namespace RockWeb.Blocks.Event
                     mergeFields.Add( "CampusContext", contextCampus );
                 }
 
-                mergeFields.Add( "EventCampus", eventItemCampus );
-                mergeFields.Add( "Event", eventItemCampus.EventItem );
+                mergeFields.Add( "EventCampus", eventItemOccurrence );
+                mergeFields.Add( "Event", eventItemOccurrence.EventItem );
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
 
                 lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );

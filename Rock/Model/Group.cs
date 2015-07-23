@@ -368,12 +368,12 @@ namespace Rock.Model
         /// <value>
         /// The linkages.
         /// </value>
-        public virtual ICollection<EventItemCampusGroupMap> Linkages
+        public virtual ICollection<EventItemOccurrenceGroupMap> Linkages
         {
-            get { return _linkages ?? ( _linkages = new Collection<EventItemCampusGroupMap>() ); }
+            get { return _linkages ?? ( _linkages = new Collection<EventItemOccurrenceGroupMap>() ); }
             set { _linkages = value; }
         }
-        private ICollection<EventItemCampusGroupMap> _linkages;
+        private ICollection<EventItemOccurrenceGroupMap> _linkages;
         
         /// <summary>
         /// Gets the securable object that security permissions should be inherited from.  If block is located on a page

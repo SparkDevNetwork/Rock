@@ -1081,16 +1081,16 @@ namespace RockWeb.Blocks.Event
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                var campusEventItem = e.Row.DataItem as EventItemCampusGroupMap;
+                var campusEventItem = e.Row.DataItem as EventItemOccurrenceGroupMap;
                 var lCalendarItem = e.Row.FindControl( "lCalendarItem" ) as Literal;
                 if ( campusEventItem != null && lCalendarItem != null )
                 {
-                    if ( campusEventItem.EventItemCampus != null &&
-                        campusEventItem.EventItemCampus.EventItem != null )
+                    if ( campusEventItem.EventItemOccurrence != null &&
+                        campusEventItem.EventItemOccurrence.EventItem != null )
                     {
                         var calendarItems = new List<string>();
 
-                        foreach ( var calendarItem in campusEventItem.EventItemCampus.EventItem.EventCalendarItems )
+                        foreach ( var calendarItem in campusEventItem.EventItemOccurrence.EventItem.EventCalendarItems )
                         {
                             if ( calendarItem.EventItem != null && calendarItem.EventCalendar != null )
                             {
@@ -1140,7 +1140,7 @@ namespace RockWeb.Blocks.Event
         {
             using ( var rockContext = new RockContext() )
             {
-                var campusEventItemService = new EventItemCampusGroupMapService( rockContext );
+                var campusEventItemService = new EventItemOccurrenceGroupMapService( rockContext );
                 var campusEventItem = campusEventItemService.Get( e.RowKeyId );
                 if ( campusEventItem != null )
                 {
@@ -2367,8 +2367,8 @@ namespace RockWeb.Blocks.Event
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var qry = new EventItemCampusGroupMapService( rockContext )
-                        .Queryable( "EventItemCampus.EventItem.EventCalendarItems.EventCalendar,Group" )
+                    var qry = new EventItemOccurrenceGroupMapService( rockContext )
+                        .Queryable( "EventItemOccurrence.EventItem.EventCalendarItems.EventCalendar,Group" )
                         .AsNoTracking()
                         .Where( r => r.RegistrationInstanceId == instanceId.Value );
 
@@ -2377,14 +2377,14 @@ namespace RockWeb.Blocks.Event
                     {
                         qry = qry
                             .Where( l =>
-                                l.EventItemCampus != null &&
+                                l.EventItemOccurrence != null &&
                                 (
-                                    !l.EventItemCampus.CampusId.HasValue ||
-                                    campusIds.Contains( l.EventItemCampus.CampusId.Value )
+                                    !l.EventItemOccurrence.CampusId.HasValue ||
+                                    campusIds.Contains( l.EventItemOccurrence.CampusId.Value )
                                 ) );
                     }
 
-                    IOrderedQueryable<EventItemCampusGroupMap> orderedQry = null;
+                    IOrderedQueryable<EventItemOccurrenceGroupMap> orderedQry = null;
                     SortProperty sortProperty = gLinkages.SortProperty;
                     if ( sortProperty != null )
                     {

@@ -24,10 +24,10 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <asp:HiddenField ID="hfLinkageEventItemCampusId" runat="server" />
-                        <Rock:RockLiteral ID="lLinkageEventItemCampus" runat="server" Label="Calendar Item" CssClass="margin-b-none" />
-                        <asp:LinkButton ID="lbLinkageEventItemCampusAdd" runat="server" CssClass="btn btn-primary btn-xs margin-b-md" OnClick="lbLinkageEventItemCampusAdd_Click"><i class="fa fa-plus"></i> Add Event Item</asp:LinkButton>
-                        <asp:LinkButton ID="lbLinkageEventItemCampusRemove" runat="server" CssClass="btn btn-danger btn-xs margin-b-md" Visible="false" OnClick="lbLinkageEventItemCampusRemove_Click"><i class="fa fa-times"></i> Remove</asp:LinkButton>
+                        <asp:HiddenField ID="hfLinkageEventItemOccurrenceId" runat="server" />
+                        <Rock:RockLiteral ID="lLinkageEventItemOccurrence" runat="server" Label="Calendar Item" CssClass="margin-b-none" />
+                        <asp:LinkButton ID="lbLinkageEventItemOccurrenceAdd" runat="server" CssClass="btn btn-primary btn-xs margin-b-md" OnClick="lbLinkageEventItemOccurrenceAdd_Click"><i class="fa fa-plus"></i> Add Event Item</asp:LinkButton>
+                        <asp:LinkButton ID="lbLinkageEventItemOccurrenceRemove" runat="server" CssClass="btn btn-danger btn-xs margin-b-md" Visible="false" OnClick="lbLinkageEventItemOccurrenceRemove_Click"><i class="fa fa-times"></i> Remove</asp:LinkButton>
                     </div>
                     <div class="col-md-6">
                         <Rock:GroupPicker ID="gpLinkageGroup" runat="server" Label="Group" ValidationGroup="Linkage" />
@@ -77,7 +77,7 @@
                             DataTextField="Name" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlCalendarItem_SelectedIndexChanged"/>
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlCalendarItemCampus" runat="server" Label="Campus" Required="true" ValidationGroup="DlgPage3"
+                        <Rock:RockDropDownList ID="ddlCalendarItemOccurrence" runat="server" Label="Campus" Required="true" ValidationGroup="DlgPage3"
                             DataTextField="Name" DataValueField="Id"  />
                     </div>
                 </div>

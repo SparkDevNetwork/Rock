@@ -38,18 +38,18 @@ using Attribute = Rock.Model.Attribute;
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Displays the details of a given calendar item at a campus.
+    /// Displays the details of a given calendar item occurrence.
     /// </summary>
-    [DisplayName( "Calendar Item Campus Detail" )]
+    [DisplayName( "Calendar Item Occurrence Detail" )]
     [Category( "Event" )]
-    [Description( "Displays the details of a given calendar item at a campus." )]
+    [Description( "Displays the details of a given calendar item occurrence." )]
 
     [AccountField( "Default Account", "The default account to use for new registration instances", false, "2A6F9E5F-6859-44F1-AB0E-CE9CF6B08EE5", "", 0 )]
-    public partial class CalendarItemCampusDetail : RockBlock, IDetailBlock
+    public partial class CalendarItemOccurrenceDetail : RockBlock, IDetailBlock
     {
         #region Properties
 
-        public EventItemCampusGroupMap LinkageState { get; set; }
+        public EventItemOccurrenceGroupMap LinkageState { get; set; }
         public List<EventItemSchedule> SchedulesState { get; set; }
 
         #endregion Properties
@@ -67,11 +67,11 @@ namespace RockWeb.Blocks.Event
             string json = ViewState["LinkageState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
-                LinkageState = new EventItemCampusGroupMap();
+                LinkageState = new EventItemOccurrenceGroupMap();
             }
             else
             {
-                LinkageState = JsonConvert.DeserializeObject<EventItemCampusGroupMap>( json );
+                LinkageState = JsonConvert.DeserializeObject<EventItemOccurrenceGroupMap>( json );
             }
 
             json = ViewState["SchedulesState"] as string;
@@ -113,7 +113,7 @@ namespace RockWeb.Blocks.Event
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "EventItemCampusId" ).AsInteger() );
+                ShowDetail( PageParameter( "EventItemOccurrenceId" ).AsInteger() );
             }
             else
             {
@@ -152,83 +152,83 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            EventItemCampus eventItemCampus = null;
+            EventItemOccurrence eventItemOccurrence = null;
 
             using ( var rockContext = new RockContext() )
             {
-                var eventItemCampusService = new EventItemCampusService( rockContext );
+                var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
                 var eventItemScheduleService = new EventItemScheduleService( rockContext );
-                var eventItemCampusGroupMapService = new EventItemCampusGroupMapService( rockContext );
+                var eventItemOccurrenceGroupMapService = new EventItemOccurrenceGroupMapService( rockContext );
                 var registrationInstanceService = new RegistrationInstanceService( rockContext );
                 var scheduleService = new ScheduleService( rockContext );
 
-                int eventItemCampusId = hfEventItemCampusId.ValueAsInt();
-                if ( eventItemCampusId != 0 )
+                int eventItemOccurrenceId = hfEventItemOccurrenceId.ValueAsInt();
+                if ( eventItemOccurrenceId != 0 )
                 {
-                    eventItemCampus = eventItemCampusService
+                    eventItemOccurrence = eventItemOccurrenceService
                         .Queryable( "Linkages,EventItemSchedules" )
-                        .Where( i => i.Id == eventItemCampusId )
+                        .Where( i => i.Id == eventItemOccurrenceId )
                         .FirstOrDefault();
                 }
 
-                if ( eventItemCampus == null )
+                if ( eventItemOccurrence == null )
                 {
-                    eventItemCampus = new EventItemCampus{ EventItemId = PageParameter("EventItemId").AsInteger() };
-                    eventItemCampusService.Add( eventItemCampus );
+                    eventItemOccurrence = new EventItemOccurrence{ EventItemId = PageParameter("EventItemId").AsInteger() };
+                    eventItemOccurrenceService.Add( eventItemOccurrence );
                 }
 
                 int? newCampusId = ddlCampus.SelectedValueAsInt();
-                if ( eventItemCampus.CampusId != newCampusId )
+                if ( eventItemOccurrence.CampusId != newCampusId )
                 {
-                    eventItemCampus.CampusId = newCampusId;
+                    eventItemOccurrence.CampusId = newCampusId;
                     if ( newCampusId.HasValue )
                     {
                         var campus = new CampusService( rockContext ).Get( newCampusId.Value );
-                        eventItemCampus.Campus = campus;
+                        eventItemOccurrence.Campus = campus;
                     }
                     else
                     {
-                        eventItemCampus.Campus = null;
+                        eventItemOccurrence.Campus = null;
                     }
                 }
 
-                eventItemCampus.Location = tbLocation.Text;
+                eventItemOccurrence.Location = tbLocation.Text;
 
-                if ( !eventItemCampus.ContactPersonAliasId.Equals( ppContact.PersonAliasId ))
+                if ( !eventItemOccurrence.ContactPersonAliasId.Equals( ppContact.PersonAliasId ))
                 {
                     PersonAlias personAlias = null;
-                    eventItemCampus.ContactPersonAliasId = ppContact.PersonAliasId;
-                    if ( eventItemCampus.ContactPersonAliasId.HasValue )
+                    eventItemOccurrence.ContactPersonAliasId = ppContact.PersonAliasId;
+                    if ( eventItemOccurrence.ContactPersonAliasId.HasValue )
                     {
-                        personAlias = new PersonAliasService( rockContext ).Get( eventItemCampus.ContactPersonAliasId.Value );
+                        personAlias = new PersonAliasService( rockContext ).Get( eventItemOccurrence.ContactPersonAliasId.Value );
                     }
 
                     if ( personAlias != null )
                     {
-                        eventItemCampus.ContactPersonAlias = personAlias;
+                        eventItemOccurrence.ContactPersonAlias = personAlias;
                     }
                 }
 
-                eventItemCampus.ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnPhone.Number );
-                eventItemCampus.ContactEmail = tbEmail.Text;
-                eventItemCampus.CampusNote = htmlCampusNote.Text;
+                eventItemOccurrence.ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnPhone.Number );
+                eventItemOccurrence.ContactEmail = tbEmail.Text;
+                eventItemOccurrence.CampusNote = htmlCampusNote.Text;
 
                 // Remove any linkage no longer in UI
                 Guid uiLinkageGuid = LinkageState != null ? LinkageState.Guid : Guid.Empty;
-                foreach( var linkage in eventItemCampus.Linkages.Where( l => !l.Guid.Equals(uiLinkageGuid)).ToList())
+                foreach( var linkage in eventItemOccurrence.Linkages.Where( l => !l.Guid.Equals(uiLinkageGuid)).ToList())
                 {
-                    eventItemCampus.Linkages.Remove( linkage );
-                    eventItemCampusGroupMapService.Delete( linkage );
+                    eventItemOccurrence.Linkages.Remove( linkage );
+                    eventItemOccurrenceGroupMapService.Delete( linkage );
                 }
 
                 // Add/Update linkage in UI
                 if ( !uiLinkageGuid.Equals( Guid.Empty ))
                 {
-                    var linkage = eventItemCampus.Linkages.Where( l => l.Guid.Equals( uiLinkageGuid)).FirstOrDefault();
+                    var linkage = eventItemOccurrence.Linkages.Where( l => l.Guid.Equals( uiLinkageGuid)).FirstOrDefault();
                     if ( linkage == null )
                     {
-                        linkage = new EventItemCampusGroupMap();
-                        eventItemCampus.Linkages.Add( linkage );
+                        linkage = new EventItemOccurrenceGroupMap();
+                        eventItemOccurrence.Linkages.Add( linkage );
                     }
 
                     linkage.CopyPropertiesFrom( LinkageState );
@@ -247,21 +247,21 @@ namespace RockWeb.Blocks.Event
 
                 // Remove any schedules not in the uI
                 List<Guid> uiScheduleGuids = SchedulesState.Select( s => s.Guid ).ToList();
-                foreach( var schedule in eventItemCampus.EventItemSchedules.Where( s => !uiScheduleGuids.Contains( s.Guid )).ToList())
+                foreach( var schedule in eventItemOccurrence.EventItemSchedules.Where( s => !uiScheduleGuids.Contains( s.Guid )).ToList())
                 {
-                    eventItemCampus.EventItemSchedules.Remove( schedule );
+                    eventItemOccurrence.EventItemSchedules.Remove( schedule );
                     eventItemScheduleService.Delete( schedule );
                 }
 
                 // Add or Update the schedule information from the UI
                 foreach ( var uiSchedule in SchedulesState )
                 {
-                    var eventItemSchedule = eventItemCampus.EventItemSchedules.Where( s => s.Guid == uiSchedule.Guid ).FirstOrDefault();
+                    var eventItemSchedule = eventItemOccurrence.EventItemSchedules.Where( s => s.Guid == uiSchedule.Guid ).FirstOrDefault();
                     if ( eventItemSchedule == null )
                     {
                         eventItemSchedule = new EventItemSchedule();
                         eventItemScheduleService.Add( eventItemSchedule );
-                        eventItemCampus.EventItemSchedules.Add( eventItemSchedule );
+                        eventItemOccurrence.EventItemSchedules.Add( eventItemSchedule );
                     }
 
                     eventItemSchedule.CopyPropertiesFrom( uiSchedule );
@@ -281,7 +281,7 @@ namespace RockWeb.Blocks.Event
                     return;
                 }
 
-                if ( !eventItemCampus.IsValid )
+                if ( !eventItemOccurrence.IsValid )
                 {
                     // Controls will render the error messages
                     return;
@@ -387,7 +387,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCreateNewRegistration_Click( object sender, EventArgs e )
         {
-            LinkageState = new EventItemCampusGroupMap { Guid = Guid.Empty };
+            LinkageState = new EventItemOccurrenceGroupMap { Guid = Guid.Empty };
             ShowNewLinkageDialog();
         }
 
@@ -398,7 +398,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbLinkToExistingRegistration_Click( object sender, EventArgs e )
         {
-            LinkageState = new EventItemCampusGroupMap { Guid = Guid.Empty };
+            LinkageState = new EventItemOccurrenceGroupMap { Guid = Guid.Empty };
             ShowExistingLinkageDialog();
         }
 
@@ -426,7 +426,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDeleteRegistration_Click( object sender, EventArgs e )
         {
-            LinkageState = new EventItemCampusGroupMap { Guid = Guid.Empty };
+            LinkageState = new EventItemOccurrenceGroupMap { Guid = Guid.Empty };
             DisplayRegistration();
         }
         
@@ -719,39 +719,39 @@ namespace RockWeb.Blocks.Event
         /// Shows the detail.
         /// </summary>
         /// <param name="eventItemId">The eventItem identifier.</param>
-        public void ShowDetail( int eventItemCampusId )
+        public void ShowDetail( int eventItemOccurrenceId )
         {
             pnlDetails.Visible = true;
 
-            EventItemCampus eventItemCampus = null;
+            EventItemOccurrence eventItemOccurrence = null;
 
             var rockContext = new RockContext();
 
-            if ( !eventItemCampusId.Equals( 0 ) )
+            if ( !eventItemOccurrenceId.Equals( 0 ) )
             {
-                eventItemCampus = new EventItemCampusService( rockContext ).Get( eventItemCampusId );
-                lActionTitle.Text = ActionTitle.Edit( "Calendar Item Campus Detail" ).FormatAsHtmlTitle();
+                eventItemOccurrence = new EventItemOccurrenceService( rockContext ).Get( eventItemOccurrenceId );
+                lActionTitle.Text = ActionTitle.Edit( "Event Occurrence" ).FormatAsHtmlTitle();
             }
 
-            if ( eventItemCampus == null )
+            if ( eventItemOccurrence == null )
             {
-                eventItemCampus = new EventItemCampus { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add( "Calendar Item Campus Detail" ).FormatAsHtmlTitle();
+                eventItemOccurrence = new EventItemOccurrence { Id = 0 };
+                lActionTitle.Text = ActionTitle.Add( "Event Occurrence" ).FormatAsHtmlTitle();
             }
 
-            hfEventItemCampusId.Value = eventItemCampus.Id.ToString();
+            hfEventItemOccurrenceId.Value = eventItemOccurrence.Id.ToString();
 
-            ddlCampus.SetValue( eventItemCampus.CampusId ?? -1 );
-            tbLocation.Text = eventItemCampus.Location;
+            ddlCampus.SetValue( eventItemOccurrence.CampusId ?? -1 );
+            tbLocation.Text = eventItemOccurrence.Location;
 
-            ppContact.SetValue( eventItemCampus.ContactPersonAlias != null ? eventItemCampus.ContactPersonAlias.Person : null );
-            pnPhone.Text = eventItemCampus.ContactPhone;
-            tbEmail.Text = eventItemCampus.ContactEmail;
+            ppContact.SetValue( eventItemOccurrence.ContactPersonAlias != null ? eventItemOccurrence.ContactPersonAlias.Person : null );
+            pnPhone.Text = eventItemOccurrence.ContactPhone;
+            tbEmail.Text = eventItemOccurrence.ContactEmail;
 
-            htmlCampusNote.Text = eventItemCampus.CampusNote;
+            htmlCampusNote.Text = eventItemOccurrence.CampusNote;
 
-            LinkageState = new EventItemCampusGroupMap { Guid = Guid.Empty };
-            var registration = eventItemCampus.Linkages.FirstOrDefault();
+            LinkageState = new EventItemOccurrenceGroupMap { Guid = Guid.Empty };
+            var registration = eventItemOccurrence.Linkages.FirstOrDefault();
             if ( registration != null )
             {
                 LinkageState = registration.Clone( false );
@@ -765,7 +765,7 @@ namespace RockWeb.Blocks.Event
             DisplayRegistration();
 
             SchedulesState = new List<EventItemSchedule>();
-            foreach ( var itemSchedule in eventItemCampus.EventItemSchedules )
+            foreach ( var itemSchedule in eventItemOccurrence.EventItemSchedules )
             {
                 var scheduleState = itemSchedule.Clone( false );
                 scheduleState.Schedule = itemSchedule.Schedule != null ? itemSchedule.Schedule.Clone( false ) : new Schedule();
