@@ -53,8 +53,8 @@ namespace Rock.Migrations
 		[Path] = '~/Blocks/Event/CalendarItemOccurrenceDetail.ascx',
 		[Name] = 'Calendar Item Occurrence Detail',
 		[Description] = 'Displays the details of a given calendar item occurrence.'
-	WHERE " );
-
+	WHERE [Path] = '~/Blocks/Event/CalendarItemCampusDetail.ascx'
+" );
         }
         
         /// <summary>
