@@ -21,19 +21,21 @@
 
                     <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-                    <div id="divMediums" runat="server" class="nav navbar nav-pagelist">
-                        <ul class="nav nav-pills">
-                            <asp:Repeater ID="rptMediums" runat="server">
-                                <ItemTemplate>
-                                    <li class='<%# (int)Eval("Key") == MediumEntityTypeId ? "active" : "" %>'>
-                                        <asp:LinkButton ID="lbMedium" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbMedium_Click" CausesValidation="false">
-                                        </asp:LinkButton>
-                                    </li>
-                                </ItemTemplate>
-                            </asp:Repeater>
-                        </ul>
+                    <div class="well well-pillwrap">
+                        <div id="divMediums" runat="server" class="nav nav-pills">
+                            <ul class="nav nav-pills">
+                                <asp:Repeater ID="rptMediums" runat="server">
+                                    <ItemTemplate>
+                                        <li class='<%# (int)Eval("Key") == MediumEntityTypeId ? "active" : "" %>'>
+                                            <asp:LinkButton ID="lbMedium" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbMedium_Click" CausesValidation="false">
+                                            </asp:LinkButton>
+                                        </li>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </ul>
+                        </div>
                     </div>
-        
+
                     <Rock:NotificationBox ID="nbInvalidTransport" runat="server" NotificationBoxType="Warning" Dismissable="true" Title="Warning" Visible="false" />
 
                     <div class="row">

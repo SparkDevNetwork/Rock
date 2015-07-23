@@ -140,15 +140,6 @@ hr {
 // 2. Bootstrap Overrides    */
 // -------------------------
 
-// nav-pill hover text color
-.nav > li > a:hover, .nav > li > a:focus {
-    color: #fff;
-}
-
-.nav > li > a {
-    color: @text-color;
-}
-
 h1 small,
 h2 small,
 h3 small,
@@ -218,29 +209,6 @@ h4, .h4 {
   color: @brand-primary;
 }
 
-.nav.nav-pagelist {
-  background-color: lighten(@accent-semibold-color, 50%);
-  border: 1px solid lighten(@accent-semibold-color, 30%);
-
-  .pill-help {
-    a {
-      color: @accent-semibold-color;
-    }
-  }
-
-  .nav.nav-pills {
-
-    li a:hover {
-      background-color: lighten(@accent-semibold-color, 30%);
-    }
-
-    li.active a {
-      background-color: @accent-semibold-color;
-      color: #fff;
-      border-color: darken(@accent-semibold-color, 5%);
-    }
-  }
-}
 
 .rock-modal-frame {
   border: 1px solid @accent-bold-color;
@@ -273,10 +241,6 @@ h4, .h4 {
 
 .groupmembers .member .person-image {
     border-color: @header-bg;
-}
-
-.panel-follow-status.following {
-    background-color: @panel-following-active-bg;
 }
 
 .smartsearch {
@@ -327,40 +291,6 @@ h4, .h4 {
     border-radius: 17.5px;
     margin: -8px 4px 0 0;
   }
-}
-
-.updateprogress-status {
-  left: 50%;
-  padding: 15px 10px;
-  border-radius: 120px;
-  box-shadow: 5px 5px 12px 3px rgba(0,0,0,0.1);
-  margin-left: -30px;
-
-  .spinner {
-    width: 40px;
-    height: 30px;
-
-    > div {
-      background-color: #fff;
-      width: 5px;
-    }
-  }
-}
-
-@media @md {
-    .updateprogress-status {
-      padding: 30px 20px;
-      margin-left: -60px;
-
-      .spinner {
-        width: 80px;
-        height: 60px;
-
-        > div {
-          width: 10px;
-        }
-      }
-    }
 }
 
 // personal notes styling

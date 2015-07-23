@@ -20,7 +20,7 @@
                                 <asp:UpdatePanel ID="upnlApproval" runat="server">
                                     <ContentTemplate>
 
-                                        <div class="alert alert-action">
+                                        <div class="alert alert-info">
 
                                             <asp:Label ID="lblApprovalStatus" runat="server" />
 
