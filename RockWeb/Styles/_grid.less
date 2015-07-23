@@ -249,6 +249,7 @@ td.grid-col-actions {
 // -------------------------
 
 .table-light {
+    background-color: transparent;
 
     thead th {
         background-color: inherit;
@@ -355,12 +356,12 @@ td.grid-col-actions {
 .table > tbody > tr.grid-section-header {
     
     > td {
-        background-color: @accent-light-color;
-        color: @accent-light-text-color;
+        background-color: @grid-section-bg;
+        color: @grid-section-color;
     }
 
     &:hover > td {
-        background-color: @accent-light-color !important;
+        background-color: @grid-section-bg !important;
     }
     
  }

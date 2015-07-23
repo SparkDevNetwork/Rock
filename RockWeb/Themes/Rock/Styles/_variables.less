@@ -1,21 +1,44 @@
-// core variables
+
+// Colors
+
+//// Bootstrap Colors {The primary colors defined by the Bootstrap framework. [More Information](http://getbootstrap.com/customize/#colors)}
+@brand-primary:         #ee7624; 
+@brand-success:         #5c9e7d; 
+@brand-warning:         #ecc759; 
+@brand-danger:          #bb5454; 
+@brand-info:            #4099ad; 
+//--
+@gray-darker:            lighten(#000, 13.5%); 
+@gray-dark:              lighten(#000, 20%);   
+@gray:                   lighten(#000, 33.5%); 
+@gray-light:             #f3f3f4;   
+@gray-lighter:           #efefef; 
+
+//// Theme Colors
+@accent-color: #dbd5cb;
+@accent-text-color: #413c35;
+@accent-light-color: #e3ded7;
+@accent-light-text-color: #817b72;
+@accent-semibold-color: #6a6a6a; // #c2b8a7;
+@accent-semibold-text-color: #fff;// #616161;
+@accent-bold-color: #282526;
+@accent-bold-text-color: #d3cec5;
 
 // Page Areas
 @body-bg:           #fff;
-
+//--
 @header-bg:         #d2cbc0;
 @header-text-color: #616161;
-
+//--
 @pagetitle-bg: #f2ede5; 
 @pagetitle-text-color: #6B645C;
-
+//--
 @footer-bg: @header-bg;
 @footer-color: @header-text-color;
-
+//--
 @nav-bg: #282526;                   // The background color of the main navigation.
 @nav-color: #d3cec5;                // The text color of the main navigation.
 @nav-logo-bg: darken(@nav-bg, 5%);  // The background color of the icon corner.
-
 @nav-sub-bg: lighten(@accent-bold-color, 5%);
 @nav-sub-color: @accent-bold-text-color;
 @nav-sub-title-color: #ee7624;
@@ -27,7 +50,7 @@
 
 // Global Settings
 @border-radius-base:       4px;      // The global setting for rounding corners.
-@autocomplete-rollover-bg: #d5e6ed;  // the background color of the rollover for autocompletes.
+
 
 @scroll-track-color: #aaa; // Color of the scrollbar track line.
 @scroll-thumb-color: #ccc; // Color of the scrollbar thumb which moves up and down the track line.
@@ -37,6 +60,12 @@
 
 @well-bg:                       @body-bg;
 
+@photo-border: @accent-color; // Standard border color for photos.
+
+@spinner-bg: @btn-primary-bg;       // The background color of the wait spinner.
+@spinner-color: @btn-primary-color; // The bar color of the wait spinner.
+
+// Control Variables
 @input-bg:                       #fff;
 @input-bg-disabled:              @gray-lighter;
 
@@ -54,32 +83,22 @@
 @legend-border-color:            @input-border;
 
 @help-color: #86b8cc;
-@required-field-color: #eca9a7;
+@required-field-color: #eca9a7; // Color of the small dot that denotes required fields.
+
+@datepicker-highlight-bg: @accent-color;         // Background color for highlighting dates and selector elements of the datepicker.
+@datepicker-highlight-color: @accent-text-color; // Text color for highlighting dates and selector elements of the datepicker.
+
+@imageeditor-bg: @photo-border;              // The background for the image editor roll-over. This control is used to upload images.
+@imageeditor-color: contrast(@photo-border); // The icon color for the image editor roll-over. This control is used to upload images.
 
 
-// Text Colors
+// Text 
 @text-color:             #6a6a6a; // The default text color.
 @link-color:             #4f89bd; // The color for all links.
 @link-hover-color:       lighten(@link-color, 15%); // The rollover color for all links.
 @text-selection-bg:      #afd074; // Text selection background color (used when people select text with the mouse).
 @text-selection-color:   #fff;    // Text selection text color (used when people select text with the mouse).
 @font-family-sans-serif: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif; // The base font to use for text. Be sure when defining this font that the various weights are configured.
-
-// Standard Colors
-@brand-primary:         #ee7624;
-@brand-success:         #5C9E7D; // #43be81;
-@brand-warning:         #ECC759; //#f3d066;
-@brand-danger:          #BB5454; // #c84b4b;
-@brand-info:            #4099AD; // #3bc2df;
-
-@accent-color: #dbd5cb;
-@accent-text-color: #413c35;
-@accent-light-color: #e3ded7;
-@accent-light-text-color: #817b72;
-@accent-semibold-color: #6a6a6a; // #c2b8a7;
-@accent-semibold-text-color: #fff;// #616161;
-@accent-bold-color: #282526;
-@accent-bold-text-color: #d3cec5;
 
 
 // Panel
@@ -112,6 +131,9 @@
 
 @grid-hover-bg: #D5E6ED;
 @grid-hover-color: @text-color;
+
+@grid-section-bg: @accent-light-color;          // Some grids like the person merge grid have section headers to group like rows. This styles the background of these rows.
+@grid-section-color: @accent-light-text-color;  // Some grids like the person merge grid have section headers to group like rows. This styles the text of these rows.
 
 @grid-pager-bg: #f1f1f1;
 @grid-pager-color: @text-color;
@@ -147,6 +169,14 @@
 @persondetails-familybar-action-bg: #6a6a6a;
 @persondetails-familybar-action-border: darken(@persondetails-bio-action-bg, 5%);
 
+// Note Types
+@note-highlight-bg: @alert-danger-bg;
+@note-highlight-text: @alert-danger-text;
+@note-highlight-border: @alert-danger-border;
+
+@note-personal-bg: @alert-info-bg;
+@note-personal-text: @alert-info-text;
+@note-personal-border: @alert-info-border;
 
 // Modals
 @modal-header-bg: @accent-bold-color;
@@ -167,9 +197,9 @@
 @tooltip-bg: @body-bg;
 
 // Pills
-@nav-pills-active-link-hover-bg:            #8cc63e;
-@nav-pills-active-link-hover-color:         #fff;
-
+@nav-pills-active-link-hover-bg:         #8cc63e;
+@nav-pills-active-link-hover-color:      #fff;
+@nav-pills-link-color: @text-color;  // The color of the none active pill link.
 
 // Components
 // -------------------------
@@ -198,6 +228,11 @@
 @tag-border-radius: @border-radius-base;
 @tag-dot-color: #dbd5cb;
 @tag-bg-alt: #d0c6b4;
+
+@autocomplete-bg: @accent-color;
+@autocomplete-border: darken(@accent-color, 10%);
+@autocomplete-text: @accent-text-color;
+@autocomplete-rollover-bg: darken(@autocomplete-bg, 10%);  // the background color of the rollover for autocompletes.
 
 // Smart Search
 @smartsearch-bg: rgba(255, 255, 255, .1);
@@ -242,10 +277,6 @@
 @btn-security-color:            @btn-default-color;
 @btn-security-bg:               @btn-default-bg;
 @btn-security-border:           @btn-default-border;
-
-@btn-authenication-color:       @accent-text-color;
-@btn-authenication-bg:          @accent-color;
-@btn-authenication-border:      darken(@accent-color, 5%);
 
 
 

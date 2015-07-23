@@ -665,10 +665,6 @@ Copyright (c) 2012 Dan Eden*/
   color: #6a6a6a;
   text-align: left;
 }
-.modal-content.rock-modal .modal-body .nav-pills,
-.rock-modal .modal-content .modal-body .nav-pills {
-  margin: 6px 0 18px;
-}
 .modal-content.rock-modal .modal-body > .scroll-container,
 .rock-modal .modal-content .modal-body > .scroll-container {
   width: 720px;
@@ -732,11 +728,12 @@ Copyright (c) 2012 Dan Eden*/
     6. Custom Controls
     7. Static Control
 */
-.form-actions {
-  padding: 12px 16px;
-  background-color: #dbd5cb;
-  color: #413c35;
-}
+/* doesn't appear to be used JME 7/22/2015
+.form-actions { // adding BS2 form-actions back
+    padding: 12px 16px;
+    background-color: @axxxxccent-color;
+    color: @axxxxccent-text-color;
+}*/
 legend {
   font-weight: 300;
   color: #6a6a6a;
@@ -882,22 +879,22 @@ dl:not(.dl-horizontal) dd {
 .panel-dashboard {
   margin: 24px 0 0 ;
   height: 220px;
-  border-color: #dbd5cb;
+  border-color: #dddddd;
 }
 .panel-dashboard > .panel-heading {
-  color: #413c35;
-  background-color: #dbd5cb;
-  border-color: #dbd5cb;
+  color: #6a6a6a;
+  background-color: #f0f0f0;
+  border-color: #e3e3e3;
 }
 .panel-dashboard > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #dbd5cb;
+  border-top-color: #dddddd;
 }
 .panel-dashboard > .panel-heading .badge {
-  color: #dbd5cb;
-  background-color: #413c35;
+  color: #f0f0f0;
+  background-color: #6a6a6a;
 }
 .panel-dashboard > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #dbd5cb;
+  border-bottom-color: #dddddd;
 }
 /*
     Used to manage styles related to Rock's internal grid component
@@ -1072,6 +1069,9 @@ td.grid-col-actions {
   background-color: #e4e4e4;
   color: #6a6a6a;
   border-color: #bebebe;
+}
+.table-light {
+  background-color: transparent;
 }
 .table-light thead th {
   background-color: inherit;
@@ -1308,9 +1308,17 @@ tr.row-highlight td {
 .security-inherited {
   margin-top: 12px;
 }
-.security .nav.nav-pagelist .nav.nav-pills li {
-  float: left;
-}
+/*
+    JME 7/23/2015
+    .security {
+    .nav.nav-pagelist {
+        .nav.nav-pills {
+            li {
+                float: left; // lock security naviagtion to always be horizontal tabs
+            }
+        }
+    }
+}*/
 /*
     Used to manage styles for specific blocks.
 
@@ -1449,9 +1457,9 @@ tr.row-highlight td {
   color: #b94a48;
 }
 .panel-note article.personal {
-  background-color: #6a6a6a;
-  border: 1px solid #626262;
-  color: #ffffff;
+  background-color: #d9edf7;
+  border: 1px solid #bce8f1;
+  color: #3a87ad;
 }
 .panel-note article > img {
   float: left;
@@ -1732,7 +1740,7 @@ tr.row-highlight td {
   float: right;
 }
 .group-location-map img {
-  border: 1px solid #6a6a6a;
+  border: 1px solid #dbd5cb;
 }
 @media (max-width: 992px) {
   .group-location-map {
@@ -1830,14 +1838,14 @@ table.attribute-grid tr th:nth-child(3) {
 .transaction-image {
   width: 100%;
   margin-bottom: 12px;
-  border: 2px solid #282526;
+  border: 2px solid #dbd5cb;
 }
 .transaction-image-thumbnail {
   max-width: 200px;
   max-height: 100px;
   margin: 5px;
   cursor: pointer;
-  border: 2px solid #282526;
+  border: 2px solid #dbd5cb;
 }
 .transaction-matching .progress {
   width: 30%;
@@ -2863,7 +2871,7 @@ iframe.email-body {
   4. Person List - used to show a list of people
   5. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
   6. Pagelist - used to list child pages; currently used in admin screens
-  7. Pagelist Nav - Pill nav of pages
+  7. Pill Help (used in security dialog)
   8. Tags - component that allows you to tag entities
   9. Photo Frame - wraps a nice border around photos
   10. Smart Search - search at th top of the page for searching people, groups, etc.
@@ -2980,7 +2988,7 @@ iframe.email-body {
   margin-left: 20px;
 }
 .picker .picker-select-item-details .person-image {
-  border: 1px solid #6a6a6a;
+  border: 1px solid #dbd5cb;
   float: left;
   margin-right: 7.5px;
   display: inline-block;
@@ -3257,51 +3265,13 @@ ul.rocktree ul {
     margin-left: 0;
   }
 }
-.nav.nav-pagelist {
-  margin: 10px 0;
-  background-color: #ffffff;
-  border: 1px solid #e6e6e6;
-  border-radius: 4px;
+.nav > li.pill-help a {
+  color: #6a6a6a;
 }
-.nav.nav-pagelist .pill-help a {
-  color: #282526;
-}
-.nav.nav-pagelist .navbar-toggle {
-  width: 100%;
-  margin: 0;
-}
-.nav.nav-pagelist .navbar-toggle:focus {
-  outline: 0;
-}
-.nav.nav-pagelist .navbar-toggle i {
-  float: right;
-  color: #282526;
-  margin-top: 8px;
-}
-.nav.nav-pagelist .navbar-toggle .collapse-current-item {
-  background-color: #282526;
-  color: #d3cec5;
-  padding: 10px 15px;
-  border-radius: 4px;
-  float: left;
-}
-.nav.nav-pagelist .navbar-collapse {
-  padding: 0;
-}
-.nav.nav-pagelist .navbar-collapse.in {
-  overflow-y: inherit;
-}
-.nav.nav-pagelist .nav.nav-pills {
-  margin: 10px 0;
-  padding: 0 15px;
-}
-.nav.nav-pagelist .nav.nav-pills li {
-  float: none;
-}
-@media (min-width: 768px) {
-  .nav.nav-pagelist .nav.nav-pills li {
-    float: left;
-  }
+.nav > li.pill-help a:hover,
+.nav > li.pill-help a:focus {
+  background-color: transparent;
+  color: #6a6a6a;
 }
 div.tagsinput {
   width: 100%;
@@ -3428,8 +3398,8 @@ div.tagsinput .tags_clear {
   z-index: 90;
   list-style: none;
   padding: 12px;
-  background-color: #282526;
-  border: 1px solid #cec5b9;
+  background-color: #dbd5cb;
+  border: 1px solid #c6bdad;
   min-width: 200px;
   border-radius: 0 0 4px 4px;
   z-index: 9999 !important;
@@ -3444,14 +3414,14 @@ div.tagsinput .tags_clear {
   margin-bottom: 0;
 }
 .tag-wrap .ui-autocomplete li a {
-  color: #d3cec5;
+  color: #413c35;
   text-decoration: none;
   cursor: pointer;
   padding: 4px;
   display: block;
 }
 .tag-wrap .ui-autocomplete li a:hover {
-  background: #1b1919;
+  background: #c6bdad;
   border-radius: 4px;
 }
 .tag-letterlist {
@@ -3476,7 +3446,7 @@ div.tagsinput .tags_clear {
   }
 }
 .photoframe {
-  border: 4px solid #6a6a6a;
+  border: 4px solid #dbd5cb;
   display: inline-block;
 }
 .photoframe.photoframe-sm {
@@ -3607,6 +3577,9 @@ fieldset .actions {
 .datepicker {
   padding: 10px;
 }
+.datepicker table {
+  background-color: transparent;
+}
 .datepicker table thead th.datepicker-switch {
   text-align: center;
 }
@@ -3623,7 +3596,7 @@ fieldset .actions {
 }
 .datepicker table td.old,
 .datepicker table td.new {
-  color: #ffffff;
+  color: #d0d0d0;
 }
 .datepicker table tfoot {
   display: none;
@@ -3654,39 +3627,39 @@ fieldset .actions {
 .datepicker table td span.year:hover {
   background-color: #dbd5cb;
   color: #413c35;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 .datepicker table td span.year:first-child {
   margin-left: 0;
 }
-.timepicker-input:before,
-.timepicker-input:after {
-  content: " ";
-  display: table;
+/*.timepicker-input  {
+  .clearfix();
+
+  .input-group {
+    float: left;
+  }
+
+  & i.fa-times {
+    float: left;
+    margin-top: 4px;
+    padding: 6px;
+    cursor: pointer;
+
+    opacity: 0;
+    -webkit-transition: opacity .2s ease-out;
+    -moz-transition: opacity .2s ease-out;
+    -o-transition: opacity .2s ease-out;
+    transition: opacity .2s ease-out;
+  }
+
+  &:hover i.fa-times {
+    opacity: 1;
+  }
 }
-.timepicker-input:after {
-  clear: both;
-}
-.timepicker-input .input-group {
-  float: left;
-}
-.timepicker-input i.fa-times {
-  float: left;
-  margin-top: 4px;
-  padding: 6px;
-  cursor: pointer;
-  opacity: 0;
-  -webkit-transition: opacity 0.2s ease-out;
-  -moz-transition: opacity 0.2s ease-out;
-  -o-transition: opacity 0.2s ease-out;
-  transition: opacity 0.2s ease-out;
-}
-.timepicker-input:hover i.fa-times {
-  opacity: 1;
-}
+
 .touch .timepicker-input i.fa-times {
   opacity: 1;
-}
+}*/
 .bootstrap-timepicker {
   position: relative;
 }
@@ -3742,6 +3715,7 @@ fieldset .actions {
 }
 .bootstrap-timepicker-widget table {
   width: 100%;
+  background-color: transparent;
   margin: 0;
 }
 .bootstrap-timepicker-widget table td {
@@ -3809,11 +3783,12 @@ fieldset .actions {
 }
 .imageupload-group {
   margin-bottom: 15px;
-  border: 1px solid #b1a48f;
+  border: 1px solid #dbd5cb;
   border-radius: 4px;
   padding: 2px;
   display: table-cell;
   position: relative;
+  cursor: pointer;
 }
 .imageupload-group .imageupload-thumbnail {
   position: relative;
@@ -3840,15 +3815,18 @@ fieldset .actions {
 .imageupload-group .imageupload-dropzone {
   margin-top: 2px;
   height: 30px;
-  border: 1px dotted #b9ad9b;
+  border: 1px solid #cccccc;
   border-radius: 0 0 4px 4px;
-  background-color: #6a6a6a;
+  background-color: #f0f0f0;
   text-align: center;
   padding-top: 8px;
   position: relative;
   line-height: 12px;
-  cursor: pointer;
   width: 100%;
+  cursor: pointer;
+}
+.imageupload-group .imageupload-dropzone ::-webkit-file-upload-button {
+  cursor: pointer;
 }
 .imageupload-group .imageupload-dropzone input {
   opacity: 0;
@@ -3857,11 +3835,23 @@ fieldset .actions {
   position: absolute;
   left: 0;
   top: 0;
+  cursor: pointer;
 }
 .imageupload-group .imageupload-dropzone span {
   font-size: 13px;
-  color: #ffffff;
+  color: #555555;
   width: 100%;
+}
+.imageupload-group .imageupload-dropzone span:before {
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transform: translate(0, 0);
+  content: "\f093";
+  padding-right: .25em;
 }
 .imageupload-group .upload-progress {
   position: absolute;
@@ -3875,10 +3865,11 @@ fieldset .actions {
 .fileupload-group {
   display: table-cell;
   margin-bottom: 15px;
-  border: 1px solid #b1a48f;
+  border: 1px solid #cccccc;
   border-radius: 4px;
   padding: 2px;
   position: relative;
+  cursor: pointer;
 }
 .fileupload-group .fileupload-thumbnail {
   position: relative;
@@ -3931,7 +3922,7 @@ fieldset .actions {
 .fileupload-group .fileupload-dropzone,
 .fileupload-group .fileupload-button {
   height: 30px;
-  background-color: #6a6a6a;
+  background-color: #f0f0f0;
   text-align: center;
   padding-top: 8px;
   position: relative;
@@ -3954,7 +3945,7 @@ fieldset .actions {
 .fileupload-group .fileupload-dropzone span,
 .fileupload-group .fileupload-button span {
   font-size: 13px;
-  color: #ffffff;
+  color: #555555;
   width: 100%;
   padding: 0 .5em;
 }
@@ -3986,25 +3977,26 @@ fieldset .actions {
 }
 .updateprogress-status {
   position: fixed;
-  padding: 50px;
-  color: #ffffff;
-  left: 40%;
+  padding: 15px 10px;
+  left: 50%;
   top: 40%;
   opacity: 1;
   background-color: #ee7624;
-  border-radius: 4px;
+  border-radius: 120px;
   z-index: 1140;
+  box-shadow: 5px 5px 12px 3px rgba(0, 0, 0, 0.1);
+  margin-left: -30px;
 }
 .updateprogress-status .spinner {
-  width: 50px;
+  width: 40px;
   height: 30px;
   text-align: center;
   font-size: 10px;
 }
 .updateprogress-status .spinner > div {
-  background-color: #d3cec5;
+  background-color: #ffffff;
   height: 100%;
-  width: 6px;
+  width: 5px;
   display: inline-block;
   -webkit-animation: stretchdelay 1.2s infinite ease-in-out;
   animation: stretchdelay 1.2s infinite ease-in-out;
@@ -4047,6 +4039,19 @@ fieldset .actions {
     -webkit-transform: scaleY(1);
   }
 }
+@media (min-width: 992px) {
+  .updateprogress-status {
+    padding: 30px 20px;
+    margin-left: -60px;
+  }
+  .updateprogress-status .spinner {
+    width: 80px;
+    height: 60px;
+  }
+  .updateprogress-status .spinner > div {
+    width: 10px;
+  }
+}
 .groupmembers {
   list-style: none;
   margin: 6px 0;
@@ -4060,7 +4065,7 @@ fieldset .actions {
   border-radius: 4px;
 }
 .groupmembers .member .person-image {
-  border: 1px solid #6a6a6a;
+  border: 1px solid #dbd5cb;
   float: left;
   margin-right: 7.5px;
   display: inline-block;
@@ -4152,12 +4157,12 @@ ul.rocklist .rocklist-item .file-name {
   display: block;
 }
 ul.rocklist .rocklist-item:hover {
-  background-color: #6a6a6a;
+  background: #bbdd8d;
   color: #ffffff;
 }
 ul.rocklist .rocklist-item.selected {
-  background-color: #282526;
-  color: #d3cec5;
+  background: #bbdd8d;
+  color: #ffffff;
 }
 .twitter-typeahead .tt-query,
 .twitter-typeahead .tt-hint {
@@ -4167,9 +4172,9 @@ ul.rocklist .rocklist-item.selected {
   min-width: 200px;
   padding: 12px;
   background-color: #fff;
-  border: 1px solid #cec5b9;
+  border: 1px solid #c6bdad;
   border-radius: 0 0 4px 4px;
-  color: #817b72;
+  color: #413c35;
   -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
@@ -4185,15 +4190,15 @@ ul.rocklist .rocklist-item.selected {
   border-radius: 4px;
 }
 .tt-suggestion p:hover {
-  background-color: #d5e6ed;
+  background-color: #c6bdad;
 }
 .tt-suggestion.tt-is-under-cursor {
-  color: #817b72;
+  color: #948a7b;
   background-repeat: repeat-x;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0);
 }
 .tt-suggestion.tt-is-under-cursor a {
-  color: #817b72;
+  color: #413c35;
 }
 .tt-suggestion p {
   margin: 0;
@@ -4205,14 +4210,14 @@ ul.rocklist .rocklist-item.selected {
 .image-editor-photo .image-container {
   width: 150px;
   height: 150px;
-  border: 3px solid #282526;
+  border: 3px solid #dbd5cb;
 }
 .image-editor-photo .options {
   position: absolute;
   top: 110px;
   right: 0;
-  background-color: #282526;
-  color: #d3cec5;
+  background-color: #dbd5cb;
+  color: #000000;
   padding: 6px 12px;
   border-radius: 4px 0 0 4px;
   opacity: 0;
@@ -4227,13 +4232,13 @@ ul.rocklist .rocklist-item.selected {
   cursor: pointer;
 }
 .image-editor-photo .options a:hover {
-  color: #c8c2b7;
+  opacity: .5;
 }
 .image-editor-photo .js-upload-progress {
   position: absolute;
   top: 55px;
   left: 55px;
-  color: #d3cec5;
+  color: #555555;
   opacity: 0.5;
 }
 .image-editor-fileinput {
@@ -4415,7 +4420,7 @@ ul.list-group-panel .list-group-item:first-child,
 }
 .panel-follow-status.following {
   opacity: 1;
-  background-color: #6a6a6a;
+  background-color: #ee7624;
   color: #fff;
 }
 .panel-follow-status.following:before {
@@ -4565,14 +4570,17 @@ ul.list-group-panel .list-group-item:first-child,
   height: 13px;
   width: 20px;
 }
-.panel-widget .scroll-container .track,
-.panel-default .scroll-container .track {
-  background-color: #dbd5cb;
-}
-.panel-widget .scroll-container .thumb,
-.panel-default .scroll-container .thumb {
-  background-color: #c6bdad;
-}
+/* needed JME 7/22/2015 
+.panel-widget .scroll-container,
+.panel-default .scroll-container {
+    .track {
+        background-color: @axxxxccent-color;
+    }
+
+    .thumb {
+        background-color: darken(@axxxxxccent-color, 10%);
+    }
+}*/
 .noSelect {
   user-select: none;
   -o-user-select: none;
@@ -4928,7 +4936,7 @@ a.cke_dialog_ui_button:active {
   background: #6a6a6a !important;
   background-image: none !important;
   color: #ffffff !important;
-  border: 1px solid #515151 !important;
+  border: 1px solid #5d5d5d !important;
   border-radius: 4px;
   text-shadow: none !important;
   padding: 6px 2px !important;
@@ -5030,8 +5038,8 @@ a.cke_dialog_ui_button_ok:active {
   font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
   padding: 2px 4px;
   font-size: 90%;
-  color: #413c35;
-  background-color: #dbd5cb;
+  color: #3a87ad;
+  background-color: #d9edf7;
   white-space: nowrap;
   border-radius: 4px;
 }
@@ -5051,6 +5059,13 @@ a.help {
 .well > h3,
 .well > h4 {
   margin-top: 0;
+}
+.nav-pills > li > a {
+  color: #6a6a6a;
+}
+.nav-pills > li > a:hover {
+  color: #ffffff;
+  background-color: #bbdd8d;
 }
 .form-right {
   text-align: right;
@@ -5135,7 +5150,7 @@ a.help {
   float: left;
 }
 .panel legend {
-  border-color: #dbd5cb;
+  border-color: red;
 }
 .panel .panel-heading .panel-title small {
   opacity: .5;
@@ -5161,7 +5176,6 @@ a.help {
 }
 .panel-widget {
   border-color: #dddddd;
-  --border-top-color: #ee7624;
 }
 .panel-widget > .panel-heading {
   color: #6a6a6a;
@@ -5191,7 +5205,7 @@ a.help {
   margin-left: 4px;
 }
 .panel-widget .panel-heading small {
-  color: #797063;
+  color: #9d9d9d;
 }
 .panel-info {
   border-top-color: #ee7624;
@@ -5421,8 +5435,8 @@ fieldset[disabled] .btn-security.active {
 }
 .btn-authenication {
   color: #413c35;
-  background-color: #dbd5cb;
-  border-color: #d1c9bc;
+  background-color: #ffffff;
+  border-color: #cccccc;
   width: 100%;
 }
 .btn-authenication:hover,
@@ -5431,8 +5445,8 @@ fieldset[disabled] .btn-security.active {
 .btn-authenication.active,
 .open > .dropdown-toggle.btn-authenication {
   color: #413c35;
-  background-color: #c6bdad;
-  border-color: #b8ac98;
+  background-color: #e6e6e6;
+  border-color: #adadad;
 }
 .btn-authenication:active,
 .btn-authenication.active,
@@ -5454,15 +5468,15 @@ fieldset[disabled] .btn-authenication:active,
 .btn-authenication.disabled.active,
 .btn-authenication[disabled].active,
 fieldset[disabled] .btn-authenication.active {
-  background-color: #dbd5cb;
-  border-color: #d1c9bc;
+  background-color: #ffffff;
+  border-color: #cccccc;
 }
 .btn-authenication .badge {
-  color: #dbd5cb;
+  color: #ffffff;
   background-color: #413c35;
 }
 .btn-authenication:hover {
-  background-color: #c6bdad;
+  background-color: #e6e6e6;
 }
 .btn-authenication.facebook:before {
   font-family: 'FontAwesome';
@@ -5484,17 +5498,6 @@ fieldset[disabled] .btn-authenication.active {
   padding: 0;
   color: inherit;
   background-color: transparent;
-}
-.alert-action {
-  background-color: #dbd5cb;
-  border-color: #dbd5cb;
-  color: #413c35;
-}
-.alert-action hr {
-  border-top-color: #d1c9bc;
-}
-.alert-action .alert-link {
-  color: #25221e;
 }
 .alert-success a {
   color: #468847;
@@ -5864,13 +5867,6 @@ hr {
 /*#endregion */
 /*#region
 // 2. Bootstrap Overrides    */
-.nav > li > a:hover,
-.nav > li > a:focus {
-  color: #fff;
-}
-.nav > li > a {
-  color: #6a6a6a;
-}
 h1 small,
 h2 small,
 h3 small,
@@ -5926,21 +5922,6 @@ h4,
 .tag-letterlist a {
   color: #ee7624;
 }
-.nav.nav-pagelist {
-  background-color: #eaeaea;
-  border: 1px solid #b7b7b7;
-}
-.nav.nav-pagelist .pill-help a {
-  color: #6a6a6a;
-}
-.nav.nav-pagelist .nav.nav-pills li a:hover {
-  background-color: #b7b7b7;
-}
-.nav.nav-pagelist .nav.nav-pills li.active a {
-  background-color: #6a6a6a;
-  color: #fff;
-  border-color: #5d5d5d;
-}
 .rock-modal-frame {
   border: 1px solid #282526;
 }
@@ -5963,9 +5944,6 @@ h4,
 }
 .groupmembers .member .person-image {
   border-color: #d2cbc0;
-}
-.panel-follow-status.following {
-  background-color: #ee7624;
 }
 .smartsearch {
   float: right;
@@ -6010,34 +5988,6 @@ h4,
   -moz-border-radius: 17.5px;
   border-radius: 17.5px;
   margin: -8px 4px 0 0;
-}
-.updateprogress-status {
-  left: 50%;
-  padding: 15px 10px;
-  border-radius: 120px;
-  box-shadow: 5px 5px 12px 3px rgba(0, 0, 0, 0.1);
-  margin-left: -30px;
-}
-.updateprogress-status .spinner {
-  width: 40px;
-  height: 30px;
-}
-.updateprogress-status .spinner > div {
-  background-color: #fff;
-  width: 5px;
-}
-@media (min-width: 992px) {
-  .updateprogress-status {
-    padding: 30px 20px;
-    margin-left: -60px;
-  }
-  .updateprogress-status .spinner {
-    width: 80px;
-    height: 60px;
-  }
-  .updateprogress-status .spinner > div {
-    width: 10px;
-  }
 }
 .panel-note article.personal {
   background-color: #d9edf7;

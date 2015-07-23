@@ -48,6 +48,17 @@
 @help-color: #86b8cc;
 @required-field-color: #eca9a7;
 
+@spinner-bg: @btn-primary-bg;       // The background color of the wait spinner.
+@spinner-color: @btn-primary-color; // The bar color of the wait spinner.
+
+// Note Types
+@note-highlight-bg: @alert-danger-bg;
+@note-highlight-text: @alert-danger-text;
+@note-highlight-border: @alert-danger-border;
+
+@note-personal-bg: @alert-info-bg;
+@note-personal-text: @alert-info-text;
+@note-personal-border: @alert-info-border;
 
 // Page Styling
 // -------------------------
@@ -95,6 +106,9 @@
 
 @grid-hover-bg: @accent-light-color;
 @grid-hover-color: @text-color;
+
+@grid-section-bg: @accent-light-color;          // Some grids like the person merge grid have section headers to group like rows. This styles the background of these rows.
+@grid-section-color: @accent-light-text-color;  // Some grids like the person merge grid have section headers to group like rows. This styles the text of these rows.
 
 @grid-row-even-bg: green;// @body-bg;
 @grid-row-even-color: white;// @text-color;
@@ -174,6 +188,11 @@
 @tag-dot-color: #d6d6d6;
 @tag-bg-alt: #aec2d4;
 
+@autocomplete-bg: @accent-color;
+@autocomplete-border: darken(@accent-color, 10%);
+@autocomplete-text: @accent-text-color;
+@autocomplete-rollover-bg: #d5e6ed;  // the background color of the rollover for autocompletes.
+
 // Smart Search
 @smartsearch-bg: rgba(255, 255, 255, .1);
 @smartsearch-border-color: #2c2c2c;
@@ -182,6 +201,8 @@
 @smartsearch-input-selection-background: #2e2e2e;
 @smartsearch-input-selection-text-color: #fff;
 @smartsearch-text-color: @header-text-color;
+
+@nav-pills-link-color: @text-color;  // The color of the none active pill link.
 
 // wizard styles
 @wizard-bg: @gray-lighter;
@@ -223,3 +244,12 @@
 // Block Specific
 @checkin-group-border-color: #afd074;
 @checkin-area-border-color:#5593a4;
+
+
+@datepicker-highlight-bg: @accent-color;
+@datepicker-highlight-color: @accent-text-color;
+
+@photo-border: @accent-color; // Standard border color for photos.
+
+@imageeditor-bg: @photo-border;
+@imageeditor-color: contrast(@photo-border);
