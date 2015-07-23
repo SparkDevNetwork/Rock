@@ -179,7 +179,9 @@ namespace RockWeb
 
                                 sched.ScheduleJob( jobDetail, jobTrigger );
 
-                                if ( job.LastStatus == errorLoadingStatus )
+                                //// if the last status was an error, but we now loaded successful, clear the error
+                                // also, if the last status was 'Running', clear that status because it would have stopped if the app restarted
+                                if ( job.LastStatus == errorLoadingStatus || job.LastStatus == "Running" )
                                 {
                                     job.LastStatusMessage = string.Empty;
                                     job.LastStatus = string.Empty;
