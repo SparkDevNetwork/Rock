@@ -31,7 +31,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sends email
     /// </summary>
-    [Description( "Sends an email.  The recipient can either be a person or email address determined by the 'To Attribute' value, or an email address entered in the 'To' field." )]
+    [Description( "Sends an email.  The recipient can either be a group, person or email address determined by the 'To Attribute' value, or an email address entered in the 'To' field." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Send Email" )]
 
@@ -152,15 +152,32 @@ namespace Rock.Workflow.Action
                             case "Rock.Field.Types.GroupFieldType":
                                 {
                                     int? groupId = toValue.AsIntegerOrNull();
-                                    if ( !groupId.HasValue )
+                                    Guid? groupGuid = toValue.AsGuidOrNull();
+                                    IQueryable<GroupMember> qry = null;
+
+                                    // Handle situations where the attribute value is the ID
+                                    if ( groupId.HasValue )
                                     {
-                                        foreach ( var person in new GroupMemberService( rockContext )
-                                            .GetByGroupId( groupId.Value )
+                                        qry = new GroupMemberService( rockContext ).GetByGroupId( groupId.Value );
+                                    }
+                                    // Handle situations where the attribute value stored the ID
+                                    else if ( groupGuid.HasValue )
+                                    {
+                                        qry = new GroupMemberService( rockContext ).GetByGroupGuid( groupGuid.Value );
+                                    }
+                                    else
+                                    {
+                                        action.AddLogEntry( "Invalid Recipient: No valid group id or Guid", true );
+                                    }
+
+                                    if ( qry != null )
+                                    {
+                                        foreach ( var person in qry
                                             .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                                             .Select( m => m.Person ) )
                                         {
-                                            if ( (person.IsEmailActive ?? true) &&
-                                                person.EmailPreference != EmailPreference.DoNotEmail && 
+                                            if ( ( person.IsEmailActive ?? true ) &&
+                                                person.EmailPreference != EmailPreference.DoNotEmail &&
                                                 !string.IsNullOrWhiteSpace( person.Email ) )
                                             {
                                                 var personDict = new Dictionary<string, object>( mergeFields );
