@@ -137,11 +137,16 @@ namespace RockWeb.Blocks.Cms
                     site.PageNotFoundPageId ?? -1
                 };
 
-                var pageViewQry = pageViewService.Queryable()
-                    .Where( t =>
-                        t.SiteId == site.Id);
-
-                pageViewService.DeleteRange( pageViewQry );
+                foreach ( var pageView in pageViewService
+                    .Queryable()
+                    .Where( t => 
+                        t.Page != null &&
+                        t.Page.Layout != null &&
+                        t.Page.Layout.SiteId == site.Id ) )
+                {
+                    pageView.Page = null;
+                    pageView.PageId = null;
+                }
 
                 var pageQry = pageService.Queryable( "Layout" )
                     .Where( t =>
