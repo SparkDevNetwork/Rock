@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Data.Entity;
 
 using Rock;
 using Rock.Data;
@@ -28,6 +29,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Event
 {
@@ -39,7 +41,13 @@ namespace RockWeb.Blocks.Event
     [Description( "Block that takes a calendar item and displays occurrences for it using Lava." )]
     
     [EventItemField("Event Item", "The event item to use to display occurrences for.", order: 0)]
-
+    [CampusesField("Campuses", "List of which campuses to show occurences for. This setting will be ignored in the 'Use Campus Context' is enabled.", order:1)]
+    [BooleanField("Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 2)]
+    [SlidingDateRangeField("Date Range", "Optional date range to filter the occurences on.", false, order:3)]
+    [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 4)]
+    [LinkedPage( "Registration Page", "The page to use for registrations.", order: 5 )]
+    [CodeEditorField("Lava Template", "The lava template to use for the results", CodeEditorMode.Liquid, CodeEditorTheme.Rock, defaultValue:"{% include '~~/Assets/Lava/EventItemOccurrenceList.lava' %}", order:6)]
+    [BooleanField("Enable Debug", "Show the lava merge fields.", order: 7)]
     public partial class EventItemOccurrenceListLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -112,6 +120,64 @@ namespace RockWeb.Blocks.Event
             if ( eventItemGuid != Guid.Empty )
             {
                 lMessages.Text = string.Empty;
+                RockContext rockContext = new RockContext();
+
+                // get event occurrences
+                var qry = new EventItemOccurrenceService( rockContext ).Queryable()
+                                            .Where( e => e.EventItem.Guid == eventItemGuid );
+
+                // filter occurrences for campus
+                if ( GetAttributeValue( "UseCampusContext" ).AsBoolean() )
+                {
+                    var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+                    var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+
+                    qry = qry.Where( e => e.CampusId == contextCampus.Id );
+                }
+                else
+                {
+                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "Campuses" ) ) )
+                    {
+                        var selectedCampuses = Array.ConvertAll( GetAttributeValue( "Campuses" ).Split( ',' ), s => new Guid( s ) ).ToList();
+                        qry = qry.Where( e => selectedCampuses.Contains( e.Campus.Guid ) );
+                    }
+                }
+
+                // retrieve occurrences
+                var itemOccurrences = qry.ToList();
+
+                // filter by date range
+                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "DateRange" ) );
+                if ( dateRange.Start != null && dateRange.End != null )
+                {
+                    foreach ( var occurrence in itemOccurrences )
+                    {
+                        if ( occurrence.GetStartTimes( dateRange.Start.Value, dateRange.End.Value ).Count() == 0 )
+                        {
+                            itemOccurrences.Remove( occurrence );
+                        }
+                    }
+                }
+
+                // limit results
+                int maxItems = GetAttributeValue( "MaxOccurrences" ).AsInteger();
+                itemOccurrences = itemOccurrences.OrderBy( i => i.NextStartDateTime ).Take( maxItems ).ToList();
+                
+                
+                // make lava merge fields
+                var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
+                mergeFields.Add( "EventItem", new EventItemService( rockContext ).Get( eventItemGuid ) );
+                mergeFields.Add( "EventItemOccurrences", itemOccurrences );
+               
+                lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
+
+                // show debug info
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+                {
+                    lDebug.Visible = true;
+                    lDebug.Text = mergeFields.lavaDebugInfo();
+                }
             }
             else
             {
