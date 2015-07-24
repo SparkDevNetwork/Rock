@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Calendar Item Lava" )]
     [Category( "Event" )]
     [Description( "Renders a particular calendar item using Lava." )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Themes/Stark/Assets/Lava/ExternalCalendarItem.lava' %}", "", 2 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/CalendarItem.lava' %}", "", 2 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar item name.", false )]
     [LinkedPage( "Registration Page", "Registration page for events" )]
@@ -155,7 +155,7 @@ namespace RockWeb.Blocks.Event
                     mergeFields.Add( "CampusContext", contextCampus );
                 }
 
-                mergeFields.Add( "EventCampus", eventItemOccurrence );
+                mergeFields.Add( "EventItemOccurrence", eventItemOccurrence );
                 mergeFields.Add( "Event", eventItemOccurrence.EventItem );
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
 
