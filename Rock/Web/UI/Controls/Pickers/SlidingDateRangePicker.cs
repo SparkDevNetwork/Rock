@@ -278,6 +278,8 @@ namespace Rock.Web.UI.Controls
             _ddlLastCurrent.Items.Add( new ListItem( SlidingDateRangeType.Current.ConvertToString(), SlidingDateRangeType.Current.ConvertToInt().ToString() ) );
             _ddlLastCurrent.Items.Add( new ListItem( SlidingDateRangeType.Previous.ConvertToString(), SlidingDateRangeType.Previous.ConvertToInt().ToString() ) );
             _ddlLastCurrent.Items.Add( new ListItem( SlidingDateRangeType.Last.ConvertToString(), SlidingDateRangeType.Last.ConvertToInt().ToString() ) );
+            _ddlLastCurrent.Items.Add( new ListItem( SlidingDateRangeType.Next.ConvertToString(), SlidingDateRangeType.Next.ConvertToInt().ToString() ) );
+            _ddlLastCurrent.Items.Add( new ListItem( SlidingDateRangeType.Upcoming.ConvertToString(), SlidingDateRangeType.Upcoming.ConvertToInt().ToString() ) );
             _ddlLastCurrent.Items.Add( new ListItem( SlidingDateRangeType.DateRange.ConvertToString(), SlidingDateRangeType.DateRange.ConvertToInt().ToString() ) );
 
             _ddlTimeUnitTypeSingular.Items.Clear();
@@ -304,7 +306,7 @@ namespace Rock.Web.UI.Controls
             All = -1,
 
             /// <summary>
-            /// The last X days,weeks,months, etc (inclusive of current day,week,month,...)
+            /// The last X days,weeks,months, etc (inclusive of current day,week,month,...) but cuts off so it doesn't include future dates
             /// </summary>
             Last = 0,
 
@@ -321,7 +323,17 @@ namespace Rock.Web.UI.Controls
             /// <summary>
             /// The previous X days,weeks,months, etc (excludes current day,week,month,...)
             /// </summary>
-            Previous = 4
+            Previous = 4,
+
+            /// <summary>
+            /// The next X days,weeks,months, etc (inclusive of current day,week,month,...), but cuts off so it doesn't include past dates
+            /// </summary>
+            Next = 8,
+
+            /// <summary>
+            /// The upcoming X days,weeks,months, etc (excludes current day,week,month,...)
+            /// </summary>
+            Upcoming = 16
         }
 
         /// <summary>
@@ -514,7 +526,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                if ( ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous ).HasFlag( this.SlidingDateRangeMode ) )
+                if ( ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming ).HasFlag( this.SlidingDateRangeMode ) )
                 {
                     return _ddlTimeUnitTypePlural.SelectedValueAsEnum<TimeUnitType>();
                 }
@@ -598,8 +610,8 @@ namespace Rock.Web.UI.Controls
                 return string.Format(
                     "{0}|{1}|{2}|{3}|{4}",
                     this.SlidingDateRangeMode,
-                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous ).HasFlag( this.SlidingDateRangeMode ) ? this.NumberOfTimeUnits : (int?)null,
-                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Current ).HasFlag( this.SlidingDateRangeMode ) ? this.TimeUnit : (TimeUnitType?)null,
+                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming ).HasFlag( this.SlidingDateRangeMode ) ? this.NumberOfTimeUnits : (int?)null,
+                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming | SlidingDateRangeType.Current ).HasFlag( this.SlidingDateRangeMode ) ? this.TimeUnit : (TimeUnitType?)null,
                     this.SlidingDateRangeMode == SlidingDateRangeType.DateRange ? this.DateRangeModeStart : null,
                     this.SlidingDateRangeMode == SlidingDateRangeType.DateRange ? this.DateRangeModeEnd : null );
             }
@@ -639,7 +651,7 @@ namespace Rock.Web.UI.Controls
                 {
                     return string.Format( "{0} {1}", slidingDateRangeMode.ConvertToString(), timeUnitText );
                 }
-                else if ( ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous ).HasFlag( slidingDateRangeMode ) )
+                else if ( ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming ).HasFlag( slidingDateRangeMode ) )
                 {
                     return string.Format( "{0} {1} {2}", slidingDateRangeMode.ConvertToString(), numberOfTimeUnits, timeUnitText );
                 }
@@ -714,7 +726,7 @@ namespace Rock.Web.UI.Controls
                     // Last X Days/Hours. NOTE: addCount is the number of X that it go back (it'll actually subtract)
                     int addCount = numberOfTimeUnits;
 
-                    // if we are getting "Last" round up to inlude the current day/week/month/year
+                    // if we are getting "Last" round up to include the current day/week/month/year
                     int roundUpCount = slidingDateRangeMode == SlidingDateRangeType.Last ? 1 : 0;
 
                     switch ( timeUnit )
@@ -751,6 +763,62 @@ namespace Rock.Web.UI.Controls
                             result.Start = result.End.Value.AddYears( -addCount );
                             break;
                     }
+
+                    // don't let Last,Previous have any future dates
+                    var cutoffDate = RockDateTime.Now.Date.AddDays( 1 );
+                    if ( result.End.Value.Date > cutoffDate )
+                    {
+                        result.End = cutoffDate;
+                    }
+                }
+                else if ( ( SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming ).HasFlag( slidingDateRangeMode ) )
+                {
+                    // Next X Days,Hours,etc
+                    int addCount = numberOfTimeUnits;
+
+                    // if we are getting "Upcoming", round up to exclude the current day/week/month/year
+                    int roundUpCount = slidingDateRangeMode == SlidingDateRangeType.Upcoming ? 1 : 0;
+
+                    switch ( timeUnit )
+                    {
+                        case TimeUnitType.Hour:
+                            result.Start = new DateTime( currentDateTime.Year, currentDateTime.Month, currentDateTime.Day, currentDateTime.Hour, 0, 0 ).AddHours( roundUpCount );
+                            result.End = result.Start.Value.AddHours( addCount );
+                            break;
+
+                        case TimeUnitType.Day:
+                            result.Start = currentDateTime.Date.AddDays( roundUpCount );
+                            result.End = result.Start.Value.AddDays( addCount );
+                            break;
+
+                        case TimeUnitType.Week:
+                            // from http://stackoverflow.com/a/38064/1755417
+                            int diff = currentDateTime.DayOfWeek - RockDateTime.FirstDayOfWeek;
+                            if ( diff < 0 )
+                            {
+                                diff += 7;
+                            }
+
+                            result.Start = currentDateTime.AddDays( -1 * diff ).Date.AddDays( 7 * roundUpCount );
+                            result.End = result.Start.Value.AddDays( addCount * 7 );
+                            break;
+
+                        case TimeUnitType.Month:
+                            result.Start = new DateTime( currentDateTime.Year, currentDateTime.Month, 1 ).AddMonths( roundUpCount );
+                            result.End = result.Start.Value.AddMonths( addCount );
+                            break;
+
+                        case TimeUnitType.Year:
+                            result.Start = new DateTime( currentDateTime.Year, 1, 1 ).AddYears( roundUpCount );
+                            result.End = result.Start.Value.AddYears( addCount );
+                            break;
+                    }
+
+                    // don't let Next,Upcoming have any past dates
+                    if ( result.Start.Value.Date < RockDateTime.Now.Date )
+                    {
+                        result.Start = RockDateTime.Now.Date;
+                    }
                 }
                 else if ( slidingDateRangeMode == SlidingDateRangeType.DateRange )
                 {
@@ -779,19 +847,21 @@ namespace Rock.Web.UI.Controls
         public static string GetHelpHtml( DateTime currentDateTime )
         {
             SlidingDateRangePicker helperPicker = new SlidingDateRangePicker();
-            SlidingDateRangeType[] slidingDateRangeTypesForHelp = new SlidingDateRangeType[] { SlidingDateRangeType.Current, SlidingDateRangeType.Previous, SlidingDateRangeType.Last };
+            SlidingDateRangeType[] slidingDateRangeTypesForHelp = new SlidingDateRangeType[] { SlidingDateRangeType.Current, SlidingDateRangeType.Previous, SlidingDateRangeType.Last, SlidingDateRangeType.Next, SlidingDateRangeType.Upcoming };
 
             string helpHtml = @"
     
     <div class='slidingdaterange-help'>
 
         <p>A date range can either be a specific date range, or a sliding date range based on the current date and time.</p>
-        <p>For a sliding date range, you can choose either <strong>current, previous, or last</strong> with a time period of <strong>hour, day, week, month, or year</strong>. Note that a week is Monday thru Sunday.</p>
+        <p>For a sliding date range, you can choose either <strong>current, previous, last, next, upcoming</strong> with a time period of <strong>hour, day, week, month, or year</strong>. Note that a week is Monday thru Sunday.</p>
         <br />
         <ul class=''>
             <li><strong>Current</strong> - the time period that the current date/time is in</li>
             <li><strong>Previous</strong> - the time period(s) prior to the current period (does not include the current time period). For example, to see the most recent weekend, select 'Previous 1 Week'</li>
-            <li><strong>Last</strong> - the last X time period(s), including the current period. For example, to see the current week and prior week, select 'Last 2 weeks'</li>
+            <li><strong>Last</strong> - the last X time period(s) including the current until today. For example, to see so far this current week and prior week, select 'Last 2 weeks'</li>
+            <li><strong>Next</strong> - the next X time period(s) including the rest of the current period. For example, to see the rest of the current month and the next full month after, select 'Next 2 months'</li>
+            <li><strong>Upcoming</strong> - the upcoming X time period(s) not including the current time period.</li>
         </ul>
 
         <h3>Preview of the sliding date ranges</h3>";
