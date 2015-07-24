@@ -41,7 +41,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PersonBadges/InGroupOfType/{personId}/{groupTypeId}" )]
+        [System.Web.Http.Route( "api/PersonBadges/InGroupOfType/{personId}/{groupTypeGuid}" )]
         public GroupOfTypeResult GetInGroupOfType(int personId, Guid groupTypeGuid)
         {
             GroupOfTypeResult result = new GroupOfTypeResult();
