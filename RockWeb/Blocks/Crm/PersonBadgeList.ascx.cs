@@ -111,21 +111,21 @@ namespace RockWeb.Blocks.Crm
         protected void gPersonBadge_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            PersonBadgeService PersonBadgeService = new PersonBadgeService( rockContext );
-            PersonBadge PersonBadge = PersonBadgeService.Get( e.RowKeyId );
+            PersonBadgeService personBadgeService = new PersonBadgeService( rockContext );
+            PersonBadge personBadge = personBadgeService.Get( e.RowKeyId );
 
-            if ( PersonBadge != null )
+            if ( personBadge != null )
             {
                 string errorMessage;
-                if ( !PersonBadgeService.CanDelete( PersonBadge, out errorMessage ) )
+                if ( !personBadgeService.CanDelete( personBadge, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
 
-                PersonBadgeCache.Flush( PersonBadge.Id );
+                PersonBadgeCache.Flush( personBadge.Id );
 
-                PersonBadgeService.Delete( PersonBadge );
+                personBadgeService.Delete( personBadge );
                 rockContext.SaveChanges();
             }
 
@@ -136,12 +136,13 @@ namespace RockWeb.Blocks.Crm
         {
             var rockContext = new RockContext();
             var service = new PersonBadgeService( rockContext );
-            var badges = service.Queryable().OrderBy( b => b.Order );
-            service.Reorder( badges.ToList(), e.OldIndex, e.NewIndex );
+            var personBadges = service.Queryable().OrderBy( b => b.Order );
+            service.Reorder( personBadges.ToList(), e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
-            foreach ( var badge in badges )
+
+            foreach ( var personBadge in personBadges )
             {
-                PersonBadgeCache.Flush( badge.Id );
+                PersonBadgeCache.Flush( personBadge.Id );
             }
 
             BindGrid();
