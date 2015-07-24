@@ -2746,9 +2746,6 @@ iframe.email-body {
 .calendar-month .calendar-selected a {
   color: #ffffff !important;
 }
-.calendar-month .calendar-hasevent {
-  font-weight: 700;
-}
 .calendar-month .calendar-last-month a {
   opacity: .2;
 }
