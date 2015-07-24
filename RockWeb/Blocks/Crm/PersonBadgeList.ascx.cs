@@ -139,6 +139,10 @@ namespace RockWeb.Blocks.Crm
             var badges = service.Queryable().OrderBy( b => b.Order );
             service.Reorder( badges.ToList(), e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
+            foreach ( var badge in badges )
+            {
+                PersonBadgeCache.Flush( badge.Id );
+            }
 
             BindGrid();
 
