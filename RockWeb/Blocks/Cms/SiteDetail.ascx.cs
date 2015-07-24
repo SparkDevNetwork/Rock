@@ -126,6 +126,7 @@ namespace RockWeb.Blocks.Cms
             Site site = siteService.Get( int.Parse( hfSiteId.Value ) );
             LayoutService layoutService = new LayoutService( rockContext );
             PageService pageService = new PageService( rockContext );
+            PageViewService pageViewService = new PageViewService( rockContext );
 
             if ( site != null )
             {
@@ -135,6 +136,12 @@ namespace RockWeb.Blocks.Cms
                     site.RegistrationPageId ?? -1, 
                     site.PageNotFoundPageId ?? -1
                 };
+
+                var pageViewQry = pageViewService.Queryable()
+                    .Where( t =>
+                        t.SiteId == site.Id);
+
+                pageViewService.DeleteRange( pageViewQry );
 
                 var pageQry = pageService.Queryable( "Layout" )
                     .Where( t =>
