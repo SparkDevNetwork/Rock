@@ -2734,6 +2734,9 @@ iframe.email-body {
 .calendar-month .calendar-last-month a {
   opacity: .2;
 }
+.calendar-month .calendar-hasevent {
+  font-weight: 900;
+}
 .registrationentry-intro {
   text-align: center;
 }
