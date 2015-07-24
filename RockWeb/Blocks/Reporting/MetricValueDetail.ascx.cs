@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Reporting
             metricValue.XValue = tbXValue.Text;
             metricValue.YValue = tbYValue.Text.AsDecimalOrNull();
             metricValue.Note = tbNote.Text;
-            metricValue.MetricValueDateTime = dtpMetricValueDateTime.SelectedDateTimeIsBlank ? null : dtpMetricValueDateTime.SelectedDateTime;
+            metricValue.MetricValueDateTime = dpMetricValueDateTime.SelectedDate;
 
             // Get EntityId from EntityType UI controls
             var metricEntityType = EntityTypeCache.Read( metricValue.Metric.EntityTypeId ?? 0 );
@@ -220,7 +220,7 @@ namespace RockWeb.Blocks.Reporting
             tbYValue.Text = metricValue.YValue.ToString();
             hfMetricId.Value = metricValue.MetricId.ToString();
             tbNote.Text = metricValue.Note;
-            dtpMetricValueDateTime.SelectedDateTime = metricValue.MetricValueDateTime;
+            dpMetricValueDateTime.SelectedDate = metricValue.MetricValueDateTime;
 
             var metricEntityType = EntityTypeCache.Read( metricValue.Metric.EntityTypeId ?? 0 );
 
@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.Reporting
             tbXValue.ReadOnly = readOnly;
             tbYValue.ReadOnly = readOnly;
             tbNote.ReadOnly = readOnly;
-            dtpMetricValueDateTime.Enabled = !readOnly;
+            dpMetricValueDateTime.Enabled = !readOnly;
             if ( entityTypeEditControl is WebControl )
             {
                 ( entityTypeEditControl as WebControl ).Enabled = !readOnly;
