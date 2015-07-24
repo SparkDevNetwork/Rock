@@ -1,25 +1,24 @@
+  {% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
 
-  {% assign eventCampusCount = EventCampuses | Size %}
-
-  {% if eventCampusCount == 0 %}
+  {% if eventItemOccurrenceCount == 0 %}
   <div class="panel panel-default margin-t-md">
     <div class="margin-all-md"> There are no events in this time frame.</div>
   </div>
   {% endif %}
 
-  {% for eventCampus in EventCampuses %}
+  {% for eventItemOccurrence in EventItemOccurrences %}
   <div class="panel panel-default margin-t-md">
     <div class="panel-heading clearfix">
       <h2 class="panel-title pull-left">
-        {{ eventCampus.Name }}
+        {{ eventItemOccurrence.Name }}
       </h2>
       <div class="pull-right">
-        {% if eventCampus.DetailPage != null %}
-        <a href="{{ eventCampus.DetailPage }}">
+        {% if eventItemOccurrence.DetailPage != null %}
+        <a href="{{ eventItemOccurrence.DetailPage }}">
           <i> View page -> </i>
         </a>
 		{% else %}
-		<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventCampus.EventItemOccurrence.Id }}">
+		<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}">
             View Details <i class="fa fa-chevron-right"></i>
         </a>
         {% endif %}
@@ -31,7 +30,7 @@
           <b>Date</b>
         </div>
         <div class="row">
-          {{ eventCampus.Date }}
+          {{ eventItemOccurrence.Date }}
         </div>
       </div>
       <div class="col-md-2">
@@ -39,7 +38,7 @@
           <b>Time</b>
         </div>
         <div class="row">
-          {{ eventCampus.Time}}
+          {{ eventItemOccurrence.Time}}
         </div>
       </div>
       <div class="col-md-4">
@@ -47,7 +46,7 @@
           <b>Location</b>
         </div>
         <div class="row">
-          {{ eventCampus.Location}}
+          {{ eventItemOccurrence.Location}}
         </div>
       </div>
       <div class="col-md-4">
@@ -55,7 +54,7 @@
           <b>Summary</b>
         </div>
         <div class="row">
-          {{eventCampus.Summary}}
+          {{eventItemOccurrence.Summary}}
         </div>
       </div>
     </div>

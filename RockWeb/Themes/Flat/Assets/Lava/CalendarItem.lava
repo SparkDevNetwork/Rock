@@ -1,37 +1,37 @@
 <div class="row">
 	<div class="col-md-4">
 		<div class="well">
-			{% assign linkage = EventCampus.Linkages | First %}
+			{% assign linkage = EventItemOccurrence.Linkages | First %}
 			
-			{% if EventCampus.Campus != null %}
-				<h4> {{EventCampus.Campus.Name}} Campus</h4> 
+			{% if EventItemOccurrence.Campus != null %}
+				<h4> {{EventItemOccurrence.Campus.Name}} Campus</h4> 
 			{% endif %}
 				
 			<p>
 				<strong>Contact</strong><br />
-				{% if EventCampus.ContactPersonAlias != null %}
-					{{ EventCampus.ContactPersonAlias.Person.FullName }} <br />
+				{% if EventItemOccurrence.ContactPersonAlias != null %}
+					{{ EventItemOccurrence.ContactPersonAlias.Person.FullName }} <br />
 				{% endif %}
 					
-				{{ EventCampus.ContactEmail }} <br />
-				{{ EventCampus.ContactPhone }}
+				{{ EventItemOccurrence.ContactEmail }} <br />
+				{{ EventItemOccurrence.ContactPhone }}
 			</p>
 				
-			{% if EventCampus.Location != '' %}
+			{% if EventItemOccurrence.Location != '' %}
 				<p>
 					<strong> Location</strong> <br />
-					{{ EventCampus.Location }}
+					{{ EventItemOccurrence.Location }}
 				</p>
 			{% endif %}
 				
 			<p>
 				<strong>Date / Time</strong> <br />
-				{{ EventCampus.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal }}
+				{{ EventItemOccurrence.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal }}
 			</p>
 				
-			{% if EventCampus.CampusNote != '' %}
+			{% if EventItemOccurrence.CampusNote != '' %}
 				<strong>Note</strong><br />
-				{{ EventCampus.CampusNote }}
+				{{ EventItemOccurrence.CampusNote }}
 			{% endif %}
 				
 			{% if linkage.RegistrationInstanceId > 0 ) %}

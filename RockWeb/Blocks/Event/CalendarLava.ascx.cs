@@ -537,7 +537,7 @@ namespace RockWeb.Blocks.Event
                 .ToList();
 
             var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "EventCampuses", eventCampusSummaries );
+            mergeFields.Add( "EventItemOccurrences", eventCampusSummaries );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
             mergeFields.Add( "TimeFrame", CurrentViewMode );
             mergeFields.Add( "DetailsPage", LinkedPageUrl( "DetailsPage", null ) );
