@@ -310,21 +310,27 @@ namespace Rock
             listControl.SetValue( value == null ? "" : value.ToString() );
         }
 
-        
-
         /// <summary>
         /// Binds to enum using the enum's integer value as the listitem value
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="listControl">The list control.</param>
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
-        public static void BindToEnum<T>( this ListControl listControl, bool insertBlankOption = false )
+        /// <param name="ignoreTypes">any enums that should not be included in the list control</param>
+        public static void BindToEnum<T>( this ListControl listControl, bool insertBlankOption = false, T[] ignoreTypes = null )
         {
             var enumType = typeof( T );
             var dictionary = new Dictionary<int, string>();
             foreach ( var value in Enum.GetValues( enumType ) )
             {
-                dictionary.Add( Convert.ToInt32( value ), Enum.GetName( enumType, value ).SplitCase() );
+                if ( ignoreTypes != null && ignoreTypes.Contains( (T)value ) )
+                {
+                    continue;
+                }
+                else
+                {
+                    dictionary.Add( Convert.ToInt32( value ), Enum.GetName( enumType, value ).SplitCase() );
+                }
             }
 
             listControl.DataSource = dictionary;
