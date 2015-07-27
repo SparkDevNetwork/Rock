@@ -388,6 +388,11 @@ namespace RockWeb.Blocks.Event
                 lDebug.Visible = true;
                 lDebug.Text = mergeFields.lavaDebugInfo();
             }
+            else
+            {
+                lDebug.Visible = false;
+                lDebug.Text = string.Empty;
+            }
 
         }
 
