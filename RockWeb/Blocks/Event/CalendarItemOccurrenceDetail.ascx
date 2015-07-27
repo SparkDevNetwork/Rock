@@ -81,12 +81,6 @@
 
                         <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
 
-                        <Rock:RockLiteral ID="lRegistration" runat="server" Label="Registration Instance - Group" CssClass="margin-b-none" />
-                        <asp:LinkButton ID="lbEditRegistration" runat="server" CssClass="btn btn-default btn-xs margin-b-md" OnClick="lbEditRegistration_Click" ><i class="fa fa-pencil"></i> Edit</asp:LinkButton>
-                        <asp:LinkButton ID="lbDeleteRegistration" runat="server" CssClass="btn btn-danger btn-xs margin-b-md" OnClick="lbDeleteRegistration_Click" ><i class="fa fa-times"></i> Remove</asp:LinkButton>
-                        <asp:LinkButton ID="lbCreateNewRegistration" runat="server" CssClass="btn btn-primary btn-xs margin-b-md" Text="Add New Registration Instance" OnClick="lbCreateNewRegistration_Click" />
-                        <asp:LinkButton ID="lbLinkToExistingRegistration" runat="server" CssClass="btn btn-default btn-xs margin-b-md" Text="Use Existing Registration Instance" OnClick="lbLinkToExistingRegistration_Click" />
-
                         <Rock:RockControlWrapper ID="rcwSchedules" runat="server" Label="Schedule">
                             <asp:HiddenField ID="hfSchedules" runat="server" />
                             <Rock:HiddenFieldValidator ID="hfvSchedules" runat="server" Display="None" ErrorMessage="At least one Schedule is required." ControlToValidate="hfSchedules" ValidationGroup="CampusDetails" />
@@ -101,6 +95,12 @@
                                 </Rock:Grid>
                             </div>
                         </Rock:RockControlWrapper>
+
+                        <Rock:RockLiteral ID="lRegistration" runat="server" Label="Registration Instance - Group" CssClass="margin-b-none" />
+                        <asp:LinkButton ID="lbEditRegistration" runat="server" CssClass="btn btn-default btn-xs margin-b-md" OnClick="lbEditRegistration_Click" ><i class="fa fa-pencil"></i> Edit</asp:LinkButton>
+                        <asp:LinkButton ID="lbDeleteRegistration" runat="server" CssClass="btn btn-danger btn-xs margin-b-md" OnClick="lbDeleteRegistration_Click" ><i class="fa fa-times"></i> Remove</asp:LinkButton>
+                        <asp:LinkButton ID="lbCreateNewRegistration" runat="server" CssClass="btn btn-primary btn-xs margin-b-md" Text="Add New Registration Instance" OnClick="lbCreateNewRegistration_Click" />
+                        <asp:LinkButton ID="lbLinkToExistingRegistration" runat="server" CssClass="btn btn-default btn-xs margin-b-md" Text="Use Existing Registration Instance" OnClick="lbLinkToExistingRegistration_Click" />
 
                     </div>
 

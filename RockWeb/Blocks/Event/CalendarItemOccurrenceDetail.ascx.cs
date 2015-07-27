@@ -23,6 +23,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
+using Humanizer;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -578,7 +579,8 @@ namespace RockWeb.Blocks.Event
         {
             SchedulesState.RemoveEntity( Guid.Empty );
 
-            var itemSchedule = new EventItemSchedule { ScheduleId = 0, Guid = Guid.Empty, Schedule = new Schedule() };
+            string scheduleName = ( SchedulesState.Count + 1 ).ToOrdinalWords().Humanize( LetterCasing.Title ) + " Schedule";
+            var itemSchedule = new EventItemSchedule { ScheduleId = 0, ScheduleName = scheduleName, Guid = Guid.Empty, Schedule = new Schedule() };
             SchedulesState.Add( itemSchedule );
 
             ShowScheduleDialog( itemSchedule );
