@@ -354,7 +354,7 @@ namespace RockWeb.Blocks.Connection
                 var qry = GetDisplayedOpportunities( rockContext, allConnectionOpportunities );
 
                 Repeater rptConnectionOpportunities = (Repeater)e.Item.FindControl( "rptConnectionOpportunities" );
-                RockLiteral lConnectionTypeName = (RockLiteral)e.Item.FindControl( "lConnectionTypeName" );
+                Literal lConnectionTypeName = (Literal)e.Item.FindControl( "lConnectionTypeName" );
                 rptConnectionOpportunities.DataSource = qry.ToList();
                 rptConnectionOpportunities.DataBind();
                 rptConnectionOpportunities.ItemCommand += rptConnectionOpportunities_ItemCommand;
