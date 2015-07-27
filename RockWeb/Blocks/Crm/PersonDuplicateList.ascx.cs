@@ -139,14 +139,18 @@ namespace RockWeb.Blocks.Crm
             var personDuplicateService = new PersonDuplicateService( rockContext );
             int recordStatusInactiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
 
-            // list duplicates that aren't confirmed as NotDuplicate and aren't IgnoreUntilScoreChanges. Also, don't include records where both the Person and Duplicate are inactive
+            // list duplicates that:
+            // - aren't confirmed as NotDuplicate and aren't IgnoreUntilScoreChanges,
+            // - don't have the PersonAlias and DuplicatePersonAlias records pointing to the same person ( occurs after two people have been merged but before the Calculate Person Duplicates job runs).
+            // - don't include records where both the Person and Duplicate are inactive
             var personDuplicateQry = personDuplicateService.Queryable()
                 .Where( a => !a.IsConfirmedAsNotDuplicate )
                 .Where( a => !a.IgnoreUntilScoreChanges )
-                .Where( a => !(a.PersonAlias.Person.RecordStatusValueId == recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId == recordStatusInactiveId) );
+                .Where( a => a.PersonAlias.PersonId != a.DuplicatePersonAlias.PersonId )
+                .Where( a => !( a.PersonAlias.Person.RecordStatusValueId == recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId == recordStatusInactiveId ) );
 
             double? confidenceScoreLow = GetAttributeValue( "ConfidenceScoreLow" ).AsDoubleOrNull();
-            if (confidenceScoreLow.HasValue)
+            if ( confidenceScoreLow.HasValue )
             {
                 personDuplicateQry = personDuplicateQry.Where( a => a.ConfidenceScore > confidenceScoreLow );
             }
@@ -164,9 +168,9 @@ namespace RockWeb.Blocks.Crm
             qryPerson,
             k1 => k1.PersonId,
             k2 => k2.Id,
-            ( personDuplicate, person ) => 
-                new 
-                { 
+            ( personDuplicate, person ) =>
+                new
+                {
                     PersonId = person.Id,
                     person.LastName,
                     person.FirstName,
