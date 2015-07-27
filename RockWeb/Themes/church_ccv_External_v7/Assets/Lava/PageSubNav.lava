@@ -1,6 +1,8 @@
 {% comment %}
 
 {% assign pageMenuClasses = "nav nav-pills nav-responsive-md margin-b-md"  %}
+{% assign pageMenuItemClasses = "" %}
+{% assign pageMenuItemSubClasses = "" %}
 
 {% endcomment %}
 
@@ -9,12 +11,12 @@
   <ul class="{{ pageMenuClasses | Default: 'nav nav-pills nav-responsive-md margin-b-md' }}">
     {% for childPage in Page.Pages %}
       {% if childPage.Title != "Sub" %}
-        <li{% if childPage.Current == 'true' %} class="active"{% endif%}>
+        <li class="{% if childPage.Current == 'true' %}active {% endif%}{{ pageMenuItemClasses }}">
           <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
         </li>
       {% else %}
         {% for gchildPage in childPage.Pages %}
-          <li{% if childPage.Current == 'true' %} class="active"{% endif%}>
+          <li class="{% if childPage.Current == 'true' %}active {% endif%}{{ pageMenuItemSubClasses }}">
             <a href="{{ gchildPage.Url }}">{{ gchildPage.Title }}</a>
           </li>
         {% endfor %}
