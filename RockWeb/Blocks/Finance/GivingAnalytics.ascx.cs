@@ -867,7 +867,10 @@ function(item) {
             var firstEverVals = new Dictionary<int, DateTime>();
             foreach( DataRow row in ds.Tables[1].Rows )
             {
-                firstEverVals.Add( (int)row["PersonId"], (DateTime)row["FirstEverGift"] );
+                if ( !DBNull.Value.Equals( row["FirstEverGift"] ) )
+                {
+                    firstEverVals.Add( (int)row["PersonId"], (DateTime)row["FirstEverGift"] );
+                }
             }
 
             // Add columns to the result set for the first-ever data
