@@ -6105,7 +6105,7 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
   padding: 10px 15px;
   line-height: 1.42857143;
   text-decoration: none;
-  color: red;
+  color: #ffffff;
   background-color: #18bc9c;
   border: 1px solid transparent;
   margin-left: -1px;
@@ -6766,7 +6766,7 @@ a.list-group-item-danger.active:focus {
 }
 .panel {
   margin-bottom: 21px;
-  background-color: #ffffff;
+  background-color: #ff0000;
   border: 1px solid transparent;
   border-radius: 4px;
   -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);

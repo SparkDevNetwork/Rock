@@ -20,9 +20,6 @@
 @accent-bold-color: #428bca; // overrides brand color
 @accent-bold-text-color: #ecf0f3;
 
-@boldheader-bg: #282526; // Background color for bold table headers like the merge person page.
-@boldheader-color: #d3cec5; // The text color for bold table headers like the merge person page.
-
 @picker-action-bg: #e3ded7;     // The background color of the actions bar at the bottom of the picker dropdown.
 
 @text-selection-bg: #afd074; // Text Selection (these colors are used when people select text with the mouse)
@@ -44,6 +41,7 @@
 @persondetails-familybar-action-color: #fff;
 @persondetails-familybar-action-bg: #6a6a6a;
 @persondetails-familybar-action-border: darken(@persondetails-bio-action-bg, 5%);
+@persondetails-familybar-photo-bg: darken(@persondetails-familybar-bg, 20%);
 
 @help-color: #86b8cc;
 @required-field-color: #eca9a7;
@@ -67,6 +65,10 @@
 
 @header-bg:     #3A3A3A;
 @header-text-color: #bbb;
+//--
+@header-hambuger-color: #fff; // The text color of the header minimizer.
+@header-hambuger-bg: @brand-primary; // The background color of the header minimizer.
+@header-hamburger-border: @brand-primary; // The border color of the header minimizer.
 
 @footer-bg: @header-bg;
 @footer-color: @header-text-color;
@@ -95,6 +97,7 @@
 
 // Grid
 @grid-border-color: #ddd;
+@grid-padding: 8px;         // The default padding of the grid cells.
 
 @grid-filter-bg: @accent-color;
 @grid-filter-color: @text-color;
@@ -103,6 +106,9 @@
 @grid-column-header-text-color: @accent-bold-text-color;
 @grid-column-header-font-size: 14px;
 @grid-column-header-font-weight: @font-weight-light;
+@grid-column-header-border-color: @grid-border-color;    // The border color of the grid header.
+@grid-column-header-bold-bg: @accent-bold-color;       // Background color for bold table headers like the merge person page.
+@grid-column-header-bold-color: @accent-bold-text-color; // The text color for bold table headers like the merge person page.
 
 @grid-hover-bg: @accent-light-color;
 @grid-hover-color: @text-color;
@@ -162,12 +168,6 @@
 @tooltip-header-bg: @accent-color;
 @tooltip-header-text-color: @accent-text-color;
 @tooltip-bg: @body-bg;
-
-// Widget
-@widget-header-bg: @accent-light-color;
-@widget-header-text-color: @accent-light-text-color;
-@widget-header-bg-dark: @accent-bold-color;
-@widget-header-text-color-dark: @accent-bold-text-color;
 
 
 // Page List
