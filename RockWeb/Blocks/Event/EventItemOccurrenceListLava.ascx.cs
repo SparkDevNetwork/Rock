@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Event
     [EventItemField("Event Item", "The event item to use to display occurrences for.", order: 0)]
     [CampusesField("Campuses", "List of which campuses to show occurences for. This setting will be ignored in the 'Use Campus Context' is enabled.", order:1)]
     [BooleanField("Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 2)]
-    [SlidingDateRangeField("Date Range", "Optional date range to filter the occurences on.", false, order:3)]
+    [SlidingDateRangeField("Date Range", "Optional date range to filter the occurrences on.", false, order:3)]
     [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 4)]
     [LinkedPage( "Registration Page", "The page to use for registrations.", order: 5 )]
     [CodeEditorField("Lava Template", "The lava template to use for the results", CodeEditorMode.Liquid, CodeEditorTheme.Rock, defaultValue:"{% include '~~/Assets/Lava/EventItemOccurrenceList.lava' %}", order:6)]
@@ -177,6 +177,11 @@ namespace RockWeb.Blocks.Event
                 {
                     lDebug.Visible = true;
                     lDebug.Text = mergeFields.lavaDebugInfo();
+                }
+                else
+                {
+                    lDebug.Visible = false;
+                    lDebug.Text = string.Empty;
                 }
             }
             else
