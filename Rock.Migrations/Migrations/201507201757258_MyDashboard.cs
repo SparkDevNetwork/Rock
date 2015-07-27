@@ -114,7 +114,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue("791A6AA0-D498-4795-BB5F-21609175826F","1B0E8904-196B-433E-B1CC-937AD3CA5BF2",@"My Dashboard^~/MyDashboard|");
 
             // Attrib Value for Block:Login Status, Attribute:Logged In Page List , Layout: Right Sidebar, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue("2356DEDC-803F-4782-A8E9-D0D88393EC2E","1B0E8904-196B-433E-B1CC-937AD3CA5BF2",@"My Dashbaord^~/MyDashboard|");
+            RockMigrationHelper.AddBlockAttributeValue("2356DEDC-803F-4782-A8E9-D0D88393EC2E","1B0E8904-196B-433E-B1CC-937AD3CA5BF2",@"My Dashboard^~/MyDashboard|");
 
             // Attrib Value for Block:Login Status, Attribute:Logged In Page List , Layout: Homepage, Site: External Website
             RockMigrationHelper.AddBlockAttributeValue("5A5C6063-EA0D-4EDD-A394-4B1B772F2041","1B0E8904-196B-433E-B1CC-937AD3CA5BF2",@"");
