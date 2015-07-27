@@ -5,6 +5,7 @@
     <asp:UpdatePanel ID="pnlContent" runat="server">
         <ContentTemplate>
 
+            <asp:HiddenField ID="metricBlockNumber" runat="server" />
             <asp:HiddenField ID="metricWidth" runat="server" />
             <asp:HiddenField ID="metricClass" runat="server" />
             <asp:HiddenField ID="metricDisplay" runat="server" />
@@ -105,9 +106,16 @@
                     pointDotStrokeWidth: 3,
                 }
 
-                $( document ).ready( function() {
+                $( "#bid_<%= metricBlockNumber.Value %>" ).on( "load", "<%= metricBlockId.Value %>Chart", function() {
+                    
                     var <%= metricBlockId.Value %> = document.getElementById("<%= metricBlockId.Value %>Chart").getContext("2d");
                     window.<%= metricBlockId.Value %>Chart = new Chart(<%= metricBlockId.Value %>).Doughnut(<%= metricBlockValues %>, pieOptions);
+
+
+                });
+
+                $( document ).ready( function() {
+                    
                 });
             </script>
 
