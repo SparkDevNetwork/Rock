@@ -132,8 +132,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             #region Global Variables
 
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( this.GetAttributeValue( "SlidingDateRange" ) ?? string.Empty );
-
+            
             // Output variables direct to the ascx
+            metricBlockNumber.Value = BlockId.ToString();
             metricBlockId.Value = BlockName.Replace( " ", "" ).ToString();
             metricTitle.Value = BlockName;
             metricDisplay.Value = GetAttributeValue( "MetricDisplayType" );
@@ -236,22 +237,10 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     if ( dateRange != null )
                     {
 
-                        metricCurrentYear = newMetric.MetricValues
-                            .Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End )
-                            .OrderBy( a => a.MetricValueDateTime )
-                            .Select( a => new MetricJson
-                            {
-                                date = a.MetricValueDateTime.Value.Date,
-                                week = calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ),
-                                year = a.MetricValueDateTime.Value.Year,
-                                value = string.Format( "{0:0}", a.YValue )
-                            } )
-                            .ToList();
-
-                        if ( GetAttributeValue( "CompareAgainstLastYear" ) == "Yes" )
+                        if ( campus != null && campusContext.HasValue )
                         {
-                            metricPreviousYear = newMetric.MetricValues
-                                .Where( a => a.MetricValueDateTime >= dateRange.Start.Value.AddYears( -1 ) && a.MetricValueDateTime <= dateRange.End.Value.AddYears( -1 ) )
+                            metricCurrentYear = newMetric.MetricValues
+                                .Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End && a.EntityId.ToString() == campus.Id.ToString() )
                                 .OrderBy( a => a.MetricValueDateTime )
                                 .Select( a => new MetricJson
                                 {
@@ -261,7 +250,52 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                                     value = string.Format( "{0:0}", a.YValue )
                                 } )
                                 .ToList();
+
+                            if ( GetAttributeValue( "CompareAgainstLastYear" ) == "Yes" )
+                            {
+                                metricPreviousYear = newMetric.MetricValues
+                                    .Where( a => a.MetricValueDateTime >= dateRange.Start.Value.AddYears( -1 ) && a.MetricValueDateTime <= dateRange.End.Value.AddYears( -1 ) && a.EntityId.ToString() == campus.Id.ToString() )
+                                    .OrderBy( a => a.MetricValueDateTime )
+                                    .Select( a => new MetricJson
+                                    {
+                                        date = a.MetricValueDateTime.Value.Date,
+                                        week = calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ),
+                                        year = a.MetricValueDateTime.Value.Year,
+                                        value = string.Format( "{0:0}", a.YValue )
+                                    } )
+                                    .ToList();
+                            }
                         }
+                        else
+                        {
+                            metricCurrentYear = newMetric.MetricValues
+                                .Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End )
+                                .OrderBy( a => a.MetricValueDateTime )
+                                .Select( a => new MetricJson
+                                {
+                                    date = a.MetricValueDateTime.Value.Date,
+                                    week = calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ),
+                                    year = a.MetricValueDateTime.Value.Year,
+                                    value = string.Format( "{0:0}", a.YValue )
+                                } )
+                                .ToList();
+
+                            if ( GetAttributeValue( "CompareAgainstLastYear" ) == "Yes" )
+                            {
+                                metricPreviousYear = newMetric.MetricValues
+                                    .Where( a => a.MetricValueDateTime >= dateRange.Start.Value.AddYears( -1 ) && a.MetricValueDateTime <= dateRange.End.Value.AddYears( -1 ) )
+                                    .OrderBy( a => a.MetricValueDateTime )
+                                    .Select( a => new MetricJson
+                                    {
+                                        date = a.MetricValueDateTime.Value.Date,
+                                        week = calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ),
+                                        year = a.MetricValueDateTime.Value.Year,
+                                        value = string.Format( "{0:0}", a.YValue )
+                                    } )
+                                    .ToList();
+                            }
+                        }
+                        
                     }
 
                     foreach ( var currentMetric in metricCurrentYear )

@@ -30,7 +30,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.AllStaffLive
     [DisplayName( "All Staff Live" )]
     [Category( "NewSpring" )]
     [Description( "Live video all staff display" )]
-    [TextField( "Ooyala Content ID", "Paste the Ooyala Content ID For All Staff Live Here" )]
     [SchedulesField( "Live Schedule", "Choose a schedule for all staff to be live" )]
     public partial class AllStaffLive : Rock.Web.UI.RockBlock
     {
@@ -54,9 +53,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.AllStaffLive
 
                     if ( schedule != null )
                     {
-                        // Get the friendly schedule text
-                        scheduleText.Value = schedule.FriendlyScheduleText.ToString();
-
                         var scheduleExpired = schedule.IsValid;
 
                         bool scheduleActive = schedule.IsScheduleOrCheckInActive;
@@ -67,8 +63,21 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.AllStaffLive
                             // Active Schedule, set liveFeedStatus to on
                             liveFeedStatus.Value = "on";
 
-                            // Set the ooyala id
-                            ooyalaId.Value = GetAttributeValue( "OoyalaContentID" );
+                            liveHeading.Text = BlockName;
+
+                            // Get the ip address
+                            String currentIp = GetLanIPAddress();
+
+                            String internalIp = "204.116.47.244";
+
+                            if ( currentIp == internalIp )
+                            {
+                                localIP.Value = "true";
+                            }
+                            else
+                            {
+                                localIP.Value = "false";
+                            }
 
                             break;
                         }
@@ -83,6 +92,20 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.AllStaffLive
                     }
                 }
             }
+        }
+
+        public String GetLanIPAddress()
+        {
+            //The X-Forwarded-For (XFF) HTTP header field is a de facto standard for identifying the originating IP address of a
+            //client connecting to a web server through an HTTP proxy or load balancer
+            String ip = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+
+            if ( string.IsNullOrEmpty( ip ) )
+            {
+                ip = HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+            }
+
+            return ip;
         }
     }
 }
