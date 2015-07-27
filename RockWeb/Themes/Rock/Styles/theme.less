@@ -6,10 +6,12 @@
 
 // Load Master Styles
 // -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
 @import "../../../Styles/_rock-core.less";
 @import "../../../Styles/_store.less";
 @import "../../../Styles/_rock-variables.less";
 @import "_variables.less";
+@import "_variable-overrides.less";
 @import "_print.less";
 
 /*#region
@@ -75,8 +77,7 @@
   5. Utilities
   6. Responsive Overrides
   7. Side Navbar
-  8. Person Details
-  9. First Word Weight
+  8. First Word Weight
 
 */
 
@@ -129,10 +130,6 @@ pre {
   color: @accent-light-text-color;
 }
 
-hr {
-    border-color: lighten(@text-color, 40%);
-}
-
 /*#endregion */
 
 
@@ -175,7 +172,6 @@ h4, .h4 {
 // panel tweaks
 .panel {
   border-radius: 0;
-  border-top-width: 0;
   border-top-width: 3px;
 
   .panel-heading {
@@ -210,13 +206,14 @@ h4, .h4 {
 }
 
 
+/* JME 7/26/2015 
 .rock-modal-frame {
   border: 1px solid @accent-bold-color;
 }
 
 .close {
   opacity: 0.6;
-}
+}*/
 
 /*#endregion */
 
@@ -225,10 +222,7 @@ h4, .h4 {
 // 3. Rock Overrides         */
 // -------------------------
 
-.person-image {
-  border-radius: 4px;
-}
-
+// make the no image svgs take on a bit of their background color
 .photo img[src*=no-photo],
 .person-image[style*=no-photo], 
 .profile-photo[style*=no-photo] {
@@ -239,9 +233,10 @@ h4, .h4 {
     border: 0;
 }
 
+/* JME 7/26/2015 @photo-border should already do this?
 .groupmembers .member .person-image {
     border-color: @header-bg;
-}
+}*/
 
 .smartsearch {
   float: right;
@@ -291,22 +286,6 @@ h4, .h4 {
     border-radius: 17.5px;
     margin: -8px 4px 0 0;
   }
-}
-
-// personal notes styling
-.panel-note {
-  article.personal {
-    background-color: @state-info-bg;
-    border-color: @state-info-border;
-    color: @state-info-text;
-  }
-}
-
-// duplicate person
-.grid-table tbody tr.duplicate-source td,
-.grid-table tbody tr.duplicate-source:hover td {
-   background-color: @accent-semibold-color;
-   color: #fff;
 }
 
 /*#endregion */
@@ -389,6 +368,7 @@ a.link-block,
       background-color: @nav-bg;
       border-color: darken(@nav-bg, 5%);
       color: @nav-color;
+      margin-bottom: 0;
 
       .navbar-header {
         padding: 10px 0 0 12px;
@@ -571,9 +551,9 @@ body#splash {
 // -------------------------
 
 .navbar-minimize {
-  background-color: @btn-primary-bg;
-  color: @btn-primary-color;
-  border: none;
+  background-color: @header-hambuger-bg;
+  color: @header-hambuger-color;
+  border: 1px solid @header-hamburger-border;
   padding: 4px 12px;
   border-radius: 4px;
   cursor: pointer;
@@ -808,32 +788,7 @@ body.navbar-side-close {
 
 
 /*#region
-// 8. Person Details  */
-// -------------------------
-
-.personprofile {
-
-  .personprofilebar-badge,
-  .personprofilebar-family,
-  .pagetabs,
-  .person-content {
-    padding-left: 15px;
-    padding-right: 15px;
-  }
-
-  .personprofilebar-bio {
-    margin-top: 12px;
-  }
-
-  .pagetabs {
-    margin-bottom: 12px;
-  }
-}
-
-/*#endregion */
-
-/*#region
-// 9. First Word Weight  */
+// 8. First Word Weight  */
 // -------------------------
 .title {
   font-weight: @font-weight-light;
