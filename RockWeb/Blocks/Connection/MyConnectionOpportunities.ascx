@@ -63,6 +63,7 @@
                     <Rock:Grid ID="gConnectionRequests" runat="server" OnRowSelected="gConnectionRequests_Edit">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campu" />
                             <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="Group" />
                             <Rock:RockBoundField DataField="Status" HeaderText="Status" />
                             <Rock:RockBoundField DataField="Connector" HeaderText="Connector" />
