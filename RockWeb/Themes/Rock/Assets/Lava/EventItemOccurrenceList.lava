@@ -1,0 +1,15 @@
+{{ EventItem.Name }}
+
+<ul>
+{% for occurrence in EventItemOccurrences %}
+    <li>
+        {{ occurrence.Campus.Name }}
+
+        {{ occurrence.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal }}
+
+        {% if RegistrationPage  %}
+            <a href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}">Register</a>
+        {% endif %}
+    </li>
+{% endfor %}
+</ul>

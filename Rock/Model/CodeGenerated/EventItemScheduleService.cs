@@ -88,7 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this EventItemSchedule target, EventItemSchedule source )
         {
             target.Id = source.Id;
-            target.EventItemCampusId = source.EventItemCampusId;
+            target.EventItemOccurrenceId = source.EventItemOccurrenceId;
             target.ScheduleId = source.ScheduleId;
             target.ScheduleName = source.ScheduleName;
             target.CreatedDateTime = source.CreatedDateTime;

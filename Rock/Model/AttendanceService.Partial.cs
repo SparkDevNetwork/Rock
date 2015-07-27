@@ -171,6 +171,11 @@ namespace Rock.Model
                 {
                     Id = a.Attendance.ScheduleId,
                     Name = a.Attendance.Schedule.Name
+                },
+                Location = new 
+                {
+                    Id = a.Attendance.LocationId,
+                    Name = a.Attendance.Location.Name
                 }
             } );
 
@@ -215,6 +220,18 @@ namespace Rock.Model
             else if ( graphBy == AttendanceGraphBy.Schedule )
             {
                 var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime, Series = a.Schedule } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
+
+                result = groupByQry.ToList().Select( a => new SummaryData
+                {
+                    DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
+                    DateTime = a.Key.SummaryDateTime,
+                    SeriesId = a.Key.Series.Name,
+                    YValue = a.Count
+                } ).ToList();
+            }
+            else if ( graphBy == AttendanceGraphBy.Location )
+            {
+                var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime, Series = a.Location } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
 
                 result = groupByQry.ToList().Select( a => new SummaryData
                 {

@@ -88,6 +88,8 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
+            GroupMemberWorkflowTriggerType[] groupMemberWorkflowChangeTriggers = new GroupMemberWorkflowTriggerType[] { GroupMemberWorkflowTriggerType.MemberAddedToGroup, GroupMemberWorkflowTriggerType.MemberRemovedFromGroup, GroupMemberWorkflowTriggerType.MemberStatusChanged, GroupMemberWorkflowTriggerType.MemberRoleChanged };
+
             // Verify that valid ids were saved
             if ( GroupId.HasValue && PersonId.HasValue )
             {
@@ -100,7 +102,7 @@ namespace Rock.Transactions
                     // Get the triggers associated to the group 
                     var groupTriggers = cachedTriggers
                         .Where( w =>
-                            w.TriggerType != GroupMemberWorkflowTriggerType.MemberAttendedGroup &&
+                            groupMemberWorkflowChangeTriggers.Contains(w.TriggerType) &&
                             w.GroupId.HasValue &&
                             w.GroupId.Value == GroupId.Value )
                         .OrderBy( w => w.Order )
@@ -109,7 +111,7 @@ namespace Rock.Transactions
                     // Get any triggers associated to a group type ( if any are found, will then filter by group type )
                     var groupTypeTriggers = cachedTriggers
                         .Where( w =>
-                            w.TriggerType != GroupMemberWorkflowTriggerType.MemberAttendedGroup &&
+                            groupMemberWorkflowChangeTriggers.Contains( w.TriggerType ) &&
                             w.GroupTypeId.HasValue )
                         .OrderBy( w => w.Order )
                         .ToList();

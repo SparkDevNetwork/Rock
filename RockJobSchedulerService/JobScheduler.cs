@@ -99,28 +99,44 @@ namespace RockJobSchedulerService
 
             foreach ( ServiceJob job in activeJobs )
             {
+                const string errorLoadingStatus = "Error Loading Job";
                 try
                 {
                     IJobDetail jobDetail = jobService.BuildQuartzJob( job );
                     ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
                     sched.ScheduleJob( jobDetail, jobTrigger );
+
+                    //// if the last status was an error, but we now loaded successful, clear the error
+                    // also, if the last status was 'Running', clear that status because it would have stopped if the app restarted
+                    if ( job.LastStatus == errorLoadingStatus || job.LastStatus == "Running" )
+                    {
+                        job.LastStatusMessage = string.Empty;
+                        job.LastStatus = string.Empty;
+                        rockContext.SaveChanges();
+                    }
                 }
                 catch ( Exception ex )
                 {
-                    // get path to the services directory
+                    ExceptionLogService.LogException( ex, null );
+                         
+                     // get path to the services directory
                     string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
                     path = System.IO.Path.GetDirectoryName( path );
-
-                    // create a friendly error message
-                    string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the services directory ({2}) of your server.", job.Name, job.Assembly, path );
-                    message = message + "\n\n\n\n" + ex.Message;
-                    //throw new JobLoadFailedException( message );
+                
+                    // create the error message
+                    string message = string.Format( "Error loading the job: {0}.\n\n{1}\n\n Job Assembly: {2}, Path: {3}", job.Name, ex.Message, job.Assembly, path );
                     job.LastStatusMessage = message;
-                    job.LastStatus = "Error Loading Job";
-
+                    job.LastStatus = errorLoadingStatus;
                     rockContext.SaveChanges();
                 }
+
+                // set up the listener to report back from jobs as they complete
+                sched.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
+
+                // start the scheduler
+                sched.Start();
+
             }
 
             // set up the listener to report back from jobs as they complete

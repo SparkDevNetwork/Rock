@@ -700,7 +700,7 @@ namespace RockWeb.Blocks.Event
             if ( RegistrationState == null && !string.IsNullOrWhiteSpace( registrationSlug ) )
             {
                 var dateTime = RockDateTime.Now;
-                var linkage = new EventItemCampusGroupMapService( rockContext )
+                var linkage = new EventItemOccurrenceGroupMapService( rockContext )
                     .Queryable( "RegistrationInstance.Account,RegistrationInstance.RegistrationTemplate.Fees,RegistrationInstance.RegistrationTemplate.Discounts,RegistrationInstance.RegistrationTemplate.Forms.Fields.Attribute,RegistrationInstance.RegistrationTemplate.FinancialGateway" )
                     .AsNoTracking()
                     .Where( l => 
@@ -725,13 +725,13 @@ namespace RockWeb.Blocks.Event
             if ( RegistrationState == null && groupId.HasValue && campusId.HasValue )
             {
                 var dateTime = RockDateTime.Now;
-                var linkage = new EventItemCampusGroupMapService( rockContext )
+                var linkage = new EventItemOccurrenceGroupMapService( rockContext )
                     .Queryable( "RegistrationInstance.Account,RegistrationInstance.RegistrationTemplate.Fees,RegistrationInstance.RegistrationTemplate.Discounts,RegistrationInstance.RegistrationTemplate.Forms.Fields.Attribute,RegistrationInstance.RegistrationTemplate.FinancialGateway" )
                     .AsNoTracking()
                     .Where( l =>
                         l.GroupId == groupId &&
-                        l.EventItemCampus != null &&
-                        l.EventItemCampus.CampusId == campusId &&
+                        l.EventItemOccurrence != null &&
+                        l.EventItemOccurrence.CampusId == campusId &&
                         l.RegistrationInstance != null &&
                         l.RegistrationInstance.IsActive &&
                         l.RegistrationInstance.RegistrationTemplate != null &&

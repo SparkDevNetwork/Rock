@@ -368,12 +368,12 @@ namespace Rock.Model
         /// <value>
         /// The linkages.
         /// </value>
-        public virtual ICollection<EventItemCampusGroupMap> Linkages
+        public virtual ICollection<EventItemOccurrenceGroupMap> Linkages
         {
-            get { return _linkages ?? ( _linkages = new Collection<EventItemCampusGroupMap>() ); }
+            get { return _linkages ?? ( _linkages = new Collection<EventItemOccurrenceGroupMap>() ); }
             set { _linkages = value; }
         }
-        private ICollection<EventItemCampusGroupMap> _linkages;
+        private ICollection<EventItemOccurrenceGroupMap> _linkages;
         
         /// <summary>
         /// Gets the securable object that security permissions should be inherited from.  If block is located on a page
@@ -408,6 +408,16 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Gets all the group member workflow triggers from the group and the group type sorted by order
+        /// </summary>
+        /// <param name="includeGroupTypeTriggers">if set to <c>true</c> [include group type triggers].</param>
+        /// <returns></returns>
+        public IOrderedEnumerable<GroupMemberWorkflowTrigger> GetGroupMemberWorkflowTriggers( bool includeGroupTypeTriggers = true )
+        {
+            return this.GroupMemberWorkflowTriggers.Union( this.GroupType.GroupMemberWorkflowTriggers ).OrderBy( a => a.Order ).ThenBy( a => a.Name );
+        }
 
         /// <summary>
         /// Determines whether the specified action is authorized.

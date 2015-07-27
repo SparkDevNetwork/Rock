@@ -83,8 +83,8 @@
     <Compile Include="CodeGenerated\EventCalendarItem.cs" />
     <Compile Include="CodeGenerated\EventItem.cs" />
     <Compile Include="CodeGenerated\EventItemAudience.cs" />
-    <Compile Include="CodeGenerated\EventItemCampus.cs" />
-    <Compile Include="CodeGenerated\EventItemCampusGroupMap.cs" />
+    <Compile Include="CodeGenerated\EventItemOccurrence.cs" />
+    <Compile Include="CodeGenerated\EventItemOccurrenceGroupMap.cs" />
     <Compile Include="CodeGenerated\EventItemSchedule.cs" />
     <Compile Include="CodeGenerated\ExceptionLog.cs" />
     <Compile Include="CodeGenerated\FieldType.cs" />
