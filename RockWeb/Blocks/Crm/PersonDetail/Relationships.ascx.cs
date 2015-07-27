@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         var rockContext = new RockContext();
                         var memberService = new GroupMemberService( rockContext );
 
-                        var group = memberService.Queryable()
+                        var group = memberService.Queryable( true )
                             .Where( m =>
                                 m.PersonId == Person.Id &&
                                 m.GroupRole.Guid == ownerRoleGuid )
@@ -234,7 +234,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             int? groupMemberId = hfRoleId.Value.AsIntegerOrNull();
                             if ( groupMemberId.HasValue )
                             {
-                                groupMember = memberService.Queryable()
+                                groupMember = memberService.Queryable( true )
                                 .Where( m => m.Id == groupMemberId.Value )
                                 .FirstOrDefault();
                             }
@@ -292,7 +292,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     using ( var rockContext = new RockContext() )
                     {
                         var memberService = new GroupMemberService( rockContext );
-                        var group = memberService.Queryable()
+                        var group = memberService.Queryable( true )
                             .Where( m =>
                                 m.PersonId == Person.Id &&
                                 m.GroupRole.Guid == ownerRoleGuid )
@@ -338,7 +338,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                 // TODO: How many implied relationships should be displayed
 
-                                rGroupMembers.DataSource = new GroupMemberService( rockContext ).GetByGroupId( group.Id )
+                                rGroupMembers.DataSource = new GroupMemberService( rockContext ).GetByGroupId( group.Id, true )
                                     .Where( m => m.PersonId != Person.Id )
                                     .OrderBy( m => m.Person.LastName )
                                     .ThenBy( m => m.Person.FirstName )
