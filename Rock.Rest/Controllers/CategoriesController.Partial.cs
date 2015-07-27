@@ -58,12 +58,14 @@ namespace Rock.Rest.Controllers
             bool showUnnamedEntityItems = true,
             bool showCategoriesThatHaveNoChildren = true,
             string includedCategoryIds = null,
-            string excludedCategoryIds = null )
+            string excludedCategoryIds = null,
+            string defaultIconCssClass = null )
         {
             Person currentPerson = GetPerson();
 
             var includedCategoryIdList = includedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
             var excludedCategoryIdList = excludedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
+            defaultIconCssClass = defaultIconCssClass ?? "fa fa-list-ol";
 
             IQueryable<Category> qry = Get();
 
@@ -163,7 +165,7 @@ namespace Rock.Rest.Controllers
                             categoryItem.Id = categorizedItem.Id.ToString();
                             categoryItem.Name = categorizedItem.Name;
                             categoryItem.IsCategory = false;
-                            categoryItem.IconCssClass = categorizedItem.GetPropertyValue( "IconCssClass" ) as string ?? "fa fa-list-ol";
+                            categoryItem.IconCssClass = categorizedItem.GetPropertyValue( "IconCssClass" ) as string ?? defaultIconCssClass;
                             categoryItem.IconSmallUrl = string.Empty;
                             categoryItemList.Add( categoryItem );
                         }

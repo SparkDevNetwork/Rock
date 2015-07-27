@@ -149,6 +149,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\EventItemFieldAttribute.cs" />
     <Compile Include="Attribute\EventCalendarFieldAttribute.cs" />
     <Compile Include="Attribute\IHasAttributesWrapper.cs" />
     <Compile Include="Attribute\NoteTypeFieldAttribute.cs" />
@@ -246,6 +247,7 @@
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
     <Compile Include="Field\Types\EventCalendarFieldType.cs" />
+    <Compile Include="Field\Types\EventItemFieldType.cs" />
     <Compile Include="Field\Types\NoteTypesFieldType.cs" />
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
     <Compile Include="Jobs\SendRegistrationReminders.cs" />
@@ -265,8 +267,8 @@
     <Compile Include="Model\CodeGenerated\EventCalendarItemService.cs" />
     <Compile Include="Model\CodeGenerated\EventCalendarService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemAudienceService.cs" />
-    <Compile Include="Model\CodeGenerated\EventItemCampusGroupMapService.cs" />
-    <Compile Include="Model\CodeGenerated\EventItemCampusService.cs" />
+    <Compile Include="Model\CodeGenerated\EventItemOccurrenceGroupMapService.cs" />
+    <Compile Include="Model\CodeGenerated\EventItemOccurrenceService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemService.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
@@ -339,7 +341,7 @@
     </Compile>
     <Compile Include="Model\CodeGenerated\RegistrationRegistrantFeeService.cs" />
     <Compile Include="Model\EventItemAudience.cs" />
-    <Compile Include="Model\EventItemCampusGroupMap.cs" />
+    <Compile Include="Model\EventItemOccurrenceGroupMap.cs" />
     <Compile Include="Model\EventItemSchedule.cs" />
     <Compile Include="Model\CampusService.partial.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceRequestService.cs" />
@@ -381,7 +383,7 @@
     <Compile Include="Model\EventCalendar.cs" />
     <Compile Include="Model\EventCalendarItem.cs" />
     <Compile Include="Model\EventItem.cs" />
-    <Compile Include="Model\EventItemCampus.cs" />
+    <Compile Include="Model\EventItemOccurrence.cs" />
     <Compile Include="Model\FinancialGateway.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\EntitySet.cs" />
@@ -420,6 +422,7 @@
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
+    <Compile Include="Reporting\DataComponentSettingsHelper.cs" />
     <Compile Include="Reporting\DataFilter\BaseAccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialPledge\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialTransactionDetail\AccountFilter.cs" />
@@ -441,6 +444,9 @@
     <Compile Include="Reporting\DataSelect\Person\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\TotalGivingAmountSelect.cs" />
     <Compile Include="Reporting\ReportingHelper.cs" />
+    <Compile Include="Reporting\DataSelect\Person\GroupParticipationSelect.cs" />
+    <Compile Include="Utility\SettingsStringBase.cs" />
+    <Compile Include="Web\Utilities\WebControlHelper.cs" />
     <Compile Include="Security\Authentication\Facebook.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -474,6 +480,7 @@
     <Compile Include="SystemGuid\NoteType.cs" />
     <Compile Include="SystemGuid\ServiceJob.cs" />
     <Compile Include="Transactions\ConnectionRequestActivityChangeTransaction.cs" />
+    <Compile Include="Transactions\GroupMemberPlacedElsewhereTransaction.cs" />
     <Compile Include="Transactions\GroupAttendedTransaction.cs" />
     <Compile Include="Transactions\ConnectionRequestChangeTransaction.cs" />
     <Compile Include="Transactions\GroupMemberChangeTransaction.cs" />
@@ -526,6 +533,7 @@
     <Compile Include="Web\UI\Controls\IDisplayRequiredIndicator.cs" />
     <Compile Include="Web\UI\Controls\NumberUpDown.cs" />
     <Compile Include="Web\UI\Controls\Pickers\EventCalendarPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\EventItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupTypesPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\FinancialGatewayPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupAndRolePicker.cs" />

@@ -526,7 +526,7 @@ namespace Rock.Model
         /// <returns>A <see cref="System.String"/> containing the link to Google Maps for this location.</returns>
         public virtual string GoogleMapLink( string title )
         {
-            string qParm = this.ToString();
+            string qParm = this.GetFullStreetAddress();
             if ( !string.IsNullOrWhiteSpace( title ) )
             {
                 qParm += " (" + title + ")";

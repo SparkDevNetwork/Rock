@@ -46,14 +46,29 @@
                 </div>
             </div>
 
-            <Rock:ModalDialog ID="mdAlternatePlacement" runat="server" Visible="false" ValidationGroup="vgAlternatePlacement" 
-                Title="<i class='fa fa-share'></i> Alternate Placement" OnSaveClick="mdAlternatePlacement_SaveClick"
+            <Rock:ModalDialog ID="mdPlaceElsewhere" runat="server" Visible="false" ValidationGroup="vgPlaceElsewhere"
+                Title="<i class='fa fa-share'></i> Place Elsewhere" OnSaveClick="mdPlaceElsewhere_SaveClick"
                 SaveButtonText="Place">
                 <Content>
-                    <Rock:NotificationBox ID="nbAlternatePlacementWarning" runat="server" NotificationBoxType="Warning" />
-                    <asp:HiddenField ID="hfAlternatePlacementGroupMemberId" runat="server" />
-                    <Rock:RockLiteral ID="lAlternatePlacementGroupMemberName" runat="server" Label="Group Member" />
-                    <Rock:RockTextBox ID="tbAlternatePlacementNote" runat="server" Label="Note" Rows="4" TextMode="MultiLine" />
+                    <asp:ValidationSummary ID="vsPlaceElsewhere" runat="server" ValidationGroup="vgPlaceElsewhere" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <Rock:RockLiteral ID="lWorkflowTriggerName" runat="server" Label="Workflow Trigger" />
+                    <Rock:RockControlWrapper ID="rcwSelectMemberTrigger" runat="server" Label="Select Workflow Trigger">
+                        <Rock:HiddenFieldWithClass ID="hfPlaceElsewhereTriggerId" CssClass="js-hidden-selected" runat="server" />
+                        <div class="controls">
+                            <div class="btn-group-vertical">
+                                <asp:Repeater ID="rptSelectMemberTrigger" runat="server" OnItemDataBound="rptSelectMemberTrigger_ItemDataBound">
+                                    <ItemTemplate>
+                                        <asp:LinkButton ID="btnMemberTrigger" runat="server" CssClass="btn btn-default" CausesValidation="false" Text='<%# Eval("Name") %>' OnClick="btnMemberTrigger_Click" CommandArgument='<%# Eval("Id") %>' CommandName="TriggerId" />
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </div>
+                        </div>
+                    </Rock:RockControlWrapper>
+                    <Rock:NotificationBox ID="nbPlaceElsewhereWarning" runat="server" NotificationBoxType="Warning" />
+                    <asp:HiddenField ID="hfPlaceElsewhereGroupMemberId" runat="server" />
+                    <Rock:RockLiteral ID="lPlaceElsewhereGroupMemberName" runat="server" Label="Group Member" />
+                    <Rock:RockLiteral ID="lWorkflowName" runat="server" Label="Workflow" />
+                    <Rock:RockTextBox ID="tbPlaceElsewhereNote" runat="server" Label="Note" Rows="4" TextMode="MultiLine" ValidationGroup="vgPlaceElsewhere" />
                 </Content>
             </Rock:ModalDialog>
 

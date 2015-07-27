@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupMember.LoadAttributes();
                     phAttributes.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false );
+                    Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false, BlockValidationGroup );
                 }
             }
         }

@@ -41,8 +41,8 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PersonBadges/InGroupOfType/{personId}/{groupTypeId}" )]
-        public GroupOfTypeResult GetInGroupOfType(int personId, Guid groupTypeId)
+        [System.Web.Http.Route( "api/PersonBadges/InGroupOfType/{personId}/{groupTypeGuid}" )]
+        public GroupOfTypeResult GetInGroupOfType(int personId, Guid groupTypeGuid)
         {
             GroupOfTypeResult result = new GroupOfTypeResult();
             result.PersonId = personId;
@@ -59,7 +59,7 @@ namespace Rock.Rest.Controllers
             }
 
             // get group type info
-            GroupType groupType = new GroupTypeService( (Rock.Data.RockContext)Service.Context ).Get( groupTypeId );
+            GroupType groupType = new GroupTypeService( (Rock.Data.RockContext)Service.Context ).Get( groupTypeGuid );
 
             if (groupType != null)
             {
@@ -70,8 +70,9 @@ namespace Rock.Rest.Controllers
 
             // determine if person is in this type of group
             GroupMemberService groupMemberService = new GroupMemberService( (Rock.Data.RockContext)Service.Context );
+            
             IQueryable<GroupMember> groupMembershipsQuery = groupMemberService.Queryable("Person,GroupRole,Group")
-                                        .Where(t => t.Group.GroupType.Guid == groupTypeId && t.PersonId == personId )
+                                        .Where(t => t.Group.GroupType.Guid == groupTypeGuid && t.PersonId == personId && t.GroupMemberStatus == GroupMemberStatus.Active )
                                         .OrderBy(g => g.GroupRole.Order);
 
             foreach (GroupMember member in groupMembershipsQuery)

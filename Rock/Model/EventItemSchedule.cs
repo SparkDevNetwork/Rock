@@ -33,15 +33,16 @@ namespace Rock.Model
     [DataContract]
     public partial class EventItemSchedule : Model<EventItemSchedule>
     {
+
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.EventItem"/> that this EventItemSchedule is associated with. This property is required.
+        /// Gets or sets the event item occurrence identifier.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EventItem"/> that the EventItemSchedule is associated with.
+        /// The event item occurrence identifier.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public int EventItemCampusId { get; set; }
+        public int EventItemOccurrenceId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Schedule"/> that this EventItemSchedule is associated with. This property is required.
@@ -72,7 +73,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EventItem"/> that this EventItemSchedule is a member of.
         /// </value>
-        public virtual EventItemCampus EventItemCampus { get; set; }
+        public virtual EventItemOccurrence EventItemOccurrence { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Schedule"/> that this EventItemSchedule is a member of.
@@ -157,7 +158,7 @@ namespace Rock.Model
         /// </summary>
         public EventItemScheduleConfiguration()
         {
-            this.HasRequired( p => p.EventItemCampus ).WithMany( p => p.EventItemSchedules ).HasForeignKey( p => p.EventItemCampusId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.EventItemOccurrence ).WithMany( p => p.EventItemSchedules ).HasForeignKey( p => p.EventItemOccurrenceId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
         }
     }

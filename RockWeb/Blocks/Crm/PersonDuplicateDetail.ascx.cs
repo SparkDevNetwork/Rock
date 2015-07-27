@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Crm
             var personDuplicateService = new PersonDuplicateService( rockContext );
             int personDuplicateId = ( sender as LinkButton ).CommandArgument.AsInteger();
             var personDuplicate = personDuplicateService.Get( personDuplicateId );
-            personDuplicateService.Delete( personDuplicate );
+            personDuplicate.IsConfirmedAsNotDuplicate = true;
             rockContext.SaveChanges();
 
             BindGrid();
