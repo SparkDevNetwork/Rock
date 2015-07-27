@@ -587,6 +587,7 @@ namespace RockWeb.Blocks.Connection
                             r.Id,
                             r.Guid,
                             Name = r.PersonAlias.Person.FullName,
+                            Campus = r.Campus,
                             Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
                             Status = r.ConnectionStatus.Name,
                             Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
