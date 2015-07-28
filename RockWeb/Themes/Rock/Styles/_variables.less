@@ -1,53 +1,28 @@
 
 // Theme Colors *open*
-@theme-1: purple;
+@theme-1: #ee7624; //orange
 @theme-1-text: #fff;
 //--
-@theme-2: red;
-@theme-2-text: #fff;
-
-// Bootstrap Colors
-
-//// Bootstrap Colors {The primary colors defined by the Bootstrap framework. [More Information](http://getbootstrap.com/customize/#colors)}
-@brand-primary:         #ee7624; 
-@brand-success:         #5c9e7d; 
-@brand-warning:         #ecc759; 
-@brand-danger:          #bb5454; 
-@brand-info:            #4099ad; 
+@theme-2: #282526; // dark brown
+@theme-2-text: #d3cec5;
 //--
-@gray-darker:            lighten(#000, 13.5%); 
-@gray-dark:              lighten(#000, 20%);   
-@gray:                   lighten(#000, 33.5%); 
-@gray-light:             #f3f3f4;   
-@gray-lighter:           #efefef; 
-
-@accent-color: #dbd5cb;
-@accent-text-color: #413c35;
+@theme-3: #c2b8a7; // header tean
+@theme-3-text: #6a6a6a;
 //--
-@accent-light-color: #e3ded7;
-@accent-light-text-color: #817b72;
+@theme-4: #dbd5cb; // page title 
+@theme-4-text: #413c35;
 //--
-@accent-semibold-color: #6a6a6a; // #c2b8a7;
-@accent-semibold-text-color: #fff;// #616161;
+@theme-5: #e3ded7; // badge bar
+@theme-5-text: #817b72;
 //--
-@accent-bold-color: #282526;
-@accent-bold-text-color: #d3cec5;
-
-////  DUPES
-
-@accent-color: #8cc63e;
-@accent-text-color: #fff;
+@theme-6: #edeae6; // family bar
+@theme-6-text: #6a6a6a;
 //--
-@accent-light-color: #b147fa;  // purple
-@accent-light-text-color: #dbacf3;
+@theme-7: #8cc63e; // green
+@theme-7-text: #fff;
 //--
-@accent-semibold-color: #282526; // #c2b8a7;     green
-@accent-semibold-text-color: #d3cec5;// #616161;
-//--
-@accent-bold-color: @brand-primary;
-@accent-bold-text-color: #fff;
-
-//// END DUPES
+@theme-8: #6a6a6a; // action buttons / type labels
+@theme-8-text: #fff;
 
 // Text *open*
 @text-color:             #6a6a6a; // The default text color. #color
@@ -67,51 +42,66 @@
 @font-size-h5:            @font-size-base;
 @font-size-h6:            ceil(@font-size-base * 0.85); // ~12px
 
+// Bootstrap Colors
+
+//// Bootstrap Colors {The primary colors defined by the Bootstrap framework. [More Information](http://getbootstrap.com/customize/#colors)}
+@brand-primary:         @theme-1; 
+@brand-success:         #5c9e7d; 
+@brand-warning:         #ecc759; 
+@brand-danger:          #bb5454; 
+@brand-info:            #4099ad; 
+//--
+@gray-darker:            lighten(#000, 13.5%); 
+@gray-dark:              lighten(#000, 20%);   
+@gray:                   lighten(#000, 33.5%); 
+@gray-light:             #f3f3f4;   
+@gray-lighter:           #efefef; 
+
 // Page Areas *open*
-@body-bg:           #fff; // The background color of the page.
+@body-bg:           #f5f4f2; // The background color of the page.
 
 //// Header
-@header-bg:         #d2cbc0; // The header background color.
-@header-text-color: #616161; // The header text color.
+@header-bg:         @theme-3; // The header background color.
+@header-text-color: @theme-3-text; // The header text color.
 //--
 @header-hambuger-color: #fff; // The text color of the header minimizer.
 @header-hambuger-bg: @brand-primary; // The background color of the header minimizer.
 @header-hamburger-border: @brand-primary; // The border color of the header minimizer.
 
 //// Main Navigation
-@nav-bg: #282526;                   // The background color of the main navigation.
-@nav-color: #d3cec5;                // The text color of the main navigation.
+@nav-bg: @theme-2;                   // The background color of the main navigation.
+@nav-color: @theme-2-text;                // The text color of the main navigation.
 @nav-logo-bg: darken(@nav-bg, 5%);  // The background color of the icon corner.
-@nav-sub-bg: lighten(@accent-bold-color, 5%); // The background of the secondary navigation.
-@nav-sub-color: @accent-bold-text-color;      // The text color of the secondary navigation.
-@nav-sub-title-color: #ee7624;                // The text color of the title on the secondary navigation.
-@nav-sub-heading-color: #a79d8b;              // The text color of the heading on the secondary navigation.
-@nav-sub-heading-border: #423e3f;             // The border color of the heading on the secondary navigation.
+@nav-sub-bg: lighten(@theme-2, 5%); // The background of the secondary navigation.
+@nav-sub-color: @theme-2-text;      // The text color of the secondary navigation.
+@nav-sub-title-color: @theme-1;                // The text color of the title on the secondary navigation.
+@nav-sub-heading-color: darken(@theme-2-text, 20%);              // The text color of the heading on the secondary navigation.
+@nav-sub-heading-border: darken(@nav-sub-heading-color, 30%);             // The border color of the heading on the secondary navigation.
 @nav-sub-text-rollover-color: @nav-sub-color; // The text color on roll-over for the secondary navigation.
 @nav-sub-text-rollover-bg: @nav-bg;           // The background color for text on roll-over for the seconday navigation.
 
 //// Page Title
-@pagetitle-bg: #f2ede5;          // The background color of the page title section.
-@pagetitle-text-color: #6B645C;  // The text color of the page title section.
+@pagetitle-bg: @theme-4;          // The background color of the page title section.
+@pagetitle-text-color: @theme-4-text;  // The text color of the page title section.
 
 //// Breadcrumbs
-@breadcrumb-bg:               #f5f5f5;
-@breadcrumb-color:            #ccc;
-@breadcrumb-active-color:     @gray-light;
-@breadcrumb-separator:        "/";
+@breadcrumb-bg:               @theme-4;
+@breadcrumb-color:            lighten(@theme-4-text, 30%);
+@breadcrumb-active-color:     @breadcrumb-color;
+@breadcrumb-separator:        ">";
 
 //// Footer
 @footer-bg: @header-bg;             // The background color of the footer.
 @footer-color: @header-text-color;  // The text color of the footer.
 
 //// Admin Bar
-@adminbar-bg: @accent-bold-color;
-@adminbar-text-color: @accent-bold-text-color;
+@adminbar-bg: @theme-2;
+@adminbar-text-color: @theme-2-text;
 
 // Global Styles *open*
 @border-radius-base: 4px;       // The global setting for rounding corners.
 @well-bg: @body-bg;             // The backgroud color for wells. Wells are used to group like content.
-@photo-border: @accent-color;   // Standard border color for photos.
+@photo-border: @theme-3;   // Standard border color for photos.
 @help-color: #86b8cc;           // The color of the help icon used in Rock.
 @required-field-color: #eca9a7; // Color of the small dot that denotes required fields.
 @hr-border: lighten(@text-color, 40%);      // The color horizontal rule lines.
@@ -145,8 +135,8 @@
 
 
 //// Date Picker
-@datepicker-highlight-bg: @accent-color;         // Background color for highlighting dates and selector elements of the datepicker.
-@datepicker-highlight-color: @accent-text-color; // Text color for highlighting dates and selector elements of the datepicker.
+@datepicker-highlight-bg: @theme-7;         // Background color for highlighting dates and selector elements of the datepicker.
+@datepicker-highlight-color: @theme-7-text; // Text color for highlighting dates and selector elements of the datepicker.
 
 //// Image Editor
 @imageeditor-bg: @photo-border;              // The background for the image editor roll-over. This control is used to upload images.
@@ -155,31 +145,31 @@
 
 // Panel
 @panel-bg:                    #f9f9f9;                  // The background color of the panel body.
-@panel-text:                  @accent-light-text-color; // The text color of the panel.
-@panel-border:                #DDDDDD;                  // The panel's border color.
+@panel-text:                  @text-color; // The text color of the panel.
+@panel-border:                darken(@theme-6, 10%);                  // The panel's border color.
 @panel-top-border-color:      darken(@panel-border, 5%);           // Color of the panel's top border often used as an accent color.
 //--
-@panel-heading-bg:            #F0F0F0;                  // The background color of the panel's header.
-@panel-heading-text-color:    @text-color;              // The heading's text color.
+@panel-heading-bg:            @theme-6;                  // The background color of the panel's header.
+@panel-heading-text-color:    @theme-6-text;              // The heading's text color.
 @panel-heading-border:        darken(@panel-heading-bg, 30%); // The headings border color.
 //--
 @panel-following-active-bg:   @panel-top-border-color;   // The background color of the following square when it's active at the top of panels that support the following feature (e.g. Group Details block).
 //--
-@panel-footer-bg:             @body-bg;                 // The background color of the panel's footer.
-@panel-footer-color:          @text-color;              // The color text of the panel's footer.
+@panel-footer-bg:             @panel-bg;                 // The background color of the panel's footer.
+@panel-footer-color:          @panel-text;              // The color text of the panel's footer.
 
 
 // Grid
-@grid-border-color: #ddd;   // The border color of the grids cells.
+@grid-border-color: @panel-border;   // The border color of the grids cells.
 @grid-padding: 8px;         // The default padding of the grid cells.
 
 //// Filter Section
-@grid-filter-bg: #f1f1f1;        // The background color of the filter section of the grid.
-@grid-filter-color: @text-color; // The text color of the filter section of the grid.
+@grid-filter-bg: @panel-heading-bg;        // The background color of the filter section of the grid.
+@grid-filter-color: @panel-heading-text-color; // The text color of the filter section of the grid.
 
 //// Grid Header
-@grid-column-header-bg: #f1f1f1;                        // The background color of the grid header.
-@grid-column-header-text-color: @accent-text-color;     // The text color of the grid header.
+@grid-column-header-bg: @panel-heading-bg;                        // The background color of the grid header.
+@grid-column-header-text-color: @panel-heading-text-color;     // The text color of the grid header.
 @grid-column-header-font-size: 14px;                    // The font size of the grid header.
 @grid-column-header-font-weight: @font-weight-semibold; // The font weight of the grid header.
 @grid-column-header-border-color: @grid-border-color;    // The border color of the grid header.
@@ -188,9 +178,9 @@
 @grid-column-header-bold-color: @nav-color;             // The text color for bold table headers like the merge person page.
 
 //// Row Striping
-@grid-row-even-bg: #f1f1f1;         // The even rows background color.
-@grid-row-even-color: @text-color;  // The even rows text color.
-@grid-row-odd-bg: @body-bg;         // The odd rows background color.
+@grid-row-even-bg: @panel-bg;         // The even rows background color.
+@grid-row-even-color: @panel-text;  // The even rows text color.
+@grid-row-odd-bg: darken(@grid-row-even-bg, 3%);         // The odd rows background color.
 @grid-row-odd-color: @text-color;   // The odd rows text color.
 
 //// Hover 
@@ -198,21 +188,21 @@
 @grid-hover-color: @text-color;     // Row text color when hovered over.
 
 //// Section Headers
-@grid-section-bg: @accent-light-color;          // Some grids like the person merge grid have section headers to group like rows. This styles the background of these rows.
-@grid-section-color: @accent-light-text-color;  // Some grids like the person merge grid have section headers to group like rows. This styles the text of these rows.
+@grid-section-bg: @theme-4;          // Some grids like the person merge grid have section headers to group like rows. This styles the background of these rows.
+@grid-section-color: @theme-4-text;  // Some grids like the person merge grid have section headers to group like rows. This styles the text of these rows.
 
 //// Pager Section
-@grid-pager-bg: #f1f1f1;
-@grid-pager-color: @text-color;
+@grid-pager-bg: @panel-heading-bg;
+@grid-pager-color: @panel-heading-text-color;
 //--
 @grid-pager-button-bg: darken(@grid-pager-bg, 5%);
 @grid-pager-button-color: @text-color;
 @grid-pager-button-border: darken(@grid-pager-button-bg, 20%);
-@grid-pager-button-active-bg: #fff;
+@grid-pager-button-active-bg: lighten(@grid-pager-button-bg, 10%);
 
 //// Footer
-@grid-footer-bg: #f1f1f1;
-@grid-footer-text-color: @text-color;
+@grid-footer-bg: @panel-heading-bg;
+@grid-footer-text-color: @panel-heading-text-color;
 @grid-footer-font-size: 10px;
 @grid-footer-font-weight: 300;
 //--
@@ -222,8 +212,8 @@
 
 // Person Profile
 //// Bio Bar
-@persondetails-bio-bg: @accent-color;
-@persondetails-bio-color: @accent-text-color;
+@persondetails-bio-bg: @theme-4;
+@persondetails-bio-color: @theme-4-text;
 @persondetails-bio-action-color: #fff;
 @persondetails-bio-action-bg: #6a6a6a;
 @persondetails-bio-action-border: darken(@persondetails-bio-action-bg, 5%);
@@ -231,12 +221,12 @@
 @persondetails-bio-photo-following: #817b72; 
 
 //// Badge Bar
-@persondetails-badge-bg: @accent-light-color;
-@persondetails-badge-color: #817b72;
+@persondetails-badge-bg: @theme-5;
+@persondetails-badge-color: @theme-5-text;
 
 //// Family Bar
-@persondetails-familybar-bg: @body-bg;
-@persondetails-familybar-color: @text-color;
+@persondetails-familybar-bg: @theme-6;
+@persondetails-familybar-color: @theme-6-text;
 @persondetails-familybar-action-color: #fff;
 @persondetails-familybar-action-bg: #6a6a6a;
 @persondetails-familybar-action-border: darken(@persondetails-bio-action-bg, 5%);
@@ -255,12 +245,12 @@
 @note-personal-border: @alert-info-border;
 
 // Modals
-@modal-header-bg: @accent-bold-color;
-@modal-header-text-color: @accent-bold-text-color;
+@modal-header-bg: @theme-2;
+@modal-header-text-color: @theme-2-text;
 @modal-body-bg: @body-bg;
 @modal-body-text-color: @text-color;
-@modal-footer-bg: @accent-color;
-@modal-footer-text-color: @accent-text-color;
+@modal-footer-bg: @theme-4;
+@modal-footer-text-color: @theme-4-text;
 @modal-dropshadow-color: rgba(0,0,0,0.6);
 
 //// Backdrop
@@ -268,25 +258,25 @@
 @modal-backdrop-opacity:      .5;
 
 // Tooltip
-@tooltip-header-bg: @accent-color;
-@tooltip-header-text-color: @accent-text-color;
-@tooltip-bg: @body-bg;
+@tooltip-header-bg: @theme-8;
+@tooltip-header-text-color: @theme-8-text;
+@tooltip-bg: @theme-8;
 
 // Pills
-@nav-pills-active-link-hover-bg:         #8cc63e;
-@nav-pills-active-link-hover-color:      #fff;
+@nav-pills-active-link-hover-bg:         @theme-7;
+@nav-pills-active-link-hover-color:      @theme-7-text;
 @nav-pills-link-color: @text-color;  // The color of the none active pill link.
 
 // List As Blocks { Used on many administration pages and pages like 'My Workflows', 'Connections' and 'Calendar'. }
-@listasblocks-bg: #F5F2EF;
-@listasblocks-border-color: #E2E2E2;
-@listasblocks-color: @text-color;
-@listasblocks-rollover-bg: @accent-bold-color;
-@listasblocks-rollover-text-color: #fff;
+@listasblocks-bg: @theme-6;
+@listasblocks-border-color: darken(@theme-6, 10%);
+@listasblocks-color: @theme-6-text;
+@listasblocks-rollover-bg: @theme-8;
+@listasblocks-rollover-text-color: @theme-8-text;
 @listasblocks-rollover-border-color: darken(@listasblocks-rollover-bg, 5%);
-@listasblocks-active-bg: #8cc63e;
+@listasblocks-active-bg: @theme-8;
 @listasblocks-active-border-color: darken(@listasblocks-active-bg, 10%);
-@listasblocks-active-color: #fff;
+@listasblocks-active-color: @theme-8-text;
 
 // Tags { Styles for the tag control used on the person profile. }
 @tag-bg: #c2b8a7;
@@ -296,9 +286,9 @@
 @tag-bg-alt: #d0c6b4;
 
 // Autocomplete Styles
-@autocomplete-bg: @accent-color;
-@autocomplete-border: darken(@accent-color, 10%);
-@autocomplete-text: @accent-text-color;
+@autocomplete-bg: @theme-4;
+@autocomplete-border: darken(@autocomplete-bg, 10%);
+@autocomplete-text: @theme-4;
 @autocomplete-rollover-bg: darken(@autocomplete-bg, 10%);  // the background color of the rollover for autocompletes.
 
 // Smart Search
@@ -327,16 +317,16 @@
 @wizard-item-icon-bg: lighten(@wizard-item-icon-active-bg, 25%);
 
 // Tree Viewer
-@tree-rollover-bg: #bbdd8d;         // Background color of the rollover for items in the treeview.
-@tree-rollover-color: #ffffff;      // Text color of the rollover for items in the treeview.
+@tree-rollover-bg: lighten(@theme-7, 20%);         // Background color of the rollover for items in the treeview.
+@tree-rollover-color: @theme-7-text;      // Text color of the rollover for items in the treeview.
 @tree-selected-bg: #6a6a6a;         // Background color of selected items in the treeview.
 @tree-selected-color: #ffffff;      // Text color of selected items in the treeview.
 
 // Buttons
 @btn-font-weight:                normal;
 //--
-@btn-default-color:              @accent-text-color;
-@btn-default-bg:                 @body-bg;
+@btn-default-color:              @theme-3-text;
+@btn-default-bg:                 @theme-3;
 @btn-default-border:             darken(@body-bg, 20%);
 //--
 @btn-primary-color:              #fff;
@@ -359,8 +349,8 @@
 @btn-info-bg:                    @brand-info;
 @btn-info-border:                darken(@btn-info-bg, 5%);
 //--
-@btn-action-color:              #fff;
-@btn-action-bg:                 #6a6a6a;
+@btn-action-color:              @theme-8-text;
+@btn-action-bg:                 @theme-8;
 @btn-action-border:             darken(@btn-action-bg, 5%);
 //--
 @btn-security-color:            @btn-default-color;
@@ -371,7 +361,7 @@
 
 // Custom Labels { The bootstrap labels use the brand colors. }
 @label-campus-bg: #83758f;               // Used for identifing campuses.
-@label-type-bg: @accent-semibold-color;  // Used for showing the 'type' of an idea. For instance on the group viewer this highlights the group's type.
+@label-type-bg: @theme-8;  // Used for showing the 'type' of an idea. For instance on the group viewer this highlights the group's type.
 
 // Form States and Actions Colors
 @state-warning-text:             #c09853;

@@ -433,24 +433,23 @@ a.link-block,
     }
 
     .breadcrumb {
-      background: none;
       padding: 0;
       margin: 4px 0 0;
 
       a {
-          color: lighten(@pagetitle-text-color, 30%);
+          color: @breadcrumb-color;
 
           &:hover {
-              color: lighten(@pagetitle-text-color, 40%);
+              color: lighten(@breadcrumb-color, 10%);
           }
       }
 
       > .active {
-        color: lighten(@pagetitle-text-color, 30%);
+        color: @breadcrumb-color;
       }
 
       li + li:before {
-        color: lighten(@pagetitle-text-color, 30%);
+        color: @breadcrumb-color;
       }
     }
 
