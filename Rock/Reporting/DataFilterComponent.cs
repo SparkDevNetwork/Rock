@@ -132,7 +132,7 @@ namespace Rock.Reporting
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public virtual Control[] CreateChildControls( Type entityType, FilterField filterControl )
+        public virtual Control[] CreateChildControls( Type entityType, FilterField filterControl, FilterMode filterMode )
         {
             var ddl = ComparisonHelper.ComparisonControl( ComparisonHelper.StringFilterComparisonTypes );
             ddl.ID = filterControl.ID + "_0";
@@ -146,13 +146,24 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// Creates the child controls.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="filterControl">The filter control.</param>
+        /// <returns></returns>
+        public virtual Control[] CreateChildControls( Type entityType, FilterField filterControl )
+        {
+            return CreateChildControls( entityType, filterControl, FilterMode.AdvancedFilter );
+        }
+
+        /// <summary>
         /// Renders the controls.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="filterControl">The filter control.</param>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public virtual void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
+        public virtual void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls, FilterMode filterMode )
         {
             foreach ( var control in controls )
             {
@@ -162,16 +173,39 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// Renders the controls.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="writer">The writer.</param>
+        /// <param name="controls">The controls.</param>
+        public virtual void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
+        {
+            RenderControls( entityType, filterControl, writer, controls, FilterMode.AdvancedFilter );
+        }
+
+        /// <summary>
         /// Gets the selection.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
-        public virtual string GetSelection( Type entityType, Control[] controls )
+        public virtual string GetSelection( Type entityType, Control[] controls, FilterMode filterMode )
         {
             string comparisonType = ( (DropDownList)controls[0] ).SelectedValue;
             string value = ( (TextBox)controls[1] ).Text;
             return string.Format( "{0}|{1}", comparisonType, value );
+        }
+
+        /// <summary>
+        /// Gets the selection.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public virtual string GetSelection( Type entityType, Control[] controls)
+        {
+            return GetSelection( entityType, controls, FilterMode.AdvancedFilter );
         }
 
         /// <summary>
@@ -180,7 +214,7 @@ namespace Rock.Reporting
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
-        public virtual void SetSelection( Type entityType, Control[] controls, string selection )
+        public virtual void SetSelection( Type entityType, Control[] controls, string selection, FilterMode filterMode )
         {
             string[] options = selection.Split( '|' );
             if ( options.Length >= 2 )
@@ -191,6 +225,17 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// Sets the selection.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="controls">The controls.</param>
+        /// <param name="selection">The selection.</param>
+        public virtual void SetSelection( Type entityType, Control[] controls, string selection)
+        {
+            SetSelection(entityType, controls, selection, FilterMode.AdvancedFilter);
+        }
+
+        /// <summary>
         /// Gets the expression.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
@@ -198,19 +243,31 @@ namespace Rock.Reporting
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public abstract Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection );
+        public virtual Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection, FilterMode filterMode )
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the expression.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public virtual Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection ) 
+        {
+            return GetExpression( entityType, serviceInstance, parameterExpression, selection, FilterMode.AdvancedFilter );
+        }
 
         #endregion
 
         #region Protected Methods
 
-        
-
         #endregion
 
         #region Static Properties
-
-        
 
         /// <summary>
         /// Registers Javascript to hide/show .js-filter-control child elements of a .js-filter-compare dropdown
@@ -225,4 +282,27 @@ namespace Rock.Reporting
 
         #endregion
     }
+
+
+    #region Enums
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum FilterMode
+    {
+        /// <summary>
+        /// Render the UI and process the filter as a simple filter
+        /// This mode can be set if the filter just needs to be simple with minimal UI (like on a public page)
+        /// </summary>
+        SimpleFilter,
+
+        /// <summary>
+        /// Render and process as an advanced filter 
+        /// This will be the mode when configuring as a Data Filter
+        /// </summary>
+        AdvancedFilter
+    }
+
+    #endregion
 }

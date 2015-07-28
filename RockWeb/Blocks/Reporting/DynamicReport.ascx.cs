@@ -329,7 +329,7 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 filterControl.Expanded = true;
-                filterControl.HideFilterTypePicker = true;
+                filterControl.FilterMode = FilterMode.SimpleFilter;
                 filterControl.ShowCheckbox = filterIsVisible && showCheckbox;
 
                 var reportEntityTypeCache = EntityTypeCache.Read( reportEntityType );
@@ -364,7 +364,6 @@ namespace RockWeb.Blocks.Reporting
                     {
                         // a configurable property filter
                         var propertyFilter = component as Rock.Reporting.DataFilter.PropertyFilter;
-                        propertyFilter.HideEntityFieldPicker();
                         if ( setSelection )
                         {
                             var selection = filter.Selection;
