@@ -515,6 +515,7 @@ namespace Rock.Web.UI.Controls
                 _tbName = new RockTextBox();
                 _tbName.ID = this.ID + "_tbName";
                 _tbName.Label = "Name";
+                _tbName.Help = "The name will be used to describe the registration on the registration screens and emails.";
                 _tbName.Required = true;
                 Controls.Add( _tbName );
 
