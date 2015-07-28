@@ -349,7 +349,7 @@ namespace Rock.Migrations
             Sql( @"
             INSERT [dbo].[ConnectionType]
             ([Name], [Description], [IconCssClass], [EnableFutureFollowup], [EnableFullActivityList], [OwnerPersonAliasId], [Guid], [ForeignId])
-            VALUES (N'Involvement', N'A connection type for church member involvement.', N'fa fa-compress', 1, 0, NULL, N'dd565087-a4be-4943-b123-bf22777e8426', NULL)
+            VALUES (N'Involvement', N'A connection type for church member involvement.', N'fa fa-leaf', 1, 0, NULL, N'dd565087-a4be-4943-b123-bf22777e8426', NULL)
             " );           
         }
         

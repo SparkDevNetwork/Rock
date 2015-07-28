@@ -912,7 +912,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         else
                         {
                             // existing family members
-                            var groupMember = familyMemberService.Queryable( "Person" ).Where( m =>
+                            var groupMember = familyMemberService.Queryable( "Person", true ).Where( m =>
                                 m.PersonId == familyMember.Id &&
                                 m.Group.GroupTypeId == familyGroupTypeId &&
                                 m.GroupId == _family.Id ).FirstOrDefault();
