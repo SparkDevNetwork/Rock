@@ -221,7 +221,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             var tbValue = new RockTextBox();
             tbValue.ID = string.Format( "{0}_ctlCompareValue", id );

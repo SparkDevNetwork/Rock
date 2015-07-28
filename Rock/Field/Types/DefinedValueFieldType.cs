@@ -333,12 +333,12 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
             if ( allowMultiple )
             {
-                return base.FilterCompareControl( configurationValues, id, required );
+                return base.FilterCompareControl( configurationValues, id, required, filterMode );
             }
             else
             {
@@ -371,7 +371,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
 
@@ -383,7 +383,7 @@ namespace Rock.Field.Types
 
             overrideConfigValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new ConfigurationValue( ( !allowMultiple ).ToString() ) );
 
-            return base.FilterValueControl( overrideConfigValues, id, required );
+            return base.FilterValueControl( overrideConfigValues, id, required, filterMode );
         }
 
         /// <summary>

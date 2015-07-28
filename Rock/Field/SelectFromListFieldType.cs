@@ -159,7 +159,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         /// <param name="required"></param>
         /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             var ddlList = new RockDropDownList();
             ddlList.ID = string.Format( "{0}_ddlList", id );

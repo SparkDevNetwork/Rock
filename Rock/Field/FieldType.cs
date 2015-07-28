@@ -207,16 +207,17 @@ namespace Rock.Field
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public virtual Control FilterControl ( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        public virtual Control FilterControl ( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             HtmlGenericControl row = new HtmlGenericControl( "div" );
             row.ID = id;
             row.AddCssClass( "row" );
             row.AddCssClass( "field-criteria" );
 
-            var compareControl = FilterCompareControl( configurationValues, id, required );
-            var valueControl = FilterValueControl( configurationValues, id, required );
+            var compareControl = FilterCompareControl( configurationValues, id, required, filterMode );
+            var valueControl = FilterValueControl( configurationValues, id, required, filterMode );
 
             bool isLabel = compareControl is Label;
 
@@ -239,6 +240,18 @@ namespace Rock.Field
         }
 
         /// <summary>
+        /// Creates the control needed to filter (query) values using this field type using a FilterMode of AdvancedFilter
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        public virtual Control FilterControl ( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required)
+        {
+            return FilterControl( configurationValues, id, required, FilterMode.AdvancedFilter );
+        }
+
+        /// <summary>
         /// Determines whether this filter has a filter control
         /// </summary>
         /// <returns></returns>
@@ -246,7 +259,7 @@ namespace Rock.Field
         {
             try
             {
-                var filterControl = FilterControl( new Dictionary<string, ConfigurationValue>(), "", true );
+                var filterControl = FilterControl( new Dictionary<string, ConfigurationValue>(), "", true, FilterMode.AdvancedFilter );
                 return filterControl != null;
             }
             catch
@@ -256,18 +269,32 @@ namespace Rock.Field
         }
 
         /// <summary>
-        /// Gets the filter compare control.
+        /// Gets the filter compare control with the specified FilterMode
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public virtual Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        public virtual Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         { 
             RockDropDownList ddlCompare = ComparisonHelper.ComparisonControl( FilterComparisonType, required );
             ddlCompare.ID = string.Format( "{0}_ddlCompare", id );
             ddlCompare.AddCssClass( "js-filter-compare" );
             return ddlCompare;
+        }
+
+        /// <summary>
+        /// Gets the filter compare control with a FilterMode of AdvancedFilter
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        [Obsolete]
+        public virtual Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        {
+            return FilterCompareControl( configurationValues, id, required, FilterMode.AdvancedFilter );
         }
 
         /// <summary>
@@ -282,13 +309,14 @@ namespace Rock.Field
         }
 
         /// <summary>
-        /// Gets the filter value control.
+        /// Gets the filter value control with the specified FilterMode
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public virtual Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        public virtual Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             var control = EditControl( configurationValues, id );
             control.ID = string.Format( "{0}_ctlCompareValue", id );
@@ -297,6 +325,19 @@ namespace Rock.Field
                 ( (WebControl)control ).AddCssClass( "js-filter-control" );
             }
             return control;
+        }
+
+        /// <summary>
+        /// Gets the filter value control with the a FilterMode of AdvancedFilter
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <returns></returns>
+        [Obsolete]
+        public virtual Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required)
+        {
+            return FilterValueControl( configurationValues, id, required, FilterMode.AdvancedFilter );
         }
 
         /// <summary>
@@ -475,7 +516,7 @@ namespace Rock.Field
         public virtual string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
         {
             string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
-            return string.Format( "return Rock.reporting.formatFilterDefault('{0}', $selectedContent);", title );
+            return string.Format( "return Rock.reporting.formatFilterDefault('{0}', $selectedContent);", titleJs);
         }
 
         /// <summary>
