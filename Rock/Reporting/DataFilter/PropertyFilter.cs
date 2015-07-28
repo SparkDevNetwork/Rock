@@ -137,7 +137,7 @@ namespace Rock.Reporting.DataFilter
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
+        public override Control[] CreateChildControls( Type entityType, FilterField filterControl, FilterMode filterMode )
         {
             var containerControl = new DynamicControlsPanel();
             containerControl.ID = string.Format( "{0}_containerControl", filterControl.ID );
@@ -211,7 +211,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="filterControl">The filter control.</param>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
+        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls, FilterMode filterMode )
         {
             if ( controls.Length > 0 )
             {
@@ -219,21 +219,7 @@ namespace Rock.Reporting.DataFilter
                 
                 var ddlEntityField = containerControl.Controls[0] as DropDownList;
                 var entityFields = EntityHelper.GetEntityFields( entityType );
-                RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, containerControl.Controls.OfType<Control>().ToList(), containerControl.ID );
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [hide entity field picker].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [hide entity field picker]; otherwise, <c>false</c>.
-        /// </value>
-        public void HideEntityFieldPicker()
-        {
-            if ( entityFieldPicker != null )
-            {
-                entityFieldPicker.Style[HtmlTextWriterStyle.Display] = "none";
+                RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, containerControl.Controls.OfType<Control>().ToList(), containerControl.ID, filterMode );
             }
         }
 
@@ -243,7 +229,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="entityType"></param>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
-        public override string GetSelection( Type entityType, Control[] controls )
+        public override string GetSelection( Type entityType, Control[] controls, FilterMode filterMode )
         {
             var values = new List<string>();
 
@@ -277,7 +263,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="entityType"></param>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
-        public override void SetSelection( Type entityType, Control[] controls, string selection )
+        public override void SetSelection( Type entityType, Control[] controls, string selection, FilterMode filterMode )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
@@ -310,7 +296,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
+        public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection, FilterMode filterMode )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {

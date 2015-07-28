@@ -49,15 +49,20 @@ namespace Rock.Reporting.DataFilter
         /// <param name="propertyControls">The property controls.</param>
         /// <param name="propertyControlsPrefix">The property controls prefix.</param>
         public void RenderEntityFieldsControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, List<EntityField> entityFields,
-            DropDownList ddlEntityField, List<Control> propertyControls, string propertyControlsPrefix )
+            DropDownList ddlEntityField, List<Control> propertyControls, string propertyControlsPrefix, FilterMode filterMode )
         {
             string selectedEntityField = ddlEntityField.SelectedValue;
 
             writer.AddAttribute( "class", "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            bool entityFieldPickerIsHidden = ddlEntityField.Style[HtmlTextWriterStyle.Display] == "none";
-            
+            bool entityFieldPickerIsHidden = filterMode == FilterMode.SimpleFilter;
+
+            if ( entityFieldPickerIsHidden )
+            {
+                ddlEntityField.Style[HtmlTextWriterStyle.Display] = "none";
+            }
+
             if ( !entityFieldPickerIsHidden )
             {
                 writer.AddAttribute( "class", "col-md-3" );
@@ -106,39 +111,22 @@ namespace Rock.Reporting.DataFilter
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderEndTag();  // "row field-criteria"
 
-            foreach ( var entityField in entityFields )
+            // render the controls for the selectedEntityField
+            string controlId = string.Format( "{0}_{1}", propertyControlsPrefix, selectedEntityField );
+            var control = propertyControls.FirstOrDefault( c => c.ID == controlId );
+            if ( control != null )
             {
-                string controlId = string.Format( "{0}_{1}", propertyControlsPrefix, entityField.Name );
-                var control = propertyControls.FirstOrDefault( c => c.ID == controlId );
-                if ( control != null )
+                if ( control is IAttributeAccessor )
                 {
-                    if ( entityField.Name != selectedEntityField )
-                    {
-                        if ( entityFieldPickerIsHidden )
-                        {
-                            // if the field can't be changed, we don't need the render the controls for the other entity fields
-                            fieldIndex++;
-                            continue;
-                        }
-                        
-                        if ( control is HtmlControl )
-                        {
-                            ( (HtmlControl)control ).Style["display"] = "none";
-                        }
-                        else if ( control is WebControl )
-                        {
-                            ( (WebControl)control ).Style["display"] = "none";
-                        }
-                    }
-
-                    if ( control is IAttributeAccessor )
-                    {
-                        ( control as IAttributeAccessor ).SetAttribute("data-entity-field-name", entityField.Name);
-                    }
-
-                    control.RenderControl( writer );
+                    ( control as IAttributeAccessor ).SetAttribute( "data-entity-field-name", selectedEntityField );
                 }
 
+                control.RenderControl( writer );
+            }
+
+            // create a javascript block for all the possible entityFields which will get rendered once per entityType
+            foreach ( var entityField in entityFields )
+            {
                 string clientFormatSelection = entityField.FieldType.Field.GetFilterFormatScript( entityField.FieldConfig, entityField.Title );
 
                 if ( clientFormatSelection != string.Empty )
@@ -399,7 +387,7 @@ namespace Rock.Reporting.DataFilter
         /// </summary>
         /// <param name="values">The values.</param>
         /// <returns></returns>
-        [System.Diagnostics.DebuggerStepThrough()] 
+        [System.Diagnostics.DebuggerStepThrough()]
         protected internal List<string> FixDelimination( List<string> values )
         {
             if ( values.Count() == 1 && values[0].Contains( "[" ) )

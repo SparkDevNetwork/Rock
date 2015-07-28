@@ -190,7 +190,7 @@ namespace Rock.Reporting.DataFilter.Group
         /// <param name="filterControl">The filter control.</param>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
+        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls, FilterMode filterMode )
         {
             if ( controls.Length > 0 )
             {
@@ -206,7 +206,7 @@ namespace Rock.Reporting.DataFilter.Group
                     var panelControls = new List<Control>();
                     panelControls.AddRange( pnlGroupAttributeFilterControls.Controls.OfType<Control>() );
 
-                    RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, panelControls, pnlGroupAttributeFilterControls.ID );
+                    RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, panelControls, pnlGroupAttributeFilterControls.ID, filterMode );
                 }
             }
         }
