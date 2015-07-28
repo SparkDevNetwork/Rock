@@ -8,7 +8,7 @@
 
 <p>{{ item.Content }}</p>
 
-<nav>
+<nav class="margin-b-lg">
   <ul class="pager">
   {% if Pagination.PreviousPage != -1 %}
     <li class="previous"><a href="?Page={{ Pagination.PreviousPage }}"><span aria-hidden="true">&larr;</span> Previous</a></li>
@@ -20,8 +20,6 @@
   </ul>
 </nav>
 
-<p>&nbsp;</p>
-
 {% assign Resources = item | Attribute: 'Resources', 'Object' %}
 
 {% if Resources != empty %}
@@ -32,4 +30,5 @@
       <li class="brandlist-item"><a href="{{ resourcekv.Value }}">{{ resourcekv.Key }}</a></li>
     {% endfor %}
   </ul>
+  <p>&nbsp;</p>
 {% endif %}
