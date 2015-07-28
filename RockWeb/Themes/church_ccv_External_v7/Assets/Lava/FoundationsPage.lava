@@ -1,7 +1,0 @@
-<div class="row">
-  {% for item in Items %}
-    <div class="col-md-3">
-      <a href="{{ LinkedPages.DetailPage }}?Id={{ item.Id }}" class="btn btn-primary btn-lg btn-block padding-v-lg margin-b-lg">{{ item.Title }}</a>
-    </div>
-  {% endfor %}
-</div>

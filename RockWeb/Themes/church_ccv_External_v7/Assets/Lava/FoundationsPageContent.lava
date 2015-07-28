@@ -1,0 +1,35 @@
+{% assign item = Items.first %}
+
+<div class="embed-responsive embed-responsive-16by9">
+  <iframe class="embed-responsive-item" src="//player.vimeo.com/video/{{ item | Attribute: 'VimeoId'}}" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+</div>
+
+<h3>{{ item.Title}}</h3>
+
+<p>{{ item.Content }}</p>
+
+<nav>
+  <ul class="pager">
+  {% if Pagination.PreviousPage != -1 %}
+    <li class="previous"><a href="?Page={{ Pagination.PreviousPage }}"><span aria-hidden="true">&larr;</span> Previous</a></li>
+  {% endif %}
+
+  {% if Pagination.NextPage != -1 %}
+    <li class="next"><a href="?Page={{ Pagination.NextPage }}">Next <span aria-hidden="true">&rarr;</span></a></li>
+  {% endif %}
+  </ul>
+</nav>
+
+<p>&nbsp;</p>
+
+{% assign Resources = item | Attribute: 'Resources', 'Object' %}
+
+{% if Resources != empty %}
+  <h3 class="underline">Resources</h3>
+  <ul class="brandlist brandlist-inline">
+    {% for resource in Resources %}
+      {% assign resourcekv = resource | PropertyToKeyValue %}
+      <li class="brandlist-item"><a href="{{ resourcekv.Value }}">{{ resourcekv.Key }}</a></li>
+    {% endfor %}
+  </ul>
+{% endif %}

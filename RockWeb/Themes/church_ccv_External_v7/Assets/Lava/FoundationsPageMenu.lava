@@ -1,0 +1,30 @@
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Videos</h3>
+  </div>
+  <ul class="list-group js-highlight-active">
+    {% for item in Items %}
+      <a class="list-group-item" data-page="{{ forloop.index }}" href="{{ LinkedPages.DetailPage }}?Page={{ forloop.index }}">{{ item.Title }}</a>
+    {% endfor %}
+   </ul>
+</div>
+
+{% comment %}
+
+The following would be unnecessary if Pagination.CurrentPage were accurate for
+this block or if PageParameter.Page worked here
+
+{% endcomment %}
+
+<script>
+  function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+  }
+  var currentPage = getParameterByName('Page') || 1;
+  // debugger;
+  $('.js-highlight-active a[data-page=' + currentPage + ']').addClass('active')
+  // console.log(wat)
+</script>
