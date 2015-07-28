@@ -1,0 +1,17 @@
+{% assign item = Items.first %}
+
+
+<div class="embed-responsive embed-responsive-16by9">
+  <iframe class="embed-responsive-item" src="//player.vimeo.com/video/{{ item | Attribute: 'VimeoId'}}" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+</div>
+
+<h3>{{ item.Title}}</h3>
+
+<p>{{ item.Content }}</p>
+
+<pre>
+  {% assign Resources = item | Attribute: 'Resources' %}
+  {% for resource in Resources %}
+    {{ resource }}
+  {% endfor %}
+</pre>
