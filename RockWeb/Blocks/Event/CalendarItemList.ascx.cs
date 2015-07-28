@@ -291,7 +291,10 @@ namespace RockWeb.Blocks.Event
         {
             if ( _canEdit )
             {
-                NavigateToLinkedPage( "DetailPage", "EventItemId", 0, "EventCalendarId", _eventCalendar.Id );
+                var qryParams = new Dictionary<string, string>();
+                qryParams.Add( "EventCalendarId", _eventCalendar.Id.ToString() );
+                qryParams.Add( "EventItemId", "0");
+                NavigateToLinkedPage( "DetailPage", qryParams );
             }
         }
 
@@ -308,7 +311,10 @@ namespace RockWeb.Blocks.Event
                 EventItem eventItem = eventItemService.Get( e.RowKeyId );
                 if ( eventItem != null )
                 {
-                    NavigateToLinkedPage( "DetailPage", "EventItemId", eventItem.Id, "EventCalendarId", _eventCalendar.Id );
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams.Add( "EventCalendarId", _eventCalendar.Id.ToString() );
+                    qryParams.Add( "EventItemId", eventItem.Id.ToString() );
+                    NavigateToLinkedPage( "DetailPage", qryParams );
                 }
             }
         }

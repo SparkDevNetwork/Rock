@@ -592,6 +592,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<EventCalendarContentChannel>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EventCalendarContentChannel.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<EventCalendarContentChannel>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EventCalendarContentChannel.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<EventCalendarItem>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EventCalendarItem.FriendlyTypeName );
@@ -649,6 +661,18 @@ namespace Rock.Model
             if ( new Service<EventItemOccurrence>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EventItemOccurrence.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<EventItemOccurrenceChannelItem>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EventItemOccurrenceChannelItem.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<EventItemOccurrenceChannelItem>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EventItemOccurrenceChannelItem.FriendlyTypeName );
                 return false;
             }  
  
