@@ -421,5 +421,26 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201507181918494_ConnectionChangesAndSampleData", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- JE: Change system email for Group Leader Pending Notifications
+        ///UPDATE [SystemEmail]
+        ///SET [Subject] = &apos;New Pending Group Members | {{ &apos;&apos;Global&apos;&apos;  | Attribute:&apos;&apos;OrganizationName&apos;&apos; }}&apos;
+        ///	, [Body] = &apos;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;EmailHeader&apos;&apos; }}
+        ///
+        ///&lt;p&gt;
+        ///    {{ Person.NickName }},
+        ///&lt;/p&gt;
+        ///
+        ///&lt;p&gt;
+        ///    We wanted to make you aware of additional individuals who have taken the next step to connect with 
+        ///    group. The individuals&apos;&apos; names and contact information can be found below. Our 
+        ///    goal is to contact new m [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201507281546100_CalendarContentChannel {
+            get {
+                return ResourceManager.GetString("_201507281546100_CalendarContentChannel", resourceCulture);
+            }
+        }
     }
 }

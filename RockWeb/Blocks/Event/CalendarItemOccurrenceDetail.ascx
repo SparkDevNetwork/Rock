@@ -9,59 +9,6 @@
 <asp:UpdatePanel ID="upnlEventItemList" runat="server">
     <ContentTemplate>
 
-        <div class="wizard">
-    
-             <div class="wizard-item complete">
-                <asp:LinkButton ID="lbCalendars" runat="server" OnClick="lbCalendarsDetail_Click" CausesValidation="false" >
-                    <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
-                    <asp:PlaceHolder runat="server">
-                        <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-calendar"></i>
-                        </div>
-                        <div class="wizard-item-label">
-                            Event Calendars
-                        </div>
-                    </asp:PlaceHolder>
-                </asp:LinkButton>
-            </div>
-    
-            <div class="wizard-item complete">
-                <asp:LinkButton ID="lbCalendarDetail" runat="server" OnClick="lbCalendarDetail_Click" CausesValidation="false" >
-                    <asp:PlaceHolder runat="server">
-                        <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-calendar"></i>
-                        </div>
-                        <div class="wizard-item-label">
-                            Calendar
-                        </div>
-                    </asp:PlaceHolder>
-                </asp:LinkButton>
-            </div>
-    
-            <div class="wizard-item complete">
-                <asp:LinkButton ID="lbCalendarItem" runat="server" OnClick="lbCalendarItem_Click" CausesValidation="false" >
-                    <asp:PlaceHolder runat="server">
-                        <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-calendar-o"></i>
-                        </div>
-                        <div class="wizard-item-label">
-                            Calendar Item
-                        </div>
-                    </asp:PlaceHolder>
-                </asp:LinkButton>
-            </div>
-    
-            <div class="wizard-item active">
-                <div class="wizard-item-icon">
-                    <i class="fa fa-fw fa-building-o"></i>
-                </div>
-                <div class="wizard-item-label">
-                    Event Occurrence
-                </div>
-            </div>
-
-        </div>
-
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block">
 
             <asp:HiddenField ID="hfEventItemOccurrenceId" runat="server" />
@@ -75,52 +22,79 @@
                 <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                <div class="row">
+                <asp:Panel id="pnlViewDetails" runat="server">
 
-                    <div class="col-md-6">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <asp:Literal ID="lLeftDetails" runat="server" />
+                        </div>
+                        <div class="col-md-6">
+                            <asp:Literal ID="lRightDetails" runat="server" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:RockLiteral ID="lCampusNotes" runat="server" />
+                        </div>
+                    </div>
 
-                        <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
+                    <div class="actions">
+                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                        <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
+                    </div>
 
-                        <Rock:RockControlWrapper ID="rcwSchedules" runat="server" Label="Schedule">
-                            <asp:HiddenField ID="hfSchedules" runat="server" />
-                            <Rock:HiddenFieldValidator ID="hfvSchedules" runat="server" Display="None" ErrorMessage="At least one Schedule is required." ControlToValidate="hfSchedules" ValidationGroup="CampusDetails" />
-                            <div class="grid">
-                                <Rock:Grid ID="gSchedules" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Schedule" ShowHeader="false">
-                                    <Columns>
-                                        <Rock:RockBoundField DataField="Schedule" />
-                                        <Rock:RockBoundField DataField="Details" />
-                                        <Rock:EditField OnClick="gSchedules_Edit" />
-                                        <Rock:DeleteField OnClick="gSchedules_Delete" />
-                                    </Columns>
-                                </Rock:Grid>
-                            </div>
-                        </Rock:RockControlWrapper>
+                </asp:Panel>
 
-                        <Rock:RockLiteral ID="lRegistration" runat="server" Label="Registration Instance - Group" CssClass="margin-b-none" />
-                        <asp:LinkButton ID="lbEditRegistration" runat="server" CssClass="btn btn-default btn-xs margin-b-md" OnClick="lbEditRegistration_Click" ><i class="fa fa-pencil"></i> Edit</asp:LinkButton>
-                        <asp:LinkButton ID="lbDeleteRegistration" runat="server" CssClass="btn btn-danger btn-xs margin-b-md" OnClick="lbDeleteRegistration_Click" ><i class="fa fa-times"></i> Remove</asp:LinkButton>
-                        <asp:LinkButton ID="lbCreateNewRegistration" runat="server" CssClass="btn btn-primary btn-xs margin-b-md" Text="Add New Registration Instance" OnClick="lbCreateNewRegistration_Click" />
-                        <asp:LinkButton ID="lbLinkToExistingRegistration" runat="server" CssClass="btn btn-default btn-xs margin-b-md" Text="Use Existing Registration Instance" OnClick="lbLinkToExistingRegistration_Click" />
+                <asp:Panel id="pnlEditDetails" runat="server">
+
+                    <div class="row">
+
+                        <div class="col-md-6">
+
+                            <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
+                            <Rock:RockTextBox ID="tbLocation" runat="server" Label="Location Description" />
+                            <Rock:RockControlWrapper ID="rcwSchedules" runat="server" Label="Schedule">
+                                <asp:HiddenField ID="hfSchedules" runat="server" />
+                                <Rock:HiddenFieldValidator ID="hfvSchedules" runat="server" Display="None" ErrorMessage="At least one Schedule is required." ControlToValidate="hfSchedules" ValidationGroup="CampusDetails" />
+                                <div class="grid">
+                                    <Rock:Grid ID="gSchedules" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Schedule" ShowHeader="false">
+                                        <Columns>
+                                            <Rock:RockBoundField DataField="Schedule" />
+                                            <Rock:RockBoundField DataField="Details" />
+                                            <Rock:EditField OnClick="gSchedules_Edit" />
+                                            <Rock:DeleteField OnClick="gSchedules_Delete" />
+                                        </Columns>
+                                    </Rock:Grid>
+                                </div>
+                            </Rock:RockControlWrapper>
+
+                            <Rock:RockLiteral ID="lRegistration" runat="server" Label="Registration Instance - Group" CssClass="margin-b-none" />
+                            <asp:LinkButton ID="lbEditRegistration" runat="server" CssClass="btn btn-default btn-xs margin-b-md" OnClick="lbEditRegistration_Click" ><i class="fa fa-pencil"></i> Edit</asp:LinkButton>
+                            <asp:LinkButton ID="lbDeleteRegistration" runat="server" CssClass="btn btn-danger btn-xs margin-b-md" OnClick="lbDeleteRegistration_Click" ><i class="fa fa-times"></i> Remove</asp:LinkButton>
+                            <asp:LinkButton ID="lbCreateNewRegistration" runat="server" CssClass="btn btn-primary btn-xs margin-b-md" Text="Add New Registration Instance" OnClick="lbCreateNewRegistration_Click" />
+                            <asp:LinkButton ID="lbLinkToExistingRegistration" runat="server" CssClass="btn btn-default btn-xs margin-b-md" Text="Use Existing Registration Instance" OnClick="lbLinkToExistingRegistration_Click" />
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" OnSelectPerson="ppContact_SelectPerson" />
+                            <Rock:PhoneNumberBox ID="pnPhone" runat="server" Label="Phone" />
+                            <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" />
+
+                        </div>
 
                     </div>
 
-                    <div class="col-md-6">
-
-                        <Rock:RockTextBox ID="tbLocation" runat="server" Label="Location Description" ValidationGroup="CampusDetails" />
-                        <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" ValidationGroup="CampusDetails" OnSelectPerson="ppContact_SelectPerson" />
-                        <Rock:PhoneNumberBox ID="pnPhone" runat="server" Label="Phone" ValidationGroup="CampusDetails" />
-                        <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" ValidationGroup="CampusDetails" />
-
-                    </div>
-
-                </div>
-
-                <Rock:HtmlEditor ID="htmlCampusNote" runat="server" Label="Campus Note" />
+                    <Rock:HtmlEditor ID="htmlCampusNote" runat="server" Label="Campus Note" />
                 
-                <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
-                </div>
+                    <div class="actions">
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                    </div>
+
+                </asp:Panel>
 
             </div>
 

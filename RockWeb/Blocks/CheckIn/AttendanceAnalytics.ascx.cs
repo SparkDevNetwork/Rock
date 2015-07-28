@@ -120,8 +120,16 @@ namespace RockWeb.Blocks.CheckIn
             if ( !Page.IsPostBack )
             {
                 LoadDropDowns();
-                LoadSettingsFromUserPreferences();
-                LoadChartAndGrids();
+                try
+                {
+                    LoadSettingsFromUserPreferences();
+                    LoadChartAndGrids();
+
+                }
+                catch ( Exception exception )
+                {
+                    LogAndShowException( exception );
+                }
             }
         }
 
@@ -257,6 +265,14 @@ namespace RockWeb.Blocks.CheckIn
             var lineChartDataSourceUrl = "~/api/Attendances/GetChartData";
             var dataSourceParams = new Dictionary<string, object>();
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
+            
+            if ( !dateRange.Start.HasValue || !dateRange.End.HasValue )
+            {
+                nbDateRangeWarning.Visible = true;
+                return;
+            }
+
+            nbDateRangeWarning.Visible = false;
 
             if ( dateRange.Start.HasValue )
             {
@@ -1054,36 +1070,45 @@ function(item) {
             }
             catch ( Exception exception )
             {
-                LogException( exception );
-                string errorMessage = null;
-                string stackTrace = string.Empty;
-                while ( exception != null )
+                LogAndShowException( exception );
+            }
+        }
+
+        /// <summary>
+        /// Logs the and show exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        private void LogAndShowException( Exception exception )
+        {
+            LogException( exception );
+            string errorMessage = null;
+            string stackTrace = string.Empty;
+            while ( exception != null )
+            {
+                errorMessage = exception.Message;
+                stackTrace += exception.StackTrace;
+                if ( exception is System.Data.SqlClient.SqlException )
                 {
-                    errorMessage = exception.Message;
-                    stackTrace += exception.StackTrace;
-                    if ( exception is System.Data.SqlClient.SqlException )
+                    // if there was a SQL Server Timeout, have the warning be a friendly message about that.
+                    if ( ( exception as System.Data.SqlClient.SqlException ).Number == -2 )
                     {
-                        // if there was a SQL Server Timeout, have the warning be a friendly message about that.
-                        if ( ( exception as System.Data.SqlClient.SqlException ).Number == -2 )
-                        {
-                            errorMessage = "The attendee report did not complete in a timely manner. Try again using a smaller date range and fewer campuses and groups.";
-                            break;
-                        }
-                        else
-                        {
-                            exception = exception.InnerException;
-                        }
+                        errorMessage = "The attendee report did not complete in a timely manner. Try again using a smaller date range and fewer campuses and groups.";
+                        break;
                     }
                     else
                     {
                         exception = exception.InnerException;
                     }
                 }
-
-                nbAttendeesError.Text = errorMessage;
-                nbAttendeesError.Details = stackTrace;
-                nbAttendeesError.Visible = true;
+                else
+                {
+                    exception = exception.InnerException;
+                }
             }
+
+            nbAttendeesError.Text = errorMessage;
+            nbAttendeesError.Details = stackTrace;
+            nbAttendeesError.Visible = true;
         }
 
         /// <summary>

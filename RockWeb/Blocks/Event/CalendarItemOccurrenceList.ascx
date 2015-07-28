@@ -28,6 +28,9 @@
                                     <Rock:RockBoundField DataField="Location" HeaderText="Location" />
                                     <asp:HyperLinkField HeaderText="Registration" DataTextField="RegistrationInstance" DataNavigateUrlFields="RegistrationInstanceId" />
                                     <asp:HyperLinkField HeaderText="Group" DataTextField="Group" DataNavigateUrlFields="GroupID" />
+                                    <Rock:RockTemplateFieldUnselected HeaderText="Content Items">
+                                        <ItemTemplate><%# Eval("ContentItems") %></ItemTemplate>
+                                    </Rock:RockTemplateFieldUnselected>
                                     <Rock:RockBoundField DataField="Contact" HeaderText="Contact" />
                                     <Rock:RockBoundField DataField="Phone" HeaderText="Phone" />
                                     <Rock:RockBoundField DataField="Email" HeaderText="Email" />
