@@ -1067,7 +1067,17 @@ namespace RockWeb.Blocks.Connection
 
             ddlAssignedGroup.Items.Clear();
             ddlAssignedGroup.Items.Add( new ListItem( String.Empty, String.Empty ) );
-            var groups = new GroupService( new RockContext() ).Queryable().Where( g => g.GroupTypeId == _connectionRequest.ConnectionOpportunity.GroupTypeId ).ToList();
+
+            var opportunityGroupIds = _connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups.Select( o => o.Id ).ToList();
+
+            var groups = _connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups
+                                .Where( g => 
+                                    g.Group.Campus == null || 
+                                    g.Group.CampusId == _connectionRequest.CampusId || 
+                                    g.Group.Id == _connectionRequest.AssignedGroupId
+                                )
+                                .Select( g => g.Group);
+                
             foreach ( var g in groups )
             {
                 ddlAssignedGroup.Items.Add( new ListItem( String.Format( "{0} ({1})", g.Name, g.Campus != null ? g.Campus.Name : "No Campus" ), g.Id.ToString().ToUpper() ) );
