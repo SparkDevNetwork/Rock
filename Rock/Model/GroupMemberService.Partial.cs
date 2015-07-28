@@ -296,7 +296,7 @@ namespace Rock.Model
                 {
                     Guid ownerRoleGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER );
 
-                    var memberInfo = Queryable()
+                    var memberInfo = Queryable( true )
                         .Where( m =>
                             m.GroupId == groupMember.GroupId &&
                             m.GroupRole.Guid.Equals( ownerRoleGuid ) )

@@ -354,7 +354,7 @@ namespace RockWeb.Blocks.Connection
                 var qry = GetDisplayedOpportunities( rockContext, allConnectionOpportunities );
 
                 Repeater rptConnectionOpportunities = (Repeater)e.Item.FindControl( "rptConnectionOpportunities" );
-                RockLiteral lConnectionTypeName = (RockLiteral)e.Item.FindControl( "lConnectionTypeName" );
+                Literal lConnectionTypeName = (Literal)e.Item.FindControl( "lConnectionTypeName" );
                 rptConnectionOpportunities.DataSource = qry.ToList();
                 rptConnectionOpportunities.DataBind();
                 rptConnectionOpportunities.ItemCommand += rptConnectionOpportunities_ItemCommand;
@@ -587,6 +587,7 @@ namespace RockWeb.Blocks.Connection
                             r.Id,
                             r.Guid,
                             Name = r.PersonAlias.Person.FullName,
+                            Campus = r.Campus,
                             Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
                             Status = r.ConnectionStatus.Name,
                             Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",

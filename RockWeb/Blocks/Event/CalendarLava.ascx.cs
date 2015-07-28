@@ -310,7 +310,7 @@ namespace RockWeb.Blocks.Event
                         campusIds.Contains( c.CampusId.Value ) );
             }
 
-            //Filter by Category
+            // Filter by Category
             List<int> categories = cblCategory.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList();
             if ( categories.Any() )
             {
@@ -375,10 +375,10 @@ namespace RockWeb.Blocks.Event
                 .ToList();
 
             var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "EventItemOccurrences", eventCampusSummaries );
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
             mergeFields.Add( "TimeFrame", ViewMode );
             mergeFields.Add( "DetailsPage", LinkedPageUrl( "DetailsPage", null ) );
+            mergeFields.Add( "EventItemOccurrences", eventCampusSummaries );
+            mergeFields.Add( "CurrentPerson", CurrentPerson );
 
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
@@ -387,6 +387,11 @@ namespace RockWeb.Blocks.Event
             {
                 lDebug.Visible = true;
                 lDebug.Text = mergeFields.lavaDebugInfo();
+            }
+            else
+            {
+                lDebug.Visible = false;
+                lDebug.Text = string.Empty;
             }
 
         }
