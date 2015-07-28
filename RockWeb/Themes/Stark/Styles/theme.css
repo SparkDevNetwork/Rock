@@ -879,22 +879,22 @@ dl:not(.dl-horizontal) dd {
 .panel-dashboard {
   margin: 24px 0 0 ;
   height: 220px;
-  border-color: #008000;
+  border-color: #d8d1c8;
 }
 .panel-dashboard > .panel-heading {
-  color: #333333;
-  background-color: #00ffff;
-  border-color: #00e5e6;
+  color: #6a6a6a;
+  background-color: #edeae6;
+  border-color: #ad9f8d;
 }
 .panel-dashboard > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #008000;
+  border-top-color: #d8d1c8;
 }
 .panel-dashboard > .panel-heading .badge {
-  color: #00ffff;
-  background-color: #333333;
+  color: #edeae6;
+  background-color: #6a6a6a;
 }
 .panel-dashboard > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #008000;
+  border-bottom-color: #d8d1c8;
 }
 /*
     Used to manage styles related to Rock's internal grid component
@@ -912,12 +912,12 @@ dl:not(.dl-horizontal) dd {
     11. Hover Colors
 */
 .table > tbody > tr > td {
-  color: #ffffff;
+  color: #333333;
 }
 .table-striped > tbody > tr:nth-child(odd) > td,
 .table-striped > tbody > tr:nth-child(odd) > th {
-  background-color: #ffc0cb;
-  color: #ff0000;
+  background-color: #f7f7f7;
+  color: #333333;
 }
 td.grid-select-cell {
   cursor: pointer;
@@ -937,7 +937,7 @@ td.wrap-contents {
   margin-bottom: 20px;
 }
 .grid .grid-table {
-  border: 1px solid #dddddd;
+  border: 1px solid #d8d1c8;
 }
 .grid .grid-table.table-light {
   border: none;
@@ -1014,7 +1014,7 @@ td.wrap-contents {
   font-size: 14px;
   color: #ecf0f3;
   font-weight: 300;
-  border-color: #dddddd;
+  border-color: #d8d1c8;
 }
 .table > thead > tr > th > a:not(.btn) {
   color: #ecf0f3;
@@ -1032,19 +1032,19 @@ td.wrap-contents {
 }
 .grid-paging {
   background-color: #fafafa;
-  color: #333333;
+  color: #6a6a6a;
 }
 .grid-paging .pagination {
   margin-top: 0;
   margin-bottom: 0;
 }
 .grid-paging .pagination li > a {
-  background-color: #555555;
+  background-color: #ededed;
   color: #333333;
-  border-color: #a2a2a2;
+  border-color: #bababa;
 }
 .grid-paging .pagination li.active > a {
-  background-color: #6f6f6f;
+  background-color: #ffffff;
 }
 .grid-paging .grid-pager {
   float: right;
@@ -1153,20 +1153,20 @@ td.grid-col-actions {
   height: 72px;
 }
 .table > tbody > tr.grid-section-header > td {
-  background-color: #eeeeee;
-  color: #333333;
+  background-color: #dbd5cb;
+  color: #413c35;
 }
 .table > tbody > tr.grid-section-header:hover > td {
-  background-color: #eeeeee !important;
+  background-color: #dbd5cb !important;
 }
 tr.row-highlight td {
   background-color: #eeeeee !important;
   color: #333333 !important;
 }
 .table > thead > tr.grid-header-bold th {
-  background-color: #428bca;
-  color: #ecf0f3;
-  border-color: #5697d0;
+  background-color: #282526;
+  color: #d3cec5;
+  border-color: #353133;
   vertical-align: top !important;
 }
 .table-responsive {
@@ -1385,23 +1385,23 @@ tr.row-highlight td {
 
 */
 .panel-note {
-  border-color: #008000;
-  border-top-color: #ffa500;
+  border-color: #d8d1c8;
+  border-top-color: #cdc5ba;
 }
 .panel-note > .panel-heading {
-  color: #333333;
-  background-color: #00ffff;
-  border-color: #00e5e6;
+  color: #6a6a6a;
+  background-color: #edeae6;
+  border-color: #ad9f8d;
 }
 .panel-note > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #008000;
+  border-top-color: #d8d1c8;
 }
 .panel-note > .panel-heading .badge {
-  color: #00ffff;
-  background-color: #333333;
+  color: #edeae6;
+  background-color: #6a6a6a;
 }
 .panel-note > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #008000;
+  border-bottom-color: #d8d1c8;
 }
 .panel-note .panel-body {
   background-color: #fffs;
@@ -1540,22 +1540,22 @@ tr.row-highlight td {
   opacity: 0.7;
 }
 .panel-noteentry {
-  border-color: #008000;
+  border-color: #d8d1c8;
 }
 .panel-noteentry > .panel-heading {
-  color: #333333;
-  background-color: #00ffff;
-  border-color: #00e5e6;
+  color: #6a6a6a;
+  background-color: #edeae6;
+  border-color: #ad9f8d;
 }
 .panel-noteentry > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #008000;
+  border-top-color: #d8d1c8;
 }
 .panel-noteentry > .panel-heading .badge {
-  color: #00ffff;
-  background-color: #333333;
+  color: #edeae6;
+  background-color: #6a6a6a;
 }
 .panel-noteentry > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #008000;
+  border-bottom-color: #d8d1c8;
 }
 .panel-noteentry .createDate {
   margin-top: 10px;
@@ -1688,23 +1688,23 @@ tr.row-highlight td {
   margin-bottom: 12px;
 }
 .panel-group .panel-workflowitem {
-  border-color: #008000;
+  border-color: #d8d1c8;
   margin-bottom: 30px;
 }
 .panel-group .panel-workflowitem > .panel-heading {
-  color: #333333;
-  background-color: #00ffff;
-  border-color: #00e5e6;
+  color: #6a6a6a;
+  background-color: #edeae6;
+  border-color: #ad9f8d;
 }
 .panel-group .panel-workflowitem > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #008000;
+  border-top-color: #d8d1c8;
 }
 .panel-group .panel-workflowitem > .panel-heading .badge {
-  color: #00ffff;
-  background-color: #333333;
+  color: #edeae6;
+  background-color: #6a6a6a;
 }
 .panel-group .panel-workflowitem > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #008000;
+  border-bottom-color: #d8d1c8;
 }
 .panel-group .panel-workflowitem:hover {
   background-color: #fff;
@@ -1747,7 +1747,7 @@ tr.row-highlight td {
   float: right;
 }
 .group-location-map img {
-  border: 1px solid #d5d5d5;
+  border: 1px solid #c2b8a7;
 }
 @media (max-width: 992px) {
   .group-location-map {
@@ -1845,14 +1845,14 @@ table.attribute-grid tr th:nth-child(3) {
 .transaction-image {
   width: 100%;
   margin-bottom: 12px;
-  border: 2px solid #d5d5d5;
+  border: 2px solid #c2b8a7;
 }
 .transaction-image-thumbnail {
   max-width: 200px;
   max-height: 100px;
   margin: 5px;
   cursor: pointer;
-  border: 2px solid #d5d5d5;
+  border: 2px solid #c2b8a7;
 }
 .transaction-matching .progress {
   width: 30%;
@@ -2438,7 +2438,7 @@ span.field-value {
 }
 /* Large devices (large desktops, 1200px and up) */
 .merge-photo {
-  border: 3px solid #d5d5d5;
+  border: 3px solid #c2b8a7;
 }
 .panel-widget.pageviewsession .pageviewsession-client {
   text-align: right;
@@ -2604,7 +2604,7 @@ tr.inactive td {
 }
 iframe.email-body {
   width: 100%;
-  border: 1px solid #008000;
+  border: 1px solid #d8d1c8;
   background-color: #fff;
   height: 300px;
 }
@@ -2975,7 +2975,7 @@ iframe.email-body {
   margin-left: 20px;
 }
 .picker .picker-select-item-details .person-image {
-  border: 1px solid #d5d5d5;
+  border: 1px solid #c2b8a7;
   float: left;
   margin-right: 7.5px;
   display: inline-block;
@@ -3089,7 +3089,7 @@ ul.rocktree ul {
 .rocktree .rocktree-name:hover,
 .rocktree span:hover,
 .rocktree span:hover a {
-  background: #badb8b;
+  background: #bbdd8d;
   color: #ffffff;
 }
 .rocktree .selected,
@@ -3221,12 +3221,12 @@ ul.rocktree ul {
   padding: 2px 6px;
 }
 .list-as-blocks ul li.active a {
-  background-color: #f5f2ef;
-  color: #333333;
-  border-color: #e2e2e2;
+  background-color: #6a6a6a;
+  color: #ffffff;
+  border-color: #515151;
 }
 .list-as-blocks ul li.active a i {
-  color: #4d4d4d;
+  color: #ffffff;
 }
 @media (min-width: 768px) and (max-width: 991px) {
   .list-as-blocks ul li {
@@ -3385,8 +3385,8 @@ div.tagsinput .tags_clear {
   z-index: 90;
   list-style: none;
   padding: 12px;
-  background-color: #d5d5d5;
-  border: 1px solid #bbbbbb;
+  background-color: #dbd5cb;
+  border: 1px solid #c6bdad;
   min-width: 200px;
   border-radius: 0 0 4px 4px;
   z-index: 9999 !important;
@@ -3401,7 +3401,7 @@ div.tagsinput .tags_clear {
   margin-bottom: 0;
 }
 .tag-wrap .ui-autocomplete li a {
-  color: #333333;
+  color: #dbd5cb;
   text-decoration: none;
   cursor: pointer;
   padding: 4px;
@@ -3433,7 +3433,7 @@ div.tagsinput .tags_clear {
   }
 }
 .photoframe {
-  border: 4px solid #d5d5d5;
+  border: 4px solid #c2b8a7;
   display: inline-block;
 }
 .photoframe.photoframe-sm {
@@ -3574,8 +3574,8 @@ fieldset .actions {
   text-align: right;
 }
 .datepicker table td.active {
-  background-color: #d5d5d5;
-  color: #333333;
+  background-color: #8cc63e;
+  color: #ffffff;
 }
 .datepicker table td.day {
   text-align: center;
@@ -3597,8 +3597,8 @@ fieldset .actions {
   font-weight: 700;
 }
 .datepicker table td span.month:hover {
-  background-color: #d5d5d5;
-  color: #333333;
+  background-color: #8cc63e;
+  color: #ffffff;
 }
 .datepicker table td span.month:first-child {
   margin-left: 0;
@@ -3612,8 +3612,8 @@ fieldset .actions {
   font-weight: 700;
 }
 .datepicker table td span.year:hover {
-  background-color: #d5d5d5;
-  color: #333333;
+  background-color: #8cc63e;
+  color: #ffffff;
   border-radius: 3px;
 }
 .datepicker table td span.year:first-child {
@@ -3770,7 +3770,7 @@ fieldset .actions {
 }
 .imageupload-group {
   margin-bottom: 15px;
-  border: 1px solid #d5d5d5;
+  border: 1px solid #c2b8a7;
   border-radius: 4px;
   padding: 2px;
   display: table-cell;
@@ -4052,7 +4052,7 @@ fieldset .actions {
   border-radius: 4px;
 }
 .groupmembers .member .person-image {
-  border: 1px solid #d5d5d5;
+  border: 1px solid #c2b8a7;
   float: left;
   margin-right: 7.5px;
   display: inline-block;
@@ -4144,11 +4144,11 @@ ul.rocklist .rocklist-item .file-name {
   display: block;
 }
 ul.rocklist .rocklist-item:hover {
-  background: #badb8b;
+  background: #bbdd8d;
   color: #ffffff;
 }
 ul.rocklist .rocklist-item.selected {
-  background: #badb8b;
+  background: #bbdd8d;
   color: #ffffff;
 }
 .twitter-typeahead .tt-query,
@@ -4159,9 +4159,9 @@ ul.rocklist .rocklist-item.selected {
   min-width: 200px;
   padding: 12px;
   background-color: #fff;
-  border: 1px solid #bbbbbb;
+  border: 1px solid #c6bdad;
   border-radius: 0 0 4px 4px;
-  color: #333333;
+  color: #dbd5cb;
   -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
@@ -4180,12 +4180,12 @@ ul.rocklist .rocklist-item.selected {
   background-color: #d5e6ed;
 }
 .tt-suggestion.tt-is-under-cursor {
-  color: #808080;
+  color: #ffffff;
   background-repeat: repeat-x;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0);
 }
 .tt-suggestion.tt-is-under-cursor a {
-  color: #333333;
+  color: #dbd5cb;
 }
 .tt-suggestion p {
   margin: 0;
@@ -4197,13 +4197,13 @@ ul.rocklist .rocklist-item.selected {
 .image-editor-photo .image-container {
   width: 150px;
   height: 150px;
-  border: 3px solid #d5d5d5;
+  border: 3px solid #c2b8a7;
 }
 .image-editor-photo .options {
   position: absolute;
   top: 110px;
   right: 0;
-  background-color: #d5d5d5;
+  background-color: #c2b8a7;
   color: #000000;
   padding: 6px 12px;
   border-radius: 4px 0 0 4px;
@@ -4407,7 +4407,7 @@ ul.list-group-panel .list-group-item:first-child,
 }
 .panel-follow-status.following {
   opacity: 1;
-  background-color: #3a3a3a;
+  background-color: #cdc5ba;
   color: #fff;
 }
 .panel-follow-status.following:before {
@@ -5162,22 +5162,22 @@ a.help {
   color: #333333;
 }
 .panel-widget {
-  border-color: #008000;
+  border-color: #d8d1c8;
 }
 .panel-widget > .panel-heading {
-  color: #333333;
-  background-color: #00ffff;
-  border-color: #00e5e6;
+  color: #6a6a6a;
+  background-color: #edeae6;
+  border-color: #ad9f8d;
 }
 .panel-widget > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #008000;
+  border-top-color: #d8d1c8;
 }
 .panel-widget > .panel-heading .badge {
-  color: #00ffff;
-  background-color: #333333;
+  color: #edeae6;
+  background-color: #6a6a6a;
 }
 .panel-widget > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #008000;
+  border-bottom-color: #d8d1c8;
 }
 .panel-widget .panel-heading {
   border: 0;
@@ -5192,10 +5192,10 @@ a.help {
   margin-left: 4px;
 }
 .panel-widget .panel-heading small {
-  color: #666666;
+  color: #9d9d9d;
 }
 .panel-info {
-  border-top-color: #ffa500;
+  border-top-color: #cdc5ba;
 }
 .panel-info .panel-body {
   background-color: #ffffff;
@@ -5204,23 +5204,23 @@ a.help {
   background-color: #ffffff;
 }
 .panel-persondetails {
-  border-color: #008000;
-  border-top-color: #ffa500;
+  border-color: #d8d1c8;
+  border-top-color: #cdc5ba;
 }
 .panel-persondetails > .panel-heading {
-  color: #333333;
-  background-color: #00ffff;
-  border-color: #00e5e6;
+  color: #6a6a6a;
+  background-color: #edeae6;
+  border-color: #ad9f8d;
 }
 .panel-persondetails > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #008000;
+  border-top-color: #d8d1c8;
 }
 .panel-persondetails > .panel-heading .badge {
-  color: #00ffff;
-  background-color: #333333;
+  color: #edeae6;
+  background-color: #6a6a6a;
 }
 .panel-persondetails > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #008000;
+  border-bottom-color: #d8d1c8;
 }
 .panel-persondetails .panel-heading .actions a {
   margin-left: 4px;
@@ -5256,23 +5256,23 @@ a.help {
   cursor: pointer;
 }
 .panel-block {
-  border-color: #008000;
-  border-top-color: #ffa500;
+  border-color: #d8d1c8;
+  border-top-color: #cdc5ba;
 }
 .panel-block > .panel-heading {
-  color: #333333;
-  background-color: #00ffff;
-  border-color: #00e5e6;
+  color: #6a6a6a;
+  background-color: #edeae6;
+  border-color: #ad9f8d;
 }
 .panel-block > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #008000;
+  border-top-color: #d8d1c8;
 }
 .panel-block > .panel-heading .badge {
-  color: #00ffff;
-  background-color: #333333;
+  color: #edeae6;
+  background-color: #6a6a6a;
 }
 .panel-block > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #008000;
+  border-bottom-color: #d8d1c8;
 }
 .panel-block > .panel-heading:before,
 .panel-block > .panel-heading:after {
@@ -5580,6 +5580,10 @@ div.aspNetDisabled {
   width: 1.28571429em;
   text-align: center;
 }
+/*
+    The accent colors are deprecated and should not be used in new theme development. They will be 
+    removed in Rock v 6.0.
+*/
 @media print {
   @page {
     margin: .5in;
