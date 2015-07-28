@@ -11,7 +11,7 @@
 
                     <div class="panel-heading clearfix">
                         <h1 class="panel-title pull-left">
-                            <i class="fa fa-long-arrow-right"></i>
+                            <i class="fa fa-list"></i>
                             Connection Opportunities
                         </h1>
 
