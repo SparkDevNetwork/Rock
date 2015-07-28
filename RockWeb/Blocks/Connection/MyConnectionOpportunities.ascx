@@ -6,7 +6,7 @@
         <div class="panel panel-block list-as-blocks">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class='fa fa-compress'></i>
+                    <i class='fa fa-plug'></i>
                     My Connection Requests</h1>
 
                 <div class="pull-right">
