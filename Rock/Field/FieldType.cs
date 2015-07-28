@@ -475,7 +475,7 @@ namespace Rock.Field
         public virtual string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
         {
             string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
-            return string.Format( "return Rock.reporting.formatFilterDefault('{0}', $selectedContent);", title );
+            return string.Format( "return Rock.reporting.formatFilterDefault('{0}', $selectedContent);", titleJs );
         }
 
         /// <summary>
