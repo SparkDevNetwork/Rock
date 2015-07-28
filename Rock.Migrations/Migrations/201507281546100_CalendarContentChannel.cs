@@ -117,6 +117,8 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockTypeAttribute( "C18CB1DC-B2BC-4D3F-918A-A047183E4024", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Registration Instance Page", "RegistrationInstancePage", "", "The page to view registration details", 1, @"", "14AF0BB1-7973-42DB-9F40-39E599776D27" );
             // Attrib for BlockType: Calendar Item Occurrence Content Channel Item List:Detail Page
             RockMigrationHelper.AddBlockTypeAttribute( "8418C3B8-5E87-469F-BAE9-E15C32873FBD", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "", "", 0, @"", "B349EF4A-5BE2-470D-BEA6-F2C099907EBF" );
+            // Attrib for BlockType: Calendar Item Occurrence List:Content Item Detail Page
+            RockMigrationHelper.AddBlockTypeAttribute( "94230E7A-8EB7-4407-9B8E-888B54C71E39", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Content Item Detail Page", "ContentItemDetailPage", "", "The page for viewing details about a content item", 3, @"", "D4C4DDD1-E99E-499B-A388-15EEDB29A9AE" );
 
             // Attrib Value for Block:Calendar Item Campus Detail, Attribute:Default Account Page: Event Occurrence, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "55564BCB-CC7D-40CE-BED9-B84BB9B88BDC", "02BD75A4-9C87-4B0A-9356-D995135F9080", @"2a6f9e5f-6859-44f1-ab0e-ce9cf6b08ee5" );
@@ -126,6 +128,9 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "55564BCB-CC7D-40CE-BED9-B84BB9B88BDC", "14AF0BB1-7973-42DB-9F40-39E599776D27", @"844dc54b-daec-47b3-a63a-712dd6d57793" );
             // Attrib Value for Block:Calendar Item Occurrence Content Channel Item List, Attribute:Detail Page Page: Event Occurrence, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "F0C1F229-EC1F-45F0-81A9-A41812280B68", "B349EF4A-5BE2-470D-BEA6-F2C099907EBF", @"6dfa80c3-e2a4-479f-addf-98eac31169e0" );
+            // Attrib Value for Block:Calendar Item Campus List, Attribute:Content Item Detail Page Page: Calendar Item, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "828C8FE3-D5F8-4C22-BA81-844D704842EA", "D4C4DDD1-E99E-499B-A388-15EEDB29A9AE", @"d18e837c-9e65-4a38-8647-dff04a595d97" );
+
 
             Sql( @"
 -- Event Occurrence Page
@@ -172,6 +177,8 @@ WHERE [GUID] = '4B0C44EE-28E3-4753-A95B-8C57CD958FD1'
         /// </summary>
         public override void Down()
         {
+            // Attrib for BlockType: Calendar Item Occurrence List:Content Item Detail Page
+            RockMigrationHelper.DeleteAttribute( "D4C4DDD1-E99E-499B-A388-15EEDB29A9AE" );
             // Attrib for BlockType: Calendar Item Occurrence Content Channel Item List:Detail Page
             RockMigrationHelper.DeleteAttribute( "B349EF4A-5BE2-470D-BEA6-F2C099907EBF" );
             // Attrib for BlockType: Calendar Item Occurrence Detail:Registration Instance Page
