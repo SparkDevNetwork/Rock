@@ -33,6 +33,7 @@ namespace Rock.Client.Enums
         Group = 0x1,
         Campus = 0x2,
         Schedule = 0x3,
+        Location = 0x4,
     }
 
     /// <summary>

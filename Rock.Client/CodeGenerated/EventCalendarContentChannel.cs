@@ -27,33 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for EventItemOccurrence that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for EventCalendarContentChannel that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class EventItemOccurrenceEntity
+    public partial class EventCalendarContentChannelEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? CampusId { get; set; }
+        public int ContentChannelId { get; set; }
 
         /// <summary />
-        public string CampusNote { get; set; }
-
-        /// <summary />
-        public string ContactEmail { get; set; }
-
-        /// <summary />
-        public int? ContactPersonAliasId { get; set; }
-
-        /// <summary />
-        public string ContactPhone { get; set; }
-
-        /// <summary />
-        public int EventItemId { get; set; }
-
-        /// <summary />
-        public string Location { get; set; }
+        public int EventCalendarId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -62,19 +47,14 @@ namespace Rock.Client
         public string ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source EventItemOccurrence object
+        /// Copies the base properties from a source EventCalendarContentChannel object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( EventItemOccurrence source )
+        public void CopyPropertiesFrom( EventCalendarContentChannel source )
         {
             this.Id = source.Id;
-            this.CampusId = source.CampusId;
-            this.CampusNote = source.CampusNote;
-            this.ContactEmail = source.ContactEmail;
-            this.ContactPersonAliasId = source.ContactPersonAliasId;
-            this.ContactPhone = source.ContactPhone;
-            this.EventItemId = source.EventItemId;
-            this.Location = source.Location;
+            this.ContentChannelId = source.ContentChannelId;
+            this.EventCalendarId = source.EventCalendarId;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 
@@ -82,24 +62,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for EventItemOccurrence that includes all the fields that are available for GETs. Use this for GETs (use EventItemOccurrenceEntity for POST/PUTs)
+    /// Client model for EventCalendarContentChannel that includes all the fields that are available for GETs. Use this for GETs (use EventCalendarContentChannelEntity for POST/PUTs)
     /// </summary>
-    public partial class EventItemOccurrence : EventItemOccurrenceEntity
+    public partial class EventCalendarContentChannel : EventCalendarContentChannelEntity
     {
         /// <summary />
-        public Campus Campus { get; set; }
+        public ContentChannel ContentChannel { get; set; }
 
         /// <summary />
-        public PersonAlias ContactPersonAlias { get; set; }
-
-        /// <summary />
-        public ICollection<EventItemOccurrenceChannelItem> ContentChannelItems { get; set; }
-
-        /// <summary />
-        public ICollection<EventItemSchedule> EventItemSchedules { get; set; }
-
-        /// <summary />
-        public ICollection<EventItemOccurrenceGroupMap> Linkages { get; set; }
+        public EventCalendar EventCalendar { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

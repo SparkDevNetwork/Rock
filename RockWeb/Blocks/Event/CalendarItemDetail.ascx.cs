@@ -594,10 +594,6 @@ namespace RockWeb.Blocks.Event
                 eventItem = new EventItem { Id = 0, IsActive = true, Name = "" };
             }
 
-            var calendar = new EventCalendarService( rockContext ).Get( _calendarId );
-            lWizardCalendarName.Text = calendar != null ? calendar.Name : "Calendar";
-            lWizardCalendarItemName.Text = string.IsNullOrWhiteSpace( eventItem.Name ) ? "New Calendar Item" : eventItem.Name;
-
             eventItem.LoadAttributes( rockContext );
 
             bool readOnly = false;
