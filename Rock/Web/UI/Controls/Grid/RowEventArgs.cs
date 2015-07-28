@@ -77,7 +77,7 @@ namespace Rock.Web.UI.Controls
                 RowIndex = row.RowIndex;
 
                 Grid grid = ( row.Parent.Parent as Grid );
-                if ( grid.DataKeyNames.Length > 0 )
+                if ( grid.DataKeyNames.Length > 0 && grid.DataKeys.Count > row.RowIndex )
                 {
                     RowKeyValue = grid.DataKeys[row.RowIndex].Value;
                     RowKeyValues = grid.DataKeys[row.RowIndex].Values;

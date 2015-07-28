@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// EventItemOccurrence Service class
+    /// EventItemOccurrenceChannelItem Service class
     /// </summary>
-    public partial class EventItemOccurrenceService : Service<EventItemOccurrence>
+    public partial class EventItemOccurrenceChannelItemService : Service<EventItemOccurrenceChannelItem>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EventItemOccurrenceService"/> class
+        /// Initializes a new instance of the <see cref="EventItemOccurrenceChannelItemService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public EventItemOccurrenceService(RockContext context) : base(context)
+        public EventItemOccurrenceChannelItemService(RockContext context) : base(context)
         {
         }
 
@@ -48,15 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( EventItemOccurrence item, out string errorMessage )
+        public bool CanDelete( EventItemOccurrenceChannelItem item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<EventItemOccurrenceChannelItem>( Context ).Queryable().Any( a => a.EventItemOccurrenceId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EventItemOccurrence.FriendlyTypeName, EventItemOccurrenceChannelItem.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -64,43 +58,38 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class EventItemOccurrenceExtensionMethods
+    public static partial class EventItemOccurrenceChannelItemExtensionMethods
     {
         /// <summary>
-        /// Clones this EventItemOccurrence object to a new EventItemOccurrence object
+        /// Clones this EventItemOccurrenceChannelItem object to a new EventItemOccurrenceChannelItem object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static EventItemOccurrence Clone( this EventItemOccurrence source, bool deepCopy )
+        public static EventItemOccurrenceChannelItem Clone( this EventItemOccurrenceChannelItem source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as EventItemOccurrence;
+                return source.Clone() as EventItemOccurrenceChannelItem;
             }
             else
             {
-                var target = new EventItemOccurrence();
+                var target = new EventItemOccurrenceChannelItem();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another EventItemOccurrence object to this EventItemOccurrence object
+        /// Copies the properties from another EventItemOccurrenceChannelItem object to this EventItemOccurrenceChannelItem object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this EventItemOccurrence target, EventItemOccurrence source )
+        public static void CopyPropertiesFrom( this EventItemOccurrenceChannelItem target, EventItemOccurrenceChannelItem source )
         {
             target.Id = source.Id;
-            target.CampusId = source.CampusId;
-            target.CampusNote = source.CampusNote;
-            target.ContactEmail = source.ContactEmail;
-            target.ContactPersonAliasId = source.ContactPersonAliasId;
-            target.ContactPhone = source.ContactPhone;
-            target.EventItemId = source.EventItemId;
-            target.Location = source.Location;
+            target.ContentChannelItemId = source.ContentChannelItemId;
+            target.EventItemOccurrenceId = source.EventItemOccurrenceId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

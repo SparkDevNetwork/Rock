@@ -256,9 +256,11 @@
     <Compile Include="Model\CodeGenerated\ConnectionTypeService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionWorkflowService.cs" />
     <Compile Include="Jobs\GroupLeaderPendingNotifications.cs" />
+    <Compile Include="Model\CodeGenerated\EventCalendarContentChannelService.cs" />
     <Compile Include="Model\CodeGenerated\EventCalendarItemService.cs" />
     <Compile Include="Model\CodeGenerated\EventCalendarService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemAudienceService.cs" />
+    <Compile Include="Model\CodeGenerated\EventItemOccurrenceChannelItemService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemOccurrenceGroupMapService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemOccurrenceService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemScheduleService.cs" />
@@ -332,7 +334,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\CodeGenerated\RegistrationRegistrantFeeService.cs" />
+    <Compile Include="Model\EventCalendarContentChannel.cs" />
     <Compile Include="Model\EventItemAudience.cs" />
+    <Compile Include="Model\EventItemOccurrenceChannelItem.cs" />
     <Compile Include="Model\EventItemOccurrenceGroupMap.cs" />
     <Compile Include="Model\EventItemSchedule.cs" />
     <Compile Include="Model\CampusService.partial.cs" />
