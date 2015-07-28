@@ -1,3 +1,8 @@
+-- JE: Make Involvement Connection Type "Enable Full Activity List" = true
+UPDATE [ConnectionType]
+  SET [EnableFullActivityList] = 1
+  WHERE [Guid] = 'DD565087-A4BE-4943-B123-BF22777E8426'
+
 -- JE: Change system email for Group Leader Pending Notifications
 UPDATE [SystemEmail]
 SET [Subject] = 'New Pending Group Members | {{ ''Global''  | Attribute:''OrganizationName'' }}'
