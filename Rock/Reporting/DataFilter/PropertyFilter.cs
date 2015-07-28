@@ -191,7 +191,7 @@ namespace Rock.Reporting.DataFilter
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.Name );
                 if ( !containerControl.Controls.OfType<Control>().Any( a => a.ID == controlId ) )
                 {
-                    var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true );
+                    var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, FilterMode.AdvancedFilter );
                     if ( control != null )
                     {
                         // Add the filter controls of the selected field

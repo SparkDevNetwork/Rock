@@ -173,7 +173,7 @@ namespace Rock.Reporting.DataFilter.Group
             foreach ( var entityField in GetGroupAttributes( groupTypePicker.SelectedGroupTypeId ) )
             {
                 string controlId = string.Format( "{0}_{1}", pnlGroupAttributeFilterControls.ID, entityField.Name );
-                var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true );
+                var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, FilterMode.AdvancedFilter );
                 if ( control != null )
                 {
                     // Add the field to the dropdown of available fields
