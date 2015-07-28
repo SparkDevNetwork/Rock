@@ -765,8 +765,16 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void BindConnectionRequestActivitiesGrid()
         {
-            var connectionRequestId = PageParameter( "ConnectionRequestId" ).AsInteger();
-            var connectionRequestActivities = new ConnectionRequestActivityService( new RockContext() ).Queryable().Where( a => a.ConnectionRequestId == connectionRequestId ).ToList();
+
+            List<ConnectionRequestActivity> connectionRequestActivities = null;
+            if ( _connectionRequest.ConnectionOpportunity.ConnectionType.EnableFullActivityList )
+            {
+                connectionRequestActivities = new ConnectionRequestActivityService( new RockContext() ).Queryable().Where( a => a.ConnectionOpportunity.ConnectionTypeId == _connectionRequest.ConnectionOpportunity.ConnectionTypeId ).ToList();
+            }
+            else
+            {
+                connectionRequestActivities = new ConnectionRequestActivityService( new RockContext() ).Queryable().Where( a => a.ConnectionRequestId == _connectionRequest.Id ).ToList();
+            }
 
             gConnectionRequestActivities.DataSource = connectionRequestActivities.Select( a => new
             {
