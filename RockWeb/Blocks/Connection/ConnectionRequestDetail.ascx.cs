@@ -386,6 +386,16 @@ namespace RockWeb.Blocks.Connection
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbSetConnector control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSetConnector_Click( object sender, EventArgs e )
+        {
+            ppConnectorEdit.SetValue( CurrentPerson );
+        }
+
         #endregion
 
         #region TransferPanel Events
@@ -732,7 +742,7 @@ namespace RockWeb.Blocks.Connection
                 }
             }
 
-            ppConnector.SetValue( CurrentPerson );
+            ppConnector.SetValue( null );
             tbNote.Text = string.Empty;
 
             ShowDialog( "ConnectionRequestActivities", true );
@@ -1097,9 +1107,10 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                ppConnectorEdit.SetValue( CurrentPerson );
+                ppConnectorEdit.SetValue( null );
             }
             ppConnectorEdit.Enabled = true;
+            lbSetConnector.Visible = CurrentPerson != null;
 
             if ( _connectionRequest.PersonAlias != null )
             {
@@ -1423,5 +1434,5 @@ namespace RockWeb.Blocks.Connection
         }
 
         #endregion
-    }
+}
 }
