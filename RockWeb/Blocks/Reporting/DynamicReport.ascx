@@ -41,6 +41,7 @@
                 </div>
                 <div class="panel-body">
                     <Rock:NotificationBox ID="nbReportErrors" runat="server" NotificationBoxType="Info" Visible="false" />
+                    <asp:Literal ID="lDebugShowSQL" runat="server" Visible="false" />
                     <div class="grid grid-panel">
                         <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
                     </div>
