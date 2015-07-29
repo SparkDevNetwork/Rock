@@ -423,19 +423,20 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to -- JE: Change system email for Group Leader Pending Notifications
-        ///UPDATE [SystemEmail]
-        ///SET [Subject] = &apos;New Pending Group Members | {{ &apos;&apos;Global&apos;&apos;  | Attribute:&apos;&apos;OrganizationName&apos;&apos; }}&apos;
-        ///	, [Body] = &apos;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;EmailHeader&apos;&apos; }}
+        ///   Looks up a localized string similar to -- JE: Reorder the Communication List on the Person Profile Page
+        ///  UPDATE [Block] SET [Order] = 0
+        ///  WHERE [Guid] = &apos;27F84ADB-AA13-439E-A130-FBF73698B172&apos;
         ///
-        ///&lt;p&gt;
-        ///    {{ Person.NickName }},
-        ///&lt;/p&gt;
+        ///  UPDATE [Block] SET [Order] = 1
+        ///  WHERE [Guid] = &apos;2D99AB97-4B9C-4D72-B207-8F36AE90D495&apos;
         ///
-        ///&lt;p&gt;
-        ///    We wanted to make you aware of additional individuals who have taken the next step to connect with 
-        ///    group. The individuals&apos;&apos; names and contact information can be found below. Our 
-        ///    goal is to contact new m [rest of string was truncated]&quot;;.
+        ///  UPDATE [Block] SET [Order] = 2
+        ///  WHERE [Guid] = &apos;F98649D7-E522-46CB-8F67-01DB7F59E3AA&apos;
+        ///
+        ///-- JE: Make Involvement Connection Type &quot;Enable Full Activity List&quot; = true
+        ///UPDATE [ConnectionType]
+        ///  SET [EnableFullActivityList] = 1
+        ///  WHERE [Guid] = &apos;DD565087-A4B [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201507281546100_CalendarContentChannel {
             get {
