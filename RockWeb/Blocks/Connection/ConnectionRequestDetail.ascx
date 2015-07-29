@@ -109,6 +109,7 @@
                         </div>
                         <div class="col-md-3">
                             <Rock:PersonPicker runat="server" ID="ppConnectorEdit" Label="Connector" />
+                            <asp:LinkButton ID="lbSetConnector" runat="server" CssClass="btn btn-link" Text="Set to Self" OnClick="lbSetConnector_Click" />
                         </div>
                         <div class="col-md-4 col-md-offset-2">
                             <Rock:RockRadioButtonList ID="rblState" runat="server" Label="State" RepeatDirection="Horizontal" OnSelectedIndexChanged="rblState_SelectedIndexChanged" AutoPostBack="true" />
