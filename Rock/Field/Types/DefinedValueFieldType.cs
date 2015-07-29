@@ -346,6 +346,9 @@ namespace Rock.Field.Types
                 lbl.ID = string.Format( "{0}_lIs", id );
                 lbl.AddCssClass( "data-view-filter-label" );
                 lbl.Text = "Is";
+                
+                // hide the compare control when in SimpleFilter mode
+                lbl.Visible = filterMode != FilterMode.SimpleFilter;
                 return lbl;
             }
         }
@@ -401,7 +404,7 @@ namespace Rock.Field.Types
         /// <param name="filterControl">The filter control.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues )
+        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode )
         {
             var values = new List<string>();
 
@@ -413,7 +416,7 @@ namespace Rock.Field.Types
                 {
                     if ( allowMultiple )
                     {
-                        var filterValues = base.GetFilterValues( filterControl, configurationValues );
+                        var filterValues = base.GetFilterValues( filterControl, configurationValues, filterMode );
                         if ( filterValues != null )
                         {
                             filterValues.ForEach( v => values.Add( v ) );
