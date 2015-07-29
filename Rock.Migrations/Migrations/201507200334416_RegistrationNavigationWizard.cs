@@ -41,7 +41,7 @@ namespace Rock.Migrations
                 <i class=""fa fa-fw fa-clipboard""></i>
             </div>
             <div class=""wizard-item-label"">
-                {% if Context %}{{ Context.RegistrationTemplate.Name }}{% else %}Template{% endif %}
+                {% if Context.RegistrationTemplate %}{{ Context.RegistrationTemplate.Name }}{% else %}Template{% endif %}
             </div>
         </a>
     </div>

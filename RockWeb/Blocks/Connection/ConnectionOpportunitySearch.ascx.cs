@@ -36,11 +36,13 @@ using Rock.Security;
 
 namespace RockWeb.Blocks.Connection
 {
-    [DisplayName( "Connection Opportunity Search Lava" )]
+    [DisplayName( "Connection Opportunity Search" )]
     [Category( "Connection" )]
     [Description( "Allows users to search for an opportunity to join" )]
+
     [CodeEditorField( "Lava Template", "Lava template to use to display the list of opportunities.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunitySearch.lava' %}", "", 2 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
+    [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", true )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the connection type name.", false )]
     [BooleanField( "Display Name Filter", "Display the name filter", true )]
     [BooleanField( "Display Campus Filter", "Display the campus filter", true )]
@@ -48,7 +50,7 @@ namespace RockWeb.Blocks.Connection
     [LinkedPage( "Detail Page", "The page used to view a connection opportunity." )]
     [IntegerField( "Connection Type Id", "The Id of the connection type whose opportunities are displayed.", true, 1 )]
 
-    public partial class ExternalOpportunitySearch : Rock.Web.UI.RockBlock
+    public partial class OpportunitySearch : Rock.Web.UI.RockBlock
     {
         #region Properties
 
@@ -270,6 +272,17 @@ namespace RockWeb.Blocks.Connection
                 else
                 {
                     cblCampus.Visible = false;
+                }
+
+                if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
+                {
+                    var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+                    var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+
+                    if ( contextCampus != null )
+                    {
+                        cblCampus.SetValue( contextCampus.Id.ToString() );
+                    }
                 }
 
                 if ( GetAttributeValue( "DisplayAttributeFilters" ).AsBoolean() )
