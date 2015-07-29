@@ -131,6 +131,10 @@ namespace Rock.Field.Types
             lbl.ID = string.Format( "{0}_lIs", id );
             lbl.AddCssClass( "data-view-filter-label" );
             lbl.Text = "Is";
+
+            // hide the compare control when in SimpleFilter mode
+            lbl.Visible = filterMode != FilterMode.SimpleFilter;
+            
             return lbl;
         }
 

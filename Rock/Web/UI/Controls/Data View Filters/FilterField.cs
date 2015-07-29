@@ -399,7 +399,7 @@ namespace Rock.Web.UI.Controls
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
-                return component.GetSelection( FilteredEntityType, filterControls );
+                return component.GetSelection( FilteredEntityType, filterControls, this.FilterMode );
             }
 
             return string.Empty;
@@ -420,7 +420,7 @@ namespace Rock.Web.UI.Controls
             if ( component != null )
             {
                 component.Options = FilterOptions;
-                filterControls = component.CreateChildControls( FilteredEntityType, this );
+                filterControls = component.CreateChildControls( FilteredEntityType, this, this.FilterMode );
             }
             else
             {

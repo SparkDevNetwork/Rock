@@ -219,21 +219,39 @@ namespace Rock.Field
             var compareControl = FilterCompareControl( configurationValues, id, required, filterMode );
             var valueControl = FilterValueControl( configurationValues, id, required, filterMode );
 
-            bool isLabel = compareControl is Label;
+            //bool isLabel = compareControl is Label;
+            string col1Class = "";
+            string col2Class = "col-md-12";
 
             if ( compareControl != null )
             {
                 HtmlGenericControl col1 = new HtmlGenericControl( "div" );
                 col1.ID = string.Format( "{0}_col1", id );
                 row.Controls.Add( col1 );
-                col1.AddCssClass( isLabel ? "col-md-2" : "col-md-4" );
+                if (!compareControl.Visible)
+                {
+                    col1Class = "";
+                    col2Class = "col-md-12";
+                }
+                else if ( compareControl is Label )
+                {
+                    col1Class = "col-md-2";
+                    col2Class = "col-md-10";
+                }
+                else
+                {
+                    col1Class = "col-md-4";
+                    col2Class = "col-md-8";
+                }
+
+                col1.AddCssClass( col1Class );
                 col1.Controls.Add( compareControl );
             }
 
             HtmlGenericControl col2 = new HtmlGenericControl( "div" );
             col2.ID = string.Format( "{0}_col2", id );
             row.Controls.Add( col2 );
-            col2.AddCssClass( isLabel ? "col-md-10" : "col-md-8" );
+            col2.AddCssClass( col2Class );
             col2.Controls.Add( valueControl );
 
             return row;
@@ -257,15 +275,7 @@ namespace Rock.Field
         /// <returns></returns>
         public virtual bool HasFilterControl()
         {
-            try
-            {
-                var filterControl = FilterControl( new Dictionary<string, ConfigurationValue>(), "", true, FilterMode.AdvancedFilter );
-                return filterControl != null;
-            }
-            catch
-            {
-                return false;
-            }
+            return true;
         }
 
         /// <summary>
@@ -279,6 +289,14 @@ namespace Rock.Field
         public virtual Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         { 
             RockDropDownList ddlCompare = ComparisonHelper.ComparisonControl( FilterComparisonType, required );
+
+            if ( FilterComparisonType == ComparisonHelper.BinaryFilterComparisonTypes && filterMode == FilterMode.SimpleFilter )
+            {
+                // hide the compare control for SimpleFilter mode if it is just EqualTo/NotEqualTo
+                ddlCompare.Visible = false;
+            }
+
+
             ddlCompare.ID = string.Format( "{0}_ddlCompare", id );
             ddlCompare.AddCssClass( "js-filter-compare" );
             return ddlCompare;
@@ -346,7 +364,7 @@ namespace Rock.Field
         /// <param name="filterControl">The filter control.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public virtual List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues )
+        public virtual List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode )
         {
             var values = new List<string>();
 
@@ -354,7 +372,7 @@ namespace Rock.Field
             {
                 try
                 {
-                    string compare = GetFilterCompareValue( filterControl.Controls[0].Controls[0] );
+                    string compare = GetFilterCompareValue( filterControl.Controls[0].Controls[0], filterMode );
                     if (compare != null )
                     {
                         values.Add( compare );
@@ -372,20 +390,42 @@ namespace Rock.Field
             return values;
         }
 
+        [Obsolete]
+        public virtual List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return GetFilterValues( filterControl, configurationValues, FilterMode.AdvancedFilter );
+        }
+
+        /// <summary>
+        /// Gets the filter compare value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public virtual string GetFilterCompareValue( Control control, FilterMode filterMode )
+        {
+            var ddlCompare = control as RockDropDownList;
+            if ( ddlCompare != null )
+            {
+                if (!ddlCompare.Visible)
+                {
+                    return ComparisonType.EqualTo.ConvertToInt().ToString();
+                }
+
+                return ddlCompare.SelectedValue;
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>
         /// Gets the filter compare value.
         /// </summary>
         /// <param name="control">The control.</param>
         /// <returns></returns>
-        public virtual string GetFilterCompareValue( Control control )
+        public virtual string GetFilterCompareValue( Control control)
         {
-            var ddlCompare = control as RockDropDownList;
-            if ( ddlCompare != null )
-            {
-                return ddlCompare.SelectedValue;
-            }
-
-            return string.Empty;
+            return GetFilterCompareValue( control, FilterMode.AdvancedFilter );
         }
 
         /// <summary>

@@ -217,7 +217,7 @@ namespace Rock.Reporting.DataFilter.Group
         /// <param name="entityType"></param>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
-        public override string GetSelection( Type entityType, Control[] controls )
+        public override string GetSelection( Type entityType, Control[] controls, FilterMode filterMode )
         {
             var values = new List<string>();
 
@@ -253,7 +253,7 @@ namespace Rock.Reporting.DataFilter.Group
                                 {
                                     values.Add( groupType.Guid.ToString() );
                                     values.Add( ddlProperty.SelectedValue );
-                                    entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig ).ForEach( v => values.Add( v ) );
+                                    entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig, filterMode ).ForEach( v => values.Add( v ) );
                                 }
                             }
                         }

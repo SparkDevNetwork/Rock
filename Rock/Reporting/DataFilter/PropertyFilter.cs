@@ -183,7 +183,8 @@ namespace Rock.Reporting.DataFilter
         protected void ddlEntityField_SelectedIndexChanged( object sender, EventArgs e )
         {
             var ddlEntityField = sender as RockDropDownList;
-            var containerControl = ddlEntityField.Parent as DynamicControlsPanel;
+            var containerControl = ddlEntityField.FirstParentControlOfType<DynamicControlsPanel>();
+            FilterField filterControl = ddlEntityField.FirstParentControlOfType<FilterField>();
             
             var entityField = this.entityFields.FirstOrDefault( a => a.Name == ddlEntityField.SelectedValue );
             if ( entityField != null )
@@ -191,7 +192,7 @@ namespace Rock.Reporting.DataFilter
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.Name );
                 if ( !containerControl.Controls.OfType<Control>().Any( a => a.ID == controlId ) )
                 {
-                    var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, FilterMode.AdvancedFilter );
+                    var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, filterControl.FilterMode );
                     if ( control != null )
                     {
                         // Add the filter controls of the selected field
@@ -248,7 +249,7 @@ namespace Rock.Reporting.DataFilter
                     if ( control != null )
                     {
                         values.Add( ddlProperty.SelectedValue );
-                        entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig ).ForEach( v => values.Add( v ) );
+                        entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig, filterMode ).ForEach( v => values.Add( v ) );
                     }
                 }
             }
