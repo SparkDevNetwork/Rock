@@ -149,7 +149,6 @@ namespace Rock.Reporting.DataFilter
             ddlEntityField.ID = string.Format( "{0}_ddlProperty", filterControl.ID );
             ddlEntityField.ClientIDMode = ClientIDMode.Predictable;
             containerControl.Controls.Add( ddlEntityField );
-            this.entityFieldPicker = ddlEntityField;
 
             // add Empty option first
             ddlEntityField.Items.Add( new ListItem() );
@@ -202,7 +201,6 @@ namespace Rock.Reporting.DataFilter
             }
         }
 
-        private DropDownList entityFieldPicker = null;
         private List<EntityField> entityFields = null;
 
         /// <summary>
