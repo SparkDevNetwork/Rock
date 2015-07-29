@@ -194,6 +194,13 @@ namespace Rock.Reporting
             return value.ConvertToEnumOrNull<TEnum>();
         }
 
+        /// <summary>
+        /// Gets the parameter as list.
+        /// </summary>
+        /// <param name="parameters">The parameters.</param>
+        /// <param name="parameterIndex">Index of the parameter.</param>
+        /// <param name="delimiter">The delimiter.</param>
+        /// <returns></returns>
         public static List<string> GetParameterAsList( IEnumerable<string> parameters, int parameterIndex, string delimiter = "," )
         {
             var value = GetParameterOrDefault( parameters, parameterIndex, string.Empty );
