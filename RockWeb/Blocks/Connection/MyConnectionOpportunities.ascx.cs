@@ -458,14 +458,28 @@ namespace RockWeb.Blocks.Connection
             }
 
             // Get the connectionOpportunities that have connector groups the user is in.
-            var connectionOpportunityIds = allConnectionOpportunities
-                .Where( o =>
-                    ( o.ConnectorGroupId.HasValue && userGroupIds.Contains( o.ConnectorGroupId.Value ) )
-                    || o.ConnectionOpportunityGroupCampuses.Any( c => userGroupIds.Contains( c.ConnectorGroupId.Value ) )
-                    || o.ConnectionType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) && !AdminFilter.Value )
-                .Select( o => o.Id )//
-                .Distinct()
-                .ToList();
+            var connectionOpportunityIds = new Dictionary<int, List<int>>();
+            foreach( var opp in allConnectionOpportunities )
+            {
+                if (
+                    ( opp.ConnectorGroupId.HasValue && userGroupIds.Contains( opp.ConnectorGroupId.Value ) ) ||
+                    ( opp.ConnectionType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) && !AdminFilter.Value )
+                )
+                {
+                    connectionOpportunityIds.Add( opp.Id, new List<int>() );
+                }
+                else
+                {
+                    foreach( var groupCampus in opp.ConnectionOpportunityGroupCampuses.Where( g => g.ConnectorGroupId.HasValue  ) )
+                    {
+                        if ( userGroupIds.Contains( groupCampus.ConnectorGroupId.Value ) )
+                        {
+                            connectionOpportunityIds.AddOrIgnore( opp.Id, new List<int>() );
+                            connectionOpportunityIds[opp.Id].Add( groupCampus.CampusId );
+                        }
+                    }
+                }
+            }
 
             // Create variable for storing authorized types and the count of active form actions
             var connectionOpportunityCounts = new Dictionary<int, int>();
@@ -474,12 +488,19 @@ namespace RockWeb.Blocks.Connection
 
             connectionRequests = new ConnectionRequestService( rockContext ).Queryable()
                 .Where( r =>
-                    connectionOpportunityIds.Contains( r.ConnectionOpportunityId )
+                    connectionOpportunityIds.Keys.Contains( r.ConnectionOpportunityId )
                     ) //TODO Status
                 .ToList();
 
-            connectionOpportunityIds.ForEach( id =>
-                connectionOpportunityCounts.Add( id, connectionRequests.Where( r => r.ConnectionOpportunityId == id && r.ConnectionStatus.IsCritical ).Count() ) );
+            foreach( var keyVal in connectionOpportunityIds )
+            { 
+                connectionOpportunityCounts.Add( keyVal.Key, connectionRequests
+                    .Where( r => 
+                        r.ConnectionOpportunityId == keyVal.Key && 
+                        r.ConnectionStatus.IsCritical &&
+                        ( !r.CampusId.HasValue || !keyVal.Value.Any() || keyVal.Value.Contains( r.CampusId.Value ) ) )
+                    .Count() );
+            }
 
             var displayedTypes = new List<ConnectionOpportunity>();
             foreach ( var connectionOpportunity in allConnectionOpportunities.Where( o => connectionOpportunityCounts.Keys.Contains( o.Id ) ) )
@@ -492,6 +513,7 @@ namespace RockWeb.Blocks.Connection
                 .Select( o => new DisplayedOpportunitySummary
                 {
                     ConnectionOpportunity = o,
+                    CampusIds = connectionOpportunityIds[o.Id],
                     Count = connectionOpportunityCounts[o.Id],
                     Class = ( SelectedConnectionOpportunityId.HasValue && SelectedConnectionOpportunityId.Value == o.Id ) ? "active" : ""
                 } );
@@ -529,8 +551,16 @@ namespace RockWeb.Blocks.Connection
 
                 if ( selectedConnectionOpportunity != null && qry.Count() > 0 )
                 {
+                    var opportunityCampusIds = qry
+                        .Where( o => o.ConnectionOpportunity.Id == selectedConnectionOpportunity.Id )
+                        .Select( o => o.CampusIds )
+                        .FirstOrDefault();
+
                     pnlGrid.Visible = true;
-                    var qryRequests = new ConnectionRequestService( rockContext ).Queryable( "ConnectionRequestActivities" ).Where( w => w.ConnectionOpportunityId == selectedConnectionOpportunity.Id );
+                    var qryRequests = new ConnectionRequestService( rockContext ).Queryable( "ConnectionRequestActivities" )
+                        .Where( w =>
+                            w.ConnectionOpportunityId == selectedConnectionOpportunity.Id &&
+                            ( !w.CampusId.HasValue || !opportunityCampusIds.Any() || opportunityCampusIds.Contains( w.CampusId.Value ) ) );
 
                     // Filter by Requester
                     string firstName = tbFirstName.Text;
@@ -614,6 +644,7 @@ namespace RockWeb.Blocks.Connection
         public class DisplayedOpportunitySummary
         {
             public ConnectionOpportunity ConnectionOpportunity { get; set; }
+            public List<int> CampusIds { get; set; }
             public int Count { get; set; }
             public String Class { get; set; }
         }
