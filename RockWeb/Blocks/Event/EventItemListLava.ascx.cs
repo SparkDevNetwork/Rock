@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.Event
 
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "DetailsPage", LinkedPageUrl( "DetailsPage", null ) );
-            mergeFields.Add( "EventItemOccurrences", eventCampusSummaries );
+            mergeFields.Add( "EventCampusSummaries", eventCampusSummaries );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
 
             lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
