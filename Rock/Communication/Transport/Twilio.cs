@@ -86,7 +86,7 @@ namespace Rock.Communication.Transport
                     bool recipientFound = true;
                     while ( recipientFound )
                     {
-                        var recipient = recipientService.Get( communication.Id, CommunicationRecipientStatus.Pending ).FirstOrDefault();
+                        var recipient = Rock.Model.Communication.GetNextPending( communication.Id, rockContext );
                         if ( recipient != null )
                         {
                             try

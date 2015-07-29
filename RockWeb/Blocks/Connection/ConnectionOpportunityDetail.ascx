@@ -99,8 +99,8 @@
                             <div class="grid">
                                 <Rock:Grid ID="gConnectionOpportunityGroupCampuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Campus Connector Group" ShowConfirmDeleteDialog="false">
                                     <Columns>
-                                        <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
                                         <Rock:RockBoundField DataField="Group" HeaderText="Group" />
+                                        <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
                                         <Rock:EditField OnClick="gConnectionOpportunityGroupCampuses_Edit" />
                                         <Rock:DeleteField OnClick="gConnectionOpportunityGroupCampuses_Delete" />
                                     </Columns>
@@ -177,8 +177,14 @@
 
         <Rock:ModalDialog ID="dlgGroupCampusDetails" runat="server" ValidationGroup="CampusDetails" SaveButtonText="Add" OnSaveClick="dlgGroupCampusDetails_SaveClick" Title="Select Group">
             <Content>
-                <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" ValidationGroup="CampusDetails" Required="true" />
-                <Rock:GroupPicker ID="gpGroup" runat="server" Label="Connector Group" ValidationGroup="CampusDetails" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:GroupPicker ID="gpGroup" runat="server" Label="Connector Group" ValidationGroup="CampusDetails" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" ValidationGroup="CampusDetails" Required="true" />
+                    </div>
+                </div>
             </Content>
         </Rock:ModalDialog>
 
