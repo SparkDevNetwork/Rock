@@ -1,0 +1,183 @@
+{{ "../Styles/pages/events.css" | AddLinkTagToHead:'rel','stylesheet' }}
+
+
+<h2 class="page-header">July</h2>
+
+<div class="row">
+
+  <div class="col-sm-12 col-md-8 col-lg-6">
+    <div class="panel panel-default panel-card panel-card-light panel-card-withimg">
+      <a class="panel-body" href="#" style="background-image: url('http://ccv.church/Arena/cachedblob.aspx?guid=34cf4480-ac44-488d-abf5-de5ca0f495a8');">
+        <h3 class="panel-title">Super Event 1</h3>
+      </a>
+      <div class="panel-footer clearfix">
+        <a class="btn btn-default btn-sm pull-right" href="#">More <i class="fa fa-caret-right"></i></a>
+        Mon 7/4/15 6-7pm
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="panel panel-card panel-card-half panel-card-withimg" href="#">
+      <a class="panel-body" href="#" style="background-image: url('http://lorempixel.com/600/600/abstract/3/');">
+        <h3 class="panel-title">Super Event 2</h3>
+      </a>
+      <div class="panel-footer clearfix">
+        <a class="btn btn-default btn-sm pull-right" href="#">More <i class="fa fa-caret-right"></i></a>
+        Mon 7/4/15 6-7pm
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="panel panel-card panel-card-half panel-card-primary" href="#">
+      <a class="panel-body" href="#">
+        <h3 class="panel-title">lorem 3</h3>
+      </a>
+      <div class="panel-footer clearfix">
+        <a class="btn btn-default btn-sm pull-right" href="#">More <i class="fa fa-caret-right"></i></a>
+        Mon 7/4/15 6-7pm
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="panel panel-card panel-card-half" href="#">
+      <a class="panel-body" href="#">
+        <h3 class="panel-title">Super Event SUPER asdf kjhsdfk 4</h3>
+      </a>
+      <div class="panel-footer clearfix">
+        <a class="btn btn-default btn-sm pull-right" href="#">More <i class="fa fa-caret-right"></i></a>
+        Mon 7/4/15 6-7pm
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="panel panel-card panel-card-half" href="#">
+      <a class="panel-body" href="#">
+        <h3 class="panel-title">lorem 5</h3>
+      </a>
+      <div class="panel-footer clearfix">
+        <a class="btn btn-default btn-sm pull-right" href="#">More <i class="fa fa-caret-right"></i></a>
+        Mon 7/4/15 6-7pm
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="panel panel-card panel-card-half" href="#">
+      <a class="panel-body" href="#">
+        <h3 class="panel-title">Super Event 6</h3>
+      </a>
+      <div class="panel-footer clearfix">
+        <a class="btn btn-default btn-sm pull-right" href="#">More <i class="fa fa-caret-right"></i></a>
+        Mon 7/4/15 6-7pm
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="panel panel-card panel-card-half panel-card-black" href="#">
+      <a class="panel-body" href="#">
+        <h3 class="panel-title">lorem 7</h3>
+      </a>
+      <div class="panel-footer clearfix">
+        <a class="btn btn-default btn-sm pull-right" href="#">More <i class="fa fa-caret-right"></i></a>
+        Mon 7/4/15 6-7pm
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<h2 class="page-header">August</h2>
+
+<div class="row">
+
+  <div class="col-sm-12 col-md-8 col-lg-6">
+    <div class="panel panel-default panel-card panel-card-light panel-card-withimg">
+      <a class="panel-body" href="#" style="background-image: url('http://ccv.church/Arena/cachedblob.aspx?guid=34cf4480-ac44-488d-abf5-de5ca0f495a8');">
+        <h3 class="panel-title">Super Event 1</h3>
+      </a>
+      <div class="panel-footer clearfix">
+        <a class="btn btn-default btn-sm pull-right" href="#">More <i class="fa fa-caret-right"></i></a>
+        Mon 7/4/15 6-7pm
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="panel panel-card panel-card-half panel-card-withimg" href="#">
+      <a class="panel-body" href="#" style="background-image: url('http://lorempixel.com/600/600/abstract/3/');">
+        <h3 class="panel-title">Super Event 2</h3>
+      </a>
+      <div class="panel-footer clearfix">
+        <a class="btn btn-default btn-sm pull-right" href="#">More <i class="fa fa-caret-right"></i></a>
+        Mon 7/4/15 6-7pm
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="panel panel-card panel-card-half panel-card-primary" href="#">
+      <a class="panel-body" href="#">
+        <h3 class="panel-title">lorem 3</h3>
+      </a>
+      <div class="panel-footer clearfix">
+        <a class="btn btn-default btn-sm pull-right" href="#">More <i class="fa fa-caret-right"></i></a>
+        Mon 7/4/15 6-7pm
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="panel panel-card panel-card-half" href="#">
+      <a class="panel-body" href="#">
+        <h3 class="panel-title">Super Event SUPER asdf kjhsdfk 4</h3>
+      </a>
+      <div class="panel-footer clearfix">
+        <a class="btn btn-default btn-sm pull-right" href="#">More <i class="fa fa-caret-right"></i></a>
+        Mon 7/4/15 6-7pm
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="panel panel-card panel-card-half" href="#">
+      <a class="panel-body" href="#">
+        <h3 class="panel-title">lorem 5</h3>
+      </a>
+      <div class="panel-footer clearfix">
+        <a class="btn btn-default btn-sm pull-right" href="#">More <i class="fa fa-caret-right"></i></a>
+        Mon 7/4/15 6-7pm
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="panel panel-card panel-card-half" href="#">
+      <a class="panel-body" href="#">
+        <h3 class="panel-title">Super Event 6</h3>
+      </a>
+      <div class="panel-footer clearfix">
+        <a class="btn btn-default btn-sm pull-right" href="#">More <i class="fa fa-caret-right"></i></a>
+        Mon 7/4/15 6-7pm
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="panel panel-card panel-card-half panel-card-black" href="#">
+      <a class="panel-body" href="#">
+        <h3 class="panel-title">lorem 7</h3>
+      </a>
+      <div class="panel-footer clearfix">
+        <a class="btn btn-default btn-sm pull-right" href="#">More <i class="fa fa-caret-right"></i></a>
+        Mon 7/4/15 6-7pm
+      </div>
+    </div>
+  </div>
+
+</div>

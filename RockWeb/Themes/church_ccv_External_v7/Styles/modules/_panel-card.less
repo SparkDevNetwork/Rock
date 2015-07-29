@@ -1,0 +1,87 @@
+
+
+//
+// CARD PANELS (Bootstrap Extension)
+// --------------------------------------------------
+
+// Base
+// -------------------------
+
+.panel-card {
+  border-width: 0;
+  margin-bottom: @grid-gutter-width;
+  .panel-body {
+    display: block;
+    height: @grid-gutter-width*9-3px;
+    position: relative;
+    background: @gray-light;
+    color: #fff;
+    border-radius: @border-radius-base @border-radius-base 0 0;
+    a { color: inherit; }
+  }
+    .panel-title {
+      font-size: @font-size-h3;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: @grid-gutter-width/2;
+      line-height: @grid-gutter-width;
+    }
+  .panel-footer {
+    border-top: none;
+    border-left: 2px solid @panel-default-border;
+    border-bottom: 2px solid @panel-default-border;
+    border-right: 2px solid @panel-default-border;
+    line-height: @grid-gutter-width + 5px;
+  }
+}
+
+
+// Modifiers
+// -------------------------
+
+.panel-card-withimg {
+  .panel-body {
+    background-position: center center;
+    background-size: cover;
+    background-repeat: none;
+    &:hover .panel-title {
+      background: rgba(0,0,0,.25);
+    }
+  }
+  .panel-title {
+    .transition(background .3s);
+  }
+}
+
+// Size
+
+.panel-card-half {
+  .panel-body {
+    height: @grid-gutter-width*3;
+  }
+}
+
+// Color
+
+.panel-card-light {
+  .panel-body {
+    color: @text-color;
+    &:hover .panel-title {
+      background: rgba(255,255,255,.5);
+    }
+  }
+}
+
+.panel-card-primary {
+  .panel-body {
+    background-color: @brand-primary;
+  }
+}
+
+.panel-card-black {
+  .panel-body {
+    background-color: @gray-darker;
+  }
+}
