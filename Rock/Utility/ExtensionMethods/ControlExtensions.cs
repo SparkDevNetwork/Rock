@@ -130,6 +130,31 @@ namespace Rock
             return result;
         }
 
+        /// <summary>
+        /// Goes up the parent tree of the control returning the first parent that is of the specified type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public static T FirstParentControlOfType<T>( this System.Web.UI.Control control ) where T : System.Web.UI.Control
+        {
+            if ( control != null )
+            {
+                var parentControl = control.Parent;
+                while ( parentControl != null )
+                {
+                    if ( parentControl is T )
+                    {
+                        return parentControl as T;
+                    }
+
+                    parentControl = parentControl.Parent;
+                }
+            }
+
+            return null;
+        }
+
         #endregion Control Extensions
 
         #region WebControl Extensions
