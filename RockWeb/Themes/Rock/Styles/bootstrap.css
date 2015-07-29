@@ -6082,7 +6082,7 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
   display: inline-block;
 }
 .breadcrumb > li + li:before {
-  content: ">\00a0";
+  content: "/\00a0";
   padding: 0 5px;
   color: #948a7b;
 }
