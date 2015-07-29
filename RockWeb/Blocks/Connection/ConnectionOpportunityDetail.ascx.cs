@@ -598,7 +598,7 @@ namespace RockWeb.Blocks.Connection
                 g.Id,
                 g.Guid,
                 Name = g.Group.Name,
-                Campus = g.Group.Campus != null ? g.Group.Campus.Name : "N/A"
+                Campus = g.Group.Campus != null ? g.Group.Campus.Name : "All"
             } ).ToList();
             gConnectionOpportunityGroups.DataBind();
         }
