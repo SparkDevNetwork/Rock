@@ -301,7 +301,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="selection">The selection.</param>
         /// <param name="filterMode"></param>
         /// <returns></returns>
-        public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection, FilterMode filterMode )
+        public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {

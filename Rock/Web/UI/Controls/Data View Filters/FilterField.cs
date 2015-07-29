@@ -384,7 +384,7 @@ namespace Rock.Web.UI.Controls
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
-                component.SetSelection( FilteredEntityType, filterControls, value );
+                component.SetSelection( FilteredEntityType, filterControls, value, this.FilterMode );
             }
         }
 

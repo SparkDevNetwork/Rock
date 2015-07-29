@@ -130,9 +130,21 @@ namespace Rock.Reporting
 
         /// <summary>
         /// Creates the child controls.
+        /// Implement this version of CreateChildControls if your DataFilterComponent supports different FilterModes
         /// </summary>
         /// <returns></returns>
         public virtual Control[] CreateChildControls( Type entityType, FilterField filterControl, FilterMode filterMode )
+        {
+            return CreateChildControls( entityType, filterControl );
+        }
+
+        /// <summary>
+        /// Implement this version of CreateChildControls if your DataFilterComponent works the same in all filter modes
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="filterControl">The filter control.</param>
+        /// <returns></returns>
+        public virtual Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             var ddl = ComparisonHelper.ComparisonControl( ComparisonHelper.StringFilterComparisonTypes );
             ddl.ID = filterControl.ID + "_0";
@@ -146,18 +158,8 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Creates the child controls.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="filterControl">The filter control.</param>
-        /// <returns></returns>
-        public virtual Control[] CreateChildControls( Type entityType, FilterField filterControl )
-        {
-            return CreateChildControls( entityType, filterControl, FilterMode.AdvancedFilter );
-        }
-
-        /// <summary>
         /// Renders the controls.
+        /// Implement this version of RenderControls if your DataFilterComponent supports different FilterModes
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="filterControl">The filter control.</param>
@@ -165,6 +167,19 @@ namespace Rock.Reporting
         /// <param name="controls">The controls.</param>
         /// <param name="filterMode">The filter mode.</param>
         public virtual void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls, FilterMode filterMode )
+        {
+            RenderControls( entityType, filterControl, writer, controls );
+        }
+
+        /// <summary>
+        /// Renders the controls.
+        /// Implement this version of RenderControls if your DataFilterComponent works the same in all FilterModes
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="writer">The writer.</param>
+        /// <param name="controls">The controls.</param>
+        public virtual void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
             foreach ( var control in controls )
             {
@@ -174,19 +189,8 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Renders the controls.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="filterControl">The filter control.</param>
-        /// <param name="writer">The writer.</param>
-        /// <param name="controls">The controls.</param>
-        public virtual void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
-        {
-            RenderControls( entityType, filterControl, writer, controls, FilterMode.AdvancedFilter );
-        }
-
-        /// <summary>
         /// Gets the selection.
+        /// Implement this version of GetSelection if your DataFilterComponent supports different FilterModes
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
@@ -194,30 +198,44 @@ namespace Rock.Reporting
         /// <returns></returns>
         public virtual string GetSelection( Type entityType, Control[] controls, FilterMode filterMode )
         {
+            return GetSelection( entityType, controls );
+        }
+
+        /// <summary>
+        /// Gets the selection.
+        /// Implement this version of GetSelection if your DataFilterComponent works the same in all FilterModes
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public virtual string GetSelection( Type entityType, Control[] controls )
+        {
             string comparisonType = ( (DropDownList)controls[0] ).SelectedValue;
             string value = ( (TextBox)controls[1] ).Text;
             return string.Format( "{0}|{1}", comparisonType, value );
         }
 
         /// <summary>
-        /// Gets the selection.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public virtual string GetSelection( Type entityType, Control[] controls)
-        {
-            return GetSelection( entityType, controls, FilterMode.AdvancedFilter );
-        }
-
-        /// <summary>
         /// Sets the selection.
+        /// Implement this version of SetSelection if your DataFilterComponent supports different FilterModes
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
         /// <param name="filterMode">The filter mode.</param>
         public virtual void SetSelection( Type entityType, Control[] controls, string selection, FilterMode filterMode )
+        {
+            SetSelection( entityType, controls, selection );
+        }
+
+        /// <summary>
+        /// Sets the selection.
+        /// Implement this version of SetSelection if your DataFilterComponent works the same in all FilterModes
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="controls">The controls.</param>
+        /// <param name="selection">The selection.</param>
+        public virtual void SetSelection( Type entityType, Control[] controls, string selection )
         {
             string[] options = selection.Split( '|' );
             if ( options.Length >= 2 )
@@ -226,44 +244,17 @@ namespace Rock.Reporting
                 ( (TextBox)controls[1] ).Text = options[1];
             }
         }
-
-        /// <summary>
-        /// Sets the selection.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</param>
-        /// <param name="selection">The selection.</param>
-        public virtual void SetSelection( Type entityType, Control[] controls, string selection)
-        {
-            SetSelection(entityType, controls, selection, FilterMode.AdvancedFilter);
-        }
-
+        
         /// <summary>
         /// Gets the expression.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="serviceInstance">The service instance.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="selection">The selection.</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public virtual Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection, FilterMode filterMode )
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the expression.
+        /// Implement this version of GetExpression if your DataFilterComponent works the same in all FilterModes
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public virtual Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection ) 
-        {
-            return GetExpression( entityType, serviceInstance, parameterExpression, selection, FilterMode.AdvancedFilter );
-        }
+        public abstract Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection );
 
         #endregion
 
