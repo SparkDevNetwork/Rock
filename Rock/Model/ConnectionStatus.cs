@@ -102,7 +102,6 @@ namespace Rock.Model
         /// <value>
         /// The type of the connection.
         /// </value>
-        [DataMember]
         public virtual ConnectionType ConnectionType { get; set; }
 
         #endregion
