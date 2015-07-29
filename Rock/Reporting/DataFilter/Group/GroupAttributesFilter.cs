@@ -164,7 +164,7 @@ namespace Rock.Reporting.DataFilter.Group
 
             // Create the field selection dropdown
             var ddlProperty = new RockDropDownList();
-            ddlProperty.ID = string.Format( "{0}_ddlProperty", containerControl.ID );
+            ddlProperty.ID = string.Format( "{0}_{1}_ddlProperty", containerControl.ID, groupTypePicker.SelectedGroupTypeId );
             containerControl.Controls.Add( ddlProperty );
 
             // add Empty option first
