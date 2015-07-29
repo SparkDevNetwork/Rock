@@ -43,31 +43,68 @@ namespace Rock.Reporting.DataSelect.Person
     {
         #region Properties
 
+        /// <summary>
+        /// Gets the name of the entity type. Filter should be an empty string
+        /// if it applies to all entities
+        /// </summary>
+        /// <value>
+        /// The name of the entity type.
+        /// </value>
         public override string AppliesToEntityType
         {
             get { return typeof( Model.Person ).FullName; }
         }
 
+        /// <summary>
+        /// Gets the section that this will appear in in the Field Selector
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
         public override string Section
         {
             get { return "Groups"; }
         }
 
+        /// <summary>
+        /// The PropertyName of the property in the anonymous class returned by the SelectExpression
+        /// </summary>
+        /// <value>
+        /// The name of the column property.
+        /// </value>
         public override string ColumnPropertyName
         {
             get { return "Group Participation"; }
         }
 
+        /// <summary>
+        /// Gets the type of the column field.
+        /// </summary>
+        /// <value>
+        /// The type of the column field.
+        /// </value>
         public override Type ColumnFieldType
         {
             get { return typeof( IEnumerable<string> ); }
         }
 
+        /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
         public override DataControlField GetGridField( Type entityType, string selection )
         {
             return new ListDelimitedField();
         }
 
+        /// <summary>
+        /// Gets the default column header text.
+        /// </summary>
+        /// <value>
+        /// The default column header text.
+        /// </value>
         public override string ColumnHeaderText
         {
             get { return "Group Participation"; }
@@ -77,11 +114,26 @@ namespace Rock.Reporting.DataSelect.Person
 
         #region Methods
 
+        /// <summary>
+        /// Gets the title.
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The title.
+        /// </value>
         public override string GetTitle( Type entityType )
         {
             return "Group Participation";
         }
 
+        /// <summary>
+        /// Gets the expression.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="entityIdProperty">The entity identifier property.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
             var settings = new GroupParticipationSelectSettings( selection );
@@ -170,6 +222,11 @@ namespace Rock.Reporting.DataSelect.Person
         private const string _CtlRoleType = "ddlRoleType";
         private const string _CtlGroupStatus = "ddlGroupStatus";
 
+        /// <summary>
+        /// Creates the child controls.
+        /// </summary>
+        /// <param name="parentControl"></param>
+        /// <returns></returns>
         public override Control[] CreateChildControls( Control parentControl )
         {
             // Define Control: Output Format DropDown List
@@ -215,6 +272,12 @@ namespace Rock.Reporting.DataSelect.Person
             return new Control[] { ddlDataView, ddlRoleType, ddlFormat, ddlGroupMemberStatus };
         }
 
+        /// <summary>
+        /// Gets the selection.
+        /// This is typically a string that contains the values selected with the Controls
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
         public override string GetSelection( Control[] controls )
         {
             var ddlDataView = controls.GetByName<DataViewPicker>( _CtlDataView );
@@ -232,6 +295,11 @@ namespace Rock.Reporting.DataSelect.Person
             return settings.ToSelectionString();
         }
 
+        /// <summary>
+        /// Sets the selection.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="selection">The selection.</param>
         public override void SetSelection( Control[] controls, string selection )
         {
             var ddlDataView = controls.GetByName<DataViewPicker>( _CtlDataView );

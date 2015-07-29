@@ -1218,8 +1218,8 @@ namespace Rock.Web.UI.Controls
                 RebindGrid( e, selectAll );
 
                 var recipients = GetPersonData();
-                if ( recipients.Any() )
-                {
+                //if ( recipients.Any() )
+                //{
 
                     // Create communication 
                     var rockContext = new RockContext();
@@ -1272,7 +1272,7 @@ namespace Rock.Web.UI.Controls
 
                     Page.Response.Redirect( url, false );
                     Context.ApplicationInstance.CompleteRequest();
-                }
+                //}
             }
         }
 
@@ -2036,23 +2036,27 @@ namespace Rock.Web.UI.Controls
 
                             if ( personIdProp != null && idProp != null )
                             {
-                                int personId = (int)personIdProp.GetValue( item, null );
-                                int id = (int)idProp.GetValue( item, null );
-
-                                // Add the personId if none are selected or if it's one of the selected items.
-                                if ( !keysSelected.Any() || keysSelected.Contains( id ) )
+                                object personIdValue = personIdProp.GetValue( item, null );
+                                if ( personIdValue != null )
                                 {
-                                    var mergeValues = new Dictionary<string, string>();
-                                    foreach ( string mergeField in CommunicateMergeFields )
-                                    {
-                                        object obj = item.GetPropertyValue( mergeField );
-                                        if ( obj != null )
-                                        {
-                                            mergeValues.Add( mergeField.Replace( '.', '_' ), obj.ToString() );
-                                        }
-                                    }
+                                    int personId = (int)personIdValue;
+                                    int id = (int)idProp.GetValue( item, null );
 
-                                    personData.AddOrIgnore( personId, mergeValues );
+                                    // Add the personId if none are selected or if it's one of the selected items.
+                                    if ( !keysSelected.Any() || keysSelected.Contains( id ) )
+                                    {
+                                        var mergeValues = new Dictionary<string, string>();
+                                        foreach ( string mergeField in CommunicateMergeFields )
+                                        {
+                                            object obj = item.GetPropertyValue( mergeField );
+                                            if ( obj != null )
+                                            {
+                                                mergeValues.Add( mergeField.Replace( '.', '_' ), obj.ToString() );
+                                            }
+                                        }
+
+                                        personData.AddOrIgnore( personId, mergeValues );
+                                    }
                                 }
                             }
                         }

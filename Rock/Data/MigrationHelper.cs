@@ -1293,7 +1293,18 @@ namespace Rock.Data
             );
         }
 
-
+        /// <summary>
+        /// Updates the entity attribute.
+        /// </summary>
+        /// <param name="modelEntityTypeName">Name of the model entity type.</param>
+        /// <param name="componentEntityTypeName">Name of the component entity type.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="key">The key.</param>
         public void UpdateEntityAttribute( string modelEntityTypeName, string  componentEntityTypeName, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid, string key = null )
         {
             EnsureEntityTypeExists( modelEntityTypeName, true, true );
@@ -1421,6 +1432,8 @@ namespace Rock.Data
         /// Ensures the entity type exists by adding it by name if it did not already exist.
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="isEntity">if set to <c>true</c> [is entity].</param>
+        /// <param name="isSecured">if set to <c>true</c> [is secured].</param>
         private void EnsureEntityTypeExists( string entityTypeName, bool isEntity = true, bool isSecured = true )
         {
             // NOTE: If it doesn't exist, add it assuming that IsEntity=True and IsSecured=True.  The framework will correct it if those assumptions are incorrect
