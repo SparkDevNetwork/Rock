@@ -183,11 +183,11 @@ namespace Rock.Transactions
                                                 }
                                                 break;
                                             }
-                                        case ConnectionWorkflowTriggerType.ActivityGroupAssigned:
+                                        case ConnectionWorkflowTriggerType.GroupAssigned:
                                             {
                                                 if ( State == EntityState.Modified && QualifiersMatch( rockContext, connectionWorkflow, AssignedGroupId ) )
                                                 {
-                                                    LaunchWorkflow( rockContext, connectionWorkflow, "Activity Group Assigned" );
+                                                    LaunchWorkflow( rockContext, connectionWorkflow, "Group Assigned" );
                                                 }
                                                 break;
                                             }
