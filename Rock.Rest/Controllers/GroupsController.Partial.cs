@@ -302,6 +302,8 @@ namespace Rock.Rest.Controllers
                             guestFamilyMember.LastName = familyMember.Person.LastName;
                             guestFamilyMember.PhotoUrl = familyMember.Person.PhotoUrl;
                             guestFamilyMember.CanCheckin = guests.Contains(familyMember.PersonId);
+                            guestFamilyMember.Role = familyMember.GroupRole.Name;
+                            guestFamilyMember.Age = familyMember.Person.Age;
 
                             guestFamily.FamilyMembers.Add(guestFamilyMember);
                         }
@@ -800,6 +802,10 @@ namespace Rock.Rest.Controllers
             public string PhotoUrl { get; set; }
 
             public bool CanCheckin { get; set; }
+
+            public int? Age { get; set; }
+
+            public string Role { get; set; }
         }
 
         /// <summary>

@@ -92,7 +92,6 @@ namespace Rock.Model
         /// <value>
         /// The type of the connection.
         /// </value>
-        [DataMember]
         public virtual ConnectionType ConnectionType { get; set; }
 
         /// <summary>
@@ -101,7 +100,6 @@ namespace Rock.Model
         /// <value>
         /// The connection opportunity.
         /// </value>
-        [DataMember]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>
@@ -110,7 +108,6 @@ namespace Rock.Model
         /// <value>
         /// The type of the workflow.
         /// </value>
-        [DataMember]
         public virtual WorkflowType WorkflowType { get; set; }
 
         #endregion
@@ -173,7 +170,7 @@ public enum ConnectionWorkflowTriggerType
     /// <summary>
     /// Activity Group Assigned
     /// </summary>
-    ActivityGroupAssigned = 5,
+    GroupAssigned = 5,
 
     /// <summary>
     /// Manual
