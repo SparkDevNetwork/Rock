@@ -219,7 +219,6 @@ namespace Rock.Field
             var compareControl = FilterCompareControl( configurationValues, id, required, filterMode );
             var valueControl = FilterValueControl( configurationValues, id, required, filterMode );
 
-            //bool isLabel = compareControl is Label;
             string col1Class = "";
             string col2Class = "col-md-12";
 
@@ -363,6 +362,7 @@ namespace Rock.Field
         /// </summary>
         /// <param name="filterControl">The filter control.</param>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
         public virtual List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode )
         {
@@ -390,6 +390,12 @@ namespace Rock.Field
             return values;
         }
 
+        /// <summary>
+        /// Gets the filter values.
+        /// </summary>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
         [Obsolete]
         public virtual List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues )
         {

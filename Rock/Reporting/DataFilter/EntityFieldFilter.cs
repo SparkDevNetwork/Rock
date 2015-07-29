@@ -48,6 +48,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="ddlEntityField">The DDL entity field.</param>
         /// <param name="propertyControls">The property controls.</param>
         /// <param name="propertyControlsPrefix">The property controls prefix.</param>
+        /// <param name="filterMode">The filter mode.</param>
         public void RenderEntityFieldsControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, List<EntityField> entityFields,
             DropDownList ddlEntityField, List<Control> propertyControls, string propertyControlsPrefix, FilterMode filterMode )
         {
