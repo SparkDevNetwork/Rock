@@ -980,7 +980,7 @@ namespace RockWeb.Blocks.Connection
                     ddlSecondaryQualifier.Items.Clear();
                     break;
 
-                case ConnectionWorkflowTriggerType.ActivityGroupAssigned:
+                case ConnectionWorkflowTriggerType.GroupAssigned:
                     var groupList = new GroupService( rockContext ).Queryable().ToList();
                     ddlPrimaryQualifier.Label = "Activity Group";
                     ddlPrimaryQualifier.Visible = true;
