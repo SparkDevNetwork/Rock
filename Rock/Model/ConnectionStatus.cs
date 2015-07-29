@@ -53,6 +53,7 @@ namespace Rock.Model
         /// <value>
         /// The description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -61,6 +62,7 @@ namespace Rock.Model
         /// <value>
         /// The connection type identifier.
         /// </value>
+        [DataMember]
         public int? ConnectionTypeId { get; set; }
 
         /// <summary>
