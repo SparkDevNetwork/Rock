@@ -212,6 +212,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="filterControl">The filter control.</param>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
+        /// <param name="filterMode"></param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls, FilterMode filterMode )
         {
             if ( controls.Length > 0 )
@@ -227,8 +228,9 @@ namespace Rock.Reporting.DataFilter
         /// <summary>
         /// Gets the selection.
         /// </summary>
-        /// <param name="entityType"></param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
+        /// <param name="filterMode"></param>
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls, FilterMode filterMode )
         {
@@ -261,9 +263,10 @@ namespace Rock.Reporting.DataFilter
         /// <summary>
         /// Sets the selection.
         /// </summary>
-        /// <param name="entityType"></param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
+        /// <param name="filterMode"></param>
         public override void SetSelection( Type entityType, Control[] controls, string selection, FilterMode filterMode )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
@@ -292,10 +295,11 @@ namespace Rock.Reporting.DataFilter
         /// <summary>
         /// Gets the expression.
         /// </summary>
-        /// <param name="entityType"></param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
+        /// <param name="filterMode"></param>
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection, FilterMode filterMode )
         {

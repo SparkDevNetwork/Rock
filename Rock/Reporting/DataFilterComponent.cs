@@ -163,6 +163,7 @@ namespace Rock.Reporting
         /// <param name="filterControl">The filter control.</param>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
+        /// <param name="filterMode">The filter mode.</param>
         public virtual void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls, FilterMode filterMode )
         {
             foreach ( var control in controls )
@@ -189,6 +190,7 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
         public virtual string GetSelection( Type entityType, Control[] controls, FilterMode filterMode )
         {
@@ -214,6 +216,7 @@ namespace Rock.Reporting
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
+        /// <param name="filterMode">The filter mode.</param>
         public virtual void SetSelection( Type entityType, Control[] controls, string selection, FilterMode filterMode )
         {
             string[] options = selection.Split( '|' );
@@ -242,6 +245,7 @@ namespace Rock.Reporting
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
         public virtual Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection, FilterMode filterMode )
         {
