@@ -8,6 +8,7 @@
 
 <asp:UpdatePanel ID="upConnectionType" runat="server">
     <ContentTemplate>
+
         <asp:Panel ID="pnlDeleteConfirm" runat="server" CssClass="panel panel-body" Visible="false">
             <Rock:NotificationBox ID="nbDeleteConfirm" runat="server" NotificationBoxType="Warning" Text="Deleting a site will delete all the layouts and pages associated with the site. Are you sure you want to delete the site?" />
             <asp:LinkButton ID="btnDeleteConfirm" runat="server" Text="Confirm Delete" CssClass="btn btn-danger" OnClick="btnDeleteConfirm_Click" />

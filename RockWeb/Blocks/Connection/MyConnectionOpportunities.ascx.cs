@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.Connection
         private const string ADMIN_TOGGLE_SETTING = "MyConnectionOpportunities_AdminToggle";
 
         #endregion
+
         #region Properties
 
         protected bool? AdminFilter { get; set; }

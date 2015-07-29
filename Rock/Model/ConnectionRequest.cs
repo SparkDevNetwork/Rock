@@ -131,7 +131,6 @@ namespace Rock.Model
         /// <value>
         /// The connection status.
         /// </value>
-        [DataMember]
         public virtual ConnectionStatus ConnectionStatus { get; set; }
 
         /// <summary>
@@ -140,7 +139,6 @@ namespace Rock.Model
         /// <value>
         /// The connection opportunity.
         /// </value>
-        [DataMember]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>
@@ -149,7 +147,6 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
-        [DataMember]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
@@ -158,7 +155,6 @@ namespace Rock.Model
         /// <value>
         /// The campus.
         /// </value>
-        [DataMember]
         public virtual Campus Campus { get; set; }
 
         /// <summary>
@@ -167,7 +163,6 @@ namespace Rock.Model
         /// <value>
         /// The assigned group.
         /// </value>
-        [DataMember]
         public virtual Group AssignedGroup { get; set; }
 
         /// <summary>
@@ -176,7 +171,6 @@ namespace Rock.Model
         /// <value>
         /// The connector person alias.
         /// </value>
-        [DataMember]
         public virtual PersonAlias ConnectorPersonAlias { get; set; }
 
         /// <summary>
@@ -185,7 +179,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionRequestWorkflow">ConnectionRequestWorkflows</see> who are associated with the ConnectionRequest.
         /// </value>
-        [DataMember]
         public virtual ICollection<ConnectionRequestWorkflow> ConnectionRequestWorkflows
         {
             get { return _connectionRequestWorkflows; }
@@ -200,7 +193,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionRequestActivity">ConnectionRequestActivities</see> who are associated with the ConnectionRequest.
         /// </value>
-        [DataMember]
         public virtual ICollection<ConnectionRequestActivity> ConnectionRequestActivities
         {
             get { return _connectionRequestActivities; }
