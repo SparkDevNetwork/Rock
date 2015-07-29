@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -37,7 +38,7 @@ namespace Rock.Reporting.DataSelect.Person
     ///     A Report Field that shows a list of people who have a specified type of relationship with the principal person.
     /// </summary>
     [Description( "Shows a list of people who have a specified type of relationship with a person." )]
-    [Export( typeof(DataSelectComponent) )]
+    [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Related People" )]
     public class RelatedPeopleSelect : DataSelectComponent
     {
@@ -45,13 +46,61 @@ namespace Rock.Reporting.DataSelect.Person
 
         private class RelatedPersonInfo
         {
-            public string FirstName;
-            public string LastName;
-            public int PersonId;
-            public int RelatedToPersonId;
-            public string RelationshipName;
-            public int SortOrder = 0;
-            public string Suffix;
+            /// <summary>
+            /// Gets or sets the first name.
+            /// </summary>
+            /// <value>
+            /// The first name.
+            /// </value>
+            public string FirstName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the last name.
+            /// </summary>
+            /// <value>
+            /// The last name.
+            /// </value>
+            public string LastName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person identifier.
+            /// </summary>
+            /// <value>
+            /// The person identifier.
+            /// </value>
+            public int PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the related to person identifier.
+            /// </summary>
+            /// <value>
+            /// The related to person identifier.
+            /// </value>
+            public int RelatedToPersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the relationship.
+            /// </summary>
+            /// <value>
+            /// The name of the relationship.
+            /// </value>
+            public string RelationshipName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the sort order.
+            /// </summary>
+            /// <value>
+            /// The sort order.
+            /// </value>
+            public int SortOrder { get; set; }
+
+            /// <summary>
+            /// Gets or sets the suffix.
+            /// </summary>
+            /// <value>
+            /// The suffix.
+            /// </value>
+            public string Suffix { get; set; }
 
             public override string ToString()
             {
@@ -59,12 +108,12 @@ namespace Rock.Reporting.DataSelect.Person
 
                 description.AppendFormat( "{0} {1}", FirstName, LastName );
 
-                if (!string.IsNullOrWhiteSpace( Suffix ))
+                if ( !string.IsNullOrWhiteSpace( Suffix ) )
                 {
                     description.AppendFormat( " {0}", Suffix );
                 }
 
-                if (!string.IsNullOrWhiteSpace( RelationshipName ))
+                if ( !string.IsNullOrWhiteSpace( RelationshipName ) )
                 {
                     description.AppendFormat( " [{0}]", RelationshipName );
                 }
@@ -77,31 +126,68 @@ namespace Rock.Reporting.DataSelect.Person
 
         #region Properties
 
+        /// <summary>
+        /// Gets the name of the entity type. Filter should be an empty string
+        /// if it applies to all entities
+        /// </summary>
+        /// <value>
+        /// The name of the entity type.
+        /// </value>
         public override string AppliesToEntityType
         {
-            get { return typeof(Model.Person).FullName; }
+            get { return typeof( Model.Person ).FullName; }
         }
 
+        /// <summary>
+        /// Gets the section that this will appear in in the Field Selector
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
         public override string Section
         {
             get { return "Relationships"; }
         }
 
+        /// <summary>
+        /// The PropertyName of the property in the anonymous class returned by the SelectExpression
+        /// </summary>
+        /// <value>
+        /// The name of the column property.
+        /// </value>
         public override string ColumnPropertyName
         {
             get { return "Related People"; }
         }
 
+        /// <summary>
+        /// Gets the type of the column field.
+        /// </summary>
+        /// <value>
+        /// The type of the column field.
+        /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof(IEnumerable<RelatedPersonInfo>); }
+            get { return typeof( IEnumerable<RelatedPersonInfo> ); }
         }
 
+        /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
         public override DataControlField GetGridField( Type entityType, string selection )
         {
             return new ListDelimitedField();
         }
 
+        /// <summary>
+        /// Gets the default column header text.
+        /// </summary>
+        /// <value>
+        /// The default column header text.
+        /// </value>
         public override string ColumnHeaderText
         {
             get { return "Related People"; }
@@ -111,11 +197,26 @@ namespace Rock.Reporting.DataSelect.Person
 
         #region Methods
 
+        /// <summary>
+        /// Gets the title.
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The title.
+        /// </value>
         public override string GetTitle( Type entityType )
         {
             return "Related People";
         }
 
+        /// <summary>
+        /// Gets the expression.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="entityIdProperty">The entity identifier property.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
             var settings = new RelatedPeopleSelectSettings( selection );
@@ -136,34 +237,34 @@ namespace Rock.Reporting.DataSelect.Person
 
             // If we are looking for Parents...
             // Add the Adults from the Family Group in which the Principal participates as a Child.
-            if (settings.FamilyRelationshipTypeGuids.Contains( FamilyRelationshipParentGuid.AsGuid() ))
+            if ( settings.FamilyRelationshipTypeGuids.Contains( FamilyRelationshipParentGuid.AsGuid() ) )
             {
-                var familyMembersQuery = GetRelatedPeopleQuery( context, new List<int> {familyGroupTypeId}, new List<Guid> {childGuid}, new List<Guid> {adultGuid}, showRelationship ? "Parent" : null );
+                var familyMembersQuery = GetRelatedPeopleQuery( context, new List<int> { familyGroupTypeId }, new List<Guid> { childGuid }, new List<Guid> { adultGuid }, showRelationship ? "Parent" : null );
 
                 allRelatedPeopleQuery = GetRelatedPeopleUnionQuery( allRelatedPeopleQuery, familyMembersQuery );
             }
 
             // If we are looking for Children...
             // Add the Children from the Family Group in which the Principal participates as an Adult.
-            if (settings.FamilyRelationshipTypeGuids.Contains( FamilyRelationshipChildGuid.AsGuid() ))
+            if ( settings.FamilyRelationshipTypeGuids.Contains( FamilyRelationshipChildGuid.AsGuid() ) )
             {
-                var familyMembersQuery = GetRelatedPeopleQuery( context, new List<int> {familyGroupTypeId}, new List<Guid> {adultGuid}, new List<Guid> {childGuid}, showRelationship ? "Child" : null );
+                var familyMembersQuery = GetRelatedPeopleQuery( context, new List<int> { familyGroupTypeId }, new List<Guid> { adultGuid }, new List<Guid> { childGuid }, showRelationship ? "Child" : null );
 
                 allRelatedPeopleQuery = GetRelatedPeopleUnionQuery( allRelatedPeopleQuery, familyMembersQuery );
             }
 
             // If we are looking for Siblings...
             // Add other Children from the Family Group in which the Principal participates as a Child.
-            if (settings.FamilyRelationshipTypeGuids.Contains( FamilyRelationshipSiblingGuid.AsGuid() ))
+            if ( settings.FamilyRelationshipTypeGuids.Contains( FamilyRelationshipSiblingGuid.AsGuid() ) )
             {
-                var familyMembersQuery = GetRelatedPeopleQuery( context, new List<int> {familyGroupTypeId}, new List<Guid> {childGuid}, new List<Guid> {childGuid}, showRelationship ? "Sibling" : null );
+                var familyMembersQuery = GetRelatedPeopleQuery( context, new List<int> { familyGroupTypeId }, new List<Guid> { childGuid }, new List<Guid> { childGuid }, showRelationship ? "Sibling" : null );
 
                 allRelatedPeopleQuery = GetRelatedPeopleUnionQuery( allRelatedPeopleQuery, familyMembersQuery );
             }
 
             // If we are looking for a Spouse...
             // Add other Married Adult in the Family Group in which the Principal participates as a Married Adult.
-            if (settings.FamilyRelationshipTypeGuids.Contains( FamilyRelationshipSpouseGuid.AsGuid() ))
+            if ( settings.FamilyRelationshipTypeGuids.Contains( FamilyRelationshipSpouseGuid.AsGuid() ) )
             {
                 var marriedStatusGuid = SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
                 int marriedStatusId = DefinedValueCache.Read( marriedStatusGuid ).Id;
@@ -194,7 +295,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             // If we are looking for a Known Relationship...
             // Add other People from the Known Relationship Group having the specified Roles and in which the Principal is the Owner.
-            if (settings.KnownRelationshipTypeGuids.Any())
+            if ( settings.KnownRelationshipTypeGuids.Any() )
             {
                 var ownerGuid = GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
                 var principalRoleGuids = new List<Guid>();
@@ -202,7 +303,7 @@ namespace Rock.Reporting.DataSelect.Person
 
                 principalRoleGuids.Add( ownerGuid );
 
-                var knownPersonsQuery = GetRelatedPeopleQuery( context, new List<int> {knownRelationshipGroupTypeId}, principalRoleGuids, targetRoleGuids, showRelationship ? "*" : null );
+                var knownPersonsQuery = GetRelatedPeopleQuery( context, new List<int> { knownRelationshipGroupTypeId }, principalRoleGuids, targetRoleGuids, showRelationship ? "*" : null );
 
                 allRelatedPeopleQuery = GetRelatedPeopleUnionQuery( allRelatedPeopleQuery, knownPersonsQuery );
             }
@@ -263,11 +364,31 @@ namespace Rock.Reporting.DataSelect.Person
         private const string _CtlKnownRelationshipType = "cblKnownRelationshipType";
         private const string _CtlFamilyRelationshipType = "cblFamilyRelationshipType";
 
+        /// <summary>
+        /// The family relationship parent unique identifier
+        /// </summary>
         public const string FamilyRelationshipParentGuid = "A498E9DB-4BFF-4C52-A6C0-7510EECDF6E7";
+
+        /// <summary>
+        /// The family relationship child unique identifier
+        /// </summary>
         public const string FamilyRelationshipChildGuid = "3DD246AB-2DD4-4DCE-B465-FBF5E72D7FBE";
+
+        /// <summary>
+        /// The family relationship sibling unique identifier
+        /// </summary>
         public const string FamilyRelationshipSiblingGuid = "7CEA6446-98C0-4E42-AE6D-6FD3F6B00416";
+
+        /// <summary>
+        /// The family relationship spouse unique identifier
+        /// </summary>
         public const string FamilyRelationshipSpouseGuid = "98AD882C-39C4-4FC6-B06D-EC474117BF42";
 
+        /// <summary>
+        /// Creates the child controls.
+        /// </summary>
+        /// <param name="parentControl"></param>
+        /// <returns></returns>
         public override Control[] CreateChildControls( Control parentControl )
         {
             // Define Control: Family Relationships Checkbox List
@@ -303,7 +424,7 @@ namespace Rock.Reporting.DataSelect.Person
             ddlFormat.Items.Add( new ListItem( "Person Name", ListFormatSpecifier.NameOnly.ToString() ) );
             parentControl.Controls.Add( ddlFormat );
 
-            return new Control[] {cblFamilyRelationships, cblKnownRelationships, ddlFormat};
+            return new Control[] { cblFamilyRelationships, cblKnownRelationships, ddlFormat };
         }
 
         /// <summary>
@@ -319,7 +440,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             var groupType = GroupTypeCache.Read( groupTypeGuid.GetValueOrDefault() );
 
-            if (groupType != null)
+            if ( groupType != null )
             {
                 var selectableRoles = new GroupTypeRoleService( new RockContext() ).GetByGroupTypeId( groupType.Id );
 
@@ -330,7 +451,7 @@ namespace Rock.Reporting.DataSelect.Person
 
                 checkboxList.Items.Clear();
 
-                foreach (var item in selectableRoles)
+                foreach ( var item in selectableRoles )
                 {
                     checkboxList.Items.Add( new ListItem( item.Name, item.Guid.ToString() ) );
                 }
@@ -341,6 +462,12 @@ namespace Rock.Reporting.DataSelect.Person
             checkboxList.Visible = showSelector;
         }
 
+        /// <summary>
+        /// Gets the selection.
+        /// This is typically a string that contains the values selected with the Controls
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
         public override string GetSelection( Control[] controls )
         {
             var cblFamilyRelationshipType = controls.GetByName<RockCheckBoxList>( _CtlFamilyRelationshipType );
@@ -367,6 +494,11 @@ namespace Rock.Reporting.DataSelect.Person
             return settings.ToSelectionString();
         }
 
+        /// <summary>
+        /// Sets the selection.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="selection">The selection.</param>
         public override void SetSelection( Control[] controls, string selection )
         {
             var cblKnownRelationshipType = controls.GetByName<RockCheckBoxList>( _CtlKnownRelationshipType );
@@ -375,19 +507,19 @@ namespace Rock.Reporting.DataSelect.Person
 
             var settings = new RelatedPeopleSelectSettings( selection );
 
-            if (!settings.IsValid)
+            if ( !settings.IsValid )
             {
                 return;
             }
 
             // Family Relationships
-            foreach (var item in cblFamilyRelationshipType.Items.OfType<ListItem>())
+            foreach ( var item in cblFamilyRelationshipType.Items.OfType<ListItem>() )
             {
                 item.Selected = settings.FamilyRelationshipTypeGuids.Contains( item.Value.AsGuid() );
             }
 
             // Known Relationships
-            foreach (var item in cblKnownRelationshipType.Items.OfType<ListItem>())
+            foreach ( var item in cblKnownRelationshipType.Items.OfType<ListItem>() )
             {
                 item.Selected = settings.KnownRelationshipTypeGuids.Contains( item.Value.AsGuid() );
             }
@@ -435,7 +567,7 @@ namespace Rock.Reporting.DataSelect.Person
 
                 selectedRoleGuids = DataComponentSettingsHelper.GetParameterAsList( parameters, 1, "," );
 
-                foreach (var roleGuid in selectedRoleGuids)
+                foreach ( var roleGuid in selectedRoleGuids )
                 {
                     FamilyRelationshipTypeGuids.Add( roleGuid.AsGuid() );
                 }
@@ -444,7 +576,7 @@ namespace Rock.Reporting.DataSelect.Person
 
                 selectedRoleGuids = DataComponentSettingsHelper.GetParameterAsList( parameters, 2, "," );
 
-                foreach (var roleGuid in selectedRoleGuids)
+                foreach ( var roleGuid in selectedRoleGuids )
                 {
                     KnownRelationshipTypeGuids.Add( roleGuid.AsGuid() );
                 }

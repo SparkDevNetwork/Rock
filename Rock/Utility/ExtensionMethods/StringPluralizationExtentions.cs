@@ -19,6 +19,9 @@ using System.Globalization;
 
 namespace Rock
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class StringPluralizationExtentions
     {
         /// <summary>

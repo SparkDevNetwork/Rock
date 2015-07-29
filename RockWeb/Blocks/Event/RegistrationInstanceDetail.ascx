@@ -223,10 +223,10 @@
                             </Rock:GridFilter>
                             <Rock:Grid ID="gLinkages" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gLinkages_RowSelected" RowItemText="Linkage">
                                 <Columns>
-                                    <Rock:TemplateFieldUnselected HeaderText="Calendar Item">
+                                    <Rock:RockTemplateFieldUnselected HeaderText="Calendar Item">
                                         <ItemTemplate>
                                             <asp:Literal ID="lCalendarItem" runat="server" /></ItemTemplate>
-                                    </Rock:TemplateFieldUnselected>
+                                    </Rock:RockTemplateFieldUnselected>
                                     <asp:BoundField HeaderText="Campus" DataField="EventItemOccurrence.Campus.Name" SortExpression="EventItemOccurrence.Campus.Name" NullDisplayText="All Campuses" />
                                     <asp:HyperLinkField HeaderText="Group" DataTextField="Group" DataNavigateUrlFields="GroupID" SortExpression="Group" />
                                     <asp:BoundField HeaderText="Public Name" DataField="PublicName" SortExpression="PublicName" />
