@@ -15,10 +15,10 @@
 // </copyright>
 //
 using System.ComponentModel;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
-using Rock.Constants;
 
 namespace Rock.Web.UI.Controls
 {
@@ -268,6 +268,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Loads the previously saved view state of the <see cref="T:System.Web.UI.WebControls.DetailsView" /> control.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the state of the <see cref="T:System.Web.UI.WebControls.ListControl" /> -derived control.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+            var savedAttributes = ViewState["ItemAttributes"] as List<Dictionary<string, string>>;
+            int itemPosition = 0;
+            foreach ( var item in this.Items.OfType<ListItem>() )
+            {
+                var itemAttributes = savedAttributes[itemPosition++];
+                foreach ( var a in itemAttributes )
+                {
+                    item.Attributes.Add( a.Key, a.Value );
+                }
+            }
+        }
+
+        /// <summary>
         /// Saves the current view state of the <see cref="T:System.Web.UI.WebControls.ListControl" /> -derived control and the items it contains.
         /// </summary>
         /// <returns>
@@ -275,38 +294,8 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override object SaveViewState()
         {
-            object[] allStates = new object[this.Items.Count + 1];
-            allStates[0] = base.SaveViewState();
-
-            int i = 1;
-            foreach ( ListItem li in this.Items )
-            {
-                allStates[i++] = li.Attributes["optiongroup"];
-            }
-
-            return allStates;
-        }
-
-        /// <summary>
-        /// Loads the previously saved view state of the <see cref="T:System.Web.UI.WebControls.DetailsView" /> control.
-        /// </summary>
-        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the state of the <see cref="T:System.Web.UI.WebControls.ListControl" /> -derived control.</param>
-        protected override void LoadViewState( object savedState )
-        {
-            if ( savedState != null )
-            {
-                object[] allStates = (object[])savedState;
-                if ( allStates[0] != null )
-                {
-                    base.LoadViewState( allStates[0] );
-                }
-
-                int i = 1;
-                foreach ( ListItem li in this.Items )
-                {
-                    li.Attributes["optiongroup"] = (string)allStates[i++];
-                }
-            }
+            ViewState["ItemAttributes"] = this.Items.OfType<ListItem>().Select( a => a.Attributes.Keys.OfType<string>().ToDictionary( k => k, v => a.Attributes[v] ) ).ToList();
+            return base.SaveViewState();
         }
 
     }
