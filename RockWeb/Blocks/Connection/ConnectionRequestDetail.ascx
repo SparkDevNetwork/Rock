@@ -108,7 +108,7 @@
                             <Rock:PersonPicker runat="server" ID="ppRequestor" Label="Requestor" Required="true" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:PersonPicker runat="server" ID="ppConnectorEdit" Label="Connector" Required="true" />
+                            <Rock:PersonPicker runat="server" ID="ppConnectorEdit" Label="Connector" />
                         </div>
                         <div class="col-md-4 col-md-offset-2">
                             <Rock:RockRadioButtonList ID="rblState" runat="server" Label="State" RepeatDirection="Horizontal" OnSelectedIndexChanged="rblState_SelectedIndexChanged" AutoPostBack="true" />
