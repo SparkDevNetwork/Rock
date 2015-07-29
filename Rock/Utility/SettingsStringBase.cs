@@ -25,8 +25,17 @@ namespace Rock.Utility
     /// </summary>
     public abstract class SettingsStringBase
     {
+        /// <summary>
+        /// The settings delimiter
+        /// </summary>
         public const string SettingsDelimiter = "|";
 
+        /// <summary>
+        /// Gets the settings version.
+        /// </summary>
+        /// <value>
+        /// The settings version.
+        /// </value>
         public virtual int SettingsVersion
         {
             get { return 1; }
@@ -105,6 +114,12 @@ namespace Rock.Utility
             return settings.AsDelimited( SettingsDelimiter );
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
         public override string ToString()
         {
             return ToSelectionString();

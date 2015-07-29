@@ -16,9 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
 
@@ -26,13 +28,9 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.ComponentModel;
-using Rock.Security;
-using Rock.Web.Cache;
-using System.Collections.Generic;
-using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Event
 {
