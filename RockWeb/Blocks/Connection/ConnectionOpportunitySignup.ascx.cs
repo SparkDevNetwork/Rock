@@ -33,17 +33,18 @@ using Rock.Security;
 
 namespace RockWeb.Blocks.Connection
 {
-    [DisplayName( "External Connection Opportunity Signup" )]
+    [DisplayName( "Connection Opportunity Signup" )]
     [Category( "Connection" )]
-    [Description( "Displays the details of the given opportunity for the external website." )]
+    [Description( "Block used to sign up for a connection opportunity." )]
     [BooleanField( "Display Home Phone", "Whether to display home phone", true )]
     [BooleanField( "Display Mobile Phone", "Whether to display mobile phone", true )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the response message.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunityResponseMessage.lava' %}", "", 2 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the opportunity name.", true )]
+    [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", true )]
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2" )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49" )]
-    public partial class ExternalConnectionOpportunitySignup : RockBlock, IDetailBlock
+    public partial class ConnectionOpportunitySignup : RockBlock, IDetailBlock
     {
         #region Fields
 
@@ -169,6 +170,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         person.Email = tbEmail.Text.Trim();
                     }
+
                     if ( GetAttributeValue( "DisplayHomePhone" ).AsBoolean() || GetAttributeValue( "DisplayMobilePhone" ).AsBoolean() )
                     {
                         if ( String.IsNullOrWhiteSpace( pnHome.Number ) && String.IsNullOrWhiteSpace( pnMobile.Number ) )
@@ -303,12 +305,14 @@ namespace RockWeb.Blocks.Connection
                 connectionRequest.ConnectionState = ConnectionState.Active;
                 connectionRequest.ConnectionStatusId = new ConnectionStatusService( rockContext ).Queryable().FirstOrDefault( s => s.IsDefault == true && s.ConnectionTypeId == connectionOpportunity.ConnectionTypeId ).Id;
                 connectionRequest.CampusId = ddlCampus.SelectedValueAsId().Value;
+
                 if ( !connectionRequest.IsValid )
                 {
                     nbInvalidMessage.Text = "Error submitting request.";
                     nbInvalidMessage.Visible = true;
                     return;
                 }
+
                 connectionRequestService.Add( connectionRequest );
                 rockContext.SaveChanges();
 
@@ -346,6 +350,7 @@ namespace RockWeb.Blocks.Connection
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             string opportunityId = PageParameter( "OpportunityId" );
+
             if ( !string.IsNullOrWhiteSpace( opportunityId ) )
             {
                 ShowDetail( opportunityId.AsInteger() );
@@ -369,6 +374,7 @@ namespace RockWeb.Blocks.Connection
             using ( var rockContext = new RockContext() )
             {
                 var opportunity = new ConnectionOpportunityService( rockContext ).Get( opportunityId );
+
                 if ( opportunity == null )
                 {
                     return;
@@ -381,10 +387,12 @@ namespace RockWeb.Blocks.Connection
                 {
                     pnHome.Visible = false;
                 }
+
                 if ( !GetAttributeValue( "DisplayMobilePhone" ).AsBoolean() )
                 {
                     pnMobile.Visible = false;
                 }
+
                 if ( CurrentPerson != null )
                 {
                     tbFirstName.Text = CurrentPerson.FirstName.EncodeHtml();
@@ -418,10 +426,22 @@ namespace RockWeb.Blocks.Connection
                     ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString().ToUpper() ) );
                 }
 
+                if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
+                {
+                    var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+                    var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+
+                    if ( contextCampus != null )
+                    {
+                        ddlCampus.SetValue( contextCampus.Id.ToString() );
+                    }
+                }
+
                 // show debug info
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Opportunity", new ConnectionOpportunityService( rockContext ).Get( PageParameter( "OpportunityId" ).AsInteger() ) );
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
+
                 if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
                     lDebug.Visible = true;
@@ -454,6 +474,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
                     string oldPhoneNumber = string.Empty;
+
                     if ( phone == null )
                     {
                         phone = new PhoneNumber();
@@ -464,6 +485,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         oldPhoneNumber = phone.NumberFormattedWithCountryCode;
                     }
+
                     if ( phone == null || newPhone.NumberFormattedWithCountryCode != phone.NumberFormattedWithCountryCode )
                     {
                         phone.CountryCode = PhoneNumber.CleanNumber( newPhone.CountryCode );
