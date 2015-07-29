@@ -18,32 +18,33 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
-using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Security;
 
 namespace RockWeb.Blocks.Connection
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [DisplayName( "Connection Opportunity Signup" )]
     [Category( "Connection" )]
     [Description( "Block used to sign up for a connection opportunity." )]
-    [BooleanField( "Display Home Phone", "Whether to display home phone", true )]
-    [BooleanField( "Display Mobile Phone", "Whether to display mobile phone", true )]
+
+    [BooleanField( "Display Home Phone", "Whether to display home phone", true, "", 0 )]
+    [BooleanField( "Display Mobile Phone", "Whether to display mobile phone", true, "", 1 )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the response message.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunityResponseMessage.lava' %}", "", 2 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
-    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the opportunity name.", true )]
-    [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", true )]
-    [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2" )]
-    [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49" )]
+    [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", true, "", 4 )]
+    [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 5 )]
+    [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 6 )]
     public partial class ConnectionOpportunitySignup : RockBlock, IDetailBlock
     {
         #region Fields
@@ -67,7 +68,7 @@ namespace RockWeb.Blocks.Connection
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlOpportunityDetail );
         }
-
+ 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -76,50 +77,28 @@ namespace RockWeb.Blocks.Connection
         {
             base.OnLoad( e );
 
+            nbErrorMessage.Visible = false;
+
             if ( !Page.IsPostBack )
             {
-                string opportunityId = PageParameter( "OpportunityId" );
-                if ( !string.IsNullOrWhiteSpace( opportunityId ) )
-                {
-                    ShowDetail( opportunityId.AsInteger() );
-                }
-                else
-                {
-                    pnlSignup.Visible = false;
-                }
+                ShowDetail( PageParameter( "OpportunityId" ).AsInteger() );
             }
         }
 
+
         /// <summary>
-        /// Returns breadcrumbs specific to the block that should be added to navigation
-        /// based on the current page reference.  This function is called during the page's
-        /// oninit to load any initial breadcrumbs.
+        /// Handles the BlockUpdated event of the control.
         /// </summary>
-        /// <param name="pageReference">The <see cref="Rock.Web.PageReference" />.</param>
-        /// <returns>
-        /// A <see cref="System.Collections.Generic.List{BreadCrumb}" /> of block related <see cref="Rock.Web.UI.BreadCrumb">BreadCrumbs</see>.
-        /// </returns>
-        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            var breadCrumbs = new List<BreadCrumb>();
-
-            int? opportunityId = PageParameter( pageReference, "OpportunityId" ).AsIntegerOrNull();
-            if ( opportunityId != null )
-            {
-                ConnectionOpportunity connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).Get( opportunityId.Value );
-                breadCrumbs.Add( new BreadCrumb( string.Format( "{0} Signup", connectionOpportunity.Name ), pageReference ) );
-            }
-            else
-            {
-                // don't show a breadcrumb if we don't have a pageparam to work with
-            }
-
-            return breadCrumbs;
+            ShowDetail( PageParameter( "OpportunityId" ).AsInteger() );
         }
 
         #endregion
 
-        #region Edit Events
+        #region Events
 
         /// <summary>
         /// Handles the Click event of the btnEdit control.
@@ -130,201 +109,134 @@ namespace RockWeb.Blocks.Connection
         {
             using ( var rockContext = new RockContext() )
             {
-                var personService = new PersonService( rockContext );
-                var isValid = true;
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine( "The following fields are required:" );
-                sb.AppendLine( "<ul>" );
-                var connectionRequest = new ConnectionRequest();
-                var person = new Person();
-
-                // Find the person and create a new one if needed
-                if ( CurrentPerson == null )
-                {
-                    if ( String.IsNullOrWhiteSpace( tbFirstName.Text ) )
-                    {
-                        sb.AppendLine( "<li>First Name</li>" );
-                        isValid = false;
-                    }
-                    else
-                    {
-                        person.FirstName = tbFirstName.Text.Trim();
-                    }
-
-                    if ( String.IsNullOrWhiteSpace( tbLastName.Text ) )
-                    {
-                        sb.AppendLine( "<li>Last Name</li>" );
-                        isValid = false;
-                    }
-                    else
-                    {
-                        person.LastName = tbLastName.Text.Trim();
-                    }
-
-                    if ( String.IsNullOrWhiteSpace( tbEmail.Text ) )
-                    {
-                        sb.AppendLine( "<li>Email</li>" );
-                        isValid = false;
-                    }
-                    else
-                    {
-                        person.Email = tbEmail.Text.Trim();
-                    }
-
-                    if ( GetAttributeValue( "DisplayHomePhone" ).AsBoolean() || GetAttributeValue( "DisplayMobilePhone" ).AsBoolean() )
-                    {
-                        if ( String.IsNullOrWhiteSpace( pnHome.Number ) && String.IsNullOrWhiteSpace( pnMobile.Number ) )
-                        {
-                            sb.AppendLine( "<li>Phone Number</li>" );
-                            isValid = false;
-                        }
-                        else
-                        {
-                            string homeNumber = PhoneNumber.CleanNumber( pnHome.Number );
-                            if ( _homePhone != null && !string.IsNullOrWhiteSpace( homeNumber ) )
-                            {
-                                var homePhoneNumber = new PhoneNumber();
-                                homePhoneNumber.NumberTypeValueId = _homePhone.Id;
-                                homePhoneNumber.Number = homeNumber;
-                                homePhoneNumber.CountryCode = PhoneNumber.CleanNumber( pnHome.CountryCode );
-                                person.PhoneNumbers.Add( homePhoneNumber );
-                            }
-
-                            string cellNumber = PhoneNumber.CleanNumber( pnMobile.Number );
-                            if ( _cellPhone != null && !string.IsNullOrWhiteSpace( cellNumber ) )
-                            {
-                                var cellPhoneNumber = new PhoneNumber();
-                                cellPhoneNumber.NumberTypeValueId = _cellPhone.Id;
-                                cellPhoneNumber.Number = cellNumber;
-                                cellPhoneNumber.CountryCode = PhoneNumber.CleanNumber( pnMobile.CountryCode );
-                                person.PhoneNumbers.Add( cellPhoneNumber );
-                            }
-                        }
-                    }
-
-                    if ( !isValid )
-                    {
-                        nbInvalidMessage.Text = sb.ToString();
-                        nbInvalidMessage.Visible = true;
-                        return;
-                    }
-                    else
-                    {
-                        var personMatch = personService.GetByMatch( person.FirstName, person.LastName, person.Email ).FirstOrDefault();
-                        if ( personMatch != null )
-                        {
-                            person = personMatch;
-                        }
-                        else
-                        {
-                            DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-                            DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
-
-                            person.IsEmailActive = true;
-                            person.EmailPreference = EmailPreference.EmailAllowed;
-                            person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                            if ( dvcConnectionStatus != null )
-                            {
-                                person.ConnectionStatusValueId = dvcConnectionStatus.Id;
-                            }
-
-                            if ( dvcRecordStatus != null )
-                            {
-                                person.RecordStatusValueId = dvcRecordStatus.Id;
-                            }
-
-                            person.Gender = Gender.Unknown;
-
-                            PersonService.SaveNewPerson( person, rockContext, null, false );
-                        }
-                    }
-                }
-                else
-                {
-                    var changes = new List<string>();
-
-                    person = personService.Get( CurrentPersonId.Value );
-
-                    if ( GetAttributeValue( "DisplayHomePhone" ).AsBoolean() || GetAttributeValue( "DisplayMobilePhone" ).AsBoolean() )
-                    {
-                        if ( String.IsNullOrWhiteSpace( pnHome.Number ) && String.IsNullOrWhiteSpace( pnMobile.Number ) )
-                        {
-                            isValid = false;
-                        }
-                        else
-                        {
-                            string homeNumber = PhoneNumber.CleanNumber( pnHome.Number );
-                            if ( _homePhone != null && !string.IsNullOrWhiteSpace( homeNumber ) )
-                            {
-                                var homePhone = new PhoneNumber();
-                                homePhone.CountryCode = PhoneNumber.CleanNumber( pnHome.CountryCode );
-                                homePhone.Number = PhoneNumber.CleanNumber( pnHome.Number );
-                                SavePhone( homePhone, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), changes );
-                            }
-
-                            string cellNumber = PhoneNumber.CleanNumber( pnMobile.Number );
-                            if ( _cellPhone != null && !string.IsNullOrWhiteSpace( cellNumber ) )
-                            {
-                                var cellPhone = new PhoneNumber();
-                                cellPhone.CountryCode = PhoneNumber.CleanNumber( pnMobile.CountryCode );
-                                cellPhone.Number = PhoneNumber.CleanNumber( pnMobile.Number );
-                                SavePhone( cellPhone, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), changes );
-                            }
-                        }
-                    }
-
-                    if ( !isValid )
-                    {
-                        nbInvalidMessage.Text = sb.ToString();
-                        nbInvalidMessage.Visible = true;
-                        return;
-                    }
-                    else
-                    {
-                        if ( rockContext.SaveChanges() > 0 )
-                        {
-                            if ( changes.Any() )
-                            {
-                                HistoryService.SaveChanges(
-                                    rockContext,
-                                    typeof( Person ),
-                                    Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                    person.Id,
-                                    changes );
-                            }
-                        }
-                    }
-                }
-
-                // Now that we have a person, we can create the connection request
+                var opportunityService = new ConnectionOpportunityService( rockContext );
                 var connectionRequestService = new ConnectionRequestService( rockContext );
-                var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Get( PageParameter( "OpportunityId" ).AsInteger() );
-                connectionRequest.PersonAlias = person.PrimaryAlias;
-                connectionRequest.Comments = tbComments.Text.Trim();
-                connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
-                connectionRequest.ConnectionState = ConnectionState.Active;
-                connectionRequest.ConnectionStatusId = new ConnectionStatusService( rockContext ).Queryable().FirstOrDefault( s => s.IsDefault == true && s.ConnectionTypeId == connectionOpportunity.ConnectionTypeId ).Id;
-                connectionRequest.CampusId = ddlCampus.SelectedValueAsId().Value;
+                var personService = new PersonService( rockContext );
 
-                if ( !connectionRequest.IsValid )
+
+                // Get the opportunity and default status
+                int opportunityId = PageParameter( "OpportunityId" ).AsInteger();
+                var opportunity = opportunityService
+                    .Queryable()
+                    .Where( o => o.Id == opportunityId )
+                    .FirstOrDefault();
+
+                int defaultStatusId = opportunity.ConnectionType.ConnectionStatuses
+                    .Where( s => s.IsDefault )
+                    .Select( s => s.Id )
+                    .FirstOrDefault();
+
+                // If opportunity is valid and has a default status
+                if ( opportunity != null && defaultStatusId > 0 )
                 {
-                    nbInvalidMessage.Text = "Error submitting request.";
-                    nbInvalidMessage.Visible = true;
-                    return;
+                    Person person = null;
+
+                    string firstName = tbFirstName.Text.Trim();
+                    string lastName = tbLastName.Text.Trim();
+                    string email = tbEmail.Text.Trim();
+                    int? campudId = cpCampus.SelectedCampusId;
+
+                    if ( CurrentPerson != null &&
+                        CurrentPerson.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase ) &&
+                        CurrentPerson.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) &&
+                        CurrentPerson.Email.Equals( email, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        // If the name and email entered are the same as current person (wasn't changed), use the current person
+                        person = personService.Get( CurrentPerson.Id );
+                    }
+
+                    else
+                    {
+                        // Try to find matching person
+                        var personMatches = personService.GetByMatch( firstName, lastName, email );
+                        if ( personMatches.Count() == 1 )
+                        {
+                            // If one person with same name and email address exists, use that person
+                            person = personMatches.First();
+                        }
+                    }
+
+                    // If person was not found, create a new one
+                    if ( person == null )
+                    {
+                        // If a match was not found, create a new person
+                        var dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+                        var dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+
+                        person = new Person();
+                        person.FirstName = firstName;
+                        person.LastName = lastName;
+                        person.IsEmailActive = true;
+                        person.Email = email;
+                        person.EmailPreference = EmailPreference.EmailAllowed;
+                        person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                        if ( dvcConnectionStatus != null )
+                        {
+                            person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                        }
+                        if ( dvcRecordStatus != null )
+                        {
+                            person.RecordStatusValueId = dvcRecordStatus.Id;
+                        }
+
+                        PersonService.SaveNewPerson( person, rockContext, campudId, false );
+                        person = personService.Get( person.Id );
+                    }
+
+                    // If there is a valid person with a primary alias, continue
+                    if ( person != null && person.PrimaryAliasId.HasValue )
+                    {
+                        var changes = new List<string>();
+                        
+                        if ( pnHome.Visible )
+                        {
+                            SavePhone( pnHome, person, _homePhone.Guid, changes );
+                        }
+
+                        if ( pnMobile.Visible )
+                        {
+                            SavePhone( pnMobile, person, _cellPhone.Guid, changes );
+                        }
+
+                        if ( changes.Any() )
+                        {
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( Person ),
+                                Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                person.Id,
+                                changes );
+                        }
+
+                        // Now that we have a person, we can create the connection request
+                        var connectionRequest = new ConnectionRequest();
+                        connectionRequest.PersonAliasId = person.PrimaryAliasId.Value;
+                        connectionRequest.Comments = tbComments.Text.Trim();
+                        connectionRequest.ConnectionOpportunityId = opportunity.Id;
+                        connectionRequest.ConnectionState = ConnectionState.Active;
+                        connectionRequest.ConnectionStatusId = defaultStatusId;
+                        connectionRequest.CampusId = campudId;
+
+                        if ( !connectionRequest.IsValid )
+                        {
+                            // Controls will show warnings
+                            return;
+                        }
+
+                        connectionRequestService.Add( connectionRequest );
+                        rockContext.SaveChanges();
+
+                        var mergeFields = new Dictionary<string, object>();
+                        mergeFields.Add( "Opportunity", new ConnectionOpportunityService( rockContext ).Get( PageParameter( "OpportunityId" ).AsInteger() ) );
+                        mergeFields.Add( "CurrentPerson", CurrentPerson );
+                        mergeFields.Add( "Person", person );
+
+                        lResponseMessage.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
+                        lResponseMessage.Visible = true;
+
+                        pnlSignup.Visible = false;
+                    }
                 }
-
-                connectionRequestService.Add( connectionRequest );
-                rockContext.SaveChanges();
-
-                // Controls will show warnings
-                var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Opportunity", new ConnectionOpportunityService( rockContext ).Get( PageParameter( "OpportunityId" ).AsInteger() ) );
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
-
-                lResponseMessage.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
-                lResponseMessage.Visible = true;
-
-                pnlSignup.Visible = false;
             }
         }
 
@@ -340,30 +252,7 @@ namespace RockWeb.Blocks.Connection
 
         #endregion
 
-        #region Control Events
-
-        /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-            string opportunityId = PageParameter( "OpportunityId" );
-
-            if ( !string.IsNullOrWhiteSpace( opportunityId ) )
-            {
-                ShowDetail( opportunityId.AsInteger() );
-            }
-            else
-            {
-                pnlSignup.Visible = false;
-            }
-        }
-
-        #endregion
-
-        #region Internal Methods
+        #region Methods
 
         /// <summary>
         /// Shows the detail.
@@ -374,24 +263,24 @@ namespace RockWeb.Blocks.Connection
             using ( var rockContext = new RockContext() )
             {
                 var opportunity = new ConnectionOpportunityService( rockContext ).Get( opportunityId );
-
                 if ( opportunity == null )
                 {
+                    pnlSignup.Visible = false;
+                    ShowError( "Incorrect Opportunity Type", "The requested opportunity does not exist." );
                     return;
                 }
 
-                lIcon.Text = string.Format( "<i class='{0}' ></i>", opportunity.IconCssClass );
+                pnlSignup.Visible = true;
+
+                if ( !string.IsNullOrWhiteSpace( opportunity.IconCssClass ) )
+                {
+                    lIcon.Text = string.Format( "<i class='{0}' ></i>", opportunity.IconCssClass );
+                }
+
                 lTitle.Text = opportunity.Name.FormatAsHtmlTitle();
 
-                if ( !GetAttributeValue( "DisplayHomePhone" ).AsBoolean() )
-                {
-                    pnHome.Visible = false;
-                }
-
-                if ( !GetAttributeValue( "DisplayMobilePhone" ).AsBoolean() )
-                {
-                    pnMobile.Visible = false;
-                }
+                pnHome.Visible = GetAttributeValue( "DisplayHomePhone" ).AsBoolean();
+                pnMobile.Visible = GetAttributeValue( "DisplayMobilePhone" ).AsBoolean();
 
                 if ( CurrentPerson != null )
                 {
@@ -399,7 +288,7 @@ namespace RockWeb.Blocks.Connection
                     tbLastName.Text = CurrentPerson.LastName.EncodeHtml();
                     tbEmail.Text = CurrentPerson.Email.EncodeHtml();
 
-                    if ( _homePhone != null )
+                    if ( pnHome.Visible && _homePhone != null )
                     {
                         var homePhoneNumber = CurrentPerson.PhoneNumbers.Where( p => p.NumberTypeValueId == _homePhone.Id ).FirstOrDefault();
                         if ( homePhoneNumber != null )
@@ -409,7 +298,7 @@ namespace RockWeb.Blocks.Connection
                         }
                     }
 
-                    if ( _cellPhone != null )
+                    if ( pnMobile.Visible && _cellPhone != null )
                     {
                         var cellPhoneNumber = CurrentPerson.PhoneNumbers.Where( p => p.NumberTypeValueId == _cellPhone.Id ).FirstOrDefault();
                         if ( cellPhoneNumber != null )
@@ -420,11 +309,9 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
-                ddlCampus.Items.Clear();
-                foreach ( var campus in CampusCache.All() )
-                {
-                    ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString().ToUpper() ) );
-                }
+                var campuses = CampusCache.All();
+                cpCampus.Campuses = campuses;
+                cpCampus.Visible = campuses.Count > 1;
 
                 if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
                 {
@@ -433,7 +320,7 @@ namespace RockWeb.Blocks.Connection
 
                     if ( contextCampus != null )
                     {
-                        ddlCampus.SetValue( contextCampus.Id.ToString() );
+                        cpCampus.SelectedCampusId = contextCampus.Id;
                     }
                 }
 
@@ -441,40 +328,25 @@ namespace RockWeb.Blocks.Connection
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Opportunity", new ConnectionOpportunityService( rockContext ).Get( PageParameter( "OpportunityId" ).AsInteger() ) );
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
-
                 if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
                     lDebug.Visible = true;
                     lDebug.Text = mergeFields.lavaDebugInfo();
                 }
-
-                if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
-                {
-                    string pageTitle = string.Format( "{0} Signup", opportunity.PublicName );
-                    RockPage.PageTitle = pageTitle;
-                    RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
-                    RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
-                }
             }
         }
 
-        /// <summary>
-        /// Saves the phone.
-        /// </summary>
-        /// <param name="fieldValue">The field value.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="phoneTypeGuid">The phone type unique identifier.</param>
-        /// <param name="changes">The changes.</param>
-        private void SavePhone( PhoneNumber newPhone, Person person, Guid phoneTypeGuid, List<string> changes )
+        private void SavePhone( PhoneNumberBox phoneNumberBox, Person person, Guid phoneTypeGuid, List<string> changes )
         {
-            if ( newPhone != null )
+            var numberType = DefinedValueCache.Read( phoneTypeGuid );
+            if ( numberType != null )
             {
-                var numberType = DefinedValueCache.Read( phoneTypeGuid );
-                if ( numberType != null )
-                {
-                    var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
-                    string oldPhoneNumber = string.Empty;
+                var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberType.Id );
+                string oldPhoneNumber = phone != null ? phone.NumberFormattedWithCountryCode : string.Empty;
+                string newPhoneNumber = PhoneNumber.CleanNumber( phoneNumberBox.Number );
 
+                if ( newPhoneNumber != string.Empty )
+                {
                     if ( phone == null )
                     {
                         phone = new PhoneNumber();
@@ -485,22 +357,27 @@ namespace RockWeb.Blocks.Connection
                     {
                         oldPhoneNumber = phone.NumberFormattedWithCountryCode;
                     }
+                    phone.CountryCode = PhoneNumber.CleanNumber( phoneNumberBox.CountryCode );
+                    phone.Number = newPhoneNumber;
 
-                    if ( phone == null || newPhone.NumberFormattedWithCountryCode != phone.NumberFormattedWithCountryCode )
-                    {
-                        phone.CountryCode = PhoneNumber.CleanNumber( newPhone.CountryCode );
-                        phone.Number = PhoneNumber.CleanNumber( newPhone.Number );
-
-                        History.EvaluateChange(
-                            changes,
-                            string.Format( "{0} Phone", numberType.Value ),
-                            oldPhoneNumber,
-                            newPhone.NumberFormattedWithCountryCode );
-                    }
-
+                    History.EvaluateChange(
+                        changes,
+                        string.Format( "{0} Phone", numberType.Value ),
+                        oldPhoneNumber,
+                        phone.NumberFormattedWithCountryCode );
                 }
+
             }
         }
+
+        private void ShowError( string title, string message )
+        {
+            nbErrorMessage.Title = title;
+            nbErrorMessage.Text = string.Format( "<p>{0}</p>", message );
+            nbErrorMessage.NotificationBoxType = NotificationBoxType.Danger;
+            nbErrorMessage.Visible = true;
+        }
+
         #endregion
 
     }
