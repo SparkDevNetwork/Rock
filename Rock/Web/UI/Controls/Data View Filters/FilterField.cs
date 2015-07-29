@@ -225,20 +225,20 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [hide filter type picker].
+        /// Gets or sets the filter mode (Advanced Filter or Simple Filter)
         /// </summary>
         /// <value>
-        /// <c>true</c> if [hide filter type picker]; otherwise, <c>false</c>.
+        /// The filter mode.
         /// </value>
-        public bool HideFilterTypePicker
+        public FilterMode FilterMode
         {
             get
             {
-                return ViewState["HideFilterTypePicker"] as bool? ?? false;
+                return ViewState["FilterMode"] as FilterMode? ?? FilterMode.AdvancedFilter;
             }
             set
             {
-                ViewState["HideFilterTypePicker"] = value;
+                ViewState["FilterMode"] = value;
             }
         }
 
@@ -384,7 +384,7 @@ namespace Rock.Web.UI.Controls
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
-                component.SetSelection( FilteredEntityType, filterControls, value );
+                component.SetSelection( FilteredEntityType, filterControls, value, this.FilterMode );
             }
         }
 
@@ -399,7 +399,7 @@ namespace Rock.Web.UI.Controls
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
-                return component.GetSelection( FilteredEntityType, filterControls );
+                return component.GetSelection( FilteredEntityType, filterControls, this.FilterMode );
             }
 
             return string.Empty;
@@ -420,7 +420,7 @@ namespace Rock.Web.UI.Controls
             if ( component != null )
             {
                 component.Options = FilterOptions;
-                filterControls = component.CreateChildControls( FilteredEntityType, this );
+                filterControls = component.CreateChildControls( FilteredEntityType, this, this.FilterMode );
             }
             else
             {
@@ -506,7 +506,9 @@ namespace Rock.Web.UI.Controls
                 hfExpanded.Value = "True";
             }
 
-            if ( !this.HideFilterTypePicker )
+            bool showFilterTypePicker = this.FilterMode == FilterMode.AdvancedFilter;
+
+            if ( showFilterTypePicker )
             {
                 // only render this stuff if the filter type picker is shown
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget filter-item" );
@@ -602,13 +604,13 @@ namespace Rock.Web.UI.Controls
 
             if ( component != null && !HideFilterCriteria )
             {
-                component.RenderControls( FilteredEntityType, this, writer, filterControls );
+                component.RenderControls( FilteredEntityType, this, writer, filterControls, this.FilterMode );
             }
 
             writer.RenderEndTag(); // "col-md-12"
             writer.RenderEndTag(); // "row js-filter-row filter-row"
 
-            if ( !HideFilterTypePicker )
+            if ( showFilterTypePicker )
             {
                 writer.RenderEndTag();
 

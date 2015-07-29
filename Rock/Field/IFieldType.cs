@@ -20,6 +20,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 
 namespace Rock.Field
 {
@@ -130,12 +131,23 @@ namespace Rock.Field
         #region Filter Control 
 
         /// <summary>
-        /// Creates the control needed to filter (query) values using this field type.
+        /// Creates the control needed to filter (query) values using this field type using the specified FilterMode
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode );
+
+        /// <summary>
+        /// Creates the control needed to filter (query) values using this field type using a FilterMode of AdvancedFilter
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
+        [Obsolete]
         Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required );
 
         /// <summary>
@@ -149,8 +161,18 @@ namespace Rock.Field
         /// </summary>
         /// <param name="filterControl">The filter control.</param>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues );
+        List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode );
+
+        /// <summary>
+        /// Gets the filter values.
+        /// </summary>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        [Obsolete]
+        List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues);
 
         /// <summary>
         /// Sets the filter value.
