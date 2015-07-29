@@ -193,5 +193,12 @@ namespace Rock.Reporting
 
             return value.ConvertToEnumOrNull<TEnum>();
         }
+
+        public static List<string> GetParameterAsList( IEnumerable<string> parameters, int parameterIndex, string delimiter = "," )
+        {
+            var value = GetParameterOrDefault( parameters, parameterIndex, string.Empty );
+
+            return value.Split( new string[] { delimiter }, StringSplitOptions.RemoveEmptyEntries ).ToList();            
+        }
     }
 }
