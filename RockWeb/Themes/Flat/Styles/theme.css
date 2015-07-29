@@ -2736,6 +2736,9 @@ iframe.email-body {
 .calendar-month .calendar-last-month a {
   opacity: .2;
 }
+.calendar-month .calendar-hasevent {
+  font-weight: 700;
+}
 .registrationentry-intro {
   text-align: center;
 }
@@ -3196,7 +3199,6 @@ ul.rocktree ul {
 .list-as-blocks ul li a i {
   font-size: 26px;
   color: #3e5771;
-  margin-top: 6px;
 }
 .list-as-blocks ul li a:hover {
   background-color: #18bc9c;
@@ -5140,9 +5142,6 @@ a.help {
 }
 .panel .panel-heading .form-group {
   margin-bottom: 0;
-}
-.panel .panel-heading i.fa {
-  color: #3e5771;
 }
 .panel .panel-body {
   border-radius: 0 0 4px 4px;

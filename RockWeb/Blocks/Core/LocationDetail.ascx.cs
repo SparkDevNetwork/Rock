@@ -496,7 +496,7 @@ namespace RockWeb.Blocks.Core
 
         private void BuildAttributeEdits( Location location, bool setValues )
         {
-            Rock.Attribute.Helper.AddEditControls( location, phAttributeEdits, setValues );
+            Rock.Attribute.Helper.AddEditControls( location, phAttributeEdits, setValues, BlockValidationGroup );
         }
 
         /// <summary>

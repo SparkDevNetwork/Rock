@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Administration
 
                 job.LoadAttributes();
                 phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( job, phAttributes, true );
+                Rock.Attribute.Helper.AddEditControls( job, phAttributes, true, BlockValidationGroup );
             }
         }
 
@@ -167,7 +167,7 @@ namespace RockWeb.Blocks.Administration
             job.Class = ddlJobTypes.SelectedValue;
             job.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( job, phAttributes, true );
+            Rock.Attribute.Helper.AddEditControls( job, phAttributes, true, BlockValidationGroup );
             
         }
 
@@ -216,7 +216,7 @@ namespace RockWeb.Blocks.Administration
 
             job.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( job, phAttributes, true );
+            Rock.Attribute.Helper.AddEditControls( job, phAttributes, true, BlockValidationGroup );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;

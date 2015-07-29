@@ -65,8 +65,7 @@ namespace Rock.Model
         /// <value>
         /// The description.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>

@@ -5,6 +5,7 @@
         <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfSelectedItemId" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfPageRouteTemplate" runat="server" ClientIDMode="Static" />
+        <asp:HiddenField ID="hfDetailPageUrl" runat="server" ClientIDMode="Static" />
 
         <div class="treeview">
 
@@ -94,9 +95,14 @@
                                 iconCssClass: item.IconCssClass,
                                 parentId: item.ParentId,
                                 hasChildren: item.HasChildren,
-                                isCategory: item.IsCategory
+                                isCategory: item.IsCategory,
+                                entityId: item.Id
                             };
 
+                            // If this Tree Node represents a Category, add a prefix to its identifier to prevent collisions with other Entity identifiers.
+                            if (item.IsCategory) {
+                                node.id = '<%= CategoryNodePrefix %>' + node.id;
+                            }
                             if (item.Children && typeof item.Children.length === 'number') {
                                 node.children = _mapCategories(item.Children);
                             }
@@ -110,8 +116,13 @@
 
                         var $node = $('[data-id="' + id + '"]'),
                             isCategory = $node.attr('data-iscategory') === 'true',
-                            urlParameter = (isCategory ? 'CategoryId' : '<%= PageParameterName %>'),
-                                itemSearch = '?' + urlParameter + '=' + id;
+                            urlParameter = (isCategory ? 'CategoryId' : '<%= PageParameterName %>');
+
+                        // Get the id of the Entity represented by this Tree Node if it has been specified as an attribute.
+                        // If not, assume the id of the Entity is the same as the Node.
+                        var entityId = $node.attr('data-entityid') || id;
+
+                        var itemSearch = '?' + urlParameter + '=' + entityId;
 
                         var currentItemId = $selectedId.val();
 
@@ -126,11 +137,18 @@
                             var regex = new RegExp("{" + urlParameter + "}", "i");
 
                             if (pageRouteTemplate.match(regex)) {
-                                locationUrl = Rock.settings.get('baseUrl') + pageRouteTemplate.replace(regex, id);
+                                locationUrl = Rock.settings.get('baseUrl') + pageRouteTemplate.replace(regex, entityId);
                                 locationUrl += "?ExpandedIds=" + encodeURIComponent(expandedDataIds);
                             }
                             else {
-                                locationUrl = window.location.href.split('?')[0] + itemSearch;
+                                var detailPageUrl = $('#hfDetailPageUrl').val();
+                                if (detailPageUrl) {
+                                    locationUrl = Rock.settings.get('baseUrl') + detailPageUrl + itemSearch;
+                                }
+                                else {
+                                    locationUrl = window.location.href.split('?')[0] + itemSearch;
+                                }
+
                                 locationUrl += "&ExpandedIds=" + encodeURIComponent(expandedDataIds);
                             }
 
@@ -148,7 +166,7 @@
                             restUrl: '<%= ResolveUrl( "~/api/categories/getchildren/" ) %>',
                             restParams: '<%= RestParms %>',
                             mapping: {
-                                include: ['isCategory'],
+                                include: ['isCategory', 'entityId'],
                                 mapData: _mapCategories
                             },
                             selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,

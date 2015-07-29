@@ -179,7 +179,9 @@ namespace RockWeb
 
                                 sched.ScheduleJob( jobDetail, jobTrigger );
 
-                                if ( job.LastStatus == errorLoadingStatus )
+                                //// if the last status was an error, but we now loaded successful, clear the error
+                                // also, if the last status was 'Running', clear that status because it would have stopped if the app restarted
+                                if ( job.LastStatus == errorLoadingStatus || job.LastStatus == "Running" )
                                 {
                                     job.LastStatusMessage = string.Empty;
                                     job.LastStatus = string.Empty;
@@ -192,7 +194,7 @@ namespace RockWeb
                                 LogError( ex, null );
 
                                 // create a friendly error message
-                                string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assembly, ex.Message );
+                                string message = string.Format( "Error loading the job: {0}.\n\n{2}", job.Name, job.Assembly, ex.Message );
                                 job.LastStatusMessage = message;
                                 job.LastStatus = errorLoadingStatus;
                                 rockContext.SaveChanges();

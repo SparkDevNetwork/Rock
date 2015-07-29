@@ -39,7 +39,6 @@ namespace RockWeb.Blocks.Groups
     [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
     [LinkedPage( "Detail Page" )]
     [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
-    [BooleanField( "Require Note on Alternate Placement", "Flag that indicates whether a note is required to save the alternate placement.", false, "", 3, "RequireAlternatePlacementNote")]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
@@ -483,9 +482,13 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            if ( _group != null && _group.GroupType != null && _group.GroupType.EnableAlternatePlacements )
+            // Add Place Elsewhere column if the group or group type has any Place Elsewhere member triggers
+            if ( _group != null && _group.GroupType != null )
             {
-                AddAlternatePlacementColumn();
+                if ( _group.GetGroupMemberWorkflowTriggers().Where( a => a.TriggerType == GroupMemberWorkflowTriggerType.MemberPlacedElsewhere ).Any() )
+                {
+                    AddPlaceElsewhereColumn();
+                }
             }
 
             // Add Link to Profile Page Column
@@ -517,116 +520,160 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
-        /// Adds the Alternate Placement column
+        /// Adds the Place Elsewhere column
         /// </summary>
-        private void AddAlternatePlacementColumn()
+        private void AddPlaceElsewhereColumn()
         {
-            LinkButtonField btnAlternatePlacement = new LinkButtonField();
-            btnAlternatePlacement.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            btnAlternatePlacement.HeaderStyle.CssClass = "grid-columncommand";
-            btnAlternatePlacement.ItemStyle.CssClass = "grid-columncommand";
-            btnAlternatePlacement.Text = "<i class='fa fa-share'></i>";
-            btnAlternatePlacement.CssClass = "btn btn-default";
-            btnAlternatePlacement.ToolTip = "Alternate Placment";
-            btnAlternatePlacement.Click += btnAlternatePlacement_Click;
+            LinkButtonField btnPlaceElsewhere = new LinkButtonField();
+            btnPlaceElsewhere.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            btnPlaceElsewhere.HeaderStyle.CssClass = "grid-columncommand";
+            btnPlaceElsewhere.ItemStyle.CssClass = "grid-columncommand";
+            btnPlaceElsewhere.Text = "<i class='fa fa-share'></i>";
+            btnPlaceElsewhere.CssClass = "btn btn-default";
+            btnPlaceElsewhere.ToolTip = "Place Elsewhere";
+            btnPlaceElsewhere.Click += btnPlaceElsewhere_Click;
 
-            gGroupMembers.Columns.Add( btnAlternatePlacement );
+            gGroupMembers.Columns.Add( btnPlaceElsewhere );
         }
 
         /// <summary>
-        /// Handles the Click event of the btnAlternatePlacement control.
+        /// Handles the Click event of the btnPlaceElsewhere control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void btnAlternatePlacement_Click( object sender, RowEventArgs e )
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void btnPlaceElsewhere_Click( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
 
-            Group targetGroup = null;
-            if ( _group != null )
-            {
-                var groupService = new GroupService( rockContext );
-                var ancestorGroupIdList = groupService.GetAllAncestorIds( _group.Id );
-
-                // get first ancestor Group that accepts Alternate Placements. 
-                // If we get all the way to the top without finding one, use the top group, even if it doesn't accept alternate placements
-                foreach ( var ancestorGroupId in ancestorGroupIdList )
-                {
-                    targetGroup = groupService.Get( ancestorGroupId );
-                    if ( targetGroup.AcceptAlternatePlacements )
-                    {
-                        break;
-                    }
-                }
-            }
-
             var groupMemberPerson = new GroupMemberService( rockContext ).GetPerson( e.RowKeyId );
-            if ( groupMemberPerson != null && targetGroup != null )
+            if ( groupMemberPerson != null )
             {
-                nbAlternatePlacementWarning.Text = string.Empty;
-                hfAlternatePlacementTargetGroupId.Value = targetGroup.Id.ToString();
-                hfAlternatePlacementGroupMemberId.Value = e.RowKeyId.ToString();
-                lAlternatePlacementGroupMemberName.Text = groupMemberPerson.ToString();
-                lAlternatePlacementTargetGroupName.Text = targetGroup.ToString();
-                mdAlternatePlacement.Visible = true;
-                mdAlternatePlacement.Show();
+                hfPlaceElsewhereGroupMemberId.Value = e.RowKeyId.ToString();
+                lPlaceElsewhereGroupMemberName.Text = groupMemberPerson.ToString();
+                BindPlaceElsewhereTriggerButtons( true );
+
+                mdPlaceElsewhere.Visible = true;
+                mdPlaceElsewhere.Show();
             }
         }
 
         /// <summary>
-        /// Handles the SaveClick event of the mdAlternatePlacement control.
+        /// Binds the place elsewhere trigger buttons.
+        /// </summary>
+        /// <param name="setDefault">if set to <c>true</c> [set default].</param>
+        private void BindPlaceElsewhereTriggerButtons( bool setDefault )
+        {
+            var sortedTriggerList = _group.GetGroupMemberWorkflowTriggers().Where( a => a.TriggerType == GroupMemberWorkflowTriggerType.MemberPlacedElsewhere ).ToList();
+
+            if ( setDefault )
+            {
+                var defaultTrigger = sortedTriggerList.FirstOrDefault();
+                hfPlaceElsewhereTriggerId.Value = defaultTrigger != null ? defaultTrigger.Id.ToString() : null;
+            }
+
+            // if only one trigger, just show the name of it (don't show the button list)
+            if ( sortedTriggerList.Count == 1 )
+            {
+                rcwSelectMemberTrigger.Visible = false;
+
+                lWorkflowTriggerName.Visible = true;
+                lWorkflowTriggerName.Text = sortedTriggerList[0].Name;
+            }
+            else
+            {
+                lWorkflowTriggerName.Visible = false;
+
+                rcwSelectMemberTrigger.Visible = true;
+                rptSelectMemberTrigger.DataSource = sortedTriggerList.OrderBy( a => a.WorkflowName );
+                rptSelectMemberTrigger.DataBind();
+            }
+
+            var selectedTrigger = sortedTriggerList.Where( a => a.Id == hfPlaceElsewhereTriggerId.Value.AsInteger() ).FirstOrDefault();
+            if ( selectedTrigger != null )
+            {
+                var qualifierParts = ( selectedTrigger.TypeQualifier ?? string.Empty ).Split( new char[] { '|' } );
+                bool showNote = qualifierParts.Length > 5 ? qualifierParts[5].AsBoolean() : false;
+                bool requireNote = qualifierParts.Length > 6 ? qualifierParts[6].AsBoolean() : false;
+                tbPlaceElsewhereNote.Visible = showNote || requireNote;
+                tbPlaceElsewhereNote.Required = requireNote;
+                lWorkflowName.Text = selectedTrigger.WorkflowType.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnMemberTrigger control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void mdAlternatePlacement_SaveClick( object sender, EventArgs e )
+        protected void btnMemberTrigger_Click( object sender, EventArgs e )
         {
-            if ( GetAttributeValue("RequireAlternatePlacementNote").AsBoolean() && string.IsNullOrWhiteSpace( tbAlternatePlacementNote.Text ) )
+            var btnMemberTrigger = sender as LinkButton;
+            if ( btnMemberTrigger != null )
             {
-                nbAlternatePlacementWarning.Text = "You must provide a note.";
-                return;
+                hfPlaceElsewhereTriggerId.Value = btnMemberTrigger.CommandArgument;
+                BindPlaceElsewhereTriggerButtons( false );
             }
+        }
 
-            // TODO
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptSelectMemberTrigger control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptSelectMemberTrigger_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var btnMemberTrigger = e.Item.FindControl( "btnMemberTrigger" ) as LinkButton;
+            var trigger = e.Item.DataItem as GroupMemberWorkflowTrigger;
+            if ( trigger != null && trigger.Id == hfPlaceElsewhereTriggerId.Value.AsInteger() )
+            {
+                btnMemberTrigger.AddCssClass( "active" );
+            }
+            else
+            {
+                btnMemberTrigger.RemoveCssClass( "active" );
+            }
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdPlaceElsewhere control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdPlaceElsewhere_SaveClick( object sender, EventArgs e )
+        {
             using ( var rockContext = new RockContext() )
             {
                 var groupService = new GroupService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
-                var targetGroup = groupService.Get( hfAlternatePlacementTargetGroupId.Value.AsInteger() );
-                var groupMember = groupMemberService.Get( hfAlternatePlacementGroupMemberId.Value.AsInteger() );
-                if ( targetGroup != null && groupMember != null )
+                var groupMember = groupMemberService.Get( hfPlaceElsewhereGroupMemberId.Value.AsInteger() );
+                if ( groupMember != null )
                 {
-                    //// delete from the old groupmember record and create a new groupmember record for the targetgroup
-                    //// NOTE: we'll delete and add vs. just change the groupMember.GroupId to avoid having anything attached 
-                    //// to the groupmember record thaat doesn't make sense in the new group
-
                     string errorMessage;
                     if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
                     {
-                        nbAlternatePlacementWarning.Text = errorMessage;
+                        nbPlaceElsewhereWarning.Text = errorMessage;
                         return;
                     }
 
-                    var groupTypeCache = GroupTypeCache.Read( targetGroup.GroupTypeId );
-                    if ( !groupTypeCache.DefaultGroupRoleId.HasValue )
+                    
+                    var trigger = _group.GetGroupMemberWorkflowTriggers().FirstOrDefault( a => a.Id == hfPlaceElsewhereTriggerId.Value.AsInteger() );
+                    if ( trigger != null )
                     {
-                        nbAlternatePlacementWarning.Text = "Target group does not have a default role";
-                        return;
+                        // create a transaction for the selected trigger
+                        var transaction = new Rock.Transactions.GroupMemberPlacedElsewhereTransaction( groupMember, tbPlaceElsewhereNote.Text, trigger );
+
+                        // delete the group member from the current group
+                        groupMemberService.Delete( groupMember );
+
+                        rockContext.SaveChanges();
+
+                        // queue up the transaction
+                        Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                     }
-
-                    var placedGroupMember = new GroupMember();
-                    placedGroupMember.GroupId = targetGroup.Id;
-                    placedGroupMember.GroupRoleId = groupTypeCache.DefaultGroupRoleId.Value;
-                    placedGroupMember.PersonId = groupMember.PersonId;
-                    placedGroupMember.GroupMemberStatus = GroupMemberStatus.Pending;
-                    placedGroupMember.Note = string.Format( "{0} - {1}, {2}", tbAlternatePlacementNote.Text, CurrentPerson.FullName, groupMember.Group.Name );
-
-                    groupMemberService.Delete( groupMember );
-                    groupMemberService.Add( placedGroupMember );
-                    rockContext.SaveChanges();
                 }
 
-                mdAlternatePlacement.Hide();
-                mdAlternatePlacement.Visible = false;
+                mdPlaceElsewhere.Hide();
+                mdPlaceElsewhere.Visible = false;
                 BindGroupMembersGrid();
             }
         }
@@ -734,17 +781,11 @@ namespace RockWeb.Blocks.Groups
 
                     SortProperty sortProperty = gGroupMembers.SortProperty;
 
-                    // If there are group requirements that that member doesn't meet, show a warning in the grid
-                    List<int> groupMemberIdsThatLackGroupRequirements = null;
-                    var qryGroupRequirementIds = new GroupRequirementService( rockContext ).Queryable().Where( a => a.GroupId == _group.Id ).Select( a => a.Id );
-                    bool hasGroupRequirements = qryGroupRequirementIds.Any();
-                    if ( hasGroupRequirements )
-                    {
-                        var groupMemberIdsThatLackGroupRequirementsQry = qry.Where(
-                            a => !qryGroupRequirementIds.All( r => a.GroupMemberRequirements.Where( mr => mr.RequirementMetDateTime.HasValue ).Select( x => x.GroupRequirementId ).Contains( r ) ) ).Select( a => a.Id );
+                    bool hasGroupRequirements = new GroupRequirementService( rockContext ).Queryable().Where( a => a.GroupId == _group.Id ).Any();
 
-                        groupMemberIdsThatLackGroupRequirements = groupMemberIdsThatLackGroupRequirementsQry.ToList();
-                    }
+                    // If there are group requirements that that member doesn't meet, show an icon in the grid
+                    bool includeWarnings = false;
+                    var groupMemberIdsThatLackGroupRequirements = new GroupService( rockContext ).GroupMembersNotMeetingRequirements( _group.Id, includeWarnings ).Select( a => a.Key.Id );
 
                     List<GroupMember> groupMembersList = null;
 
@@ -853,5 +894,7 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
+
+
     }
 }

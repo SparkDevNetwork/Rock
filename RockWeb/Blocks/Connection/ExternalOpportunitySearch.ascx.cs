@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Connection
     [DisplayName( "Connection Opportunity Search Lava" )]
     [Category( "Connection" )]
     [Description( "Allows users to search for an opportunity to join" )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the list of opportunities.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Themes/Stark/Assets/Lava/ExternalOpportunitySearch.lava' %}", "", 2 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the list of opportunities.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunitySearch.lava' %}", "", 2 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the connection type name.", false )]
     [BooleanField( "Display Name Filter", "Display the name filter", true )]

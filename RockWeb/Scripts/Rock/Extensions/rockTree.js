@@ -151,7 +151,15 @@
                 // Wrapper function around jQuery.ajax. Appends a handler to databind the
                 // resulting JSON from the server and returns the promise
                 getNodes = function (parentId, parentNode) {
-                    var restUrl = self.options.restUrl + parentId;
+                    var restUrl = self.options.restUrl;
+
+                    // If the Tree Node we are loading has an EntityId attribute, use it to identify the associated Data Entity key - otherwise use the Tree Node identifier itself.
+                    // The Data Entity key identifies the node data we are requesting from the REST source to load into the tree.
+                    if (parentNode && parentNode.entityId) {
+                        restUrl += parentNode.entityId;
+                    } else {
+                        restUrl += parentId;
+                    }
 
                     if (self.options.restParams) {
                         restUrl += self.options.restParams;
@@ -308,11 +316,11 @@
 				        $li.prepend('<i class="rocktree-icon icon-fw ' + folderCssClass + '"></i>');
 
 				        if (node.iconCssClass) {
-				            $li.find('.rocktree-name').prepend('<i class="' + node.iconCssClass + '"></i>');
+				            $li.find('.rocktree-name').prepend('<i class="icon-fw ' + node.iconCssClass + '"></i>');
 				        }
 				    } else {
 				        if (leafCssClass) {
-				            $li.find('.rocktree-name').prepend('<i class="' + leafCssClass + '"></i>');
+				            $li.find('.rocktree-name').prepend('<i class="icon-fw ' + leafCssClass + '"></i>');
 				        }
 				    }
 

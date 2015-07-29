@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Connection
     [Description( "Displays the details of the given opportunity for the external website." )]
     [BooleanField( "Display Home Phone", "Whether to display home phone", true )]
     [BooleanField( "Display Mobile Phone", "Whether to display mobile phone", true )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the response message.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Themes/Stark/Assets/Lava/ExternalOpportunityResponseMessage.lava' %}", "", 2 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the response message.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunityResponseMessage.lava' %}", "", 2 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the opportunity name.", true )]
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2" )]

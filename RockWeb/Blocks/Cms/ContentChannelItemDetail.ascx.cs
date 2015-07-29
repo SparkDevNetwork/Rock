@@ -196,6 +196,28 @@ namespace RockWeb.Blocks.Cms
                 {
                     rockContext.SaveChanges();
                     contentItem.SaveAttributeValues( rockContext );
+
+                    int? eventItemOccurrenceId = PageParameter( "EventItemOccurrenceId" ).AsIntegerOrNull();
+                    if ( eventItemOccurrenceId.HasValue )
+                    {
+                        var occurrenceChannelItemService = new EventItemOccurrenceChannelItemService( rockContext );
+                        var occurrenceChannelItem = occurrenceChannelItemService
+                            .Queryable()
+                            .Where( c =>
+                                c.ContentChannelItemId == contentItem.Id &&
+                                c.EventItemOccurrenceId == eventItemOccurrenceId.Value) 
+                            .FirstOrDefault();
+
+                        if ( occurrenceChannelItem == null )
+                        {
+                            occurrenceChannelItem = new EventItemOccurrenceChannelItem();
+                            occurrenceChannelItem.ContentChannelItemId = contentItem.Id;
+                            occurrenceChannelItem.EventItemOccurrenceId = eventItemOccurrenceId.Value;
+                            occurrenceChannelItemService.Add( occurrenceChannelItem );
+                            rockContext.SaveChanges();
+                        }
+                    }
+
                 } );
 
                 ReturnToParentPage();
@@ -435,7 +457,16 @@ namespace RockWeb.Blocks.Cms
         private void ReturnToParentPage()
         {
             var qryParams = new Dictionary<string,string>();
-            qryParams.Add( "contentChannelId", hfChannelId.Value );
+
+            int? eventItemOccurrenceId = PageParameter( "EventItemOccurrenceId" ).AsIntegerOrNull();
+            if ( eventItemOccurrenceId.HasValue )
+            {
+                qryParams.Add( "EventCalendarId", PageParameter( "EventCalendarId" ) );
+                qryParams.Add( "EventItemId", PageParameter( "EventItemId" ) );
+                qryParams.Add( "EventItemOccurrenceId", eventItemOccurrenceId.Value.ToString() );
+            }
+            
+            qryParams.Add( "ContentChannelId", hfChannelId.Value );
             NavigateToParentPage( qryParams );
         }
 

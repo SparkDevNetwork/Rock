@@ -9,51 +9,6 @@
 <asp:UpdatePanel ID="upEventCalendar" runat="server">
     <ContentTemplate>
 
-        <div class="wizard">
-
-             <div class="wizard-item complete">
-                <asp:LinkButton ID="lbCalendars" runat="server" OnClick="lbCalendarsDetail_Click" CausesValidation="false" >
-                    <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
-                    <asp:PlaceHolder runat="server">
-                        <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-calendar"></i>
-                        </div>
-                        <div class="wizard-item-label">
-                            Event Calendars
-                        </div>
-                    </asp:PlaceHolder>
-                </asp:LinkButton>
-            </div>
-            
-            <div class="wizard-item active">
-                <div class="wizard-item-icon">
-                    <i class="fa fa-fw fa-calendar"></i>
-                </div>
-                <div class="wizard-item-label">
-                    <asp:Literal ID="lWizardCalenderName" runat="server" />
-                </div>
-            </div>
-    
-            <div class="wizard-item">
-                <div class="wizard-item-icon">
-                    <i class="fa fa-fw fa-calendar-o"></i>
-                </div>
-                <div class="wizard-item-label">
-                    Calendar Item
-                </div>
-            </div>
-    
-            <div class="wizard-item">
-                <div class="wizard-item-icon">
-                    <i class="fa fa-fw fa-building-o"></i>
-                </div>
-                <div class="wizard-item-label">
-                    Campus Detail
-                </div>
-            </div>
-
-        </div>
-
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
             <asp:HiddenField ID="hfEventCalendarId" runat="server" />
 
@@ -105,7 +60,7 @@
 
                     <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Calendar Item Attributes">
                         <div class="grid">
-                            <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Attribute">
+                            <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Attribute" ShowConfirmDeleteDialog="false">
                                 <Columns>
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
@@ -116,6 +71,17 @@
                                     <Rock:BoolField DataField="AllowSearch" HeaderText="Allow Search" />
                                     <Rock:EditField OnClick="gAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gAttributes_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="wpContentChannels" runat="server" Title="Content Channels">
+                        <div class="grid">
+                            <Rock:Grid ID="gContentChannels" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Content Channel" ShowConfirmDeleteDialog="false">
+                                <Columns>
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Channel" />
+                                    <Rock:DeleteField OnClick="gContentChannels_Delete" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
@@ -136,6 +102,12 @@
         <Rock:ModalDialog ID="dlgAttribute" runat="server" Title="Calendar Item Attribute" OnSaveClick="dlgAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Attributes">
             <Content>
                 <Rock:AttributeEditor ID="edtAttributes" runat="server" ShowActions="false" ValidationGroup="Attributes" />
+            </Content>
+        </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="dlgContentChannel" runat="server" Title="Content Channel" OnSaveClick="dlgContentChannel_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Channels">
+            <Content>
+                <Rock:RockDropDownList ID="ddlContentChannel" runat="server" Label="Channel" DataValueField="Guid" DataTextField="Name" />
             </Content>
         </Rock:ModalDialog>
 

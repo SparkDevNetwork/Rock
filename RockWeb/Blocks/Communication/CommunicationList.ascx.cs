@@ -359,6 +359,7 @@ namespace RockWeb.Blocks.Communication
                 .Select( c => new CommunicationItem {
                     Id = c.Id,
                     MediumEntityTypeId = c.MediumEntityTypeId,
+                    MediumName = c.MediumEntityTypeId.HasValue ? c.MediumEntityType.FriendlyName : null,
                     Subject = c.Subject,
                     CreatedDateTime = c.CreatedDateTime,
                     Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
@@ -383,24 +384,9 @@ namespace RockWeb.Blocks.Communication
                 queryable = queryable.OrderByDescending( c => c.CreatedDateTime );
             }
 
-            var communicationItems = queryable.ToList();
-
-            // Get the medium names
-            var mediums = new Dictionary<int, string>();
-            foreach ( var item in Rock.Communication.MediumContainer.Instance.Components.Values )
-            {
-                var entityType = item.Value.EntityType;
-                mediums.Add( entityType.Id, item.Metadata.ComponentName );
-            }
-            foreach ( var c in communicationItems )
-            {
-                c.MediumName = c.MediumEntityTypeId.HasValue && mediums.ContainsKey( c.MediumEntityTypeId.Value ) ? mediums[c.MediumEntityTypeId.Value] : "Unknown";
-            }
-
             gCommunication.EntityTypeId = EntityTypeCache.Read<Rock.Model.Communication>().Id;
-            gCommunication.DataSource = communicationItems;
+            gCommunication.SetLinqDataSource( queryable );
             gCommunication.DataBind();
-
         }
 
         #endregion

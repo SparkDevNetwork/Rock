@@ -265,8 +265,8 @@ namespace RockWeb.Blocks.Crm
             {
                 var personService = new PersonService( rockContext );
                 var userLoginService = new UserLoginService( rockContext );
-                var familyService = new GroupService( rockContext );
-                var familyMemberService = new GroupMemberService( rockContext );
+                var groupService = new GroupService( rockContext );
+                var groupMemberService = new GroupMemberService( rockContext );
                 var binaryFileService = new BinaryFileService( rockContext );
                 var phoneNumberService = new PhoneNumberService( rockContext );
 
@@ -425,14 +425,14 @@ namespace RockWeb.Blocks.Crm
 
                         // Delete the merged person's other family member records and the family if they were the only one in the family
                         Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-                        foreach ( var familyMember in familyMemberService.Queryable().Where( m => m.PersonId == p.Id && m.Group.GroupType.Guid == familyGuid ) )
+                        foreach ( var familyMember in groupMemberService.Queryable().Where( m => m.PersonId == p.Id && m.Group.GroupType.Guid == familyGuid ) )
                         {
-                            familyMemberService.Delete( familyMember );
+                            groupMemberService.Delete( familyMember );
 
                             rockContext.SaveChanges();
 
                             // Get the family
-                            var family = familyService.Queryable( "Members" ).Where( f => f.Id == familyMember.GroupId ).FirstOrDefault();
+                            var family = groupService.Queryable( "Members" ).Where( f => f.Id == familyMember.GroupId ).FirstOrDefault();
                             if ( !family.Members.Any() )
                             {
                                 // If there are not any other family members, delete the family record.
@@ -449,10 +449,24 @@ namespace RockWeb.Blocks.Crm
                                 }
 
                                 // Delete the family
-                                familyService.Delete( family );
+                                groupService.Delete( family );
 
                                 rockContext.SaveChanges();
 
+                            }
+                        }
+                    }
+
+                    // Flush any security roles that the merged person's other records were a part of
+                    foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
+                    {
+                        foreach ( var groupMember in groupMemberService.Queryable().Where( m => m.PersonId == p.Id ) )
+                        {
+                            Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
+                            if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
+                            {
+                                Rock.Security.Role.Flush( group.Id );
+                                Rock.Security.Authorization.Flush();
                             }
                         }
                     }

@@ -2734,6 +2734,9 @@ iframe.email-body {
 .calendar-month .calendar-last-month a {
   opacity: .2;
 }
+.calendar-month .calendar-hasevent {
+  font-weight: 700;
+}
 .registrationentry-intro {
   text-align: center;
 }
@@ -3194,7 +3197,6 @@ ul.rocktree ul {
 .list-as-blocks ul li a i {
   font-size: 26px;
   color: #4d4d4d;
-  margin-top: 6px;
 }
 .list-as-blocks ul li a:hover {
   background-color: #428bca;
@@ -5139,9 +5141,6 @@ a.help {
 .panel .panel-heading .form-group {
   margin-bottom: 0;
 }
-.panel .panel-heading i.fa {
-  color: #4d4d4d;
-}
 .panel .panel-body {
   border-radius: 0 0 4px 4px;
 }
@@ -5553,6 +5552,10 @@ h5.condensed,
 h6.condensed {
   margin-top: 0;
   margin-bottom: 0;
+}
+.col-md-2-10 {
+  padding-right: 15px;
+  padding-left: 15px;
 }
 @media (min-width: 992px) {
   .col-md-2-10 {

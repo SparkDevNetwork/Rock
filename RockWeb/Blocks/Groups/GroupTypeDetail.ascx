@@ -119,8 +119,6 @@
                                             Help="Check this option if more than one location should be allowed for groups of this type." />
                                         <Rock:RockCheckBox ID="cbEnableLocationSchedules" runat="server" Label="Enable Location Schedules" Text="Yes" 
                                             Help="Check this option if group locations should be associated with one or more pre-defined schedules." />
-                                        <Rock:RockCheckBox ID="cbEnableAlternatePlacements" runat="server" Label="Enable Alternate Placements" Text="Yes" 
-                                            Help="Check this option if groups of this type can use the Alternate Placements feature" />
                                     </div>
                                 </div>
                                 <Rock:RockControlWrapper ID="rcLocationTypes" runat="server" Label="Location Types"
@@ -410,6 +408,10 @@
                         <Rock:RockDropDownList ID="ddlTriggerToRole" runat="server" Label="To Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
                         <Rock:RockCheckBox ID="cbTriggerFirstTime" runat="server" Label="First Time" Text="Yes" ValidationGroup="Trigger" 
                             Help="Select this option if workflow should only be started when a person attends a group of this type for the first time. Leave this option unselected if the workflow should be started whenever a person attends a group of this type."/>
+                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereShowNote" runat="server" Label="Show Note" Text="Yes" ValidationGroup="Trigger"
+                            Help="Select this option if workflow should show UI for entering a note when the member is placed." />
+                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereRequireNote" runat="server" Label="Require Note" Text="Yes" ValidationGroup="Trigger"
+                            Help="Select this option if workflow should show UI for entering a note and make it required when the member is placed." />
                     </div>
                 </div>
             </Content>

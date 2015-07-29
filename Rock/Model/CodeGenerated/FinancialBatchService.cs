@@ -100,6 +100,7 @@ namespace Rock.Model
             target.CampusId = source.CampusId;
             target.ControlAmount = source.ControlAmount;
             target.Name = source.Name;
+            target.Note = source.Note;
             target.Status = source.Status;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

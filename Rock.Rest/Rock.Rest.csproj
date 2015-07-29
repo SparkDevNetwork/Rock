@@ -131,11 +131,13 @@
     <Compile Include="Controllers\CodeGenerated\ContentChannelTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EntitySetItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\EntitySetsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EventCalendarContentChannelsController.cs" />
     <Compile Include="Controllers\CodeGenerated\EventCalendarItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\EventCalendarsController.cs" />
     <Compile Include="Controllers\CodeGenerated\EventItemAudiencesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\EventItemCampusController.cs" />
-    <Compile Include="Controllers\CodeGenerated\EventItemCampusGroupMapsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EventItemOccurrenceChannelItemsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EventItemOccurrenceGroupMapsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EventItemOccurrencesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EventItemSchedulesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EventItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialGatewaysController.cs" />

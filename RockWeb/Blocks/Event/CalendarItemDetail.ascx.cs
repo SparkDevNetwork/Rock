@@ -312,7 +312,7 @@ namespace RockWeb.Blocks.Event
                 if ( eventItemId != 0 )
                 {
                     eventItem = eventItemService
-                        .Queryable( "EventItemAudiences,EventItemCampuses.Linkages,EventItemCampuses.EventItemSchedules" )
+                        .Queryable( "EventItemAudiences,EventItemOccurrences.Linkages,EventItemOccurrences.EventItemSchedules" )
                         .Where( i => i.Id == eventItemId )
                         .FirstOrDefault();
                 }
@@ -593,10 +593,6 @@ namespace RockWeb.Blocks.Event
             {
                 eventItem = new EventItem { Id = 0, IsActive = true, Name = "" };
             }
-
-            var calendar = new EventCalendarService( rockContext ).Get( _calendarId );
-            lWizardCalendarName.Text = calendar != null ? calendar.Name : "Calendar";
-            lWizardCalendarItemName.Text = string.IsNullOrWhiteSpace( eventItem.Name ) ? "New Calendar Item" : eventItem.Name;
 
             eventItem.LoadAttributes( rockContext );
 

@@ -370,7 +370,12 @@ namespace Rock.Model
         /// <summary>
         /// Each schedule (from Attendance.ScheduleId) is its own series
         /// </summary>
-        Schedule = 3
+        Schedule = 3,
+
+        /// <summary>
+        /// Each Lodation (from Attendance.LocationId) is its own series
+        /// </summary>
+        Location = 4
     }
 
     /// <summary>

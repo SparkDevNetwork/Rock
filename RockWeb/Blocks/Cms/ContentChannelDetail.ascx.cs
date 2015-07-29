@@ -700,7 +700,7 @@ namespace RockWeb.Blocks.Cms
             contentChannel.ContentChannelTypeId = typeId;
             contentChannel.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( contentChannel, phAttributes, true );
+            Rock.Attribute.Helper.AddEditControls( contentChannel, phAttributes, true, BlockValidationGroup );
         }
 
         /// <summary>
