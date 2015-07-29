@@ -2116,17 +2116,17 @@ table.attribute-grid tr th:nth-child(3) {
 .badge-attendingduration .duration-metric:before {
   font-family: FontAwesome;
   content: "\f111";
-  color: #d0db25;
+  color: #E5D24D;
   font-size: 45px;
 }
 .badge-attendingduration .duration-metric.duration-months:before {
-  color: #49b039;
+  color: #69AD5E;
 }
 .badge-attendingduration .duration-metric.duration-years:before {
-  color: #3971b0;
+  color: #56789E;
 }
 .badge-attendingduration .duration-metric.duration-new:before {
-  color: #db2525;
+  color: #D25555;
 }
 .badge-attendingduration .duration-metric .metric-value {
   font-size: 20px;
@@ -2735,6 +2735,9 @@ iframe.email-body {
 .calendar-month .calendar-last-month a {
   opacity: .2;
 }
+.calendar-month .calendar-hasevent {
+  font-weight: 700;
+}
 .registrationentry-intro {
   text-align: center;
 }
@@ -2763,10 +2766,10 @@ iframe.email-body {
   padding-left: 0;
 }
 .registrationentry-summary .row.fee-header {
-  border-bottom: 2px solid #cccccc;
+  border-bottom: 2px solid #999999;
   padding-bottom: 2px;
   margin-bottom: 6px;
-  font-size: 16px;
+  font-size: 14px;
 }
 .registrationentry-summary .fee-row-cost,
 .registrationentry-summary .fee-row-total {
@@ -2774,7 +2777,7 @@ iframe.email-body {
 }
 .registrationentry-summary .fee-row-total {
   margin-top: 6px;
-  border-top: 1px solid #cccccc;
+  border-top: 1px solid #999999;
 }
 .registrationentry-summary .row.fee-row-fee {
   font-weight: 300;
@@ -3175,7 +3178,7 @@ ul.rocktree ul {
 }
 .list-as-blocks ul li {
   border-radius: 4px;
-  border: 1px solid #bbb;
+  border: 1px solid #c8c8c8;
   float: left;
   margin: 0 1.25% 15px;
   width: 47.5%;
@@ -3192,9 +3195,17 @@ ul.rocktree ul {
   padding: 15px;
   border-radius: 4px;
 }
+.list-as-blocks ul li a i {
+  font-size: 26px;
+  color: #4d4d4d;
+}
 .list-as-blocks ul li a:hover {
   background-color: #7a1315;
-  color: #ecf0f3;
+  color: #ffffff;
+  border-color: #641011;
+}
+.list-as-blocks ul li a:hover i {
+  color: #ffffff;
 }
 .list-as-blocks ul li a div.notification {
   position: absolute;
@@ -3209,10 +3220,28 @@ ul.rocktree ul {
   background-color: #7a1315;
   color: #ecf0f3;
 }
-@media (min-width: 768px) {
+@media (min-width: 768px) and (max-width: 991px) {
   .list-as-blocks ul li {
-    margin: 0 2.5% 15px;
-    width: 20%;
+    margin: 0 1% 15px;
+    width: 32%;
+  }
+  .list-as-blocks ul li:nth-child(3n) {
+    margin-right: 0;
+  }
+  .list-as-blocks ul li:nth-child(3n+1) {
+    margin-left: 0;
+  }
+}
+@media (min-width: 992px) {
+  .list-as-blocks ul li {
+    margin: 0 1% 15px;
+    width: 18.4%;
+  }
+  .list-as-blocks ul li:nth-child(5n) {
+    margin-right: 0;
+  }
+  .list-as-blocks ul li:nth-child(5n+1) {
+    margin-left: 0;
   }
 }
 .nav.nav-pagelist {
@@ -3492,6 +3521,7 @@ div.tagsinput .tags_clear {
   min-width: 290px;
   margin-left: -6px;
   border: 0;
+  margin-top: 2px;
 }
 .smartsearch input.searchinput {
   padding: 4px 4px 4px 25px;
@@ -4145,7 +4175,7 @@ ul.rocklist .rocklist-item.selected {
   border-radius: 4px;
 }
 .tt-suggestion p:hover {
-  background-color: #e2e2e2;
+  background-color: #d5e6ed;
 }
 .tt-suggestion.tt-is-under-cursor {
   color: #333333;
@@ -5000,6 +5030,9 @@ a.help {
   outline: 0;
   color: #86b8cc;
 }
+.help-message {
+  font-weight: normal;
+}
 .photo img {
   width: 100%;
 }
@@ -5520,6 +5553,10 @@ h5.condensed,
 h6.condensed {
   margin-top: 0;
   margin-bottom: 0;
+}
+.col-md-2-10 {
+  padding-right: 15px;
+  padding-left: 15px;
 }
 @media (min-width: 992px) {
   .col-md-2-10 {
