@@ -168,6 +168,9 @@ WHERE [GUID] = '4B0C44EE-28E3-4753-A95B-8C57CD958FD1'
 
             Sql( MigrationSQL._201507281546100_CalendarContentChannel );
 
+            // JE: Add missing communication detail page from Communication History
+            RockMigrationHelper.AddBlockAttributeValue( "27F84ADB-AA13-439E-A130-FBF73698B172", "8127D8B3-7698-46FD-B239-C924807F1EE4", "2a22d08d-73a8-4aaf-ac7e-220e8b2e7857" );
+
             #endregion
 
         }

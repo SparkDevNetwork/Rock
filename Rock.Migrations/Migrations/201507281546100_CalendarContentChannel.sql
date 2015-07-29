@@ -1,3 +1,13 @@
+-- JE: Reorder the Communication List on the Person Profile Page
+  UPDATE [Block] SET [Order] = 0
+  WHERE [Guid] = '27F84ADB-AA13-439E-A130-FBF73698B172'
+
+  UPDATE [Block] SET [Order] = 1
+  WHERE [Guid] = '2D99AB97-4B9C-4D72-B207-8F36AE90D495'
+
+  UPDATE [Block] SET [Order] = 2
+  WHERE [Guid] = 'F98649D7-E522-46CB-8F67-01DB7F59E3AA'
+
 -- JE: Make Involvement Connection Type "Enable Full Activity List" = true
 UPDATE [ConnectionType]
   SET [EnableFullActivityList] = 1
