@@ -430,8 +430,8 @@ namespace RockWeb.Blocks.Administraton
             var exceptionQuery = BuildBaseExceptionListQuery()
                                     .GroupBy( e => new
                                         {
-                                            SiteName = e.Site.Name,
-                                            PageName = e.Page.InternalName,
+                                            SiteName = e.Site.Name ?? string.Empty,
+                                            PageName = e.Page.InternalName ?? string.Empty,
                                             Description = e.Description
                                         } )
                                     .Select( eg => new
