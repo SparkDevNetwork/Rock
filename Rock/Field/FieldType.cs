@@ -295,6 +295,12 @@ namespace Rock.Field
                 ddlCompare.Visible = false;
             }
 
+            if ( FilterComparisonType == ComparisonHelper.ContainsFilterComparisonTypes && filterMode == FilterMode.SimpleFilter )
+            {
+                // hide the compare control for SimpleFilter mode if it is just Contains/NotContains
+                ddlCompare.Visible = false;
+            }
+
 
             ddlCompare.ID = string.Format( "{0}_ddlCompare", id );
             ddlCompare.AddCssClass( "js-filter-compare" );
@@ -413,9 +419,19 @@ namespace Rock.Field
             var ddlCompare = control as RockDropDownList;
             if ( ddlCompare != null )
             {
-                if (!ddlCompare.Visible)
+                if ( !ddlCompare.Visible )
                 {
-                    return ComparisonType.EqualTo.ConvertToInt().ToString();
+                    if ( FilterComparisonType == ComparisonHelper.BinaryFilterComparisonTypes && filterMode == FilterMode.SimpleFilter )
+                    {
+                        // in FilterMode.SimpleFilter, if the compare only support EqualTo/NotEqual to, and the compare is hidden, return EqualTo
+                        return ComparisonType.EqualTo.ConvertToInt().ToString();
+                    }
+
+                    if ( FilterComparisonType == ComparisonHelper.ContainsFilterComparisonTypes && filterMode == FilterMode.SimpleFilter )
+                    {
+                        // in FilterMode.SimpleFilter, if the compare only support EqualTo/NotEqual to, and the compare is hidden, return Contains
+                        return ComparisonType.Contains.ConvertToInt().ToString();
+                    }
                 }
 
                 return ddlCompare.SelectedValue;
