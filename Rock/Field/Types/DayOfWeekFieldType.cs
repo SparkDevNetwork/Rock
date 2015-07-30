@@ -139,14 +139,16 @@ namespace Rock.Field.Types
             return lbl;
         }
 
+
         /// <summary>
         /// Gets the filter compare value.
         /// </summary>
         /// <param name="control">The control.</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override string GetFilterCompareValue( Control control )
+        public override string GetFilterCompareValue( Control control, FilterMode filterMode )
         {
-            return "1";  // Equal to
+            return "1"; // Equal To
         }
 
         /// <summary>

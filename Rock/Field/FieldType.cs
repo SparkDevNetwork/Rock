@@ -446,6 +446,7 @@ namespace Rock.Field
         /// </summary>
         /// <param name="control">The control.</param>
         /// <returns></returns>
+        [Obsolete]
         public virtual string GetFilterCompareValue( Control control )
         {
             return GetFilterCompareValue( control, FilterMode.AdvancedFilter );
