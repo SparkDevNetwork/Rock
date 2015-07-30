@@ -22,7 +22,6 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -35,7 +34,6 @@ namespace Rock.Field
     [Serializable]
     public abstract class FieldType : IFieldType
     {
-
         #region Constructors
 
         /// <summary>
@@ -47,7 +45,7 @@ namespace Rock.Field
 
         #endregion
 
-        #region Configuration 
+        #region Configuration
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -209,7 +207,7 @@ namespace Rock.Field
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public virtual Control FilterControl ( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
+        public virtual Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             HtmlGenericControl row = new HtmlGenericControl( "div" );
             row.ID = id;
@@ -219,7 +217,7 @@ namespace Rock.Field
             var compareControl = FilterCompareControl( configurationValues, id, required, filterMode );
             var valueControl = FilterValueControl( configurationValues, id, required, filterMode );
 
-            string col1Class = "";
+            string col1Class = string.Empty;
             string col2Class = "col-md-12";
 
             if ( compareControl != null )
@@ -227,9 +225,9 @@ namespace Rock.Field
                 HtmlGenericControl col1 = new HtmlGenericControl( "div" );
                 col1.ID = string.Format( "{0}_col1", id );
                 row.Controls.Add( col1 );
-                if (!compareControl.Visible)
+                if ( !compareControl.Visible )
                 {
-                    col1Class = "";
+                    col1Class = string.Empty;
                     col2Class = "col-md-12";
                 }
                 else if ( compareControl is Label )
@@ -263,7 +261,7 @@ namespace Rock.Field
         /// <param name="id">The identifier.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
-        public virtual Control FilterControl ( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required)
+        public virtual Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
             return FilterControl( configurationValues, id, required, FilterMode.AdvancedFilter );
         }
@@ -286,7 +284,7 @@ namespace Rock.Field
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
         public virtual Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
-        { 
+        {
             RockDropDownList ddlCompare = ComparisonHelper.ComparisonControl( FilterComparisonType, required );
 
             if ( FilterComparisonType == ComparisonHelper.BinaryFilterComparisonTypes && filterMode == FilterMode.SimpleFilter )
@@ -300,7 +298,6 @@ namespace Rock.Field
                 // hide the compare control for SimpleFilter mode if it is just Contains/NotContains
                 ddlCompare.Visible = false;
             }
-
 
             ddlCompare.ID = string.Format( "{0}_ddlCompare", id );
             ddlCompare.AddCssClass( "js-filter-compare" );
@@ -347,6 +344,7 @@ namespace Rock.Field
             {
                 ( (WebControl)control ).AddCssClass( "js-filter-control" );
             }
+
             return control;
         }
 
@@ -358,7 +356,7 @@ namespace Rock.Field
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <returns></returns>
         [Obsolete]
-        public virtual Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required)
+        public virtual Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
         {
             return FilterValueControl( configurationValues, id, required, FilterMode.AdvancedFilter );
         }
@@ -379,7 +377,7 @@ namespace Rock.Field
                 try
                 {
                     string compare = GetFilterCompareValue( filterControl.Controls[0].Controls[0], filterMode );
-                    if (compare != null )
+                    if ( compare != null )
                     {
                         values.Add( compare );
                     }
@@ -390,7 +388,10 @@ namespace Rock.Field
                         values.Add( value );
                     }
                 }
-                catch { }
+                catch
+                {
+                    // intentionally ignore error
+                }
             }
 
             return values;
@@ -445,7 +446,7 @@ namespace Rock.Field
         /// </summary>
         /// <param name="control">The control.</param>
         /// <returns></returns>
-        public virtual string GetFilterCompareValue( Control control)
+        public virtual string GetFilterCompareValue( Control control )
         {
             return GetFilterCompareValue( control, FilterMode.AdvancedFilter );
         }
@@ -467,7 +468,7 @@ namespace Rock.Field
         /// <param name="filterControl">The filter control.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="filterValues">The filter values.</param>
-        public virtual void SetFilterValues ( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
+        public virtual void SetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
         {
             if ( filterControl != null )
             {
@@ -477,7 +478,10 @@ namespace Rock.Field
                     string value = filterValues.Count > 1 ? filterValues[1] : filterValues.Count > 0 ? filterValues[0] : string.Empty;
                     SetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues, value );
                 }
-                catch { }
+                catch
+                {
+                    // intentionally ignore error
+                }
             }
         }
 
@@ -516,19 +520,18 @@ namespace Rock.Field
         {
             if ( filterValues != null && filterValues.Any() )
             {
-                // If just one value, then it is likely just a value
                 if ( filterValues.Count == 1 )
                 {
+                    // If just one value, then it is likely just a value
                     string filterValue = FormatFilterValueValue( configurationValues, filterValues[0] );
                     if ( !string.IsNullOrWhiteSpace( filterValue ) )
                     {
                         return "is " + filterValue;
                     }
                 }
-
-                // If two more values, then it is a comparison and a value
                 else if ( filterValues.Count >= 2 )
                 {
+                    // If two more values, then it is a comparison and a value
                     string comparisonValue = filterValues[0];
                     if ( comparisonValue != "0" )
                     {
@@ -639,12 +642,12 @@ namespace Rock.Field
         /// <returns></returns>
         public virtual object ConvertValueToPropertyType( string value, Type propertyType, bool isNullableType )
         {
-            if ( propertyType == typeof(string) )
+            if ( propertyType == typeof( string ) )
             {
                 return value;
             }
 
-            if ( string.IsNullOrWhiteSpace(value) && isNullableType)
+            if ( string.IsNullOrWhiteSpace( value ) && isNullableType )
             {
                 return null;
             }
@@ -683,7 +686,7 @@ namespace Rock.Field
         /// <value>
         /// The name of the attribute value field.
         /// </value>
-        public virtual string AttributeValueFieldName 
+        public virtual string AttributeValueFieldName
         {
             get
             {
@@ -697,8 +700,8 @@ namespace Rock.Field
         /// <value>
         /// The type of the attribute value field.
         /// </value>
-        public virtual Type AttributeValueFieldType 
-        { 
+        public virtual Type AttributeValueFieldType
+        {
             get
             {
                 return typeof( string );
@@ -714,7 +717,7 @@ namespace Rock.Field
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        public void OnQualifierUpdated(object sender, EventArgs e)
+        public void OnQualifierUpdated( object sender, EventArgs e )
         {
             if ( QualifierUpdated != null )
             {
@@ -728,6 +731,5 @@ namespace Rock.Field
         public event EventHandler QualifierUpdated;
 
         #endregion
-
     }
 }
