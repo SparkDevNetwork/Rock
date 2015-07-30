@@ -262,6 +262,11 @@ namespace RockWeb.Blocks.Connection
         {
             using ( var rockContext = new RockContext() )
             {
+                // load campus dropdown
+                var campuses = CampusCache.All();
+                cpCampus.Campuses = campuses;
+                cpCampus.Visible = campuses.Count > 1;
+                
                 var opportunity = new ConnectionOpportunityService( rockContext ).Get( opportunityId );
                 if ( opportunity == null )
                 {
@@ -307,20 +312,25 @@ namespace RockWeb.Blocks.Connection
                             pnMobile.CountryCode = cellPhoneNumber.CountryCode;
                         }
                     }
-                }
 
-                var campuses = CampusCache.All();
-                cpCampus.Campuses = campuses;
-                cpCampus.Visible = campuses.Count > 1;
-
-                if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
-                {
-                    var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
-                    var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
-
-                    if ( contextCampus != null )
+                    var campus = CurrentPerson.GetCampus();
+                    if ( campus != null )
                     {
-                        cpCampus.SelectedCampusId = contextCampus.Id;
+                        cpCampus.SelectedCampusId = campus.Id;
+                    }
+                }
+                else
+                {
+                    // set the campus to the context
+                    if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
+                    {
+                        var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+                        var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+
+                        if ( contextCampus != null )
+                        {
+                            cpCampus.SelectedCampusId = contextCampus.Id;
+                        }
                     }
                 }
 
