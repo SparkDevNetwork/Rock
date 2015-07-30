@@ -218,6 +218,22 @@ namespace Rock.Field
         /// <returns></returns>
         Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression );
 
+        /// <summary>
+        /// Gets the name of the attribute value field.
+        /// </summary>
+        /// <value>
+        /// The name of the attribute value field.
+        /// </value>
+        string AttributeValueFieldName { get; }
+
+        /// <summary>
+        /// Gets the type of the attribute value field.
+        /// </summary>
+        /// <value>
+        /// The type of the attribute value field.
+        /// </value>
+        Type AttributeValueFieldType { get; }
+
         #endregion
 
         #region Event Handlers 

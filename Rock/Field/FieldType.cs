@@ -661,6 +661,34 @@ namespace Rock.Field
             return null;
         }
 
+        /// <summary>
+        /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, or ValueAsNumeric)
+        /// </summary>
+        /// <value>
+        /// The name of the attribute value field.
+        /// </value>
+        public virtual string AttributeValueFieldName 
+        {
+            get
+            {
+                return "Value";
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the attribute value field.
+        /// </summary>
+        /// <value>
+        /// The type of the attribute value field.
+        /// </value>
+        public virtual Type AttributeValueFieldType 
+        { 
+            get
+            {
+                return typeof( string );
+            }
+        }
+
         #endregion
 
         #region Event Handlers
