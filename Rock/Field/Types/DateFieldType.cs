@@ -524,6 +524,34 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, or ValueAsNumeric)
+        /// </summary>
+        /// <value>
+        /// The name of the attribute value field.
+        /// </value>
+        public override string AttributeValueFieldName
+        {
+            get
+            {
+                return "ValueAsDateTime";
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the attribute value field.
+        /// </summary>
+        /// <value>
+        /// The type of the attribute value field.
+        /// </value>
+        public override Type AttributeValueFieldType
+        {
+            get
+            {
+                return typeof( DateTime? );
+            }
+        }
+
+        /// <summary>
         /// Checks to see if value is for 'current' date and if so, adjusts the date value.
         /// </summary>
         /// <param name="value">The value.</param>

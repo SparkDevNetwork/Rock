@@ -153,9 +153,14 @@ namespace Rock.Reporting
                                     boundField = new CallbackField();
                                     boundField.HtmlEncode = false;
                                     ( boundField as CallbackField ).OnFormatDataValue += (sender, e) => {
+                                        string resultHtml = null;
+                                        if (e.DataValue != null)
+                                        {
+                                            bool condensed = true;
+                                            resultHtml = attribute.FieldType.Field.FormatValueAsHtml( gReport, e.DataValue.ToString(), attribute.QualifierValues, condensed );
+                                            
+                                        }
 
-                                        bool condensed = true;
-                                        string resultHtml = attribute.FieldType.Field.FormatValueAsHtml( gReport, e.DataValue as string, attribute.QualifierValues, condensed );
                                         e.FormattedValue = resultHtml ?? string.Empty;
                                     };
                                 }
