@@ -52,7 +52,7 @@ namespace Rock.Transactions
             {
                 State = entry.State;
                 ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
-                PersonId = connectionRequest.PersonAlias.PersonId;
+                PersonId = connectionRequest.PersonAlias != null ? connectionRequest.PersonAlias.PersonId : (int?)null;
                 ConnectionState = connectionRequest.ConnectionState;
                 ConnectionStatusId = connectionRequest.ConnectionStatusId;
                 AssignedGroupId = connectionRequest.AssignedGroupId;
