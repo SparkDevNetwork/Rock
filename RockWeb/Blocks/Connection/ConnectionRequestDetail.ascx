@@ -25,19 +25,25 @@
                 <div class="panel-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="col-md-4">
-                                <div class="photo">
-                                    <asp:Literal ID="lPortrait" runat="server" />
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="photo">
+                                        <asp:Literal ID="lPortrait" runat="server" />
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <Rock:RockLiteral ID="lContactInfo" runat="server" Label="Contact Info" />
+                                    
+                                    <Rock:RockLiteral ID="lConnector" runat="server" Label="Connector" />
                                 </div>
                             </div>
-                            <div class="col-md-8">
-                                <Rock:RockLiteral ID="lContactInfo" runat="server" Label="Contact Info" />
-                                <Rock:RockLiteral ID="lConnector" runat="server" Label="Connector" />
-                            </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Request Date" />
                             <Rock:RockLiteral ID="lAssignedGroup" runat="server" Label="Assigned Group" />
+                        </div>
+                        <div class="col-md-2 text-right">
+                            <asp:LinkButton ID="lbProfilePage" runat="server" CssClass="btn btn-default btn-xs"><i class="fa fa-user"></i> Profile</asp:LinkButton>
                         </div>
                     </div>
 
@@ -111,7 +117,6 @@
                         </div>
                         <div class="col-md-3">
                             <Rock:PersonPicker runat="server" ID="ppConnectorEdit" Label="Connector" />
-                            <asp:LinkButton ID="lbSetConnector" runat="server" CssClass="btn btn-link" Text="Set to Self" OnClick="lbSetConnector_Click" />
                         </div>
                         <div class="col-md-4 col-md-offset-2">
                             <Rock:RockRadioButtonList ID="rblState" runat="server" Label="State" RepeatDirection="Horizontal" OnSelectedIndexChanged="rblState_SelectedIndexChanged" AutoPostBack="true" />

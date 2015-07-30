@@ -37,8 +37,10 @@ namespace RockWeb.Blocks.Connection
     [DisplayName( "Connection Request Detail" )]
     [Category( "Connection" )]
     [Description( "Displays the details of the given connection request for editing state, status, etc." )]
-    [LinkedPage( "Manual Workflow Page", "Page used to manually start a workflow." )]
-    [LinkedPage( "Workflow Configuration Page", "Page used to view and edit configuration of a workflow." )]
+
+    [LinkedPage( "Manual Workflow Page", "Page used to manually start a workflow.", order: 0 )]
+    [LinkedPage( "Workflow Configuration Page", "Page used to view and edit configuration of a workflow.", order: 1 )]
+    [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
     public partial class ConnectionRequestDetail : RockBlock, IDetailBlock
     {
         #region Fields
@@ -422,16 +424,6 @@ namespace RockWeb.Blocks.Connection
                     nbWorkflow.Visible = true;
                 }
             }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbSetConnector control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbSetConnector_Click( object sender, EventArgs e )
-        {
-            ppConnectorEdit.SetValue( CurrentPerson );
         }
 
         #endregion
@@ -1011,6 +1003,20 @@ namespace RockWeb.Blocks.Connection
                 lContactInfo.Text = "No contact Info";
             }
 
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PersonProfilePage" ) ) )
+            {
+                lbProfilePage.Visible = true;
+
+                Dictionary<string, string> queryParms = new Dictionary<string, string>();
+                queryParms.Add( "PersonId", person.Id.ToString() );
+                lbProfilePage.PostBackUrl = LinkedPageUrl( "PersonProfilePage", queryParms );
+            }
+            else
+            {
+                lbProfilePage.Visible = false;
+            }
+            
+            
 
             string imgTag = Rock.Model.Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 200, 200 );
             if ( person.PhotoId.HasValue )
@@ -1148,8 +1154,7 @@ namespace RockWeb.Blocks.Connection
                 ppConnectorEdit.SetValue( null );
             }
             ppConnectorEdit.Enabled = true;
-            lbSetConnector.Visible = CurrentPerson != null;
-
+            
             if ( _connectionRequest.PersonAlias != null )
             {
                 ppRequestor.SetValue( _connectionRequest.PersonAlias.Person );
