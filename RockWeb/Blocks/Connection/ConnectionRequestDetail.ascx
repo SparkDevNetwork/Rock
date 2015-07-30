@@ -90,6 +90,8 @@
                 <div class="actions">
                     <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbEdit_Click"></asp:LinkButton>
                     <asp:LinkButton ID="lbTransfer" runat="server" Text="Transfer" CssClass="btn btn-link" CausesValidation="false" OnClick="lbTransfer_Click"></asp:LinkButton>
+                    <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                    <asp:LinkButton ID="lbDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-request" CausesValidation="false" OnClick="lbDelete_Click"></asp:LinkButton>
                     <div class="pull-right">
                         <asp:LinkButton ID="lbConnect" runat="server" Text="Connect" CssClass="btn btn-success" CausesValidation="false" OnClick="lbConnect_Click"></asp:LinkButton>
                     </div>
