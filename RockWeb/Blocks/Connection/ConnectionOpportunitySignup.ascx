@@ -5,7 +5,7 @@
         
         <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Visible="false" />
 
-        <Rock:RockLiteral ID="lResponseMessage" runat="server" Visible="false" />
+        <asp:Literal ID="lResponseMessage" runat="server" Visible="false" />
         <asp:Literal ID="lDebug" Visible="false" runat="server"></asp:Literal>
 
         <asp:Panel ID="pnlSignup" runat="server" CssClass="panel panel-block">
