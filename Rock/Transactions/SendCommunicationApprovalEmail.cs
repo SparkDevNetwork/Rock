@@ -149,7 +149,7 @@ namespace Rock.Transactions
                             var recipients = new List<string>();
                             recipients.Add( approver.Person.Email );
 
-                            Email.Send( fromEmail, fromName, subject, recipients, message.ResolveMergeFields( mergeFields ), appRoot );
+                            Email.Send( fromEmail, fromName, subject, recipients, message.ResolveMergeFields( mergeFields ), appRoot, string.Empty, null, false );
                         }
                     }
                 }

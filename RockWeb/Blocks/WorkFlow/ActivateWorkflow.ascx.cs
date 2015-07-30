@@ -66,7 +66,7 @@ and then redirect the user to a page with the Workflow Entry block. Because the 
 supports setting attribute values from query string parameters, the Activate Workflow block is no 
 longer needed.<br/><br/>Please update any place that links to page ID: {1}, to instead link directly to the Workflow 
 Entry page (Page ID: {2}).", RockPage.Site.Name, RockPage.PageId, pageReference.PageId );
-                Rock.Communication.Email.NotifyAdmins( subject, message );
+                Rock.Communication.Email.NotifyAdmins( subject, message, string.Empty, string.Empty, false );
             }
             catch ( Exception ex )
             {

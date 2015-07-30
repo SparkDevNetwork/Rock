@@ -388,7 +388,7 @@ namespace RockWeb.Blocks.Security
                 var recipients = new List<RecipientData>();
                 recipients.Add( new RecipientData( person.Email, mergeObjects ) );
 
-                Email.Send( GetAttributeValue( "ForgotUsernameTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
+                Email.Send( GetAttributeValue( "ForgotUsernameTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), false );
             }
             else
             {
@@ -425,7 +425,7 @@ namespace RockWeb.Blocks.Security
                 var recipients = new List<RecipientData>();
                 recipients.Add( new RecipientData( person.Email, mergeObjects ) );
 
-                Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
+                Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), false );
 
                 ShowPanel( 4 );
             }
@@ -467,7 +467,7 @@ namespace RockWeb.Blocks.Security
                         var recipients = new List<RecipientData>();
                         recipients.Add( new RecipientData( person.Email, mergeObjects ) );
 
-                        Email.Send( GetAttributeValue( "AccountCreatedTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
+                        Email.Send( GetAttributeValue( "AccountCreatedTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), false );
                     }
                     catch ( SystemException ex )
                     {
