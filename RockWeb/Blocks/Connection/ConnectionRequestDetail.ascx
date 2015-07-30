@@ -55,23 +55,26 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="col-md-6">
-                                <asp:Label ID="lblWorkflows" Text="Available Workflows" Font-Bold="true" runat="server" />
-                                </br>
-                            <asp:Repeater ID="rptRequestWorkflows" runat="server">
-                                <ItemTemplate>
-                                    <li class="btn btn-default btn-xs">
-                                        <asp:LinkButton ID="lbRequestWorkflow" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
-                                        <%# Eval("Name") %>
-                                        </asp:LinkButton>
-                                    </li>
-                                </ItemTemplate>
-                            </asp:Repeater>
-                                </br>
-                                </br>
-                                <Rock:NotificationBox ID="nbWorkflow" runat="server" Text="Workflow Launched" Visible="false" NotificationBoxType="Success" Dismissable="true" />
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <asp:Label ID="lblWorkflows" Text="Available Workflows" Font-Bold="true" runat="server" />
+
+                                    <div class="margin-b-md">
+                                        <asp:Repeater ID="rptRequestWorkflows" runat="server">
+                                            <ItemTemplate>
+                                                <li class="btn btn-default btn-xs">
+                                                    <asp:LinkButton ID="lbRequestWorkflow" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
+                                                    <%# Eval("Name") %>
+                                                    </asp:LinkButton>
+                                                </li>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </div>
+
+                                    <Rock:NotificationBox ID="nbWorkflow" runat="server" Text="Workflow Launched" Visible="false" NotificationBoxType="Success" Dismissable="true" />
+                                </div>
+                                <div class="col-md-6">
                             </div>
-                            <div class="col-md-6">
                             </div>
                         </div>
                         <div class="col-md-6">
