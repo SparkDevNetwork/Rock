@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <div class="panel panel-block list-as-blocks">
+        <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <i class='fa fa-plug'></i>
@@ -21,6 +21,7 @@
                 <asp:Repeater ID="rptConnnectionTypes" runat="server" OnItemDataBound="rptConnnectionTypes_ItemDataBound">
                     <ItemTemplate>
                         <asp:Literal ID="lConnectionTypeName" runat="server" />
+                        <div class="list-as-blocks clearfix">    
                             <ul>
                                 <asp:Repeater ID="rptConnectionOpportunities" runat="server">
                                     <ItemTemplate>
@@ -36,6 +37,7 @@
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </ul>
+                        </div>
                     </ItemTemplate>
                 </asp:Repeater>
 

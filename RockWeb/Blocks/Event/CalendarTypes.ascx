@@ -14,7 +14,7 @@
             <div class="panel-body">
 
                 <div class="list-as-blocks clearfix">
-                    <ul class="list-unstyled">
+                    <ul>
                         <asp:Repeater ID="rptEventCalendars" runat="server">
                             <ItemTemplate>
                                 <li>
