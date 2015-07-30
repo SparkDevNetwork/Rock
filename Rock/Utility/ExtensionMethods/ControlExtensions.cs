@@ -240,7 +240,7 @@ namespace Rock
         /// </summary>
         /// <param name="checkBoxList">The check box list.</param>
         /// <param name="values">The values.</param>
-        public static void SetValues( this CheckBoxList checkBoxList, List<string> values )
+        public static void SetValues( this CheckBoxList checkBoxList, IEnumerable<string> values )
         {
             foreach ( ListItem item in checkBoxList.Items )
             {
@@ -253,7 +253,7 @@ namespace Rock
         /// </summary>
         /// <param name="checkBoxList">The check box list.</param>
         /// <param name="values">The values.</param>
-        public static void SetValues( this CheckBoxList checkBoxList, List<int> values )
+        public static void SetValues( this CheckBoxList checkBoxList, IEnumerable<int> values )
         {
             foreach ( ListItem item in checkBoxList.Items )
             {
