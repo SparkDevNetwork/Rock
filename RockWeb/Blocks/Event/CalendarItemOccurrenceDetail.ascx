@@ -117,6 +117,29 @@
             </Content>
         </Rock:ModalDialog>
 
+        <Rock:ModalDialog ID="dlgEditLinkage" runat="server" Title="Edit Registration Instance" SaveButtonText="OK" OnSaveClick="dlgEditLinkage_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="EditLinkage">
+            <Content>
+                <asp:ValidationSummary ID="vsEditLinkage" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="EditLinkage" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockLiteral ID="lEditLinkageTemplate" runat="server" Label="Registration Template" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:GroupPicker ID="gpEditLinkageGroup" runat="server" Label="Group" ValidationGroup="EditLinkage" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbEditLinkagePublicName" runat="server" Label="Public Name" Required="true" ValidationGroup="EditLinkage" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbEditLinkageUrlSlug" runat="server" Label="URL Slug" ValidationGroup="EditLinkage" />
+                    </div>
+                </div>
+                <Rock:RegistrationInstanceEditor ID="rieEditLinkage" runat="server" ValidationGroup="EditLinkage" />
+            </Content>
+        </Rock:ModalDialog>
+
         <Rock:ModalDialog ID="dlgExistingLinkage" runat="server" Title="Existing Registration Instance" SaveButtonText="OK" OnSaveClick="dlgExistingLinkage_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ExistingLinkage">
             <Content>
                 <asp:ValidationSummary ID="vsExistingLinkage" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="ExistingLinkage" />
