@@ -62,11 +62,9 @@
                                     <div class="margin-b-md">
                                         <asp:Repeater ID="rptRequestWorkflows" runat="server">
                                             <ItemTemplate>
-                                                <li class="btn btn-default btn-xs">
-                                                    <asp:LinkButton ID="lbRequestWorkflow" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
-                                                    <%# Eval("Name") %>
-                                                    </asp:LinkButton>
-                                                </li>
+                                                <asp:LinkButton ID="lbRequestWorkflow" runat="server" CssClass="btn btn-default btn-xs" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
+                                                <%# Eval("Name") %>
+                                                </asp:LinkButton>
                                             </ItemTemplate>
                                         </asp:Repeater>
                                     </div>
@@ -175,7 +173,7 @@
                 </div>
             </asp:Panel>
         </div>
-        <Rock:PanelWidget ID="wpConnectionRequestWorkflow" runat="server" Title="Workflows">
+        <Rock:PanelWidget ID="wpConnectionRequestWorkflow" runat="server" Title="Workflows" CssClass="clickable">
             <div class="grid">
                 <Rock:Grid ID="gConnectionRequestWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location" OnRowSelected="gConnectionRequestWorkflows_RowSelected">
                     <Columns>
@@ -189,7 +187,7 @@
             </div>
         </Rock:PanelWidget>
 
-        <Rock:PanelWidget ID="wpConnectionRequestActivities" runat="server" Title="Activities" Expanded="true">
+        <Rock:PanelWidget ID="wpConnectionRequestActivities" runat="server" Title="Activities" Expanded="true" CssClass="clickable">
             <div class="grid">
                 <Rock:Grid ID="gConnectionRequestActivities" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Activity" OnRowDataBound="gConnectionRequestActivities_RowDataBound">
                     <Columns>
