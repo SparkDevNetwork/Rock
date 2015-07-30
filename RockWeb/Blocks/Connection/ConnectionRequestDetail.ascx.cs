@@ -95,6 +95,18 @@ namespace RockWeb.Blocks.Connection
             rptRequestWorkflows.ItemCommand += rptRequestWorkflows_ItemCommand;
             rptSearchResult.ItemCommand += rptSearchResult_ItemCommand;
 
+            string deleteScript = @"
+    $('a.js-delete-request').click(function( e ){
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this connection request? All of the activities for this request will also be deleted, and any existing workflow associations will be lost!', function (result) {
+            if (result) {
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( lbDelete, lbDelete.GetType(), "deleteRequestScript", deleteScript, true );
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.AddConfigurationUpdateTrigger( upDetail );
         }
@@ -359,6 +371,32 @@ namespace RockWeb.Blocks.Connection
             {
                 ddlTransferOpportunity.Items.Add( new ListItem( opportunity.Name, opportunity.Id.ToString().ToUpper() ) );
             }
+        }
+
+        protected void lbDelete_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+
+            var service = new ConnectionRequestService( rockContext );
+            var connectionRequest = service.Get( hfConnectionRequestId.Value.AsInteger() );
+
+            if ( connectionRequest != null )
+            {
+                if ( !connectionRequest.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                {
+                    mdDeleteWarning.Show( "You are not authorized to delete this connection request.", ModalAlertType.Information );
+                    return;
+                }
+
+                rockContext.WrapTransaction( () =>
+                {
+                    new ConnectionRequestActivityService( rockContext ).DeleteRange( connectionRequest.ConnectionRequestActivities );
+                    service.Delete( connectionRequest );
+                    rockContext.SaveChanges();
+                } );
+            }
+
+            NavigateToParentPage();
         }
 
         /// <summary>
@@ -691,7 +729,7 @@ namespace RockWeb.Blocks.Connection
                 ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
                 connectionRequestActivity.ConnectionActivityTypeId = ddlActivity.SelectedValueAsId().Value;
                 connectionRequestActivity.ConnectionOpportunityId = _connectionRequest.ConnectionOpportunityId;
-                connectionRequestActivity.ConnectorPersonAliasId = ppConnector.PersonAliasId.Value;
+                connectionRequestActivity.ConnectorPersonAliasId = ppConnector.PersonAliasId;
                 connectionRequestActivity.ConnectionRequestId = PageParameter( "ConnectionRequestId" ).AsInteger();
                 connectionRequestActivity.Note = tbNote.Text;
 
