@@ -124,9 +124,13 @@ namespace Rock.Reporting.DataFilter.Group
 
         /// <summary>
         /// Creates the child controls.
+        /// Implement this version of CreateChildControls if your DataFilterComponent supports different FilterModes
         /// </summary>
+        /// <param name="entityType"></param>
+        /// <param name="filterControl"></param>
+        /// <param name="filterMode"></param>
         /// <returns></returns>
-        public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
+        public override Control[] CreateChildControls( Type entityType, FilterField filterControl, FilterMode filterMode )
         {
             var containerControl = new DynamicControlsPanel();
             containerControl.ID = string.Format( "{0}_containerControl", filterControl.ID );
@@ -139,6 +143,7 @@ namespace Rock.Reporting.DataFilter.Group
             groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             groupTypePicker.SelectedIndexChanged += groupTypePicker_SelectedIndexChanged;
             groupTypePicker.AutoPostBack = true;
+            groupTypePicker.Visible = filterMode == FilterMode.AdvancedFilter;
             containerControl.Controls.Add( groupTypePicker );
 
             // set the GroupTypePicker selected value now so we can create the other controls the depending on know the groupTypeid
@@ -158,6 +163,7 @@ namespace Rock.Reporting.DataFilter.Group
         {
             GroupTypePicker groupTypePicker = sender as GroupTypePicker;
             DynamicControlsPanel containerControl = groupTypePicker.Parent as DynamicControlsPanel;
+            FilterField filterControl = containerControl.FirstParentControlOfType<FilterField>();
 
             containerControl.Controls.Clear();
             containerControl.Controls.Add( groupTypePicker );
@@ -174,7 +180,7 @@ namespace Rock.Reporting.DataFilter.Group
             foreach ( var entityField in this.entityFields )
             {
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.Name );
-                var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, FilterMode.AdvancedFilter );
+                var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, filterControl.FilterMode );
                 if ( control != null )
                 {
                     // Add the field to the dropdown of available fields
