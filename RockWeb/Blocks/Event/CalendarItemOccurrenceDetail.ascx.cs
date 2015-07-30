@@ -338,8 +338,7 @@ namespace RockWeb.Blocks.Event
                 var qryParams = new Dictionary<string, string>();
                 qryParams.Add( "EventCalendarId", PageParameter( "EventCalendarId" ) );
                 qryParams.Add( "EventItemId", PageParameter( "EventItemId" ) );
-                qryParams.Add( "EventItemOccurrenceId", eventItemOccurrence.Id.ToString() );
-                NavigateToPage( RockPage.Guid, qryParams );
+                NavigateToParentPage( qryParams );
             }
         }
 
@@ -465,14 +464,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEditRegistration_Click( object sender, EventArgs e )
         {
-            if ( LinkageState.RegistrationInstanceId == 0 )
-            {
-                ShowNewLinkageDialog();
-            }
-            else
-            {
-                ShowExistingLinkageDialog();
-            }
+            ShowEditLinkageDialog();
         }
 
         /// <summary>
@@ -540,7 +532,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 LinkageState.PublicName = rieNewLinkage.Name;
-                LinkageState.UrlSlug = tbExistingLinkageUrlSlug.Text;
+                LinkageState.UrlSlug = rieNewLinkage.UrlSlug;
 
                 // Set the Guid now (otherwise it will not be valid )
                 bool isNew = LinkageState.Guid == Guid.Empty;
@@ -564,6 +556,45 @@ namespace RockWeb.Blocks.Event
                 HideDialog();
             }
         }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgEditLinkage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgEditLinkage_SaveClick( object sender, EventArgs e )
+        {
+            if ( LinkageState.RegistrationInstance != null )
+            {
+                var rockContext = new RockContext();
+
+                rieEditLinkage.GetValue( LinkageState.RegistrationInstance );
+
+                int? groupId = gpEditLinkageGroup.SelectedValueAsInt();
+                if ( groupId.HasValue && groupId.Value != ( LinkageState.GroupId ?? 0 ) )
+                {
+                    var group = new GroupService( rockContext ).Get( groupId.Value );
+                    if ( group != null )
+                    {
+                        LinkageState.GroupId = group.Id;
+                        LinkageState.Group = group;
+                    }
+                }
+
+                LinkageState.PublicName = tbEditLinkagePublicName.Text;
+                LinkageState.UrlSlug = tbEditLinkageUrlSlug.Text;
+
+                if ( !LinkageState.IsValid )
+                {
+                    return;
+                }
+
+                DisplayRegistration();
+
+                HideDialog();
+            }
+        }
+
 
         /// <summary>
         /// Handles the SaveClick event of the dlgExistingLinkage control.
@@ -967,6 +998,8 @@ namespace RockWeb.Blocks.Event
             rieNewLinkage.ShowActive = false;
             rieNewLinkage.ShowUrlSlug = true;
 
+            bool newLinkage = !LinkageState.RegistrationInstanceId.HasValue || LinkageState.RegistrationInstanceId.Value == 0;
+            
             ddlNewLinkageTemplate.Items.Clear();
 
             using ( var rockContext = new RockContext() )
@@ -1018,11 +1051,26 @@ namespace RockWeb.Blocks.Event
                     }
 
                 }
-
-                tbExistingLinkageUrlSlug.Text = LinkageState.UrlSlug;
             }
 
             ShowDialog( "EventItemNewLinkage", true );
+        }
+
+        /// <summary>
+        /// Shows the edit linkage dialog.
+        /// </summary>
+        private void ShowEditLinkageDialog()
+        {
+            rieEditLinkage.ShowActive = false;
+            rieEditLinkage.ShowUrlSlug = false;
+
+            lEditLinkageTemplate.Text = LinkageState.RegistrationInstance.RegistrationTemplate.Name;
+            gpEditLinkageGroup.SetValue( LinkageState.Group );
+            tbEditLinkagePublicName.Text = LinkageState.PublicName;
+            tbEditLinkageUrlSlug.Text = LinkageState.UrlSlug;
+            rieEditLinkage.SetValue( LinkageState.RegistrationInstance );
+
+            ShowDialog( "EventItemEditLinkage", true );
         }
 
         /// <summary>
@@ -1137,6 +1185,10 @@ namespace RockWeb.Blocks.Event
                     dlgNewLinkage.Show();
                     break;
 
+                case "EVENTITEMEDITLINKAGE":
+                    dlgEditLinkage.Show();
+                    break;
+
                 case "EVENTITEMEXISTINGLINKAGE":
                     dlgExistingLinkage.Show();
                     break;
@@ -1156,6 +1208,10 @@ namespace RockWeb.Blocks.Event
             {
                 case "EVENTITEMNEWLINKAGE":
                     dlgNewLinkage.Hide();
+                    break;
+
+                case "EVENTITEMEDITLINKAGE":
+                    dlgEditLinkage.Hide();
                     break;
 
                 case "EVENTITEMEXISTINGLINKAGE":
