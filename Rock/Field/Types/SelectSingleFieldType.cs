@@ -266,7 +266,7 @@ namespace Rock.Field.Types
         #endregion
 
         #region Filter Control
-
+         
         /// <summary>
         /// Gets the filter compare control.
         /// </summary>
@@ -333,8 +333,9 @@ namespace Rock.Field.Types
         /// Gets the filter compare value.
         /// </summary>
         /// <param name="control">The control.</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override string GetFilterCompareValue( Control control )
+        public override string GetFilterCompareValue( Control control, FilterMode filterMode )
         {
             return null;
         }
