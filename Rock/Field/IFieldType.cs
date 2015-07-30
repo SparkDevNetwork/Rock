@@ -18,8 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Web.UI;
-using Rock.Data;
-using Rock.Model;
+
 using Rock.Reporting;
 
 namespace Rock.Field
@@ -29,7 +28,6 @@ namespace Rock.Field
     /// </summary>
     public interface IFieldType
     {
-
         #region Configuration
 
         /// <summary>
@@ -89,7 +87,7 @@ namespace Rock.Field
 
         #endregion
 
-        #region Edit Control 
+        #region Edit Control
 
         /// <summary>
         /// Creates an HTML control.
@@ -128,7 +126,7 @@ namespace Rock.Field
 
         #endregion
 
-        #region Filter Control 
+        #region Filter Control
 
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type using the specified FilterMode
@@ -154,7 +152,7 @@ namespace Rock.Field
         /// Determines whether this filter type has a FilterControl
         /// </summary>
         /// <returns></returns>
-        Boolean HasFilterControl();
+        bool HasFilterControl();
 
         /// <summary>
         /// Gets the filter values.
@@ -172,7 +170,7 @@ namespace Rock.Field
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
         [Obsolete]
-        List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues);
+        List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues );
 
         /// <summary>
         /// Sets the filter value.
@@ -236,7 +234,7 @@ namespace Rock.Field
 
         #endregion
 
-        #region Event Handlers 
+        #region Event Handlers
 
         /// <summary>
         /// Occurs when a qualifier is updated.
@@ -244,6 +242,5 @@ namespace Rock.Field
         event EventHandler QualifierUpdated;
 
         #endregion
-
     }
 }
