@@ -1406,7 +1406,7 @@ namespace RockWeb.Blocks.Connection
             var workflowType = workflowTypeService.Get( connectionWorkflow.WorkflowTypeId.Value );
             if ( workflowType != null )
             {
-                var workflow = Rock.Model.Workflow.Activate( workflowType, name );
+                var workflow = Rock.Model.Workflow.Activate( workflowType, name, rockContext);
 
                 if ( workflow.AttributeValues != null )
                 {
