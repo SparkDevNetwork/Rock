@@ -5068,16 +5068,20 @@ a.help {
   font-weight: 700;
 }
 .badge-danger {
-  background-color: #e74c3c;
+  background-color: #e74c3c !important;
+  color: #fff !important;
 }
 .badge-warning {
-  background-color: #f39c12;
+  background-color: #f39c12 !important;
+  color: #fff !important;
 }
 .badge-success {
-  background-color: #18bc9c;
+  background-color: #18bc9c !important;
+  color: #fff !important;
 }
 .badge-info {
-  background-color: #3498db;
+  background-color: #3498db !important;
+  color: #fff !important;
 }
 .popover-content header {
   margin: -9px -14px 8px -14px;
