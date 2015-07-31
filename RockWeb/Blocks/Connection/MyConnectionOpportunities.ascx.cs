@@ -619,11 +619,12 @@ namespace RockWeb.Blocks.Connection
                             Name = r.PersonAlias.Person.FullName,
                             Campus = r.Campus,
                             Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
-                            Status = r.ConnectionStatus.Name,
                             Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
                             Activities = r.ConnectionRequestActivities.Select( a => a.ConnectionActivityType.Name ).ToList().AsDelimited( "</br>" ),
-                            State = r.ConnectionState.ToString() == "Active" ? "<span class='label label-success'>Active</span>" : "<span class='label label-campus'>" + r.ConnectionState.ToString() + "</span>"
-
+                            Status = r.ConnectionStatus.Name,
+                            StatusLabel = r.ConnectionStatus.IsCritical ? "danger" : "info",
+                            State = r.ConnectionState.ConvertToString(),
+                            StateLabel = r.ConnectionState == ConnectionState.Active ? "success" : ( r.ConnectionState == ConnectionState.Inactive ? "danger" : "info" )
                         } )
                         .ToList();
                     gConnectionRequests.DataBind();
