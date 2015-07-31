@@ -327,6 +327,20 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.ConnectionType != null ? this.ConnectionType : base.ParentAuthority;
+            }
+        }
+
         #endregion
     }
 
