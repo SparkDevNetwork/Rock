@@ -21,6 +21,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -28,12 +29,11 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
+    /// Field Type used to display a list of options as checkboxes.  Value is saved as a comma-delimited list
     /// </summary>
     [Serializable]
     public class SelectMultiFieldType : FieldType
     {
-
         #region Configuration
 
         /// <summary>
@@ -74,13 +74,19 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( "values", new ConfigurationValue( "Values", 
-                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.", "" ) );
+            var configurationValue = new ConfigurationValue(
+                "Values",
+                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.",
+                string.Empty );
+
+            configurationValues.Add( "values", configurationValue );
 
             if ( controls != null && controls.Count == 1 )
             {
                 if ( controls[0] != null && controls[0] is TextBox )
-                    configurationValues["values"].Value = ( ( TextBox )controls[0] ).Text;
+                {
+                    configurationValues["values"].Value = ( (TextBox)controls[0] ).Text;
+                }
             }
 
             return configurationValues;
@@ -94,8 +100,10 @@ namespace Rock.Field.Types
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( controls != null && controls.Count == 1 && configurationValues != null &&
-                controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey("values"))
-                    ( ( TextBox )controls[0] ).Text = configurationValues["values"].Value;
+                controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey( "values" ) )
+            {
+                ( (TextBox)controls[0] ).Text = configurationValues["values"].Value;
+            }
         }
 
         #endregion
@@ -115,7 +123,7 @@ namespace Rock.Field.Types
             if ( configurationValues.ContainsKey( "values" ) )
             {
                 var listItems = configurationValues["values"].Value.GetListItems();
-                if (listItems != null)
+                if ( listItems != null )
                 {
                     var valueList = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                     return listItems.Where( a => valueList.Contains( a.Value ) ).ToList().AsDelimited( "," );
@@ -158,7 +166,6 @@ namespace Rock.Field.Types
                         }
                     }
                 }
-
                 else
                 {
                     foreach ( var listItem in listSource.GetListItems() )
@@ -188,10 +195,15 @@ namespace Rock.Field.Types
 
             if ( control != null && control is CheckBoxList )
             {
-                CheckBoxList cbl = ( CheckBoxList )control;
+                CheckBoxList cbl = (CheckBoxList)control;
                 foreach ( ListItem li in cbl.Items )
+                {
                     if ( li.Selected )
+                    {
                         values.Add( li.Value );
+                    }
+                }
+
                 return values.AsDelimited<string>( "," );
             }
 
@@ -215,7 +227,9 @@ namespace Rock.Field.Types
                 {
                     CheckBoxList cbl = (CheckBoxList)control;
                     foreach ( ListItem li in cbl.Items )
+                    {
                         li.Selected = values.Contains( li.Value );
+                    }
                 }
             }
         }
@@ -269,7 +283,7 @@ namespace Rock.Field.Types
         public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             // call the base which will get SelectMulti's CheckBoxList values
-            return base.GetFilterValueValue(control, configurationValues);
+            return base.GetFilterValueValue( control, configurationValues );
         }
 
         /// <summary>
@@ -329,12 +343,12 @@ namespace Rock.Field.Types
                     var searchValue = "," + selectedValue + ",";
                     var qryToExtract = new AttributeValueService( new Data.RockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
                     var valueExpression = FilterExpressionExtractor.Extract<AttributeValue>( qryToExtract, parameterExpression, "a" );
-                    
-                    if (comparisonType != ComparisonType.Contains)
+
+                    if ( comparisonType != ComparisonType.Contains )
                     {
-                        valueExpression = Expression.Not( valueExpression );    
+                        valueExpression = Expression.Not( valueExpression );
                     }
-                    
+
                     if ( comparison == null )
                     {
                         comparison = valueExpression;
@@ -350,6 +364,5 @@ namespace Rock.Field.Types
         }
 
         #endregion
-
     }
 }
