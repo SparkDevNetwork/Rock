@@ -10,7 +10,7 @@
                     <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-calendar"></i>
+                            <i class="fa fa-fw fa-th-large"></i>
                         </div>
                         <div class="wizard-item-label">
                             Event Calendars
@@ -36,7 +36,7 @@
                 <asp:LinkButton ID="lbCalendarItem" runat="server" OnClick="lbCalendarItem_Click" CausesValidation="false" >
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-calendar-o"></i>
+                            <i class="fa fa-fw fa-calendar-check-o"></i>
                         </div>
                         <div class="wizard-item-label">
                             <asp:Literal ID="lCalendarItemName" runat="server" Text="Calendar Item" />
@@ -49,7 +49,7 @@
                 <asp:LinkButton ID="lbEventOccurrence" runat="server" OnClick="lbEventOccurrence_Click" CausesValidation="false" >
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-building-o"></i>
+                            <i class="fa fa-fw fa-clock-o"></i>
                         </div>
                         <div class="wizard-item-label">
                             <asp:Literal ID="lEventOccurrenceName" runat="server" Text="Event Occurrence" />
