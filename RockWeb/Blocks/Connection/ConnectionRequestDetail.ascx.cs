@@ -1049,34 +1049,13 @@ namespace RockWeb.Blocks.Connection
             }
 
             hlState.Visible = true;
-
-            if ( _connectionRequest.ConnectionState == ConnectionState.Inactive )
-            {
-                hlState.Text = "Inactive";
-                hlState.LabelType = Rock.Web.UI.Controls.LabelType.Danger;
-            }
-            else if ( _connectionRequest.ConnectionState == ConnectionState.FutureFollowUp )
-            {
-                hlState.Text = String.Format( "Follow-up: {0}", _connectionRequest.FollowupDate.Value.ToShortDateString() );
-                hlState.LabelType = Rock.Web.UI.Controls.LabelType.Success;
-            }
-            else
-            {
-                hlState.Text = "Active";
-                hlState.LabelType = Rock.Web.UI.Controls.LabelType.Success;
-            }
+            hlState.Text = _connectionRequest.ConnectionState.ConvertToString();
+            hlState.LabelType = _connectionRequest.ConnectionState == ConnectionState.Active ? LabelType.Success :
+                ( _connectionRequest.ConnectionState == ConnectionState.Inactive ? LabelType.Danger : LabelType.Info );
 
             hlStatus.Visible = true;
             hlStatus.Text = _connectionRequest.ConnectionStatus.Name;
-
-            if ( _connectionRequest.ConnectionStatus.IsCritical )
-            {
-                hlStatus.LabelType = Rock.Web.UI.Controls.LabelType.Warning;
-            }
-            else
-            {
-                hlStatus.LabelType = Rock.Web.UI.Controls.LabelType.Type;
-            }
+            hlStatus.LabelType = _connectionRequest.ConnectionStatus.IsCritical ? LabelType.Danger : LabelType.Type;
 
             hlOpportunity.Text = _connectionRequest.ConnectionOpportunity.Name;
             hlCampus.Text = _connectionRequest.Campus.Name;

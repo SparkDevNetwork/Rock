@@ -67,10 +67,18 @@
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campu" />
                             <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="Group" />
-                            <Rock:RockBoundField DataField="Status" HeaderText="Status" />
                             <Rock:RockBoundField DataField="Connector" HeaderText="Connector" />
                             <Rock:RockBoundField DataField="Activities" HeaderText="Activities" HtmlEncode="false" />
-                            <Rock:RockBoundField DataField="State" HeaderText="State" HtmlEncode="false" />
+                            <asp:TemplateField HeaderText="State">
+                                <ItemTemplate>
+                                    <span class='label label-<%# Eval("StateLabel") %>'><%# Eval("State") %></span>
+                                </ItemTemplate>
+                            </asp:TemplateField>
+                            <asp:TemplateField HeaderText="Status">
+                                <ItemTemplate>
+                                    <span class='label label-<%# Eval("StatusLabel") %>'><%# Eval("Status") %></span>
+                                </ItemTemplate>
+                            </asp:TemplateField>
                         </Columns>
                     </Rock:Grid>
                 </div>
