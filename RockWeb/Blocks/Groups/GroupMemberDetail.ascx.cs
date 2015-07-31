@@ -596,7 +596,7 @@ namespace RockWeb.Blocks.Groups
         protected void btnReCheckRequirements_Click( object sender, EventArgs e )
         {
             CalculateRequirements();
-            nbRecheckedNotification.Text = string.Format( "Successfully re-checked requirements at {0}", RockDateTime.Now );
+            nbRecheckedNotification.Text = "Successfully re-checked requirements.";
             nbRecheckedNotification.Visible = true;
         }
 
