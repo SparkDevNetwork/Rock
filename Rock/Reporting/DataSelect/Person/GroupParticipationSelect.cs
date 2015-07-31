@@ -287,8 +287,8 @@ namespace Rock.Reporting.DataSelect.Person
 
             var settings = new GroupParticipationSelectSettings();
 
-            settings.MemberStatus = ddlGroupMemberStatus.SelectedValue.ConvertToEnum<GroupMemberStatus>();
-            settings.RoleType = ddlRoleType.SelectedValue.ConvertToEnum<RoleTypeSpecifier>();
+            settings.MemberStatus = ddlGroupMemberStatus.SelectedValue.ConvertToEnumOrNull<GroupMemberStatus>();
+            settings.RoleType = ddlRoleType.SelectedValue.ConvertToEnumOrNull<RoleTypeSpecifier>();
             settings.DataViewGuid = DataComponentSettingsHelper.GetDataViewGuid( ddlDataView.SelectedValue );
             settings.ListFormat = ddlFormat.SelectedValue.ConvertToEnum<ListFormatSpecifier>( ListFormatSpecifier.GroupAndRole );
 
