@@ -1279,16 +1279,24 @@ namespace RockWeb.Blocks.Connection
                     }
                     else
                     {
-                        bool meets = requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets;
                         string labelText;
-                        if ( meets )
+                        string labelType;
+                        string labelTooltip;
+                        if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
                         {
                             labelText = requirementResult.GroupRequirement.GroupRequirementType.PositiveLabel;
+                            labelType = "success";
+                        }
+                        else if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
+                        {
+                            labelText = requirementResult.GroupRequirement.GroupRequirementType.WarningLabel;
+                            labelType = "warning";
                         }
                         else
                         {
                             passedAllRequirements = false;
                             labelText = requirementResult.GroupRequirement.GroupRequirementType.NegativeLabel;
+                            labelType = "danger";
                         }
 
                         if ( string.IsNullOrEmpty( labelText ) )
@@ -1296,11 +1304,26 @@ namespace RockWeb.Blocks.Connection
                             labelText = requirementResult.GroupRequirement.GroupRequirementType.Name;
                         }
 
+                        if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
+                        {
+                            labelTooltip = requirementResult.RequirementWarningDateTime.HasValue
+                                ? "Last Checked: " + requirementResult.RequirementWarningDateTime.Value.ToString( "g" )
+                                : "Not calculated yet";
+                        }
+                        else
+                        {
+                            labelTooltip = requirementResult.LastRequirementCheckDateTime.HasValue
+                                ? "Last Checked: " + requirementResult.LastRequirementCheckDateTime.Value.ToString( "g" )
+                                : "Not calculated yet";
+                        }
+
+
                         lRequirementsLabels.Text += string.Format(
-                            @"<span class='label label-{1}'>{0}</span>
+                            @"<span class='label label-{1}' title='{2}'>{0}</span>
                         ",
                             labelText,
-                            meets ? "success" : "danger" );
+                            labelType,
+                            labelTooltip );
                     }
                 }
 

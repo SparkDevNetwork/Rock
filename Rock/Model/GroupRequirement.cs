@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -180,8 +181,9 @@ namespace Rock.Model
                             {
                                 PersonId = a.PersonId,
                                 GroupRequirement = this,
-                                MeetsGroupRequirement = a.Included ? MeetsGroupRequirement.Meets : MeetsGroupRequirement.NotMet,
-                                WarningIncluded = a.WarningIncluded
+                                MeetsGroupRequirement = a.Included
+                                    ? ( a.WarningIncluded ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.Meets )
+                                    : MeetsGroupRequirement.NotMet
                             } );
 
                         return result;
@@ -203,7 +205,7 @@ namespace Rock.Model
                     {
                         IEnumerable<int> personIds = tableResult.Rows.OfType<System.Data.DataRow>().Select( r => Convert.ToInt32( r[0] ) );
                         IEnumerable<int> warningPersonIds = null;
-                        
+
                         // if a Warning SQL was specified, get a list of PersonIds that should have a warning with their status
                         if ( !string.IsNullOrWhiteSpace( warningFormattedSql ) )
                         {
@@ -218,8 +220,12 @@ namespace Rock.Model
                             {
                                 PersonId = a,
                                 GroupRequirement = this,
-                                MeetsGroupRequirement = personIds.Contains( a ) ? MeetsGroupRequirement.Meets : MeetsGroupRequirement.NotMet,
-                                WarningIncluded = warningPersonIds != null && warningPersonIds.Contains( a )
+                                MeetsGroupRequirement = personIds.Contains( a )
+                                    ? ( ( warningPersonIds != null && warningPersonIds.Contains( a ) )
+                                        ? MeetsGroupRequirement.MeetsWithWarning
+                                        : MeetsGroupRequirement.Meets
+                                        )
+                                    : MeetsGroupRequirement.NotMet,
                             } );
 
                         return result;
@@ -243,12 +249,14 @@ namespace Rock.Model
             else
             {
                 // manual
+                var groupMemberRequirementQry = new GroupMemberRequirementService( rockContext ).Queryable().Where( a => a.GroupRequirementId == this.Id && a.RequirementMetDateTime.HasValue );
+
                 var result = personQry.ToList().Select( a =>
                     new PersonGroupRequirementStatus
                     {
                         PersonId = a.Id,
                         GroupRequirement = this,
-                        MeetsGroupRequirement = MeetsGroupRequirement.ManualCheckRequired
+                        MeetsGroupRequirement = groupMemberRequirementQry.Any( r => r.GroupMember.PersonId == a.Id) ? MeetsGroupRequirement.Meets : MeetsGroupRequirement.NotMet
                     } );
 
                 return result;
@@ -276,13 +284,69 @@ namespace Rock.Model
                 {
                     GroupRequirement = this,
                     MeetsGroupRequirement = MeetsGroupRequirement.NotMet,
-                    PersonId = personId,
-                    WarningIncluded = false
+                    PersonId = personId
                 };
             }
             else
             {
                 return result;
+            }
+        }
+
+        /// <summary>
+        /// Updates the group member requirement result.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="meetsGroupRequirement">The meets group requirement.</param>
+        public void UpdateGroupMemberRequirementResult( RockContext rockContext, int personId, MeetsGroupRequirement meetsGroupRequirement )
+        {
+            GroupRequirement groupRequirement = this;
+            var currentDateTime = RockDateTime.Now;
+            GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupMemberQry = groupMemberService.Queryable( true ).Where( a => a.GroupId == groupRequirement.GroupId ).AsNoTracking();
+
+            var groupMemberRequirement = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.PersonId == personId && a.GroupRequirementId == groupRequirement.Id ).FirstOrDefault();
+            if ( groupMemberRequirement == null )
+            {
+                var groupMemberId = groupMemberQry.Where( a => a.PersonId == personId ).Select( a => a.Id ).FirstOrDefault();
+                if ( groupMemberId > 0 )
+                {
+                    groupMemberRequirement = new GroupMemberRequirement();
+                    groupMemberRequirement.GroupMemberId = groupMemberId;
+                    groupMemberRequirement.GroupRequirementId = groupRequirement.Id;
+                    groupMemberRequirementService.Add( groupMemberRequirement );
+                }
+            }
+
+            groupMemberRequirement.LastRequirementCheckDateTime = currentDateTime;
+
+            if ( ( meetsGroupRequirement == MeetsGroupRequirement.Meets ) || ( meetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning ) )
+            {
+                // they meet the requirement so update the Requirement Met Date/Time
+                groupMemberRequirement.RequirementMetDateTime = currentDateTime;
+                groupMemberRequirement.RequirementFailDateTime = null;
+            }
+            else
+            {
+                // they don't meet the requirement so set the Requirement Met Date/Time to null
+                groupMemberRequirement.RequirementMetDateTime = null;
+                groupMemberRequirement.RequirementFailDateTime = currentDateTime;
+            }
+
+            if ( meetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
+            {
+                if ( !groupMemberRequirement.RequirementWarningDateTime.HasValue )
+                {
+                    // they have a warning for the requirement, and didn't have a warning already
+                    groupMemberRequirement.RequirementWarningDateTime = currentDateTime;
+                }
+            }
+            else
+            {
+                // no warning, so set to null
+                groupMemberRequirement.RequirementWarningDateTime = null;
             }
         }
 
@@ -315,11 +379,6 @@ namespace Rock.Model
         /// The Requirement doesn't apply for the GroupRole we are checking against
         /// </summary>
         NotApplicable,
-
-        /// <summary>
-        /// Person must be added to Group first, then requirement must be manually checked
-        /// </summary>
-        ManualCheckRequired,
 
         /// <summary>
         /// The Requirement calculation resulted in an exception
@@ -367,14 +426,6 @@ namespace Rock.Model
         public MeetsGroupRequirement MeetsGroupRequirement { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the Person is also included in the Warning dataview/sql
-        /// </summary>
-        /// <value>
-        /// The requirement warning included
-        /// </value>
-        public bool WarningIncluded { get; set; }
-
-        /// <summary>
         /// Gets or sets the requirement warning date time.
         /// </summary>
         /// <value>
@@ -398,7 +449,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0}:{1}: Warning:{2}", this.GroupRequirement, this.MeetsGroupRequirement, this.WarningIncluded );
+            return string.Format( "{0}:{1}", this.GroupRequirement, this.MeetsGroupRequirement );
         }
     }
 
