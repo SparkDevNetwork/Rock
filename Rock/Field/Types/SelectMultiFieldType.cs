@@ -295,6 +295,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
         {
+            // probably won't happen since MultiFieldType would only be a Attribute FieldType
             return base.PropertyFilterExpression( configurationValues, filterValues, parameterExpression, propertyName, propertyType );
         }
 
@@ -308,36 +309,31 @@ namespace Rock.Field.Types
         public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
         {
             Expression comparison = null;
-            
-            //// OR up the where clauses for each of the selected values so it'll do something like this
-            ////  Value like '%bacon%'
-            ////  OR Value like '%lettuce%'
-            ////  OR Value like '%tomato%'
-
-            //// WARNING: Known issue in situations like this, and one of the possible values is '11' (%1% will match it) 
-            ////  Value like '%1%'
-            ////  OR Value like '%2%'
-            ////  OR Value like '%3%'
-
             if ( filterValues.Count > 1 )
             {
-                string compareTypeValue = filterValues[0];
+                //// OR up the where clauses for each of the selected values 
+                // and make sure to wrap commas around things so we don't collide with partial matches
+                // so it'll do something like this:
+                //
+                // WHERE ',' + Value + ',' like '%,bacon,%'
+                // OR ',' + Value + ',' like '%,lettuce,%'
+                // OR ',' + Value + ',' like '%,tomato,%'
+
+                // should be either "Contains" or "Not Contains"
+                ComparisonType comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains );
+
                 List<string> selectedValues = filterValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
 
                 foreach ( var selectedValue in selectedValues )
                 {
-                    var singleFilterValues = new List<string>();
-                    singleFilterValues.Add( compareTypeValue );
-                    singleFilterValues.Add( selectedValue );
-                    var valueExpression = base.AttributeFilterExpression( configurationValues, singleFilterValues, parameterExpression );
-
-                    // should be either "Contains" or "Not Contains"
-                    ComparisonType comparisonType = compareTypeValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                    var searchValue = "," + selectedValue + ",";
+                    var qryToExtract = new AttributeValueService( new Data.RockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
+                    var valueExpression = FilterExpressionExtractor.Extract<AttributeValue>( qryToExtract, parameterExpression, "a" );
                     
-                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
-                    ConstantExpression constantExpression = Expression.Constant( filterValues[1], typeof( string ) );
-
-                    valueExpression = ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                    if (comparisonType != ComparisonType.Contains)
+                    {
+                        valueExpression = Expression.Not( valueExpression );    
+                    }
                     
                     if ( comparison == null )
                     {
