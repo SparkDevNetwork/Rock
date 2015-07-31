@@ -14,7 +14,7 @@
             <asp:HiddenField ID="hfEventItemOccurrenceId" runat="server" />
 
             <div class="panel-heading clearfix">
-                <h1 class="panel-title"><asp:Literal ID="lActionTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="fa fa-clock-o"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
 
             <div class="panel-body">

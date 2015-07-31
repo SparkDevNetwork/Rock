@@ -10,7 +10,7 @@
                 <div class="panel panel-block">
 
                     <div class="panel-heading clearfix">
-                        <h1 class="panel-title pull-left">Event Occurrences</h1>
+                        <h1 class="panel-title pull-left"><i class="fa fa-clock-o"></i> Event Occurrences</h1>
                     </div>
 
                     <div class="panel-body">

@@ -18,7 +18,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title pull-left">
-                    <i class="fa fa-calendar-o"></i>
+                    <i class="fa fa-calendar-check-o"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </h1>
 

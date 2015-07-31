@@ -11,7 +11,7 @@
 
                     <div class="panel-heading clearfix">
                         <h1 class="panel-title pull-left">
-                            <i class="fa fa-calendar-o"></i>
+                            <i class="fa fa-calendar-check-o"></i>
                             Calendar Items
                         </h1>
                     </div>
