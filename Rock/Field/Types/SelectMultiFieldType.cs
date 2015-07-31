@@ -18,9 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
@@ -225,46 +225,6 @@ namespace Rock.Field.Types
         #region Filter Control
 
         /// <summary>
-        /// Gets the filter value control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="filterMode">The filter mode.</param>
-        /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
-        {
-            var ddlList = new RockDropDownList();
-            ddlList.ID = string.Format( "{0}_ddlList", id );
-            ddlList.AddCssClass( "js-filter-control" );
-
-            if ( !required )
-            {
-                ddlList.Items.Add( new ListItem() );
-            }
-
-            var control = EditControl( configurationValues, id );
-            if ( control is RockCheckBoxList )
-            {
-                foreach( ListItem li in ((RockCheckBoxList)control).Items)
-                {
-                    ddlList.Items.Add( new ListItem( li.Text, li.Value ) );
-                }
-            }
-
-            return ddlList;
-        }
-
-        /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return true;
-        }
-
-        /// <summary>
         /// Gets the type of the filter comparison.
         /// </summary>
         /// <value>
@@ -279,6 +239,28 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
+        {
+            // call the base which render SelectMulti's CheckBoxList
+            return base.FilterValueControl( configurationValues, id, required, filterMode );
+        }
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return true;
+        }
+
         /// Gets the filter value value.
         /// </summary>
         /// <param name="control">The control.</param>
@@ -286,12 +268,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is RockDropDownList )
-            {
-                return ( (RockDropDownList)control ).SelectedValue;
-            }
-
-            return string.Empty;
+            // call the base which will get SelectMulti's CheckBoxList values
+            return base.GetFilterValueValue(control, configurationValues);
         }
 
         /// <summary>
@@ -302,10 +280,77 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( control != null && control is RockDropDownList )
+            // call the base which will set SelectMulti's CheckBoxList values
+            base.SetFilterValueValue( control, configurationValues, value );
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an entity property value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
+        {
+            return base.PropertyFilterExpression( configurationValues, filterValues, parameterExpression, propertyName, propertyType );
+        }
+
+        /// <summary>
+        /// Geta a filter expression for an attribute value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
+        {
+            Expression comparison = null;
+            
+            //// OR up the where clauses for each of the selected values so it'll do something like this
+            ////  Value like '%bacon%'
+            ////  OR Value like '%lettuce%'
+            ////  OR Value like '%tomato%'
+
+            //// WARNING: Known issue in situations like this, and one of the possible values is '11' (%1% will match it) 
+            ////  Value like '%1%'
+            ////  OR Value like '%2%'
+            ////  OR Value like '%3%'
+
+            if ( filterValues.Count > 1 )
             {
-                ( (RockDropDownList)control ).SetValue( value );
+                string compareTypeValue = filterValues[0];
+                List<string> selectedValues = filterValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+                foreach ( var selectedValue in selectedValues )
+                {
+                    var singleFilterValues = new List<string>();
+                    singleFilterValues.Add( compareTypeValue );
+                    singleFilterValues.Add( selectedValue );
+                    var valueExpression = base.AttributeFilterExpression( configurationValues, singleFilterValues, parameterExpression );
+
+                    // should be either "Contains" or "Not Contains"
+                    ComparisonType comparisonType = compareTypeValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                    
+                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                    ConstantExpression constantExpression = Expression.Constant( filterValues[1], typeof( string ) );
+
+                    valueExpression = ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                    
+                    if ( comparison == null )
+                    {
+                        comparison = valueExpression;
+                    }
+                    else
+                    {
+                        comparison = Expression.Or( comparison, valueExpression );
+                    }
+                }
             }
+
+            return comparison;
         }
 
         #endregion
