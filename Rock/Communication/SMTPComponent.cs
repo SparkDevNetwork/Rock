@@ -229,50 +229,50 @@ namespace Rock.Communication.Transport
                                 }
                                 else
                                 {
-                                    message.To.Clear();
-                                    message.Headers.Clear();
-                                    message.AlternateViews.Clear();
-
-                                    message.To.Add( new MailAddress( recipient.PersonAlias.Person.Email, recipient.PersonAlias.Person.FullName ) );
-
-                                    // Create merge field dictionary
-                                    var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
-
-                                    // Subject
-                                    message.Subject = communication.Subject.ResolveMergeFields( mergeObjects, currentPerson );
-
-                                    // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
-                                    message.Subject = message.Subject.ReplaceWordChars();
-
-                                    // Add any additional headers that specific SMTP provider needs
-                                    AddAdditionalHeaders( message, recipient );
-
-                                    // Add text view first as last view is usually treated as the preferred view by email readers (gmail)
-                                    string plainTextBody = Rock.Communication.Medium.Email.ProcessTextBody( communication, globalAttributes, mergeObjects, currentPerson );
-
-                                    // convert any special microsoft word characters to normal chars so they don't look funny
-                                    plainTextBody = plainTextBody.ReplaceWordChars();
-
-                                    if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
-                                    {
-                                        AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Plain ) );
-                                        message.AlternateViews.Add( plainTextView );
-                                    }
-
-                                    // Add Html view
-                                    string htmlBody = Rock.Communication.Medium.Email.ProcessHtmlBody( communication, globalAttributes, mergeObjects, currentPerson );
-
-                                    // convert any special microsoft word characters to normal chars so they don't look funny
-                                    htmlBody = htmlBody.ReplaceWordChars();
-
-                                    if ( !string.IsNullOrWhiteSpace( htmlBody ) )
-                                    {
-                                        AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Html ) );
-                                        message.AlternateViews.Add( htmlView );
-                                    }
-
                                     try
                                     {
+                                        message.To.Clear();
+                                        message.Headers.Clear();
+                                        message.AlternateViews.Clear();
+
+                                        message.To.Add( new MailAddress( recipient.PersonAlias.Person.Email, recipient.PersonAlias.Person.FullName ) );
+
+                                        // Create merge field dictionary
+                                        var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
+
+                                        // Subject
+                                        message.Subject = communication.Subject.ResolveMergeFields( mergeObjects, currentPerson );
+
+                                        // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
+                                        message.Subject = message.Subject.ReplaceWordChars();
+
+                                        // Add any additional headers that specific SMTP provider needs
+                                        AddAdditionalHeaders( message, recipient );
+
+                                        // Add text view first as last view is usually treated as the preferred view by email readers (gmail)
+                                        string plainTextBody = Rock.Communication.Medium.Email.ProcessTextBody( communication, globalAttributes, mergeObjects, currentPerson );
+
+                                        // convert any special microsoft word characters to normal chars so they don't look funny
+                                        plainTextBody = plainTextBody.ReplaceWordChars();
+
+                                        if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
+                                        {
+                                            AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Plain ) );
+                                            message.AlternateViews.Add( plainTextView );
+                                        }
+
+                                        // Add Html view
+                                        string htmlBody = Rock.Communication.Medium.Email.ProcessHtmlBody( communication, globalAttributes, mergeObjects, currentPerson );
+
+                                        // convert any special microsoft word characters to normal chars so they don't look funny
+                                        htmlBody = htmlBody.ReplaceWordChars();
+
+                                        if ( !string.IsNullOrWhiteSpace( htmlBody ) )
+                                        {
+                                            AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Html ) );
+                                            message.AlternateViews.Add( htmlView );
+                                        }
+
                                         smtpClient.Send( message );
                                         recipient.Status = CommunicationRecipientStatus.Delivered;
 
@@ -300,7 +300,7 @@ namespace Rock.Communication.Transport
                                     catch ( Exception ex )
                                     {
                                         recipient.Status = CommunicationRecipientStatus.Failed;
-                                        recipient.StatusNote = "SMTP Exception: " + ex.Message;
+                                        recipient.StatusNote = "Exception: " + ex.Message;
                                     }
                                 }
 
