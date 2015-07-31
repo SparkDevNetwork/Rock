@@ -114,9 +114,19 @@ namespace Rock.Reporting.DataFilter
         public override string FormatSelection( Type entityType, string selection )
         {
             string result = entityType.Name.SplitCase() + " Property";
+            List<string> values;
 
             // First value is the field id (property of attribute), remaining values are the field type's filter values
-            var values = JsonConvert.DeserializeObject<List<string>>( selection );
+            try
+            {
+                values = JsonConvert.DeserializeObject<List<string>>( selection );
+            }
+            catch (Exception ex)
+            {
+                ExceptionLogService.LogException( ex, null );
+                return "Error";
+            }
+
             if ( values.Count >= 1 )
             {
                 // First value in array is always the name of the entity field being filtered
