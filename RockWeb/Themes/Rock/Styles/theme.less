@@ -125,9 +125,9 @@ textarea:focus,
 }
 
 pre {
-  background-color: @accent-light-color;
-  border-color: darken(@accent-light-color, 15%);
-  color: @accent-light-text-color;
+  background-color: @theme-6;
+  border-color: darken(@theme-6, 15%);
+  color: @theme-6-text;
 }
 
 /*#endregion */
@@ -206,18 +206,6 @@ h4, .h4 {
 }
 
 
-/* JME 7/26/2015 
-.rock-modal-frame {
-  border: 1px solid @accent-bold-color;
-}
-
-.close {
-  opacity: 0.6;
-}*/
-
-/*#endregion */
-
-
 /*#region
 // 3. Rock Overrides         */
 // -------------------------
@@ -242,11 +230,11 @@ h4, .h4 {
   float: right;
   margin: 12px 4%;
   border: 0;
-  background-color: lighten(@accent-bold-color, 5%);
+  background-color: lighten(@theme-6, 5%);
   width: 92%;
 
   input.searchinput {
-    color: @accent-bold-text-color;
+    color: @theme-6-text;
   }
 
   @media @md {
@@ -308,8 +296,8 @@ h4, .h4 {
       padding: 15px;
       color: @navbar-default-link-color;
       &:hover, &:focus {
-        color: @accent-bold-text-color;
-        background-color: lighten(@accent-bold-color, 5%);
+        color: @theme-8-text;
+        background-color: @theme-8;
         @media @sm {
           color: @navbar-default-link-hover-color;
           background-color: darken(@header-bg, 5%);
@@ -318,7 +306,7 @@ h4, .h4 {
     }
     .navbar-top-links > li.open > a {
       &, &:hover, &:focus {
-        background-color: lighten(@accent-bold-color, 5%);
+        background-color: @theme-8;
         @media @sm {
           background-color: darken(@header-bg, 10%);
         }
@@ -398,7 +386,7 @@ a.link-block,
       .navbar-nav > .open > a,
       .navbar-nav > .open > a:hover,
       .navbar-nav > .open > a:focus {
-        background-color: lighten(@accent-bold-color, 5%);
+        background-color: @theme-8;
       }
 
       .navbar-nav > li > a {
@@ -498,8 +486,8 @@ a.link-block,
 }
 
 body#splash {
-  background-color: @accent-color;
-  border-top: 36px solid @accent-bold-color;
+  background-color: @theme-4;
+  border-top: 36px solid @theme-2;
 
   #content {
     max-width: 400px;
@@ -518,7 +506,7 @@ body#splash {
       }
 
       .rock-logo {
-        fill: darken(@accent-color, 5%);
+        fill: darken(@theme-4, 5%);
       }
     }
   }
