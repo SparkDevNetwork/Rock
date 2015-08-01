@@ -280,6 +280,17 @@ $(document).ready(function() {
                 else
                 {
                     categoryId = dataView.CategoryId;
+                    
+                    // delete report filter
+                    try
+                    {
+                        DataViewFilterService dataViewFilterService = new DataViewFilterService( rockContext );
+                        DeleteDataViewFilter( dataView.DataViewFilter, dataViewFilterService );
+                    }
+                    catch
+                    {
+                        //
+                    }
 
                     dataViewService.Delete( dataView );
                     rockContext.SaveChanges();
@@ -414,6 +425,7 @@ $(document).ready(function() {
                 if (!btnDelete.Enabled)
                 {
                     btnDelete.ToolTip = errorMessage;
+                    btnDelete.Attributes["onclick"] = null;
                 }
 
                 if ( dataView.Id > 0 )
