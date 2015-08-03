@@ -34,7 +34,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:RockLiteral ID="lCampusNotes" runat="server" />
+                            <Rock:RockLiteral ID="lOccurrenceNotes" runat="server" />
                         </div>
                     </div>
 
@@ -87,7 +87,7 @@
 
                     </div>
 
-                    <Rock:HtmlEditor ID="htmlCampusNote" runat="server" Label="Campus Note" />
+                    <Rock:HtmlEditor ID="htmlOccurrenceNote" runat="server" Label="Occurrence Note" />
                 
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />

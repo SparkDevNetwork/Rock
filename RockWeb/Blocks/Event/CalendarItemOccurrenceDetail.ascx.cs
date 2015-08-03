@@ -257,7 +257,7 @@ namespace RockWeb.Blocks.Event
 
                 eventItemOccurrence.ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnPhone.Number );
                 eventItemOccurrence.ContactEmail = tbEmail.Text;
-                eventItemOccurrence.CampusNote = htmlCampusNote.Text;
+                eventItemOccurrence.CampusNote = htmlOccurrenceNote.Text;
 
                 // Remove any linkage no longer in UI
                 Guid uiLinkageGuid = LinkageState != null ? LinkageState.Guid : Guid.Empty;
@@ -884,7 +884,7 @@ namespace RockWeb.Blocks.Event
             pnPhone.Text = eventItemOccurrence.ContactPhone;
             tbEmail.Text = eventItemOccurrence.ContactEmail;
 
-            htmlCampusNote.Text = eventItemOccurrence.CampusNote;
+            htmlOccurrenceNote.Text = eventItemOccurrence.CampusNote;
 
             LinkageState = new EventItemOccurrenceGroupMap { Guid = Guid.Empty };
             var registration = eventItemOccurrence.Linkages.FirstOrDefault();
@@ -956,8 +956,8 @@ namespace RockWeb.Blocks.Event
             rightDesc.Add( "Email", eventItemOccurrence.ContactEmail );
             lRightDetails.Text = rightDesc.Html;
 
-            lCampusNotes.Visible = !string.IsNullOrWhiteSpace( eventItemOccurrence.CampusNote );
-            lCampusNotes.Text = eventItemOccurrence.CampusNote;
+            lOccurrenceNotes.Visible = !string.IsNullOrWhiteSpace( eventItemOccurrence.CampusNote );
+            lOccurrenceNotes.Text = eventItemOccurrence.CampusNote;
         }
 
         private void SetEditMode( bool editable )
