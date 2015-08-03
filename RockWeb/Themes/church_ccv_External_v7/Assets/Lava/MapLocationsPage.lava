@@ -74,5 +74,9 @@
 
 {% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
 
+{% comment %}
 <script src="~~/Scripts/_map.js"></script>
 <script src="~~/Scripts/map-locations-page.js"></script>
+{% endcomment %}
+
+<script src="~~/Scripts/min/map-locations-page.min.js"></script>

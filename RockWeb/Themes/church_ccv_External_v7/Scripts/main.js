@@ -1,5 +1,6 @@
 // @prepros-prepend "_slider.js"
 // @prepros-prepend "_fullmenu.js"
+// @prepros-prepend "_vimeo-thumb.js"
 
 // BS Tooltips
 $(function () {

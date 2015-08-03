@@ -1,0 +1,35 @@
+
+
+//
+// VIMEO THUMB (like campus video on /invite)
+// --------------------------------------------------
+
+.vimeothumb {
+  .clearfix();
+}
+
+  .vimeothumb a {
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    position: relative;
+    display: block;
+
+    &:before {
+      .fa-icon();
+      content: @fa-var-play-circle-o;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #fff;
+      width: 100%;
+      text-align: center;
+      font-size: 7em;
+      text-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+      .opacity(.75);
+      .transition(.5s opacity);
+    }
+    &:hover:before {
+      .opacity(1);
+    }
+  }

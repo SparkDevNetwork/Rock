@@ -1,0 +1,147 @@
+<header class="bigblock bigblock-red">
+  <div class="container container-md text-center">
+    <p class="hidden-xs">&nbsp;</p>
+    <h1 class="margin-t-none margin-b-lg">Visit CCV This Weekend</h1>
+    <p class="hidden-xs">&nbsp;</p>
+    <div class="embed-responsive embed-responsive-16by9">
+      <iframe class="embed-responsive-item" src="https://player.vimeo.com/video/64237446" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+    </div>
+  </div>
+</header>
+
+<article class="container container-md">
+  <p class="hidden-xs">&nbsp;</p>
+  <p class="lead"><strong class="visible-xs-inline visible-sm-block visible-md-block visible-lg-block">Christ's Church of the Valley is one church in many locations.</strong> At each campus you will experience a welcoming atmosphere, relevant messages and excellent music.</p>
+  <p class="hidden-xs">&nbsp;</p>
+
+  <h2 class="underline margin-b-lg">{{ Context.Campus.Name }} Campus</h2>
+
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="vimeothumb js-vimeothumb margin-b-lg" data-vimeo-id="{{ Context.Campus.CampusTourVimeoId }}"></div>
+    </div>
+    <div class="col-md-6">
+      <div class="panel panel-default margin-b-lg">
+        <div class="panel-body">
+          <h4 class="margin-b-sm">Service Times</h4>
+          <p class="commalist">
+            {% assign hasSaturday = false %}{% assign hasSunday = false %}
+
+            {% assign times = Context.Campus.ServiceTimes | Split: '|' %}
+
+            {% for time in times %}
+              {% assign split = time | Split: '^' %}
+              {% if split[0] == 'Saturday' %}
+                {% assign hasSaturday = true %}
+              {% endif %}
+              {% if split[0] == 'Sunday' %}
+                {% assign hasSunday = true %}
+              {% endif %}
+            {% endfor %}
+
+            {% if hasSaturday %}
+              <strong>Saturday</strong>
+              {% for time in times %}
+                {% assign split = time | Split: '^' %}
+                {% if split[0] == 'Saturday' %}
+                  <span class="commalist-item">{{ split[1] }}</span>
+                {% endif %}
+              {% endfor %}
+              <br>
+            {% endif %}
+
+            {% if hasSunday %}
+              <strong>Sunday</strong>
+              {% for time in times %}
+                {% assign split = time | Split: '^' %}
+                {% if split[0] == 'Sunday' %}
+                  <span class="commalist-item">{{ split[1] }}</span>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="invitation-map-holder" class="margin-b-md" style="min-height: 30vh;"></div>
+
+  {% capture urlString %}{{ Context.Campus.Location.Street1 }} {{ Context.Campus.Location.Street2 }} {{ Context.Campus.Location.City }}, {{ Context.Campus.Location.State }} {{ Context.Campus.Location.PostalCode }}{% endcapture %}
+  {% assign urlString = urlString | Replace: '  ', ' ' | Replace: ' ', '+' %}
+
+  <a class="btn btn-primary margin-b-md margin-r-md" href="http://maps.apple.com/maps?daddr={{ urlString }}"><i class="fa fa-location-arrow"></i> Get Directions</a>
+  <span class="text-muted">{{ Context.Campus.Location.Street1 }} {{ Context.Campus.Location.Street2 }} {{ Context.Campus.Location.City }}, {{ Context.Campus.Location.State }} {{ Context.Campus.Location.PostalCode }}</span>
+
+</article>
+
+<p class="hidden-xs">&nbsp;</p>
+<p class="hidden-xs">&nbsp;</p>
+<p>&nbsp;</p>
+
+<aside class="bigblock bigblock-graydark">
+  <div class="container container-md text-center">
+    <p>
+      <a href="https://twitter.com/intent/tweet?url=http://ccv.church/invite&text=Join%20me%20at%20church%20this%20weekend!&hashtags=ccvonline" class="btn btn-default btn-lg">Invite friends on Twitter</a>
+    </p>
+    Share an invitation to CCV with your friends and followers, they'll see this page.
+  </div>
+</aside>
+
+{% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
+
+<script src="~~/Scripts/_map.js"></script>
+
+<script>
+  Rock.controls.util.loadGoogleMapsApi('https://maps.googleapis.com/maps/api/js?sensor=false&libraries=drawing')
+
+  $(window).on('googleMapsIsLoaded', function(){
+
+    window.invitationMap = new CCV.campusMap(document.getElementById('invitation-map-holder'), {{ Context.Campus.Location.CampusId }})
+
+    invitationMap.mapOptions = {
+      mapTypeId: 'CCV',
+      scrollwheel: false,
+      panControl: false,
+      zoomControl: false,
+      streetViewControl: false,
+      mapTypeControl: false
+    }
+
+    invitationMap.draw()
+
+    // Custom Zoom buttons
+
+    function CustomZoom(controlDiv, map) {
+      var zoomIn = document.createElement('div');
+      zoomIn.className = "btn btn-default btn-md"
+      zoomIn.title = 'Zoom In';
+      zoomIn.innerHTML = '<i class="fa fa-fw fa-plus"></i>';
+      controlDiv.appendChild(zoomIn);
+
+      google.maps.event.addDomListener(zoomIn, 'click', function() {
+        invitationMap.map.setZoom(invitationMap.map.getZoom() + 1);
+      });
+
+      var zoomOut = document.createElement('div');
+      zoomOut.className = "btn btn-default btn-md"
+      zoomOut.title = 'Zoom Out';
+      zoomOut.innerHTML = '<i class="fa fa-fw fa-minus"></i>';
+      controlDiv.appendChild(zoomOut);
+
+      google.maps.event.addDomListener(zoomOut, 'click', function() {
+        invitationMap.map.setZoom(invitationMap.map.getZoom() - 1);
+      });
+    }
+    var customZoomDiv = document.createElement('div');
+    customZoomDiv.className = "btn-group-vertical"
+    customZoomDiv.style.marginTop = '2.5%';
+    customZoomDiv.style.marginRight = '2.5%';
+    var customZoom = new CustomZoom(customZoomDiv, invitationMap.map);
+
+    customZoomDiv.index = 1;
+    invitationMap.map.controls[google.maps.ControlPosition.RIGHT_TOP].push(customZoomDiv);
+
+  })
+</script>
