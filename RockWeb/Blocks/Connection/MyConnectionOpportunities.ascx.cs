@@ -412,7 +412,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     r.ConnectionOpportunityId,
                     r.CampusId,
-                    ConnectorPersonId = r.ConnectorPersonAlias.PersonId
+                    ConnectorPersonId = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.PersonId : -1
                 } )
                 .ToList();
 
