@@ -86,6 +86,7 @@ namespace RockWeb.Blocks.Finance
             account.ParentAccountId = apParentAccount.SelectedValueAsInt();
             account.AccountTypeValueId = ddlAccountType.SelectedValueAsInt();
             account.PublicName = tbPublicName.Text;
+            account.Url = tbUrl.Text;
             account.CampusId = cpCampus.SelectedValueAsInt();
 
             account.GlCode = tbGLCode.Text;
@@ -184,6 +185,7 @@ namespace RockWeb.Blocks.Finance
             apParentAccount.SetValue( account.ParentAccount );
             ddlAccountType.SetValue( account.AccountTypeValueId );
             tbPublicName.Text = account.PublicName;
+            tbUrl.Text = account.Url;
             cpCampus.SelectedCampusId = account.CampusId;
 
             tbGLCode.Text = account.GlCode;

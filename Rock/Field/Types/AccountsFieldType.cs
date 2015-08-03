@@ -161,10 +161,11 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
-            var control = base.FilterValueControl( configurationValues, id, required );
+            var control = base.FilterValueControl( configurationValues, id, required, filterMode );
             if ( control is AccountPicker )
             {
                 var accountPicker = (AccountPicker)control;

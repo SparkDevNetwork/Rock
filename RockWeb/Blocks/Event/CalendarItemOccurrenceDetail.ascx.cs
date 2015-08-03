@@ -46,6 +46,8 @@ namespace RockWeb.Blocks.Event
     [Description( "Displays the details of a given calendar item occurrence." )]
 
     [AccountField( "Default Account", "The default account to use for new registration instances", false, "2A6F9E5F-6859-44F1-AB0E-CE9CF6B08EE5", "", 0 )]
+    [LinkedPage( "Registration Instance Page", "The page to view registration details", true, "", "", 1 )]
+    [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 2 )]
     public partial class CalendarItemOccurrenceDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -147,6 +149,49 @@ namespace RockWeb.Blocks.Event
         #region Edit Events
 
         /// <summary>
+        /// Handles the Click event of the btnEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnEdit_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var eventItemOccurrence = new EventItemOccurrenceService( rockContext ).Get( hfEventItemOccurrenceId.Value.AsInteger() );
+
+            ShowEditDetails( eventItemOccurrence );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                EventItemOccurrenceService eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
+                EventItemOccurrence eventItemOccurrence = eventItemOccurrenceService.Get( hfEventItemOccurrenceId.Value.AsInteger() );
+
+                if ( eventItemOccurrence != null )
+                {
+                    string errorMessage;
+                    if ( !eventItemOccurrenceService.CanDelete( eventItemOccurrence, out errorMessage ) )
+                    {
+                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    eventItemOccurrenceService.Delete( eventItemOccurrence );
+
+                    rockContext.SaveChanges();
+                }
+            }
+
+            NavigateToParentPage();
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -212,7 +257,7 @@ namespace RockWeb.Blocks.Event
 
                 eventItemOccurrence.ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnPhone.Number );
                 eventItemOccurrence.ContactEmail = tbEmail.Text;
-                eventItemOccurrence.CampusNote = htmlCampusNote.Text;
+                eventItemOccurrence.CampusNote = htmlOccurrenceNote.Text;
 
                 // Remove any linkage no longer in UI
                 Guid uiLinkageGuid = LinkageState != null ? LinkageState.Guid : Guid.Empty;
@@ -304,13 +349,22 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "EventCalendarId", PageParameter( "EventCalendarId" ) );
-            qryParams.Add( "EventItemId", PageParameter( "EventItemId" ) );
-            NavigateToParentPage( qryParams );
+            int eventItemId = hfEventItemOccurrenceId.ValueAsInt();
+            if ( eventItemId == 0 )
+            {
+                var qryParams = new Dictionary<string, string>();
+                qryParams.Add( "EventCalendarId", PageParameter( "EventCalendarId" ) );
+                qryParams.Add( "EventItemId", PageParameter( "EventItemId" ) );
+                NavigateToParentPage( qryParams );
+            }
+            else
+            {
+                var eventItemOccurrence = new EventItemOccurrenceService( new RockContext() ).Get( eventItemId );
+                ShowReadonlyDetails( eventItemOccurrence );
+            }
         }
 
-        #endregion Edit Events
+        #endregion 
 
         #region Control Events
 
@@ -410,14 +464,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEditRegistration_Click( object sender, EventArgs e )
         {
-            if ( LinkageState.RegistrationInstanceId == 0 )
-            {
-                ShowNewLinkageDialog();
-            }
-            else
-            {
-                ShowExistingLinkageDialog();
-            }
+            ShowEditLinkageDialog();
         }
 
         /// <summary>
@@ -485,7 +532,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 LinkageState.PublicName = rieNewLinkage.Name;
-                LinkageState.UrlSlug = tbExistingLinkageUrlSlug.Text;
+                LinkageState.UrlSlug = rieNewLinkage.UrlSlug;
 
                 // Set the Guid now (otherwise it will not be valid )
                 bool isNew = LinkageState.Guid == Guid.Empty;
@@ -509,6 +556,45 @@ namespace RockWeb.Blocks.Event
                 HideDialog();
             }
         }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgEditLinkage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgEditLinkage_SaveClick( object sender, EventArgs e )
+        {
+            if ( LinkageState.RegistrationInstance != null )
+            {
+                var rockContext = new RockContext();
+
+                rieEditLinkage.GetValue( LinkageState.RegistrationInstance );
+
+                int? groupId = gpEditLinkageGroup.SelectedValueAsInt();
+                if ( groupId.HasValue && groupId.Value != ( LinkageState.GroupId ?? 0 ) )
+                {
+                    var group = new GroupService( rockContext ).Get( groupId.Value );
+                    if ( group != null )
+                    {
+                        LinkageState.GroupId = group.Id;
+                        LinkageState.Group = group;
+                    }
+                }
+
+                LinkageState.PublicName = tbEditLinkagePublicName.Text;
+                LinkageState.UrlSlug = tbEditLinkageUrlSlug.Text;
+
+                if ( !LinkageState.IsValid )
+                {
+                    return;
+                }
+
+                DisplayRegistration();
+
+                HideDialog();
+            }
+        }
+
 
         /// <summary>
         /// Handles the SaveClick event of the dlgExistingLinkage control.
@@ -732,14 +818,62 @@ namespace RockWeb.Blocks.Event
             if ( !eventItemOccurrenceId.Equals( 0 ) )
             {
                 eventItemOccurrence = new EventItemOccurrenceService( rockContext ).Get( eventItemOccurrenceId );
-                lActionTitle.Text = ActionTitle.Edit( "Event Occurrence" ).FormatAsHtmlTitle();
             }
 
             if ( eventItemOccurrence == null )
             {
                 eventItemOccurrence = new EventItemOccurrence { Id = 0 };
+            }
+
+            bool canEdit  = UserCanEdit || eventItemOccurrence.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            bool readOnly = false;
+            nbEditModeMessage.Text = string.Empty;
+
+            if ( !canEdit )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( EventItemOccurrence.FriendlyTypeName );
+            }
+
+            if ( readOnly )
+            {
+                btnEdit.Visible = false;
+                btnDelete.Visible = false;
+                ShowReadonlyDetails( eventItemOccurrence );
+            }
+            else
+            {
+                btnEdit.Visible = true;
+                btnDelete.Visible = true;
+
+                if ( !eventItemOccurrenceId.Equals( 0))
+                {
+                    ShowReadonlyDetails( eventItemOccurrence );
+                }
+                else
+                {
+                    ShowEditDetails( eventItemOccurrence );
+                }
+            }
+        }
+
+        private void ShowEditDetails( EventItemOccurrence eventItemOccurrence )
+        {
+            if ( eventItemOccurrence == null )
+            {
+                eventItemOccurrence = new EventItemOccurrence();
+            }
+
+            if ( eventItemOccurrence.Id == 0 )
+            {
                 lActionTitle.Text = ActionTitle.Add( "Event Occurrence" ).FormatAsHtmlTitle();
             }
+            else
+            {
+                lActionTitle.Text = ActionTitle.Edit( "Event Occurrence" ).FormatAsHtmlTitle();
+            }
+
+            SetEditMode( true );
 
             hfEventItemOccurrenceId.Value = eventItemOccurrence.Id.ToString();
 
@@ -750,7 +884,7 @@ namespace RockWeb.Blocks.Event
             pnPhone.Text = eventItemOccurrence.ContactPhone;
             tbEmail.Text = eventItemOccurrence.ContactEmail;
 
-            htmlCampusNote.Text = eventItemOccurrence.CampusNote;
+            htmlOccurrenceNote.Text = eventItemOccurrence.CampusNote;
 
             LinkageState = new EventItemOccurrenceGroupMap { Guid = Guid.Empty };
             var registration = eventItemOccurrence.Linkages.FirstOrDefault();
@@ -776,6 +910,62 @@ namespace RockWeb.Blocks.Event
 
             BindSchedulesGrid();
         
+        }
+
+        private void ShowReadonlyDetails( EventItemOccurrence eventItemOccurrence )
+        {
+            SetEditMode( false );
+
+            hfEventItemOccurrenceId.Value = eventItemOccurrence.Id.ToString();
+
+            lActionTitle.Text = "Event Occurrence".FormatAsHtmlTitle();
+
+            var leftDesc = new DescriptionList();
+            leftDesc.Add( "Campus", eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All" );
+            StringBuilder sbSchedules = new StringBuilder();
+            foreach( var sched in eventItemOccurrence.EventItemSchedules.Where( s => s.Schedule != null ) )
+            {
+                sbSchedules.AppendFormat( "<strong>{0}</strong> {1}<br/>", sched.ScheduleName, sched.Schedule.FriendlyScheduleText );
+            }
+            leftDesc.Add( "Schedule(s)", sbSchedules.ToString() );
+
+            if ( eventItemOccurrence.Linkages.Any() )
+            {
+                var linkage = eventItemOccurrence.Linkages.First();
+                if ( linkage.RegistrationInstance != null )
+                {
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams.Add( "RegistrationInstanceId", linkage.RegistrationInstance.Id.ToString() );
+                    leftDesc.Add( "Registration", string.Format( "<a href='{0}'>{1}</a>", LinkedPageUrl( "RegistrationInstancePage", qryParams ), linkage.RegistrationInstance.Name ) );
+                }
+
+                if ( linkage.Group != null )
+                {
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams.Add( "GroupId", linkage.Group.Id.ToString() );
+                    leftDesc.Add( "Group", string.Format( "<a href='{0}'>{1}</a>", LinkedPageUrl( "GroupDetailPage", qryParams ), linkage.Group.Name ) );
+                }
+            }
+            lLeftDetails.Text = leftDesc.Html;
+
+            var rightDesc = new DescriptionList();
+            leftDesc.Add( "Location Details", eventItemOccurrence.Location );
+            rightDesc.Add( "Contact", eventItemOccurrence.ContactPersonAlias != null && eventItemOccurrence.ContactPersonAlias.Person != null ?
+                eventItemOccurrence.ContactPersonAlias.Person.FullName : "" );
+            rightDesc.Add( "Phone", eventItemOccurrence.ContactPhone );
+            rightDesc.Add( "Email", eventItemOccurrence.ContactEmail );
+            lRightDetails.Text = rightDesc.Html;
+
+            lOccurrenceNotes.Visible = !string.IsNullOrWhiteSpace( eventItemOccurrence.CampusNote );
+            lOccurrenceNotes.Text = eventItemOccurrence.CampusNote;
+        }
+
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            pnlViewDetails.Visible = !editable;
+
+            this.HideSecondaryBlocks( editable );
         }
 
         /// <summary>
@@ -808,6 +998,8 @@ namespace RockWeb.Blocks.Event
             rieNewLinkage.ShowActive = false;
             rieNewLinkage.ShowUrlSlug = true;
 
+            bool newLinkage = !LinkageState.RegistrationInstanceId.HasValue || LinkageState.RegistrationInstanceId.Value == 0;
+            
             ddlNewLinkageTemplate.Items.Clear();
 
             using ( var rockContext = new RockContext() )
@@ -859,11 +1051,26 @@ namespace RockWeb.Blocks.Event
                     }
 
                 }
-
-                tbExistingLinkageUrlSlug.Text = LinkageState.UrlSlug;
             }
 
             ShowDialog( "EventItemNewLinkage", true );
+        }
+
+        /// <summary>
+        /// Shows the edit linkage dialog.
+        /// </summary>
+        private void ShowEditLinkageDialog()
+        {
+            rieEditLinkage.ShowActive = false;
+            rieEditLinkage.ShowUrlSlug = false;
+
+            lEditLinkageTemplate.Text = LinkageState.RegistrationInstance.RegistrationTemplate.Name;
+            gpEditLinkageGroup.SetValue( LinkageState.Group );
+            tbEditLinkagePublicName.Text = LinkageState.PublicName;
+            tbEditLinkageUrlSlug.Text = LinkageState.UrlSlug;
+            rieEditLinkage.SetValue( LinkageState.RegistrationInstance );
+
+            ShowDialog( "EventItemEditLinkage", true );
         }
 
         /// <summary>
@@ -978,6 +1185,10 @@ namespace RockWeb.Blocks.Event
                     dlgNewLinkage.Show();
                     break;
 
+                case "EVENTITEMEDITLINKAGE":
+                    dlgEditLinkage.Show();
+                    break;
+
                 case "EVENTITEMEXISTINGLINKAGE":
                     dlgExistingLinkage.Show();
                     break;
@@ -997,6 +1208,10 @@ namespace RockWeb.Blocks.Event
             {
                 case "EVENTITEMNEWLINKAGE":
                     dlgNewLinkage.Hide();
+                    break;
+
+                case "EVENTITEMEDITLINKAGE":
+                    dlgEditLinkage.Hide();
                     break;
 
                 case "EVENTITEMEXISTINGLINKAGE":

@@ -17,27 +17,28 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Security;
 
 namespace RockWeb.Blocks.Connection
 {
-    [DisplayName( "External Connection Opportunity Detail" )]
+    [DisplayName( "Connection Opportunity Detail Lava" )]
     [Category( "Connection" )]
     [Description( "Displays the details of the given opportunity for the external website." )]
     [LinkedPage( "Signup Page", "The page used to sign up for an opportunity" )]
-    public partial class ExternalConnectionOpportunityDetail : RockBlock, IDetailBlock
+    [CodeEditorField( "Lava Template", "Lava template to use to display the package details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunityDetail.lava' %}", "", 2 )]
+    [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
+    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the package name.", false )]
+    public partial class ConnectionOpportunityDetailLava : RockBlock
     {
 
         #region Control Methods
@@ -52,7 +53,7 @@ namespace RockWeb.Blocks.Connection
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlOpportunityDetail );
+            this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
         /// <summary>
@@ -63,17 +64,9 @@ namespace RockWeb.Blocks.Connection
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
+            if ( !IsPostBack )
             {
-                string opportunityId = PageParameter( "OpportunityId" );
-                if ( !string.IsNullOrWhiteSpace( opportunityId ) )
-                {
-                    ShowDetail( opportunityId.AsInteger() );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                LoadContent();
             }
         }
 
@@ -106,30 +99,6 @@ namespace RockWeb.Blocks.Connection
 
         #endregion
 
-        #region Edit Events
-
-        /// <summary>
-        /// Handles the Click event of the btnEdit control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnConnect_Click( object sender, EventArgs e )
-        {
-            NavigateToLinkedPage( "SignupPage", "OpportunityId", PageParameter( "OpportunityId" ).AsInteger() );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            NavigateToParentPage();
-        }
-
-        #endregion
-
         #region Control Events
 
         /// <summary>
@@ -139,49 +108,71 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            string opportunityId = PageParameter( "OpportunityId" );
-            if ( !string.IsNullOrWhiteSpace( opportunityId ) )
-            {
-                ShowDetail( opportunityId.AsInteger() );
-            }
-            else
-            {
-                pnlDetails.Visible = false;
-            }
+            LoadContent();
         }
 
         #endregion
 
         #region Internal Methods
 
-        /// <summary>
-        /// Shows the detail.
-        /// </summary>
-        /// <param name="opportunityId">The opportunity identifier.</param>
-        public void ShowDetail( int opportunityId )
+        public void LoadContent()
         {
-            using ( var rockContext = new RockContext() )
+            // get opportunity id
+            int opportunityId = -1;
+
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "OpportunityId" ) ) )
             {
-                var opportunity = new ConnectionOpportunityService( rockContext ).Get( opportunityId );
-                if ( opportunity == null )
+                opportunityId = Convert.ToInt32( PageParameter( "OpportunityId" ) );
+            }
+
+            if ( opportunityId > 0 )
+            {
+                RockContext rockContext = new RockContext();
+                ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+
+                bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
+
+                var qry = connectionOpportunityService
+                    .Queryable()
+                    .Where( g => g.Id == opportunityId );
+
+                if ( !enableDebug )
                 {
-                    return;
+                    qry = qry.AsNoTracking();
+                }
+                var opportunity = qry.FirstOrDefault();
+
+                var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "Opportunity", opportunity );
+
+                // add linked pages
+                Dictionary<string, object> linkedPages = new Dictionary<string, object>();
+                linkedPages.Add( "SignupPage", LinkedPageUrl( "SignupPage", null ) );
+                mergeFields.Add( "LinkedPages", linkedPages );
+
+                mergeFields.Add( "CurrentPerson", CurrentPerson );
+
+                var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+
+                lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
+
+                if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
+                {
+                    string pageTitle = opportunity.PublicName;
+                    RockPage.PageTitle = pageTitle;
+                    RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
+                    RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
                 }
 
-                lIcon.Text = string.Format( "<i class='{0}' ></i>", opportunity.IconCssClass );
-                lTitle.Text = opportunity.Name.FormatAsHtmlTitle();
-
-                lDescription.Text = opportunity.Description.ScrubHtmlAndConvertCrLfToBr();
-
-                opportunity.LoadAttributes();
-                var attributes = opportunity.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-
-                var attributeCategories = Helper.GetAttributeCategories( attributes );
-
-                Rock.Attribute.Helper.AddDisplayControls( opportunity, attributeCategories, phAttributes, null, false );
+                // show debug info
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+                {
+                    lDebug.Visible = true;
+                    lDebug.Text = mergeFields.lavaDebugInfo();
+                }
             }
         }
-
         #endregion
 
     }

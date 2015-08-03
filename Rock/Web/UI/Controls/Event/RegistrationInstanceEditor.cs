@@ -514,7 +514,8 @@ namespace Rock.Web.UI.Controls
 
                 _tbName = new RockTextBox();
                 _tbName.ID = this.ID + "_tbName";
-                _tbName.Label = "Name";
+                _tbName.Label = "Registration Instance Name";
+                _tbName.Help = "The name will be used to describe the registration on the registration screens and emails.";
                 _tbName.Required = true;
                 Controls.Add( _tbName );
 
@@ -530,13 +531,16 @@ namespace Rock.Web.UI.Controls
                 _tbUrlSlug.Visible = false;
                 Controls.Add( _tbUrlSlug );
 
+
                 _ceDetails = new CodeEditor();
                 _ceDetails.ID = this.ID + "_ceDetails";
                 _ceDetails.Label = "Details";
                 _ceDetails.EditorMode = CodeEditorMode.Html;
                 _ceDetails.EditorTheme = CodeEditorTheme.Rock;
                 _ceDetails.EditorHeight = "100";
+                _ceDetails.Visible = false; // hiding this out for now. Struggling where we'd even use this, but instead of removing it we'll just comment it out for now.
                 Controls.Add( _ceDetails );
+                 
 
                 _dtpStart = new DateTimePicker();
                 _dtpStart.ID = this.ID + "_dtpStart";
@@ -589,6 +593,7 @@ namespace Rock.Web.UI.Controls
                 _ceAdditionalReminderDetails = new CodeEditor();
                 _ceAdditionalReminderDetails.ID = this.ID + "_ceAdditionalReminderDetails";
                 _ceAdditionalReminderDetails.Label = "Additional Reminder Details";
+                _ceAdditionalReminderDetails.Help = "These reminder details will be appended to those in the registration template when sending the reminder email.";
                 _ceAdditionalReminderDetails.EditorMode = CodeEditorMode.Html;
                 _ceAdditionalReminderDetails.EditorTheme = CodeEditorTheme.Rock;
                 _ceAdditionalReminderDetails.EditorHeight = "100";
@@ -597,6 +602,7 @@ namespace Rock.Web.UI.Controls
                 _ceAdditionalConfirmationDetails = new CodeEditor();
                 _ceAdditionalConfirmationDetails.ID = this.ID + "_ceAdditionalConfirmationDetails";
                 _ceAdditionalConfirmationDetails.Label = "Additional Confirmation Details";
+                _ceAdditionalConfirmationDetails.Help = "These confirmation details will be appended to those from the registration template when displayed at the end of the registration process.";
                 _ceAdditionalConfirmationDetails.EditorMode = CodeEditorMode.Html;
                 _ceAdditionalConfirmationDetails.EditorTheme = CodeEditorTheme.Rock;
                 _ceAdditionalConfirmationDetails.EditorHeight = "100";

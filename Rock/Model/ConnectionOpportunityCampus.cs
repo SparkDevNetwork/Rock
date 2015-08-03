@@ -66,7 +66,6 @@ namespace Rock.Model
         /// <value>
         /// The connection opportunity.
         /// </value>
-        [DataMember]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>
@@ -75,7 +74,6 @@ namespace Rock.Model
         /// <value>
         /// The campus.
         /// </value>
-        [DataMember]
         public virtual Campus Campus { get; set; }
 
         #endregion

@@ -14,7 +14,7 @@
             <asp:HiddenField ID="hfRegistrationTemplateId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-file-o"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="fa fa-clipboard"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
                 
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />

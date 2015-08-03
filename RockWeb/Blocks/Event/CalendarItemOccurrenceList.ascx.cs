@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Detail Page", "The page to view linkage details", true, "", "", 0 )]
     [LinkedPage( "Registration Instance Page", "The page to view registration details", true, "", "", 1 )]
     [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 2 )]
+    [LinkedPage( "Content Item Detail Page", "The page for viewing details about a content item", true, "", "", 3 )]
     public partial class CalendarItemOccurrenceList : RockBlock, ISecondaryBlock
     {
         #region Properties
@@ -393,6 +394,7 @@ namespace RockWeb.Blocks.Event
                         RegistrationInstance = c.EventItemOccurrence.Linkages.Any() ? c.EventItemOccurrence.Linkages.FirstOrDefault().RegistrationInstance : null,
                         GroupId = c.EventItemOccurrence.Linkages.Any() ? c.EventItemOccurrence.Linkages.FirstOrDefault().GroupId : (int?)null,
                         Group = c.EventItemOccurrence.Linkages.Any() ? c.EventItemOccurrence.Linkages.FirstOrDefault().Group : null,
+                        ContentItems = FormatContentItems( c.EventItemOccurrence.ContentChannelItems.Select( i => i.ContentChannelItem ).ToList() ),
                         Contact = c.EventItemOccurrence.ContactPersonAlias != null ? c.EventItemOccurrence.ContactPersonAlias.Person.FullName : "",
                         Phone = c.EventItemOccurrence.ContactPhone,
                         Email = c.EventItemOccurrence.ContactEmail,
@@ -404,6 +406,19 @@ namespace RockWeb.Blocks.Event
             {
                 pnlEventCalendarCampusItems.Visible = false;
             }
+        }
+
+        private string FormatContentItems( IEnumerable<ContentChannelItem> items )
+        {
+            var qryParams = new Dictionary<string, string> { { "ContentItemId", "" }};
+
+            var itemLinks = new List<string>();
+            foreach( var item in items )
+            {
+                qryParams["ContentItemId"] = item.Id.ToString();
+                itemLinks.Add( string.Format( "<a href='{0}'>{1}</a> ({2})", LinkedPageUrl( "ContentItemDetailPage", qryParams ), item.Title, item.ContentChannelType.Name ) );
+            }
+            return itemLinks.AsDelimited( "<br/>" );
         }
 
         #endregion

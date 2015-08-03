@@ -3955,7 +3955,6 @@ fieldset .actions {
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transform: translate(0, 0);
   content: "\f093";
   padding-right: .25em;
 }
@@ -5066,16 +5065,20 @@ a.help {
   font-weight: 900;
 }
 .badge-danger {
-  background-color: #bb5454;
+  background-color: #bb5454 !important;
+  color: #fff !important;
 }
 .badge-warning {
-  background-color: #ecc759;
+  background-color: #ecc759 !important;
+  color: #fff !important;
 }
 .badge-success {
-  background-color: #5c9e7d;
+  background-color: #5c9e7d !important;
+  color: #fff !important;
 }
 .badge-info {
-  background-color: #4099ad;
+  background-color: #4099ad !important;
+  color: #fff !important;
 }
 .popover-content header {
   margin: -9px -14px 8px -14px;

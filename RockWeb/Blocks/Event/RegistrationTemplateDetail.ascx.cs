@@ -99,17 +99,35 @@ namespace RockWeb.Blocks.Event
 </p>
 {% endif %}
 
-{{ RegistrationInstance.AdditionalConfirmationDetails }}
+<p>
+    {{ RegistrationInstance.AdditionalConfirmationDetails }}
+</p>
 
 <p>
     If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}
-", "", 0 )]
+{{ 'Global' | Attribute:'EmailFooter' }}", "", 0 )]
 
-    [CodeEditorField( "Default Reminder Email", "The default Reminder Email Template value to use for a new template", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
-", "", 1 )]
+    [CodeEditorField( "Default Reminder Email", "The default Reminder Email Template value to use for a new template", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
+
+<p>
+    {{ Registration.Registrants | Map:'NickName' | Join:', ' | ReplaceLast:',',' and' }},
+</p>
+
+<p>
+    Just a reminder that you are registered for {{ RegistrationInstance.Name }}.
+</p>
+
+<p>
+    {{ RegistrationInstance.AdditionalReminderDetails }}
+</p>
+
+<p>
+    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+</p>
+
+{{ 'Global' | Attribute:'EmailFooter' }}", "", 1 )]
 
     [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}

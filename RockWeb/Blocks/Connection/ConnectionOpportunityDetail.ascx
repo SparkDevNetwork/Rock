@@ -37,6 +37,8 @@
                     <Rock:NotificationBox ID="nbNotAllowedToEdit" runat="server" NotificationBoxType="Danger" Visible="false"
                         Text="You are not authorized to save opportunities for the configured connection type." />
 
+                    <Rock:NotificationBox ID="nbInvalidGroupTypes" runat="server" NotificationBoxType="Danger" Visible="false" Heading="Groups" />
+
                     <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                     <div id="pnlEditDetails" runat="server">
@@ -80,7 +82,7 @@
 
                         <Rock:PanelWidget ID="wpConnectionOpportunityGroups" runat="server" Title="Groups">
                             <div class="grid">
-                                <Rock:Grid ID="gConnectionOpportunityGroups" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group">
+                                <Rock:Grid ID="gConnectionOpportunityGroups" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group" ShowConfirmDeleteDialog="false">
                                     <Columns>
                                         <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                                         <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
@@ -95,10 +97,10 @@
                                 <Rock:GroupPicker ID="gpConnectorGroup" runat="server" Label="Global Connector Group" Help="The group in charge of managing requests for this opportunity" />
                             </div>
                             <div class="grid">
-                                <Rock:Grid ID="gConnectionOpportunityGroupCampuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Campus Connector Group">
+                                <Rock:Grid ID="gConnectionOpportunityGroupCampuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Campus Connector Group" ShowConfirmDeleteDialog="false">
                                     <Columns>
-                                        <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
                                         <Rock:RockBoundField DataField="Group" HeaderText="Group" />
+                                        <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
                                         <Rock:EditField OnClick="gConnectionOpportunityGroupCampuses_Edit" />
                                         <Rock:DeleteField OnClick="gConnectionOpportunityGroupCampuses_Delete" />
                                     </Columns>
@@ -168,14 +170,21 @@
         <Rock:ModalDialog ID="dlgGroupDetails" runat="server" ValidationGroup="GroupDetails" SaveButtonText="Add" OnSaveClick="dlgGroupDetails_SaveClick" Title="Select Group">
             <Content>
                 <asp:ValidationSummary ID="valGroupDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="GroupDetails" />
-                <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Select Group" ValidationGroup="GroupDetails" />
+                <Rock:NotificationBox ID="nbInvalidGroupType" runat="server" NotificationBoxType="Danger" Visible="false" Heading="Group Type" />
+                <Rock:GroupPicker ID="gpOpportunityGroup" runat="server" Label="Select Group" ValidationGroup="GroupDetails" />
             </Content>
         </Rock:ModalDialog>
 
         <Rock:ModalDialog ID="dlgGroupCampusDetails" runat="server" ValidationGroup="CampusDetails" SaveButtonText="Add" OnSaveClick="dlgGroupCampusDetails_SaveClick" Title="Select Group">
             <Content>
-                <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" ValidationGroup="CampusDetails" Required="true" />
-                <Rock:GroupPicker ID="gpGroup" runat="server" Label="Connector Group" ValidationGroup="CampusDetails" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:GroupPicker ID="gpGroup" runat="server" Label="Connector Group" ValidationGroup="CampusDetails" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" ValidationGroup="CampusDetails" Required="true" />
+                    </div>
+                </div>
             </Content>
         </Rock:ModalDialog>
 

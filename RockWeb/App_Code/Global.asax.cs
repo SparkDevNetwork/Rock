@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Configuration;
 using System.Data.Entity;
 using System.Data.SqlClient;
@@ -29,13 +30,10 @@ using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
-
 using DotLiquid;
-
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
-
 using Rock;
 using Rock.Communication;
 using Rock.Data;
@@ -304,9 +302,10 @@ namespace RockWeb
         {
             if ( string.IsNullOrWhiteSpace( Global.BaseUrl ) )
             {
-                if ( Context.Request.Url != null )
+                var uri = GetPublicFacingUrl( Context.Request );
+                if ( uri != null )
                 {
-                    Global.BaseUrl = string.Format( "{0}://{1}/", Context.Request.Url.Scheme, Context.Request.Url.Authority );
+                    Global.BaseUrl = string.Format( "{0}://{1}/", uri.Scheme, uri.Authority );
                 }
             }
 
@@ -773,7 +772,7 @@ namespace RockWeb
 
                         if ( sendNotification )
                         {
-                            Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                            Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients, string.Empty, string.Empty, false );
                         }
                     }
                 }
@@ -805,6 +804,49 @@ namespace RockWeb
         } 
 
         #region Static Methods
+
+        /// <summary>
+        /// Gets the public facing URL.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        internal static Uri GetPublicFacingUrl( HttpRequest request )
+        {
+            if ( request.Url != null )
+            {
+                // http://stackoverflow.com/questions/7795910/how-do-i-get-url-action-to-use-the-right-port-number
+                // Due to URL rewriting, cloud computing (i.e. Azure)
+                // and web farms, etc., we have to be VERY careful about what
+                // we consider the incoming URL.  We want to see the URL as it would
+                // appear on the public-facing side of the hosting web site.
+                // HttpRequest.Url gives us the internal URL in a cloud environment,
+                // So we use a variable that gives us the public URL:
+                var serverVariables = request.ServerVariables;
+                if ( serverVariables != null && serverVariables["HTTP_HOST"] != null )
+                {
+                    //ErrorUtilities.VerifySupported(request.Url.Scheme == Uri.UriSchemeHttps || request.Url.Scheme == Uri.UriSchemeHttp, "Only HTTP and HTTPS are supported protocols.");
+                    string scheme = serverVariables["HTTP_X_FORWARDED_PROTO"] ?? request.Url.Scheme;
+                    Uri hostAndPort = new Uri( scheme + Uri.SchemeDelimiter + serverVariables["HTTP_HOST"] );
+                    UriBuilder publicRequestUri = new UriBuilder( request.Url );
+                    publicRequestUri.Scheme = scheme;
+                    publicRequestUri.Host = hostAndPort.Host;
+                    publicRequestUri.Port = hostAndPort.Port; 
+                    return publicRequestUri.Uri;
+                }
+
+                // Failover to the method that works for non-web farm enviroments.
+                // We use Request.Url for the full path to the server, and modify it
+                // with Request.RawUrl to capture both the cookieless session "directory" if it exists
+                // and the original path in case URL rewriting is going on.  We don't want to be
+                // fooled by URL rewriting because we're comparing the actual URL with what's in
+                // the return_to parameter in some cases.
+                // Response.ApplyAppPathModifier(builder.Path) would have worked for the cookieless
+                // session, but not the URL rewriting problem.
+                return new Uri( request.Url, request.RawUrl );
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Adds the call back.

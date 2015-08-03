@@ -10,7 +10,7 @@
                 <div class="panel panel-block">
 
                     <div class="panel-heading clearfix">
-                        <h1 class="panel-title pull-left">Event Occurrences</h1>
+                        <h1 class="panel-title pull-left"><i class="fa fa-clock-o"></i> Event Occurrences</h1>
                     </div>
 
                     <div class="panel-body">
@@ -28,6 +28,9 @@
                                     <Rock:RockBoundField DataField="Location" HeaderText="Location" />
                                     <asp:HyperLinkField HeaderText="Registration" DataTextField="RegistrationInstance" DataNavigateUrlFields="RegistrationInstanceId" />
                                     <asp:HyperLinkField HeaderText="Group" DataTextField="Group" DataNavigateUrlFields="GroupID" />
+                                    <Rock:RockTemplateFieldUnselected HeaderText="Content Items">
+                                        <ItemTemplate><%# Eval("ContentItems") %></ItemTemplate>
+                                    </Rock:RockTemplateFieldUnselected>
                                     <Rock:RockBoundField DataField="Contact" HeaderText="Contact" />
                                     <Rock:RockBoundField DataField="Phone" HeaderText="Phone" />
                                     <Rock:RockBoundField DataField="Email" HeaderText="Email" />

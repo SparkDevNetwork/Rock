@@ -130,7 +130,19 @@ namespace Rock.Reporting
 
         /// <summary>
         /// Creates the child controls.
+        /// Implement this version of CreateChildControls if your DataFilterComponent supports different FilterModes
         /// </summary>
+        /// <returns></returns>
+        public virtual Control[] CreateChildControls( Type entityType, FilterField filterControl, FilterMode filterMode )
+        {
+            return CreateChildControls( entityType, filterControl );
+        }
+
+        /// <summary>
+        /// Implement this version of CreateChildControls if your DataFilterComponent works the same in all filter modes
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="filterControl">The filter control.</param>
         /// <returns></returns>
         public virtual Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
@@ -147,6 +159,21 @@ namespace Rock.Reporting
 
         /// <summary>
         /// Renders the controls.
+        /// Implement this version of RenderControls if your DataFilterComponent supports different FilterModes
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="writer">The writer.</param>
+        /// <param name="controls">The controls.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        public virtual void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls, FilterMode filterMode )
+        {
+            RenderControls( entityType, filterControl, writer, controls );
+        }
+
+        /// <summary>
+        /// Renders the controls.
+        /// Implement this version of RenderControls if your DataFilterComponent works the same in all FilterModes
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="filterControl">The filter control.</param>
@@ -163,6 +190,20 @@ namespace Rock.Reporting
 
         /// <summary>
         /// Gets the selection.
+        /// Implement this version of GetSelection if your DataFilterComponent supports different FilterModes
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="controls">The controls.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public virtual string GetSelection( Type entityType, Control[] controls, FilterMode filterMode )
+        {
+            return GetSelection( entityType, controls );
+        }
+
+        /// <summary>
+        /// Gets the selection.
+        /// Implement this version of GetSelection if your DataFilterComponent works the same in all FilterModes
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
@@ -176,6 +217,20 @@ namespace Rock.Reporting
 
         /// <summary>
         /// Sets the selection.
+        /// Implement this version of SetSelection if your DataFilterComponent supports different FilterModes
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="controls">The controls.</param>
+        /// <param name="selection">The selection.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        public virtual void SetSelection( Type entityType, Control[] controls, string selection, FilterMode filterMode )
+        {
+            SetSelection( entityType, controls, selection );
+        }
+
+        /// <summary>
+        /// Sets the selection.
+        /// Implement this version of SetSelection if your DataFilterComponent works the same in all FilterModes
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
@@ -189,9 +244,10 @@ namespace Rock.Reporting
                 ( (TextBox)controls[1] ).Text = options[1];
             }
         }
-
+        
         /// <summary>
         /// Gets the expression.
+        /// Implement this version of GetExpression if your DataFilterComponent works the same in all FilterModes
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="serviceInstance">The service instance.</param>
@@ -204,13 +260,9 @@ namespace Rock.Reporting
 
         #region Protected Methods
 
-        
-
         #endregion
 
         #region Static Properties
-
-        
 
         /// <summary>
         /// Registers Javascript to hide/show .js-filter-control child elements of a .js-filter-compare dropdown
@@ -225,4 +277,27 @@ namespace Rock.Reporting
 
         #endregion
     }
+
+
+    #region Enums
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum FilterMode
+    {
+        /// <summary>
+        /// Render the UI and process the filter as a simple filter
+        /// This mode can be set if the filter just needs to be simple with minimal UI (like on a public page)
+        /// </summary>
+        SimpleFilter,
+
+        /// <summary>
+        /// Render and process as an advanced filter 
+        /// This will be the mode when configuring as a Data Filter
+        /// </summary>
+        AdvancedFilter
+    }
+
+    #endregion
 }

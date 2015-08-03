@@ -86,45 +86,7 @@ namespace Rock.Jobs
                     var results = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, personQry, groupRequirement.GroupRoleId );
                     foreach ( var result in results )
                     {
-                        var groupMemberRequirement = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.PersonId == result.PersonId && a.GroupRequirementId == result.GroupRequirement.Id ).FirstOrDefault();
-                        if ( groupMemberRequirement == null )
-                        {
-                            var groupMemberId = groupMemberQry.Where( a => a.PersonId == result.PersonId ).Select( a => a.Id ).FirstOrDefault();
-                            if ( groupMemberId > 0 )
-                            {
-                                groupMemberRequirement = new GroupMemberRequirement();
-                                groupMemberRequirement.GroupMemberId = groupMemberId;
-                                groupMemberRequirement.GroupRequirementId = groupRequirement.Id;
-                                groupMemberRequirementService.Add( groupMemberRequirement );
-                            }
-                        }
-
-                        groupMemberRequirement.LastRequirementCheckDateTime = currentDateTime;
-
-                        if ( result.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
-                        {
-                            // they meet the requirement so update the Requirement Met Date/Time
-                            groupMemberRequirement.RequirementMetDateTime = currentDateTime;
-                        }
-                        else
-                        {
-                            // they don't meet the requirement so set the Requirement Met Date/Time to null
-                            groupMemberRequirement.RequirementMetDateTime = null;
-                        }
-
-                        if ( result.WarningIncluded )
-                        {
-                            if ( !groupMemberRequirement.RequirementWarningDateTime.HasValue )
-                            {
-                                // they have a warning for the requirement, and didn't have a warning already
-                                groupMemberRequirement.RequirementWarningDateTime = currentDateTime;
-                            }
-                        }
-                        else
-                        {
-                            // no warning, so set to null
-                            groupMemberRequirement.RequirementWarningDateTime = null;
-                        }
+                        groupRequirement.UpdateGroupMemberRequirementResult( rockContext, result.PersonId, result.MeetsGroupRequirement );
 
                         rockContext.SaveChanges();
                     }

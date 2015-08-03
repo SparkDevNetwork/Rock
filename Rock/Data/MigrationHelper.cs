@@ -1293,7 +1293,18 @@ namespace Rock.Data
             );
         }
 
-
+        /// <summary>
+        /// Updates the entity attribute.
+        /// </summary>
+        /// <param name="modelEntityTypeName">Name of the model entity type.</param>
+        /// <param name="componentEntityTypeName">Name of the component entity type.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="key">The key.</param>
         public void UpdateEntityAttribute( string modelEntityTypeName, string  componentEntityTypeName, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid, string key = null )
         {
             EnsureEntityTypeExists( modelEntityTypeName, true, true );
@@ -1421,6 +1432,8 @@ namespace Rock.Data
         /// Ensures the entity type exists by adding it by name if it did not already exist.
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="isEntity">if set to <c>true</c> [is entity].</param>
+        /// <param name="isSecured">if set to <c>true</c> [is secured].</param>
         private void EnsureEntityTypeExists( string entityTypeName, bool isEntity = true, bool isSecured = true )
         {
             // NOTE: If it doesn't exist, add it assuming that IsEntity=True and IsSecured=True.  The framework will correct it if those assumptions are incorrect
@@ -1577,32 +1590,36 @@ namespace Rock.Data
                 DECLARE @AttributeId int
                 SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
 
-                DECLARE @TheValue NVARCHAR(MAX) = '{2}'
-
-                -- If appendToExisting (and any current value exists), get the current value before we delete it...
-                IF 1 = {3} AND EXISTS (SELECT 1 FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId )
+                IF @BlockId IS NOT NULL AND @AttributeId IS NOT NULL
                 BEGIN
-                    SET @TheValue = (SELECT [Value] FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId )
-                    -- If the new value is not in the old value, append it.
-                    IF CHARINDEX( '{2}', @TheValue ) = 0
+
+                    DECLARE @TheValue NVARCHAR(MAX) = '{2}'
+
+                    -- If appendToExisting (and any current value exists), get the current value before we delete it...
+                    IF 1 = {3} AND EXISTS (SELECT 1 FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId )
                     BEGIN
-                        SET @TheValue = (SELECT @TheValue + ',' + '{2}' )
+                        SET @TheValue = (SELECT [Value] FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId )
+                        -- If the new value is not in the old value, append it.
+                        IF CHARINDEX( '{2}', @TheValue ) = 0
+                        BEGIN
+                            SET @TheValue = (SELECT @TheValue + ',' + '{2}' )
+                        END
                     END
+
+                    -- Delete existing attribute value first (might have been created by Rock system)
+                    DELETE [AttributeValue]
+                    WHERE [AttributeId] = @AttributeId
+                    AND [EntityId] = @BlockId
+
+                    INSERT INTO [AttributeValue] (
+                        [IsSystem],[AttributeId],[EntityId],
+                        [Value],
+                        [Guid])
+                    VALUES(
+                        1,@AttributeId,@BlockId,
+                        @TheValue,
+                        NEWID())
                 END
-
-                -- Delete existing attribute value first (might have been created by Rock system)
-                DELETE [AttributeValue]
-                WHERE [AttributeId] = @AttributeId
-                AND [EntityId] = @BlockId
-
-                INSERT INTO [AttributeValue] (
-                    [IsSystem],[AttributeId],[EntityId],
-                    [Value],
-                    [Guid])
-                VALUES(
-                    1,@AttributeId,@BlockId,
-                    @TheValue,
-                    NEWID())
 ",
                     blockGuid,
                     attributeGuid,
@@ -1627,7 +1644,12 @@ namespace Rock.Data
                 DECLARE @AttributeId int
                 SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
 
-                DELETE [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId
+                IF @BlockId IS NOT NULL AND @AttributeId IS NOT NULL
+                BEGIN
+
+                    DELETE [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId
+
+                END
 ",
                     blockGuid,
                     attributeGuid )

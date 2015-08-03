@@ -180,8 +180,8 @@ namespace RockWeb.Blocks.Event
                     {
                         try
                         {
-                            var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
-                            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues ).ToJson() );
+                            var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                            rFilter.SaveUserPreference( MakeKeyUniqueToEventCalendar( attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                         }
                         catch { }
                     }
@@ -291,7 +291,10 @@ namespace RockWeb.Blocks.Event
         {
             if ( _canEdit )
             {
-                NavigateToLinkedPage( "DetailPage", "EventItemId", 0, "EventCalendarId", _eventCalendar.Id );
+                var qryParams = new Dictionary<string, string>();
+                qryParams.Add( "EventCalendarId", _eventCalendar.Id.ToString() );
+                qryParams.Add( "EventItemId", "0");
+                NavigateToLinkedPage( "DetailPage", qryParams );
             }
         }
 
@@ -308,7 +311,10 @@ namespace RockWeb.Blocks.Event
                 EventItem eventItem = eventItemService.Get( e.RowKeyId );
                 if ( eventItem != null )
                 {
-                    NavigateToLinkedPage( "DetailPage", "EventItemId", eventItem.Id, "EventCalendarId", _eventCalendar.Id );
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams.Add( "EventCalendarId", _eventCalendar.Id.ToString() );
+                    qryParams.Add( "EventItemId", eventItem.Id.ToString() );
+                    NavigateToLinkedPage( "DetailPage", qryParams );
                 }
             }
         }
@@ -413,7 +419,7 @@ namespace RockWeb.Blocks.Event
             {
                 foreach ( var attribute in AvailableAttributes )
                 {
-                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false );
+                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
                     if ( control != null )
                     {
                         if ( control is IRockControl )
@@ -558,7 +564,7 @@ namespace RockWeb.Blocks.Event
                         var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
                         if ( filterControl != null )
                         {
-                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
+                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                             var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
                             if ( expression != null )
                             {

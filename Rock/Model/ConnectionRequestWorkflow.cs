@@ -94,7 +94,6 @@ namespace Rock.Model
         /// <value>
         /// The connection request.
         /// </value>
-        [DataMember]
         public virtual ConnectionRequest ConnectionRequest { get; set; }
 
         /// <summary>
@@ -103,7 +102,6 @@ namespace Rock.Model
         /// <value>
         /// The connection workflow.
         /// </value>
-        [DataMember]
         public virtual ConnectionWorkflow ConnectionWorkflow { get; set; }
 
         /// <summary>
@@ -112,7 +110,6 @@ namespace Rock.Model
         /// <value>
         /// The workflow.
         /// </value>
-        [DataMember]
         public virtual Workflow Workflow { get; set; }
 
         #endregion

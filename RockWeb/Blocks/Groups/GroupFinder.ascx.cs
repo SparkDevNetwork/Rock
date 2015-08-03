@@ -613,13 +613,13 @@ namespace RockWeb.Blocks.Groups
             {
                 if ( ScheduleFilters.Contains( "Day" ) )
                 {
-                    var control = FieldTypeCache.Read( Rock.SystemGuid.FieldType.DAY_OF_WEEK ).Field.FilterControl( null, "filter_dow", false );
+                    var control = FieldTypeCache.Read( Rock.SystemGuid.FieldType.DAY_OF_WEEK ).Field.FilterControl( null, "filter_dow", false, Rock.Reporting.FilterMode.SimpleFilter );
                     AddFilterControl( control, "Day of Week", "The day of week that group meets on." );
                 }
 
                 if ( ScheduleFilters.Contains( "Time" ) )
                 {
-                    var control = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TIME ).Field.FilterControl( null, "filter_time", false );
+                    var control = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TIME ).Field.FilterControl( null, "filter_time", false, Rock.Reporting.FilterMode.SimpleFilter );
                     AddFilterControl( control, "Time of Day", "The time of day that group meets." );
                 }
             }
@@ -628,7 +628,7 @@ namespace RockWeb.Blocks.Groups
             {
                 foreach ( var attribute in AttributeFilters )
                 {
-                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false );
+                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
                     AddFilterControl( control, attribute.Name, attribute.Description );
                 }
             }
@@ -740,7 +740,7 @@ namespace RockWeb.Blocks.Groups
             {
                 var field = FieldTypeCache.Read( Rock.SystemGuid.FieldType.DAY_OF_WEEK ).Field;
 
-                var filterValues = field.GetFilterValues( dowFilterControl, null );
+                var filterValues = field.GetFilterValues( dowFilterControl, null, Rock.Reporting.FilterMode.SimpleFilter );
                 var expression = field.PropertyFilterExpression( null, filterValues, schedulePropertyExpression, "WeeklyDayOfWeek", typeof( DayOfWeek? ) );
                 groupQry = groupQry.Where( groupParameterExpression, expression, null );
             }
@@ -750,7 +750,7 @@ namespace RockWeb.Blocks.Groups
             {
                 var field = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TIME ).Field;
 
-                var filterValues = field.GetFilterValues( timeFilterControl, null );
+                var filterValues = field.GetFilterValues( timeFilterControl, null, Rock.Reporting.FilterMode.SimpleFilter );
                 var expression = field.PropertyFilterExpression( null, filterValues, schedulePropertyExpression, "WeeklyTimeOfDay", typeof( TimeSpan? ) );
                 groupQry = groupQry.Where( groupParameterExpression, expression, null );
             }
@@ -766,7 +766,7 @@ namespace RockWeb.Blocks.Groups
                     var filterControl = phFilterControls.FindControl( "filter_" + attribute.Id.ToString() );
                     if ( filterControl != null )
                     {
-                        var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
+                        var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                         var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
                         if ( expression != null )
                         {

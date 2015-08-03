@@ -52,7 +52,7 @@ namespace Rock.Transactions
             {
                 State = entry.State;
                 ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
-                PersonId = connectionRequest.PersonAlias.PersonId;
+                PersonId = connectionRequest.PersonAlias != null ? connectionRequest.PersonAlias.PersonId : (int?)null;
                 ConnectionState = connectionRequest.ConnectionState;
                 ConnectionStatusId = connectionRequest.ConnectionStatusId;
                 AssignedGroupId = connectionRequest.AssignedGroupId;
@@ -183,11 +183,11 @@ namespace Rock.Transactions
                                                 }
                                                 break;
                                             }
-                                        case ConnectionWorkflowTriggerType.ActivityGroupAssigned:
+                                        case ConnectionWorkflowTriggerType.GroupAssigned:
                                             {
                                                 if ( State == EntityState.Modified && QualifiersMatch( rockContext, connectionWorkflow, AssignedGroupId ) )
                                                 {
-                                                    LaunchWorkflow( rockContext, connectionWorkflow, "Activity Group Assigned" );
+                                                    LaunchWorkflow( rockContext, connectionWorkflow, "Group Assigned" );
                                                 }
                                                 break;
                                             }
