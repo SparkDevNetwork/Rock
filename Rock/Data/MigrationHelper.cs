@@ -309,6 +309,35 @@ namespace Rock.Data
             DeleteByGuid( guid, "BlockType" );
         }
 
+        /// <summary>
+        /// Renames the type of the block.
+        /// </summary>
+        /// <param name="oldPath">The old path.</param>
+        /// <param name="newPath">The new path.</param>
+        /// <param name="newCategory">The new category.</param>
+        /// <param name="newName">The new name.</param>
+        /// <param name="newDescription">The new description.</param>
+        public void RenameBlockType( string oldPath, string newPath, string newCategory = null, string newName = null, string newDescription = null )
+        {
+            Migration.Sql( string.Format( @"
+                DELETE FROM [BlockType] 
+	            WHERE [Path] = '{1}'
+
+                UPDATE [BlockType] SET 
+		            [Path] = '{1}', 
+		            [Category] = CASE WHEN '{2}' <> '' THEN '{2}' ELSE [Category] END,
+		            [Name] = CASE WHEN '{3}' <> '' THEN '{3}' ELSE [Name] END,
+                    [Description] = CASE WHEN '{4}' <> '' THEN '{4}' ELSE [Description] END
+	            WHERE [Path] = '{0}'
+",
+                oldPath ?? "",
+                newPath ?? "",
+                newCategory ?? "",
+                newName ?? "",
+                newDescription ?? ""
+            ) );
+        }
+
         #endregion
 
         #region Site Methods
