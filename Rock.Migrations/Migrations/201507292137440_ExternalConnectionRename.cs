@@ -34,13 +34,22 @@ namespace Rock.Migrations
             //
 
             // External Connection Opportunity Detail -> Connection Opportunity Detail Lava
-            Sql( @"UPDATE [BlockType] SET [Path] = '~/Blocks/Connection/ConnectionOpportunityDetailLava.ascx', [Name] = 'Connection Opportunity Detail Lava' WHERE [Guid] = 'B8CA0630-29E7-41B9-B4F1-EB6DE043EBDC'" );
+            RockMigrationHelper.RenameBlockType(
+                "~/Blocks/Connection/ExternalConnectionOpportunityDetail.ascx",
+                "~/Blocks/Connection/ConnectionOpportunityDetailLava.ascx",
+                null, "Connection Opportunity Detail Lava" );
 
             // External Opportunity Search -> Connection Opportunity Search
-            Sql( @"UPDATE [BlockType] SET [Path] = '~/Blocks/Connection/ConnectionOpportunitySearch.ascx', [Name] = 'Connection Opportunity Search' WHERE [Guid] = 'C0D58DEE-D266-4AA8-8750-414A3CC26C07'" );
+            RockMigrationHelper.RenameBlockType(
+                "~/Blocks/Connection/ExternalOpportunitySearch.ascx",
+                "~/Blocks/Connection/ConnectionOpportunitySearch.ascx",
+                null, "Connection Opportunity Search" );
 
             // External Connection Opportunity Signup -> Connection Opportunity Signup
-            Sql( @"UPDATE [BlockType] SET [Path] = '~/Blocks/Connection/ConnectionOpportunitySignup.ascx', [Name] = 'Connection Opportunity Signup' WHERE [Guid] = 'C7FCE3B7-704B-43C0-AF96-5A70EB7F70D9'" );
+            RockMigrationHelper.RenameBlockType(
+                "~/Blocks/Connection/ExternalConnectionOpportunitySignup.ascx",
+                "~/Blocks/Connection/ConnectionOpportunitySignup.ascx",
+                null, "Connection Opportunity Signup" ); 
 
             RockMigrationHelper.AddBlockTypeAttribute( "B8CA0630-29E7-41B9-B4F1-EB6DE043EBDC", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Set Page Title", "SetPageTitle", "", "Determines if the block should set the page title with the package name.", 0, @"False", "754A1F8A-6AEB-4DE8-BF27-3C4EB5ED24FC" );
 
