@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Event
 
                     // Set the names based on current object values
                     lCalendarName.Text = eventCalendar != null ? eventCalendar.Name : "Calendar";
-                    lCalendarItemName.Text = eventItem != null ? eventItem.Name : "Calendar Item";
+                    lCalendarItemName.Text = eventItem != null ? eventItem.Name : "Event";
                     lEventOccurrenceName.Text = eventItemOccurrence != null ?
                         ( eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All Campuses" ) :
                         "Event Occurrence";

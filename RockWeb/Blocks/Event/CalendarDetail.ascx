@@ -52,13 +52,13 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.EventCalendar, Rock" PropertyName="IconCssClass" />
+                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.EventCalendar, Rock" PropertyName="IconCssClass" Label="Calendar CSS Class" />
                         </div>
                         <div class="col-md-6">
                         </div>
                     </div>
 
-                    <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Calendar Item Attributes">
+                    <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Event Attributes">
                         <div class="grid">
                             <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Attribute" ShowConfirmDeleteDialog="false">
                                 <Columns>
