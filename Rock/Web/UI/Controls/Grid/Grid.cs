@@ -2330,7 +2330,7 @@ namespace Rock.Web.UI.Controls
                     bool useHeaderNamesIfAvailable = item.GetType().Assembly.IsDynamic;
                     
                     var idVal = idProp.GetValue( item ) as int?;
-                    if ( idVal.HasValue && selectedKeys.Contains( idVal.Value ) )
+                    if ( idVal.HasValue && selectedKeys.Contains( idVal.Value ) && !itemMergeFieldsList.Keys.Contains( idVal.Value ) )
                     {
                         var mergeFields = new Dictionary<string, object>();
                         foreach ( var mergeProperty in additionalMergeProperties )
@@ -2351,7 +2351,7 @@ namespace Rock.Web.UI.Controls
                             mergeFields.AddOrIgnore( mergeFieldKey, objValue );
                         }
 
-                        itemMergeFieldsList.Add( idVal.Value, mergeFields );
+                        itemMergeFieldsList.AddOrIgnore( idVal.Value, mergeFields );
                     }
                 }
             }
