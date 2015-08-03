@@ -206,7 +206,7 @@ namespace Rock.Web.UI.Controls
                         if ( !string.IsNullOrWhiteSpace( args.Value ) )
                         {
 
-                            filtersHtml.AppendLine( "<div>" );
+                            filtersHtml.AppendLine( "<div class='col-md-3'>" );
                             filtersHtml.AppendLine( string.Format( "<label>{0}:</label> {1}", args.Name, args.Value ) );
                             filtersHtml.AppendLine( "</div>" );
                         }
@@ -217,7 +217,9 @@ namespace Rock.Web.UI.Controls
                 {
                     writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
                     writer.Write( "<h4>Enabled Filters</h4>" );
+                    writer.Write( "<div class='row'>" );
                     writer.Write( filtersHtml.ToString() );
+                    writer.Write( "</div>" );
                     writer.RenderEndTag();
                 }
 
