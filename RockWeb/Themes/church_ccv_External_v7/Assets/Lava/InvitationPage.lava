@@ -19,7 +19,7 @@
 
   <div class="row">
     <div class="col-md-6">
-      <div class="vimeothumb js-vimeothumb margin-b-lg" data-vimeo-id="{{ Context.Campus.CampusTourVimeoId }}"></div>
+      <div class="vimeothumb js-vimeothumb margin-b-lg" data-vimeo-id="{{ Context.Campus | Attribute: 'CampusTourVimeoID' }}"></div>
     </div>
     <div class="col-md-6">
       <div class="panel panel-default margin-b-lg">
