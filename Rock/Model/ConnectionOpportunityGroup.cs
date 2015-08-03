@@ -66,7 +66,6 @@ namespace Rock.Model
         /// <value>
         /// The connection opportunity.
         /// </value>
-        [DataMember]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>

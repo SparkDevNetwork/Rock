@@ -107,6 +107,18 @@ namespace Rock.Model
         public virtual GroupMember GroupMember { get; set; }
 
         /// <summary>
+        /// Gets the person identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
+        [NotMapped]
+        public virtual int? PersonId
+        {
+            get { return PersonAlias != null ? PersonAlias.PersonId : (int?)null; }
+        }
+
+        /// <summary>
         /// Gets or sets the fees.
         /// </summary>
         /// <value>

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -28,12 +29,11 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
+    /// Field Type used to display a list of options as checkboxes.  Value is saved as a comma-delimited list
     /// </summary>
     [Serializable]
     public class SelectMultiFieldType : FieldType
     {
-
         #region Configuration
 
         /// <summary>
@@ -74,13 +74,19 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( "values", new ConfigurationValue( "Values", 
-                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.", "" ) );
+            var configurationValue = new ConfigurationValue(
+                "Values",
+                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.",
+                string.Empty );
+
+            configurationValues.Add( "values", configurationValue );
 
             if ( controls != null && controls.Count == 1 )
             {
                 if ( controls[0] != null && controls[0] is TextBox )
-                    configurationValues["values"].Value = ( ( TextBox )controls[0] ).Text;
+                {
+                    configurationValues["values"].Value = ( (TextBox)controls[0] ).Text;
+                }
             }
 
             return configurationValues;
@@ -94,8 +100,10 @@ namespace Rock.Field.Types
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( controls != null && controls.Count == 1 && configurationValues != null &&
-                controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey("values"))
-                    ( ( TextBox )controls[0] ).Text = configurationValues["values"].Value;
+                controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey( "values" ) )
+            {
+                ( (TextBox)controls[0] ).Text = configurationValues["values"].Value;
+            }
         }
 
         #endregion
@@ -115,7 +123,7 @@ namespace Rock.Field.Types
             if ( configurationValues.ContainsKey( "values" ) )
             {
                 var listItems = configurationValues["values"].Value.GetListItems();
-                if (listItems != null)
+                if ( listItems != null )
                 {
                     var valueList = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                     return listItems.Where( a => valueList.Contains( a.Value ) ).ToList().AsDelimited( "," );
@@ -158,7 +166,6 @@ namespace Rock.Field.Types
                         }
                     }
                 }
-
                 else
                 {
                     foreach ( var listItem in listSource.GetListItems() )
@@ -188,10 +195,15 @@ namespace Rock.Field.Types
 
             if ( control != null && control is CheckBoxList )
             {
-                CheckBoxList cbl = ( CheckBoxList )control;
+                CheckBoxList cbl = (CheckBoxList)control;
                 foreach ( ListItem li in cbl.Items )
+                {
                     if ( li.Selected )
+                    {
                         values.Add( li.Value );
+                    }
+                }
+
                 return values.AsDelimited<string>( "," );
             }
 
@@ -215,7 +227,9 @@ namespace Rock.Field.Types
                 {
                     CheckBoxList cbl = (CheckBoxList)control;
                     foreach ( ListItem li in cbl.Items )
+                    {
                         li.Selected = values.Contains( li.Value );
+                    }
                 }
             }
         }
@@ -223,45 +237,6 @@ namespace Rock.Field.Types
         #endregion
 
         #region Filter Control
-
-        /// <summary>
-        /// Gets the filter value control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
-        {
-            var ddlList = new RockDropDownList();
-            ddlList.ID = string.Format( "{0}_ddlList", id );
-            ddlList.AddCssClass( "js-filter-control" );
-
-            if ( !required )
-            {
-                ddlList.Items.Add( new ListItem() );
-            }
-
-            var control = EditControl( configurationValues, id );
-            if ( control is RockCheckBoxList )
-            {
-                foreach( ListItem li in ((RockCheckBoxList)control).Items)
-                {
-                    ddlList.Items.Add( new ListItem( li.Text, li.Value ) );
-                }
-            }
-
-            return ddlList;
-        }
-
-        /// <summary>
-        /// Determines whether this filter has a filter control
-        /// </summary>
-        /// <returns></returns>
-        public override bool HasFilterControl()
-        {
-            return true;
-        }
 
         /// <summary>
         /// Gets the type of the filter comparison.
@@ -278,6 +253,28 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Gets the filter value control.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
+        {
+            // call the base which render SelectMulti's CheckBoxList
+            return base.FilterValueControl( configurationValues, id, required, filterMode );
+        }
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return true;
+        }
+
         /// Gets the filter value value.
         /// </summary>
         /// <param name="control">The control.</param>
@@ -285,12 +282,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is RockDropDownList )
-            {
-                return ( (RockDropDownList)control ).SelectedValue;
-            }
-
-            return string.Empty;
+            // call the base which will get SelectMulti's CheckBoxList values
+            return base.GetFilterValueValue( control, configurationValues );
         }
 
         /// <summary>
@@ -301,13 +294,75 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( control != null && control is RockDropDownList )
+            // call the base which will set SelectMulti's CheckBoxList values
+            base.SetFilterValueValue( control, configurationValues, value );
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an entity property value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
+        {
+            // probably won't happen since MultiFieldType would only be a Attribute FieldType
+            return base.PropertyFilterExpression( configurationValues, filterValues, parameterExpression, propertyName, propertyType );
+        }
+
+        /// <summary>
+        /// Geta a filter expression for an attribute value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
+        {
+            Expression comparison = null;
+            if ( filterValues.Count > 1 )
             {
-                ( (RockDropDownList)control ).SetValue( value );
+                //// OR up the where clauses for each of the selected values 
+                // and make sure to wrap commas around things so we don't collide with partial matches
+                // so it'll do something like this:
+                //
+                // WHERE ',' + Value + ',' like '%,bacon,%'
+                // OR ',' + Value + ',' like '%,lettuce,%'
+                // OR ',' + Value + ',' like '%,tomato,%'
+
+                // should be either "Contains" or "Not Contains"
+                ComparisonType comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains );
+
+                List<string> selectedValues = filterValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+                foreach ( var selectedValue in selectedValues )
+                {
+                    var searchValue = "," + selectedValue + ",";
+                    var qryToExtract = new AttributeValueService( new Data.RockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
+                    var valueExpression = FilterExpressionExtractor.Extract<AttributeValue>( qryToExtract, parameterExpression, "a" );
+
+                    if ( comparisonType != ComparisonType.Contains )
+                    {
+                        valueExpression = Expression.Not( valueExpression );
+                    }
+
+                    if ( comparison == null )
+                    {
+                        comparison = valueExpression;
+                    }
+                    else
+                    {
+                        comparison = Expression.Or( comparison, valueExpression );
+                    }
+                }
             }
+
+            return comparison;
         }
 
         #endregion
-
     }
 }

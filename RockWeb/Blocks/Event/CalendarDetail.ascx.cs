@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
 
@@ -47,6 +48,7 @@ namespace RockWeb.Blocks.Event
         #region Properties
 
         private List<Attribute> AttributesState { get; set; }
+        private Dictionary<Guid, string> ContentChannelsState { get; set; }
 
         #endregion
 
@@ -69,6 +71,8 @@ namespace RockWeb.Blocks.Event
             {
                 AttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
             }
+
+            ContentChannelsState = ViewState["ContentChannelsState"] as Dictionary<Guid, string>;
         }
 
         /// <summary>
@@ -85,6 +89,12 @@ namespace RockWeb.Blocks.Event
             gAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gAttributes.GridRebind += gAttributes_GridRebind;
             gAttributes.GridReorder += gAttributes_GridReorder;
+
+            gContentChannels.DataKeyNames = new string[] { "Guid" };
+            gContentChannels.Actions.ShowAdd = UserCanAdministrate;
+            gContentChannels.Actions.AddClick += gContentChannels_Add;
+            gContentChannels.EmptyDataText = Server.HtmlEncode( None.Text );
+            gContentChannels.GridRebind += gContentChannels_GridRebind;
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the calendar items! Are you sure you wish to continue with the delete?');", EventCalendar.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.EventCalendar ) ).Id;
@@ -126,6 +136,8 @@ namespace RockWeb.Blocks.Event
             };
 
             ViewState["AttributesState"] = JsonConvert.SerializeObject( AttributesState, Formatting.None, jsonSetting );
+
+            ViewState["ContentChannelsState"] = ContentChannelsState;
 
             return base.SaveViewState();
         }
@@ -179,7 +191,7 @@ namespace RockWeb.Blocks.Event
             var eventCalendar = new EventCalendarService( rockContext ).Get( hfEventCalendarId.Value.AsInteger() );
 
             LoadStateDetails( eventCalendar, rockContext );
-            ShowEditDetails( eventCalendar );
+            ShowEditDetails( eventCalendar, rockContext );
         }
 
         /// <summary>
@@ -231,6 +243,8 @@ namespace RockWeb.Blocks.Event
             using ( var rockContext = new RockContext() )
             {
                 EventCalendarService eventCalendarService = new EventCalendarService( rockContext );
+                EventCalendarContentChannelService eventCalendarContentChannelService = new EventCalendarContentChannelService( rockContext );
+                ContentChannelService contentChannelService = new ContentChannelService( rockContext );
                 AttributeService attributeService = new AttributeService( rockContext );
                 AttributeQualifierService qualifierService = new AttributeQualifierService( rockContext );
 
@@ -260,6 +274,35 @@ namespace RockWeb.Blocks.Event
                 // need WrapTransaction due to Attribute saves
                 rockContext.WrapTransaction( () =>
                 {
+                    rockContext.SaveChanges();
+
+                    var dbChannelGuids = eventCalendarContentChannelService.Queryable()
+                        .Where( c => c.EventCalendarId == eventCalendar.Id )
+                        .Select( c => c.Guid )
+                        .ToList();
+
+                    var uiChannelGuids = ContentChannelsState.Select( c => c.Key ).ToList();
+
+                    var toDelete = eventCalendarContentChannelService
+                        .Queryable()
+                        .Where( c => 
+                            dbChannelGuids.Contains( c.Guid ) &&
+                            !uiChannelGuids.Contains( c.Guid ));
+
+                    eventCalendarContentChannelService.DeleteRange( toDelete );
+                    contentChannelService.Queryable()
+                        .Where( c =>
+                            uiChannelGuids.Contains( c.Guid ) &&
+                            !dbChannelGuids.Contains( c.Guid ) )
+                        .ToList()
+                        .ForEach( c =>
+                        {
+                            var eventCalendarContentChannel = new EventCalendarContentChannel();
+                            eventCalendarContentChannel.EventCalendarId = eventCalendar.Id;
+                            eventCalendarContentChannel.ContentChannelId = c.Id;
+                            eventCalendarContentChannelService.Add( eventCalendarContentChannel );
+                        } );
+
                     rockContext.SaveChanges();
 
                     /* Save Attributes */
@@ -448,6 +491,60 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
+        #region Content Channel Grid
+
+        /// <summary>
+        /// Handles the Add event of the gContentChannels control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gContentChannels_Add( object sender, EventArgs e )
+        {
+            ddlContentChannel.SelectedIndex = -1;
+            ShowDialog( "ContentChannel" );
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gContentChannels control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gContentChannels_Delete( object sender, RowEventArgs e )
+        {
+            Guid contentChannelGuid = (Guid)e.RowKeyValue;
+            ContentChannelsState.Remove( contentChannelGuid );
+
+            BindContentChannelsGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gContentChannels_GridRebind( object sender, EventArgs e )
+        {
+            BindContentChannelsGrid();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgContentChannel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgContentChannel_SaveClick( object sender, EventArgs e )
+        {
+            ListItem li = ddlContentChannel.SelectedItem;
+            ContentChannelsState.AddOrIgnore( li.Value.AsGuid(), li.Text );
+
+            BindContentChannelsGrid();
+
+            HideDialog();
+        }
+
+        #endregion
+
         #endregion
 
         #region Methods
@@ -513,7 +610,7 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     LoadStateDetails( eventCalendar, rockContext );
-                    ShowEditDetails( eventCalendar );
+                    ShowEditDetails( eventCalendar, rockContext );
                 }
             }
         }
@@ -522,7 +619,7 @@ namespace RockWeb.Blocks.Event
         /// Shows the edit details.
         /// </summary>
         /// <param name="eventCalendar">the event calendar</param>
-        private void ShowEditDetails( EventCalendar eventCalendar )
+        private void ShowEditDetails( EventCalendar eventCalendar, RockContext rockContext )
         {
             if ( eventCalendar == null )
             {
@@ -532,12 +629,10 @@ namespace RockWeb.Blocks.Event
             if ( eventCalendar.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( EventCalendar.FriendlyTypeName ).FormatAsHtmlTitle();
-                lWizardCalenderName.Text = "New Calendar";
             }
             else
             {
                 lReadOnlyTitle.Text = eventCalendar.Name.FormatAsHtmlTitle();
-                lWizardCalenderName.Text = eventCalendar.Name;
             }
 
             lCalendarIcon.Text = string.Format( "<i class='{0}'></i>", string.IsNullOrWhiteSpace( eventCalendar.IconCssClass ) ? "fa fa-calendar" : eventCalendar.IconCssClass );
@@ -551,6 +646,20 @@ namespace RockWeb.Blocks.Event
             tbIconCssClass.Text = eventCalendar.IconCssClass;
 
             BindAttributesGrid();
+
+            BindContentChannelsGrid();
+
+            ddlContentChannel.DataSource = new ContentChannelService( rockContext )
+                .Queryable()
+                .Select( c => new
+                {
+                    c.Guid,
+                    c.Name
+                } )
+                .OrderBy( c => c.Name )
+                .ToList();
+
+            ddlContentChannel.DataBind();
         }
 
         /// <summary>
@@ -563,9 +672,9 @@ namespace RockWeb.Blocks.Event
 
             hfEventCalendarId.SetValue( eventCalendar.Id );
             AttributesState = null;
+            ContentChannelsState = null;
 
             lReadOnlyTitle.Text = eventCalendar.Name.FormatAsHtmlTitle();
-            lWizardCalenderName.Text = eventCalendar.Name;
 
             lCalendarIcon.Text = string.Format( "<i class='{0}'></i>", string.IsNullOrWhiteSpace( eventCalendar.IconCssClass ) ? "fa fa-calendar" : eventCalendar.IconCssClass );
             lEventCalendarDescription.Text = eventCalendar.Description;
@@ -626,6 +735,9 @@ namespace RockWeb.Blocks.Event
                 case "ATTRIBUTES":
                     dlgAttribute.Show();
                     break;
+                case "CONTENTCHANNEL":
+                    dlgContentChannel.Show();
+                    break;
             }
         }
 
@@ -638,6 +750,9 @@ namespace RockWeb.Blocks.Event
             {
                 case "ATTRIBUTES":
                     dlgAttribute.Hide();
+                    break;
+                case "CONTENTCHANNEL":
+                    dlgContentChannel.Hide();
                     break;
             }
 
@@ -664,6 +779,13 @@ namespace RockWeb.Blocks.Event
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
                 .ToList();
+
+            ContentChannelsState = new Dictionary<Guid,string>();
+            new EventCalendarContentChannelService( rockContext )
+                .Queryable()
+                .Where( c => c.EventCalendarId == eventCalendar.Id )
+                .ToList()
+                .ForEach( c => ContentChannelsState.Add( c.ContentChannel.Guid, c.ContentChannel.Name ) );
         }
 
         /// <summary>
@@ -785,6 +907,26 @@ namespace RockWeb.Blocks.Event
             }
 
             AttributeCache.FlushEntityAttributes();
+        }
+
+        #endregion
+
+        #region Content Channels Grid
+
+        /// <summary>
+        /// Binds the group type attributes grid.
+        /// </summary>
+        private void BindContentChannelsGrid()
+        {
+            gContentChannels.DataSource = ContentChannelsState
+                .OrderBy( a => a.Value )
+                .Select( a => new
+                {
+                    Guid = a.Key,
+                    Name = a.Value
+                } )
+                .ToList();
+            gContentChannels.DataBind();
         }
 
         #endregion

@@ -254,7 +254,7 @@ namespace Rock.Model
 
                     foreach ( var a in attributes )
                     {
-                        dynamicFields.Add( string.Format( "Attribute_{0}_{1}", a.Value.Id, a.Key ), typeof( string ) );
+                        dynamicFields.Add( string.Format( "Attribute_{0}_{1}", a.Value.Id, a.Key ), a.Value.FieldType.Field.AttributeValueFieldType );
                     }
 
                     foreach ( var reportField in selectComponents )
@@ -428,14 +428,25 @@ namespace Rock.Model
                 Expression.Constant(attributeValues),
                 Expression.Lambda<Func<AttributeValue, bool>>( andExpression, new ParameterExpression[] { attributeValueParameter })
             };
+            
             Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( AttributeValue ) }, match );
 
-            MemberExpression valueProperty = Expression.Property( attributeValueParameter, "Value" );
+            var attributeCache = AttributeCache.Read( attributeId );
+            var attributeValueFieldName = "Value";
+            Type attributeValueFieldType = typeof( string );
+            if ( attributeCache != null )
+            {
+                attributeValueFieldName = attributeCache.FieldType.Field.AttributeValueFieldName;
+                attributeValueFieldType = attributeCache.FieldType.Field.AttributeValueFieldType;
+            }
+
+            MemberExpression valueProperty = Expression.Property( attributeValueParameter, attributeValueFieldName );
+
             Expression valueLambda = Expression.Lambda( valueProperty, new ParameterExpression[] { attributeValueParameter } );
 
-            Expression selectValue = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( AttributeValue ), typeof( string ) }, whereExpression, valueLambda );
+            Expression selectValue = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( AttributeValue ), attributeValueFieldType }, whereExpression, valueLambda );
 
-            Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { typeof( string ) }, selectValue );
+            Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { attributeValueFieldType }, selectValue );
 
             return firstOrDefault;
         }

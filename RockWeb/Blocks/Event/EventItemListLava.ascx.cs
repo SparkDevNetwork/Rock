@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Event
     [CampusesField( "Campuses", "List of which campuses to show occurences for. This setting will be ignored in the 'Use Campus Context' is enabled.", order: 1 )]
     [BooleanField( "Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 2 )]
     [LinkedPage( "Details Page", "Detail page for events", order: 3 )]
-    [SlidingDateRangeField( "Date Range", "Optional date range to filter the items on.", false, order: 4 )]
+    [SlidingDateRangeField( "Date Range", "Optional date range to filter the items on. (defaults to next 1000 days)", false, order: 4 )]
     [IntegerField( "Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 5 )]
 
     [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Liquid, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemList.lava' %}", order: 6 )]
@@ -128,27 +128,27 @@ namespace RockWeb.Blocks.Event
             var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
 
             // Grab events
+            // NOTE: Do not use AsNoTracking() so that things can be lazy loaded if needed
             var qry = eventItemOccurrenceService
                     .Queryable( "EventItem, EventItem.EventItemAudiences,EventItemSchedules.Schedule" )
-                    .AsNoTracking()
                     .Where( m =>
                         m.EventItem.EventCalendarItems.Any( i => i.EventCalendarId == eventCalendar.Id ) &&
                         m.EventItem.IsActive );
 
-            // Filter by campus
+            // Filter by campus (always include the "All Campuses" events)
             if ( GetAttributeValue( "UseCampusContext" ).AsBoolean() )
             {
                 var campusEntityType = EntityTypeCache.Read<Campus>();
                 var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
-                qry = qry.Where( e => e.CampusId == contextCampus.Id );
+                qry = qry.Where( e => e.CampusId == contextCampus.Id || !e.CampusId.HasValue );
             }
             else
             {
                 var campusGuidList = GetAttributeValue( "Campuses" ).Split( ',' ).AsGuidList();
                 if ( campusGuidList.Any() )
                 {
-                    qry = qry.Where( e => campusGuidList.Contains( e.Campus.Guid ) );
+                    qry = qry.Where( e => !e.CampusId.HasValue ||  campusGuidList.Contains( e.Campus.Guid ) );
                 }
             }
 
@@ -156,7 +156,10 @@ namespace RockWeb.Blocks.Event
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( this.GetAttributeValue( "DateRange" ) );
             var today = RockDateTime.Today;
             dateRange.Start = dateRange.Start ?? today;
-            dateRange.End = ( dateRange.End ?? today ).AddDays( 1 );
+            if ( dateRange.End == null )
+            {
+                dateRange.End = dateRange.Start.Value.AddDays( 1000 );
+            }
 
             // Get the occurrences 
             var occurrences = qry.ToList();
@@ -211,7 +214,7 @@ namespace RockWeb.Blocks.Event
 
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "DetailsPage", LinkedPageUrl( "DetailsPage", null ) );
-            mergeFields.Add( "EventItemOccurrences", eventCampusSummaries );
+            mergeFields.Add( "EventCampusSummaries", eventCampusSummaries );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
 
             lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );

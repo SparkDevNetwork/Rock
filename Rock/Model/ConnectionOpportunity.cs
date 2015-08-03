@@ -65,8 +65,7 @@ namespace Rock.Model
         /// <value>
         /// The description.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -136,6 +135,15 @@ namespace Rock.Model
         public int? GroupMemberRoleId { get; set; }
 
         /// <summary>
+        /// Gets or sets the group member status.
+        /// </summary>
+        /// <value>
+        /// The group member status.
+        /// </value>
+        [DataMember]
+        public GroupMemberStatus GroupMemberStatus { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [use all groups of type].
         /// </summary>
         /// <value>
@@ -155,7 +163,6 @@ namespace Rock.Model
         /// <value>
         /// The type of the connection.
         /// </value>
-        [DataMember]
         public virtual ConnectionType ConnectionType { get; set; }
 
         /// <summary>
@@ -164,7 +171,6 @@ namespace Rock.Model
         /// <value>
         /// The connector group.
         /// </value>
-        [DataMember]
         public virtual Group ConnectorGroup { get; set; }
 
         /// <summary>
@@ -173,7 +179,6 @@ namespace Rock.Model
         /// <value>
         /// The type of the group.
         /// </value>
-        [DataMember]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
@@ -182,17 +187,7 @@ namespace Rock.Model
         /// <value>
         /// The group member role.
         /// </value>
-        [DataMember]
         public virtual GroupTypeRole GroupMemberRole { get; set; }
-
-        /// <summary>
-        /// Gets or sets the group member status.
-        /// </summary>
-        /// <value>
-        /// The group member status.
-        /// </value>
-        [DataMember]
-        public virtual GroupMemberStatus GroupMemberStatus { get; set; }
 
         /// <summary>
         /// Gets the URL of the Opportunity's photo.
@@ -200,7 +195,6 @@ namespace Rock.Model
         /// <value>
         /// URL of the photo
         /// </value>
-        [DataMember]
         [NotMapped]
         public virtual string PhotoUrl
         {
@@ -217,7 +211,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.BinaryFile"/> that contains the Opportunity's photo.
         /// </value>
-        [DataMember]
         public virtual BinaryFile Photo { get; set; }
 
         /// <summary>
@@ -226,7 +219,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionOpportunityGroup">ConnectionOpportunityGroups</see> who are associated with the ConnectionOpportunity.
         /// </value>
-        [DataMember]
         public virtual ICollection<ConnectionOpportunityGroup> ConnectionOpportunityGroups
         {
             get { return _connectionOpportunityGroups ?? ( _connectionOpportunityGroups = new Collection<ConnectionOpportunityGroup>() ); }
@@ -241,7 +233,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionWorkflow">ConnectionWorkflows</see> who are associated with the ConnectionOpportunity.
         /// </value>
-        [DataMember]
         public virtual ICollection<ConnectionWorkflow> ConnectionWorkflows
         {
             get { return _connectionWorkflows ?? ( _connectionWorkflows = new Collection<ConnectionWorkflow>() ); }
@@ -256,7 +247,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionRequest">ConnectionRequests</see> who are associated with the ConnectionOpportunity.
         /// </value>
-        [DataMember]
         public virtual ICollection<ConnectionRequest> ConnectionRequests
         {
             get { return _connectionRequests ?? ( _connectionRequests = new Collection<ConnectionRequest>() ); }
@@ -271,7 +261,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionOpportunityGroupCampus">ConnectionOpportunityGroupCampuses</see> who are associated with the ConnectionOpportunity.
         /// </value>
-        [DataMember]
         public virtual ICollection<ConnectionOpportunityGroupCampus> ConnectionOpportunityGroupCampuses
         {
             get { return _connectionOpportunityGroupCampuses ?? ( _connectionOpportunityGroupCampuses = new Collection<ConnectionOpportunityGroupCampus>() ); }
@@ -286,7 +275,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionOpportunityCampus">ConnectionOpportunityCampuses</see> who are associated with the ConnectionOpportunity.
         /// </value>
-        [DataMember]
         public virtual ICollection<ConnectionOpportunityCampus> ConnectionOpportunityCampuses
         {
             get { return _connectionOpportunityCampuses ?? ( _connectionOpportunityCampuses = new Collection<ConnectionOpportunityCampus>() ); }
@@ -336,6 +324,20 @@ namespace Rock.Model
             else
             {
                 return VirtualPathUtility.ToAbsolute( virtualPath );
+            }
+        }
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.ConnectionType != null ? this.ConnectionType : base.ParentAuthority;
             }
         }
 

@@ -264,9 +264,11 @@
     <Compile Include="Model\CodeGenerated\ConnectionTypeService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionWorkflowService.cs" />
     <Compile Include="Jobs\GroupLeaderPendingNotifications.cs" />
+    <Compile Include="Model\CodeGenerated\EventCalendarContentChannelService.cs" />
     <Compile Include="Model\CodeGenerated\EventCalendarItemService.cs" />
     <Compile Include="Model\CodeGenerated\EventCalendarService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemAudienceService.cs" />
+    <Compile Include="Model\CodeGenerated\EventItemOccurrenceChannelItemService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemOccurrenceGroupMapService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemOccurrenceService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemScheduleService.cs" />
@@ -320,6 +322,7 @@
     <Compile Include="Model\BenevolenceResult.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\CommunicationService.Partial.cs" />
     <Compile Include="Model\ConnectionOpportunityCampus.cs" />
     <Compile Include="Model\ConnectionRequest.cs" />
     <Compile Include="Model\ConnectionOpportunityGroup.cs" />
@@ -340,7 +343,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\CodeGenerated\RegistrationRegistrantFeeService.cs" />
+    <Compile Include="Model\EventCalendarContentChannel.cs" />
     <Compile Include="Model\EventItemAudience.cs" />
+    <Compile Include="Model\EventItemOccurrenceChannelItem.cs" />
     <Compile Include="Model\EventItemOccurrenceGroupMap.cs" />
     <Compile Include="Model\EventItemSchedule.cs" />
     <Compile Include="Model\CampusService.partial.cs" />
@@ -441,10 +446,12 @@
     <Compile Include="Reporting\DataSelect\Group\ParticipationRateSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\ParentPhoneNumberSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InGroupGeofenceGroupTypeSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\RelatedPeopleSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\TotalGivingAmountSelect.cs" />
     <Compile Include="Reporting\ReportingHelper.cs" />
     <Compile Include="Reporting\DataSelect\Person\GroupParticipationSelect.cs" />
+    <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />
     <Compile Include="Security\Authentication\Facebook.cs">
@@ -509,7 +516,7 @@
     <Compile Include="Utility\ExtensionMethods\ReportingExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\StringExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\StringHtmlExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\StringPluralizationExtentions.cs" />
+    <Compile Include="Utility\ExtensionMethods\StringPluralizationExtensions.cs" />
     <Compile Include="Utility\RockJsonMediaTypeFormatter.cs" />
     <Compile Include="Utility\RockJsonTextWriter.cs" />
     <Compile Include="Utility\RockSemanticVersion.cs" />

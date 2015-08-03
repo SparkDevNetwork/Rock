@@ -115,6 +115,7 @@ namespace RockWeb.Blocks.Cms
     [LinkedPage("Response Page", "The page the use will be taken to after submitting the form. Use the 'Response Message' field if you just need a simple message.", false, "", "", 7)]
     [TextField("Submit Button Text", "The text to display for the submit button.", true, "Submit", "", 8)]
     [BooleanField("Enable Debug", "Shows the fields available to merge in lava.", false, "", 9)]
+    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 10 )]
     public partial class EmailForm : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -296,8 +297,8 @@ namespace RockWeb.Blocks.Cms
                 string fromEmail = GetAttributeValue("FromEmail");
                 string fromName = GetAttributeValue( "FromName" );
                 string subject = GetAttributeValue("Subject");
-                
-                Email.Send(fromEmail, fromName, subject, recipients, message, ResolveRockUrl( "~/"), ResolveRockUrl( "~~/"), attachments);
+
+                Email.Send( fromEmail, fromName, subject, recipients, message, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), attachments, GetAttributeValue( "SaveCommunicationHistory" ).AsBoolean() );
 
                 // set response
                 if ( !string.IsNullOrWhiteSpace(GetAttributeValue("ResponsePage")) )

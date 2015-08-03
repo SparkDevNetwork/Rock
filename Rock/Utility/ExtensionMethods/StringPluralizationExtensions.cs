@@ -19,7 +19,10 @@ using System.Globalization;
 
 namespace Rock
 {
-    public static class StringPluralizationExtentions
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class StringPluralizationExtensions
     {
         /// <summary>
         /// Pluralizes the specified string.

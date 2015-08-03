@@ -25,19 +25,25 @@
                 <div class="panel-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="col-md-4">
-                                <div class="photo">
-                                    <asp:Literal ID="lPortrait" runat="server" />
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="photo">
+                                        <asp:Literal ID="lPortrait" runat="server" />
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <Rock:RockLiteral ID="lContactInfo" runat="server" Label="Contact Info" />
+                                    
+                                    <Rock:RockLiteral ID="lConnector" runat="server" Label="Connector" />
                                 </div>
                             </div>
-                            <div class="col-md-8">
-                                <Rock:RockLiteral ID="lContactInfo" runat="server" Label="Contact Info" />
-                                <Rock:RockLiteral ID="lConnector" runat="server" Label="Connector" />
-                            </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Request Date" />
                             <Rock:RockLiteral ID="lAssignedGroup" runat="server" Label="Assigned Group" />
+                        </div>
+                        <div class="col-md-2 text-right">
+                            <asp:LinkButton ID="lbProfilePage" runat="server" CssClass="btn btn-default btn-xs"><i class="fa fa-user"></i> Profile</asp:LinkButton>
                         </div>
                     </div>
 
@@ -49,23 +55,24 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="col-md-6">
-                                <asp:Label ID="lblWorkflows" Text="Available Workflows" Font-Bold="true" runat="server" />
-                                </br>
-                            <asp:Repeater ID="rptRequestWorkflows" runat="server">
-                                <ItemTemplate>
-                                    <li class="btn btn-default btn-xs">
-                                        <asp:LinkButton ID="lbRequestWorkflow" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
-                                        <%# Eval("Name") %>
-                                        </asp:LinkButton>
-                                    </li>
-                                </ItemTemplate>
-                            </asp:Repeater>
-                                </br>
-                                </br>
-                                <Rock:NotificationBox ID="nbWorkflow" runat="server" Text="Workflow Launched" Visible="false" NotificationBoxType="Success" Dismissable="true" />
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <asp:Label ID="lblWorkflows" Text="Available Workflows" Font-Bold="true" runat="server" />
+
+                                    <div class="margin-b-md">
+                                        <asp:Repeater ID="rptRequestWorkflows" runat="server">
+                                            <ItemTemplate>
+                                                <asp:LinkButton ID="lbRequestWorkflow" runat="server" CssClass="btn btn-default btn-xs" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
+                                                <%# Eval("Name") %>
+                                                </asp:LinkButton>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </div>
+
+                                    <Rock:NotificationBox ID="nbWorkflow" runat="server" Text="Workflow Launched" Visible="false" NotificationBoxType="Success" Dismissable="true" />
+                                </div>
+                                <div class="col-md-6">
                             </div>
-                            <div class="col-md-6">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -90,6 +97,8 @@
                 <div class="actions">
                     <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbEdit_Click"></asp:LinkButton>
                     <asp:LinkButton ID="lbTransfer" runat="server" Text="Transfer" CssClass="btn btn-link" CausesValidation="false" OnClick="lbTransfer_Click"></asp:LinkButton>
+                    <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                    <asp:LinkButton ID="lbDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-request" CausesValidation="false" OnClick="lbDelete_Click"></asp:LinkButton>
                     <div class="pull-right">
                         <asp:LinkButton ID="lbConnect" runat="server" Text="Connect" CssClass="btn btn-success" CausesValidation="false" OnClick="lbConnect_Click"></asp:LinkButton>
                     </div>
@@ -108,7 +117,7 @@
                             <Rock:PersonPicker runat="server" ID="ppRequestor" Label="Requestor" Required="true" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:PersonPicker runat="server" ID="ppConnectorEdit" Label="Connector" Required="true" />
+                            <Rock:PersonPicker runat="server" ID="ppConnectorEdit" Label="Connector" />
                         </div>
                         <div class="col-md-4 col-md-offset-2">
                             <Rock:RockRadioButtonList ID="rblState" runat="server" Label="State" RepeatDirection="Horizontal" OnSelectedIndexChanged="rblState_SelectedIndexChanged" AutoPostBack="true" />
@@ -164,7 +173,7 @@
                 </div>
             </asp:Panel>
         </div>
-        <Rock:PanelWidget ID="wpConnectionRequestWorkflow" runat="server" Title="Workflows">
+        <Rock:PanelWidget ID="wpConnectionRequestWorkflow" runat="server" Title="Workflows" CssClass="clickable">
             <div class="grid">
                 <Rock:Grid ID="gConnectionRequestWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location" OnRowSelected="gConnectionRequestWorkflows_RowSelected">
                     <Columns>
@@ -178,7 +187,7 @@
             </div>
         </Rock:PanelWidget>
 
-        <Rock:PanelWidget ID="wpConnectionRequestActivities" runat="server" Title="Activities" Expanded="true">
+        <Rock:PanelWidget ID="wpConnectionRequestActivities" runat="server" Title="Activities" Expanded="true" CssClass="clickable">
             <div class="grid">
                 <Rock:Grid ID="gConnectionRequestActivities" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Activity" OnRowDataBound="gConnectionRequestActivities_RowDataBound">
                     <Columns>

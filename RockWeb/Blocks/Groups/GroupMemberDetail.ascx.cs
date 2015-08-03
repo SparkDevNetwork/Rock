@@ -161,9 +161,12 @@ namespace RockWeb.Blocks.Groups
                             {
                                 groupMemberRequirement = new GroupMemberRequirement();
                                 groupMemberRequirement.GroupRequirementId = groupRequirementId;
+                                
                                 groupMember.GroupMemberRequirements.Add( groupMemberRequirement );
-                                groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
                             }
+
+                            // set the RequirementMetDateTime if it hasn't been set already
+                            groupMemberRequirement.RequirementMetDateTime = groupMemberRequirement.RequirementMetDateTime ?? RockDateTime.Now;
 
                             groupMemberRequirement.LastRequirementCheckDateTime = RockDateTime.Now;
                         }
@@ -206,17 +209,11 @@ namespace RockWeb.Blocks.Groups
                         groupMemberService.Add( groupMember );
                     }
 
-                    foreach ( var deletedRequirement in groupMember.GroupMemberRequirements.Where( a => a.RequirementMetDateTime == null ).ToList() )
-                    {
-                        // remove any requirements that they no longer meet (manual ones that were un-checked)
-                        groupMemberRequirementService.Delete( deletedRequirement );
-                    }
-
                     rockContext.SaveChanges();
                     groupMember.SaveAttributeValues( rockContext );
-
-                    groupMember.CalculateRequirements( rockContext, true );
                 } );
+
+                groupMember.CalculateRequirements( rockContext, true );
 
                 Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
                 if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
@@ -509,16 +506,15 @@ namespace RockWeb.Blocks.Groups
                         labelText = requirementResult.GroupRequirement.GroupRequirementType.PositiveLabel;
                         labelType = "success";
                     }
+                    else if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
+                    {
+                        labelText = requirementResult.GroupRequirement.GroupRequirementType.WarningLabel;
+                        labelType = "warning";
+                    }
                     else
                     {
                         labelText = requirementResult.GroupRequirement.GroupRequirementType.NegativeLabel;
                         labelType = "danger";
-                    }
-
-                    if ( requirementResult.WarningIncluded )
-                    {
-                        labelText = requirementResult.GroupRequirement.GroupRequirementType.WarningLabel;
-                        labelType = "warning";
                     }
 
                     if ( string.IsNullOrEmpty( labelText ) )
@@ -526,7 +522,7 @@ namespace RockWeb.Blocks.Groups
                         labelText = requirementResult.GroupRequirement.GroupRequirementType.Name;
                     }
 
-                    if ( requirementResult.WarningIncluded )
+                    if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
                     {
                         labelTooltip = requirementResult.RequirementWarningDateTime.HasValue
                             ? "Last Checked: " + requirementResult.RequirementWarningDateTime.Value.ToString( "g" )
@@ -596,7 +592,7 @@ namespace RockWeb.Blocks.Groups
         protected void btnReCheckRequirements_Click( object sender, EventArgs e )
         {
             CalculateRequirements();
-            nbRecheckedNotification.Text = string.Format( "Successfully re-checked requirements at {0}", RockDateTime.Now );
+            nbRecheckedNotification.Text = "Successfully re-checked requirements.";
             nbRecheckedNotification.Visible = true;
         }
 

@@ -168,6 +168,8 @@ namespace RockWeb.Blocks.Connection
             {
                 nbIncorrectOpportunity.Visible = false;
                 nbNotAllowedToEdit.Visible = false;
+                nbInvalidGroupType.Visible = false;
+                nbInvalidGroupTypes.Visible = false;
 
                 ShowOpportunityAttributes();
             }
@@ -268,6 +270,18 @@ namespace RockWeb.Blocks.Connection
 
             using ( RockContext rockContext = new RockContext() )
             {
+                int? groupTypeId = ddlGroupType.SelectedValueAsInt();
+                if ( groupTypeId.HasValue && GroupsState.Any( g => g.Group.GroupTypeId != groupTypeId.Value ) )
+                {
+                    var groupType = new GroupTypeService( rockContext ).Get( groupTypeId.Value );
+                    if ( groupType != null )
+                    {
+                        nbInvalidGroupTypes.Text = string.Format( "<p>One or more of the selected groups is not a <strong>{0}</strong> type. Please select groups that have a group type of <strong>{0}</strong>.", groupType.Name );
+                        nbInvalidGroupTypes.Visible = true;
+                        return;
+                    }
+                }
+
                 ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
                 EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
                 ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
@@ -510,23 +524,47 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgGroupDetails_SaveClick( object sender, EventArgs e )
         {
-            ConnectionOpportunityGroup connectionOpportunityGroup = new ConnectionOpportunityGroup();
-            connectionOpportunityGroup.Group = new GroupService( new RockContext() ).Get( ddlGroup.SelectedValueAsInt().Value );
-            connectionOpportunityGroup.GroupId = ddlGroup.SelectedValueAsInt().Value;
-            // Controls will show warnings
-            if ( !connectionOpportunityGroup.IsValid )
+            int? groupId = gpOpportunityGroup.SelectedValueAsInt();
+            if ( groupId.HasValue )
             {
-                return;
-            }
+                var rockContext = new RockContext();
+                var group = new GroupService( rockContext ).Get( groupId.Value );
+                if ( group != null )
+                {
+                    int? groupTypeId = ddlGroupType.SelectedValueAsInt();
+                    if( groupTypeId.HasValue && group.GroupTypeId != groupTypeId.Value )
+                    {
+                        var groupType = new GroupTypeService( rockContext ).Get( groupTypeId.Value );
+                        if ( groupType != null )
+                        {
+                            nbInvalidGroupType.Text = string.Format( "<p>The selected group is not a <strong>{0}</strong> type. Please select a group that has a group type of <strong>{0}</strong>.", groupType.Name );
+                            nbInvalidGroupType.Visible = true;
+                            return;
+                        }
+                    }
 
-            if ( GroupsState.Any( a => a.Guid.Equals( connectionOpportunityGroup.Guid ) ) )
-            {
-                GroupsState.RemoveEntity( connectionOpportunityGroup.Guid );
-            }
+                    ConnectionOpportunityGroup connectionOpportunityGroup = new ConnectionOpportunityGroup();
+                    connectionOpportunityGroup.Group = group;
+                    connectionOpportunityGroup.GroupId = groupId.Value;
 
-            GroupsState.Add( connectionOpportunityGroup );
-            BindGroupGrid();
-            HideDialog();
+                    // Controls will show warnings
+                    if ( !connectionOpportunityGroup.IsValid )
+                    {
+                        return;
+                    }
+
+                    if ( GroupsState.Any( a => a.Guid.Equals( connectionOpportunityGroup.Guid ) ) )
+                    {
+                        GroupsState.RemoveEntity( connectionOpportunityGroup.Guid );
+                    }
+
+                    GroupsState.Add( connectionOpportunityGroup );
+
+                    BindGroupGrid();
+                    HideDialog();
+                   
+                }
+            }
         }
 
         /// <summary>
@@ -546,17 +584,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gConnectionOpportunityGroups_Add( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-            ddlGroup.Items.Clear();
-            List<int> selectedGroupIds = GroupsState.Select( c => c.GroupId ).ToList();
-
-            var groups = new GroupService( rockContext ).Queryable().Where( g => !selectedGroupIds.Contains( g.Id ) && g.GroupTypeId.ToString() == ddlGroupType.SelectedValue ).ToList();
-            foreach ( var g in groups )
-            {
-                ddlGroup.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) );
-            }
-            ddlGroup.DataBind();
-
+            gpOpportunityGroup.SetValue( null );
             ShowDialog( "GroupDetails", true );
         }
 
@@ -570,7 +598,7 @@ namespace RockWeb.Blocks.Connection
                 g.Id,
                 g.Guid,
                 Name = g.Group.Name,
-                Campus = g.Group.Campus != null ? g.Group.Campus.Name : "N/A"
+                Campus = g.Group.Campus != null ? g.Group.Campus.Name : "All"
             } ).ToList();
             gConnectionOpportunityGroups.DataBind();
         }
@@ -952,7 +980,7 @@ namespace RockWeb.Blocks.Connection
                     ddlSecondaryQualifier.Items.Clear();
                     break;
 
-                case ConnectionWorkflowTriggerType.ActivityGroupAssigned:
+                case ConnectionWorkflowTriggerType.GroupAssigned:
                     var groupList = new GroupService( rockContext ).Queryable().ToList();
                     ddlPrimaryQualifier.Label = "Activity Group";
                     ddlPrimaryQualifier.Visible = true;

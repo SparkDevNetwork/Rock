@@ -339,6 +339,22 @@
     <Compile Include="Migrations\201507232010232_EventItemOccurrence.Designer.cs">
       <DependentUpon>201507232010232_EventItemOccurrence.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201507281546100_CalendarContentChannel.cs" />
+    <Compile Include="Migrations\201507281546100_CalendarContentChannel.Designer.cs">
+      <DependentUpon>201507281546100_CalendarContentChannel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201507291132307_ConnectionOppDesc.cs" />
+    <Compile Include="Migrations\201507291132307_ConnectionOppDesc.Designer.cs">
+      <DependentUpon>201507291132307_ConnectionOppDesc.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201507292137440_ExternalConnectionRename.cs" />
+    <Compile Include="Migrations\201507292137440_ExternalConnectionRename.Designer.cs">
+      <DependentUpon>201507292137440_ExternalConnectionRename.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201508010008536_BackgroundCheckExpiringSoon.cs" />
+    <Compile Include="Migrations\201508010008536_BackgroundCheckExpiringSoon.Designer.cs">
+      <DependentUpon>201508010008536_BackgroundCheckExpiringSoon.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2006,6 +2022,18 @@
     <EmbeddedResource Include="Migrations\201507232010232_EventItemOccurrence.resx">
       <DependentUpon>201507232010232_EventItemOccurrence.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507281546100_CalendarContentChannel.resx">
+      <DependentUpon>201507281546100_CalendarContentChannel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507291132307_ConnectionOppDesc.resx">
+      <DependentUpon>201507291132307_ConnectionOppDesc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507292137440_ExternalConnectionRename.resx">
+      <DependentUpon>201507292137440_ExternalConnectionRename.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201508010008536_BackgroundCheckExpiringSoon.resx">
+      <DependentUpon>201508010008536_BackgroundCheckExpiringSoon.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
     </EmbeddedResource>
@@ -3100,9 +3128,11 @@
     <Content Include="Migrations\201506242325188_GeoSpatialIndexes_AddSystemEmail.sql" />
     <Content Include="Migrations\201507081827047_SampleCalendarEvents.sql" />
     <Content Include="Migrations\201507062330051_GroupRequirementsNotificationEmail.sql" />
+    <Content Include="Migrations\201507281546100_CalendarContentChannel.sql" />
     <Content Include="Migrations\201507181918494_ConnectionChangesAndSampleData.sql" />
     <Content Include="Migrations\201507171137229_RegistrationInstanceContactPhone.sql" />
     <Content Include="Migrations\201507121943445_RegistrationEmails.sql" />
+    <Content Include="Migrations\201508010008536_BackgroundCheckExpiringSoon.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

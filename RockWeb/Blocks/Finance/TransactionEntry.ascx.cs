@@ -802,7 +802,7 @@ namespace RockWeb.Blocks.Finance
                                 var recipients = new List<Rock.Communication.RecipientData>();
                                 recipients.Add( new Rock.Communication.RecipientData( authorizedPersonAlias.Person.Email, mergeObjects ) );
 
-                                Rock.Communication.Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
+                                Rock.Communication.Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), false );
                             }
 
                             var paymentInfo = GetPaymentInfo();

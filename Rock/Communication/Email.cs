@@ -39,7 +39,11 @@ namespace Rock.Communication
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        public static void Send( Guid emailTemplateGuid, List<RecipientData> recipients, string appRoot = "", string themeRoot = "" )
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        /// <exception cref="System.Exception">
+        /// Error sending System Email: Could not read Email Medium Entity Type
+        /// </exception>
+        public static void Send( Guid emailTemplateGuid, List<RecipientData> recipients, string appRoot = "", string themeRoot = "", bool createCommunicationHistory = true )
         {
             try
             {
@@ -62,7 +66,14 @@ namespace Rock.Communication
                                     {
                                         try
                                         {
-                                            transport.Send( template, recipients, appRoot, themeRoot );
+                                            if ( transport is Rock.Communication.Transport.SMTPComponent )
+                                            {
+                                                ( (Rock.Communication.Transport.SMTPComponent)transport ).Send( template, recipients, appRoot, themeRoot, createCommunicationHistory );
+                                            }
+                                            else
+                                            {
+                                                transport.Send( template, recipients, appRoot, themeRoot );
+                                            }
                                         }
                                         catch ( Exception ex1 )
                                         {
@@ -108,9 +119,10 @@ namespace Rock.Communication
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">The attachments.</param>
-        public static void Send(string fromEmail, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "", List<Attachment> attachments = null)
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        public static void Send( string fromEmail, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "", List<Attachment> attachments = null, bool createCommunicationHistory = true )
         {
-            Send( fromEmail, string.Empty, subject, recipients, message, appRoot, themeRoot, attachments );
+            Send( fromEmail, string.Empty, subject, recipients, message, appRoot, themeRoot, attachments, createCommunicationHistory );
         }
 
 
@@ -125,8 +137,9 @@ namespace Rock.Communication
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">The attachments.</param>
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
         /// <exception cref="System.Exception">Error sending System Email: Could not read Email Medium Entity Type</exception>
-        public static void Send(string fromEmail, string fromName, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "", List<Attachment> attachments = null)
+        public static void Send(string fromEmail, string fromName, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "", List<Attachment> attachments = null, bool createCommunicationHistory = true )
         {
             try
             {
@@ -143,14 +156,15 @@ namespace Rock.Communication
                             {
                                 try
                                 {
-                                    if ( string.IsNullOrWhiteSpace( fromName ) )
+                                    if ( transport is Rock.Communication.Transport.SMTPComponent )
                                     {
-                                        transport.Send( recipients, fromEmail, subject, message, appRoot, themeRoot, attachments );
+                                        ( (Rock.Communication.Transport.SMTPComponent)transport ).Send( recipients, fromEmail, fromName ?? string.Empty, subject, message, appRoot, themeRoot, attachments, createCommunicationHistory );
                                     }
                                     else
                                     {
-                                        transport.Send( recipients, fromEmail, fromName, subject, message, appRoot, themeRoot, attachments );
+                                        transport.Send( recipients, fromEmail, fromName ?? string.Empty, subject, message, appRoot, themeRoot, attachments );
                                     }
+
                                 }
                                 catch ( Exception ex1 )
                                 {
@@ -216,10 +230,9 @@ namespace Rock.Communication
         /// <param name="message">The message.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        /// <exception cref="System.Exception">
-        /// Error sending System Email: Could not read Email Medium Entity Type
-        /// </exception>
-        public static void NotifyAdmins( string subject, string message, string appRoot = "", string themeRoot = "" )
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        /// <exception cref="System.Exception">Error sending System Email: Could not read Email Medium Entity Type</exception>
+        public static void NotifyAdmins( string subject, string message, string appRoot = "", string themeRoot = "", bool createCommunicationHistory = true  )
         {
             try
             {
@@ -238,7 +251,7 @@ namespace Rock.Communication
                         .ToList();
                 }
 
-                Email.Send(GlobalAttributesCache.Value("OrganizationEmail"), subject, recipients, message, appRoot, themeRoot);
+                Email.Send(GlobalAttributesCache.Value("OrganizationEmail"), subject, recipients, message, appRoot, themeRoot, null, createCommunicationHistory );
             }
             catch ( Exception ex )
             {

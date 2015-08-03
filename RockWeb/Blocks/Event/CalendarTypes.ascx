@@ -3,49 +3,9 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <div class="wizard">
-
-             <div class="wizard-item active">
-                <div class="wizard-item-icon">
-                    <i class="fa fa-fw fa-calendar"></i>
-                </div>
-                <div class="wizard-item-label">
-                    Event Calendars
-                </div>
-            </div>
-            
-            <div class="wizard-item">
-                <div class="wizard-item-icon">
-                    <i class="fa fa-fw fa-calendar"></i>
-                </div>
-                <div class="wizard-item-label">
-                    Calendar
-                </div>
-            </div>
-    
-            <div class="wizard-item">
-                <div class="wizard-item-icon">
-                    <i class="fa fa-fw fa-calendar-o"></i>
-                </div>
-                <div class="wizard-item-label">
-                    Calendar Item
-                </div>
-            </div>
-    
-            <div class="wizard-item">
-                <div class="wizard-item-icon">
-                    <i class="fa fa-fw fa-building-o"></i>
-                </div>
-                <div class="wizard-item-label">
-                    Event Occurrence
-                </div>
-            </div>
-
-        </div>
-
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-calendar"></i> Event Calendars</h1>
+                <h1 class="panel-title"><i class="fa fa-th-large"></i> Event Calendars</h1>
 
                 <div class="pull-right">
                     <asp:LinkButton ID="lbAddEventCalendar" runat="server" CssClass="btn btn-action btn-xs pull-right" OnClick="lbAddEventCalendar_Click" CausesValidation="false"><i class="fa fa-plus"></i></asp:LinkButton>
@@ -54,7 +14,7 @@
             <div class="panel-body">
 
                 <div class="list-as-blocks clearfix">
-                    <ul class="list-unstyled">
+                    <ul>
                         <asp:Repeater ID="rptEventCalendars" runat="server">
                             <ItemTemplate>
                                 <li>

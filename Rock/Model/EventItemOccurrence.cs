@@ -180,6 +180,20 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the content channel items.
+        /// </summary>
+        /// <value>
+        /// The content channel items.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<EventItemOccurrenceChannelItem> ContentChannelItems
+        {
+            get { return _contentChannelItems ?? ( _contentChannelItems = new Collection<EventItemOccurrenceChannelItem>() ); }
+            set { _contentChannelItems = value; }
+        }
+        private ICollection<EventItemOccurrenceChannelItem> _contentChannelItems;
+
         #endregion
 
         #region Methods

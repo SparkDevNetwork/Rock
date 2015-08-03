@@ -93,6 +93,9 @@ namespace Rock.Client
         public PersonAlias ContactPersonAlias { get; set; }
 
         /// <summary />
+        public ICollection<EventItemOccurrenceChannelItem> ContentChannelItems { get; set; }
+
+        /// <summary />
         public ICollection<EventItemSchedule> EventItemSchedules { get; set; }
 
         /// <summary />

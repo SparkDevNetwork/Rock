@@ -332,13 +332,14 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
             if ( allowMultiple )
             {
-                return base.FilterCompareControl( configurationValues, id, required );
+                return base.FilterCompareControl( configurationValues, id, required, filterMode );
             }
             else
             {
@@ -346,6 +347,9 @@ namespace Rock.Field.Types
                 lbl.ID = string.Format( "{0}_lIs", id );
                 lbl.AddCssClass( "data-view-filter-label" );
                 lbl.Text = "Is";
+                
+                // hide the compare control when in SimpleFilter mode
+                lbl.Visible = filterMode != FilterMode.SimpleFilter;
                 return lbl;
             }
         }
@@ -370,8 +374,9 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
 
@@ -383,7 +388,7 @@ namespace Rock.Field.Types
 
             overrideConfigValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new ConfigurationValue( ( !allowMultiple ).ToString() ) );
 
-            return base.FilterValueControl( overrideConfigValues, id, required );
+            return base.FilterValueControl( overrideConfigValues, id, required, filterMode );
         }
 
         /// <summary>
@@ -400,8 +405,9 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="filterControl">The filter control.</param>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues )
+        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode )
         {
             var values = new List<string>();
 
@@ -413,7 +419,7 @@ namespace Rock.Field.Types
                 {
                     if ( allowMultiple )
                     {
-                        var filterValues = base.GetFilterValues( filterControl, configurationValues );
+                        var filterValues = base.GetFilterValues( filterControl, configurationValues, filterMode );
                         if ( filterValues != null )
                         {
                             filterValues.ForEach( v => values.Add( v ) );
