@@ -98,7 +98,7 @@ namespace Rock.Model
             target.AdditionalConfirmationDetails = source.AdditionalConfirmationDetails;
             target.AdditionalReminderDetails = source.AdditionalReminderDetails;
             target.ContactEmail = source.ContactEmail;
-            target.ContactName = source.ContactName;
+            target.ContactPersonAliasId = source.ContactPersonAliasId;
             target.ContactPhone = source.ContactPhone;
             target.Details = source.Details;
             target.EndDateTime = source.EndDateTime;
