@@ -178,4 +178,7 @@
   <data name="_201508010008536_BackgroundCheckExpiringSoon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201508010008536_backgroundcheckexpiringsoon.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201508041124356_RegistrationContact" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201508041124356_registrationcontact.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

@@ -36,6 +36,8 @@ namespace Rock.Migrations
 
             // JE: Delete redundant defined type
             RockMigrationHelper.DeleteDefinedType( "0F48CB3F-8A48-249A-412A-2DCA7648706F" );
+
+            Sql( MigrationSQL._201508041124356_RegistrationContact );
         }
         
         /// <summary>
