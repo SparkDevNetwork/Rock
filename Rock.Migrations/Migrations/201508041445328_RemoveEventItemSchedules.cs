@@ -73,7 +73,7 @@ namespace Rock.Migrations
         AND [ModifiedDateTime] IS NULL
 
         UPDATE [AttributeValue]
-        SET [Value] = 'MMM^34|1^35|2^36'
+        SET [Value] = 'WWW^34|1^35|2^36'
         WHERE [AttributeId] = @AttributeId
         AND [EntityId] = @BinaryFileId
         AND [Value] = 'MMM^34|2^35'
