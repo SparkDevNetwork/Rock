@@ -25,11 +25,18 @@
 // -------------------------
 
 .personprofile { // offset pageheader margin
-    margin-top: -@spacing-md-px;
 
     small { // lighten up small elements a bit
-        color: lighten(@persondetails-bio-color, 30%);
+        opacity: .7;
     }
+}
+
+.personprofilebar-bio,
+.personprofilebar-badge,
+.personprofilebar-family,
+.pagetabs,
+.person-content {
+    padding: 15px;
 }
 
 // 2. Header
@@ -38,7 +45,6 @@
 .personprofilebar-bio {
     background-color: @persondetails-bio-bg;
     border-bottom: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
-    padding: @spacing-md-px @spacing-md-px 0 @spacing-md-px;
     color: @persondetails-bio-color;
 
     .name {
@@ -73,15 +79,15 @@
         margin-right: -52px;
 
         a.btn-action {
-            color: @accent-bold-text-color;
-            background-color: @accent-bold-color;
-            border-color: darken(@accent-bold-color, 5%);
+            color: @persondetails-bio-action-color;
+            background-color: @persondetails-bio-action-bg;
+            border-color: darken(@persondetails-bio-action-border, 5%);
         }
     }
 
     .photo {
         padding: 5px 5px 5px 5px;
-        background-color: @header-bg;
+        background-color: @persondetails-bio-photo-border;
         border: 1px solid #bdbdbd;
         display: table;
         max-width: 200px;
@@ -96,7 +102,7 @@
             width: 40px;
             height: 40px;
             z-index: 500;
-            border-top: 70px solid @persondetails-badge-color;
+            border-top: 70px solid @persondetails-bio-photo-following;
             border-right: 70px solid transparent;
             transition: 1s;
             opacity: .4;
@@ -144,7 +150,7 @@
         text-align: center;
 
         .icon {
-            background-color: @accent-bold-color;
+            background-color: @gray;
             margin: 0 2px;
             border-radius: @border-radius-base;
             font-size: 16px;
@@ -199,7 +205,7 @@
 
         .email {
             .email-status i {
-                color: @accent-semibold-color;
+                color: @persondetails-bio-color;
             }
 
             .email-status.do-not-email i {
@@ -222,6 +228,7 @@
     min-height: 64px;
     border-bottom: 1px solid darken(@persondetails-badge-bg, @const-border-darken-amt);
     color: @persondetails-badge-color;
+    padding: 0;
 
     .badge-group {
         margin: @spacing-sm-px 0;
@@ -506,10 +513,10 @@
 
 .personprofilebar-family {
     background: @persondetails-familybar-bg;
-    padding: 12px 0;
     border-bottom: 1px solid darken(@persondetails-familybar-bg, @const-border-darken-amt);
     color: @persondetails-familybar-color;
     min-height: 60px;
+    padding-bottom: 0;
 
     a {
         color: @persondetails-familybar-color;
@@ -536,6 +543,7 @@
                 -webkit-transition: all .6s ease; /* Fade to color for Chrome and Safari */
                 filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale"); /* Firefox 10+, Firefox on Android */
                 transition: .5s;
+                border-color: @persondetails-familybar-photo-bg;
             }
 
             &:hover {
@@ -557,9 +565,9 @@
         z-index: 999;
 
         a.btn-action {
-            color: @accent-semibold-text-color;
-            background-color: @accent-semibold-color;
-            border-color: darken(@accent-semibold-color, 5%);
+            color: @persondetails-familybar-action-color;
+            background-color: @persondetails-familybar-action-bg;
+            border-color: @persondetails-familybar-action-border;
         }
     }
 
@@ -610,9 +618,6 @@
 // 5. Page Tabs
 // -------------------------
 
-.pagetabs {
-    margin-top: 12px;
-}
 
 
 // 6. Edit Family Page
@@ -634,6 +639,10 @@
 
 // 7. Styles for Page Tabs
 // -------------------------
+
+.person-content {
+    padding-top: 0;
+}
 
 // history page
 span.field-name {
@@ -753,41 +762,8 @@ span.field-value {
 // 11. Person Merge
 // -------------------------
 
-
-.table thead th.merge-personselect {
-    background-color: @accent-bold-color;
-    color: @accent-bold-text-color;
-    border-color: lighten(@accent-bold-color, 5%);
-    vertical-align: top !important;
-
-    .merge-header-summary {
-        margin-left: 20px;
-
-        i {
-            margin-right: 12px;
-            float: left;
-        }
-    }
-
-    .btn-danger {
-        color: #fff;
-    }
-
-    small {
-        color: darken(@accent-bold-text-color, 15%);
-    }
-
-    .merge-heading-family {
-        span {
-            display: block;
-        }
-
-        margin-bottom: 12px;
-    }
-}
-
 .merge-photo {
-    border: 3px solid @accent-semibold-color;
+    border: 3px solid @photo-border;
 }
 
 // 12. Person Page Views
@@ -795,7 +771,6 @@ span.field-value {
 .panel-widget.pageviewsession {
 
     .pageviewsession-client {
-        color: @accent-bold-color;
         text-align: right;
         line-height: 1;
     }
@@ -946,8 +921,8 @@ tr.inactive {
         text-align: center;
         vertical-align: bottom;
         border-radius: @border-radius-large @border-radius-large 0 0;
-        background-color: @accent-bold-color;
-        color: @accent-bold-text-color;
+        background-color: lighten(@brand-primary, 10%);
+        color: @btn-primary-color;
 
         &.discchart-midpoint {
             height: 70%;
@@ -989,7 +964,7 @@ tr.inactive {
         }
 
         &.discbar-primary {
-            background: darken(@accent-bold-color, 30%);
+            background: @brand-primary;
         }
     }
 }

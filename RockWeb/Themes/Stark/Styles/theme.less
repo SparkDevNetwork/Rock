@@ -1,9 +1,12 @@
 ﻿
 // Load Master Styles
 // -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
 @import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
 @import "../../../Styles/_rock-variables.less";
 @import "_variables.less";
+@import "_variable-overrides.less";
 @import "_print.less";
 
 
@@ -59,6 +62,7 @@ header {
 
     .navbar {
         background-color: @header-bg;
+        border: 0;
     }
 }
 
@@ -98,10 +102,6 @@ header {
     li {
         border: 1px solid @gray-lighter;
         border-radius: @border-radius-base;
-
-        a:hover {
-            background-color: @gray-lighter;
-        }
     }
 }
 

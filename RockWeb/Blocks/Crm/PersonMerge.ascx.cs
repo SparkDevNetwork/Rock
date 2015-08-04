@@ -236,6 +236,10 @@ namespace RockWeb.Blocks.Crm
                     e.Row.AddCssClass( "grid-section-header" );
                 }
             }
+            else if ( e.Row.RowType == DataControlRowType.Header )
+            {
+                e.Row.AddCssClass( "grid-header-bold" );
+            }
         }
 
         /// <summary>
@@ -497,7 +501,7 @@ namespace RockWeb.Blocks.Crm
             gValues.Columns.Clear();
 
             if ( MergeData != null && MergeData.People != null && MergeData.People.Any() )
-            {
+            {                
                 var keyCol = new BoundField();
                 keyCol.DataField = "Key";
                 keyCol.Visible = false;
@@ -505,7 +509,7 @@ namespace RockWeb.Blocks.Crm
 
                 var labelCol = new BoundField();
                 labelCol.DataField = "Label";
-                labelCol.HeaderStyle.CssClass = "merge-personselect";
+                //labelCol.HeaderStyle.CssClass = "grid-section-header";
                 gValues.Columns.Add( labelCol );
 
                 var personService = new PersonService( new RockContext() );
@@ -518,7 +522,7 @@ namespace RockWeb.Blocks.Crm
                     personCol.HeaderContent = GetValuesColumnHeader( person.Id );
                     personCol.ModifiedDateTime = person.ModifiedDateTime;
                     personCol.ModifiedBy = person.ModifiedBy;
-                    personCol.HeaderStyle.CssClass = "merge-personselect";
+                    //personCol.HeaderStyle.CssClass = "grid-section-header";
                     personCol.DataTextField = string.Format( "property_{0}", person.Id );
                     personCol.DataSelectedField = string.Format( "property_{0}_selected", person.Id );
                     personCol.DataVisibleField = string.Format( "property_{0}_visible", person.Id );
@@ -568,7 +572,7 @@ namespace RockWeb.Blocks.Crm
                 bool showType = family.GroupLocations.Count() > 1;
                 foreach ( var loc in family.GroupLocations )
                 {
-                    sbHeaderData.AppendFormat( " <span class='merge-heading-location'>{0}{1}</span>",
+                    sbHeaderData.AppendFormat( " <br><span>{0}{1}</span>",
                         loc.Location.ToStringSafe(),
                         ( showType ? " (" + loc.GroupLocationTypeValue.Value + ")" : "" ) );
                 }
