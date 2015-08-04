@@ -7,7 +7,7 @@
       {% assign eventName = eventCampusSummary.Name %}
     {% endif %}
 
-    <h4>{{ eventName }} <small>{{ eventCampusSummary.EventItemOccurrence.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal | First | Date: 'ddd, MMM d / h:mmtt' }}</small></h4>
+    <h4>{{ eventName }} <small>{{ eventCampusSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'ddd, MMM d / h:mmtt' }}</small></h4>
 
 
     <p>{{ eventCampusSummary.Summary }}</p>
