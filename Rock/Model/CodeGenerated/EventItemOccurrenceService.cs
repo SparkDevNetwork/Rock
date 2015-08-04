@@ -95,7 +95,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.CampusId = source.CampusId;
-            target.CampusNote = source.CampusNote;
+            target.Note = source.Note;
             target.ContactEmail = source.ContactEmail;
             target.ContactPersonAliasId = source.ContactPersonAliasId;
             target.ContactPhone = source.ContactPhone;

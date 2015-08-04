@@ -510,7 +510,7 @@ namespace RockWeb.Blocks.Event
 
                 EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
                 var qry = eventCalendarItemService
-                    .Queryable( "EventCalendar,EventItem.EventItemAudiences,EventItem.EventItemOccurrences.EventItemSchedules.Schedule" )
+                    .Queryable( "EventCalendar,EventItem.EventItemAudiences,EventItem.EventItemOccurrences.Schedule" )
                     .Where( m =>
                         m.EventItem != null &&
                         m.EventCalendarId == _eventCalendar.Id );

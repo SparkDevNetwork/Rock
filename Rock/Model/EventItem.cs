@@ -202,7 +202,6 @@ namespace Rock.Model
             get
             {
                 return EventItemOccurrences
-                    .SelectMany( c => c.EventItemSchedules)
                     .Select( s => s.NextStartDateTime )
                     .DefaultIfEmpty()
                     .Min();

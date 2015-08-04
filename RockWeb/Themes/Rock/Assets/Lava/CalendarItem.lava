@@ -29,9 +29,9 @@
 				{{ EventItemOccurrence.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal | First | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}
 			</p>
 				
-			{% if EventItemOccurrence.CampusNote != '' %}
+			{% if EventItemOccurrence.Note != '' %}
 				<strong>Note</strong><br />
-				{{ EventItemOccurrence.CampusNote }}
+				{{ EventItemOccurrence.Note }}
 			{% endif %}
 				
 			{% if linkage.RegistrationInstanceId > 0 ) %}

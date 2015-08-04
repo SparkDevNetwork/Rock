@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Event
 </p>
 
 <p>
-    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 0 )]
@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.Event
 </p>
 
 <p>
-    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 1 )]
@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.Event
 
 <p>
     A confirmation email has been sent to {{ Registration.ConfirmationEmail }}. If you have any questions 
-    please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+    please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 ", "", 2 )]
     public partial class RegistrationTemplateDetail : RockBlock
@@ -1638,11 +1638,11 @@ namespace RockWeb.Blocks.Event
                 registrationTemplate.Id = 0;
                 registrationTemplate.IsActive = true;
                 registrationTemplate.CategoryId = parentCategoryId;
-                registrationTemplate.ConfirmationFromName = "{{ RegistrationInstance.ContactName }}";
+                registrationTemplate.ConfirmationFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
                 registrationTemplate.ConfirmationFromEmail = "{{ RegistrationInstance.ContactEmail }}";
                 registrationTemplate.ConfirmationSubject = "{{ RegistrationInstance.Name }} Confirmation";
                 registrationTemplate.ConfirmationEmailTemplate = GetAttributeValue( "DefaultConfirmationEmail" );
-                registrationTemplate.ReminderFromName = "{{ RegistrationInstance.ContactName }}";
+                registrationTemplate.ReminderFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
                 registrationTemplate.ReminderFromEmail = "{{ RegistrationInstance.ContactEmail }}";
                 registrationTemplate.ReminderSubject = "{{ RegistrationInstance.Name }} Reminder";
                 registrationTemplate.ReminderEmailTemplate = GetAttributeValue( "DefaultReminderEmail" );
