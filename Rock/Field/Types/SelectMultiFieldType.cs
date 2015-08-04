@@ -275,6 +275,7 @@ namespace Rock.Field.Types
             return true;
         }
 
+        /// <summary>
         /// Gets the filter value value.
         /// </summary>
         /// <param name="control">The control.</param>
