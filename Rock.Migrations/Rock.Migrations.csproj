@@ -3139,6 +3139,7 @@
     <Content Include="Migrations\201507181918494_ConnectionChangesAndSampleData.sql" />
     <Content Include="Migrations\201507171137229_RegistrationInstanceContactPhone.sql" />
     <Content Include="Migrations\201507121943445_RegistrationEmails.sql" />
+    <Content Include="Migrations\201508041124356_RegistrationContact.sql" />
     <Content Include="Migrations\201508010008536_BackgroundCheckExpiringSoon.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
