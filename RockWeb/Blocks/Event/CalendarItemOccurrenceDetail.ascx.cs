@@ -1023,13 +1023,13 @@ namespace RockWeb.Blocks.Event
 
                 if ( LinkageState.RegistrationInstance == null )
                 {
-                    var contactPersonId = ppContact.PersonId;
-                    if ( contactPersonId.HasValue )
+                    var contactPersonAliasId = ppContact.PersonAliasId;
+                    if ( contactPersonAliasId.HasValue )
                     {
-                        var person = new PersonService( rockContext ).Get( contactPersonId.Value );
-                        if ( person != null )
+                        var personAlias = new PersonAliasService( rockContext ).Get( contactPersonAliasId.Value );
+                        if ( personAlias != null )
                         {
-                            rieNewLinkage.ContactName = person.FullName;
+                            rieNewLinkage.ContactPersonAlias = personAlias;
                         }
                     }
 
