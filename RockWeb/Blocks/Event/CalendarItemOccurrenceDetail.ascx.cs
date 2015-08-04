@@ -53,7 +53,6 @@ namespace RockWeb.Blocks.Event
         #region Properties
 
         public EventItemOccurrenceGroupMap LinkageState { get; set; }
-        public List<EventItemSchedule> SchedulesState { get; set; }
 
         #endregion Properties
 
@@ -76,16 +75,6 @@ namespace RockWeb.Blocks.Event
             {
                 LinkageState = JsonConvert.DeserializeObject<EventItemOccurrenceGroupMap>( json );
             }
-
-            json = ViewState["SchedulesState"] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
-            {
-                SchedulesState = new List<EventItemSchedule>();
-            }
-            else
-            {
-                SchedulesState = JsonConvert.DeserializeObject<List<EventItemSchedule>>( json );
-            }
         }
 
         /// <summary>
@@ -95,11 +84,6 @@ namespace RockWeb.Blocks.Event
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            gSchedules.DataKeyNames = new string[] { "Guid" };
-            gSchedules.Actions.ShowAdd = true;
-            gSchedules.Actions.AddClick += gSchedules_Add;
-            gSchedules.GridRebind += gSchedules_GridRebind;
 
             ddlCampus.DataSource = CampusCache.All();
             ddlCampus.DataBind();
@@ -139,7 +123,6 @@ namespace RockWeb.Blocks.Event
             };
 
             ViewState["LinkageState"] = JsonConvert.SerializeObject( LinkageState, Formatting.None, jsonSetting );
-            ViewState["SchedulesState"] = JsonConvert.SerializeObject( SchedulesState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -203,7 +186,6 @@ namespace RockWeb.Blocks.Event
             using ( var rockContext = new RockContext() )
             {
                 var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
-                var eventItemScheduleService = new EventItemScheduleService( rockContext );
                 var eventItemOccurrenceGroupMapService = new EventItemOccurrenceGroupMapService( rockContext );
                 var registrationInstanceService = new RegistrationInstanceService( rockContext );
                 var scheduleService = new ScheduleService( rockContext );
@@ -212,7 +194,7 @@ namespace RockWeb.Blocks.Event
                 if ( eventItemOccurrenceId != 0 )
                 {
                     eventItemOccurrence = eventItemOccurrenceService
-                        .Queryable( "Linkages,EventItemSchedules" )
+                        .Queryable( "Linkages" )
                         .Where( i => i.Id == eventItemOccurrenceId )
                         .FirstOrDefault();
                 }
@@ -240,6 +222,28 @@ namespace RockWeb.Blocks.Event
 
                 eventItemOccurrence.Location = tbLocation.Text;
 
+                string iCalendarContent = sbSchedule.iCalendarContent;
+                var calEvent = ScheduleICalHelper.GetCalenderEvent( iCalendarContent );
+                if ( calEvent != null && calEvent.DTStart != null )
+                {
+                    if ( eventItemOccurrence.Schedule == null )
+                    {
+                        eventItemOccurrence.Schedule = new Schedule();
+                    }
+                    eventItemOccurrence.Schedule.iCalendarContent = iCalendarContent;
+                }
+                else
+                {
+                    if ( eventItemOccurrence.ScheduleId.HasValue )
+                    {
+                        var oldSchedule = scheduleService.Get( eventItemOccurrence.ScheduleId.Value );
+                        if ( oldSchedule != null )
+                        {
+                            scheduleService.Delete( oldSchedule );
+                        }
+                    }
+                }
+
                 if ( !eventItemOccurrence.ContactPersonAliasId.Equals( ppContact.PersonAliasId ))
                 {
                     PersonAlias personAlias = null;
@@ -257,7 +261,7 @@ namespace RockWeb.Blocks.Event
 
                 eventItemOccurrence.ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnPhone.Number );
                 eventItemOccurrence.ContactEmail = tbEmail.Text;
-                eventItemOccurrence.CampusNote = htmlOccurrenceNote.Text;
+                eventItemOccurrence.Note = htmlOccurrenceNote.Text;
 
                 // Remove any linkage no longer in UI
                 Guid uiLinkageGuid = LinkageState != null ? LinkageState.Guid : Guid.Empty;
@@ -289,37 +293,6 @@ namespace RockWeb.Blocks.Event
                         linkage.RegistrationInstance = registrationInstance;
                     }
 
-                }
-
-                // Remove any schedules not in the uI
-                List<Guid> uiScheduleGuids = SchedulesState.Select( s => s.Guid ).ToList();
-                foreach( var schedule in eventItemOccurrence.EventItemSchedules.Where( s => !uiScheduleGuids.Contains( s.Guid )).ToList())
-                {
-                    eventItemOccurrence.EventItemSchedules.Remove( schedule );
-                    eventItemScheduleService.Delete( schedule );
-                }
-
-                // Add or Update the schedule information from the UI
-                foreach ( var uiSchedule in SchedulesState )
-                {
-                    var eventItemSchedule = eventItemOccurrence.EventItemSchedules.Where( s => s.Guid == uiSchedule.Guid ).FirstOrDefault();
-                    if ( eventItemSchedule == null )
-                    {
-                        eventItemSchedule = new EventItemSchedule();
-                        eventItemScheduleService.Add( eventItemSchedule );
-                        eventItemOccurrence.EventItemSchedules.Add( eventItemSchedule );
-                    }
-
-                    eventItemSchedule.CopyPropertiesFrom( uiSchedule );
-
-                    if ( eventItemSchedule.Schedule == null )
-                    {
-                        var schedule = new Schedule();
-                        scheduleService.Add( schedule );
-                        eventItemSchedule.Schedule = schedule;
-                    }
-
-                    eventItemSchedule.Schedule.CopyPropertiesFrom( uiSchedule.Schedule );
                 }
 
                 if ( !Page.IsValid )
@@ -654,102 +627,6 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
-        #region EventItemSchedule Events
-
-        /// <summary>
-        /// Handles the Add event of the gSchedules control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gSchedules_Add( object sender, EventArgs e )
-        {
-            SchedulesState.RemoveEntity( Guid.Empty );
-
-            string scheduleName = ( SchedulesState.Count + 1 ).ToOrdinalWords().Humanize( LetterCasing.Title ) + " Schedule";
-            var itemSchedule = new EventItemSchedule { ScheduleId = 0, ScheduleName = scheduleName, Guid = Guid.Empty, Schedule = new Schedule() };
-            SchedulesState.Add( itemSchedule );
-
-            ShowScheduleDialog( itemSchedule );
-        }
-
-        /// <summary>
-        /// Handles the Edit event of the gSchedules control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gSchedules_Edit( object sender, RowEventArgs e )
-        {
-            Guid guid = (Guid)e.RowKeyValue;
-            var itemSchedule = SchedulesState.FirstOrDefault( l => l.Guid.Equals( guid ) );
-            if ( itemSchedule != null )
-            {
-                ShowScheduleDialog( itemSchedule );
-            } 
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnSaveSchedule control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void dlgSchedule_SaveClick( object sender, EventArgs e )
-        {
-            Guid? guid = hfScheduleGuid.Value.AsGuidOrNull();
-            if ( guid.HasValue )
-            {
-                var eventItemSchedule = SchedulesState.FirstOrDefault( s => s.Guid.Equals( guid ) );
-                if ( eventItemSchedule != null && eventItemSchedule.Schedule != null )
-                {
-                    eventItemSchedule.Schedule.iCalendarContent = sbSchedule.iCalendarContent;
-                    eventItemSchedule.ScheduleName = tbScheduleName.Text;
-
-                    // Set the Guid now (otherwise it will not be valid )
-                    bool isNew = eventItemSchedule.Guid == Guid.Empty;
-                    if ( isNew )
-                    {
-                        eventItemSchedule.Guid = Guid.NewGuid();
-                    }
-
-                    if ( !eventItemSchedule.IsValid )
-                    {
-                        // If validation failed and this is new, reset the guid back to empty
-                        if ( isNew )
-                        {
-                            eventItemSchedule.Guid = Guid.Empty;
-                        }
-                        return;
-                    }
-
-                    BindSchedulesGrid();
-
-                    HideDialog();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handles the Delete event of the gSchedules control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gSchedules_Delete( object sender, RowEventArgs e )
-        {
-            Guid guid = (Guid)e.RowKeyValue;
-            SchedulesState.RemoveEntity( guid );
-
-            BindSchedulesGrid();
-        }
-
-        /// <summary>
-        /// Handles the GridRebind event of the gSchedules control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gSchedules_GridRebind( object sender, EventArgs e )
-        {
-            BindSchedulesGrid();
-        }
-
         /// <summary>
         /// Handles the SaveSchedule event of the sbSchedule control.
         /// </summary>
@@ -798,8 +675,6 @@ namespace RockWeb.Blocks.Event
                 }
             }
         }
-
-        #endregion
 
         #region Methods
 
@@ -880,11 +755,22 @@ namespace RockWeb.Blocks.Event
             ddlCampus.SetValue( eventItemOccurrence.CampusId ?? -1 );
             tbLocation.Text = eventItemOccurrence.Location;
 
+            if ( eventItemOccurrence.Schedule != null )
+            {
+                sbSchedule.iCalendarContent = eventItemOccurrence.Schedule.iCalendarContent;
+                lScheduleText.Text = eventItemOccurrence.Schedule.FriendlyScheduleText;
+            }
+            else
+            {
+                sbSchedule.iCalendarContent = string.Empty;
+                lScheduleText.Text = string.Empty;
+            }
+
             ppContact.SetValue( eventItemOccurrence.ContactPersonAlias != null ? eventItemOccurrence.ContactPersonAlias.Person : null );
             pnPhone.Text = eventItemOccurrence.ContactPhone;
             tbEmail.Text = eventItemOccurrence.ContactEmail;
 
-            htmlOccurrenceNote.Text = eventItemOccurrence.CampusNote;
+            htmlOccurrenceNote.Text = eventItemOccurrence.Note;
 
             LinkageState = new EventItemOccurrenceGroupMap { Guid = Guid.Empty };
             var registration = eventItemOccurrence.Linkages.FirstOrDefault();
@@ -899,17 +785,6 @@ namespace RockWeb.Blocks.Event
             }
 
             DisplayRegistration();
-
-            SchedulesState = new List<EventItemSchedule>();
-            foreach ( var itemSchedule in eventItemOccurrence.EventItemSchedules )
-            {
-                var scheduleState = itemSchedule.Clone( false );
-                scheduleState.Schedule = itemSchedule.Schedule != null ? itemSchedule.Schedule.Clone( false ) : new Schedule();
-                SchedulesState.Add( scheduleState );
-            }
-
-            BindSchedulesGrid();
-        
         }
 
         private void ShowReadonlyDetails( EventItemOccurrence eventItemOccurrence )
@@ -922,12 +797,7 @@ namespace RockWeb.Blocks.Event
 
             var leftDesc = new DescriptionList();
             leftDesc.Add( "Campus", eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All" );
-            StringBuilder sbSchedules = new StringBuilder();
-            foreach( var sched in eventItemOccurrence.EventItemSchedules.Where( s => s.Schedule != null ) )
-            {
-                sbSchedules.AppendFormat( "<strong>{0}</strong> {1}<br/>", sched.ScheduleName, sched.Schedule.FriendlyScheduleText );
-            }
-            leftDesc.Add( "Schedule(s)", sbSchedules.ToString() );
+            leftDesc.Add( "Schedule", eventItemOccurrence.Schedule != null ? eventItemOccurrence.Schedule.FriendlyScheduleText : string.Empty );
 
             if ( eventItemOccurrence.Linkages.Any() )
             {
@@ -956,8 +826,8 @@ namespace RockWeb.Blocks.Event
             rightDesc.Add( "Email", eventItemOccurrence.ContactEmail );
             lRightDetails.Text = rightDesc.Html;
 
-            lOccurrenceNotes.Visible = !string.IsNullOrWhiteSpace( eventItemOccurrence.CampusNote );
-            lOccurrenceNotes.Text = eventItemOccurrence.CampusNote;
+            lOccurrenceNotes.Visible = !string.IsNullOrWhiteSpace( eventItemOccurrence.Note );
+            lOccurrenceNotes.Text = eventItemOccurrence.Note;
         }
 
         private void SetEditMode( bool editable )
@@ -1023,13 +893,13 @@ namespace RockWeb.Blocks.Event
 
                 if ( LinkageState.RegistrationInstance == null )
                 {
-                    var contactPersonId = ppContact.PersonId;
-                    if ( contactPersonId.HasValue )
+                    var contactPersonAliasId = ppContact.PersonAliasId;
+                    if ( contactPersonAliasId.HasValue )
                     {
-                        var person = new PersonService( rockContext ).Get( contactPersonId.Value );
-                        if ( person != null )
+                        var personAlias = new PersonAliasService( rockContext ).Get( contactPersonAliasId.Value );
+                        if ( personAlias != null )
                         {
-                            rieNewLinkage.ContactName = person.FullName;
+                            rieNewLinkage.ContactPersonAlias = personAlias;
                         }
                     }
 
@@ -1126,43 +996,6 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Binds the schedules grid.
-        /// </summary>
-        private void BindSchedulesGrid()
-        {
-            gSchedules.DataSource = SchedulesState
-                .Where( s => !s.Guid.Equals( Guid.Empty ) )
-                .OrderBy( s => s.ScheduleName )
-                .Select( s => new
-                {
-                    s.Id,
-                    s.Guid,
-                    Schedule = s.ScheduleName,
-                    Details = s.Schedule.FriendlyScheduleText
-                } )
-                .ToList();
-            gSchedules.DataBind();
-
-            // Set hidden field so that it can be used for client-side validation to ensure at least one schedule was created
-            hfSchedules.Value = SchedulesState.Any() ? "WeGotSome" : "";
-        }
-
-        /// <summary>
-        /// Shows the schedule dialog.
-        /// </summary>
-        /// <param name="itemSchedule">The item schedule.</param>
-        private void ShowScheduleDialog( EventItemSchedule itemSchedule )
-        {
-            hfScheduleGuid.Value = itemSchedule.Guid.ToString();
-
-            tbScheduleName.Text = itemSchedule.ScheduleName;
-            sbSchedule.iCalendarContent = itemSchedule.Schedule.iCalendarContent;
-            lScheduleText.Text = itemSchedule.Schedule.FriendlyScheduleText;
-
-            ShowDialog( "EventItemSchedule", true );
-        }
-
-        /// <summary>
         /// Shows the dialog.
         /// </summary>
         /// <param name="dialog">The dialog.</param>
@@ -1192,10 +1025,6 @@ namespace RockWeb.Blocks.Event
                 case "EVENTITEMEXISTINGLINKAGE":
                     dlgExistingLinkage.Show();
                     break;
-
-                case "EVENTITEMSCHEDULE":
-                    dlgSchedule.Show();
-                    break;
             }
         }
 
@@ -1217,10 +1046,6 @@ namespace RockWeb.Blocks.Event
                 case "EVENTITEMEXISTINGLINKAGE":
                     dlgExistingLinkage.Hide();
                     break;
-
-                case "EVENTITEMSCHEDULE":
-                    dlgSchedule.Hide();
-                    break;
             }
 
             hfActiveDialog.Value = string.Empty; ;
@@ -1229,5 +1054,9 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
+        protected void sbSchedule_SaveSchedule( object sender, EventArgs e )
+        {
+
+        }
 }
 }

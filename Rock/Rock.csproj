@@ -263,7 +263,6 @@
     <Compile Include="Model\CodeGenerated\EventItemOccurrenceChannelItemService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemOccurrenceGroupMapService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemOccurrenceService.cs" />
-    <Compile Include="Model\CodeGenerated\EventItemScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemService.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
@@ -339,7 +338,6 @@
     <Compile Include="Model\EventItemAudience.cs" />
     <Compile Include="Model\EventItemOccurrenceChannelItem.cs" />
     <Compile Include="Model\EventItemOccurrenceGroupMap.cs" />
-    <Compile Include="Model\EventItemSchedule.cs" />
     <Compile Include="Model\CampusService.partial.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceRequestService.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceResultService.cs" />

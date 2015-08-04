@@ -312,7 +312,7 @@ namespace RockWeb.Blocks.Event
                 if ( eventItemId != 0 )
                 {
                     eventItem = eventItemService
-                        .Queryable( "EventItemAudiences,EventItemOccurrences.Linkages,EventItemOccurrences.EventItemSchedules" )
+                        .Queryable( "EventItemAudiences,EventItemOccurrences.Linkages,EventItemOccurrences" )
                         .Where( i => i.Id == eventItemId )
                         .FirstOrDefault();
                 }

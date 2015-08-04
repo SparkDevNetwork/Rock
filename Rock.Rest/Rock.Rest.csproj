@@ -138,7 +138,6 @@
     <Compile Include="Controllers\CodeGenerated\EventItemOccurrenceChannelItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\EventItemOccurrenceGroupMapsController.cs" />
     <Compile Include="Controllers\CodeGenerated\EventItemOccurrencesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\EventItemSchedulesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EventItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialGatewaysController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingsController.cs" />
