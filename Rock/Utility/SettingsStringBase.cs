@@ -26,7 +26,7 @@ namespace Rock.Utility
     public abstract class SettingsStringBase
     {
         /// <summary>
-        /// The settings delimiter
+        /// The settings delimiter.
         /// </summary>
         public const string SettingsDelimiter = "|";
 
@@ -42,38 +42,38 @@ namespace Rock.Utility
         }
 
         /// <summary>
-        ///     Indicates if the current settings are valid.
-        ///     Override this property to implement verification of custom settings.
+        /// Indicates if the current settings are valid.
         /// </summary>
+        /// <value>True if the settings are valid.</value>
         public virtual bool IsValid
         {
             get { return true; }
         }
 
         /// <summary>
-        ///     Implemented by the derived class to set property values parsed from a settings string.
-        ///     The derived class should implement parsing for previous versions of the settings string where needed.
+        ///     Set the property values parsed from a settings string.
         /// </summary>
-        /// <param name="version"></param>
-        /// <param name="parameters"></param>
+        /// <param name="version">The version number of the parameter set.</param>
+        /// <param name="parameters">An ordered collection of strings representing the parameter values.</param>
         protected abstract void OnSetParameters( int version, IReadOnlyList<string> parameters );
 
         /// <summary>
-        ///     Implemented by the derived class to return an ordered set of property values that can be used to construct the
+        ///     Gets an ordered set of property values that can be used to construct the
         ///     settings string.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>An ordered collection of strings representing the parameter values.</returns>
         protected abstract IEnumerable<string> OnGetParameters();
 
         /// <summary>
         ///     Set values from a string representation of the settings.
         /// </summary>
-        /// <param name="selectionString"></param>
-        public void FromSelectionString( string selectionString )
+        /// <param name="selectionString">A delimited string representing the settings.</param>
+        /// <param name="delimiter">The delimiter used to separate the setting values.</param>
+        public void FromSelectionString( string selectionString, string delimiter = SettingsDelimiter )
         {
             // Selection String is of the format: version=X|param1|param2|param3...
             // If version parameter is missing, assume version = 1.                   
-            var parameterValues = selectionString.Split( new string[] { SettingsDelimiter }, StringSplitOptions.None ).ToList();
+            var parameterValues = selectionString.Split( new[] { delimiter }, StringSplitOptions.None ).ToList();
 
             // Read the settings string version from the first parameter.
             // This allows us to cater for any future upgrades to the content and format of the settings string.
@@ -95,9 +95,9 @@ namespace Rock.Utility
         }
 
         /// <summary>
-        ///     Returns a delimited string representation of the settings.
+        ///     Gets a string representation of the settings.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A delimited string representing the settings.</returns>
         public string ToSelectionString()
         {
             var settings = new List<string>();

@@ -11,7 +11,7 @@
 
         <asp:Panel id="pnlDetails" runat="server" CssClass="row">
 
-            <asp:Panel ID="pnlFilters" CssClass="col-md-3" runat="server">
+            <asp:Panel ID="pnlFilters" CssClass="col-md-3 hidden-print" runat="server">
 
                 <asp:Panel ID="pnlCalendar" CssClass="calendar" runat="server">
                     <asp:Calendar ID="calEventCalendar" runat="server" DayNameFormat="FirstLetter" SelectionMode="Day" BorderStyle="None"
@@ -46,7 +46,7 @@
 
             <asp:Panel ID="pnlList" CssClass="col-md-9" runat="server">
 
-                <div class="btn-group" role="group">
+                <div class="btn-group hidden-print" role="group">
                     <Rock:BootstrapButton ID="btnDay" runat="server" CssClass="btn btn-default" Text="Day" OnClick="btnViewMode_Click" />
                     <Rock:BootstrapButton ID="btnWeek" runat="server" CssClass="btn btn-default" Text="Week" OnClick="btnViewMode_Click" />
                     <Rock:BootstrapButton ID="btnMonth" runat="server" CssClass="btn btn-default" Text="Month" OnClick="btnViewMode_Click" />

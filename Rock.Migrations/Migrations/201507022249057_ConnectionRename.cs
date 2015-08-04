@@ -30,53 +30,22 @@ namespace Rock.Migrations
         public override void Up()
         {
             Sql( String.Format( @"
-UPDATE [Group]
+    UPDATE [Group]
     SET [Name] = 'RSR - Connection Administration',
     [Description] = 'Group of individuals who can administrate the various parts of the connection functionality.'
     WHERE [Guid] = '{0}'
+", Rock.SystemGuid.Group.GROUP_CONNECTION_ADMINISTRATORS ) );
 
-UPDATE [BlockType] SET
-	[Path] = '~/Blocks/Connection/MyConnectionOpportunities.ascx',
-	[Category] = 'Connection'
-    WHERE [Path] = '~/Blocks/Involvement/MyConnectionOpportunities.ascx'
-
-UPDATE [BlockType] SET
-	[Path] = '~/Blocks/Connection/ConnectionRequestDetail.ascx',
-	[Category] = 'Connection'
-    WHERE [Path] = '~/Blocks/Involvement/ConnectionRequestDetail.ascx'
-
-UPDATE [BlockType] SET
-	[Path] = '~/Blocks/Connection/ConnectionTypeList.ascx',
-	[Category] = 'Connection'
-    WHERE [Path] = '~/Blocks/Involvement/ConnectionTypeList.ascx'
-
-UPDATE [BlockType] SET
-	[Path] = '~/Blocks/Connection/ConnectionOpportunityList.ascx',
-	[Category] = 'Connection'
-    WHERE [Path] = '~/Blocks/Involvement/ConnectionOpportunityList.ascx'
-
-UPDATE [BlockType] SET
-	[Path] = '~/Blocks/Connection/ConnectionTypeDetail.ascx',
-	[Category] = 'Connection'
-    WHERE [Path] = '~/Blocks/Involvement/ConnectionTypeDetail.ascx'
-
-UPDATE [BlockType] SET
-	[Path] = '~/Blocks/Connection/ConnectionOpportunityDetail.ascx',
-	[Category] = 'Connection'
-    WHERE [Path] = '~/Blocks/Involvement/ConnectionOpportunityDetail.ascx'
-
-UPDATE [BlockType] SET
-	[Path] = '~/Blocks/Connection/ExternalOpportunitySearch.ascx',
-	[Category] = 'Connection'
-    WHERE [Path] = '~/Blocks/Involvement/ExternalOpportunitySearch.ascx'
-
-UPDATE [BlockType] SET
-	[Path] = '~/Blocks/Connection/ExternalConnectionOpportunityDetail.ascx',
-	[Category] = 'Connection'
-    WHERE [Path] = '~/Blocks/Involvement/ExternalConnectionOpportunityDetail.ascx'
-                ", Rock.SystemGuid.Group.GROUP_CONNECTION_ADMINISTRATORS ) );   
+            RockMigrationHelper.RenameBlockType( "~/Blocks/Involvement/MyConnectionOpportunities.ascx", "~/Blocks/Connection/MyConnectionOpportunities.ascx", "Connection" );
+            RockMigrationHelper.RenameBlockType( "~/Blocks/Involvement/ConnectionRequestDetail.ascx", "~/Blocks/Connection/ConnectionRequestDetail.ascx", "Connection" );
+            RockMigrationHelper.RenameBlockType( "~/Blocks/Involvement/ConnectionTypeList.ascx", "~/Blocks/Connection/ConnectionTypeList.ascx", "Connection" );
+            RockMigrationHelper.RenameBlockType( "~/Blocks/Involvement/ConnectionOpportunityList.ascx", "~/Blocks/Connection/ConnectionOpportunityList.ascx", "Connection" );
+            RockMigrationHelper.RenameBlockType( "~/Blocks/Involvement/ConnectionTypeDetail.ascx", "~/Blocks/Connection/ConnectionTypeDetail.ascx", "Connection" );
+            RockMigrationHelper.RenameBlockType( "~/Blocks/Involvement/ConnectionOpportunityDetail.ascx", "~/Blocks/Connection/ConnectionOpportunityDetail.ascx", "Connection" );
+            RockMigrationHelper.RenameBlockType( "~/Blocks/Involvement/ExternalOpportunitySearch.ascx", "~/Blocks/Connection/ExternalOpportunitySearch.ascx", "Connection" );
+            RockMigrationHelper.RenameBlockType( "~/Blocks/Involvement/ExternalConnectionOpportunityDetail.ascx", "~/Blocks/Connection/ExternalConnectionOpportunityDetail.ascx", "Connection" );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>

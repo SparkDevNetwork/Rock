@@ -71,7 +71,7 @@ namespace Rock.CheckIn
             {
                 if ( Groups != null )
                 {
-                    return Groups.SelectMany( g => g.Schedules.SelectMany( s => s.PersonIds ) ).Distinct().ToList();
+                    return Groups.SelectMany( g => g.Schedules.Where( s => s.IsActive).SelectMany( s => s.PersonIds ) ).Distinct().ToList();
                 }
                 else
                 {
@@ -204,6 +204,7 @@ namespace Rock.CheckIn
                     scheduleAttendance = new KioskScheduleAttendance();
                     scheduleAttendance.ScheduleId = attendance.ScheduleId.Value;
                     scheduleAttendance.ScheduleName = attendance.Schedule.Name;
+                    scheduleAttendance.IsActive = attendance.Schedule.IsScheduleOrCheckInActive;
                     scheduleAttendance.PersonIds = new List<int>();
                     groupAttendance.Schedules.Add( scheduleAttendance );
                 }

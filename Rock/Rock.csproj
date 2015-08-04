@@ -432,6 +432,9 @@
     <Compile Include="Reporting\DataFilter\FinancialPledge\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialTransactionDetail\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialTransaction\TotalAmountFilter.cs" />
+    <Compile Include="Reporting\DataFilter\GroupMembers\ContainsPeopleFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Group\ContainsGroupMembersFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Group\ContainsPeopleFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\GroupBranchFilter.cs" />
     <Compile Include="Reporting\DataFilter\IUpdateSelectionFromPageParameters.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusesFilter.cs" />
