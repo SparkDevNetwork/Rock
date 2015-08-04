@@ -185,6 +185,7 @@ namespace RockWeb.Blocks.Event
 
             using ( var rockContext = new RockContext() )
             {
+                bool newItem = false;
                 var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
                 var eventItemOccurrenceGroupMapService = new EventItemOccurrenceGroupMapService( rockContext );
                 var registrationInstanceService = new RegistrationInstanceService( rockContext );
@@ -201,6 +202,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( eventItemOccurrence == null )
                 {
+                    newItem = true;
                     eventItemOccurrence = new EventItemOccurrence{ EventItemId = PageParameter("EventItemId").AsInteger() };
                     eventItemOccurrenceService.Add( eventItemOccurrence );
                 }
@@ -311,7 +313,16 @@ namespace RockWeb.Blocks.Event
                 var qryParams = new Dictionary<string, string>();
                 qryParams.Add( "EventCalendarId", PageParameter( "EventCalendarId" ) );
                 qryParams.Add( "EventItemId", PageParameter( "EventItemId" ) );
-                NavigateToParentPage( qryParams );
+
+                if ( newItem )
+                {
+                    NavigateToParentPage( qryParams );
+                }
+                else
+                {
+                    qryParams.Add( "EventItemOccurrenceId", eventItemOccurrence.Id.ToString() );
+                    NavigateToPage( RockPage.Guid, qryParams );
+                }
             }
         }
 
@@ -797,6 +808,7 @@ namespace RockWeb.Blocks.Event
 
             var leftDesc = new DescriptionList();
             leftDesc.Add( "Campus", eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All" );
+            leftDesc.Add( "Location Description", eventItemOccurrence.Location );
             leftDesc.Add( "Schedule", eventItemOccurrence.Schedule != null ? eventItemOccurrence.Schedule.FriendlyScheduleText : string.Empty );
 
             if ( eventItemOccurrence.Linkages.Any() )
@@ -819,7 +831,6 @@ namespace RockWeb.Blocks.Event
             lLeftDetails.Text = leftDesc.Html;
 
             var rightDesc = new DescriptionList();
-            leftDesc.Add( "Location Details", eventItemOccurrence.Location );
             rightDesc.Add( "Contact", eventItemOccurrence.ContactPersonAlias != null && eventItemOccurrence.ContactPersonAlias.Person != null ?
                 eventItemOccurrence.ContactPersonAlias.Person.FullName : "" );
             rightDesc.Add( "Phone", eventItemOccurrence.ContactPhone );
@@ -1054,9 +1065,5 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
-        protected void sbSchedule_SaveSchedule( object sender, EventArgs e )
-        {
-
-        }
 }
 }
