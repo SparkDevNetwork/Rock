@@ -115,7 +115,7 @@ namespace RockWeb.Blocks.Examples
                             ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " - " +  property.Comment.Summary : "",
                             property.Required ? " <strong class='text-danger'>*</strong> " : string.Empty,
                             property.IsLavaInclude ? " <small><span class='tip tip-lava'></span></small> " : string.Empty,
-                            property.NotMapped ? " <span class='fa-stack small'><i class='fa fa-database fa-stack-1x'></i><i class='fa fa-ban fa-stack-2x text-danger'></i></span> " : string.Empty,
+                            property.NotMapped || property.IsVirtual ? " <span class='fa-stack small'><i class='fa fa-database fa-stack-1x'></i><i class='fa fa-ban fa-stack-2x text-danger'></i></span> " : string.Empty,
                             property.IsInherited ? " js-model hidden " : " ",
                             property.IsInherited ? " (inherited)" : "",
                             Environment.NewLine );
@@ -250,6 +250,7 @@ namespace RockWeb.Blocks.Examples
                 {
                     Name = p.Name,
                     IsInherited = p.DeclaringType != type,
+                    IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual,
                     IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ),
                     NotMapped = p.IsDefined( typeof( NotMappedAttribute ) ),
                     Required = p.IsDefined( typeof( RequiredAttribute ) ),
@@ -360,6 +361,7 @@ namespace RockWeb.Blocks.Examples
         public string Name { get; set; }
         public int Id { get; set; }
         public bool IsInherited { get; set; }
+        public bool IsVirtual { get; set; }
         public bool IsLavaInclude { get; set; }
         public bool NotMapped { get; set; }
         public bool Required { get; set; }
