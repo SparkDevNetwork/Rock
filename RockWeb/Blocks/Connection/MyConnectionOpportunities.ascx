@@ -51,7 +51,7 @@
                     <asp:Literal ID="lConnectionRequest" runat="server"></asp:Literal></h4>
             </div>
             <div class="panel-body">
-
+                <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
                         <Rock:PersonPicker ID="ppRequester" runat="server" Label="Requester" />
@@ -60,7 +60,7 @@
                         <Rock:RockCheckBoxList ID="cblStatus" runat="server" Label="Status" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                         <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit">
+                    <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit" CssClass="js-grid-requests" >
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campu" />

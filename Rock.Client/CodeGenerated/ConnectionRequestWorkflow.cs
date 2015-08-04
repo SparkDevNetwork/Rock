@@ -79,15 +79,6 @@ namespace Rock.Client
     public partial class ConnectionRequestWorkflow : ConnectionRequestWorkflowEntity
     {
         /// <summary />
-        public ConnectionRequest ConnectionRequest { get; set; }
-
-        /// <summary />
-        public ConnectionWorkflow ConnectionWorkflow { get; set; }
-
-        /// <summary />
-        public Workflow Workflow { get; set; }
-
-        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

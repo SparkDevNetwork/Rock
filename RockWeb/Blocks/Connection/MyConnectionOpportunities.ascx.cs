@@ -89,9 +89,28 @@ namespace RockWeb.Blocks.Connection
             gRequests.Actions.AddClick += gRequests_Add;
             gRequests.IsDeleteEnabled = true;
             gRequests.GridRebind += gRequests_GridRebind;
+            gRequests.ShowConfirmDeleteDialog = false;
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            string deleteScript = @"
+    $('table.js-grid-requests a.grid-delete-button').click(function( e ){
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this connection request? All of the activities for this request will also be deleted, and any existing workflow associations will be lost!', function (result) {
+            if (result) {
+                Rock.dialogs.confirm('Are you really sure?', function (result) {
+                    if (result) {
+                        window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                    }
+                });
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( gRequests, gRequests.GetType(), "deleteRequestScript", deleteScript, true );
+
+
         }
 
         /// <summary>
@@ -104,7 +123,7 @@ namespace RockWeb.Blocks.Connection
 
             if ( !Page.IsPostBack )
             {
-                tglMyOpportunities.Checked = GetUserPreference( TOGGLE_SETTING ).AsBoolean();
+                tglMyOpportunities.Checked = GetUserPreference( TOGGLE_SETTING ).AsBoolean( true );
                 SelectedOpportunityId = GetUserPreference( SELECTED_OPPORTUNITY_SETTING ).AsIntegerOrNull();
 
                 GetSummaryData();
@@ -308,7 +327,29 @@ namespace RockWeb.Blocks.Connection
 
         protected void gRequests_Delete( object sender, RowEventArgs e )
         {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                var service = new ConnectionRequestService( rockContext );
+                var connectionRequest = service.Get( e.RowKeyId );
+                if ( connectionRequest != null )
+                {
+                    string errorMessage;
+                    if ( !service.CanDelete( connectionRequest, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
 
+                    rockContext.WrapTransaction( () =>
+                    {
+                        new ConnectionRequestActivityService( rockContext ).DeleteRange( connectionRequest.ConnectionRequestActivities );
+                        service.Delete( connectionRequest );
+                        rockContext.SaveChanges();
+                    } );
+                }
+            }
+
+            BindGrid();
         }
 
         /// <summary>
