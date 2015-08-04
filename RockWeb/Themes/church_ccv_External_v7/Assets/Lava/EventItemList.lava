@@ -1,0 +1,41 @@
+{{ "../Styles/pages/events.css" | AddLinkTagToHead:'rel','stylesheet' }}
+{% assign firstEventCampusSummary = EventCampusSummaries | First %}
+{% assign firstMonth = firstEventCampusSummary.EventItemOccurrence.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal | First | Date: 'MMMM' %}
+{% assign currentMonth = firstMonth %}
+
+
+<h2 class="page-header">{{ firstMonth}}</h2>
+
+<div class="row">
+
+  {% for eventCampusSummary in EventCampusSummaries %}
+
+    {% assign thisMonth = eventCampusSummary.EventItemOccurrence.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal | First | Date: 'MMMM' %}
+
+    {% if thisMonth != currentMonth %}
+</div>
+<h2 class="page-header">{{ thisMonth }}</h2>
+
+<div class="row">
+    {% endif %}
+
+    <div class="col-sm-6 col-md-4 col-lg-3">
+      <div class="panel panel-card panel-card-half" href="#">
+        <a class="panel-body" href="#">
+          <h3 class="panel-title">{{ eventCampusSummary.Name }}</h3>
+        </a>
+        <div class="panel-footer clearfix">
+          {% if DetailsPage != empty %}
+            <a class="btn btn-default btn-sm pull-right" href="{{ DetailsPage }}?EventOccurrenceId={{ eventCampusSummary.EventItemOccurrence.EventItemId }}">More <i class="fa fa-caret-right"></i></a>
+          {% endif %}
+          {{ eventCampusSummary.EventItemOccurrence.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal | First | Date: 'ddd, MMM d / h:mmtt' }}
+        </div>
+      </div>
+    </div>
+
+    {% assign currentMonth = thisMonth %}
+
+  {% endfor %}
+
+</div>
+

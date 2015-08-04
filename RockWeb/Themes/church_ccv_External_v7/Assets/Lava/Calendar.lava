@@ -1,37 +1,36 @@
+  {% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
 
-  {% assign eventCount = Events | Size %}
-
-  {% if eventCount == 0 %}
+  {% if eventItemOccurrenceCount == 0 %}
   <div class="panel panel-default margin-t-md">
     <div class="margin-all-md"> There are no events in this time frame.</div>
   </div>
   {% endif %}
 
-  {% for event in Events %}
+  {% for eventItemOccurrence in EventItemOccurrences %}
   <div class="panel panel-default margin-t-md">
     <div class="panel-heading clearfix">
       <h2 class="panel-title pull-left">
-        {{ event.Event.Name }}
+        {{ eventItemOccurrence.Name }}
       </h2>
-      <div class="panel-heading pull-right">
-        {% if event.DetailPage != null %}
-        <a href="{{ event.DetailPage }}">
+      <div class="pull-right">
+        {% if eventItemOccurrence.DetailPage != null %}
+        <a href="{{ eventItemOccurrence.DetailPage }}">
           <i> View page -> </i>
         </a>
 		{% else %}
-		<a href="{{ DetailsPage }}?EventId={{ event.Event.Id }}">
-          <i> View page -> </i>
+		<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}">
+            View Details <i class="fa fa-chevron-right"></i>
         </a>
         {% endif %}
       </div>
     </div>
     <div class="panel-body">
-      <div class="col-md-1">
+      <div class="col-md-2">
         <div class="row">
           <b>Date</b>
         </div>
         <div class="row">
-          {{ event.Date }}
+          {{ eventItemOccurrence.Date }}
         </div>
       </div>
       <div class="col-md-2">
@@ -39,23 +38,23 @@
           <b>Time</b>
         </div>
         <div class="row">
-          {{ event.Time}}
+          {{ eventItemOccurrence.Time}}
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="row">
           <b>Location</b>
         </div>
         <div class="row">
-          {{ event.Location}}
+          {{ eventItemOccurrence.Location}}
         </div>
       </div>
       <div class="col-md-4">
         <div class="row">
-          <b>Description</b>
+          <b>Summary</b>
         </div>
         <div class="row">
-          {{event.Description}}
+          {{eventItemOccurrence.Summary}}
         </div>
       </div>
     </div>
