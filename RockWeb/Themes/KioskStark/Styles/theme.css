@@ -1016,6 +1016,9 @@ td.wrap-contents {
 .grid-filter-entry legend + .control-group {
   margin-top: 0;
 }
+.grid-filter-overview h4 {
+  margin: 0;
+}
 .grid-filter-overview fieldset {
   margin-bottom: 12px;
 }

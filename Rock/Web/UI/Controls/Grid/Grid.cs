@@ -602,18 +602,20 @@ namespace Rock.Web.UI.Controls
             this.Actions.ExcelExportClick += Actions_ExcelExportClick;
             this.Actions.MergeTemplateClick += Actions_MergeTemplateClick;
 
-            var rockPage = this.Page as RockPage;
-            if ( rockPage != null )
+            int pageSize = 50;
+            
+            var rockBlock = this.RockBlock();
+            if ( rockBlock != null )
             {
-                int pageSize = 50;
-                int.TryParse( rockPage.GetUserPreference( PAGE_SIZE_KEY ), out pageSize );
+                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.BlockCache.Id );
+                pageSize = rockBlock.GetUserPreference( preferenceKey ).AsInteger();
                 if ( pageSize != 50 && pageSize != 500 && pageSize != 5000 )
                 {
                     pageSize = 50;
                 }
-
-                base.PageSize = pageSize;
             }
+
+            base.PageSize = pageSize;
 
             base.OnInit( e );
         }
@@ -1148,10 +1150,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
         void pagerTemplate_ItemsPerPageClick( object sender, NumericalEventArgs e )
         {
-            var rockPage = this.Page as RockPage;
-            if ( rockPage != null )
+            var rockBlock = this.RockBlock();
+            if ( rockBlock != null )
             {
-                rockPage.SetUserPreference( PAGE_SIZE_KEY, e.Number.ToString() );
+                string preferenceKey = string.Format( "{0}_{1}", PAGE_SIZE_KEY, rockBlock.BlockCache.Id );
+                rockBlock.SetUserPreference( preferenceKey, e.Number.ToString() );
             }
 
             this.PageSize = e.Number;
@@ -2330,7 +2333,7 @@ namespace Rock.Web.UI.Controls
                     bool useHeaderNamesIfAvailable = item.GetType().Assembly.IsDynamic;
                     
                     var idVal = idProp.GetValue( item ) as int?;
-                    if ( idVal.HasValue && selectedKeys.Contains( idVal.Value ) )
+                    if ( idVal.HasValue && selectedKeys.Contains( idVal.Value ) && !itemMergeFieldsList.Keys.Contains( idVal.Value ) )
                     {
                         var mergeFields = new Dictionary<string, object>();
                         foreach ( var mergeProperty in additionalMergeProperties )
@@ -2351,7 +2354,7 @@ namespace Rock.Web.UI.Controls
                             mergeFields.AddOrIgnore( mergeFieldKey, objValue );
                         }
 
-                        itemMergeFieldsList.Add( idVal.Value, mergeFields );
+                        itemMergeFieldsList.AddOrIgnore( idVal.Value, mergeFields );
                     }
                 }
             }

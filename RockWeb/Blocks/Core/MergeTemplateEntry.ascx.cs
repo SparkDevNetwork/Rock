@@ -276,7 +276,7 @@ namespace RockWeb.Blocks.Core
                         .Select( x => new
                         {
                             GroupId = x.Key,
-                            Persons = x.Select( xx => xx.Person )
+                            Persons = x.Select( xx => xx.Person ).Distinct()
                         } );
 
                     foreach ( var combinedFamilyItem in qryCombined )
@@ -321,7 +321,7 @@ namespace RockWeb.Blocks.Core
                             mergeObject = primaryGroupPerson;
                         }
 
-                        mergeObjectsDictionary.Add( primaryGroupPerson.Id, mergeObject );
+                        mergeObjectsDictionary.AddOrIgnore( primaryGroupPerson.Id, mergeObject );
                     }
                 }
                 else if ( isGroupMemberEntityType )
@@ -347,14 +347,14 @@ namespace RockWeb.Blocks.Core
                             }
                         }
 
-                        mergeObjectsDictionary.Add( groupMember.PersonId, person );
+                        mergeObjectsDictionary.AddOrIgnore( groupMember.PersonId, person );
                     }
                 }
                 else
                 {
                     foreach ( var item in qryEntity.AsNoTracking() )
                     {
-                        mergeObjectsDictionary.Add( item.Id, item );
+                        mergeObjectsDictionary.AddOrIgnore( item.Id, item );
                     }
                 }
             }
@@ -400,7 +400,7 @@ namespace RockWeb.Blocks.Core
 
                     // non-Entity merge object, so just use Dictionary
                     mergeObject = new Dictionary<string, object>();
-                    mergeObjectsDictionary.Add( entityId, mergeObject );
+                    mergeObjectsDictionary.AddOrIgnore( entityId, mergeObject );
                 }
 
                 foreach ( var additionalMergeValue in additionalMergeValuesItem.AdditionalMergeValues )
