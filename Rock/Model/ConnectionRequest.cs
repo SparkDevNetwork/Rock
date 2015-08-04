@@ -131,6 +131,7 @@ namespace Rock.Model
         /// <value>
         /// The connection status.
         /// </value>
+        [DataMember]
         public virtual ConnectionStatus ConnectionStatus { get; set; }
 
         /// <summary>
@@ -139,6 +140,7 @@ namespace Rock.Model
         /// <value>
         /// The connection opportunity.
         /// </value>
+        [DataMember]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>
@@ -147,6 +149,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
+        [DataMember]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
@@ -155,6 +158,7 @@ namespace Rock.Model
         /// <value>
         /// The campus.
         /// </value>
+        [LavaInclude]
         public virtual Campus Campus { get; set; }
 
         /// <summary>
@@ -163,6 +167,7 @@ namespace Rock.Model
         /// <value>
         /// The assigned group.
         /// </value>
+        [LavaInclude]
         public virtual Group AssignedGroup { get; set; }
 
         /// <summary>
@@ -171,6 +176,7 @@ namespace Rock.Model
         /// <value>
         /// The connector person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias ConnectorPersonAlias { get; set; }
 
         /// <summary>
@@ -193,6 +199,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionRequestActivity">ConnectionRequestActivities</see> who are associated with the ConnectionRequest.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<ConnectionRequestActivity> ConnectionRequestActivities
         {
             get { return _connectionRequestActivities; }

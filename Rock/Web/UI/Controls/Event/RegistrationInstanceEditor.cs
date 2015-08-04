@@ -44,7 +44,7 @@ namespace Rock.Web.UI.Controls
         DateTimePicker _dtpEnd;
         NumberBox _nbMaxAttendees;
         AccountPicker _apAccount;
-        RockTextBox _tbContactName;
+        PersonPicker _ppContact;
         PhoneNumberBox _pnContactPhone;
         EmailBox _ebContactEmail;
         DateTimePicker _dtpSendReminder;
@@ -253,22 +253,32 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the name of the contact.
+        /// Gets the contact person alias identifier.
         /// </summary>
         /// <value>
-        /// The name of the contact.
+        /// The contact person alias identifier.
         /// </value>
-        public string ContactName
+        public int? ContactPersonAliasId
         {
             get
             {
                 EnsureChildControls();
-                return _tbContactName.Text;
+                return _ppContact.PersonAliasId;
             }
+        }
+
+        /// <summary>
+        /// Sets the contact person alias.
+        /// </summary>
+        /// <value>
+        /// The contact person alias.
+        /// </value>
+        public PersonAlias ContactPersonAlias
+        {
             set
             {
                 EnsureChildControls();
-                _tbContactName.Text = value;
+                _ppContact.SetValue( value != null ? value.Person : null );
             }
         }
 
@@ -415,7 +425,7 @@ namespace Rock.Web.UI.Controls
                 _dtpStart.ValidationGroup = value;
                 _dtpEnd.ValidationGroup = value;
                 _nbMaxAttendees.ValidationGroup = value;
-                _tbContactName.ValidationGroup = value;
+                _ppContact.ValidationGroup = value;
                 _pnContactPhone.ValidationGroup = value;
                 _ebContactEmail.ValidationGroup = value;
                 _apAccount.ValidationGroup = value;
@@ -445,7 +455,7 @@ namespace Rock.Web.UI.Controls
                 _dtpStart.SelectedDateTime = instance.StartDateTime;
                 _dtpEnd.SelectedDateTime = instance.EndDateTime;
                 _nbMaxAttendees.Text = instance.MaxAttendees.ToString();
-                _tbContactName.Text = instance.ContactName;
+                _ppContact.SetValue( instance.ContactPersonAlias != null ? instance.ContactPersonAlias.Person : null );
                 _pnContactPhone.Text = instance.ContactPhone;
                 _ebContactEmail.Text = instance.ContactEmail;
                 _apAccount.SetValue( instance.AccountId );
@@ -462,7 +472,7 @@ namespace Rock.Web.UI.Controls
                 _dtpStart.SelectedDateTime = null;
                 _dtpEnd.SelectedDateTime = null;
                 _nbMaxAttendees.Text = string.Empty;
-                _tbContactName.Text = string.Empty;
+                _ppContact.SetValue( null );
                 _pnContactPhone.Text = string.Empty;
                 _ebContactEmail.Text = string.Empty;
                 _apAccount.SetValue( null );
@@ -492,7 +502,7 @@ namespace Rock.Web.UI.Controls
                 instance.StartDateTime = _dtpStart.SelectedDateTime;
                 instance.EndDateTime = _dtpEnd.SelectedDateTime;
                 instance.MaxAttendees = _nbMaxAttendees.Text.AsInteger();
-                instance.ContactName = _tbContactName.Text;
+                instance.ContactPersonAliasId = _ppContact.PersonAliasId;
                 instance.ContactPhone = _pnContactPhone.Text;
                 instance.ContactEmail = _ebContactEmail.Text;
                 instance.AccountId = _apAccount.SelectedValue.AsInteger();
@@ -514,7 +524,7 @@ namespace Rock.Web.UI.Controls
 
                 _tbName = new RockTextBox();
                 _tbName.ID = this.ID + "_tbName";
-                _tbName.Label = "Name";
+                _tbName.Label = "Registration Instance Name";
                 _tbName.Help = "The name will be used to describe the registration on the registration screens and emails.";
                 _tbName.Required = true;
                 Controls.Add( _tbName );
@@ -531,13 +541,16 @@ namespace Rock.Web.UI.Controls
                 _tbUrlSlug.Visible = false;
                 Controls.Add( _tbUrlSlug );
 
+
                 _ceDetails = new CodeEditor();
                 _ceDetails.ID = this.ID + "_ceDetails";
                 _ceDetails.Label = "Details";
                 _ceDetails.EditorMode = CodeEditorMode.Html;
                 _ceDetails.EditorTheme = CodeEditorTheme.Rock;
                 _ceDetails.EditorHeight = "100";
+                _ceDetails.Visible = false; // hiding this out for now. Struggling where we'd even use this, but instead of removing it we'll just comment it out for now.
                 Controls.Add( _ceDetails );
+                 
 
                 _dtpStart = new DateTimePicker();
                 _dtpStart.ID = this.ID + "_dtpStart";
@@ -561,10 +574,11 @@ namespace Rock.Web.UI.Controls
                 _apAccount.Required = true;
                 Controls.Add( _apAccount );
 
-                _tbContactName = new RockTextBox();
-                _tbContactName.ID = this.ID + "_tbContactName";
-                _tbContactName.Label = "Contact Name";
-                Controls.Add( _tbContactName );
+                _ppContact = new PersonPicker();
+                _ppContact.ID = this.ID + "_ppContact";
+                _ppContact.Label = "Contact";
+                _ppContact.SelectPerson += _ppContact_SelectPerson;
+                Controls.Add( _ppContact );
 
                 _pnContactPhone = new PhoneNumberBox();
                 _pnContactPhone.ID = this.ID + "_pnContactPhone";
@@ -590,6 +604,7 @@ namespace Rock.Web.UI.Controls
                 _ceAdditionalReminderDetails = new CodeEditor();
                 _ceAdditionalReminderDetails.ID = this.ID + "_ceAdditionalReminderDetails";
                 _ceAdditionalReminderDetails.Label = "Additional Reminder Details";
+                _ceAdditionalReminderDetails.Help = "These reminder details will be appended to those in the registration template when sending the reminder email.";
                 _ceAdditionalReminderDetails.EditorMode = CodeEditorMode.Html;
                 _ceAdditionalReminderDetails.EditorTheme = CodeEditorTheme.Rock;
                 _ceAdditionalReminderDetails.EditorHeight = "100";
@@ -598,12 +613,51 @@ namespace Rock.Web.UI.Controls
                 _ceAdditionalConfirmationDetails = new CodeEditor();
                 _ceAdditionalConfirmationDetails.ID = this.ID + "_ceAdditionalConfirmationDetails";
                 _ceAdditionalConfirmationDetails.Label = "Additional Confirmation Details";
+                _ceAdditionalConfirmationDetails.Help = "These confirmation details will be appended to those from the registration template when displayed at the end of the registration process.";
                 _ceAdditionalConfirmationDetails.EditorMode = CodeEditorMode.Html;
                 _ceAdditionalConfirmationDetails.EditorTheme = CodeEditorTheme.Rock;
                 _ceAdditionalConfirmationDetails.EditorHeight = "100";
                 Controls.Add( _ceAdditionalConfirmationDetails );
 
                 _controlsLoaded = true;
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectPerson event of the _ppContact control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _ppContact_SelectPerson( object sender, EventArgs e )
+        {
+            if ( _ppContact.PersonId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    Guid workPhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid();
+                    var contactInfo = new PersonService( rockContext )
+                        .Queryable()
+                        .Where( p => p.Id == _ppContact.PersonId.Value )
+                        .Select( p => new
+                        {
+                            Email = p.Email,
+                            Phone = p.PhoneNumbers
+                                .Where( n => n.NumberTypeValue.Guid.Equals( workPhoneGuid ) )
+                                .Select( n => n.NumberFormatted )
+                                .FirstOrDefault()
+                        } )
+                        .FirstOrDefault();
+
+                    if ( string.IsNullOrWhiteSpace( _ebContactEmail.Text ) && contactInfo != null )
+                    {
+                        _ebContactEmail.Text = contactInfo.Email;
+                    }
+
+                    if ( string.IsNullOrWhiteSpace( _pnContactPhone.Text ) && contactInfo != null )
+                    {
+                        _pnContactPhone.Text = contactInfo.Phone;
+                    }
+                }
             }
         }
 
@@ -644,7 +698,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _apAccount.RenderControl( writer );
-            _tbContactName.RenderControl( writer );
+            _ppContact.RenderControl( writer );
             _pnContactPhone.RenderControl( writer );
             _ebContactEmail.RenderControl( writer );
             writer.RenderEndTag();  // col-md-6

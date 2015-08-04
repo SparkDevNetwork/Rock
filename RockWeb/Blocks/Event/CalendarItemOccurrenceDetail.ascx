@@ -14,7 +14,7 @@
             <asp:HiddenField ID="hfEventItemOccurrenceId" runat="server" />
 
             <div class="panel-heading clearfix">
-                <h1 class="panel-title"><asp:Literal ID="lActionTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="fa fa-clock-o"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
 
             <div class="panel-body">
@@ -34,7 +34,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:RockLiteral ID="lCampusNotes" runat="server" />
+                            <Rock:RockLiteral ID="lOccurrenceNotes" runat="server" />
                         </div>
                     </div>
 
@@ -87,7 +87,7 @@
 
                     </div>
 
-                    <Rock:HtmlEditor ID="htmlCampusNote" runat="server" Label="Campus Note" />
+                    <Rock:HtmlEditor ID="htmlOccurrenceNote" runat="server" Label="Occurrence Note" />
                 
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
@@ -114,6 +114,29 @@
                     </div>
                 </div>
                 <Rock:RegistrationInstanceEditor ID="rieNewLinkage" runat="server" ValidationGroup="NewLinkage" />
+            </Content>
+        </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="dlgEditLinkage" runat="server" Title="Edit Registration Instance" SaveButtonText="OK" OnSaveClick="dlgEditLinkage_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="EditLinkage">
+            <Content>
+                <asp:ValidationSummary ID="vsEditLinkage" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="EditLinkage" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockLiteral ID="lEditLinkageTemplate" runat="server" Label="Registration Template" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:GroupPicker ID="gpEditLinkageGroup" runat="server" Label="Group" ValidationGroup="EditLinkage" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbEditLinkagePublicName" runat="server" Label="Public Name" Required="true" ValidationGroup="EditLinkage" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbEditLinkageUrlSlug" runat="server" Label="URL Slug" ValidationGroup="EditLinkage" />
+                    </div>
+                </div>
+                <Rock:RegistrationInstanceEditor ID="rieEditLinkage" runat="server" ValidationGroup="EditLinkage" />
             </Content>
         </Rock:ModalDialog>
 

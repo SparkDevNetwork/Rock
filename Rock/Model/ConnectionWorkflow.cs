@@ -170,7 +170,7 @@ public enum ConnectionWorkflowTriggerType
     /// <summary>
     /// Activity Group Assigned
     /// </summary>
-    ActivityGroupAssigned = 5,
+    GroupAssigned = 5,
 
     /// <summary>
     /// Manual

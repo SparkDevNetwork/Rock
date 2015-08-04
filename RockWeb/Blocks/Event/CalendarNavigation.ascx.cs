@@ -122,6 +122,10 @@ namespace RockWeb.Blocks.Event
                         if ( eventItemOccurrence != null )
                         {
                             eventItem = eventItemOccurrence.EventItem;
+                            if ( eventItem != null && !EventItemId.HasValue )
+                            {
+                                EventItemId = eventItem.Id;
+                            }
                         }
                     }
 
@@ -137,7 +141,7 @@ namespace RockWeb.Blocks.Event
 
                     // Set the names based on current object values
                     lCalendarName.Text = eventCalendar != null ? eventCalendar.Name : "Calendar";
-                    lCalendarItemName.Text = eventItem != null ? eventItem.Name : "Calendar Item";
+                    lCalendarItemName.Text = eventItem != null ? eventItem.Name : "Event";
                     lEventOccurrenceName.Text = eventItemOccurrence != null ?
                         ( eventItemOccurrence.Campus != null ? eventItemOccurrence.Campus.Name : "All Campuses" ) :
                         "Event Occurrence";
@@ -241,6 +245,16 @@ namespace RockWeb.Blocks.Event
                 var pageCache = PageCache.Read( RockPage.PageId );
                 if ( pageCache != null )
                 {
+                    if ( 
+                        ( targetPage == 2 && !EventCalendarId.HasValue ) ||
+                        ( targetPage == 3 && !EventItemId.HasValue ) ||
+                        ( targetPage == 4 && !EventItemOccurrenceId.HasValue )
+                    )
+                    {
+                        // We don't have the parameter neccessary to navigate, so just return
+                        return;
+                    }
+
                     // Build the querystring parameters
                     var qryParams = new Dictionary<string, string>();
                     if ( targetPage >= 2 && EventCalendarId.HasValue )

@@ -123,7 +123,7 @@
                 <asp:Panel ID="pnlRegistrations" runat="server" Visible="false" CssClass="panel panel-block">
 
                     <div class="panel-heading">
-                        <h1 class="panel-title">Registrations</h1>
+                        <h1 class="panel-title"><i class="fa fa-user"></i> Registrations</h1>
                     </div>
 
                     <div class="panel-body">
@@ -177,7 +177,7 @@
                 <asp:Panel ID="pnlRegistrants" runat="server" Visible="false" CssClass="panel panel-block">
 
                     <div class="panel-heading">
-                        <h1 class="panel-title">Registrants</h1>
+                        <h1 class="panel-title"><i class="fa fa-users"></i> Registrants</h1>
                     </div>
 
                     <div class="panel-body">
@@ -212,7 +212,7 @@
                 <asp:Panel ID="pnlLinkages" runat="server" Visible="false" CssClass="panel panel-block">
 
                     <div class="panel-heading">
-                        <h1 class="panel-title">Linkages</h1>
+                        <h1 class="panel-title"><i class="fa fa-link"></i> Linkages</h1>
                     </div>
 
                     <div class="panel-body">

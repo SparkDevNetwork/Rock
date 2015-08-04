@@ -1,3 +1,5 @@
+@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
 /*
    Rock's Core CSS
 
@@ -19,8 +21,6 @@
   A better method for styling can be seen below with .jcrop-light
   (Add a class to the holder and style elements for that extended class)
 */
-@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
 .jcrop-holder {
   direction: ltr;
   text-align: left;
@@ -1017,6 +1017,9 @@ td.wrap-contents {
 }*/
 .grid-filter-entry legend + .control-group {
   margin-top: 0;
+}
+.grid-filter-overview h4 {
+  margin: 0;
 }
 .grid-filter-overview fieldset {
   margin-bottom: 12px;
@@ -3957,7 +3960,6 @@ fieldset .actions {
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transform: translate(0, 0);
   content: "\f093";
   padding-right: .25em;
 }
@@ -5068,16 +5070,20 @@ a.help {
   font-weight: 700;
 }
 .badge-danger {
-  background-color: #e74c3c;
+  background-color: #e74c3c !important;
+  color: #fff !important;
 }
 .badge-warning {
-  background-color: #f39c12;
+  background-color: #f39c12 !important;
+  color: #fff !important;
 }
 .badge-success {
-  background-color: #18bc9c;
+  background-color: #18bc9c !important;
+  color: #fff !important;
 }
 .badge-info {
-  background-color: #3498db;
+  background-color: #3498db !important;
+  color: #fff !important;
 }
 .popover-content header {
   margin: -9px -14px 8px -14px;

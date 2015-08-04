@@ -113,7 +113,7 @@ namespace Rock.Transactions
                         // create approval link if one was not provided
                         if ( ApprovalPageUrl == null )
                         {
-                            ApprovalPageUrl = string.Format( "{0}Communication", Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" ) );
+                            ApprovalPageUrl = string.Format( "{0}Communication/{1}", Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" ), communication.Id );
                         }
                         
 
@@ -134,7 +134,7 @@ namespace Rock.Transactions
                                     </p>
 
                                     <p>
-                                        <a href='{5}/{6}'>View Communication</a>
+                                        <a href='{5}'>View Communication</a>
                                     </p>
     
                                     {{{{ 'Global' | Attribute:'EmailFooter' }}}}", 
@@ -143,13 +143,12 @@ namespace Rock.Transactions
                                                     typeName,
                                                     communicationDetails,
                                                     communication.Recipients.Count(),
-                                                    ApprovalPageUrl,
-                                                    communication.Id);
+                                                    ApprovalPageUrl);
                             
                             var recipients = new List<string>();
                             recipients.Add( approver.Person.Email );
 
-                            Email.Send( fromEmail, fromName, subject, recipients, message.ResolveMergeFields( mergeFields ), appRoot );
+                            Email.Send( fromEmail, fromName, subject, recipients, message.ResolveMergeFields( mergeFields ), appRoot, string.Empty, null, false );
                         }
                     }
                 }

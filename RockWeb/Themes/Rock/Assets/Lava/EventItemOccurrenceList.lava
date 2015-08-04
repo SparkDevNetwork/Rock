@@ -1,15 +1,12 @@
-{{ EventItem.Name }}
-
-<ul>
-{% for occurrence in EventItemOccurrences %}
-    <li>
-        {{ occurrence.Campus.Name }}
-
-        {{ occurrence.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal }}
-
-        {% if RegistrationPage  %}
-            <a href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}">Register</a>
-        {% endif %}
-    </li>
-{% endfor %}
-</ul>
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Register for {{ EventItem.Name }}</h3>
+  </div>
+  <div class="list-group">
+    {% for occurrence in EventItemOccurrences %}
+      <a class="list-group-item" href="{{ RegistrationPage }}?RegistrationInstanceId={{ occurrence.Linkages | Select: 'RegistrationInstanceId' }}">
+        {{ occurrence.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal| First | Date: 'dddd, MMM d / h:mmtt'  }} <span class="text-muted">{{ occurrence.Campus.Name }}</span>
+      </a>
+    {% endfor %}
+  </div>
+</div>

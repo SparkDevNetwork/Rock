@@ -26,7 +26,7 @@
 				
 			<p>
 				<strong>Date / Time</strong> <br />
-				{{ EventItemOccurrence.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal }}
+				{{ EventItemOccurrence.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal | First | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}
 			</p>
 				
 			{% if EventItemOccurrence.CampusNote != '' %}

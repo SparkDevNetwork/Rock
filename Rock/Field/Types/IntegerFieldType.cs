@@ -33,6 +33,20 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            int? intValue = (int?)value.AsDecimalOrNull();
+            return base.FormatValue( parentControl, intValue.ToString(), configurationValues, condensed );
+        }
+
+        /// <summary>
         /// Gets the align value that should be used when displaying value
         /// </summary>
         public override System.Web.UI.WebControls.HorizontalAlign AlignValue
@@ -115,6 +129,34 @@ namespace Rock.Field.Types
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, or ValueAsNumeric)
+        /// </summary>
+        /// <value>
+        /// The name of the attribute value field.
+        /// </value>
+        public override string AttributeValueFieldName
+        {
+            get
+            {
+                return "ValueAsNumeric";
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the attribute value field.
+        /// </summary>
+        /// <value>
+        /// The type of the attribute value field.
+        /// </value>
+        public override Type AttributeValueFieldType
+        {
+            get
+            {
+                return typeof( decimal? );
+            }
         }
 
         #endregion

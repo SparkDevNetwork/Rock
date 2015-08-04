@@ -37,8 +37,10 @@ namespace RockWeb.Blocks.Connection
     [DisplayName( "Connection Request Detail" )]
     [Category( "Connection" )]
     [Description( "Displays the details of the given connection request for editing state, status, etc." )]
-    [LinkedPage( "Manual Workflow Page", "Page used to manually start a workflow." )]
-    [LinkedPage( "Workflow Configuration Page", "Page used to view and edit configuration of a workflow." )]
+
+    [LinkedPage( "Manual Workflow Page", "Page used to manually start a workflow.", order: 0 )]
+    [LinkedPage( "Workflow Configuration Page", "Page used to view and edit configuration of a workflow.", order: 1 )]
+    [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
     public partial class ConnectionRequestDetail : RockBlock, IDetailBlock
     {
         #region Fields
@@ -94,6 +96,18 @@ namespace RockWeb.Blocks.Connection
 
             rptRequestWorkflows.ItemCommand += rptRequestWorkflows_ItemCommand;
             rptSearchResult.ItemCommand += rptSearchResult_ItemCommand;
+
+            string deleteScript = @"
+    $('a.js-delete-request').click(function( e ){
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this connection request? All of the activities for this request will also be deleted, and any existing workflow associations will be lost!', function (result) {
+            if (result) {
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( lbDelete, lbDelete.GetType(), "deleteRequestScript", deleteScript, true );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.AddConfigurationUpdateTrigger( upDetail );
@@ -361,6 +375,32 @@ namespace RockWeb.Blocks.Connection
             }
         }
 
+        protected void lbDelete_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+
+            var service = new ConnectionRequestService( rockContext );
+            var connectionRequest = service.Get( hfConnectionRequestId.Value.AsInteger() );
+
+            if ( connectionRequest != null )
+            {
+                if ( !connectionRequest.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                {
+                    mdDeleteWarning.Show( "You are not authorized to delete this connection request.", ModalAlertType.Information );
+                    return;
+                }
+
+                rockContext.WrapTransaction( () =>
+                {
+                    new ConnectionRequestActivityService( rockContext ).DeleteRange( connectionRequest.ConnectionRequestActivities );
+                    service.Delete( connectionRequest );
+                    rockContext.SaveChanges();
+                } );
+            }
+
+            NavigateToParentPage();
+        }
+
         /// <summary>
         /// Handles the ItemCommand event of the rptRequestWorkflows control.
         /// </summary>
@@ -499,7 +539,7 @@ namespace RockWeb.Blocks.Connection
                         var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
                         if ( filterControl != null )
                         {
-                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
+                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                             var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
                             if ( expression != null )
                             {
@@ -559,7 +599,7 @@ namespace RockWeb.Blocks.Connection
             {
                 foreach ( var attribute in AvailableAttributes )
                 {
-                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false );
+                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
                     if ( control != null )
                     {
                         if ( control is IRockControl )
@@ -681,7 +721,7 @@ namespace RockWeb.Blocks.Connection
                 ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
                 connectionRequestActivity.ConnectionActivityTypeId = ddlActivity.SelectedValueAsId().Value;
                 connectionRequestActivity.ConnectionOpportunityId = _connectionRequest.ConnectionOpportunityId;
-                connectionRequestActivity.ConnectorPersonAliasId = ppConnector.PersonAliasId.Value;
+                connectionRequestActivity.ConnectorPersonAliasId = ppConnector.PersonAliasId;
                 connectionRequestActivity.ConnectionRequestId = PageParameter( "ConnectionRequestId" ).AsInteger();
                 connectionRequestActivity.Note = tbNote.Text;
 
@@ -732,7 +772,7 @@ namespace RockWeb.Blocks.Connection
                 }
             }
 
-            ppConnector.SetValue( CurrentPerson );
+            ppConnector.SetValue( null );
             tbNote.Text = string.Empty;
 
             ShowDialog( "ConnectionRequestActivities", true );
@@ -963,6 +1003,20 @@ namespace RockWeb.Blocks.Connection
                 lContactInfo.Text = "No contact Info";
             }
 
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PersonProfilePage" ) ) )
+            {
+                lbProfilePage.Visible = true;
+
+                Dictionary<string, string> queryParms = new Dictionary<string, string>();
+                queryParms.Add( "PersonId", person.Id.ToString() );
+                lbProfilePage.PostBackUrl = LinkedPageUrl( "PersonProfilePage", queryParms );
+            }
+            else
+            {
+                lbProfilePage.Visible = false;
+            }
+            
+            
 
             string imgTag = Rock.Model.Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 200, 200 );
             if ( person.PhotoId.HasValue )
@@ -995,34 +1049,13 @@ namespace RockWeb.Blocks.Connection
             }
 
             hlState.Visible = true;
-
-            if ( _connectionRequest.ConnectionState == ConnectionState.Inactive )
-            {
-                hlState.Text = "Inactive";
-                hlState.LabelType = Rock.Web.UI.Controls.LabelType.Danger;
-            }
-            else if ( _connectionRequest.ConnectionState == ConnectionState.FutureFollowUp )
-            {
-                hlState.Text = String.Format( "Follow-up: {0}", _connectionRequest.FollowupDate.Value.ToShortDateString() );
-                hlState.LabelType = Rock.Web.UI.Controls.LabelType.Success;
-            }
-            else
-            {
-                hlState.Text = "Active";
-                hlState.LabelType = Rock.Web.UI.Controls.LabelType.Success;
-            }
+            hlState.Text = _connectionRequest.ConnectionState.ConvertToString();
+            hlState.LabelType = _connectionRequest.ConnectionState == ConnectionState.Active ? LabelType.Success :
+                ( _connectionRequest.ConnectionState == ConnectionState.Inactive ? LabelType.Danger : LabelType.Info );
 
             hlStatus.Visible = true;
             hlStatus.Text = _connectionRequest.ConnectionStatus.Name;
-
-            if ( _connectionRequest.ConnectionStatus.IsCritical )
-            {
-                hlStatus.LabelType = Rock.Web.UI.Controls.LabelType.Warning;
-            }
-            else
-            {
-                hlStatus.LabelType = Rock.Web.UI.Controls.LabelType.Type;
-            }
+            hlStatus.LabelType = _connectionRequest.ConnectionStatus.IsCritical ? LabelType.Danger : LabelType.Type;
 
             hlOpportunity.Text = _connectionRequest.ConnectionOpportunity.Name;
             hlCampus.Text = _connectionRequest.Campus.Name;
@@ -1097,10 +1130,10 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                ppConnectorEdit.SetValue( CurrentPerson );
+                ppConnectorEdit.SetValue( null );
             }
             ppConnectorEdit.Enabled = true;
-
+            
             if ( _connectionRequest.PersonAlias != null )
             {
                 ppRequestor.SetValue( _connectionRequest.PersonAlias.Person );
@@ -1225,16 +1258,24 @@ namespace RockWeb.Blocks.Connection
                     }
                     else
                     {
-                        bool meets = requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets;
                         string labelText;
-                        if ( meets )
+                        string labelType;
+                        string labelTooltip;
+                        if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
                         {
                             labelText = requirementResult.GroupRequirement.GroupRequirementType.PositiveLabel;
+                            labelType = "success";
+                        }
+                        else if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
+                        {
+                            labelText = requirementResult.GroupRequirement.GroupRequirementType.WarningLabel;
+                            labelType = "warning";
                         }
                         else
                         {
                             passedAllRequirements = false;
                             labelText = requirementResult.GroupRequirement.GroupRequirementType.NegativeLabel;
+                            labelType = "danger";
                         }
 
                         if ( string.IsNullOrEmpty( labelText ) )
@@ -1242,11 +1283,26 @@ namespace RockWeb.Blocks.Connection
                             labelText = requirementResult.GroupRequirement.GroupRequirementType.Name;
                         }
 
+                        if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
+                        {
+                            labelTooltip = requirementResult.RequirementWarningDateTime.HasValue
+                                ? "Last Checked: " + requirementResult.RequirementWarningDateTime.Value.ToString( "g" )
+                                : "Not calculated yet";
+                        }
+                        else
+                        {
+                            labelTooltip = requirementResult.LastRequirementCheckDateTime.HasValue
+                                ? "Last Checked: " + requirementResult.LastRequirementCheckDateTime.Value.ToString( "g" )
+                                : "Not calculated yet";
+                        }
+
+
                         lRequirementsLabels.Text += string.Format(
-                            @"<span class='label label-{1}'>{0}</span>
+                            @"<span class='label label-{1}' title='{2}'>{0}</span>
                         ",
                             labelText,
-                            meets ? "success" : "danger" );
+                            labelType,
+                            labelTooltip );
                     }
                 }
 
@@ -1352,7 +1408,7 @@ namespace RockWeb.Blocks.Connection
             var workflowType = workflowTypeService.Get( connectionWorkflow.WorkflowTypeId.Value );
             if ( workflowType != null )
             {
-                var workflow = Rock.Model.Workflow.Activate( workflowType, name );
+                var workflow = Rock.Model.Workflow.Activate( workflowType, name, rockContext);
 
                 if ( workflow.AttributeValues != null )
                 {
@@ -1423,5 +1479,5 @@ namespace RockWeb.Blocks.Connection
         }
 
         #endregion
-    }
+}
 }

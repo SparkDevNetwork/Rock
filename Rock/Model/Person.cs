@@ -1314,6 +1314,16 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the campus.
+        /// </summary>
+        /// <returns></returns>
+        public Campus GetCampus()
+        {
+            var firstFamily = this.GetFamilies().FirstOrDefault();
+            return firstFamily != null ? firstFamily.Campus : null;
+        }
+
         #endregion
 
         #region Static Helper Methods

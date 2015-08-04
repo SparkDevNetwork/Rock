@@ -598,7 +598,7 @@ namespace RockWeb.Blocks.Connection
                 g.Id,
                 g.Guid,
                 Name = g.Group.Name,
-                Campus = g.Group.Campus != null ? g.Group.Campus.Name : "N/A"
+                Campus = g.Group.Campus != null ? g.Group.Campus.Name : "All"
             } ).ToList();
             gConnectionOpportunityGroups.DataBind();
         }
@@ -980,7 +980,7 @@ namespace RockWeb.Blocks.Connection
                     ddlSecondaryQualifier.Items.Clear();
                     break;
 
-                case ConnectionWorkflowTriggerType.ActivityGroupAssigned:
+                case ConnectionWorkflowTriggerType.GroupAssigned:
                     var groupList = new GroupService( rockContext ).Queryable().ToList();
                     ddlPrimaryQualifier.Label = "Activity Group";
                     ddlPrimaryQualifier.Visible = true;

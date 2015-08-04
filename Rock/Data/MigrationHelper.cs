@@ -309,6 +309,35 @@ namespace Rock.Data
             DeleteByGuid( guid, "BlockType" );
         }
 
+        /// <summary>
+        /// Renames the type of the block.
+        /// </summary>
+        /// <param name="oldPath">The old path.</param>
+        /// <param name="newPath">The new path.</param>
+        /// <param name="newCategory">The new category.</param>
+        /// <param name="newName">The new name.</param>
+        /// <param name="newDescription">The new description.</param>
+        public void RenameBlockType( string oldPath, string newPath, string newCategory = null, string newName = null, string newDescription = null )
+        {
+            Migration.Sql( string.Format( @"
+                DELETE FROM [BlockType] 
+	            WHERE [Path] = '{1}'
+
+                UPDATE [BlockType] SET 
+		            [Path] = '{1}', 
+		            [Category] = CASE WHEN '{2}' <> '' THEN '{2}' ELSE [Category] END,
+		            [Name] = CASE WHEN '{3}' <> '' THEN '{3}' ELSE [Name] END,
+                    [Description] = CASE WHEN '{4}' <> '' THEN '{4}' ELSE [Description] END
+	            WHERE [Path] = '{0}'
+",
+                oldPath ?? "",
+                newPath ?? "",
+                newCategory ?? "",
+                newName ?? "",
+                newDescription ?? ""
+            ) );
+        }
+
         #endregion
 
         #region Site Methods
@@ -1590,32 +1619,36 @@ namespace Rock.Data
                 DECLARE @AttributeId int
                 SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
 
-                DECLARE @TheValue NVARCHAR(MAX) = '{2}'
-
-                -- If appendToExisting (and any current value exists), get the current value before we delete it...
-                IF 1 = {3} AND EXISTS (SELECT 1 FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId )
+                IF @BlockId IS NOT NULL AND @AttributeId IS NOT NULL
                 BEGIN
-                    SET @TheValue = (SELECT [Value] FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId )
-                    -- If the new value is not in the old value, append it.
-                    IF CHARINDEX( '{2}', @TheValue ) = 0
+
+                    DECLARE @TheValue NVARCHAR(MAX) = '{2}'
+
+                    -- If appendToExisting (and any current value exists), get the current value before we delete it...
+                    IF 1 = {3} AND EXISTS (SELECT 1 FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId )
                     BEGIN
-                        SET @TheValue = (SELECT @TheValue + ',' + '{2}' )
+                        SET @TheValue = (SELECT [Value] FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId )
+                        -- If the new value is not in the old value, append it.
+                        IF CHARINDEX( '{2}', @TheValue ) = 0
+                        BEGIN
+                            SET @TheValue = (SELECT @TheValue + ',' + '{2}' )
+                        END
                     END
+
+                    -- Delete existing attribute value first (might have been created by Rock system)
+                    DELETE [AttributeValue]
+                    WHERE [AttributeId] = @AttributeId
+                    AND [EntityId] = @BlockId
+
+                    INSERT INTO [AttributeValue] (
+                        [IsSystem],[AttributeId],[EntityId],
+                        [Value],
+                        [Guid])
+                    VALUES(
+                        1,@AttributeId,@BlockId,
+                        @TheValue,
+                        NEWID())
                 END
-
-                -- Delete existing attribute value first (might have been created by Rock system)
-                DELETE [AttributeValue]
-                WHERE [AttributeId] = @AttributeId
-                AND [EntityId] = @BlockId
-
-                INSERT INTO [AttributeValue] (
-                    [IsSystem],[AttributeId],[EntityId],
-                    [Value],
-                    [Guid])
-                VALUES(
-                    1,@AttributeId,@BlockId,
-                    @TheValue,
-                    NEWID())
 ",
                     blockGuid,
                     attributeGuid,
@@ -1640,7 +1673,12 @@ namespace Rock.Data
                 DECLARE @AttributeId int
                 SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
 
-                DELETE [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId
+                IF @BlockId IS NOT NULL AND @AttributeId IS NOT NULL
+                BEGIN
+
+                    DELETE [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId
+
+                END
 ",
                     blockGuid,
                     attributeGuid )

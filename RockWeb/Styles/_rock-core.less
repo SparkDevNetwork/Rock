@@ -163,19 +163,23 @@ a.help {
 
 // add badge colors back to BS3
 .badge-danger {
-    background-color: @label-danger-bg;
+    background-color: @label-danger-bg !important;
+    color: #fff !important;
 }
 
 .badge-warning {
-    background-color: @label-warning-bg;
+    background-color: @label-warning-bg !important;
+    color: #fff !important;
 }
 
 .badge-success {
-    background-color: @label-success-bg;
+    background-color: @label-success-bg !important;
+    color: #fff !important;
 }
 
 .badge-info {
-    background-color: @label-info-bg;
+    background-color: @label-info-bg !important;
+    color: #fff !important;
 }
 
 // add alternate popover title style that exists inside of the popover-content to use ajax updates
@@ -215,7 +219,7 @@ a.help {
 .list-group-item {
     .clearfix;
 
-    .toggle-container {
+    .toggle-container {   
         display: inline-block;
     }
 
@@ -623,7 +627,7 @@ div.aspNetDisabled {
 //--------------------------------
 
 // abstracted fixed width icon element
-.icon-fw {
+.icon-fw { 
       width: (18em / 14); // font-awesome
       text-align: center;
 }
