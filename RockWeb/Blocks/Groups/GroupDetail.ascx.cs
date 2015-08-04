@@ -48,6 +48,8 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Group Map Page", "The page to display detailed group map.", true, "", "", 6 )]
     [LinkedPage( "Attendance Page", "The page to display attendance list.", false, "", "", 7 )]
     [LinkedPage( "Registration Instance Page", "The page to display registration details.", false, "", "", 7 )]
+    [LinkedPage( "Event Item Occurrence Page", "The page to display event item occurrence details.", false, "", "", 8 )]
+    [LinkedPage( "Content Item Page", "The page to display registration details.", false, "", "", 9 )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -1403,24 +1405,53 @@ namespace RockWeb.Blocks.Groups
 
             string groupMapUrl = LinkedPageUrl( "GroupMapPage", pageParams );
 
-            if ( group.Linkages.Any() )
+            var registrations = new Dictionary<int, string>();
+            var eventItemOccurrences = new Dictionary<int, string>();
+            var contentItems = new Dictionary<int, string>();
+
+            var linkages = group.Linkages.ToList();
+            if ( linkages.Any() )
             {
-                rcwLinkedRegistrations.Visible = true;
-                rptLinkedRegistrations.DataSource = group.Linkages
-                    .Where( l => l.RegistrationInstanceId.HasValue )
+                linkages
+                    .Where( l => 
+                        l.RegistrationInstanceId.HasValue )
                     .ToList()
-                    .Select( l => new
-                    {
-                        RegistrationInstanceId = l.RegistrationInstanceId.Value,
-                        Title = l.ToString( true, true, false )
-                    } )
-                    .ToList();
+                    .ForEach( l => registrations
+                        .AddOrIgnore( l.RegistrationInstanceId.Value, l.ToString( true, true, false ) ) );
+
+                linkages
+                    .Where( l => 
+                        l.EventItemOccurrence != null && 
+                        l.EventItemOccurrence.EventItem != null )
+                    .ToList()
+                    .ForEach( l => eventItemOccurrences
+                        .AddOrIgnore( l.EventItemOccurrence.Id, string.Format( "{0} - {1}",
+                            l.EventItemOccurrence.EventItem.Name,
+                            l.EventItemOccurrence.Campus != null ? l.EventItemOccurrence.Campus.Name : "All Campuses" ) ) );
+
+                linkages
+                    .Where( l => 
+                        l.EventItemOccurrence != null && 
+                        l.EventItemOccurrence.EventItem != null && 
+                        l.EventItemOccurrence.ContentChannelItems.Any() )
+                    .SelectMany( l => l.EventItemOccurrence.ContentChannelItems.Where( i => i.ContentChannelItem != null ) )
+                    .ToList()
+                    .ForEach( i => contentItems
+                        .AddOrIgnore( i.ContentChannelItem.Id, i.ContentChannelItem.Title ) );
+
+                rptLinkedRegistrations.DataSource = registrations;
                 rptLinkedRegistrations.DataBind();
+
+                rptEventItemOccurrences.DataSource = eventItemOccurrences;
+                rptEventItemOccurrences.DataBind();
+
+                rptContentItems.DataSource = contentItems;
+                rptContentItems.DataBind();
             }
-            else
-            {
-                rcwLinkedRegistrations.Visible = false;
-            }
+
+            rcwLinkedRegistrations.Visible = registrations.Any();
+            rcwEventItemOccurrences.Visible = eventItemOccurrences.Any();
+            rcwContentItems.Visible = contentItems.Any();
 
             // Get Map Style
             phMaps.Controls.Clear();
@@ -1566,6 +1597,20 @@ namespace RockWeb.Blocks.Groups
             var qryParams = new Dictionary<string, string>();
             qryParams.Add( "RegistrationInstanceId", registrationInstanceId.ToString() );
             return LinkedPageUrl( "RegistrationInstancePage", qryParams );
+        }
+
+        protected string EventItemOccurrenceUrl( int eventItemOccurrenceId )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "EventItemOccurrenceId", eventItemOccurrenceId.ToString() );
+            return LinkedPageUrl( "EventItemOccurrencePage", qryParams );
+        }
+
+        protected string ContentItemUrl( int contentItemId )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "ContentItemId", contentItemId.ToString() );
+            return LinkedPageUrl( "ContentItemPage", qryParams );
         }
 
         /// <summary>
