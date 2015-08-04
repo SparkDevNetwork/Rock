@@ -39,16 +39,16 @@ using Attribute = Rock.Model.Attribute;
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Displays the details of a given calendar item occurrence.
+    /// Displays the details of a given calendar event item occurrence.
     /// </summary>
-    [DisplayName( "Calendar Item Occurrence Detail" )]
+    [DisplayName( "Calendar Event Item Occurrence Detail" )]
     [Category( "Event" )]
-    [Description( "Displays the details of a given calendar item occurrence." )]
+    [Description( "Displays the details of a given calendar event item occurrence." )]
 
     [AccountField( "Default Account", "The default account to use for new registration instances", false, "2A6F9E5F-6859-44F1-AB0E-CE9CF6B08EE5", "", 0 )]
     [LinkedPage( "Registration Instance Page", "The page to view registration details", true, "", "", 1 )]
     [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 2 )]
-    public partial class CalendarItemOccurrenceDetail : RockBlock, IDetailBlock
+    public partial class EventItemOccurrenceDetail : RockBlock, IDetailBlock
     {
         #region Properties
 

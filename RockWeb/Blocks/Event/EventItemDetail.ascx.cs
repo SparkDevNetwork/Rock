@@ -38,13 +38,13 @@ using Attribute = Rock.Model.Attribute;
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Displays the details of the given calendar item.
+    /// Displays the details of the given calendar event item.
     /// </summary>
-    [DisplayName( "Calendar Item Detail" )]
+    [DisplayName( "Calendar Event Item Detail" )]
     [Category( "Event" )]
-    [Description( "Displays the details of the given calendar item." )]
+    [Description( "Displays the details of the given calendar event item." )]
 
-    public partial class CalendarItemDetail : RockBlock, IDetailBlock
+    public partial class EventItemDetail : RockBlock, IDetailBlock
     {
         #region Properties
 
