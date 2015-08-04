@@ -38,9 +38,6 @@ namespace Rock.Client
         public int? CampusId { get; set; }
 
         /// <summary />
-        public string CampusNote { get; set; }
-
-        /// <summary />
         public string ContactEmail { get; set; }
 
         /// <summary />
@@ -56,6 +53,12 @@ namespace Rock.Client
         public string Location { get; set; }
 
         /// <summary />
+        public string Note { get; set; }
+
+        /// <summary />
+        public int? ScheduleId { get; set; }
+
+        /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
@@ -69,12 +72,13 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.CampusId = source.CampusId;
-            this.CampusNote = source.CampusNote;
             this.ContactEmail = source.ContactEmail;
             this.ContactPersonAliasId = source.ContactPersonAliasId;
             this.ContactPhone = source.ContactPhone;
             this.EventItemId = source.EventItemId;
             this.Location = source.Location;
+            this.Note = source.Note;
+            this.ScheduleId = source.ScheduleId;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 
@@ -96,10 +100,10 @@ namespace Rock.Client
         public ICollection<EventItemOccurrenceChannelItem> ContentChannelItems { get; set; }
 
         /// <summary />
-        public ICollection<EventItemSchedule> EventItemSchedules { get; set; }
+        public ICollection<EventItemOccurrenceGroupMap> Linkages { get; set; }
 
         /// <summary />
-        public ICollection<EventItemOccurrenceGroupMap> Linkages { get; set; }
+        public Schedule Schedule { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

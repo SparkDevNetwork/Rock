@@ -83,21 +83,6 @@ namespace Rock.Client
     public partial class ConnectionType : ConnectionTypeEntity
     {
         /// <summary />
-        public ICollection<ConnectionActivityType> ConnectionActivityTypes { get; set; }
-
-        /// <summary />
-        public ICollection<ConnectionOpportunity> ConnectionOpportunities { get; set; }
-
-        /// <summary />
-        public ICollection<ConnectionStatus> ConnectionStatuses { get; set; }
-
-        /// <summary />
-        public ICollection<ConnectionWorkflow> ConnectionWorkflows { get; set; }
-
-        /// <summary />
-        public PersonAlias OwnerPersonAlias { get; set; }
-
-        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-
+        js-grid-registration
         <div class="wizard">
 
             <div class="wizard-item complete">

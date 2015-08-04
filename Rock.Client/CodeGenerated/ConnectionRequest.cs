@@ -95,25 +95,10 @@ namespace Rock.Client
     public partial class ConnectionRequest : ConnectionRequestEntity
     {
         /// <summary />
-        public Group AssignedGroup { get; set; }
-
-        /// <summary />
-        public Campus Campus { get; set; }
-
-        /// <summary />
         public ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary />
-        public ICollection<ConnectionRequestActivity> ConnectionRequestActivities { get; set; }
-
-        /// <summary />
-        public ICollection<ConnectionRequestWorkflow> ConnectionRequestWorkflows { get; set; }
-
-        /// <summary />
         public ConnectionStatus ConnectionStatus { get; set; }
-
-        /// <summary />
-        public PersonAlias ConnectorPersonAlias { get; set; }
 
         /// <summary />
         public PersonAlias PersonAlias { get; set; }
