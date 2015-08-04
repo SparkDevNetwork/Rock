@@ -1017,6 +1017,9 @@ td.wrap-contents {
 .grid-filter-entry legend + .control-group {
   margin-top: 0;
 }
+.grid-filter-overview h4 {
+  margin: 0;
+}
 .grid-filter-overview fieldset {
   margin-bottom: 12px;
 }
@@ -3956,7 +3959,6 @@ fieldset .actions {
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transform: translate(0, 0);
   content: "\f093";
   padding-right: .25em;
 }
@@ -5067,16 +5069,20 @@ a.help {
   font-weight: 700;
 }
 .badge-danger {
-  background-color: #d9534f;
+  background-color: #d9534f !important;
+  color: #fff !important;
 }
 .badge-warning {
-  background-color: #f0ad4e;
+  background-color: #f0ad4e !important;
+  color: #fff !important;
 }
 .badge-success {
-  background-color: #5cb85c;
+  background-color: #5cb85c !important;
+  color: #fff !important;
 }
 .badge-info {
-  background-color: #5bc0de;
+  background-color: #5bc0de !important;
+  color: #fff !important;
 }
 .popover-content header {
   margin: -9px -14px 8px -14px;
@@ -6737,7 +6743,6 @@ h6,
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transform: translate(0, 0);
   content: "\f0da";
   opacity: .25;
   font-size: 1.175em;
@@ -7236,7 +7241,6 @@ a.thumbnail {
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transform: translate(0, 0);
   content: "\f01d";
   position: absolute;
   top: 50%;
