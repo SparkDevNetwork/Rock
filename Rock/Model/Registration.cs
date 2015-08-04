@@ -48,6 +48,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember]
+        [IgnoreCanDelete]
         public int RegistrationInstanceId { get; set; }
 
         /// <summary>

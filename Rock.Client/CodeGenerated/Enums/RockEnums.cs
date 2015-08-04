@@ -273,8 +273,7 @@ namespace Rock.Client.Enums
         NotMet = 0x1,
         MeetsWithWarning = 0x2,
         NotApplicable = 0x3,
-        ManualCheckRequired = 0x4,
-        Error = 0x5,
+        Error = 0x4,
     }
 
     /// <summary>

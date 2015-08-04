@@ -71,9 +71,6 @@ namespace Rock.Client
     public partial class ConnectionActivityType : ConnectionActivityTypeEntity
     {
         /// <summary />
-        public ConnectionType ConnectionType { get; set; }
-
-        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />
