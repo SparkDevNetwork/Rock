@@ -125,10 +125,23 @@ namespace Rock.Field.Types
 
             if ( condensed )
             {
-                return System.Web.HttpUtility.HtmlEncode( value ).Truncate( 100 );
+                return value.Truncate( 100 );
             }
 
-            return System.Web.HttpUtility.HtmlEncode( value );
+            return value;
+        }
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            return System.Web.HttpUtility.HtmlEncode( FormatValue( parentControl, value, configurationValues, condensed ) );
         }
 
         #endregion
