@@ -4399,7 +4399,7 @@ ul.list-group-panel .list-group-item:first-child,
   bottom: 0;
   width: 35px;
   text-align: center;
-  padding-top: 8px;
+  padding-top: 10px;
   opacity: .4;
   color: #333333;
   transition: 1s;
