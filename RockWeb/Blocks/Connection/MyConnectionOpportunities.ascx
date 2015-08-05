@@ -45,10 +45,7 @@
         </div>
         <asp:Panel ID="pnlGrid" runat="server" CssClass="panel panel-block" Visible="false">
             <div class="panel-heading">
-                <h4>
-                    <asp:Literal ID="lOpportunityIcon" runat="server" />
-
-                    <asp:Literal ID="lConnectionRequest" runat="server"></asp:Literal></h4>
+                <h1 class="panel-title"><asp:Literal ID="lOpportunityIcon" runat="server" /> <asp:Literal ID="lConnectionRequest" runat="server"></asp:Literal></h1>
             </div>
             <div class="panel-body">
                 <Rock:ModalAlert ID="mdGridWarning" runat="server" />
