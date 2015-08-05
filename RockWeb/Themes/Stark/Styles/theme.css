@@ -4625,6 +4625,73 @@ ul.list-group-panel .list-group-item:first-child,
   color: #413c35;
   border: 1px solid #c6bdad;
 }
+.primary-color {
+  background-color: #428bca;
+  color: #ffffff;
+}
+.theme-color-1 {
+  background-color: #3a3a3a;
+  color: #bbbbbb;
+}
+.theme-color-1-bordered {
+  background-color: #3a3a3a;
+  color: #bbbbbb;
+  border: 1px solid #212121;
+}
+.theme-color-2 {
+  background-color: #428bca;
+  color: #ffffff;
+}
+.theme-color-2-bordered {
+  background-color: #428bca;
+  color: #ffffff;
+  border: 1px solid #3071a9;
+}
+.theme-color-3 {
+  background-color: #f6f6f6;
+  color: #333333;
+}
+.theme-color-3-bordered {
+  background-color: #f6f6f6;
+  color: #333333;
+  border: 1px solid #dddddd;
+}
+.theme-color-4 {
+  background-color: #dbd5cb;
+  color: #413c35;
+}
+.theme-color-4-bordered {
+  background-color: #dbd5cb;
+  color: #413c35;
+  border: 1px solid #c6bdad;
+}
+.theme-color-5 {
+  background-color: #e3ded7;
+  color: #817b72;
+}
+.theme-color-5-bordered {
+  background-color: #e3ded7;
+  color: #817b72;
+  border: 1px solid #cec5b9;
+}
+.theme-color-6 {
+  background-color: #edeae6;
+  color: #6a6a6a;
+}
+.theme-color-6-bordered {
+  background-color: #edeae6;
+  color: #6a6a6a;
+  border: 1px solid #d8d1c8;
+}
+.theme-color-7 {
+  background-color: #8cc63e;
+  color: #ffffff;
+}
+.theme-color-7-bordered {
+  background-color: #8cc63e;
+  color: #ffffff;
+  border: 1px solid #71a130;
+}
 .bg-color {
   background-color: #ffffff;
 }
