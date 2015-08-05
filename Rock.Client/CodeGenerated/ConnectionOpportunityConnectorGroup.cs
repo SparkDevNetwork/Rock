@@ -27,27 +27,21 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for ConnectionWorkflow that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for ConnectionOpportunityConnectorGroup that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class ConnectionWorkflowEntity
+    public partial class ConnectionOpportunityConnectorGroupEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? ConnectionOpportunityId { get; set; }
+        public int? CampusId { get; set; }
 
         /// <summary />
-        public int? ConnectionTypeId { get; set; }
+        public int ConnectionOpportunityId { get; set; }
 
         /// <summary />
-        public string QualifierValue { get; set; }
-
-        /// <summary />
-        public int /* ConnectionWorkflowTriggerType*/ TriggerType { get; set; }
-
-        /// <summary />
-        public int? WorkflowTypeId { get; set; }
+        public int ConnectorGroupId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -56,17 +50,15 @@ namespace Rock.Client
         public string ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source ConnectionWorkflow object
+        /// Copies the base properties from a source ConnectionOpportunityConnectorGroup object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( ConnectionWorkflow source )
+        public void CopyPropertiesFrom( ConnectionOpportunityConnectorGroup source )
         {
             this.Id = source.Id;
+            this.CampusId = source.CampusId;
             this.ConnectionOpportunityId = source.ConnectionOpportunityId;
-            this.ConnectionTypeId = source.ConnectionTypeId;
-            this.QualifierValue = source.QualifierValue;
-            this.TriggerType = source.TriggerType;
-            this.WorkflowTypeId = source.WorkflowTypeId;
+            this.ConnectorGroupId = source.ConnectorGroupId;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 
@@ -74,13 +66,10 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for ConnectionWorkflow that includes all the fields that are available for GETs. Use this for GETs (use ConnectionWorkflowEntity for POST/PUTs)
+    /// Client model for ConnectionOpportunityConnectorGroup that includes all the fields that are available for GETs. Use this for GETs (use ConnectionOpportunityConnectorGroupEntity for POST/PUTs)
     /// </summary>
-    public partial class ConnectionWorkflow : ConnectionWorkflowEntity
+    public partial class ConnectionOpportunityConnectorGroup : ConnectionOpportunityConnectorGroupEntity
     {
-        /// <summary />
-        public WorkflowType WorkflowType { get; set; }
-
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 

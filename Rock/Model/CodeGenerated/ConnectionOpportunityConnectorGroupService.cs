@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// ConnectionOpportunityGroupCampus Service class
+    /// ConnectionOpportunityConnectorGroup Service class
     /// </summary>
-    public partial class ConnectionOpportunityGroupCampusService : Service<ConnectionOpportunityGroupCampus>
+    public partial class ConnectionOpportunityConnectorGroupService : Service<ConnectionOpportunityConnectorGroup>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConnectionOpportunityGroupCampusService"/> class
+        /// Initializes a new instance of the <see cref="ConnectionOpportunityConnectorGroupService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public ConnectionOpportunityGroupCampusService(RockContext context) : base(context)
+        public ConnectionOpportunityConnectorGroupService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( ConnectionOpportunityGroupCampus item, out string errorMessage )
+        public bool CanDelete( ConnectionOpportunityConnectorGroup item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,34 +58,34 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class ConnectionOpportunityGroupCampusExtensionMethods
+    public static partial class ConnectionOpportunityConnectorGroupExtensionMethods
     {
         /// <summary>
-        /// Clones this ConnectionOpportunityGroupCampus object to a new ConnectionOpportunityGroupCampus object
+        /// Clones this ConnectionOpportunityConnectorGroup object to a new ConnectionOpportunityConnectorGroup object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static ConnectionOpportunityGroupCampus Clone( this ConnectionOpportunityGroupCampus source, bool deepCopy )
+        public static ConnectionOpportunityConnectorGroup Clone( this ConnectionOpportunityConnectorGroup source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as ConnectionOpportunityGroupCampus;
+                return source.Clone() as ConnectionOpportunityConnectorGroup;
             }
             else
             {
-                var target = new ConnectionOpportunityGroupCampus();
+                var target = new ConnectionOpportunityConnectorGroup();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another ConnectionOpportunityGroupCampus object to this ConnectionOpportunityGroupCampus object
+        /// Copies the properties from another ConnectionOpportunityConnectorGroup object to this ConnectionOpportunityConnectorGroup object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this ConnectionOpportunityGroupCampus target, ConnectionOpportunityGroupCampus source )
+        public static void CopyPropertiesFrom( this ConnectionOpportunityConnectorGroup target, ConnectionOpportunityConnectorGroup source )
         {
             target.Id = source.Id;
             target.CampusId = source.CampusId;

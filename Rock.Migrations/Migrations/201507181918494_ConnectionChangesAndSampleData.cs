@@ -68,7 +68,7 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateEntityType( "Rock.Model.ConnectionOpportunity", Rock.SystemGuid.EntityType.CONNECTION_OPPORTUNITY, true, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Model.ConnectionOpportunityCampus", Rock.SystemGuid.EntityType.CONNECTION_OPPORTUNITY_CAMPUS, true, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Model.ConnectionOpportunityGroup", Rock.SystemGuid.EntityType.CONNECTION_OPPORTUNITY_GROUP, true, true );
-            RockMigrationHelper.UpdateEntityType( "Rock.Model.ConnectionOpportunityGroupCampus", Rock.SystemGuid.EntityType.CONNECTION_OPPORTUNITY_GROUP_CAMPUS, true, true );
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.ConnectionOpportunityGroupCampus", Rock.SystemGuid.EntityType.CONNECTION_OPPORTUNITY_CONNECTOR_GROUP, true, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Model.ConnectionRequest", Rock.SystemGuid.EntityType.CONNECTION_REQUEST, true, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Model.ConnectionRequestActivity", Rock.SystemGuid.EntityType.CONNECTION_REQUEST_ACTIVITY, true, true );
             RockMigrationHelper.UpdateEntityType( "Rock.Model.ConnectionRequestWorkflow", Rock.SystemGuid.EntityType.CONNECTION_REQUEST_WORKFLOW, true, true );

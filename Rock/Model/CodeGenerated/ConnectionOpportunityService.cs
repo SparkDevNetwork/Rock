@@ -95,7 +95,6 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.ConnectionTypeId = source.ConnectionTypeId;
-            target.ConnectorGroupId = source.ConnectorGroupId;
             target.Description = source.Description;
             target.GroupMemberRoleId = source.GroupMemberRoleId;
             target.GroupMemberStatus = source.GroupMemberStatus;

@@ -24,6 +24,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -332,6 +333,47 @@ namespace Rock.Model
             CompletedDateTime = RockDateTime.Now;
             Status = "Completed";
             AddLogEntry( "Completed" );
+        }
+
+        /// <summary>
+        /// Determines whether this workflow instance has an active entry form for the selected person.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public bool HasActiveEntryForm( Person person )
+        {
+            if ( IsActive )
+            {
+                var canEdit = IsAuthorized( Authorization.EDIT, person );
+
+                // Find first active action form
+                int personId = person != null ? person.Id : 0;
+                foreach ( var activity in Activities
+                    .Where( a =>
+                        a.IsActive &&
+                        (
+                            ( canEdit ) ||
+                            ( !a.AssignedGroupId.HasValue && !a.AssignedPersonAliasId.HasValue ) ||
+                            ( a.AssignedPersonAlias != null && a.AssignedPersonAlias.PersonId == personId ) ||
+                            ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == personId ) )
+                        )
+                    )
+                    .OrderBy( a => a.ActivityType.Order ) )
+                {
+                    if ( canEdit || ( activity.ActivityType.IsAuthorized( Authorization.VIEW, person ) ) )
+                    {
+                        foreach ( var action in activity.ActiveActions )
+                        {
+                            if ( action.ActionType.WorkflowForm != null && action.IsCriteriaValid )
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

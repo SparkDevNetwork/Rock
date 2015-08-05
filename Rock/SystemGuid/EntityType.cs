@@ -64,9 +64,9 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CONNECTION_OPPORTUNITY_GROUP = "CD3F425C-9B36-4433-9C38-D58DE42C9F65";
         /// <summary>
-        /// The guid for the Rock.Model.ConnectionOpportunityGroupCampus entity
+        /// The guid for the Rock.Model.ConnectionOpportunityConnectorGroup entity
         /// </summary>
-        public const string CONNECTION_OPPORTUNITY_GROUP_CAMPUS = "4CB430B1-0F32-482F-9C95-164A09332CC1";
+        public const string CONNECTION_OPPORTUNITY_CONNECTOR_GROUP = "4CB430B1-0F32-482F-9C95-164A09332CC1";
         /// <summary>
         /// The guid for the Rock.Model.ConnectionRequest entity
         /// </summary>
