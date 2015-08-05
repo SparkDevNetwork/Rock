@@ -685,7 +685,6 @@ namespace RockWeb.Blocks.Event
                 var registrationService = new RegistrationService( rockContext );
                 var registration = registrationService
                     .Queryable( "Registrants.PersonAlias.Person,Registrants.GroupMember,RegistrationInstance.Account,RegistrationInstance.RegistrationTemplate.Fees,RegistrationInstance.RegistrationTemplate.Discounts,RegistrationInstance.RegistrationTemplate.Forms.Fields.Attribute,RegistrationInstance.RegistrationTemplate.FinancialGateway" )
-                    .AsNoTracking()
                     .Where( r => r.Id == registrationId.Value )
                     .FirstOrDefault();
                 if ( registration != null )
@@ -702,7 +701,6 @@ namespace RockWeb.Blocks.Event
                 var dateTime = RockDateTime.Now;
                 var linkage = new EventItemOccurrenceGroupMapService( rockContext )
                     .Queryable( "RegistrationInstance.Account,RegistrationInstance.RegistrationTemplate.Fees,RegistrationInstance.RegistrationTemplate.Discounts,RegistrationInstance.RegistrationTemplate.Forms.Fields.Attribute,RegistrationInstance.RegistrationTemplate.FinancialGateway" )
-                    .AsNoTracking()
                     .Where( l => 
                         l.UrlSlug == registrationSlug &&
                         l.RegistrationInstance != null &&
@@ -727,7 +725,6 @@ namespace RockWeb.Blocks.Event
                 var dateTime = RockDateTime.Now;
                 var linkage = new EventItemOccurrenceGroupMapService( rockContext )
                     .Queryable( "RegistrationInstance.Account,RegistrationInstance.RegistrationTemplate.Fees,RegistrationInstance.RegistrationTemplate.Discounts,RegistrationInstance.RegistrationTemplate.Forms.Fields.Attribute,RegistrationInstance.RegistrationTemplate.FinancialGateway" )
-                    .AsNoTracking()
                     .Where( l =>
                         l.GroupId == groupId &&
                         l.EventItemOccurrence != null &&
@@ -754,7 +751,6 @@ namespace RockWeb.Blocks.Event
                 var dateTime = RockDateTime.Now;
                 RegistrationInstanceState = new RegistrationInstanceService( rockContext )
                     .Queryable( "Account,RegistrationTemplate.Fees,RegistrationTemplate.Discounts,RegistrationTemplate.Forms.Fields.Attribute,RegistrationTemplate.FinancialGateway" )
-                    .AsNoTracking()
                     .Where( r =>
                         r.Id == registrationInstanceId.Value &&
                         r.IsActive &&
