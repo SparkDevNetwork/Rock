@@ -38,9 +38,6 @@ namespace Rock.Client
         public int ConnectionTypeId { get; set; }
 
         /// <summary />
-        public int? ConnectorGroupId { get; set; }
-
-        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -84,7 +81,6 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.ConnectionTypeId = source.ConnectionTypeId;
-            this.ConnectorGroupId = source.ConnectorGroupId;
             this.Description = source.Description;
             this.GroupMemberRoleId = source.GroupMemberRoleId;
             this.GroupMemberStatus = source.GroupMemberStatus;

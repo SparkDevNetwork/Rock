@@ -274,6 +274,10 @@ public enum ConnectionState
     /// </summary>
     FutureFollowUp = 2,
 
+    /// <summary>
+    /// Connected
+    /// </summary>
+    Connected = 3,
 }
 
 #endregion

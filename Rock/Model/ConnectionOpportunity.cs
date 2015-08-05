@@ -98,15 +98,6 @@ namespace Rock.Model
         public int GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the connector group identifier.
-        /// </summary>
-        /// <value>
-        /// The connector group identifier.
-        /// </value>
-        [DataMember]
-        public int? ConnectorGroupId { get; set; }
-
-        /// <summary>
         /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>
@@ -164,14 +155,6 @@ namespace Rock.Model
         /// The type of the connection.
         /// </value>
         public virtual ConnectionType ConnectionType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the connector group.
-        /// </summary>
-        /// <value>
-        /// The connector group.
-        /// </value>
-        public virtual Group ConnectorGroup { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the group.
@@ -256,18 +239,18 @@ namespace Rock.Model
         private ICollection<ConnectionRequest> _connectionRequests;
 
         /// <summary>
-        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionOpportunityGroupCampus">ConnectionOpportunityGroupCampuses</see> who are associated with the ConnectionOpportunity.
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionOpportunityConnectorGroup">ConnectionOpportunityConnectorGroup</see> who are associated with the ConnectionOpportunity.
         /// </summary>
         /// <value>
-        /// A collection of <see cref="Rock.Model.ConnectionOpportunityGroupCampus">ConnectionOpportunityGroupCampuses</see> who are associated with the ConnectionOpportunity.
+        /// A collection of <see cref="Rock.Model.ConnectionOpportunityConnectorGroup">ConnectionOpportunityConnectorGroup</see> who are associated with the ConnectionOpportunity.
         /// </value>
-        public virtual ICollection<ConnectionOpportunityGroupCampus> ConnectionOpportunityGroupCampuses
+        public virtual ICollection<ConnectionOpportunityConnectorGroup> ConnectionOpportunityConnectorGroups
         {
-            get { return _connectionOpportunityGroupCampuses ?? ( _connectionOpportunityGroupCampuses = new Collection<ConnectionOpportunityGroupCampus>() ); }
-            set { _connectionOpportunityGroupCampuses = value; }
+            get { return _connectionOpportunityConnectorGroups ?? ( _connectionOpportunityConnectorGroups = new Collection<ConnectionOpportunityConnectorGroup>() ); }
+            set { _connectionOpportunityConnectorGroups = value; }
         }
 
-        private ICollection<ConnectionOpportunityGroupCampus> _connectionOpportunityGroupCampuses;
+        private ICollection<ConnectionOpportunityConnectorGroup> _connectionOpportunityConnectorGroups;
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionOpportunityCampus">ConnectionOpportunityCampuses</see> who are associated with the ConnectionOpportunity.
@@ -357,7 +340,6 @@ namespace Rock.Model
         public ConnectionOpportunityConfiguration()
         {
             this.HasOptional( p => p.GroupMemberRole ).WithMany().HasForeignKey( p => p.GroupMemberRoleId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.ConnectorGroup ).WithMany().HasForeignKey( p => p.ConnectorGroupId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.GroupType ).WithMany().HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.ConnectionType ).WithMany( p => p.ConnectionOpportunities ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );

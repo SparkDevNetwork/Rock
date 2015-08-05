@@ -383,28 +383,40 @@ namespace RockWeb.Blocks.Connection
             foreach ( var opportunity in new ConnectionOpportunityService( rockContext )
                 .Queryable().AsNoTracking() )
             {
-                // Check to see if person can view the opportunity because of admin rights to this block, admin rights to
-                // the opportunity, or they are in the global connector group for the opportunity
-                bool canView =
-                    UserCanAdministrate ||
-                    opportunity.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) ||
-                    ( opportunity.ConnectorGroup != null && opportunity.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId ) );
-
-                // If user is not yet authorized to view the opportunity, check to see if they are a member of one of the 
-                // connector groups for the opportunity, and note the campus
+                // Check to see if person can view the opportunity because of admin rights to this block or admin rights to
+                // the opportunity
+                bool canView = UserCanAdministrate || opportunity.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
                 bool campusSpecificConnector = false;
                 var campusIds = new List<int>();
-                if ( !canView )
+
+                if ( CurrentPersonId.HasValue )
                 {
-                    foreach ( var groupCampus in opportunity
-                        .ConnectionOpportunityGroupCampuses
-                        .Where( g =>
-                            g.ConnectorGroup != null &&
-                            g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId ) ) )
+                    // Check to see if person belongs to any connector group that is not campus specific
+                    if ( !canView )
                     {
-                        campusSpecificConnector = true;
-                        canView = true;
-                        campusIds.Add( groupCampus.CampusId );
+                        canView = opportunity
+                            .ConnectionOpportunityConnectorGroups
+                            .Any( g =>
+                                !g.CampusId.HasValue &&
+                                g.ConnectorGroup != null &&
+                                g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId.Value ) );
+                    }
+
+                    // If user is not yet authorized to view the opportunity, check to see if they are a member of one of the 
+                    // campus-specific connector groups for the opportunity, and note the campus
+                    if ( !canView )
+                    {
+                        foreach ( var groupCampus in opportunity
+                            .ConnectionOpportunityConnectorGroups
+                            .Where( g =>
+                                g.CampusId.HasValue &&
+                                g.ConnectorGroup != null &&
+                                g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId.Value ) ) )
+                        {
+                            campusSpecificConnector = true;
+                            canView = true;
+                            campusIds.Add( groupCampus.CampusId.Value );
+                        }
                     }
                 }
 
@@ -664,9 +676,9 @@ namespace RockWeb.Blocks.Connection
                         Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
                         Activities = r.ConnectionRequestActivities.Select( a => a.ConnectionActivityType.Name ).ToList().AsDelimited( "</br>" ),
                         Status = r.ConnectionStatus.Name,
-                        StatusLabel = r.ConnectionStatus.IsCritical ? "danger" : "info",
+                        StatusLabel = r.ConnectionStatus.IsCritical ? "warning" : "info",
                         State = r.ConnectionState.ConvertToString(),
-                        StateLabel = r.ConnectionState == ConnectionState.Active ? "success" : ( r.ConnectionState == ConnectionState.Inactive ? "danger" : "info" )
+                        StateLabel = r.ConnectionState == ConnectionState.Inactive ? "danger" : ( r.ConnectionState == ConnectionState.FutureFollowUp ? "info" : "success" )
                     } )
                    .ToList();
                     gRequests.DataBind();

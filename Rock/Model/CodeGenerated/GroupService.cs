@@ -52,12 +52,6 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<ConnectionOpportunity>( Context ).Queryable().Any( a => a.ConnectorGroupId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, ConnectionOpportunity.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<ConnectionRequest>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, ConnectionRequest.FriendlyTypeName );

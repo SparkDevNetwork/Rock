@@ -118,7 +118,7 @@
     <Compile Include="Controllers\CodeGenerated\ConnectionActivityTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionOpportunitiesController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionOpportunityCampusController.cs" />
-    <Compile Include="Controllers\CodeGenerated\ConnectionOpportunityGroupCampusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionOpportunityConnectorGroupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionOpportunityGroupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionRequestActivitiesController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionRequestsController.cs" />

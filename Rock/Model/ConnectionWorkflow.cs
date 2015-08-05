@@ -108,6 +108,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the workflow.
         /// </value>
+        [DataMember]
         public virtual WorkflowType WorkflowType { get; set; }
 
         #endregion

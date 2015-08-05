@@ -351,10 +351,17 @@ namespace RockWeb.Blocks.WorkFlow
             var workflow = new WorkflowService( new RockContext() ).Get( e.RowKeyId );
             if ( workflow != null )
             {
-                var qryParam = new Dictionary<string, string>();
-                qryParam.Add( "WorkflowTypeId", workflow.WorkflowTypeId.ToString() );
-                qryParam.Add( "WorkflowId", workflow.Id.ToString() );
-                NavigateToLinkedPage( "EntryPage", qryParam );
+                if ( workflow.HasActiveEntryForm( CurrentPerson ) )
+                {
+                    var qryParam = new Dictionary<string, string>();
+                    qryParam.Add( "WorkflowTypeId", workflow.WorkflowTypeId.ToString() );
+                    qryParam.Add( "WorkflowId", workflow.Id.ToString() );
+                    NavigateToLinkedPage( "EntryPage", qryParam );
+                }
+                else
+                {
+                    NavigateToLinkedPage( "DetailPage", "workflowId", e.RowKeyId );
+                }
             }
         }
 
