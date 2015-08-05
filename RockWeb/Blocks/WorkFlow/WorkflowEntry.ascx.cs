@@ -525,7 +525,18 @@ namespace RockWeb.Blocks.WorkFlow
                     if ( formAttribute.IsReadOnly )
                     {
                         var field = attribute.FieldType.Field;
-                        string formattedValue = field.FormatValueAsHtml( phAttributes, value, attribute.QualifierValues );
+
+                        string formattedValue = null;
+
+                        // get formatted value 
+                        if ( attribute.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
+                        {
+                            formattedValue = attribute.FieldType.Field.FormatValueAsHtml( phAttributes, value, attribute.QualifierValues, true );
+                        }
+                        else
+                        {
+                            formattedValue = field.FormatValueAsHtml( phAttributes, value, attribute.QualifierValues );
+                        }
 
                         if ( formAttribute.HideLabel )
                         {
