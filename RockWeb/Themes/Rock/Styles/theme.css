@@ -4399,7 +4399,7 @@ ul.list-group-panel .list-group-item:first-child,
   bottom: 0;
   width: 35px;
   text-align: center;
-  padding-top: 8px;
+  padding-top: 10px;
   opacity: .4;
   color: #6a6a6a;
   transition: 1s;
@@ -5896,37 +5896,18 @@ h4,
 .h4 {
   font-weight: 500;
 }
-/* JME 8/4/2015
 .panel {
   border-radius: 0;
   border-top-width: 3px;
-
-  .panel-heading {
-    padding: 6px 10px;
-    border-color: darken(@panel-default-heading-bg, 5%);
-    border-radius: 0;
-
-    .panel-title {
-      font-weight: @font-weight-semibold;
-      letter-spacing: -.5px;
-      font-size: 18px;
-      margin: 0 12px 4px 0;
-    }
-
-    h3 > i {
-      margin-right: 4px;
-    }
-  }
-
-
-  &.panel-primary {
-    .panel-heading {
-      background-color: @brand-primary;
-    }
-  }
-
-  
-}*/
+}
+.panel .panel-heading .panel-title {
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  font-size: 18px;
+}
+.panel.panel-primary .panel-heading {
+  background-color: #ee7624;
+}
 .tag-letterlist a {
   color: #ee7624;
 }
@@ -6330,7 +6311,7 @@ body#splash.error #content #logo {
   margin-left: 4px;
   font-weight: 600;
   padding-bottom: 2px;
-  border-bottom: 1px solid #575042;
+  border-bottom: 1px solid #494237;
   font-weight: 400;
 }
 .navbar-static-side .navbar-side > li .nav-childpages li.header:first-child {
