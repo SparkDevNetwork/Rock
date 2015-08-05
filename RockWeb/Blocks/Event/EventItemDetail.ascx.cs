@@ -592,6 +592,7 @@ namespace RockWeb.Blocks.Event
             if ( eventItem == null )
             {
                 eventItem = new EventItem { Id = 0, IsActive = true, Name = "" };
+                eventItem.IsApproved = _canApprove;
             }
 
             eventItem.LoadAttributes( rockContext );
@@ -644,6 +645,7 @@ namespace RockWeb.Blocks.Event
             if ( eventItem == null )
             {
                 eventItem = new EventItem();
+                eventItem.IsApproved = _canApprove;
             }
             if ( eventItem.Id == 0 )
             {
