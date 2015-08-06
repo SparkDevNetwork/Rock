@@ -263,6 +263,86 @@ namespace Rock.Data
         public DbSet<Rock.Model.CommunicationTemplate> CommunicationTemplates { get; set; }
 
         /// <summary>
+        /// Gets or sets the connection activity types.
+        /// </summary>
+        /// <value>
+        /// The connection activity types.
+        /// </value>
+        public DbSet<ConnectionActivityType> ConnectionActivityTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection opportunities.
+        /// </summary>
+        /// <value>
+        /// The connection opportunities.
+        /// </value>
+        public DbSet<ConnectionOpportunity> ConnectionOpportunities { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection opportunity campuses.
+        /// </summary>
+        /// <value>
+        /// The connection opportunity campuses.
+        /// </value>
+        public DbSet<ConnectionOpportunityCampus> ConnectionOpportunityCampuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection opportunity connector groups.
+        /// </summary>
+        /// <value>
+        /// The connection opportunity connector groups.
+        /// </value>
+        public DbSet<ConnectionOpportunityConnectorGroup> ConnectionOpportunityConnectorGroups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection opportunity groups.
+        /// </summary>
+        /// <value>
+        /// The connection opportunity groups.
+        /// </value>
+        public DbSet<ConnectionOpportunityGroup> ConnectionOpportunityGroups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection requests.
+        /// </summary>
+        /// <value>
+        /// The connection requests.
+        /// </value>
+        public DbSet<ConnectionRequest> ConnectionRequests { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection request activities.
+        /// </summary>
+        /// <value>
+        /// The connection request activities.
+        /// </value>
+        public DbSet<ConnectionRequestActivity> ConnectionRequestActivities { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection statuses.
+        /// </summary>
+        /// <value>
+        /// The connection statuses.
+        /// </value>
+        public DbSet<ConnectionStatus> ConnectionStatuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection types.
+        /// </summary>
+        /// <value>
+        /// The connection types.
+        /// </value>
+        public DbSet<ConnectionType> ConnectionTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection workflows.
+        /// </summary>
+        /// <value>
+        /// The connection workflows.
+        /// </value>
+        public DbSet<ConnectionWorkflow> ConnectionWorkflows { get; set; }
+        
+        /// <summary>
         /// Gets or sets the content channels.
         /// </summary>
         /// <value>
@@ -351,6 +431,70 @@ namespace Rock.Data
         public DbSet<EntityType> EntityTypes { get; set; }
 
         /// <summary>
+        /// Gets or sets the event calendars.
+        /// </summary>
+        /// <value>
+        /// The event calendars.
+        /// </value>
+        public DbSet<EventCalendar> EventCalendars { get; set; }
+
+        /// <summary>
+        /// Gets or sets the event calendar content channels.
+        /// </summary>
+        /// <value>
+        /// The event calendar content channels.
+        /// </value>
+        public DbSet<EventCalendarContentChannel> EventCalendarContentChannels { get; set; }
+
+        /// <summary>
+        /// Gets or sets the event calendar items.
+        /// </summary>
+        /// <value>
+        /// The event calendar items.
+        /// </value>
+        public DbSet<EventCalendarItem> EventCalendarItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the event items.
+        /// </summary>
+        /// <value>
+        /// The event items.
+        /// </value>
+        public DbSet<EventItem> EventItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the event item audiences.
+        /// </summary>
+        /// <value>
+        /// The event item audiences.
+        /// </value>
+        public DbSet<EventItemAudience> EventItemAudiences { get; set; }
+
+        /// <summary>
+        /// Gets or sets the event item occurrences.
+        /// </summary>
+        /// <value>
+        /// The event item occurrences.
+        /// </value>
+        public DbSet<EventItemOccurrence> EventItemOccurrences { get; set; }
+
+        /// <summary>
+        /// Gets or sets the event item occurrence channel items.
+        /// </summary>
+        /// <value>
+        /// The event item occurrence channel items.
+        /// </value>
+        public DbSet<EventItemOccurrenceChannelItem> EventItemOccurrenceChannelItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the event item occurrence group maps.
+        /// </summary>
+        /// <value>
+        /// The event item occurrence group maps.
+        /// </value>
+        public DbSet<EventItemOccurrenceGroupMap> EventItemOccurrenceGroupMaps { get; set; }
+
+        /// <summary>
         /// Gets or sets the Exception Logs.
         /// </summary>
         /// <value>
@@ -375,20 +519,20 @@ namespace Rock.Data
         public DbSet<FinancialAccount> FinancialAccounts { get; set; }
 
         /// <summary>
-        /// Gets or sets the financial gateways.
-        /// </summary>
-        /// <value>
-        /// The financial gateways.
-        /// </value>
-        public DbSet<FinancialGateway> FinancialGateways { get; set; }
-
-        /// <summary>
         /// Gets or sets the batches.
         /// </summary>
         /// <value>
         /// The batches.
         /// </value>
         public DbSet<FinancialBatch> FinancialBatches { get; set; }
+
+        /// <summary>
+        /// Gets or sets the financial gateways.
+        /// </summary>
+        /// <value>
+        /// The financial gateways.
+        /// </value>
+        public DbSet<FinancialGateway> FinancialGateways { get; set; }
 
         /// <summary>
         /// Gets or sets the financial person bank account.
@@ -495,6 +639,14 @@ namespace Rock.Data
         public DbSet<GroupMember> GroupMembers { get; set; }
 
         /// <summary>
+        /// Gets or sets the group member requirements.
+        /// </summary>
+        /// <value>
+        /// The group member requirements.
+        /// </value>
+        public DbSet<GroupMemberRequirement> GroupMemberRequirements { get; set; }
+
+        /// <summary>
         /// Gets or sets the group member workflow triggers.
         /// </summary>
         /// <value>
@@ -502,6 +654,22 @@ namespace Rock.Data
         /// </value>
         public DbSet<GroupMemberWorkflowTrigger> GroupMemberWorkflowTriggers { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group requirements.
+        /// </summary>
+        /// <value>
+        /// The group requirements.
+        /// </value>
+        public DbSet<GroupRequirement> GroupRequirements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group requirement types.
+        /// </summary>
+        /// <value>
+        /// The group requirement types.
+        /// </value>
+        public DbSet<GroupRequirementType> GroupRequirementTypes { get; set; }
+        
         /// <summary>
         /// Gets or sets the group schedule exclusions.
         /// </summary>
@@ -663,6 +831,22 @@ namespace Rock.Data
         public DbSet<PersonBadge> PersonBadges { get; set; }
 
         /// <summary>
+        /// Gets or sets the person duplicates.
+        /// </summary>
+        /// <value>
+        /// The person duplicates.
+        /// </value>
+        public DbSet<PersonDuplicate> PersonDuplicates { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person previous names.
+        /// </summary>
+        /// <value>
+        /// The person previous names.
+        /// </value>
+        public DbSet<PersonPreviousName> PersonPreviousNames { get; set; }        
+        
+        /// <summary>
         /// Gets or sets the Person Vieweds.
         /// </summary>
         /// <value>
@@ -693,6 +877,78 @@ namespace Rock.Data
         /// The prayer requests.
         /// </value>
         public DbSet<PrayerRequest> PrayerRequests { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registrations.
+        /// </summary>
+        /// <value>
+        /// The registrations.
+        /// </value>
+        public DbSet<Registration> Registrations { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration instances.
+        /// </summary>
+        /// <value>
+        /// The registration instances.
+        /// </value>
+        public DbSet<RegistrationInstance> RegistrationInstances { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration registrants.
+        /// </summary>
+        /// <value>
+        /// The registration registrants.
+        /// </value>
+        public DbSet<RegistrationRegistrant> RegistrationRegistrants { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration registrant fees.
+        /// </summary>
+        /// <value>
+        /// The registration registrant fees.
+        /// </value>
+        public DbSet<RegistrationRegistrantFee> RegistrationRegistrantFees { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration templates.
+        /// </summary>
+        /// <value>
+        /// The registration templates.
+        /// </value>
+        public DbSet<RegistrationTemplate> RegistrationTemplates { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration template discounts.
+        /// </summary>
+        /// <value>
+        /// The registration template discounts.
+        /// </value>
+        public DbSet<RegistrationTemplateDiscount> RegistrationTemplateDiscounts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration template fees.
+        /// </summary>
+        /// <value>
+        /// The registration template fees.
+        /// </value>
+        public DbSet<RegistrationTemplateFee> RegistrationTemplateFees { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration template forms.
+        /// </summary>
+        /// <value>
+        /// The registration template forms.
+        /// </value>
+        public DbSet<RegistrationTemplateForm> RegistrationTemplateForms { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration template form fields.
+        /// </summary>
+        /// <value>
+        /// The registration template form fields.
+        /// </value>
+        public DbSet<RegistrationTemplateFormField> RegistrationTemplateFormFields { get; set; }
 
         /// <summary>
         /// Gets or sets the reports.
