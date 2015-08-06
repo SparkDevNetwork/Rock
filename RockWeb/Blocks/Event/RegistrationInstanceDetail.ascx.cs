@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Event
         #region Fields
 
         private List<FinancialTransactionDetail> RegistrationPayments;
+        private bool _instanceHasCost = false;
 
         #endregion
 
@@ -549,39 +550,36 @@ namespace RockWeb.Blocks.Event
 
                 // Set the Cost
                 decimal discountedCost = registration.DiscountedCost;
-                if ( discountedCost > 0.0M )
+                var lCost = e.Row.FindControl( "lCost" ) as Label;
+                if ( lCost != null )
                 {
-                    var lCost = e.Row.FindControl( "lCost" ) as Label;
-                    if ( lCost != null )
-                    {
-                        lCost.Visible = discountedCost > 0.0M;
-                        lCost.Text = discountedCost.ToString( "C2" );
-                    }
+                    lCost.Visible = _instanceHasCost || discountedCost > 0.0M;
+                    lCost.Text = discountedCost.ToString( "C2" );
+                }
 
-                    var lBalance = e.Row.FindControl( "lBalance" ) as Label;
-                    if ( lBalance != null )
+                var lBalance = e.Row.FindControl( "lBalance" ) as Label;
+                if ( lBalance != null )
+                {
+                    decimal balanceDue = registration.DiscountedCost - totalPaid;
+                    lBalance.Visible = _instanceHasCost || discountedCost > 0.0M;
+                    lBalance.Text = balanceDue.ToString( "C2" );
+                    if ( balanceDue > 0.0m )
                     {
-                        decimal balanceDue = registration.DiscountedCost - totalPaid;
-                        lBalance.Visible = discountedCost > 0.0M;
-                        lBalance.Text = balanceDue.ToString( "C2" );
-                        if ( balanceDue > 0.0m )
-                        {
-                            lBalance.AddCssClass( "label-danger" );
-                            lBalance.RemoveCssClass( "label-warning" );
-                            lBalance.RemoveCssClass( "label-success" );
-                        }
-                        else if ( balanceDue < 0.0m )
-                        {
-                            lBalance.RemoveCssClass( "label-danger" );
-                            lBalance.AddCssClass( "label-warning" );
-                            lBalance.RemoveCssClass( "label-success" );
-                        }
-                        else
-                        {
-                            lBalance.RemoveCssClass( "label-danger" );
-                            lBalance.RemoveCssClass( "label-warning" );
-                            lBalance.AddCssClass( "label-success" );
-                        }
+                        lBalance.AddCssClass( "label-danger" );
+                        lBalance.RemoveCssClass( "label-warning" );
+                        lBalance.RemoveCssClass( "label-success" );
+                    }
+                    else if ( balanceDue < 0.0m )
+                    {
+                        lBalance.RemoveCssClass( "label-danger" );
+                        lBalance.AddCssClass( "label-warning" );
+                        lBalance.RemoveCssClass( "label-success" );
+                    }
+                    else
+                    {
+                        lBalance.RemoveCssClass( "label-danger" );
+                        lBalance.RemoveCssClass( "label-warning" );
+                        lBalance.AddCssClass( "label-success" );
                     }
                 }
             }
@@ -1437,6 +1435,9 @@ namespace RockWeb.Blocks.Event
                 using ( var rockContext = new RockContext() )
                 {
                     var registrationEntityType = EntityTypeCache.Read( typeof( Rock.Model.Registration ) );
+
+                    var instance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
+                    _instanceHasCost = instance != null && instance.RegistrationTemplate.Cost > 0.0m;
 
                     var qry = new RegistrationService( rockContext )
                         .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person,Registrants.Fees.RegistrationTemplateFee" )
