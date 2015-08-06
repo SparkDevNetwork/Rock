@@ -43,7 +43,8 @@ namespace Rock.Migrations
         ORDER BY [Id] )
     FROM [EventItemOccurrence] O
 
-    DELETE [Schedule] 
+    -- Mark other schedules to be deleted (can't delete yet because of foreign key restraint to EventItemSchedule)
+    UPDATE [Schedule] SET [ForeignId] = 'DeleteMe'
     WHERE [Id] IN ( SELECT [ScheduleId] FROM [EventItemSchedule] )
     AND [Id] NOT IN ( SELECT [ScheduleId] FROM [EventItemOccurrence] )
 " );
@@ -60,6 +61,10 @@ namespace Rock.Migrations
             DropIndex("dbo.EventItemSchedule", new[] { "ForeignId" });
             DropTable( "dbo.EventItemSchedule" );
 
+            Sql( @"
+    DELETE [Schedule]
+    WHERE [ForeignId] = 'DeleteMe'
+" );
             // Update parent label to include last name
             Sql( @"
     DECLARE @AttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'CE57450F-634A-420A-BF5A-B43E9B20ABF2' )
