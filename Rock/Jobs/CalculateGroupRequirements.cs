@@ -83,12 +83,13 @@ namespace Rock.Jobs
 
                     personQry = personQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMember.PersonId == a.Id ) );
 
-                    var results = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, personQry, groupRequirement.GroupRoleId );
+                    var results = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, personQry, groupRequirement.GroupRoleId ).ToList();
                     foreach ( var result in results )
                     {
-                        groupRequirement.UpdateGroupMemberRequirementResult( rockContext, result.PersonId, result.MeetsGroupRequirement );
-
-                        rockContext.SaveChanges();
+                        // use a fresh rockContext per Update so that ChangeTracker doesn't get bogged down
+                        var rockContextUpdate = new RockContext();
+                        groupRequirement.UpdateGroupMemberRequirementResult( rockContextUpdate, result.PersonId, result.MeetsGroupRequirement );
+                        rockContextUpdate.SaveChanges();
                     }
                 }
                 catch ( Exception ex )
