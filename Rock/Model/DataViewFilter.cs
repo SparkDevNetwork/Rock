@@ -248,6 +248,7 @@ namespace Rock.Model
                     return null;
 
                 case FilterExpressionType.GroupAll:
+                case FilterExpressionType.GroupAnyFalse:
 
                     Expression andExp = null;
                     foreach ( var filter in this.ChildFilters )
@@ -267,9 +268,17 @@ namespace Rock.Model
                         }
                     }
 
+                    if ( ExpressionType == FilterExpressionType.GroupAnyFalse
+                         && andExp != null )
+                    {
+                        // If only one of the conditions must be false, invert the expression so that it becomes the logical equivalent of "NOT ALL".
+                        andExp = Expression.Not( andExp );
+                    }
+
                     return andExp;
 
                 case FilterExpressionType.GroupAny:
+                case FilterExpressionType.GroupAllFalse:
 
                     Expression orExp = null;
                     foreach ( var filter in this.ChildFilters )
@@ -288,11 +297,17 @@ namespace Rock.Model
                         }
                     }
 
+                    if ( ExpressionType == FilterExpressionType.GroupAllFalse
+                         && orExp != null )
+                    {
+                        // If all of the conditions must be false, invert the expression so that it becomes the logical equivalent of "NOT ANY".
+                        orExp = Expression.Not( orExp );
+                    }
+
                     return orExp;
             }
 
             return null;
-
         }
 
         /// <summary>
@@ -318,7 +333,18 @@ namespace Rock.Model
             {
                 StringBuilder sb = new StringBuilder();
 
-                string conjuction = this.ExpressionType == FilterExpressionType.GroupAll ? " AND " : " OR ";
+                string conjunction;
+
+                if (this.ExpressionType == FilterExpressionType.GroupAny
+                    || this.ExpressionType == FilterExpressionType.GroupAllFalse)
+                {
+                    // If any of the conditions can be True or all of the conditions must be False, use a logical "OR" operation.
+                    conjunction = " OR ";
+                }
+                else
+                {
+                    conjunction = " AND ";
+                }
 
                 var children = this.ChildFilters.OrderBy( f => f.ExpressionType).ToList();
                 for(int i = 0; i < children.Count; i++)
@@ -326,7 +352,7 @@ namespace Rock.Model
                     string childString = children[i].ToString( filteredEntityType );
                     if ( !string.IsNullOrWhiteSpace( childString ) )
                     {
-                        sb.AppendFormat( "{0}{1}", i > 0 ? conjuction : string.Empty, childString );
+                        sb.AppendFormat( "{0}{1}", i > 0 ? conjunction : string.Empty, childString );
                     }
                 }
 
@@ -334,6 +360,12 @@ namespace Rock.Model
                 {
                     sb.Insert(0, "( ");
                     sb.Append(" )");
+                }
+
+                if (this.ExpressionType == FilterExpressionType.GroupAllFalse
+                    || this.ExpressionType == FilterExpressionType.GroupAnyFalse)
+                {
+                    sb.Insert( 0, "NOT " );
                 }
 
                 return sb.ToString();
@@ -385,7 +417,17 @@ namespace Rock.Model
         /// <summary>
         /// A collection of expressions/conditions where at least one condition/expression must match.  Expressions are "or'd" together.
         /// </summary>
-        GroupAny = 2
+        GroupAny = 2,
+
+        /// <summary>
+        /// A collection of expressions/conditions where all conditions must be false.  Expressions are combined using a logical OR and the group result must be FALSE.
+        /// </summary>
+        GroupAllFalse = 3,
+
+        /// <summary>
+        /// A collection of expressions/conditions where at least one condition must be false.  Expressions are combined using a logical AND and the group result must be FALSE.
+        /// </summary>
+        GroupAnyFalse = 4
     }
 
     /// <summary>
