@@ -54,7 +54,13 @@
                         <Rock:PersonPicker ID="ppRequester" runat="server" Label="Requester" />
                         <Rock:PersonPicker ID="ppConnector" runat="server" Label="Connector" />
                         <Rock:RockCheckBoxList ID="cblStatus" runat="server" Label="Status" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
-                        <Rock:RockCheckBoxList ID="cblState" runat="server" Label="State" RepeatDirection="Horizontal" />
+                        <Rock:RockCheckBoxList ID="cblState" runat="server" Label="State" RepeatDirection="Horizontal">
+                            <asp:ListItem Text="Active" Value="0" />
+                            <asp:ListItem Text="Inactive" Value="1" />
+                            <asp:ListItem Text="Future Follow Up" Value="2" />
+                            <asp:ListItem Text="Future Follow Up (Past Due)" Value="-2" />
+                            <asp:ListItem Text="Connected" Value="3" />
+                        </Rock:RockCheckBoxList>
                         <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                     </Rock:GridFilter>
                     <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit" CssClass="js-grid-requests" >
@@ -66,7 +72,7 @@
                             <Rock:RockBoundField DataField="Activities" HeaderText="Activities" HtmlEncode="false" />
                             <asp:TemplateField HeaderText="State">
                                 <ItemTemplate>
-                                    <span class='label label-<%# Eval("StateLabel") %>'><%# Eval("State") %></span>
+                                    <%# Eval("StateLabel") %>
                                 </ItemTemplate>
                             </asp:TemplateField>
                             <asp:TemplateField HeaderText="Status">
