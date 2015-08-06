@@ -184,6 +184,8 @@ namespace Rock.Client.Enums
         Filter = 0x0,
         GroupAll = 0x1,
         GroupAny = 0x2,
+        GroupAllFalse = 0x3,
+        GroupAnyFalse = 0x4,
     }
 
     /// <summary>
