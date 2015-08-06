@@ -456,17 +456,18 @@ namespace Rock.Apps.CheckScannerUtility
                     {
                         int accountNumberDigitPosition = lastOnUsPosition - 1;
 
-                        // read all digits to the left of the last 'c' until you run into another 'c'
+                        // read all digits to the left of the last 'c' until you run into another 'c' or 'd'
                         while ( accountNumberDigitPosition >= 0 )
                         {
                             char accountNumberDigit = remainingMicr[accountNumberDigitPosition];
-                            if ( accountNumberDigit == 'c' )
+                            if ( accountNumberDigit == 'c' || accountNumberDigit == 'd' )
                             {
                                 break;
                             }
                             else
                             {
-                                accountNumber = accountNumberDigit + accountNumber.Trim();
+                                accountNumber = accountNumberDigit + accountNumber;
+                                accountNumber = accountNumber.Trim();
                             }
 
                             accountNumberDigitPosition--;
