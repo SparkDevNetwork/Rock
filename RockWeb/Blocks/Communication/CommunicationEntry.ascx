@@ -22,7 +22,7 @@
                     <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                     <div class="well well-pillwrap">
-                        <div id="divMediums" runat="server" class="nav nav-pills">
+                        <div id="divMediums" runat="server">
                             <ul class="nav nav-pills">
                                 <asp:Repeater ID="rptMediums" runat="server">
                                     <ItemTemplate>

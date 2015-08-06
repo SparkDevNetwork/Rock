@@ -254,7 +254,7 @@
 @modal-dropshadow-color: rgba(0,0,0,0.6);
 
 //// Backdrop
-@modal-backdrop-bg:           #000;
+@modal-backdrop-bg:           #fff;
 @modal-backdrop-opacity:      .5;
 
 // Tooltip
@@ -266,6 +266,9 @@
 @nav-pills-active-link-hover-bg:         @theme-7;
 @nav-pills-active-link-hover-color:      @theme-7-text;
 @nav-pills-link-color: @text-color;  // The color of the none active pill link.
+//--
+@nav-pills-container-bg:                @body-bg; // the background color for the well-pillwrap class used on the security dialog, communication mediums and template details.
+@nav-pills-container-border:            darkend(@nav-pills-container-bg, 20%); // The border color of the well-pillwrap classed used on the security dialog, communication mediums and template details.
 
 // List As Blocks { Used on many administration pages and pages like 'My Workflows', 'Connections' and 'Calendar'. }
 @listasblocks-bg: @theme-6;

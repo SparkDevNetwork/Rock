@@ -36,7 +36,7 @@
     <ContentTemplate>
 
         <div class="well well-pillwrap">
-            <div id="divActions" runat="server" class="nav nav-pills">
+            <div id="divActions" runat="server">
                 <ul class="nav nav-pills">
                     <asp:Repeater ID="rptActions" runat="server">
                         <ItemTemplate>

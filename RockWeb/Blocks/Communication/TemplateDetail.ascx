@@ -26,19 +26,17 @@
                     </div>
                 </div>
 
-                <div class="well well-pillwrap">
-                    <div class="nav navbar nav-pills">
-                        <ul class="nav nav-pills">
-                            <asp:Repeater ID="rptMediums" runat="server">
-                                <ItemTemplate>
-                                    <li class='<%# (int)Eval("Key") == MediumEntityTypeId ? "active" : "" %>'>
-                                        <asp:LinkButton ID="lbMedium" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbMedium_Click" CausesValidation="false">
-                                        </asp:LinkButton>
-                                    </li>
-                                </ItemTemplate>
-                            </asp:Repeater>
-                        </ul>
-                    </div>
+                <div class="well well-pillwrap">                  
+                    <ul class="nav nav-pills">
+                        <asp:Repeater ID="rptMediums" runat="server">
+                            <ItemTemplate>
+                                <li class='<%# (int)Eval("Key") == MediumEntityTypeId ? "active" : "" %>'>
+                                    <asp:LinkButton ID="lbMedium" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbMedium_Click" CausesValidation="false">
+                                    </asp:LinkButton>
+                                </li>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </ul>
                 </div>
         
                 <asp:PlaceHolder ID="phContent" runat="server" />

@@ -708,7 +708,7 @@ Copyright (c) 2012 Dan Eden*/
 .modal-backdrop.fade.in {
   opacity: 0.7;
   filter: alpha(opacity=70);
-  background: #000000;
+  background: #ffffff;
 }
 .modal-dialog {
   margin: 0;
@@ -2386,7 +2386,7 @@ span.field-value {
   margin-top: 0;
 }
 #fluidbox-overlay {
-  background: #000000;
+  background: #ffffff;
 }
 /* Small devices (tablets, 768px and up) */
 @media (min-width: 768px), print {
@@ -3265,6 +3265,10 @@ ul.rocktree ul {
 .nav > li.pill-help a:focus {
   background-color: transparent;
   color: #6a6a6a;
+}
+.well-pillwrap {
+  background-color: #edeae6;
+  border-color: darkend(#edeae6, 20%);
 }
 div.tagsinput {
   width: 100%;
