@@ -52,6 +52,8 @@ namespace RockWeb.Blocks.Event
     {
         #region Fields
 
+        private bool _saveNavigationHistory = false;
+
         // Page (query string) parameter names
         private const string REGISTRATION_ID_PARAM_NAME = "RegistrationId";
         private const string REGISTRATION_SLUG_PARAM_NAME = "Slug";
@@ -410,10 +412,28 @@ namespace RockWeb.Blocks.Event
             return base.SaveViewState();
         }
 
-        protected override void Render( HtmlTextWriter writer )
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
         {
-            base.Render( writer );
+            if ( _saveNavigationHistory )
+            {
+                if ( CurrentPanel != 1 )
+                {
+                    this.AddHistory( "event", string.Format( "{0},0,0", CurrentPanel ) );
+                }
+                else
+                {
+                    this.AddHistory( "event", string.Format( "1,{0},{1}", CurrentRegistrantIndex, CurrentFormIndex ) );
+                }
+
+            }
+
+            base.OnPreRender( e );
         }
+
         #endregion
 
         #region Events
@@ -478,6 +498,8 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbHowManyNext_Click( object sender, EventArgs e )
         {
+            _saveNavigationHistory = true;
+
             CurrentRegistrantIndex = 0;
             CurrentFormIndex = 0;
 
@@ -487,8 +509,6 @@ namespace RockWeb.Blocks.Event
             ShowRegistrant();
 
             hfTriggerScroll.Value = "true";
-
-            this.AddHistory( "event", "1,0,0" );
         }
 
         /// <summary>
@@ -500,6 +520,8 @@ namespace RockWeb.Blocks.Event
         {
             if ( CurrentPanel == 1 )
             {
+                _saveNavigationHistory = true;
+
                 CurrentFormIndex--;
                 if ( CurrentFormIndex < 0 )
                 {
@@ -510,12 +532,10 @@ namespace RockWeb.Blocks.Event
                 if ( CurrentRegistrantIndex < 0 )
                 {
                     ShowHowMany();
-                    this.AddHistory( "event", "0,0,0" );
                 }
                 else
                 {
                     ShowRegistrant();
-                    this.AddHistory( "event", string.Format("1,{0},{1}", CurrentRegistrantIndex.ToString(), CurrentFormIndex.ToString()) );
                 }
             }
             else
@@ -535,6 +555,8 @@ namespace RockWeb.Blocks.Event
         {
             if ( CurrentPanel == 1 )
             {
+                _saveNavigationHistory = true;
+
                 CurrentFormIndex++;
                 if ( CurrentFormIndex >= FormCount )
                 {
@@ -545,18 +567,15 @@ namespace RockWeb.Blocks.Event
                 if ( CurrentRegistrantIndex >= RegistrationState.RegistrantCount )
                 {
                     ShowSummary();
-                    this.AddHistory( "event", "2,0,0" );
                 }
                 else
                 {
                     ShowRegistrant();
-                    this.AddHistory( "event", string.Format( "1,{0},{1}", CurrentRegistrantIndex.ToString(), CurrentFormIndex.ToString() ) );
                 }
             }
             else
             {
                 ShowHowMany();
-                this.AddHistory( "event", "0,0,0" );
             }
 
             hfTriggerScroll.Value = "true";
@@ -571,16 +590,16 @@ namespace RockWeb.Blocks.Event
         {
             if ( CurrentPanel == 2 )
             {
+                _saveNavigationHistory = true;
+
                 CurrentRegistrantIndex = RegistrationState != null ? RegistrationState.RegistrantCount - 1 : 0;
                 CurrentFormIndex = FormCount - 1;
 
                 ShowRegistrant();
-                this.AddHistory( "event", string.Format( "1,{0},{1}", CurrentRegistrantIndex.ToString(), CurrentFormIndex.ToString() ) );
             }
             else
             {
                 ShowHowMany();
-                this.AddHistory( "event", "0,0,0" );
             }
 
             hfTriggerScroll.Value = "true";
@@ -595,16 +614,16 @@ namespace RockWeb.Blocks.Event
         {
             if ( CurrentPanel == 2 )
             {
+                _saveNavigationHistory = true;
+
                 var registrationId = SaveChanges();
                 if ( registrationId.HasValue )
                 {
                     ShowSuccess( registrationId.Value );
-                    this.AddHistory( "event", "2,0,0" );
                 }
                 else
                 {
                     ShowSummary();
-                    this.AddHistory( "event", "2,0,0" );
                 }
             }
             else
@@ -624,6 +643,8 @@ namespace RockWeb.Blocks.Event
         {
             if ( CurrentPanel == 2 )
             {
+                _saveNavigationHistory = true;
+
                 TransactionCode = string.Empty;
 
                 var registrationId = SaveChanges();
@@ -634,7 +655,6 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     ShowSummary();
-                    this.AddHistory( "event", "2,0,0" );
                 }
             }
         }
