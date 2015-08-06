@@ -3268,6 +3268,10 @@ ul.rocktree ul {
   background-color: transparent;
   color: #18bc9c;
 }
+.well-pillwrap {
+  background-color: transparent;
+  border-color: transparent;
+}
 div.tagsinput {
   width: 100%;
   overflow-y: auto;
