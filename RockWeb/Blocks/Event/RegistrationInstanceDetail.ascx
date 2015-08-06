@@ -2,9 +2,8 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        js-grid-registration
-        <div class="wizard">
 
+        <div class="wizard">
             <div class="wizard-item complete">
                 <asp:LinkButton ID="lbWizardTemplate" runat="server" OnClick="lbTemplate_Click">
                     <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
