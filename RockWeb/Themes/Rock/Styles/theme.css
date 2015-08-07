@@ -1033,6 +1033,11 @@ td.wrap-contents {
   content: "\f0d7";
   font-family: FontAwesome;
 }
+.table.table-light > thead > tr > th {
+  background-color: transparent;
+  color: #6a6a6a;
+  border-color: #d8d1c8;
+}
 .grid-paging {
   background-color: #edeae6;
   color: #6a6a6a;
@@ -5118,6 +5123,10 @@ a.help {
 .well > h3,
 .well > h4 {
   margin-top: 0;
+}
+.modal-backdrop,
+.modal-backdrop.fade.in {
+  opacity: 0.4;
 }
 .nav-pills > li > a {
   color: #6a6a6a;

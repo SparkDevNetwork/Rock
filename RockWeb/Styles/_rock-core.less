@@ -135,6 +135,12 @@ a.help {
 // 4. Bootstrap Overrides
 //--------------------------------
 
+// allow modal backdrop opacity to be configurable
+.modal-backdrop,
+.modal-backdrop.fade.in{
+  opacity: @modal-backdrop-opacity;
+}
+
 // change the color of the none selected links
 // by default bootsrap does not allow the color of a link roll-over to be a different color. Modified it to allow this.
 .nav-pills {

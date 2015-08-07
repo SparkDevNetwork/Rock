@@ -7430,8 +7430,8 @@ button.close {
   filter: alpha(opacity=0);
 }
 .modal-backdrop.in {
-  opacity: 0.5;
-  filter: alpha(opacity=50);
+  opacity: 0.4;
+  filter: alpha(opacity=40);
 }
 .modal-header {
   padding: 15px;
