@@ -1479,7 +1479,7 @@ namespace RockWeb.Blocks.Groups
                                 var literalcontrol = new Literal()
                                 {
                                     Text = string.Format(
-                                    "<div class='group-location-map'>{0}<a href='{1}'><img src='{2}'/></a></div>",
+                                    "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a></div>",
                                     groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Value + "</h4>" ) : string.Empty,
                                     groupMapUrl,
                                     mapLink ),
@@ -1495,7 +1495,7 @@ namespace RockWeb.Blocks.Groups
                                 mapLink += "&sensor=false&size=350x200&format=png";
                                 phMaps.Controls.Add(
                                     new LiteralControl( string.Format(
-                                        "<div class='group-location-map'>{0}<a href='{1}'><img src='{2}'/></a></div>",
+                                        "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a></div>",
                                         groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Value + "</h4>" ) : string.Empty,
                                         groupMapUrl,
                                         mapLink ) ) );
