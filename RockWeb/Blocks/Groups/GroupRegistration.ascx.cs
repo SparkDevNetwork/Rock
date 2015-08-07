@@ -526,31 +526,9 @@ namespace RockWeb.Blocks.Groups
                     {
                         try
                         {
-                            var workflowService = new WorkflowService( rockContext );
-                            var workflow = Workflow.Activate( workflowType, person.FullName );
-
                             List<string> workflowErrors;
-                            if ( workflow.Process( rockContext, groupMember, out workflowErrors ) )
-                            {
-                                if ( workflow.IsPersisted || workflow.IsPersisted )
-                                {
-                                    if ( workflow.Id == 0 )
-                                    {
-                                        workflowService.Add( workflow );
-                                    }
-
-                                    rockContext.WrapTransaction( () =>
-                                    {
-                                        rockContext.SaveChanges();
-                                        workflow.SaveAttributeValues( _rockContext );
-                                        foreach ( var activity in workflow.Activities )
-                                        {
-                                            activity.SaveAttributeValues( rockContext );
-                                        }
-                                    } );
-                                }
-                            }
-
+                            var workflow = Workflow.Activate( workflowType, person.FullName );
+                            new WorkflowService( rockContext ).Process( workflow, groupMember, out workflowErrors );
                         }
                         catch (Exception ex)
                         {

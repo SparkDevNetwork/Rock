@@ -376,16 +376,9 @@ namespace RockWeb.Blocks.Core
                             var workflow = Workflow.Activate( workflowType, binaryFile.FileName );
 
                             List<string> workflowErrors;
-                            if ( workflow.Process( workflowRockContext, binaryFile, out workflowErrors ) )
+                            if ( new Rock.Model.WorkflowService( workflowRockContext ).Process( workflow, binaryFile, out workflowErrors ) )
                             {
                                 binaryFile = binaryFileService.Get( binaryFile.Id );
-
-                                if ( workflow.IsPersisted || workflowType.IsPersisted )
-                                {
-                                    var workflowService = new Rock.Model.WorkflowService( workflowRockContext );
-                                    workflowService.Add( workflow );
-                                    workflowRockContext.SaveChanges();
-                                }
                             }
                         }
                     }

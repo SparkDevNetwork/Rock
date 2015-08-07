@@ -23,6 +23,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
+
+using Rock;
 using Rock.Data;
 using Rock.Security;
 
@@ -272,20 +274,10 @@ namespace Rock.Model
         /// <returns>
         /// A <see cref="System.Boolean" /> value that is <c>true</c> if the Workflow processed successfully; otherwise <c>false</c>.
         /// </returns>
-        public virtual bool Process( RockContext rockContext, out List<string> errorMessages)
+        [Obsolete( "Use the WorkflowService.Process() method instead." )]
+        public virtual bool Process( RockContext rockContext, out List<string> errorMessages )
         {
-            if (!InitiatorPersonAliasId.HasValue &&
-                HttpContext.Current != null && 
-                HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-            {
-                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-                if ( currentPerson != null )
-                {
-                    InitiatorPersonAliasId = currentPerson.PrimaryAliasId;
-                }
-            }
-
-            return Process( rockContext, null, out errorMessages );
+            return ProcessActivities( rockContext, null, out errorMessages );
         }
 
         /// <summary>
@@ -293,17 +285,38 @@ namespace Rock.Model
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="entity">The entity that work is being performed against.</param>
-        /// <param name="errorMessages">A 
-        /// <see cref="System.Collections.Generic.List{String}" /> that will contain and any error messages that occur
+        /// <param name="errorMessages">A
+        /// <see cref="System.Collections.Generic.List{String}"/> that will contain and any error messages that occur
         /// while the Workflow is being processed.</param>
         /// <returns>
-        /// A <see cref="System.Boolean" /> that is <c>true</c> if the workflow processed sucessfully.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if the workflow processed sucessfully.
         /// </returns>
+        [Obsolete("Use the WorkflowService.Process() method instead.")]
         public virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
+        {
+            return ProcessActivities( rockContext, entity, out errorMessages );
+        }
+
+
+        /// <summary>
+        /// Processes the activities.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        internal bool ProcessActivities( RockContext rockContext, Object entity, out List<string> errorMessages )
         {
             AddLogEntry( "Workflow Processing..." );
 
             DateTime processStartTime = RockDateTime.Now;
+
+            if ( Attributes == null )
+            {
+                this.LoadAttributes( rockContext );
+            }
+
+            SetInitiator();
 
             while ( ProcessActivity( rockContext, processStartTime, entity, out errorMessages )
                 && errorMessages.Count == 0 ) { }
@@ -318,6 +331,23 @@ namespace Rock.Model
             }
 
             return errorMessages.Count == 0;
+        }
+
+        /// <summary>
+        /// Sets the initiator.
+        /// </summary>
+        internal void SetInitiator()
+        {
+            if ( !InitiatorPersonAliasId.HasValue &&
+                HttpContext.Current != null &&
+                HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            {
+                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                if ( currentPerson != null )
+                {
+                    InitiatorPersonAliasId = currentPerson.PrimaryAliasId;
+                }
+            }
         }
 
         /// <summary>

@@ -217,24 +217,7 @@ namespace Rock.Transactions
                 }
 
                 List<string> workflowErrors;
-                if ( workflow.Process( rockContext, null, out workflowErrors ) )
-                {
-                    if ( workflow.IsPersisted || workflowType.IsPersisted )
-                    {
-                        var workflowService = new Rock.Model.WorkflowService( rockContext );
-                        workflowService.Add( workflow );
-
-                        rockContext.WrapTransaction( () =>
-                        {
-                            rockContext.SaveChanges();
-                            workflow.SaveAttributeValues( rockContext );
-                            foreach ( var activity in workflow.Activities )
-                            {
-                                activity.SaveAttributeValues( rockContext );
-                            }
-                        } );
-                    }
-                }
+                new Rock.Model.WorkflowService( rockContext ).Process( workflow, null, out workflowErrors );
             }
         }
 

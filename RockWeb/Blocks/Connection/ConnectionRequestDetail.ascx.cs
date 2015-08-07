@@ -1670,21 +1670,10 @@ namespace RockWeb.Blocks.Connection
                     var workflowService = new Rock.Model.WorkflowService( rockContext );
 
                     List<string> workflowErrors;
-                    if ( workflow.Process( rockContext, connectionRequest, out workflowErrors ) )
+                    if ( workflowService.Process( workflow, connectionRequest, out workflowErrors ) )
                     {
-                        if ( workflow.IsPersisted || connectionWorkflow.WorkflowType.IsPersisted )
+                        if ( workflow.Id != 0 )
                         {
-                            workflowService.Add( workflow );
-                            rockContext.WrapTransaction( () =>
-                            {
-                                rockContext.SaveChanges();
-                                workflow.SaveAttributeValues( rockContext );
-                                foreach ( var activity in workflow.Activities )
-                                {
-                                    activity.SaveAttributeValues( rockContext );
-                                }
-                            } );
-
                             ConnectionRequestWorkflow connectionRequestWorkflow = new ConnectionRequestWorkflow();
                             connectionRequestWorkflow.ConnectionRequestId = connectionRequest.Id;
                             connectionRequestWorkflow.WorkflowId = workflow.Id;
@@ -1715,7 +1704,10 @@ namespace RockWeb.Blocks.Connection
                             mdWorkflowLaunched.Show( string.Format( "A '{0}' workflow was processed (but not persisted).",
                                 connectionWorkflow.WorkflowType.Name ), ModalAlertType.Information );
                         }
-
+                    }
+                    else
+                    {
+                        mdWorkflowLaunched.Show( "Workflow Processing Error(s):<ul><li>" + workflowErrors.AsDelimited( "</li><li>" ) + "</li></ul>", ModalAlertType.Information );
                     }
                 }
             }
