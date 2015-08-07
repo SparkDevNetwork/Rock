@@ -1751,9 +1751,6 @@ tr.row-highlight td {
 .group-location-map {
   float: right;
 }
-.group-location-map img {
-  border: 1px solid #ecf0f1;
-}
 @media (max-width: 992px) {
   .group-location-map {
     float: left;

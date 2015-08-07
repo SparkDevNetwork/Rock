@@ -916,7 +916,7 @@ dl:not(.dl-horizontal) dd {
 }
 .table-striped > tbody > tr:nth-child(odd) > td,
 .table-striped > tbody > tr:nth-child(odd) > th {
-  background-color: #f7f2ed;
+  background-color: #f5f2ee;
   color: #6a6a6a;
 }
 td.grid-select-cell {
@@ -1042,12 +1042,12 @@ td.wrap-contents {
   margin-bottom: 0;
 }
 .grid-paging .pagination li > a {
-  background-color: #e2ded7;
+  background-color: #edeae6;
   color: #6a6a6a;
-  border-color: #b8ac9c;
+  border-color: #cdc5ba;
 }
 .grid-paging .pagination li.active > a {
-  background-color: #f8f6f5;
+  background-color: #ffffff;
 }
 .grid-paging .grid-pager {
   float: right;
@@ -1072,7 +1072,7 @@ td.grid-col-actions {
   margin-left: 8px;
   background-color: #e2ded7;
   color: #6a6a6a;
-  border-color: #c2b8ab;
+  border-color: #cdc5ba;
 }
 .table-light {
   background-color: transparent;
@@ -1748,9 +1748,6 @@ tr.row-highlight td {
 */
 .group-location-map {
   float: right;
-}
-.group-location-map img {
-  border: 1px solid #c2b8a7;
 }
 @media (max-width: 992px) {
   .group-location-map {
