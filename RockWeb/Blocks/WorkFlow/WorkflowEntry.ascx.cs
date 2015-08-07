@@ -251,12 +251,14 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( _workflowType == null )
             {
+                ShowNotes( false );
                 ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Workflow type was not configured or specified correctly." );
                 return false;
             }
 
             if ( !_workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
+                ShowNotes( false );
                 ShowMessage( NotificationBoxType.Warning, "Sorry", "You are not authorized to view this type of workflow." );
                 return false;
             }
@@ -337,34 +339,23 @@ namespace RockWeb.Blocks.WorkFlow
                     }
 
                     List<string> errorMessages;
-                    if ( _workflow.Process( _rockContext, entity, out errorMessages ) )
+                    if ( !_workflowService.Process( _workflow, entity, out errorMessages ) )
                     {
-                        // If the workflow type is persisted, save the workflow
-                        if ( _workflow.IsPersisted || _workflowType.IsPersisted )
-                        {
-                            if ( _workflow.Id == 0 )
-                            {
-                                _workflowService.Add( _workflow );
-                            }
-
-                            _rockContext.WrapTransaction( () =>
-                            {
-                                _rockContext.SaveChanges();
-                                _workflow.SaveAttributeValues( _rockContext );
-                                foreach ( var activity in _workflow.Activities )
-                                {
-                                    activity.SaveAttributeValues( _rockContext );
-                                }
-                            } );
-
-                            WorkflowId = _workflow.Id;
-                        }
+                        ShowNotes( false );
+                        ShowMessage( NotificationBoxType.Danger, "Workflow Processing Error(s):",
+                            "<ul><li>" + errorMessages.AsDelimited( "</li><li>" ) + "</li></ul>" );
+                        return false;
+                    }
+                    if ( _workflow.Id != 0 )
+                    {
+                        WorkflowId = _workflow.Id;
                     }
                 }
             }
 
             if ( _workflow == null )
             {
+                ShowNotes( false );
                 ShowMessage( NotificationBoxType.Danger, "Workflow Activation Error", "Workflow could not be activated." );
                 return false;
             }
@@ -758,29 +749,10 @@ namespace RockWeb.Blocks.WorkFlow
                 }
 
                 List<string> errorMessages;
-                if ( _workflow.Process( _rockContext, out errorMessages ) )
+                if ( _workflowService.Process( _workflow, out errorMessages ) )
                 {
-                    if ( _workflow.IsPersisted || _workflowType.IsPersisted )
-                    {
-                        if ( _workflow.Id == 0 )
-                        {
-                            _workflowService.Add( _workflow );
-                        }
-
-                        _rockContext.WrapTransaction( () =>
-                        {
-                            _rockContext.SaveChanges();
-                            _workflow.SaveAttributeValues( _rockContext );
-                            foreach ( var activity in _workflow.Activities )
-                            {
-                                activity.SaveAttributeValues( _rockContext );
-                            }
-                        } );
-
-                        WorkflowId = _workflow.Id;
-                    }
-
                     int? previousActionId = null;
+                    
                     if ( _action != null )
                     {
                         previousActionId = _action.Id;
@@ -804,6 +776,10 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     ShowMessage( NotificationBoxType.Danger, "Workflow Processing Error(s):", 
                         "<ul><li>" + errorMessages.AsDelimited( "</li><li>" ) + "</li></ul>" );
+                }
+                if ( _workflow.Id != 0 )
+                {
+                    WorkflowId = _workflow.Id;
                 }
             }
         }

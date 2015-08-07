@@ -333,32 +333,18 @@ namespace Rock.Transactions
                 }
 
                 List<string> workflowErrors;
-                if ( workflow.Process( rockContext, connectionRequest, out workflowErrors ) )
+                new WorkflowService( rockContext ).Process( workflow, connectionRequest, out workflowErrors );
+                if ( workflow.Id != 0 )
                 {
-                    if ( workflow.IsPersisted || workflowType.IsPersisted )
-                    {
-                        var workflowService = new Rock.Model.WorkflowService( rockContext );
-                        workflowService.Add( workflow );
-
-                        rockContext.WrapTransaction( () =>
-                        {
-                            rockContext.SaveChanges();
-                            workflow.SaveAttributeValues( rockContext );
-                            foreach ( var activity in workflow.Activities )
-                            {
-                                activity.SaveAttributeValues( rockContext );
-                            }
-                        } );
-                    }
+                    ConnectionRequestWorkflow connectionRequestWorkflow = new ConnectionRequestWorkflow();
+                    connectionRequestWorkflow.ConnectionRequestId = connectionRequest.Id;
+                    connectionRequestWorkflow.WorkflowId = workflow.Id;
+                    connectionRequestWorkflow.ConnectionWorkflowId = connectionWorkflow.Id;
+                    connectionRequestWorkflow.TriggerType = connectionWorkflow.TriggerType;
+                    connectionRequestWorkflow.TriggerQualifier = connectionWorkflow.QualifierValue;
+                    new ConnectionRequestWorkflowService( rockContext ).Add( connectionRequestWorkflow );
+                    rockContext.SaveChanges();
                 }
-                ConnectionRequestWorkflow connectionRequestWorkflow = new ConnectionRequestWorkflow();
-                connectionRequestWorkflow.ConnectionRequestId = connectionRequest.Id;
-                connectionRequestWorkflow.WorkflowId = workflow.Id;
-                connectionRequestWorkflow.ConnectionWorkflowId = connectionWorkflow.Id;
-                connectionRequestWorkflow.TriggerType = connectionWorkflow.TriggerType;
-                connectionRequestWorkflow.TriggerQualifier = connectionWorkflow.QualifierValue;
-                new ConnectionRequestWorkflowService( rockContext ).Add( connectionRequestWorkflow );
-                rockContext.SaveChanges();
             }
         }
     }

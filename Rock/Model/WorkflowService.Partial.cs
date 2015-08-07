@@ -29,25 +29,45 @@ namespace Rock.Model
     public partial class WorkflowService 
     {
         /// <summary>
+        /// Processes the specified workflow.
+        /// </summary>
+        /// <param name="workflow">The workflow.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public bool Process( Workflow workflow, out List<string> errorMessages )
+        {
+            return Process( workflow, null, out errorMessages );
+        }
+
+        /// <summary>
         /// Processes the specified <see cref="Rock.Model.Workflow" />
         /// </summary>
         /// <param name="workflow">The <see cref="Rock.Model.Workflow" /> instance to process.</param>
+        /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}" /> that contains any error messages that were returned while processing the <see cref="Rock.Model.Workflow" />.</param>
-        public void Process( Workflow workflow, out List<string> errorMessages )
+        /// <returns></returns>
+        public bool Process( Workflow workflow, object entity, out List<string> errorMessages )
         {
-            workflow.IsProcessing = true;
-            this.Context.SaveChanges();
-
             var rockContext = (RockContext)this.Context;
-            workflow.LoadAttributes( rockContext );
-
-            workflow.Process( rockContext, out errorMessages );
 
             if ( workflow.IsPersisted )
             {
-                this.Context.WrapTransaction( () =>
+                workflow.IsProcessing = true;
+                rockContext.SaveChanges();
+            }
+
+            bool result = workflow.ProcessActivities( rockContext, entity, out errorMessages );
+
+            if ( workflow.IsPersisted || workflow.WorkflowType.IsPersisted )
+            {
+                if ( workflow.Id == 0 )
                 {
-                    this.Context.SaveChanges();
+                    Add( workflow );
+                }
+
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
                     workflow.SaveAttributeValues( rockContext );
                     foreach ( var activity in workflow.Activities )
                     {
@@ -56,8 +76,10 @@ namespace Rock.Model
                 } );
 
                 workflow.IsProcessing = false;
-                this.Context.SaveChanges();
+                rockContext.SaveChanges();
             }
+
+            return result;
         }
 
         /// <summary>
