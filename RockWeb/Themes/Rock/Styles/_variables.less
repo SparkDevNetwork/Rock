@@ -180,7 +180,7 @@
 //// Row Striping
 @grid-row-even-bg: @panel-bg;         // The even rows background color.
 @grid-row-even-color: @panel-text;  // The even rows text color.
-@grid-row-odd-bg: darken(@grid-row-even-bg, 3%);         // The odd rows background color.
+@grid-row-odd-bg: #f5f2ee;         // The odd rows background color.
 @grid-row-odd-color: @text-color;   // The odd rows text color.
 
 //// Hover 
@@ -195,9 +195,9 @@
 @grid-pager-bg: @panel-heading-bg;
 @grid-pager-color: @panel-heading-text-color;
 //--
-@grid-pager-button-bg: darken(@grid-pager-bg, 5%);
+@grid-pager-button-bg: @panel-heading-bg;
 @grid-pager-button-color: @text-color;
-@grid-pager-button-border: darken(@grid-pager-button-bg, 20%);
+@grid-pager-button-border: darken(@grid-pager-button-bg, 15%);
 @grid-pager-button-active-bg: lighten(@grid-pager-button-bg, 10%);
 
 //// Footer
@@ -208,7 +208,7 @@
 //--
 @grid-footer-button-bg: darken(@grid-footer-bg, 5%);
 @grid-footer-button-text-color: @text-color;
-@grid-footer-button-border: darken(@grid-footer-bg, 20%);
+@grid-footer-button-border: darken(@grid-footer-bg, 15%);
 
 // Person Profile
 //// Bio Bar
