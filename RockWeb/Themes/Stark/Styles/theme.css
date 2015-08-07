@@ -1036,7 +1036,7 @@ td.wrap-contents {
 .table.table-light > thead > tr > th {
   background-color: transparent;
   color: #6a6a6a;
-  border-color: #dddddd;
+  border-color: #d0d0d0;
 }
 .grid-paging {
   background-color: #f6f6f6;
