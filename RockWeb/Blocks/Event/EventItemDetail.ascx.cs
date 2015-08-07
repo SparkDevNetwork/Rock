@@ -710,7 +710,7 @@ namespace RockWeb.Blocks.Event
 
             SetLabels( eventItem );
 
-            string imgTag = GetImageTag( eventItem.PhotoId, 150, 150, false );
+            string imgTag = GetImageTag( eventItem.PhotoId, 300, 300, false, true );
             if ( eventItem.PhotoId.HasValue )
             {
                 string imageUrl = ResolveRockUrl( String.Format( "~/GetImage.ashx?id={0}", eventItem.PhotoId.Value ) );
