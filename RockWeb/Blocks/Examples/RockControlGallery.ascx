@@ -296,6 +296,11 @@
                         <Rock:PersonPicker ID="ppBusinessExample" runat="server" Label="Rock:PersonPicker including businesses" IncludeBusinesses="true" />
                     </div>
 
+                    <a id="PersonPickerEnableSelfSelection"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:PersonPicker ID="ppSelfSelect" runat="server" Label="Rock:PersonPicker with Self Selection" EnableSelfSelection="true" />
+                    </div>
+
                     <a id="AccountPicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:AccountPicker ID="acctpExample" runat="server" Label="Rock:AccountPicker" />

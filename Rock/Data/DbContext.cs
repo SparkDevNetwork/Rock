@@ -384,18 +384,10 @@ namespace Rock.Data
                                 var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
 
                                 List<string> workflowErrors;
-                                if ( !workflow.Process( rockContext, entity, out workflowErrors ) )
+                                if ( !workflowService.Process( workflow, entity, out workflowErrors ) )
                                 {
                                     SaveErrorMessages.AddRange( workflowErrors );
                                     return false;
-                                }
-                                else
-                                {
-                                    if ( workflow.IsPersisted || workflowType.IsPersisted )
-                                    {
-                                        workflowService.Add( workflow );
-                                        rockContext.SaveChanges();
-                                    }
                                 }
                             }
                         }

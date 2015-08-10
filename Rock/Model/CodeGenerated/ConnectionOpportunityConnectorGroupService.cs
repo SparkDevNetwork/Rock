@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// EventItemSchedule Service class
+    /// ConnectionOpportunityConnectorGroup Service class
     /// </summary>
-    public partial class EventItemScheduleService : Service<EventItemSchedule>
+    public partial class ConnectionOpportunityConnectorGroupService : Service<ConnectionOpportunityConnectorGroup>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EventItemScheduleService"/> class
+        /// Initializes a new instance of the <see cref="ConnectionOpportunityConnectorGroupService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public EventItemScheduleService(RockContext context) : base(context)
+        public ConnectionOpportunityConnectorGroupService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( EventItemSchedule item, out string errorMessage )
+        public bool CanDelete( ConnectionOpportunityConnectorGroup item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,39 +58,39 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class EventItemScheduleExtensionMethods
+    public static partial class ConnectionOpportunityConnectorGroupExtensionMethods
     {
         /// <summary>
-        /// Clones this EventItemSchedule object to a new EventItemSchedule object
+        /// Clones this ConnectionOpportunityConnectorGroup object to a new ConnectionOpportunityConnectorGroup object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static EventItemSchedule Clone( this EventItemSchedule source, bool deepCopy )
+        public static ConnectionOpportunityConnectorGroup Clone( this ConnectionOpportunityConnectorGroup source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as EventItemSchedule;
+                return source.Clone() as ConnectionOpportunityConnectorGroup;
             }
             else
             {
-                var target = new EventItemSchedule();
+                var target = new ConnectionOpportunityConnectorGroup();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another EventItemSchedule object to this EventItemSchedule object
+        /// Copies the properties from another ConnectionOpportunityConnectorGroup object to this ConnectionOpportunityConnectorGroup object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this EventItemSchedule target, EventItemSchedule source )
+        public static void CopyPropertiesFrom( this ConnectionOpportunityConnectorGroup target, ConnectionOpportunityConnectorGroup source )
         {
             target.Id = source.Id;
-            target.EventItemOccurrenceId = source.EventItemOccurrenceId;
-            target.ScheduleId = source.ScheduleId;
-            target.ScheduleName = source.ScheduleName;
+            target.CampusId = source.CampusId;
+            target.ConnectionOpportunityId = source.ConnectionOpportunityId;
+            target.ConnectorGroupId = source.ConnectorGroupId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

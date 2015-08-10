@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Reporting
                 metricValue = new MetricValue();
                 metricValueService.Add( metricValue );
                 metricValue.MetricId = hfMetricId.ValueAsInt();
-                metricValue.Metric = metricValue.Metric ?? new MetricService(rockContext).Get(metricValue.MetricId);
+                metricValue.Metric = metricValue.Metric ?? new MetricService( rockContext ).Get( metricValue.MetricId );
             }
             else
             {
@@ -154,7 +154,7 @@ namespace RockWeb.Blocks.Reporting
 
             // Get EntityId from EntityType UI controls
             var metricEntityType = EntityTypeCache.Read( metricValue.Metric.EntityTypeId ?? 0 );
-            Control entityTypeEditControl = phEntityTypeEntityIdValue.FindControl("entityTypeEditControl");
+            Control entityTypeEditControl = phEntityTypeEntityIdValue.FindControl( "entityTypeEditControl" );
             if ( metricEntityType != null && metricEntityType.SingleValueFieldType != null && metricEntityType.SingleValueFieldType.Field is IEntityFieldType )
             {
                 metricValue.EntityId = ( metricEntityType.SingleValueFieldType.Field as IEntityFieldType ).GetEditValueAsEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>() );
@@ -175,6 +175,7 @@ namespace RockWeb.Blocks.Reporting
             var qryParams = new Dictionary<string, string>();
             qryParams.Add( "MetricId", hfMetricId.Value );
             qryParams.Add( "MetricCategoryId", hfMetricCategoryId.Value );
+            qryParams.Add( "ExpandedIds", PageParameter( "ExpandedIds" ) );
             NavigateToParentPage( qryParams );
         }
 

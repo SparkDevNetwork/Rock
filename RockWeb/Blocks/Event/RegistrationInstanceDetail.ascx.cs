@@ -47,11 +47,13 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Linkage Page", "The page for editing registration linkages", true, "", "", 2 )]
     [LinkedPage( "Calendar Item Page", "The page to view calendar item details", true, "", "", 3)]
     [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 4)]
+    [LinkedPage( "Content Item Page", "The page for viewing details about a content channel item", true, "", "", 5 )]
     public partial class RegistrationInstanceDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Fields
 
         private List<FinancialTransactionDetail> RegistrationPayments;
+        private bool _instanceHasCost = false;
 
         #endregion
 
@@ -549,39 +551,36 @@ namespace RockWeb.Blocks.Event
 
                 // Set the Cost
                 decimal discountedCost = registration.DiscountedCost;
-                if ( discountedCost > 0.0M )
+                var lCost = e.Row.FindControl( "lCost" ) as Label;
+                if ( lCost != null )
                 {
-                    var lCost = e.Row.FindControl( "lCost" ) as Label;
-                    if ( lCost != null )
-                    {
-                        lCost.Visible = discountedCost > 0.0M;
-                        lCost.Text = discountedCost.ToString( "C2" );
-                    }
+                    lCost.Visible = _instanceHasCost || discountedCost > 0.0M;
+                    lCost.Text = discountedCost.ToString( "C2" );
+                }
 
-                    var lBalance = e.Row.FindControl( "lBalance" ) as Label;
-                    if ( lBalance != null )
+                var lBalance = e.Row.FindControl( "lBalance" ) as Label;
+                if ( lBalance != null )
+                {
+                    decimal balanceDue = registration.DiscountedCost - totalPaid;
+                    lBalance.Visible = _instanceHasCost || discountedCost > 0.0M;
+                    lBalance.Text = balanceDue.ToString( "C2" );
+                    if ( balanceDue > 0.0m )
                     {
-                        decimal balanceDue = registration.DiscountedCost - totalPaid;
-                        lBalance.Visible = discountedCost > 0.0M;
-                        lBalance.Text = balanceDue.ToString( "C2" );
-                        if ( balanceDue > 0.0m )
-                        {
-                            lBalance.AddCssClass( "label-danger" );
-                            lBalance.RemoveCssClass( "label-warning" );
-                            lBalance.RemoveCssClass( "label-success" );
-                        }
-                        else if ( balanceDue < 0.0m )
-                        {
-                            lBalance.RemoveCssClass( "label-danger" );
-                            lBalance.AddCssClass( "label-warning" );
-                            lBalance.RemoveCssClass( "label-success" );
-                        }
-                        else
-                        {
-                            lBalance.RemoveCssClass( "label-danger" );
-                            lBalance.RemoveCssClass( "label-warning" );
-                            lBalance.AddCssClass( "label-success" );
-                        }
+                        lBalance.AddCssClass( "label-danger" );
+                        lBalance.RemoveCssClass( "label-warning" );
+                        lBalance.RemoveCssClass( "label-success" );
+                    }
+                    else if ( balanceDue < 0.0m )
+                    {
+                        lBalance.RemoveCssClass( "label-danger" );
+                        lBalance.AddCssClass( "label-warning" );
+                        lBalance.RemoveCssClass( "label-success" );
+                    }
+                    else
+                    {
+                        lBalance.RemoveCssClass( "label-danger" );
+                        lBalance.RemoveCssClass( "label-warning" );
+                        lBalance.AddCssClass( "label-success" );
                     }
                 }
             }
@@ -1081,30 +1080,50 @@ namespace RockWeb.Blocks.Event
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                var campusEventItem = e.Row.DataItem as EventItemOccurrenceGroupMap;
-                var lCalendarItem = e.Row.FindControl( "lCalendarItem" ) as Literal;
-                if ( campusEventItem != null && lCalendarItem != null )
+                var eventItemOccurrenceGroupMap = e.Row.DataItem as EventItemOccurrenceGroupMap;
+                if ( eventItemOccurrenceGroupMap != null && eventItemOccurrenceGroupMap.EventItemOccurrence != null )
                 {
-                    if ( campusEventItem.EventItemOccurrence != null &&
-                        campusEventItem.EventItemOccurrence.EventItem != null )
+                    if ( eventItemOccurrenceGroupMap.EventItemOccurrence.EventItem != null )
                     {
-                        var calendarItems = new List<string>();
-
-                        foreach ( var calendarItem in campusEventItem.EventItemOccurrence.EventItem.EventCalendarItems )
+                        var lCalendarItem = e.Row.FindControl( "lCalendarItem" ) as Literal;
+                        if ( lCalendarItem != null )
                         {
-                            if ( calendarItem.EventItem != null && calendarItem.EventCalendar != null )
+                            var calendarItems = new List<string>();
+                            foreach ( var calendarItem in eventItemOccurrenceGroupMap.EventItemOccurrence.EventItem.EventCalendarItems )
                             {
-                                var qryParams = new Dictionary<string, string>();
-                                qryParams.Add( "EventCalendarId", calendarItem.EventCalendarId.ToString() );
-                                qryParams.Add( "EventItemId", calendarItem.Id.ToString() );
-                                calendarItems.Add( string.Format( "<a href='{0}'>{1}</a> ({2})", 
-                                    LinkedPageUrl( "CalendarItemPage", qryParams ), 
-                                    calendarItem.EventItem.Name,
-                                    calendarItem.EventCalendar.Name ) );
+                                if ( calendarItem.EventItem != null && calendarItem.EventCalendar != null )
+                                {
+                                    var qryParams = new Dictionary<string, string>();
+                                    qryParams.Add( "EventCalendarId", calendarItem.EventCalendarId.ToString() );
+                                    qryParams.Add( "EventItemId", calendarItem.Id.ToString() );
+                                    calendarItems.Add( string.Format( "<a href='{0}'>{1}</a> ({2})",
+                                        LinkedPageUrl( "CalendarItemPage", qryParams ),
+                                        calendarItem.EventItem.Name,
+                                        calendarItem.EventCalendar.Name ) );
+                                }
                             }
+                            lCalendarItem.Text = calendarItems.AsDelimited( "<br/>" );
                         }
 
-                        lCalendarItem.Text = calendarItems.AsDelimited( "<br/>" );
+                        if ( eventItemOccurrenceGroupMap.EventItemOccurrence.ContentChannelItems.Any() )
+                        {
+                            var lContentItem = e.Row.FindControl( "lContentItem" ) as Literal;
+                            if ( lContentItem != null )
+                            {
+                                var contentItems = new List<string>();
+                                foreach ( var contentItem in eventItemOccurrenceGroupMap.EventItemOccurrence.ContentChannelItems
+                                    .Where( c => c.ContentChannelItem != null )
+                                    .Select( c => c.ContentChannelItem ) )
+                                {
+                                    var qryParams = new Dictionary<string, string>();
+                                    qryParams.Add( "ContentItemId", contentItem.Id.ToString() );
+                                    contentItems.Add( string.Format( "<a href='{0}'>{1}</a>",
+                                        LinkedPageUrl( "ContentItemPage", qryParams ),
+                                        contentItem.Title ) );
+                                }
+                                lContentItem.Text = contentItems.AsDelimited( "<br/>" );
+                            }
+                        }
                     }
                 }
             }
@@ -1437,6 +1456,9 @@ namespace RockWeb.Blocks.Event
                 using ( var rockContext = new RockContext() )
                 {
                     var registrationEntityType = EntityTypeCache.Read( typeof( Rock.Model.Registration ) );
+
+                    var instance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
+                    _instanceHasCost = instance != null && instance.RegistrationTemplate.Cost > 0.0m;
 
                     var qry = new RegistrationService( rockContext )
                         .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person,Registrants.Fees.RegistrationTemplateFee" )
@@ -2368,7 +2390,7 @@ namespace RockWeb.Blocks.Event
                 using ( var rockContext = new RockContext() )
                 {
                     var qry = new EventItemOccurrenceGroupMapService( rockContext )
-                        .Queryable( "EventItemOccurrence.EventItem.EventCalendarItems.EventCalendar,Group" )
+                        .Queryable( "EventItemOccurrence.EventItem.EventCalendarItems.EventCalendar,EventItemOccurrence.ContentChannelItems.ContentChannelItem,Group" )
                         .AsNoTracking()
                         .Where( r => r.RegistrationInstanceId == instanceId.Value );
 

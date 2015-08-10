@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CalendarItemDetail.ascx.cs" Inherits="RockWeb.Blocks.Event.CalendarItemDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EventItemDetail.ascx.cs" Inherits="RockWeb.Blocks.Event.EventItemDetail" %>
 
 <script type="text/javascript">
     function clearActiveDialog() {
@@ -38,7 +38,7 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <div id="divImage" runat="server" class="photo photoframe pull-right margin-l-sm margin-b-sm">
+                            <div id="divImage" runat="server" class="pull-right margin-l-sm margin-b-sm">
                                 <asp:Literal ID="lImage" runat="server" />
                             </div>
 

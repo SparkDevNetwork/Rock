@@ -24,6 +24,11 @@ namespace Rock.SystemGuid
     public class ConnectionActivityType
     {
         /// <summary>
+        /// The assigned activity type
+        /// </summary>
+        public const string ASSIGNED = "DB4C6D25-211C-4995-B194-9FEF7551F26B";
+
+        /// <summary>
         /// The connected activity type
         /// </summary>
         public const string CONNECTED = "04C61230-97B6-4702-89C0-634E5AE57D6F";

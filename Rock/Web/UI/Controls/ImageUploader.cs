@@ -506,8 +506,14 @@ namespace Rock.Web.UI.Controls
 
             if ( BinaryFileId != null )
             {
-                thumbnailImage = System.Web.VirtualPathUtility.ToAbsolute( "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width=500" );
+                thumbnailImage = System.Web.VirtualPathUtility.ToAbsolute( "~/GetImage.ashx?id=" + BinaryFileId.ToString() );
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "block";
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Href, thumbnailImage );
+                writer.AddAttribute( HtmlTextWriterAttribute.Target, "_blank" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+
+                thumbnailImage += "&width=500";
             }
             else
             {
@@ -519,6 +525,11 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "id", this.ClientID + "-thumbnail" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderEndTag();
+
+            if ( BinaryFileId != null )
+            {
+                writer.RenderEndTag();
+            }
 
             _hfBinaryFileId.RenderControl( writer );
             _hfBinaryFileTypeGuid.RenderControl( writer );

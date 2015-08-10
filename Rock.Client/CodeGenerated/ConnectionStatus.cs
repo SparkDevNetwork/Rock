@@ -83,9 +83,6 @@ namespace Rock.Client
     public partial class ConnectionStatus : ConnectionStatusEntity
     {
         /// <summary />
-        public ConnectionType ConnectionType { get; set; }
-
-        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

@@ -7,7 +7,7 @@
   4. Person List - used to show a list of people
   5. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
   6. Pagelist - used to list child pages; currently used in admin screens
-  7. Pagelist Nav - Pill nav of pages
+  7. Pill Help (used in security dialog)
   8. Tags - component that allows you to tag entities
   9. Photo Frame - wraps a nice border around photos
   10. Smart Search - search at th top of the page for searching people, groups, etc.
@@ -127,9 +127,9 @@
   }
 
   .picker-actions {
-    background-color: @accent-light-color;
+    background-color: @picker-action-bg;
     padding: 10px;
-    border-top: 1px solid @accent-color;
+    border-top: 1px solid darken(@picker-action-bg, 10%);
     border-radius: 0 0 @border-radius-base @border-radius-base;
     margin: 10px -10px -10px -10px;
   }
@@ -140,7 +140,7 @@
 
     .person-image {
       float: left;
-      border:1px solid @accent-semibold-color;
+      border:1px solid @photo-border;
       float:left;
       margin-right: 7.5px;
       display: inline-block;
@@ -291,14 +291,14 @@ ul.rocktree ul {
   .rocktree-name:hover,
   span:hover,
   span:hover a {
-    background: @accent-bold-color;
-    color: @accent-bold-text-color;
+    background: @tree-rollover-bg;
+    color: @tree-rollover-color;
   }
 
   .selected,
   .selected a {
-    background: @accent-semibold-color;
-    color: @accent-semibold-text-color
+    background: @tree-selected-bg;
+    color: @tree-selected-color;
   }
 
   .rocktree-name {
@@ -425,7 +425,7 @@ ul.rocktree ul {
 
     li {
       border-radius: @border-radius-base;
-      border: 1px solid @pagelist-border-color;
+      border: 1px solid @listasblocks-border-color;
       float: left;
       margin: 0 1.25% @spacing-md-px;
       width: 47.5%;
@@ -435,25 +435,31 @@ ul.rocktree ul {
       text-align: center;
 
       a {
-        background-color: @pagelist-bg;
+        background-color: @listasblocks-bg;
         display: block;
-        color: @pagelist-text-color;
+        color: @listasblocks-color;
         height: 80px;
         padding: @spacing-md-px;
         border-radius: @border-radius-base;
+        -webkit-transition: background-color 200ms linear;
+        -moz-transition: background-color 200ms linear;
+        -o-transition: background-color 200ms linear;
+        -ms-transition: background-color 200ms linear;
+        transition: background-color 200ms linear;
 
         i {
             font-size: 26px;
-            color: lighten(@pagelist-text-color, 10%);
+            color: lighten(@listasblocks-color, 10%);
+            margin-top: 6px;
         }
 
         &:hover {
-          background-color: @pagelist-rollover-bg;
-          color: @pagelist-rollover-text-color;
-          border-color: @pagelist-rollover-border-color;
+          background-color: @listasblocks-rollover-bg;
+          color: @listasblocks-rollover-text-color;
+          border-color: @listasblocks-rollover-border-color;
 
           i {
-            color: @pagelist-rollover-text-color;
+            color: lighten(@listasblocks-rollover-text-color, 10%);
           }
         }
 
@@ -471,8 +477,13 @@ ul.rocktree ul {
 
       &.active {
         a {
-          background-color: @accent-bold-color;
-          color: @accent-bold-text-color;
+          background-color: @listasblocks-active-bg;
+          color: @listasblocks-active-color;
+          border-color: @listasblocks-active-border-color;
+
+          i {
+            color: lighten(@listasblocks-active-color, 10%);
+          }
         }
       }
 
@@ -519,75 +530,25 @@ ul.rocktree ul {
   }
 }
 
-// 7. Pagelist Nav
+// 7. Pill Help (used in security dialog)
 // -------------------------
 
-.nav.nav-pagelist {
-  margin: 10px 0;
-  background-color: @accent-light-color;
-  border: 1px solid darken(@accent-light-color, 10%);
-  border-radius: @border-radius-base;
-
-  .panel-default & {
-    background-color: @accent-color;
-    border: 1px solid darken(@accent-color, 10%);
-  }
-
-  .pill-help {
+.nav > li.pill-help {
     a {
-      color: @accent-bold-color;
+        color: @nav-pills-link-color;
+
+        &:hover,
+        &:focus {
+            background-color: transparent;
+            color: @nav-pills-link-color;
+        }
     }
-  }
-
-  .navbar-toggle {
-    width: 100%;
-    margin: 0;
-
-    &:focus {outline:0;}
-
-    i {
-      float: right;
-      color: @accent-bold-color;
-      margin-top: 8px;
-    }
-
-    .collapse-current-item {
-      background-color: @accent-bold-color;
-      color: @accent-bold-text-color;
-      padding: 10px 15px;
-      border-radius: @border-radius-base;
-      float: left;
-    }
-  }
-
-  .navbar-collapse {
-    padding: 0;
-
-    &.in {
-      overflow-y: inherit;
-    }
-  }
-
-  .nav.nav-pills {
-    margin: 10px 0;
-    padding: 0 15px;
-
-    li {
-      float: none;
-    }
-  }
 }
 
-@media (min-width: @screen-sm-min) { // tablet portrait and larger
-  .nav.nav-pagelist {
-    .nav.nav-pills {
-      li {
-        float: left;
-      }
-    }
-  }
+.well-pillwrap {
+    background-color: @nav-pills-container-bg;
+    border-color: @nav-pills-container-border;
 }
-
 
 // 8. Tags
 // ------------------------
@@ -743,8 +704,8 @@ div.tagsinput
     z-index: 90;
     list-style: none;
     padding: 12px;
-    background-color: @accent-bold-color;
-    border: 1px solid darken(@accent-light-color, 10%);
+    background-color: @autocomplete-bg;
+    border: 1px solid @autocomplete-border;
     min-width: 200px;
     border-radius: 0 0 @border-radius-base @border-radius-base;
     z-index: 9999 !important;
@@ -760,14 +721,14 @@ div.tagsinput
       }
 
       a {
-        color:@accent-bold-text-color;
+        color: @autocomplete-text;
         text-decoration: none;
         cursor: pointer;
         padding: 4px;
         display: block;
 
         &:hover {
-          background: darken(@accent-bold-color, 5%);
+          background: @autocomplete-rollover-bg;
           border-radius: 4px;
         }
       }
@@ -809,7 +770,7 @@ div.tagsinput
 // 9.
 // ------------------------
 .photoframe {
-  border: 4px solid @accent-semibold-color;
+  border: 4px solid @photo-border;
   display: inline-block;
 
   &.photoframe-sm {
@@ -831,7 +792,7 @@ div.tagsinput
   border-radius: @border-radius-base;
   padding: 2px 6px;
   position: relative;
-  color: @accent-semibold-color;
+  color: @smartsearch-text-color;
 
   &:focus {
     border-color: #595959;
@@ -882,7 +843,7 @@ div.tagsinput
 
   input.searchinput {
     padding: 4px 4px 4px 25px;
-    color: @header-text-color;
+    color: @smartsearch-input-text-color;
     width: 100%;
     border: 0 !important;
     box-shadow: none !important;
@@ -892,6 +853,7 @@ div.tagsinput
 
     .navbar-link {
       text-align: right;
+      color: @smartsearch-text-color;
 
       span {
         padding-right: 4px;
@@ -993,6 +955,9 @@ fieldset .actions {
   padding: 10px;
 
   table {
+
+    background-color: transparent;
+
     thead {
       th.datepicker-switch {
         text-align: center;
@@ -1004,8 +969,8 @@ fieldset .actions {
     }
 
     td.active {
-      background-color: @accent-color;
-      color: @accent-text-color;
+      background-color: @datepicker-highlight-bg;
+      color: @datepicker-highlight-color;
     }
 
     td.day {
@@ -1014,7 +979,7 @@ fieldset .actions {
     }
 
     td.old, td.new {
-      color: lighten(@text-color, 60%);
+      color: lighten(@text-color, 40%);
     }
 
     tfoot {
@@ -1031,8 +996,8 @@ fieldset .actions {
       }
 
       &:hover {
-        background-color: @accent-color;
-        color: @accent-text-color;
+        background-color: @datepicker-highlight-bg;
+        color: @datepicker-highlight-color;
       }
 
       &:first-child {
@@ -1050,9 +1015,9 @@ fieldset .actions {
       }
 
       &:hover {
-        background-color: @accent-color;
-        color: @accent-text-color;
-        border-radius: 2px;
+        background-color: @datepicker-highlight-bg;
+        color: @datepicker-highlight-color;
+        border-radius: @border-radius-small;
       }
 
       &:first-child {
@@ -1065,7 +1030,7 @@ fieldset .actions {
 // 16. Time Picker
 // -------------------------
 
-.timepicker-input  {
+/*.timepicker-input  {
   .clearfix();
 
   .input-group {
@@ -1092,7 +1057,7 @@ fieldset .actions {
 
 .touch .timepicker-input i.fa-times {
   opacity: 1;
-}
+}*/
 
 .bootstrap-timepicker {
   position: relative;
@@ -1158,6 +1123,7 @@ fieldset .actions {
 
   table {
     width: 100%;
+    background-color: transparent;
     margin: 0;
 
     td {
@@ -1238,11 +1204,12 @@ fieldset .actions {
 .imageupload-group {
 
   margin-bottom: @spacing-md-px;
-  border: 1px solid darken(@accent-color, 20%);
+  border: 1px solid @photo-border;
   border-radius: @border-radius-base;
   padding: 2px;
   display: table-cell;
   position: relative;
+  cursor: pointer;
 
   .imageupload-thumbnail {
     position: relative;
@@ -1273,15 +1240,17 @@ fieldset .actions {
   .imageupload-dropzone {
     margin-top: 2px;
     height: 30px;
-    border: 1px dotted darken(@accent-light-color, 20%);
+    border: 1px solid @input-border;
     border-radius: 0 0 @border-radius-base @border-radius-base;
-    background-color: @btn-action-bg;
+    background-color: @input-group-addon-bg;
     text-align: center;
     padding-top: 8px;
     position: relative;
     line-height: 12px;
-    cursor: pointer;
     width: 100%;
+    cursor: pointer;
+
+    ::-webkit-file-upload-button { cursor:pointer; }
 
     input {
       opacity: 0;
@@ -1290,12 +1259,19 @@ fieldset .actions {
       position: absolute;
       left: 0;
       top: 0;
+      cursor: pointer;
     }
 
     span {
       font-size: 13px;
-      color: @btn-action-color;
+      color: @input-color;
       width: 100%;
+
+      &:before {
+        .fa-icon();
+        content: @fa-var-upload;
+        padding-right: .25em;
+      }
     }
 
   }
@@ -1315,10 +1291,11 @@ fieldset .actions {
 .fileupload-group {
   display: table-cell;
   margin-bottom: @spacing-md-px;
-  border: 1px solid darken(@accent-color, 20%);
+  border: 1px solid @input-border;
   border-radius: @border-radius-base;
   padding: 2px;
   position: relative;
+  cursor: pointer;
 
   .fileupload-thumbnail {
     position: relative;
@@ -1377,8 +1354,7 @@ fieldset .actions {
   .fileupload-dropzone,
   .fileupload-button {
     height: 30px;
-    // border: 1px dotted darken(@accent-light-color, 20%);
-    background-color: @btn-action-bg;
+    background-color: @input-group-addon-bg;
     text-align: center;
     padding-top: 8px;
     position: relative;
@@ -1398,7 +1374,7 @@ fieldset .actions {
 
     span {
       font-size: 13px;
-      color: @btn-action-color;
+      color: @input-color;
       width: 100%;
       padding: 0 .5em;
 
@@ -1435,29 +1411,27 @@ fieldset .actions {
 
 .updateprogress-status {
   position: fixed;
-  padding: 50px;
-  color: @btn-primary-color;
-  left: 40%;
+  padding: 15px 10px;
+  left: 50%;
   top: 40%;
   opacity: 1;
-  background-color: @btn-primary-bg;
-  border-radius: @border-radius-base;
+  background-color: @spinner-bg;
+  border-radius: 120px;
   z-index: (@zindex-modal-background + 100);
-  //-moz-box-shadow:    @modal-dropshadow-color 9px 9px 40px 0px;
-  //-webkit-box-shadow: @modal-dropshadow-color 9px 9px 40px 0px;
-  //box-shadow: @modal-dropshadow-color 9px 9px 40px 0px;
+  box-shadow: 5px 5px 12px 3px rgba(0,0,0,0.1);
+  margin-left: -30px;
 
   .spinner {
-    width: 50px;
+    width: 40px;
     height: 30px;
     text-align: center;
     font-size: 10px;
   }
 
   .spinner > div {
-    background-color: @accent-bold-text-color;
+    background-color: @spinner-color;
     height: 100%;
-    width: 6px;
+    width: 5px;
     display: inline-block;
 
     -webkit-animation: stretchdelay 1.2s infinite ease-in-out;
@@ -1498,7 +1472,22 @@ fieldset .actions {
     -webkit-transform: scaleY(1.0);
     }
   }
+}
 
+@media @md {
+    .updateprogress-status {
+      padding: 30px 20px;
+      margin-left: -60px;
+
+      .spinner {
+        width: 80px;
+        height: 60px;
+
+        > div {
+          width: 10px;
+        }
+      }
+    }
 }
 
 // 19. Group List
@@ -1517,7 +1506,7 @@ fieldset .actions {
     border-radius: @border-radius-base;
 
     .person-image {
-      border: 1px solid @accent-semibold-color;
+      border: 1px solid @photo-border;
       float: left;
       margin-right: 7.5px;
       display: inline-block;
@@ -1646,13 +1635,13 @@ ul.rocklist {
     }
 
     &:hover {
-      background-color: @accent-semibold-color;
-      color: @accent-semibold-text-color;
+      background: @tree-rollover-bg;
+      color: @tree-rollover-color;
     }
 
     &.selected {
-      background-color: @accent-bold-color;
-      color: @accent-bold-text-color;
+      background: @tree-rollover-bg;
+      color: @tree-rollover-color;
     }
   }
 }
@@ -1669,10 +1658,10 @@ ul.rocklist {
 .tt-dropdown-menu {
   min-width: 200px;
   padding: 12px;
-  background-color: #fff;
-  border: 1px solid darken(@accent-light-color, 10%);
+  background-color: @autocomplete-bg;
+  border: 1px solid @autocomplete-border;
   border-radius: 0 0 @border-radius-base @border-radius-base;
-  color: @accent-light-text-color;
+  color: @autocomplete-text;
   -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
    -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
       box-shadow: 0 5px 10px rgba(0,0,0,.2);
@@ -1695,13 +1684,13 @@ ul.rocklist {
 }
 
 .tt-suggestion.tt-is-under-cursor {
-  color: @accent-light-text-color;
+  color: lighten(@autocomplete-text, 30%);
   background-repeat: repeat-x;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0)
 }
 
 .tt-suggestion.tt-is-under-cursor a {
-  color: @accent-light-text-color;
+  color: @autocomplete-text;
 }
 
 .tt-suggestion p {
@@ -1717,15 +1706,15 @@ ul.rocklist {
   .image-container {
     width: 150px;
     height: 150px;
-    border: 3px solid @accent-bold-color;
+    border: 3px solid @photo-border;
   }
 
   .options {
     position: absolute;
     top: 110px;
     right: 0;
-    background-color: @accent-bold-color;
-    color: @accent-bold-text-color;
+    background-color: @imageeditor-bg;
+    color: @imageeditor-color;
     padding: 6px 12px;
     border-radius: @border-radius-base 0 0 @border-radius-base;
     opacity: 0;
@@ -1740,7 +1729,7 @@ ul.rocklist {
       cursor: pointer;
 
       &:hover {
-        color: darken(@accent-bold-text-color, 5%);
+        opacity: .5;
       }
     }
   }
@@ -1749,7 +1738,7 @@ ul.rocklist {
     position:absolute;
     top: 55px;
     left: 55px;
-    color: @accent-bold-text-color;
+    color: @input-color;
     opacity: 0.5;
   }
 }
@@ -1986,7 +1975,7 @@ ul.list-group-panel, .panel-collapse {
     bottom: 0;
     width: 35px;
     text-align: center;
-    padding-top: 8px;
+    padding-top: 10px;
     opacity: .4;
     color: @text-color;
     transition: 1s;
@@ -1999,7 +1988,7 @@ ul.list-group-panel, .panel-collapse {
 
     &.following {
         opacity: 1;
-        background-color: @accent-semibold-color;
+        background-color: @panel-following-active-bg;
         color: #fff;
 
         &:before {

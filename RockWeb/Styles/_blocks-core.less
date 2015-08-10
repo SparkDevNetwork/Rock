@@ -11,7 +11,9 @@
 // -------------------------
 .panel-note {
     // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
-    .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 5%););
+    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+
+    border-top-color: @panel-top-border-color;
 
     .panel-body {
         background-color: #fffs;
@@ -77,19 +79,19 @@
         }
 
         &.highlight {
-            background-color: @state-danger-bg;
-            border: 1px solid darken(spin(@state-danger-bg, -10), 3%);
-            color: @state-danger-text;
+            background-color: @note-highlight-bg;
+            border: 1px solid @note-highlight-border;
+            color: @note-highlight-text;
 
             a {
-                color: @state-danger-text;
+                color: @note-highlight-text;
             }
         }
 
         &.personal {
-            background-color: @accent-semibold-color;
-            border: 1px solid darken(spin(@accent-semibold-color, -10), 3%);
-            color: @accent-semibold-text-color;
+            background-color: @note-personal-bg;
+            border: 1px solid @note-personal-border;
+            color: @note-personal-text;
         }
 
         & > img {
@@ -193,7 +195,7 @@
 
 .panel-noteentry
 {
-    .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 5%););
+    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
     .createDate {
           margin-top:10px;
@@ -383,7 +385,7 @@
 .panel-group {
     .panel-workflowitem {
         // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
-        .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 5%););
+        .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
         margin-bottom: 30px;
 

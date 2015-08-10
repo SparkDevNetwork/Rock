@@ -141,8 +141,7 @@ namespace Rock.Model
         /// The name of the contact.
         /// </value>
         [DataMember]
-        [MaxLength( 200 )]
-        public string ContactName { get; set; }
+        public int? ContactPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the contact phone.
@@ -203,6 +202,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual FinancialAccount Account { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> representing the personalias who is the contact person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.PersonAlias"/> representing the personalias who is the contact person.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias ContactPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the registrations.
@@ -277,6 +285,7 @@ namespace Rock.Model
         {
             this.HasRequired( i => i.RegistrationTemplate ).WithMany( t => t.Instances ).HasForeignKey( i => i.RegistrationTemplateId ).WillCascadeOnDelete( true );
             this.HasRequired( i => i.Account ).WithMany().HasForeignKey( i => i.AccountId).WillCascadeOnDelete( false );
+            this.HasOptional( i => i.ContactPersonAlias ).WithMany().HasForeignKey( i => i.ContactPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -79,12 +79,6 @@ namespace Rock.Client
     public partial class ConnectionWorkflow : ConnectionWorkflowEntity
     {
         /// <summary />
-        public ConnectionOpportunity ConnectionOpportunity { get; set; }
-
-        /// <summary />
-        public ConnectionType ConnectionType { get; set; }
-
-        /// <summary />
         public WorkflowType WorkflowType { get; set; }
 
         /// <summary />

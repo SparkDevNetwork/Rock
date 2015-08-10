@@ -32,6 +32,14 @@ namespace Rock.Field.Types
 
         #region Formatting 
 
+        /// <summary>
+        /// Formats the value.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             decimal? decimalValue = value.AsDecimalOrNull();

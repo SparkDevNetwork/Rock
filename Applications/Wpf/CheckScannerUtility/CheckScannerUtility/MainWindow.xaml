@@ -7,7 +7,7 @@
                   Icon="./resources/check-scanner.ico"
                   MinHeight="350"
                   MinWidth="550"
-                  Height="600"
+                  Height="620"
                   Width="960"
                   FontFamily="./resources/#Open Sans Regular"
                   ShowsNavigationUI="False"

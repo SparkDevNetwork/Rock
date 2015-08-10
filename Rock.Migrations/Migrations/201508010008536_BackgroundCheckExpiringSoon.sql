@@ -148,7 +148,7 @@ SET [DefaultValue] = '{{ ''Global'' | Attribute:''EmailHeader'' }}
 </p>
 
 <p>
-    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
 {{ ''Global'' | Attribute:''EmailFooter'' }}'
@@ -171,7 +171,7 @@ SET [DefaultValue] = '{{ ''Global'' | Attribute:''EmailHeader'' }}
 </p>
 
 <p>
-    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
 {{ ''Global'' | Attribute:''EmailFooter'' }}'

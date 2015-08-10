@@ -248,7 +248,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                return this["EnableRearImage"] as bool? ?? true;
+                return this["EnableRearImage"] as bool? ?? false;
             }
 
             set

@@ -80,7 +80,7 @@
                     $el.text(data.response().result.FileName).attr('href', getFileUrl);
                     $('#' + options.aRemove).show();
                     if (options.postbackScript) {
-                        eval(options.postbackScript);
+                        window.location = "javascript:" +  options.postbackScript;
                     }
 
                     if (options.doneFunction) {
@@ -121,7 +121,7 @@
                 $el.removeClass('file-exists');
 
                 if (options.postbackScript) {
-                    eval(options.postbackScript);
+                    window.location = "javascript:" + options.postbackScript;
                 }
 
                 return false;

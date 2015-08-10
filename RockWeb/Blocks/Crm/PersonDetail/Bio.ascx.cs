@@ -151,7 +151,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         lImage.Text = imgTag;
                     }
 
-                    FollowingsHelper.SetFollowing( Person, pnlFollow, this.CurrentPerson );
+                    FollowingsHelper.SetFollowing( Person.PrimaryAlias, pnlFollow, this.CurrentPerson );
 
                     var socialCategoryGuid = Rock.SystemGuid.Category.PERSON_ATTRIBUTES_SOCIAL.AsGuid();
                     if ( !socialCategoryGuid.IsEmpty() )
