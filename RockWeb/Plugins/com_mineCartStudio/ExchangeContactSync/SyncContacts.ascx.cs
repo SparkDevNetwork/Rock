@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
-using com.voracitysolutions.ExchangeContactSync.Transactions;
+using com.minecartstudio.ExchangeContactSync.Transactions;
 
 using Rock;
 using Rock.Attribute;
@@ -29,13 +29,13 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.com_voracitySolutions.ExchangeContactSync
+namespace RockWeb.Plugins.com_mineCartStudio.ExchangeContactSync
 {
     /// <summary>
     /// Block that syncs selected people to an exchange server.
     /// </summary>
     [DisplayName( "Sync Contacts" )]
-    [Category( "Voracity Solutions > Exchange Contact Sync" )]
+    [Category( "Mine Cart Studio > Exchange Contact Sync" )]
     [Description( "Block that syncs selected people to an exchange server." )]
 
     [TextField("Admin Email Address", "The exchange admin's email address.", true, "", "", 0)]
@@ -59,7 +59,7 @@ namespace RockWeb.Plugins.com_voracitySolutions.ExchangeContactSync
         {
             base.OnInit( e );
 
-            _keyPrefix = string.Format( "Voracity.SyncContacts.{0}.", this.BlockId );
+            _keyPrefix = string.Format( "MineCartStudio.SyncContacts.{0}.", this.BlockId );
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace RockWeb.Plugins.com_voracitySolutions.ExchangeContactSync
             nbNotice.Visible = true;
 
             string message = string.Empty;
-            if ( com.voracitysolutions.ExchangeContactSync.ExchangeContact.TestConnection( 
+            if ( com.minecartstudio.ExchangeContactSync.ExchangeContact.TestConnection( 
                 GetAttributeValue( "AdminEmailAddress" ), GetAttributeValue( "AdminPassword" ), CurrentPerson, out message ) )
             {
                 nbNotice.Heading = "Successful Connection";
