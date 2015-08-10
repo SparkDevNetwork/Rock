@@ -5136,13 +5136,6 @@ a.help {
 .modal-backdrop.fade.in {
   opacity: 0.5;
 }
-.nav-pills > li > a {
-  color: #428bca;
-}
-.nav-pills > li > a:hover {
-  color: #ffffff;
-  background-color: #92bce0;
-}
 .form-right {
   text-align: right;
   margin-bottom: 12px;
