@@ -23,7 +23,7 @@ namespace Rock
     /// <summary>
     /// Rock.Model.PageRoute extensions
     /// </summary>
-    public static class PageRouteExtensions
+    public static partial class ExtensionMethods
     {
         #region Route Extensions
 

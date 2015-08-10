@@ -25,7 +25,7 @@ namespace Rock
     /// <summary>
     /// Rock.Data.Entity and EntityType extensions
     /// </summary>
-    public static class EntityExtensions
+    public static partial class ExtensionMethods
     {
         /// <summary>
         /// Sets the value to the entity's id value. If the value does not exist, will set the first item in the list.
