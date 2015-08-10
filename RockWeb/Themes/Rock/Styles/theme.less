@@ -218,6 +218,21 @@ h4, .h4 {
   color: @brand-primary;
 }
 
+// change the color of the none selected links
+// by default bootsrap does not allow the color of a link roll-over to be a different color. Modified it to allow this.
+.nav-pills {
+  > li {
+    > a {
+      color: @nav-pills-link-color;
+
+      &:hover {
+        color: @nav-pills-active-link-hover-color;
+        background-color: lighten(@nav-pills-active-link-hover-bg, 20%);
+      }
+    }
+  }
+}
+
 
 /*#region
 // 3. Rock Overrides         */
