@@ -203,6 +203,8 @@ namespace Rock.Web.UI.Controls
 
         private HiddenFieldWithClass _hfPersonId;
         private HiddenFieldWithClass _hfPersonName;
+        private HiddenFieldWithClass _hfSelfPersonId;
+        private HiddenFieldWithClass _hfSelfPersonName;
         private HiddenFieldWithClass _hfIncludeBusinesses;
         private HtmlAnchor _btnSelect;
         private HtmlAnchor _btnSelectNone;
@@ -231,6 +233,18 @@ namespace Rock.Web.UI.Controls
                 _hfIncludeBusinesses.Value = value.Bit().ToString();
 
             }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable self selection].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable self selection]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableSelfSelection
+        {
+            get { return ViewState["EnableSelfSelection"] as bool? ?? false; }
+            set { ViewState["EnableSelfSelection"] = value; }
         }
 
         /// <summary>
@@ -420,6 +434,24 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _hfPersonName );
             _hfPersonName.ID = "hfPersonName";
 
+            _hfSelfPersonId = new HiddenFieldWithClass();
+            _hfSelfPersonId.CssClass = "js-self-person-id";
+            Controls.Add( _hfSelfPersonId );
+            _hfSelfPersonId.ID = "hfSelfPersonId";
+            _hfSelfPersonId.Value = "0";
+
+            _hfSelfPersonName = new HiddenFieldWithClass();
+            _hfSelfPersonName.CssClass = "js-self-person-name";
+            Controls.Add( _hfSelfPersonName );
+            _hfSelfPersonName.ID = "hfSelfPersonName";
+
+            var rockBlock = this.RockBlock();
+            if ( rockBlock != null && rockBlock.CurrentPerson != null)
+            {
+                _hfSelfPersonId.Value = rockBlock.CurrentPersonId.ToString();
+                _hfSelfPersonName.Value = rockBlock.CurrentPerson.ToString();
+            }
+
             _hfIncludeBusinesses = new HiddenFieldWithClass();
             _hfIncludeBusinesses.CssClass = "js-include-businesses";
             Controls.Add( _hfIncludeBusinesses );
@@ -476,6 +508,8 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _hfPersonId.RenderControl( writer );
                 _hfPersonName.RenderControl( writer );
+                _hfSelfPersonId.RenderControl( writer );
+                _hfSelfPersonName.RenderControl( writer );
                 _hfIncludeBusinesses.RenderControl( writer );
                 
                 string pickerLabelHtmlFormat = @"
@@ -489,10 +523,35 @@ namespace Rock.Web.UI.Controls
 
                 _btnSelectNone.RenderControl( writer );
 
-                string pickMenuHtmlFormatStart = @"
-          <div class='picker-menu dropdown-menu'>
+                // render picker-menu dropdown-menu
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "picker-menu dropdown-menu" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-             <h4>Search</h4>
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                // column1
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.Write( "<h4>Search</h4>" );
+                writer.RenderEndTag();
+
+                // column2
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                if ( this.EnableSelfSelection )
+                {
+                    writer.Write( @"
+                    <span class='js-select-self' title='Select self'>
+                        <i class='fa fa-user pull-right clickable' ></i>
+                    </span>" );
+                }
+                writer.RenderEndTag();
+
+                // row
+                writer.RenderEndTag();
+
+                string pickMenuHtmlFormatStart = @"
              <input id='{0}_personPicker' type='text' class='picker-search form-control input-sm' />
 
              <hr />             
@@ -504,17 +563,21 @@ namespace Rock.Web.UI.Controls
              <div class='picker-actions'>
 ";
 
-                writer.Write( pickMenuHtmlFormatStart, this.ClientID, this.PersonName );
+                writer.Write( pickMenuHtmlFormatStart, this.ClientID );
 
                 _btnSelect.RenderControl( writer );
 
                 string pickMenuHtmlFormatEnd = @"
             <a class='btn btn-link btn-xs' id='{0}_btnCancel'>Cancel</a>
             </div>
-         </div>
 ";
 
-                writer.Write( string.Format( pickMenuHtmlFormatEnd, this.ClientID, this.PersonName ) );
+                writer.Write( string.Format( pickMenuHtmlFormatEnd, this.ClientID ) );
+                
+                // picker-menu dropdown-menu
+                writer.RenderEndTag();
+
+                // picker picker-select picker-person
                 writer.RenderEndTag();
             }
             else

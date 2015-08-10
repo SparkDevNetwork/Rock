@@ -27,11 +27,11 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a connection opportunity group campus
+    /// Represents a connection opportunity connector groups
     /// </summary>
-    [Table( "ConnectionOpportunityGroupCampus" )]
+    [Table( "ConnectionOpportunityConnectorGroup" )]
     [DataContract]
-    public partial class ConnectionOpportunityGroupCampus : Model<ConnectionOpportunityGroupCampus>
+    public partial class ConnectionOpportunityConnectorGroup : Model<ConnectionOpportunityConnectorGroup>
     {
 
         #region Entity Properties
@@ -52,9 +52,8 @@ namespace Rock.Model
         /// <value>
         /// The campus identifier.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public int CampusId { get; set; }
+        [DataMember]
+        public int? CampusId { get; set; }
 
         /// <summary>
         /// Gets or sets the connector group identifier.
@@ -62,8 +61,9 @@ namespace Rock.Model
         /// <value>
         /// The connector group identifier.
         /// </value>
-        [DataMember]
-        public int? ConnectorGroupId { get; set; }
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int ConnectorGroupId { get; set; }
 
         #endregion
 
@@ -99,18 +99,18 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// ConnectionOpportunityGroupCampus Configuration class.
+    /// ConnectionOpportunityConnectorGroup Configuration class.
     /// </summary>
-    public partial class ConnectionOpportunityGroupCampusConfiguration : EntityTypeConfiguration<ConnectionOpportunityGroupCampus>
+    public partial class ConnectionOpportunityConnectorGroupConfiguration : EntityTypeConfiguration<ConnectionOpportunityConnectorGroup>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConnectionOpportunityGroupCampusConfiguration" /> class.
+        /// Initializes a new instance of the <see cref="ConnectionOpportunityConnectorGroupConfiguration" /> class.
         /// </summary>
-        public ConnectionOpportunityGroupCampusConfiguration()
+        public ConnectionOpportunityConnectorGroupConfiguration()
         {
-            this.HasRequired( p => p.ConnectionOpportunity ).WithMany( p => p.ConnectionOpportunityGroupCampuses ).HasForeignKey( p => p.ConnectionOpportunityId ).WillCascadeOnDelete( true );
-            this.HasRequired( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( true );
-            this.HasOptional( p => p.ConnectorGroup ).WithMany().HasForeignKey( p => p.ConnectorGroupId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.ConnectionOpportunity ).WithMany( p => p.ConnectionOpportunityConnectorGroups ).HasForeignKey( p => p.ConnectionOpportunityId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.ConnectorGroup ).WithMany().HasForeignKey( p => p.ConnectorGroupId ).WillCascadeOnDelete( true );
         }
     }
 

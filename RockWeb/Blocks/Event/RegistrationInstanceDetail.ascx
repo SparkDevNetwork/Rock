@@ -4,7 +4,6 @@
     <ContentTemplate>
 
         <div class="wizard">
-
             <div class="wizard-item complete">
                 <asp:LinkButton ID="lbWizardTemplate" runat="server" OnClick="lbTemplate_Click">
                     <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
@@ -141,9 +140,8 @@
                                 <Rock:RockTextBox ID="tbRegistrationRegistrantFirstName" runat="server" Label="Registrant First Name" />
                                 <Rock:RockTextBox ID="tbRegistrationRegistrantLastName" runat="server" Label="Registrant Last Name" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gRegistrations" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrations_RowSelected" RowItemText="Registration" CssClass="js-grid-registration" PersonIdField="PersonId">
+                            <Rock:Grid ID="gRegistrations" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrations_RowSelected" RowItemText="Registration" CssClass="js-grid-registration" >
                                 <Columns>
-                                    <Rock:SelectField ItemStyle-Width="48px"/>
                                     <Rock:RockTemplateField HeaderText="Registered By">
                                         <ItemTemplate>
                                             <asp:Literal ID="lRegisteredBy" runat="server"></asp:Literal>
@@ -225,10 +223,16 @@
                                 <Columns>
                                     <Rock:RockTemplateFieldUnselected HeaderText="Calendar Item">
                                         <ItemTemplate>
-                                            <asp:Literal ID="lCalendarItem" runat="server" /></ItemTemplate>
+                                            <asp:Literal ID="lCalendarItem" runat="server" />
+                                        </ItemTemplate>
                                     </Rock:RockTemplateFieldUnselected>
                                     <asp:BoundField HeaderText="Campus" DataField="EventItemOccurrence.Campus.Name" SortExpression="EventItemOccurrence.Campus.Name" NullDisplayText="All Campuses" />
                                     <asp:HyperLinkField HeaderText="Group" DataTextField="Group" DataNavigateUrlFields="GroupID" SortExpression="Group" />
+                                    <Rock:RockTemplateFieldUnselected HeaderText="Content Item">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lContentItem" runat="server" />
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateFieldUnselected>
                                     <asp:BoundField HeaderText="Public Name" DataField="PublicName" SortExpression="PublicName" />
                                     <asp:BoundField HeaderText="URL Slug" DataField="UrlSlug" SortExpression="UrlSlug" />
                                     <Rock:DeleteField OnClick="gLinkages_Delete" />

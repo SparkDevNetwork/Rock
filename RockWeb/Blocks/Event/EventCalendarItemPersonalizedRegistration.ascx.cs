@@ -294,46 +294,46 @@ namespace RockWeb.Blocks.Event
             }
 
             // get list of upcoming events for the current campus
-            var campusEvents = eventItem.EventItemOccurrences
+            var eventItemOccurrences = eventItem.EventItemOccurrences
                                     .Where( c => c.CampusId == _campusId || c.CampusId == null).ToList();
 
             List<EventSummary> eventSummaries = new List<EventSummary>();
 
             // go through campus event schedules looking for upcoming dates
-            foreach ( var campusEvent in campusEvents )
+            foreach ( var eventItemOccurrence in eventItemOccurrences )
             {
-                var startDate = campusEvent.GetFirstStartDateTime();
+                var startDate = eventItemOccurrence.GetFirstStartDateTime();
 
                 if ( startDate.HasValue && startDate > RockDateTime.Now )
                 {
                     EventSummary eventSummary = new EventSummary();
                     eventSummary.StartDate = startDate.Value;
-                    eventSummary.Name = campusEvent.EventItem.Name;
-                    eventSummary.Location = campusEvent.Location;
-                    eventSummary.Id = campusEvent.Id;
+                    eventSummary.Name = eventItemOccurrence.EventItem.Name;
+                    eventSummary.Location = eventItemOccurrence.Location;
+                    eventSummary.Id = eventItemOccurrence.Id;
 
-                    if ( campusEvent.Campus != null )
+                    if ( eventItemOccurrence.Campus != null )
                     {
-                        eventSummary.Campus = campusEvent.Campus.Name;
+                        eventSummary.Campus = eventItemOccurrence.Campus.Name;
                     }
                     else
                     {
                         eventSummary.Campus = "All";
                     }
 
-                    eventSummary.ContactEmail = campusEvent.ContactEmail;
-                    eventSummary.ContactPhone = campusEvent.ContactPhone;
+                    eventSummary.ContactEmail = eventItemOccurrence.ContactEmail;
+                    eventSummary.ContactPhone = eventItemOccurrence.ContactPhone;
 
-                    if ( campusEvent.ContactPersonAlias != null )
+                    if ( eventItemOccurrence.ContactPersonAlias != null )
                     {
-                        eventSummary.ContactName = campusEvent.ContactPersonAlias.Person.FullName;
+                        eventSummary.ContactName = eventItemOccurrence.ContactPersonAlias.Person.FullName;
                     }
                     else
                     {
                         eventSummary.ContactName = string.Empty;
                     }
 
-                    eventSummary.CampusNote = campusEvent.CampusNote;
+                    eventSummary.Note = eventItemOccurrence.Note;
 
                     eventSummaries.Add( eventSummary );
                 }
@@ -428,12 +428,12 @@ namespace RockWeb.Blocks.Event
         public string ContactEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus note.
+        /// Gets or sets the note.
         /// </summary>
         /// <value>
-        /// The campus note.
+        /// The note.
         /// </value>
-        public string CampusNote { get; set; }
+        public string Note { get; set; }
 
         /// <summary>
         /// Gets or sets the campus.

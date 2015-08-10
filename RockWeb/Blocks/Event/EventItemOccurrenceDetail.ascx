@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CalendarItemOccurrenceDetail.ascx.cs" Inherits="RockWeb.Blocks.Event.CalendarItemOccurrenceDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EventItemOccurrenceDetail.ascx.cs" Inherits="RockWeb.Blocks.Event.EventItemOccurrenceDetail" %>
 
 <script type="text/javascript">
     function clearActiveDialog() {
@@ -54,21 +54,10 @@
 
                             <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
                             <Rock:RockTextBox ID="tbLocation" runat="server" Label="Location Description" />
-                            <Rock:RockControlWrapper ID="rcwSchedules" runat="server" Label="Schedule">
-                                <asp:HiddenField ID="hfSchedules" runat="server" />
-                                <Rock:HiddenFieldValidator ID="hfvSchedules" runat="server" Display="None" ErrorMessage="At least one Schedule is required." ControlToValidate="hfSchedules" ValidationGroup="CampusDetails" />
-                                <div class="grid">
-                                    <Rock:Grid ID="gSchedules" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Schedule" ShowHeader="false">
-                                        <Columns>
-                                            <Rock:RockBoundField DataField="Schedule" />
-                                            <Rock:RockBoundField DataField="Details" />
-                                            <Rock:EditField OnClick="gSchedules_Edit" />
-                                            <Rock:DeleteField OnClick="gSchedules_Delete" />
-                                        </Columns>
-                                    </Rock:Grid>
-                                </div>
+                            <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule" >
+                                <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ValidationGroup="Schedule" AllowMultiSelect="true" Required="true" OnSaveSchedule="sbSchedule_SaveSchedule"/>
+                                <asp:Literal ID="lScheduleText" runat="server" />
                             </Rock:RockControlWrapper>
-
                             <Rock:RockLiteral ID="lRegistration" runat="server" Label="Registration Instance - Group" CssClass="margin-b-none" />
                             <asp:LinkButton ID="lbEditRegistration" runat="server" CssClass="btn btn-default btn-xs margin-b-md" OnClick="lbEditRegistration_Click" ><i class="fa fa-pencil"></i> Edit</asp:LinkButton>
                             <asp:LinkButton ID="lbDeleteRegistration" runat="server" CssClass="btn btn-danger btn-xs margin-b-md" OnClick="lbDeleteRegistration_Click" ><i class="fa fa-times"></i> Remove</asp:LinkButton>
@@ -161,22 +150,6 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbExistingLinkageUrlSlug" runat="server" Label="URL Slug" ValidationGroup="ExistingLinkage" />
-                    </div>
-                </div>
-            </Content>
-        </Rock:ModalDialog>
-
-        <Rock:ModalDialog ID="dlgSchedule" runat="server" Title="Schedule" OnSaveClick="dlgSchedule_SaveClick" SaveButtonText="OK" OnCancelScript="clearActiveDialog();" ValidationGroup="Schedule">
-            <Content>
-                <asp:ValidationSummary ID="vsSchedule" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Schedule" />
-                <asp:HiddenField ID="hfScheduleGuid" runat="server" />
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbScheduleName" runat="server" Label="Schedule Label" ValidationGroup="Schedule" Required="true" />
-                    </div>
-                    <div class="col-md-6">
-                        <Rock:ScheduleBuilder ID="sbSchedule" runat="server" Label="Schedule" ValidationGroup="Schedule" AllowMultiSelect="true" Required="true" OnSaveSchedule="sbSchedule_SaveSchedule"/>
-                        <Rock:RockLiteral ID="lScheduleText" runat="server" />
                     </div>
                 </div>
             </Content>

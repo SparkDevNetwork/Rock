@@ -38,13 +38,13 @@ namespace Rock.Client
         public int ConnectionTypeId { get; set; }
 
         /// <summary />
-        public int? ConnectorGroupId { get; set; }
-
-        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
         public int? GroupMemberRoleId { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.GroupMemberStatus GroupMemberStatus { get; set; }
 
         /// <summary />
         public int GroupTypeId { get; set; }
@@ -81,9 +81,9 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.ConnectionTypeId = source.ConnectionTypeId;
-            this.ConnectorGroupId = source.ConnectorGroupId;
             this.Description = source.Description;
             this.GroupMemberRoleId = source.GroupMemberRoleId;
+            this.GroupMemberStatus = source.GroupMemberStatus;
             this.GroupTypeId = source.GroupTypeId;
             this.IconCssClass = source.IconCssClass;
             this.IsActive = source.IsActive;
@@ -102,39 +102,6 @@ namespace Rock.Client
     /// </summary>
     public partial class ConnectionOpportunity : ConnectionOpportunityEntity
     {
-        /// <summary />
-        public ICollection<ConnectionOpportunityCampus> ConnectionOpportunityCampuses { get; set; }
-
-        /// <summary />
-        public ICollection<ConnectionOpportunityGroupCampus> ConnectionOpportunityGroupCampuses { get; set; }
-
-        /// <summary />
-        public ICollection<ConnectionOpportunityGroup> ConnectionOpportunityGroups { get; set; }
-
-        /// <summary />
-        public ICollection<ConnectionRequest> ConnectionRequests { get; set; }
-
-        /// <summary />
-        public ConnectionType ConnectionType { get; set; }
-
-        /// <summary />
-        public ICollection<ConnectionWorkflow> ConnectionWorkflows { get; set; }
-
-        /// <summary />
-        public Group ConnectorGroup { get; set; }
-
-        /// <summary />
-        public GroupTypeRole GroupMemberRole { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.GroupMemberStatus GroupMemberStatus { get; set; }
-
-        /// <summary />
-        public GroupType GroupType { get; set; }
-
-        /// <summary />
-        public BinaryFile Photo { get; set; }
-
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 

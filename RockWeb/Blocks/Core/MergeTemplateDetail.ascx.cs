@@ -517,6 +517,15 @@ namespace RockWeb.Blocks.Core
                     }
                 }
 
+                if ( mergeTemplateType == null )
+                {
+                    // couldn't automatically pick one, so warn that they need to pick it
+                    nbFileTypeWarning.Text = "Warning: Please select a template type.";
+                    nbFileTypeWarning.Visible = true;
+                    nbFileTypeWarning.Dismissable = true;
+                    return;
+                }
+
                 if ( mergeTemplateType.SupportedFileExtensions != null && mergeTemplateType.SupportedFileExtensions.Any() )
                 {
                     if ( !mergeTemplateType.SupportedFileExtensions.Contains( fileExtension ) )

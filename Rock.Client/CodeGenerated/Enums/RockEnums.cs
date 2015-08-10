@@ -184,6 +184,8 @@ namespace Rock.Client.Enums
         Filter = 0x0,
         GroupAll = 0x1,
         GroupAny = 0x2,
+        GroupAllFalse = 0x3,
+        GroupAnyFalse = 0x4,
     }
 
     /// <summary>
@@ -273,8 +275,7 @@ namespace Rock.Client.Enums
         NotMet = 0x1,
         MeetsWithWarning = 0x2,
         NotApplicable = 0x3,
-        ManualCheckRequired = 0x4,
-        Error = 0x5,
+        Error = 0x4,
     }
 
     /// <summary>

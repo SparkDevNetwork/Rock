@@ -34,16 +34,16 @@ using Rock.Web.Cache;
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Renders a particular calendar using Lava.
+    /// Renders a particular calendar event item occurrence using Lava.
     /// </summary>
-    [DisplayName( "Calendar Item Lava" )]
+    [DisplayName( "Calendar Event Item Occurrence Lava" )]
     [Category( "Event" )]
-    [Description( "Renders a particular calendar item using Lava." )]
+    [Description( "Renders a particular calendar event item occurrence using Lava." )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/CalendarItem.lava' %}", "", 2 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar item name.", false )]
     [LinkedPage( "Registration Page", "Registration page for events" )]
-    public partial class CalendarItemLava : Rock.Web.UI.RockBlock
+    public partial class EventItemOccurrenceLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
 

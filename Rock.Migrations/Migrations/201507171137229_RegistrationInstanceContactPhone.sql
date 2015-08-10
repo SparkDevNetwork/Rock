@@ -90,7 +90,7 @@ VALUES ( 'Baptism', @CategoryId, @GeneralGroupTypeId, @GeneralGroupTypeRoleId, 2
 {{ RegistrationInstance.AdditionalConfirmationDetails }}
 
 <p>
-    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
 {{ ''Global'' | Attribute:''EmailFooter'' }}
@@ -148,11 +148,11 @@ VALUES ( 'Baptism', @CategoryId, @GeneralGroupTypeId, @GeneralGroupTypeRoleId, 2
 
 <p>
     A confirmation email has been sent to {{ Registration.ConfirmationEmail }}. If you have any questions 
-    please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+    please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 ', 
 	1, 0, 1, '5E0ADD57-B220-4ED0-975D-EEE2D0B14743', 7, 
-	'{{ RegistrationInstance.ContactName }}', '{{ RegistrationInstance.ContactEmail }}', '{{ RegistrationInstance.Name }} Confirmation', '{{ RegistrationInstance.ContactName }}', '{{ RegistrationInstance.ContactEmail }}', '{{ RegistrationInstance.Name }} Reminder' )
+	'{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}', '{{ RegistrationInstance.ContactEmail }}', '{{ RegistrationInstance.Name }} Confirmation', '{{ RegistrationInstance.ContactName }}', '{{ RegistrationInstance.ContactEmail }}', '{{ RegistrationInstance.Name }} Reminder' )
 SET @RegistrationTemplateId = SCOPE_IDENTITY()
 
 DECLARE @FormId int
@@ -239,7 +239,7 @@ VALUES ( 'Starting Point', @CategoryId, @GeneralGroupTypeId, @GeneralGroupTypeRo
 {{ RegistrationInstance.AdditionalConfirmationDetails }}
 
 <p>
-    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
 {{ ''Global'' | Attribute:''EmailFooter'' }}
@@ -297,11 +297,11 @@ VALUES ( 'Starting Point', @CategoryId, @GeneralGroupTypeId, @GeneralGroupTypeRo
 
 <p>
     A confirmation email has been sent to {{ Registration.ConfirmationEmail }}. If you have any questions 
-    please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+    please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 ', 
 	1, 0, 1, '9A1D2292-9FE5-45D8-90B7-2D20535E0479', 7, 
-	'{{ RegistrationInstance.ContactName }}', '{{ RegistrationInstance.ContactEmail }}', '{{ RegistrationInstance.Name }} Confirmation', '{{ RegistrationInstance.ContactName }}', '{{ RegistrationInstance.ContactEmail }}', '{{ RegistrationInstance.Name }} Reminder' )
+	'{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}', '{{ RegistrationInstance.ContactEmail }}', '{{ RegistrationInstance.Name }} Confirmation', '{{ RegistrationInstance.ContactName }}', '{{ RegistrationInstance.ContactEmail }}', '{{ RegistrationInstance.Name }} Reminder' )
 SET @RegistrationTemplateId = SCOPE_IDENTITY()
 
 INSERT INTO [RegistrationTemplateForm] ( [Name], [RegistrationTemplateId], [Order], [Guid] )

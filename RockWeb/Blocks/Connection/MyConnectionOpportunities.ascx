@@ -45,22 +45,25 @@
         </div>
         <asp:Panel ID="pnlGrid" runat="server" CssClass="panel panel-block" Visible="false">
             <div class="panel-heading">
-                <h4>
-                    <asp:Literal ID="lOpportunityIcon" runat="server" />
-
-                    <asp:Literal ID="lConnectionRequest" runat="server"></asp:Literal></h4>
+                <h1 class="panel-title"><asp:Literal ID="lOpportunityIcon" runat="server" /> <asp:Literal ID="lConnectionRequest" runat="server"></asp:Literal></h1>
             </div>
             <div class="panel-body">
-
+                <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
                         <Rock:PersonPicker ID="ppRequester" runat="server" Label="Requester" />
                         <Rock:PersonPicker ID="ppConnector" runat="server" Label="Connector" />
-                        <Rock:RockCheckBoxList ID="cblState" runat="server" Label="State" RepeatDirection="Horizontal" />
                         <Rock:RockCheckBoxList ID="cblStatus" runat="server" Label="Status" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
+                        <Rock:RockCheckBoxList ID="cblState" runat="server" Label="State" RepeatDirection="Horizontal">
+                            <asp:ListItem Text="Active" Value="0" />
+                            <asp:ListItem Text="Inactive" Value="1" />
+                            <asp:ListItem Text="Future Follow Up" Value="2" />
+                            <asp:ListItem Text="Future Follow Up (Past Due)" Value="-2" />
+                            <asp:ListItem Text="Connected" Value="3" />
+                        </Rock:RockCheckBoxList>
                         <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit">
+                    <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit" CssClass="js-grid-requests" >
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campu" />
@@ -69,7 +72,7 @@
                             <Rock:RockBoundField DataField="Activities" HeaderText="Activities" HtmlEncode="false" />
                             <asp:TemplateField HeaderText="State">
                                 <ItemTemplate>
-                                    <span class='label label-<%# Eval("StateLabel") %>'><%# Eval("State") %></span>
+                                    <%# Eval("StateLabel") %>
                                 </ItemTemplate>
                             </asp:TemplateField>
                             <asp:TemplateField HeaderText="Status">

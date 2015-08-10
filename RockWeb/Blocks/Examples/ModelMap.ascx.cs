@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Linq;
@@ -27,7 +28,6 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Caching;
 using System.Xml.Linq;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -105,16 +105,19 @@ namespace RockWeb.Blocks.Examples
 
                 if ( aClass.Properties.Any() )
                 {
-                    sb.AppendLine( "<h2>Properties</h2><ul>" );
+                    sb.AppendLine( "<small class='pull-right js-model-inherited'>Show: <i class='js-model-check fa fa-fw fa-square-o'></i> inherited</small><h2>Properties</h2><ul>" );
                     foreach ( var property in aClass.Properties.OrderBy( p => p.Name ) )
                     {
                         //  data-expanded='false' data-model='Block' data-id='b{0}'
-                        sb.AppendFormat( "<li data-id='p{0}'><strong><tt>{1}</tt></strong>{3}{4}{2}</li>{5}",
+                        sb.AppendFormat( "<li data-id='p{0}' class='{6}'><strong><tt>{1}</tt></strong>{3}{4}{5}{2}{7}</li>{8}",
                             property.Id,
                             HttpUtility.HtmlEncode( property.Name ),
                             ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " - " +  property.Comment.Summary : "",
+                            property.Required ? " <strong class='text-danger'>*</strong> " : string.Empty,
                             property.IsLavaInclude ? " <small><span class='tip tip-lava'></span></small> " : string.Empty,
-                            property.NotMapped ? " <span class='fa-stack small'><i class='fa fa-database fa-stack-1x'></i><i class='fa fa-ban fa-stack-2x text-danger'></i></span> " : string.Empty,
+                            property.NotMapped || property.IsVirtual ? " <span class='fa-stack small'><i class='fa fa-database fa-stack-1x'></i><i class='fa fa-ban fa-stack-2x text-danger'></i></span> " : string.Empty,
+                            property.IsInherited ? " js-model hidden " : " ",
+                            property.IsInherited ? " (inherited)" : "",
                             Environment.NewLine );
                     }
                     sb.AppendLine( "</ul>" );
@@ -126,10 +129,12 @@ namespace RockWeb.Blocks.Examples
                     foreach ( var method in aClass.Methods.OrderBy( m => m.Name ) )
                     {
                         //<li data-expanded='false' data-model='Block' data-id='b{0}'><span>{1}{2}:{3}</span></li>{4}
-                        sb.AppendFormat( "<li data-id='m{0}'><strong><tt>{1}</tt></strong> {2}</li>{3}",
+                        sb.AppendFormat( "<li data-id='m{0}' class='{3}'><strong><tt>{1}</tt></strong> {2}{4}</li>{5}",
                             method.Id,
                             HttpUtility.HtmlEncode( method.Signature ),
                             ( method.Comment != null && !string.IsNullOrWhiteSpace( method.Comment.Summary ) ) ? " - " +  method.Comment.Summary : "",
+                            method.IsInherited ? " js-model hidden " : " ",
+                            method.IsInherited ? " (inherited)" : "",
                             Environment.NewLine );
                     }
                     sb.AppendLine( "</ul>" );
@@ -229,7 +234,7 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns></returns>
-        private MClass GetPropertiesAndMethods( Type type )
+        private MClass GetPropertiesAndMethods( Type type, bool includeInherited = true )
         {
             MClass mClass = new MClass
             {
@@ -238,21 +243,23 @@ namespace RockWeb.Blocks.Examples
                 Comment = GetComments( type )
             };
 
-            PropertyInfo[] properties = type.GetProperties( BindingFlags.Public | BindingFlags.Instance ).Where( m => ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) ).ToArray();
+            PropertyInfo[] properties = type.GetProperties( BindingFlags.Public | ( includeInherited ? BindingFlags.Instance : BindingFlags.Instance | BindingFlags.DeclaredOnly ) ).Where( m => ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) ).ToArray();
             foreach ( PropertyInfo p in properties.OrderBy( i => i.Name ).ToArray() )
             {
-
                 mClass.Properties.Add( new MProperty
                 {
                     Name = p.Name,
+                    IsInherited = p.DeclaringType != type,
+                    IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual,
                     IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ),
                     NotMapped = p.IsDefined( typeof( NotMappedAttribute ) ),
+                    Required = p.IsDefined( typeof( RequiredAttribute ) ),
                     Id = p.MetadataToken,
                     Comment = GetComments( p )
                 } );
             }
 
-            MethodInfo[] methods = type.GetMethods( BindingFlags.Public | BindingFlags.Instance ).Where( m => !m.IsSpecialName && ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) ).ToArray();
+            MethodInfo[] methods = type.GetMethods( BindingFlags.Public | ( includeInherited ? BindingFlags.Instance : BindingFlags.Instance | BindingFlags.DeclaredOnly ) ).Where( m => !m.IsSpecialName && ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) ).ToArray();
             foreach ( MethodInfo m in methods.OrderBy( i => i.Name ).ToArray() )
             {
                 // crazy, right?
@@ -261,6 +268,7 @@ namespace RockWeb.Blocks.Examples
                 mClass.Methods.Add( new MMethod
                 {
                     Name = m.Name,
+                    IsInherited = m.DeclaringType != type,
                     Id = m.MetadataToken,
                     Signature = string.Format( "{0}({1})", m.Name, param ),
                     Comment = GetComments( m )
@@ -352,8 +360,11 @@ namespace RockWeb.Blocks.Examples
     {
         public string Name { get; set; }
         public int Id { get; set; }
+        public bool IsInherited { get; set; }
+        public bool IsVirtual { get; set; }
         public bool IsLavaInclude { get; set; }
         public bool NotMapped { get; set; }
+        public bool Required { get; set; }
         public XmlComment Comment { get; set; }
     }
 
@@ -361,6 +372,7 @@ namespace RockWeb.Blocks.Examples
     {
         public string Name { get; set; }
         public int Id { get; set; }
+        public bool IsInherited { get; set; }
         public string Signature { get; set; }
         public XmlComment Comment { get; set; }
     }

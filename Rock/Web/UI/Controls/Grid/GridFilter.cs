@@ -36,6 +36,14 @@ namespace Rock.Web.UI.Controls
         private bool _isDirty = false;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="GridFilter"/> class.
+        /// </summary>
+        public GridFilter() : base()
+        {
+            AdditionalFilterDisplay = new Dictionary<string, string>();
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -65,6 +73,24 @@ namespace Rock.Web.UI.Controls
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the additional filter display.
+        /// </summary>
+        /// <value>
+        /// The additional filter display.
+        /// </value>
+        public Dictionary<string, string> AdditionalFilterDisplay
+        {
+            get
+            {
+                return ViewState["AdditionalFilterDisplay"] as Dictionary<string, string> ?? new Dictionary<string, string>();
+            }
+            set
+            {
+                ViewState["AdditionalFilterDisplay"] = value;
             }
         }
 
@@ -189,10 +215,13 @@ namespace Rock.Web.UI.Controls
                 {
                     writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
                 }
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+                var filterDisplay = new Dictionary<string, string>();
+                AdditionalFilterDisplay.ToList().ForEach( d => filterDisplay.Add( d.Key, d.Value ) );
+
                 var nonEmptyValues = _userPreferences.Where( v => !string.IsNullOrEmpty( v.Value ) ).ToList();
-                StringBuilder filtersHtml = new StringBuilder();
                 if ( nonEmptyValues.Count > 0 )
                 {
                     foreach ( var userPreference in nonEmptyValues )
@@ -205,21 +234,23 @@ namespace Rock.Web.UI.Controls
 
                         if ( !string.IsNullOrWhiteSpace( args.Value ) )
                         {
-
-                            filtersHtml.AppendLine( "<div class='col-md-3'>" );
-                            filtersHtml.AppendLine( string.Format( "<label>{0}:</label> {1}", args.Name, args.Value ) );
-                            filtersHtml.AppendLine( "</div>" );
+                            filterDisplay.AddOrIgnore( args.Name, args.Value );
                         }
                     }
                 }
 
-                if ( filtersHtml.Length > 0 )
+                if ( filterDisplay.Any() )
                 {
                     writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
-                    writer.Write( "<h4>Enabled Filters</h4>" );
-                    writer.Write( "<div class='row'>" );
-                    writer.Write( filtersHtml.ToString() );
-                    writer.Write( "</div>" );
+                    writer.WriteLine( "<h4>Enabled Filters</h4>" );
+                    writer.WriteLine( "<div class='row'>" );
+                    foreach( var filterNameValue in filterDisplay.OrderBy( f => f.Key ) )
+                    {
+                        writer.WriteLine( "<div class='col-md-3'>" );
+                        writer.WriteLine( string.Format( "<label>{0}:</label> {1}", filterNameValue.Key, filterNameValue.Value ) );
+                        writer.WriteLine( "</div>" );
+                    }
+                    writer.WriteLine( "</div>" );
                     writer.RenderEndTag();
                 }
 

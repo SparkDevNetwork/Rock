@@ -225,11 +225,29 @@
                                         <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                                     </div>
                                 </div>
-                                <Rock:RockControlWrapper id="rcwLinkedRegistrations" runat="server" Label="Linked Registrations">
+                                <Rock:RockControlWrapper id="rcwLinkedRegistrations" runat="server" Label="Registrations">
                                     <ul class="list-unstyled">
                                         <asp:Repeater ID="rptLinkedRegistrations" runat="server">
                                             <ItemTemplate>
-                                                <li><a href='<%# RegistrationInstanceUrl( (int)Eval("RegistrationInstanceId" ) ) %>'><%# Eval("Title") %></a></li>
+                                                <li><a href='<%# RegistrationInstanceUrl( (int)Eval("Key" ) ) %>'><%# Eval("Value") %></a></li>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </ul>
+                                </Rock:RockControlWrapper>
+                                <Rock:RockControlWrapper id="rcwEventItemOccurrences" runat="server" Label="Event Item Occurrences">
+                                    <ul class="list-unstyled">
+                                        <asp:Repeater ID="rptEventItemOccurrences" runat="server">
+                                            <ItemTemplate>
+                                                <li><a href='<%# EventItemOccurrenceUrl( (int)Eval("Key" ) ) %>'><%# Eval("Value") %></a></li>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </ul>
+                                </Rock:RockControlWrapper>
+                                <Rock:RockControlWrapper id="rcwContentItems" runat="server" Label="Content Items">
+                                    <ul class="list-unstyled">
+                                        <asp:Repeater ID="rptContentItems" runat="server">
+                                            <ItemTemplate>
+                                                <li><a href='<%# ContentItemUrl( (int)Eval("Key" ) ) %>'><%# Eval("Value") %></a></li>
                                             </ItemTemplate>
                                         </asp:Repeater>
                                     </ul>

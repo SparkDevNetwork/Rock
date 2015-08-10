@@ -66,6 +66,15 @@ namespace Rock.Model
         public string Location { get; set; }
 
         /// <summary>
+        /// Gets or sets the schedule identifier.
+        /// </summary>
+        /// <value>
+        /// The schedule identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleId { get; set; }
+
+        /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.PersonAlias"/> for the EventItemOccurrence's contact person. This property is required.
         /// </summary>
         /// <value>
@@ -104,7 +113,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the campus note.
         /// </value>
         [DataMember]
-        public string CampusNote { get; set; }
+        public string Note { get; set; }
 
         #region Virtual Properties
 
@@ -116,6 +125,15 @@ namespace Rock.Model
         /// </value>
         public virtual EventItem EventItem { get; set; }
 
+        /// <summary>
+        /// Gets or sets the schedule.
+        /// </summary>
+        /// <value>
+        /// The schedule.
+        /// </value>
+        [DataMember]
+        public virtual Schedule Schedule { get; set; }
+        
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Campus"/> that this EventItemOccurrence is a member of.
         /// </summary>
@@ -149,20 +167,6 @@ namespace Rock.Model
         private ICollection<EventItemOccurrenceGroupMap> _linkages;
 
         /// <summary>
-        /// Gets or sets a collection of the <see cref="Rock.Model.EventItemSchedule">EventItemSchedules</see> that belong to this EventItem.
-        /// </summary>
-        /// <value>
-        /// A collection containing a collection of the <see cref="Rock.Model.EventItemSchedule">EventItemSchedules</see> that belong to this EventItem.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<EventItemSchedule> EventItemSchedules
-        {
-            get { return _calendarItemSchedules ?? ( _calendarItemSchedules = new Collection<EventItemSchedule>() ); }
-            set { _calendarItemSchedules = value; }
-        }
-        private ICollection<EventItemSchedule> _calendarItemSchedules;
-
-        /// <summary>
         /// Gets the next start date time.
         /// </summary>
         /// <value>
@@ -173,10 +177,12 @@ namespace Rock.Model
         {
             get
             {
-                return EventItemSchedules
-                    .Select( s => s.NextStartDateTime )
-                    .DefaultIfEmpty()
-                    .Min();
+                if ( Schedule != null )
+                {
+                    return Schedule.NextStartDateTime;
+                }
+
+                return null;
             }
         }
 
@@ -204,16 +210,16 @@ namespace Rock.Model
         /// <param name="beginDateTime">The begin date time.</param>
         /// <param name="endDateTime">The end date time.</param>
         /// <returns></returns>
-        public virtual List<DateTime> GetStartTimes( DateTime beginDateTime, DateTime endDateTime )
+        public virtual List<DateTime> GetStartTimes ( DateTime beginDateTime, DateTime endDateTime )
         {
-            var result = new List<DateTime>();
-
-            foreach( var eventItemSchedule in EventItemSchedules )
+            if ( Schedule != null )
             {
-                result.AddRange( eventItemSchedule.GetStartTimes( beginDateTime, endDateTime ) );
+                return Schedule.GetScheduledStartTimes( beginDateTime, endDateTime );
             }
-
-            return result.Distinct().OrderBy( d => d ).ToList();
+            else
+            {
+                return new List<DateTime>();
+            }
         }
 
         /// <summary>
@@ -222,22 +228,9 @@ namespace Rock.Model
         /// <returns></returns>
         public virtual DateTime? GetFirstStartDateTime()
         {
-            var results = new List<DateTime>();
-
-            foreach ( var eventItemSchedule in EventItemSchedules )
+            if ( Schedule != null )
             {
-
-                var firstStartDate = eventItemSchedule.GetFirstStartDateTime();
-
-                if ( firstStartDate.HasValue )
-                {
-                    results.Add( firstStartDate.Value );
-                }
-            }
-
-            if ( results.Count() > 0 )
-            {
-                return results.OrderBy( d => d ).FirstOrDefault();
+                return Schedule.GetFirstStartDateTime();
             }
             else
             {
@@ -278,6 +271,7 @@ namespace Rock.Model
         public EventItemOccurrenceConfiguration()
         {
             this.HasRequired( p => p.EventItem ).WithMany( p => p.EventItemOccurrences ).HasForeignKey( p => p.EventItemId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ContactPersonAlias ).WithMany().HasForeignKey( p => p.ContactPersonAliasId ).WillCascadeOnDelete( false );
         }

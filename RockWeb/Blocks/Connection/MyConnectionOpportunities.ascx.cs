@@ -89,9 +89,28 @@ namespace RockWeb.Blocks.Connection
             gRequests.Actions.AddClick += gRequests_Add;
             gRequests.IsDeleteEnabled = true;
             gRequests.GridRebind += gRequests_GridRebind;
+            gRequests.ShowConfirmDeleteDialog = false;
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            string deleteScript = @"
+    $('table.js-grid-requests a.grid-delete-button').click(function( e ){
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this connection request? All of the activities for this request will also be deleted, and any existing workflow associations will be lost!', function (result) {
+            if (result) {
+                Rock.dialogs.confirm('Are you really sure?', function (result) {
+                    if (result) {
+                        window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                    }
+                });
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( gRequests, gRequests.GetType(), "deleteRequestScript", deleteScript, true );
+
+
         }
 
         /// <summary>
@@ -104,8 +123,11 @@ namespace RockWeb.Blocks.Connection
 
             if ( !Page.IsPostBack )
             {
-                tglMyOpportunities.Checked = GetUserPreference( TOGGLE_SETTING ).AsBoolean();
+                tglMyOpportunities.Checked = GetUserPreference( TOGGLE_SETTING ).AsBoolean( true );
                 SelectedOpportunityId = GetUserPreference( SELECTED_OPPORTUNITY_SETTING ).AsIntegerOrNull();
+
+                // Reset the state filter on every initial request to be Active and Past Due future follow up
+                rFilter.SaveUserPreference( "State", "State", "0;-2" );
 
                 GetSummaryData();
             }
@@ -163,26 +185,6 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
-        /// Handles the ApplyFilterClick event of the rFilter control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
-        {
-            int? personId = ppRequester.PersonId;
-            rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "Requester" ), "Requester", personId.HasValue ? personId.Value.ToString() : string.Empty );
-
-            personId = ppConnector.PersonId;
-            rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "Connector" ), "Connector", personId.HasValue ? personId.Value.ToString() : string.Empty );
-
-            rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "Campus" ), "Campus", cblStatus.SelectedValues.AsDelimited( ";" ) );
-            rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "State" ), "State", cblState.SelectedValues.AsDelimited( ";" ) );
-            rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "Status" ), "Status", cblStatus.SelectedValues.AsDelimited( ";" ) );
-
-            BindGrid();
-        }
-
-        /// <summary>
         /// Handles the ItemDataBound event of the rptConnnectionTypes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -231,6 +233,26 @@ namespace RockWeb.Blocks.Connection
         #region Request Grid/Filter Events
 
         /// <summary>
+        /// Handles the ApplyFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            int? personId = ppRequester.PersonId;
+            rFilter.SaveUserPreference( "Requester", "Requester", personId.HasValue ? personId.Value.ToString() : string.Empty );
+
+            personId = ppConnector.PersonId;
+            rFilter.SaveUserPreference( "Connector", "Connector", personId.HasValue ? personId.Value.ToString() : string.Empty );
+
+            rFilter.SaveUserPreference( "Campus", "Campus", cblStatus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( "State", "State", cblState.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "Status" ), "Status", cblStatus.SelectedValues.AsDelimited( ";" ) );
+
+            BindGrid();
+        }
+        
+        /// <summary>
         /// Rs the filter_ display filter value.
         /// </summary>
         /// <param name="sender">The sender.</param>
@@ -239,7 +261,7 @@ namespace RockWeb.Blocks.Connection
         {
             using ( var rockContext = new RockContext() )
             {
-                if ( e.Key == MakeKeyUniqueToOpportunity( "Requester" ) )
+                if ( e.Key == "Requester" )
                 {
                     string personName = string.Empty;
                     int? personId = e.Value.AsIntegerOrNull();
@@ -253,7 +275,7 @@ namespace RockWeb.Blocks.Connection
                     }
                     e.Value = personName;
                 }
-                else if ( e.Key == MakeKeyUniqueToOpportunity( "Connector" ) )
+                else if ( e.Key == "Connector" )
                 {
                     string personName = string.Empty;
                     int? personId = e.Value.AsIntegerOrNull();
@@ -267,11 +289,11 @@ namespace RockWeb.Blocks.Connection
                     }
                     e.Value = personName;
                 }
-                else if ( e.Key == MakeKeyUniqueToOpportunity( "Campus" ) )
+                else if ( e.Key == "Campus" )
                 {
                     e.Value = ResolveValues( e.Value, cblCampus );
                 }
-                else if ( e.Key == MakeKeyUniqueToOpportunity( "State" ) )
+                else if ( e.Key == "State" )
                 {
                     e.Value = ResolveValues( e.Value, cblState );
                 }
@@ -308,7 +330,29 @@ namespace RockWeb.Blocks.Connection
 
         protected void gRequests_Delete( object sender, RowEventArgs e )
         {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                var service = new ConnectionRequestService( rockContext );
+                var connectionRequest = service.Get( e.RowKeyId );
+                if ( connectionRequest != null )
+                {
+                    string errorMessage;
+                    if ( !service.CanDelete( connectionRequest, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
 
+                    rockContext.WrapTransaction( () =>
+                    {
+                        new ConnectionRequestActivityService( rockContext ).DeleteRange( connectionRequest.ConnectionRequestActivities );
+                        service.Delete( connectionRequest );
+                        rockContext.SaveChanges();
+                    } );
+                }
+            }
+
+            BindGrid();
         }
 
         /// <summary>
@@ -342,28 +386,40 @@ namespace RockWeb.Blocks.Connection
             foreach ( var opportunity in new ConnectionOpportunityService( rockContext )
                 .Queryable().AsNoTracking() )
             {
-                // Check to see if person can view the opportunity because of admin rights to this block, admin rights to
-                // the opportunity, or they are in the global connector group for the opportunity
-                bool canView =
-                    UserCanAdministrate ||
-                    opportunity.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) ||
-                    ( opportunity.ConnectorGroup != null && opportunity.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId ) );
-
-                // If user is not yet authorized to view the opportunity, check to see if they are a member of one of the 
-                // connector groups for the opportunity, and note the campus
+                // Check to see if person can view the opportunity because of admin rights to this block or admin rights to
+                // the opportunity
+                bool canView = UserCanAdministrate || opportunity.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
                 bool campusSpecificConnector = false;
                 var campusIds = new List<int>();
-                if ( !canView )
+
+                if ( CurrentPersonId.HasValue )
                 {
-                    foreach ( var groupCampus in opportunity
-                        .ConnectionOpportunityGroupCampuses
-                        .Where( g =>
-                            g.ConnectorGroup != null &&
-                            g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId ) ) )
+                    // Check to see if person belongs to any connector group that is not campus specific
+                    if ( !canView )
                     {
-                        campusSpecificConnector = true;
-                        canView = true;
-                        campusIds.Add( groupCampus.CampusId );
+                        canView = opportunity
+                            .ConnectionOpportunityConnectorGroups
+                            .Any( g =>
+                                !g.CampusId.HasValue &&
+                                g.ConnectorGroup != null &&
+                                g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId.Value ) );
+                    }
+
+                    // If user is not yet authorized to view the opportunity, check to see if they are a member of one of the 
+                    // campus-specific connector groups for the opportunity, and note the campus
+                    if ( !canView )
+                    {
+                        foreach ( var groupCampus in opportunity
+                            .ConnectionOpportunityConnectorGroups
+                            .Where( g =>
+                                g.CampusId.HasValue &&
+                                g.ConnectorGroup != null &&
+                                g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId.Value ) ) )
+                        {
+                            campusSpecificConnector = true;
+                            canView = true;
+                            campusIds.Add( groupCampus.CampusId.Value );
+                        }
                     }
                 }
 
@@ -402,12 +458,14 @@ namespace RockWeb.Blocks.Connection
             // Get a list of all the authorized opportunity ids
             var allOpportunities = SummaryState.SelectMany( s => s.Opportunities ).Select( o => o.Id ).Distinct().ToList();
 
-            // Get all the active requests ids, and include the campus id and personid of connector
+            // Get all the active and past-due future followup request ids, and include the campus id and personid of connector
+            var midnightToday = RockDateTime.Today.AddDays(1);
             var activeRequests = new ConnectionRequestService( rockContext )
                 .Queryable().AsNoTracking()
                 .Where( r =>
                     allOpportunities.Contains( r.ConnectionOpportunityId ) &&
-                    r.ConnectionState == ConnectionState.Active )
+                    ( r.ConnectionState == ConnectionState.Active || 
+                        ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < midnightToday ) ) )
                 .Select( r => new
                 {
                     r.ConnectionOpportunityId,
@@ -416,7 +474,7 @@ namespace RockWeb.Blocks.Connection
                 } )
                 .ToList();
 
-            // Based on the active requests, set addtional properties for each opportunity
+            // Based on the active requests, set additional properties for each opportunity
             foreach ( var opportunity in SummaryState.SelectMany( s => s.Opportunities ) )
             {
                 // Get the active requests for this opportunity that user is authorized to view (based on campus connector)
@@ -487,26 +545,37 @@ namespace RockWeb.Blocks.Connection
             using ( var rockContext = new RockContext() )
             {
                 var personService = new PersonService( rockContext );
-                int? personId = rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "Requester" ) ).AsIntegerOrNull();
+                int? personId = rFilter.GetUserPreference( "Requester" ).AsIntegerOrNull();
                 if ( personId.HasValue )
                 {
                     ppRequester.SetValue( personService.Get( personId.Value ) );
                 }
 
-                personId = rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "Connector" ) ).AsIntegerOrNull();
-                if ( personId.HasValue )
+                rFilter.AdditionalFilterDisplay.Clear();
+                if ( tglMyOpportunities.Checked )
                 {
-                    ppConnector.SetValue( personService.Get( personId.Value ) );
-                }
-                ppConnector.Visible = !tglMyOpportunities.Checked;
+                    ppConnector.Visible = false;
+                    rFilter.AdditionalFilterDisplay.Add( "Connector", CurrentPerson.FullName );
 
+                    cblState.Visible = false;
+                    rFilter.AdditionalFilterDisplay.Add( "State", "Active, Future Follow Up (Past Due)" );
+                }
+                else
+                {
+                    ppConnector.Visible = true;
+                    personId = rFilter.GetUserPreference( "Connector" ).AsIntegerOrNull();
+                    if ( personId.HasValue )
+                    {
+                        ppConnector.SetValue( personService.Get( personId.Value ) );
+                    }
+
+                    cblState.Visible = true;
+                    cblState.SetValues( rFilter.GetUserPreference( "State" ).SplitDelimitedValues().AsIntegerList() );
+                }
+                
                 cblCampus.DataSource = CampusCache.All();
                 cblCampus.DataBind();
-                cblCampus.SetValues( rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "Campus" ) ).SplitDelimitedValues().AsIntegerList() );
-
-                cblState.BindToEnum<ConnectionState>();
-                cblState.SetValues( rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "State" ) ).SplitDelimitedValues().AsIntegerList() );
-                cblState.Visible = !tglMyOpportunities.Checked;
+                cblCampus.SetValues( rFilter.GetUserPreference( "Campus" ).SplitDelimitedValues().AsIntegerList() );
 
                 cblStatus.Items.Clear();
                 if ( SelectedOpportunityId.HasValue )
@@ -571,26 +640,33 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     // Filter by State
+                    var midnightToday = RockDateTime.Today.AddDays(1);
                     if ( tglMyOpportunities.Checked )
                     {
                         requests = requests
-                            .Where( r => r.ConnectionState == ConnectionState.Active );
+                            .Where( r => r.ConnectionState == ConnectionState.Active || 
+                                    ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < midnightToday ) );
                     }
                     else
                     {
                         var states = new List<ConnectionState>();
+                        bool futureFollowup = false;
                         foreach ( string stateValue in cblState.SelectedValues )
                         {
+                            futureFollowup = futureFollowup || stateValue.AsInteger() == -2;
                             var state = stateValue.ConvertToEnumOrNull<ConnectionState>();
                             if ( state.HasValue )
                             {
                                 states.Add( state.Value );
                             }
                         }
-                        if ( states.Any() )
+                        if ( futureFollowup || states.Any() )
                         {
                             requests = requests
-                                .Where( r => states.Contains( r.ConnectionState ) );
+                                .Where( r =>
+                                    ( futureFollowup && r.ConnectionState == ConnectionState.FutureFollowUp &&
+                                        r.FollowupDate.HasValue && r.FollowupDate.Value < midnightToday ) ||
+                                    states.Contains( r.ConnectionState ) );
                         }
                     }
 
@@ -623,9 +699,8 @@ namespace RockWeb.Blocks.Connection
                         Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
                         Activities = r.ConnectionRequestActivities.Select( a => a.ConnectionActivityType.Name ).ToList().AsDelimited( "</br>" ),
                         Status = r.ConnectionStatus.Name,
-                        StatusLabel = r.ConnectionStatus.IsCritical ? "danger" : "info",
-                        State = r.ConnectionState.ConvertToString(),
-                        StateLabel = r.ConnectionState == ConnectionState.Active ? "success" : ( r.ConnectionState == ConnectionState.Inactive ? "danger" : "info" )
+                        StatusLabel = r.ConnectionStatus.IsCritical ? "warning" : "info",
+                        StateLabel = FormatStateLabel( r.ConnectionState, r.FollowupDate )
                     } )
                    .ToList();
                     gRequests.DataBind();
@@ -670,6 +745,26 @@ namespace RockWeb.Blocks.Connection
             }
 
             return resolvedValues.AsDelimited( ", " );
+        }
+
+        private string FormatStateLabel( ConnectionState connectionState, DateTime? followupDate )
+        {
+            string css = string.Empty;
+            switch ( connectionState )
+            {
+                case ConnectionState.Active: css = "success"; break;
+                case ConnectionState.Inactive: css = "danger"; break;
+                case ConnectionState.FutureFollowUp: css = ( followupDate.HasValue && followupDate.Value >= RockDateTime.Today.AddDays( 1 ) ) ? "info" : "info"; break;
+                case ConnectionState.Connected: css = "success"; break;
+            }
+
+            string text = connectionState.ConvertToString();
+            if ( connectionState == ConnectionState.FutureFollowUp && followupDate.HasValue )
+            {
+                text += string.Format( " ({0})", followupDate.Value.ToShortDateString() );
+            }
+
+            return string.Format( "<span class='label label-{0}'>{1}</span>", css, text );
         }
 
         #endregion

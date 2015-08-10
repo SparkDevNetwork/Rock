@@ -26,10 +26,10 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// ConnectionOpportunityGroupCampus REST API
+    /// ConnectionOpportunityConnectorGroups REST API
     /// </summary>
-    public partial class ConnectionOpportunityGroupCampusController : Rock.Rest.ApiController<Rock.Model.ConnectionOpportunityGroupCampus>
+    public partial class ConnectionOpportunityConnectorGroupsController : Rock.Rest.ApiController<Rock.Model.ConnectionOpportunityConnectorGroup>
     {
-        public ConnectionOpportunityGroupCampusController() : base( new Rock.Model.ConnectionOpportunityGroupCampusService( new Rock.Data.RockContext() ) ) { } 
+        public ConnectionOpportunityConnectorGroupsController() : base( new Rock.Model.ConnectionOpportunityConnectorGroupService( new Rock.Data.RockContext() ) ) { } 
     }
 }

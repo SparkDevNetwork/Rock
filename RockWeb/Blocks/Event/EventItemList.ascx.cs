@@ -32,14 +32,14 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Lists all the items in the given calendar.
+    /// Lists all the event items in the given calendar.
     /// </summary>
-    [DisplayName( "Calendar Item List" )]
+    [DisplayName( "Calendar Event Item List" )]
     [Category( "Event" )]
-    [Description( "Lists all the items in the given calendar." )]
+    [Description( "Lists all the event items in the given calendar." )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class CalendarItemList : RockBlock, ISecondaryBlock
+    public partial class EventItemList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
 
@@ -510,7 +510,7 @@ namespace RockWeb.Blocks.Event
 
                 EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
                 var qry = eventCalendarItemService
-                    .Queryable( "EventCalendar,EventItem.EventItemAudiences,EventItem.EventItemOccurrences.EventItemSchedules.Schedule" )
+                    .Queryable( "EventCalendar,EventItem.EventItemAudiences,EventItem.EventItemOccurrences.Schedule" )
                     .Where( m =>
                         m.EventItem != null &&
                         m.EventCalendarId == _eventCalendar.Id );

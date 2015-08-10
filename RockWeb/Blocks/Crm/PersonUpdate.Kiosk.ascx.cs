@@ -370,6 +370,7 @@ namespace RockWeb.Blocks.Crm
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "WorkflowType" ) ) )
             {
                 var workflowTypeService = new WorkflowTypeService( rockContext );
+                var workflowService = new WorkflowService( rockContext );
                 var workflowType = workflowTypeService.Get( new Guid( GetAttributeValue( "WorkflowType" ) ) );
 
                 if ( workflowType != null )
@@ -393,24 +394,7 @@ namespace RockWeb.Blocks.Crm
 
                     // lauch workflow
                     List<string> workflowErrors;
-                    if ( workflow.Process( rockContext, out workflowErrors ) )
-                    {
-                        if ( workflow.IsPersisted || workflowType.IsPersisted )
-                        {
-                            var workflowService = new Rock.Model.WorkflowService( rockContext );
-                            workflowService.Add( workflow );
-
-                            rockContext.WrapTransaction( () =>
-                            {
-                                rockContext.SaveChanges();
-                                workflow.SaveAttributeValues( rockContext );
-                                foreach ( var activity in workflow.Activities )
-                                {
-                                    activity.SaveAttributeValues( rockContext );
-                                }
-                            } );
-                        }
-                    }
+                    workflowService.Process( workflow, out workflowErrors );
                 }
             }
 

@@ -41,6 +41,15 @@ namespace Rock.Apps.CheckScannerUtility
         public BatchPage batchPage { get; private set; }
 
         /// <summary>
+        /// Gets or sets the name of the log file.
+        /// If specified, the raw MICR scans will be written to this this
+        /// </summary>
+        /// <value>
+        /// The name of the log file.
+        /// </value>
+        public string DebugLogFilePath { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ScanningPage"/> class.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -48,6 +57,41 @@ namespace Rock.Apps.CheckScannerUtility
         {
             InitializeComponent();
             this.batchPage = value;
+
+            try
+            {
+                var config = System.Configuration.ConfigurationManager.OpenExeConfiguration(System.Configuration.ConfigurationUserLevel.None);
+                DebugLogFilePath = config.AppSettings.Settings["DebugLogFilePath"].Value;
+                bool isDirectory = !string.IsNullOrWhiteSpace(DebugLogFilePath) && Directory.Exists( this.DebugLogFilePath );
+                if (isDirectory)
+                {
+                    DebugLogFilePath = Path.Combine( DebugLogFilePath, "CheckScanner.log" );
+                }
+            }
+            catch
+            {
+                // ignore any exceptions
+            }
+        }
+
+        /// <summary>
+        /// Writes the message to a debug log (if DebugLogFilePath is configured in AppSettings)
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public void WriteToDebugLog( string message )
+        {
+            if ( !string.IsNullOrWhiteSpace( this.DebugLogFilePath ) )
+            {
+                try
+                {
+                    
+                    File.AppendAllText( DebugLogFilePath, message + Environment.NewLine );
+                }
+                catch
+                {
+                    //
+                }
+            }
         }
 
         /// <summary>
@@ -434,6 +478,7 @@ namespace Rock.Apps.CheckScannerUtility
                 if ( scannedDoc.IsCheck )
                 {
                     string checkMicr = batchPage.rangerScanner.GetMicrText( 1 ).Trim();
+                    WriteToDebugLog( string.Format( "[{0}] - {1}", DateTime.Now.ToString( "o" ), checkMicr ) );
                     string remainingMicr = checkMicr;
                     string accountNumber = string.Empty;
                     string routingNumber = string.Empty;
@@ -456,17 +501,18 @@ namespace Rock.Apps.CheckScannerUtility
                     {
                         int accountNumberDigitPosition = lastOnUsPosition - 1;
 
-                        // read all digits to the left of the last 'c' until you run into another 'c'
+                        // read all digits to the left of the last 'c' until you run into another 'c' or 'd'
                         while ( accountNumberDigitPosition >= 0 )
                         {
                             char accountNumberDigit = remainingMicr[accountNumberDigitPosition];
-                            if ( accountNumberDigit == 'c' )
+                            if ( accountNumberDigit == 'c' || accountNumberDigit == 'd' )
                             {
                                 break;
                             }
                             else
                             {
-                                accountNumber = accountNumberDigit + accountNumber.Trim();
+                                accountNumber = accountNumberDigit + accountNumber;
+                                accountNumber = accountNumber.Trim();
                             }
 
                             accountNumberDigitPosition--;
@@ -573,6 +619,7 @@ namespace Rock.Apps.CheckScannerUtility
                     scannedDoc.RoutingNumber = routingNumber;
                     scannedDoc.AccountNumber = accountNumber;
                     scannedDoc.CheckNumber = checkNumber;
+                    WriteToDebugLog( string.Format( "[{0}] - {1}", DateTime.Now.ToString( "o" ), scannedDoc.ScannedCheckMicr ) );
                 }
 
                 // set the _currentMagtekScannedDoc in case we are going to scan the back of the image

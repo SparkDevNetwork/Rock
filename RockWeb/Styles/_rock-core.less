@@ -56,12 +56,12 @@
 
 // text selection color
 ::selection {
-	background: @text-selection-color;
-    color: @text-selection-text-color;
+	background: @text-selection-bg;
+    color: @text-selection-color;
 }
 ::-moz-selection {
-	background: @text-selection-color;
-    color: @text-selection-text-color;
+	background: @text-selection-bg;
+    color: @text-selection-color;
 }
 
 
@@ -100,8 +100,8 @@
     font-family: @font-family-monospace;
     padding: 2px 4px;
     font-size: 90%;
-    color: @accent-text-color;
-    background-color: @accent-color;
+    color: @state-info-text;
+    background-color: @state-info-bg;
     white-space: nowrap;
     border-radius: @border-radius-base;
 }
@@ -134,6 +134,27 @@ a.help {
 
 // 4. Bootstrap Overrides
 //--------------------------------
+
+// allow modal backdrop opacity to be configurable
+.modal-backdrop,
+.modal-backdrop.fade.in{
+  opacity: @modal-backdrop-opacity;
+}
+
+// change the color of the none selected links
+// by default bootsrap does not allow the color of a link roll-over to be a different color. Modified it to allow this.
+.nav-pills {
+    > li {
+        > a {
+            color: @nav-pills-link-color;
+
+            &:hover {
+                color: @nav-pills-active-link-hover-color;
+                background-color: lighten(@nav-pills-active-link-hover-bg, 20%);
+            }
+        }
+    }  
+}
 
 .form-right {
     .clearfix();
@@ -232,8 +253,9 @@ a.help {
 
 // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
 .panel {
+
     legend {
-        border-color: @accent-color;
+        border-color: red;// @axxxccent-color;
     }
 
     .panel-heading {
@@ -258,16 +280,23 @@ a.help {
         .form-group {
             margin-bottom: 0;
         }
+
+        
     }
 
     .panel-body {
         border-radius: 0 0 4px 4px;
     }
+
+    .panel-footer {
+        background-color: @panel-footer-bg;
+        color: @panel-footer-color;
+    }
 }
 
 .panel-widget {
     // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
-    .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 5%););
+    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
     .panel-heading {
         border: 0;
@@ -286,12 +315,13 @@ a.help {
         }
 
         small {
-            color: lighten(@accent-text-color, 20%);
+            color: lighten(@panel-heading-text-color, 20%);
         }
     }
 }
 
 .panel-info {
+    border-top-color: @panel-top-border-color;
 
     .panel-body {
         background-color: @body-bg;
@@ -304,7 +334,9 @@ a.help {
 
 .panel-persondetails {
     // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
-    .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 5%););
+    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+
+    border-top-color: @panel-top-border-color;
 
     .panel-heading {
         .actions {
@@ -345,7 +377,7 @@ a.help {
 
 .panel-block {
     //.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;)
-    .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 2%););
+    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
     border-top-color: @panel-top-border-color;
 
@@ -440,11 +472,11 @@ a.help {
 }
 
 .btn-authenication {
-    .button-variant(@btn-authenication-color; @btn-authenication-bg; @btn-authenication-border);
+    .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
     width: 100%;
 
     &:hover {
-        background-color: darken(@accent-color, 10%);
+        background-color: darken(@btn-default-bg, 10%);
     }
 
     &.facebook:before {
@@ -475,10 +507,6 @@ a.help {
         color: inherit;
         background-color: transparent;
     }
-}
-// new alert types
-.alert-action {
-    .alert-variant(@accent-color; @accent-color; @accent-text-color);
 }
 
 // make links in alerts the same color as the text with a nice dotted underline

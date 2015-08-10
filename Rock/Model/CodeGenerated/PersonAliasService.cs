@@ -334,6 +334,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<ConnectionOpportunityConnectorGroup>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunityConnectorGroup.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<ConnectionOpportunityConnectorGroup>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunityConnectorGroup.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<ConnectionOpportunityGroup>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunityGroup.FriendlyTypeName );
@@ -343,18 +355,6 @@ namespace Rock.Model
             if ( new Service<ConnectionOpportunityGroup>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunityGroup.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<ConnectionOpportunityGroupCampus>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunityGroupCampus.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<ConnectionOpportunityGroupCampus>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunityGroupCampus.FriendlyTypeName );
                 return false;
             }  
  
@@ -685,18 +685,6 @@ namespace Rock.Model
             if ( new Service<EventItemOccurrenceGroupMap>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EventItemOccurrenceGroupMap.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<EventItemSchedule>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EventItemSchedule.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<EventItemSchedule>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EventItemSchedule.FriendlyTypeName );
                 return false;
             }  
  
@@ -1333,6 +1321,12 @@ namespace Rock.Model
             if ( new Service<Registration>( Context ).Queryable().Any( a => a.PersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Registration.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<RegistrationInstance>( Context ).Queryable().Any( a => a.ContactPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, RegistrationInstance.FriendlyTypeName );
                 return false;
             }  
  
