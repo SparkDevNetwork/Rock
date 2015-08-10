@@ -96,7 +96,10 @@ namespace Rock.Transactions
                     using ( var rockContext = new RockContext() )
                     {
                         var groupMember = new GroupMemberService( rockContext ).Get( GroupMemberGuid.Value );
-                        groupMember.CalculateRequirements( rockContext, true );
+                        if ( groupMember != null )
+                        {
+                            groupMember.CalculateRequirements( rockContext, true );
+                        }
                     }
                 }
             }
