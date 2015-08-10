@@ -1876,7 +1876,13 @@ ul.list-group-panel, .panel-collapse {
     background-color: @wizard-bg;
     padding: 8px 0;
     .clearfix();
-    margin-bottom: 12px;
+    margin: -15px;
+    margin-bottom: 24px;
+    margin-top: -16px;
+
+    @media only screen and (max-width : 480px){
+        display: none;
+	}
 }
 
 .wizard-item-icon {
@@ -1896,14 +1902,18 @@ ul.list-group-panel, .panel-collapse {
 }
 
 .wizard-item {
-    min-width: 200px;
+    min-width: 100px;
     text-align: center;
     float: left;
     position: relative;
     z-index: 1;
 
+    @media @md {
+        min-width: 175px;
+    }
+
     &:before {
-        border-top: 4px solid lighten(@wizard-item-bar-color, 10%);
+        border-top: 4px solid @wizard-item-bar-color;
         content:"";
         margin: 0 auto; /* this centers the line to the full width specified */
         position: absolute; /* positioning must be absolute here, and relative positioning must be applied to the parent */
@@ -1917,7 +1927,7 @@ ul.list-group-panel, .panel-collapse {
     &.active {
         
         &:before {
-            border-top: 4px solid @wizard-item-bar-color;
+            border-top: 4px solid @wizard-item-bar-complete-color;
         }
         
         .wizard-item-icon {
@@ -1932,7 +1942,7 @@ ul.list-group-panel, .panel-collapse {
     &.complete {
         
         &:before {
-            border-top: 4px solid @wizard-item-bar-color;
+            border-top: 4px solid @wizard-item-bar-complete-color;
         }
         
         .wizard-item-icon {
@@ -1945,13 +1955,22 @@ ul.list-group-panel, .panel-collapse {
     }
 
     &:first-child:before {
-        left: 110px;
+        left: 55px;
+
+        @media @md {
+            left: 100px;
+        }
     }
 
     &:last-child:before {
-        right: 110px;
+        right: 55px;
+
+        @media @md {
+            right: 100px;
+        }
     }
 }
+
 
 // 34. Checkbox
 // -------------------------
