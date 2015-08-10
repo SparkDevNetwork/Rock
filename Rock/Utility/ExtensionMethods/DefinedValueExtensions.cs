@@ -20,7 +20,7 @@ namespace Rock
     /// <summary>
     /// Defined Value Extensions
     /// </summary>
-    public static class DefinedValueExtensions
+    public static partial class ExtensionMethods
     {
         #region Int Extensions
 
