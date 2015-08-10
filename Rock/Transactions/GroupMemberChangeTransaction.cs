@@ -25,7 +25,7 @@ using Rock.Model;
 namespace Rock.Transactions
 {
     /// <summary>
-    /// Launches a group member change workflow
+    /// Launches a group member change workflow. Will also recalculate group member requirements when a member is added
     /// </summary>
     public class GroupMemberChangeTransaction : ITransaction
     {
@@ -43,7 +43,7 @@ namespace Rock.Transactions
         /// Initializes a new instance of the <see cref="GroupMemberChangeTransaction"/> class.
         /// </summary>
         /// <param name="entry">The entry.</param>
-        public GroupMemberChangeTransaction ( DbEntityEntry entry )
+        public GroupMemberChangeTransaction( DbEntityEntry entry )
         {
             // If entity was a group member, save the values
             var groupMember = entry.Entity as GroupMember;
@@ -84,10 +84,23 @@ namespace Rock.Transactions
         }
 
         /// <summary>
-        /// Execute method to check for any workflows to launch.
+        /// Execute method to check for any workflows to launch and will also recalculate group member requirements when a member is added
         /// </summary>
         public void Execute()
         {
+            // if a GroupMember is getting added, call CalculateRequirements to make sure that group member requirements are calculated (if the group has requirements)
+            if ( State == EntityState.Added )
+            {
+                if ( GroupMemberGuid.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var groupMember = new GroupMemberService( rockContext ).Get( GroupMemberGuid.Value );
+                        groupMember.CalculateRequirements( rockContext, true );
+                    }
+                }
+            }
+
             GroupMemberWorkflowTriggerType[] groupMemberWorkflowChangeTriggers = new GroupMemberWorkflowTriggerType[] { GroupMemberWorkflowTriggerType.MemberAddedToGroup, GroupMemberWorkflowTriggerType.MemberRemovedFromGroup, GroupMemberWorkflowTriggerType.MemberStatusChanged, GroupMemberWorkflowTriggerType.MemberRoleChanged };
 
             // Verify that valid ids were saved
@@ -102,7 +115,7 @@ namespace Rock.Transactions
                     // Get the triggers associated to the group 
                     var groupTriggers = cachedTriggers
                         .Where( w =>
-                            groupMemberWorkflowChangeTriggers.Contains(w.TriggerType) &&
+                            groupMemberWorkflowChangeTriggers.Contains( w.TriggerType ) &&
                             w.GroupId.HasValue &&
                             w.GroupId.Value == GroupId.Value )
                         .OrderBy( w => w.Order )
