@@ -772,6 +772,7 @@ namespace Rock.Web.UI
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
         /// <param name="showPlaceholderImage">if set to <c>true</c> [show placeholder image].</param>
+        /// <param name="isThumbnail">if set to <c>true</c> [is thumbnail].</param>
         /// <returns></returns>
         public string GetImageTag( int? imageId, int? maxWidth = null, int? maxHeight = null, bool showPlaceholderImage = true, bool isThumbnail = false )
         {
