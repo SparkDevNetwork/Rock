@@ -900,7 +900,7 @@ dl:not(.dl-horizontal) dd {
 }
 /*
     Used to manage styles related to Rock's internal grid component
-    
+
     1. Bootstrap Overrides
     2. Core Table
     3. Filter
@@ -911,7 +911,6 @@ dl:not(.dl-horizontal) dd {
     8. Column Types
     9. Row Types
     10. Responsive Columns
-    11. Hover Colors
 */
 .table > tbody > tr > td {
   color: #6a6a6a;
@@ -1224,11 +1223,6 @@ tr.row-highlight td {
   .table-responsive td[data-priority="6"] {
     display: table-cell;
   }
-}
-.table-hover tbody tr:hover td,
-.table-hover tbody tr:hover th {
-  background-color: #d5e6ed;
-  color: #6a6a6a;
 }
 /*
     Used to manage styles for specific blocks.
