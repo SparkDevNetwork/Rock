@@ -865,7 +865,7 @@ namespace RockWeb.Blocks.Event
 
                         rockContext.WrapTransaction( () =>
                         {
-                            bool hasPayment = RegistrationState.PaymentAmount > 0.0m;
+                            bool hasPayment = ( RegistrationState.PaymentAmount ?? 0.0m ) > 0.0m;
 
                             if ( RegistrationState.RegistrationId.HasValue )
                             {
@@ -892,7 +892,7 @@ namespace RockWeb.Blocks.Event
                                 {
                                     string appRoot = ResolveRockUrl( "~/" );
                                     string themeRoot = ResolveRockUrl( "~~/" );
-
+                                     
                                     var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
                                     confirmation.RegistrationId = registration.Id;
                                     confirmation.AppRoot = appRoot;
@@ -1481,7 +1481,7 @@ namespace RockWeb.Blocks.Event
             paymentInfo.BillingPostalCode = acBillingAddress.PostalCode;
             paymentInfo.BillingCountry = acBillingAddress.Country;
 
-            paymentInfo.Amount = RegistrationState.PaymentAmount;
+            paymentInfo.Amount = RegistrationState.PaymentAmount ?? 0.0m;
             paymentInfo.Email = RegistrationState.ConfirmationEmail;
 
             paymentInfo.FirstName = RegistrationState.FirstName;
@@ -1507,13 +1507,23 @@ namespace RockWeb.Blocks.Event
                 transaction.TransactionTypeValueId = txnType.Id;
                 History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
 
-                transaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
+                if ( transaction.FinancialPaymentDetail == null )
+                {
+                    transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+                }
+
+                transaction.FinancialPaymentDetail.NameOnCardEncrypted = Rock.Security.Encryption.EncryptString( paymentInfo.NameOnCard );
+                transaction.FinancialPaymentDetail.AccountNumberMasked = paymentInfo.MaskedNumber;
+                transaction.FinancialPaymentDetail.ExpirationMonthEncrypted = Rock.Security.Encryption.EncryptString( paymentInfo.ExpirationDate.Month.ToString() );
+                transaction.FinancialPaymentDetail.ExpirationYearEncrypted = Rock.Security.Encryption.EncryptString( paymentInfo.ExpirationDate.Year.ToString() );
+                transaction.FinancialPaymentDetail.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
+
                 History.EvaluateChange( txnChanges, "Currency Type", string.Empty, paymentInfo.CurrencyTypeValue.Value );
 
-                transaction.CreditCardTypeValueId = paymentInfo.CreditCardTypeValue != null ? paymentInfo.CreditCardTypeValue.Id : (int?)null;
-                if ( transaction.CreditCardTypeValueId.HasValue )
+                transaction.FinancialPaymentDetail.CreditCardTypeValueId = paymentInfo.CreditCardTypeValue != null ? paymentInfo.CreditCardTypeValue.Id : (int?)null;
+                if ( transaction.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
                 {
-                    var ccType = DefinedValueCache.Read( transaction.CreditCardTypeValueId.Value );
+                    var ccType = DefinedValueCache.Read( transaction.FinancialPaymentDetail.CreditCardTypeValueId.Value );
                     History.EvaluateChange( txnChanges, "Credit Card Type", string.Empty, ccType.Value );
                 }
 
@@ -1531,7 +1541,7 @@ namespace RockWeb.Blocks.Event
                 transaction.Summary = registration.GetSummary( RegistrationInstanceState );
 
                 var transactionDetail = new FinancialTransactionDetail();
-                transactionDetail.Amount = RegistrationState.PaymentAmount;
+                transactionDetail.Amount = RegistrationState.PaymentAmount ?? 0.0m;
                 transactionDetail.AccountId = RegistrationInstanceState.AccountId.Value;
                 transactionDetail.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
                 transactionDetail.EntityId = registration.Id;
@@ -2852,18 +2862,19 @@ namespace RockWeb.Blocks.Event
                     lMinimumDue.Text = minPayment.ToString( "C2" );
 
                     // Make sure payment amount is within minumum due and balance due. If not, set to balance due
-                    if ( RegistrationState.PaymentAmount < minPayment ||
-                        RegistrationState.PaymentAmount > balanceDue )
+                    if ( !RegistrationState.PaymentAmount.HasValue ||
+                        RegistrationState.PaymentAmount.Value < minPayment ||
+                        RegistrationState.PaymentAmount.Value > balanceDue )
                     {
                         RegistrationState.PaymentAmount = balanceDue;
                     }
 
                     nbAmountPaid.Visible = allowPartialPayment;
-                    nbAmountPaid.Text = RegistrationState.PaymentAmount.ToString( "N2" );
+                    nbAmountPaid.Text = ( RegistrationState.PaymentAmount ?? 0.0m ).ToString( "N2" );
 
                     // If a previous payment was made, or partial payment is allowed, show the amount remaining after selected payment amount
                     lRemainingDue.Visible = allowPartialPayment || RegistrationState.PreviousPaymentTotal != 0.0m;
-                    lRemainingDue.Text = ( RegistrationState.DiscountedCost - ( RegistrationState.PreviousPaymentTotal + RegistrationState.PaymentAmount ) ).ToString( "C2" );
+                    lRemainingDue.Text = ( RegistrationState.DiscountedCost - ( RegistrationState.PreviousPaymentTotal + ( RegistrationState.PaymentAmount ?? 0.0m ) ) ).ToString( "C2" );
 
                     divPaymentInfo.Visible = balanceDue > 0;
 

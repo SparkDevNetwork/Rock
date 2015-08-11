@@ -361,7 +361,11 @@ namespace RockWeb.Blocks.Finance
                         }
                     }
 
-                    bool requiresMicr = transactionToMatch.CurrencyTypeValue != null && transactionToMatch.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+                    bool requiresMicr = 
+                        transactionToMatch.FinancialPaymentDetail != null &&
+                        transactionToMatch.FinancialPaymentDetail.CurrencyTypeValue != null &&
+                        transactionToMatch.FinancialPaymentDetail.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+
                     nbNoMicrWarning.Visible = requiresMicr && string.IsNullOrWhiteSpace( checkMicrHashed );
 
                     if ( ddlIndividual.Items.Count == 2 )
@@ -619,7 +623,10 @@ namespace RockWeb.Blocks.Finance
             // if the transaction is matched to somebody, attempt to save it.  Otherwise, if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction
             if ( financialTransaction != null && authorizedPersonId.HasValue )
             {
-                bool requiresMicr = financialTransaction.CurrencyTypeValue != null && financialTransaction.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+                bool requiresMicr = 
+                    financialTransaction.FinancialPaymentDetail != null &&
+                    financialTransaction.FinancialPaymentDetail.CurrencyTypeValue != null &&
+                    financialTransaction.FinancialPaymentDetail.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
                 if ( requiresMicr && string.IsNullOrWhiteSpace( accountNumberSecured ) )
                 {
                     // should be showing already, but just in case

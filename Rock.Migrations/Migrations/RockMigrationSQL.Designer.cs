@@ -512,5 +512,26 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201508111253454_SiteMobilePage", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- FinancialTransaction
+        ///INSERT INTO [FinancialPaymentDetail] ( [CurrencyTypeValueId], [CreditCardTypeValueId], [Guid], [ForeignId] )
+        ///SELECT [CurrencyTypeValueId], [CreditCardTypeValueId], NEWID(), CAST( [Id] AS VARCHAR )
+        ///FROM [FinancialTransaction]
+        ///
+        ///UPDATE F
+        ///SET [FinancialPaymentDetailId] = D.[Id]
+        ///FROM [FinancialPaymentDetail] D
+        ///INNER JOIN [FinancialTransaction] F ON CAST( F.[ID] AS VARCHAR ) = D.[ForeignId]
+        ///WHERE D.[ForeignId] IS NOT NULL
+        ///
+        ///UPDATE [FinancialPaymentDetail]
+        ///SET [ForeignId] = NULL        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201508111636214_FinancialPaymentDetails {
+            get {
+                return ResourceManager.GetString("_201508111636214_FinancialPaymentDetails", resourceCulture);
+            }
+        }
     }
 }

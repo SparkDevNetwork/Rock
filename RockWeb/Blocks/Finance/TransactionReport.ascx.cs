@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Finance
                                             .Where( i => i.Selected == true )
                                             .Select( i => int.Parse( i.Value ) ).ToList();
 
-            var qry = transService.Queryable("TransactionDetails.Account")
+            var qry = transService.Queryable( "TransactionDetails.Account,FinancialPaymentDetail" )
                         .Where( t => 
                             t.TransactionDetails.Any( d => selectedAccountIds.Contains( d.AccountId ) ) && 
                             t.AuthorizedPersonAlias != null &&
@@ -245,17 +245,17 @@ namespace RockWeb.Blocks.Finance
             string currencyType = string.Empty;
             string creditCardType = string.Empty;
 
-            if ( txn.CurrencyTypeValueId.HasValue )
+            if ( txn.FinancialPaymentDetail != null && txn.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
             {
-                int currencyTypeId = txn.CurrencyTypeValueId.Value;
+                int currencyTypeId = txn.FinancialPaymentDetail.CurrencyTypeValueId.Value;
 
                 var currencyTypeValue = DefinedValueCache.Read( currencyTypeId );
                 currencyType = currencyTypeValue != null ? currencyTypeValue.Value : string.Empty;
 
 
-                if ( txn.CreditCardTypeValueId.HasValue )
+                if ( txn.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
                 {
-                    int creditCardTypeId = txn.CreditCardTypeValueId.Value;
+                    int creditCardTypeId = txn.FinancialPaymentDetail.CreditCardTypeValueId.Value;
                     var creditCardTypeValue = DefinedValueCache.Read( creditCardTypeId );
                     creditCardType = creditCardTypeValue != null ? creditCardTypeValue.Value : string.Empty;
 
