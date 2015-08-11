@@ -263,8 +263,8 @@ namespace Rock.Model
                         if ( selectComponent != null )
                         {
                             dynamicFields.Add( string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ), selectComponent.ColumnFieldType );
-                            var customSortProperties = selectComponent.SortProperties(reportField.Value.Selection);
-                            if (customSortProperties != null)
+                            var customSortProperties = selectComponent.SortProperties( reportField.Value.Selection );
+                            if ( customSortProperties != null )
                             {
                                 foreach ( var customSortProperty in customSortProperties.Split( ',' ) )
                                 {
@@ -307,7 +307,7 @@ namespace Rock.Model
                                 bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression( reportDbContext, idExpression, reportField.Value.Selection ?? string.Empty ) ) );
 
                                 var customSortProperties = selectComponent.SortProperties( reportField.Value.Selection );
-                                if ( customSortProperties != null )
+                                if ( !string.IsNullOrEmpty( customSortProperties ) )
                                 {
                                     foreach ( var customSortProperty in customSortProperties.Split( ',' ) )
                                     {
@@ -428,7 +428,7 @@ namespace Rock.Model
                 Expression.Constant(attributeValues),
                 Expression.Lambda<Func<AttributeValue, bool>>( andExpression, new ParameterExpression[] { attributeValueParameter })
             };
-            
+
             Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( AttributeValue ) }, match );
 
             var attributeCache = AttributeCache.Read( attributeId );
