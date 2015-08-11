@@ -1,34 +1,34 @@
 ﻿
 // Theme Colors *open*
-@theme-1: #ee7624; //orange
+@theme-1: #428bca; // bootstrap primary blue
 @theme-1-text: #fff;
 //--
-@theme-2: #282526; // dark brown
-@theme-2-text: #d3cec5;
+@theme-2: @gray-darker; // admin bar
+@theme-2-text: lighten(@gray-darker, 70%);
 //--
-@theme-3: #c2b8a7; // header tean
-@theme-3-text: #6a6a6a;
+@theme-3: lighten(@theme-1, 20%); // header
+@theme-3-text: darken(@theme-3, 55%);
 //--
-@theme-4: #dbd5cb; // page title
-@theme-4-text: #413c35;
+@theme-4: lighten(@theme-1, 30%); // page title
+@theme-4-text: darken(@theme-4, 50%);
 //--
-@theme-5: #e3ded7; // badge bar
-@theme-5-text: #817b72;
+@theme-5: lighten(@theme-1, 40%); // badge bar
+@theme-5-text: darken(@theme-5, 45%);
 //--
-@theme-6: #edeae6; // family bar
-@theme-6-text: #6a6a6a;
+@theme-6: lighten(@theme-1, 45%); // family bar
+@theme-6-text: darken(@theme-6, 40%);
 //--
-@theme-7: #8cc63e; // green
+@theme-7: spin(@theme-1, -135); // accent color
 @theme-7-text: #fff;
 //--
-@theme-8: #6a6a6a; // action buttons / type labels
+@theme-8: @gray-light; // action buttons / type labels
 @theme-8-text: #fff;
 
 // Text *open*
-@text-color:             #6a6a6a; // The default text color. #color
-@link-color:             #4f89bd; // The color for all links.
-@link-hover-color:       lighten(@link-color, 15%); // The rollover color for all links.
-@text-muted:             lighten(@text-color, 30%); // The muted color for text #color
+@text-color:             @gray-dark; // The default text color. #color
+@link-color:             @brand-primary; // The color for all links.
+@link-hover-color:       darken(@link-color, 15%); // The rollover color for all links.
+@text-muted:             @gray-light; // The muted color for text #color
 @text-selection-bg:      #afd074; // Text selection background color (used when people select text with the mouse).
 @text-selection-color:   #fff;    // Text selection text color (used when people select text with the mouse).
 @font-family-sans-serif: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif; // The base font to use for text. Be sure when defining this font that the various weights are configured.
@@ -79,7 +79,7 @@
 
 
 // Page Areas *open*
-@body-bg:           #f5f4f2; // The background color of the page.
+@body-bg:           #fff; // The background color of the page.
 
 //// Header
 @header-bg:         @theme-3; // The header background color.
@@ -181,7 +181,7 @@
 
 
 // Grid
-@grid-border-color: @panel-border;   // The border color of the grids cells.
+@grid-border-color: #ddd;   // The border color of the grids cells.
 @grid-padding: 8px;         // The default padding of the grid cells.
 
 //// Filter Section
@@ -189,8 +189,8 @@
 @grid-filter-color: @panel-heading-text-color; // The text color of the filter section of the grid.
 
 //// Grid Header
-@grid-column-header-bg: @panel-heading-bg;                        // The background color of the grid header.
-@grid-column-header-text-color: @panel-heading-text-color;     // The text color of the grid header.
+@grid-column-header-bg: transparent;                        // The background color of the grid header.
+@grid-column-header-text-color: @text-color;     // The text color of the grid header.
 @grid-column-header-font-size: 14px;                    // The font size of the grid header.
 @grid-column-header-font-weight: @font-weight-semibold; // The font weight of the grid header.
 @grid-column-header-border-color: @grid-border-color;    // The border color of the grid header.
@@ -350,8 +350,8 @@
 // Buttons
 @btn-font-weight:                normal;
 //--
-@btn-default-color:              @theme-3-text;
-@btn-default-bg:                 @theme-3;
+@btn-default-color:              #333;
+@btn-default-bg:                 #fff;
 @btn-default-border:             darken(@body-bg, 20%);
 //--
 @btn-primary-color:              #fff;
