@@ -6171,13 +6171,13 @@ a.link-block,
 #content-wrapper header .navbar-default .navbar-nav > .open > a,
 #content-wrapper header .navbar-default .navbar-nav > .open > a:hover,
 #content-wrapper header .navbar-default .navbar-nav > .open > a:focus {
-  background-color: #6a6a6a;
+  background-color: #282526;
 }
 #content-wrapper header .navbar-default .navbar-nav > li > a {
   color: #d3cec5;
 }
 #content-wrapper header .navbar-default .dropdown-menu li.divider {
-  background-color: #dedad4;
+  background-color: #a79d8b;
 }
 #content-wrapper #page-title {
   background-color: #dbd5cb;
@@ -6327,7 +6327,7 @@ body#splash.error #content #logo {
     color: #6a6a6a;
   }
   #content-wrapper header .navbar-default .dropdown-menu li.divider {
-    background-color: #777777;
+    background-color: #eeeeee;
   }
 }
 /*#endregion */
