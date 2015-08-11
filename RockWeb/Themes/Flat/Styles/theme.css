@@ -5289,15 +5289,6 @@ a.help {
 .panel-widget .panel-heading small {
   color: #666666;
 }
-.panel-info {
-  border-top-color: #c0cdd1;
-}
-.panel-info .panel-body {
-  background-color: #ffffff;
-}
-.panel-info .list-group-item {
-  background-color: #ffffff;
-}
 .panel-persondetails {
   border-color: #cfd9db;
   border-top-color: #c0cdd1;

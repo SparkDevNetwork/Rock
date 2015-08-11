@@ -5287,15 +5287,7 @@ a.help {
 .panel-widget .panel-heading small {
   color: #a6c8e6;
 }
-.panel-info {
-  border-top-color: #b9d4ec;
-}
-.panel-info .panel-body {
-  background-color: #ffffff;
-}
-.panel-info .list-group-item {
-  background-color: #ffffff;
-}
+
 .panel-persondetails {
   border-color: #cde1f1;
   border-top-color: #b9d4ec;
