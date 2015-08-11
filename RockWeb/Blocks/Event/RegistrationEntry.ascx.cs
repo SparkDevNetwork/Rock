@@ -1464,7 +1464,7 @@ namespace RockWeb.Blocks.Event
                 return false;
             }
 
-            if ( RegistrationInstanceState.Account == null )
+            if ( !RegistrationInstanceState.AccountId.HasValue || RegistrationInstanceState.Account == null )
             {
                 errorMessage = "There was a problem with the account configuration for this " + RegistrationTerm.ToLower();
                 return false;
@@ -1532,7 +1532,7 @@ namespace RockWeb.Blocks.Event
 
                 var transactionDetail = new FinancialTransactionDetail();
                 transactionDetail.Amount = RegistrationState.PaymentAmount;
-                transactionDetail.AccountId = RegistrationInstanceState.AccountId;
+                transactionDetail.AccountId = RegistrationInstanceState.AccountId.Value;
                 transactionDetail.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
                 transactionDetail.EntityId = registration.Id;
                 transaction.TransactionDetails.Add( transactionDetail );
@@ -2746,8 +2746,8 @@ namespace RockWeb.Blocks.Event
                         }
 
                         // If registration allows a minimum payment calculate that amount, otherwise use the discounted amount as minimum
-                        costSummary.MinPayment = RegistrationTemplate.MinimumInitialPayment != 0 ? 
-                            RegistrationTemplate.MinimumInitialPayment : costSummary.DiscountedCost;
+                        costSummary.MinPayment = RegistrationTemplate.MinimumInitialPayment.HasValue ? 
+                            RegistrationTemplate.MinimumInitialPayment.Value : costSummary.DiscountedCost;
 
                         costs.Add( costSummary );
                     }

@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int AccountId { get; set; }
+        public int? AccountId { get; set; }
 
         /// <summary />
         public string AdditionalConfirmationDetails { get; set; }
