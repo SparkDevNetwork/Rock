@@ -24,7 +24,7 @@ namespace Rock
     /// <summary>
     /// String extensions for HTML things
     /// </summary>
-    public static class StringHtmlExtensions
+    public static partial class ExtensionMethods
     {
         /// <summary>
         /// Converts string to a HTML title "<span class='first-word'>first-word</span> rest of string".

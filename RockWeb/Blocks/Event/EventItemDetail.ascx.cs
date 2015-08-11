@@ -38,13 +38,13 @@ using Attribute = Rock.Model.Attribute;
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Displays the details of the given calendar item.
+    /// Displays the details of the given calendar event item.
     /// </summary>
-    [DisplayName( "Calendar Item Detail" )]
+    [DisplayName( "Calendar Event Item Detail" )]
     [Category( "Event" )]
-    [Description( "Displays the details of the given calendar item." )]
+    [Description( "Displays the details of the given calendar event item." )]
 
-    public partial class CalendarItemDetail : RockBlock, IDetailBlock
+    public partial class EventItemDetail : RockBlock, IDetailBlock
     {
         #region Properties
 
@@ -312,7 +312,7 @@ namespace RockWeb.Blocks.Event
                 if ( eventItemId != 0 )
                 {
                     eventItem = eventItemService
-                        .Queryable( "EventItemAudiences,EventItemOccurrences.Linkages,EventItemOccurrences.EventItemSchedules" )
+                        .Queryable( "EventItemAudiences,EventItemOccurrences.Linkages,EventItemOccurrences" )
                         .Where( i => i.Id == eventItemId )
                         .FirstOrDefault();
                 }
@@ -592,6 +592,7 @@ namespace RockWeb.Blocks.Event
             if ( eventItem == null )
             {
                 eventItem = new EventItem { Id = 0, IsActive = true, Name = "" };
+                eventItem.IsApproved = _canApprove;
             }
 
             eventItem.LoadAttributes( rockContext );
@@ -644,6 +645,7 @@ namespace RockWeb.Blocks.Event
             if ( eventItem == null )
             {
                 eventItem = new EventItem();
+                eventItem.IsApproved = _canApprove;
             }
             if ( eventItem.Id == 0 )
             {
@@ -708,7 +710,7 @@ namespace RockWeb.Blocks.Event
 
             SetLabels( eventItem );
 
-            string imgTag = GetImageTag( eventItem.PhotoId, 150, 150, false );
+            string imgTag = GetImageTag( eventItem.PhotoId, 300, 300, false, true );
             if ( eventItem.PhotoId.HasValue )
             {
                 string imageUrl = ResolveRockUrl( String.Format( "~/GetImage.ashx?id={0}", eventItem.PhotoId.Value ) );

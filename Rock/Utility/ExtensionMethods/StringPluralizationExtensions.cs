@@ -22,7 +22,7 @@ namespace Rock
     /// <summary>
     /// 
     /// </summary>
-    public static class StringPluralizationExtensions
+    public static partial class ExtensionMethods
     {
         /// <summary>
         /// Pluralizes the specified string.

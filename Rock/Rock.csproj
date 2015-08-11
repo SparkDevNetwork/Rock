@@ -246,7 +246,7 @@
     <Compile Include="Jobs\SendGroupRequirementsNotification.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionActivityTypeService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionOpportunityCampusService.cs" />
-    <Compile Include="Model\CodeGenerated\ConnectionOpportunityGroupCampusService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionOpportunityConnectorGroupService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionOpportunityGroupService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionOpportunityService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionRequestActivityService.cs" />
@@ -263,7 +263,6 @@
     <Compile Include="Model\CodeGenerated\EventItemOccurrenceChannelItemService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemOccurrenceGroupMapService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemOccurrenceService.cs" />
-    <Compile Include="Model\CodeGenerated\EventItemScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\EventItemService.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
@@ -318,7 +317,7 @@
     <Compile Include="Model\ConnectionOpportunityCampus.cs" />
     <Compile Include="Model\ConnectionRequest.cs" />
     <Compile Include="Model\ConnectionOpportunityGroup.cs" />
-    <Compile Include="Model\ConnectionOpportunityGroupCampus.cs" />
+    <Compile Include="Model\ConnectionOpportunityConnectorGroups.cs" />
     <Compile Include="Model\ConnectionActivityType.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -339,7 +338,6 @@
     <Compile Include="Model\EventItemAudience.cs" />
     <Compile Include="Model\EventItemOccurrenceChannelItem.cs" />
     <Compile Include="Model\EventItemOccurrenceGroupMap.cs" />
-    <Compile Include="Model\EventItemSchedule.cs" />
     <Compile Include="Model\CampusService.partial.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceRequestService.cs" />
     <Compile Include="Model\CodeGenerated\BenevolenceResultService.cs" />

@@ -92,17 +92,14 @@
                             </div>
                         </Rock:PanelWidget>
 
-                        <Rock:PanelWidget ID="wpConnectionOpportunityGroupCampuses" runat="server" Title="Connector Groups">
-                            <div class="col-md-6">
-                                <Rock:GroupPicker ID="gpConnectorGroup" runat="server" Label="Global Connector Group" Help="The group in charge of managing requests for this opportunity" />
-                            </div>
+                        <Rock:PanelWidget ID="wpConnectionOpportunityConnectorGroups" runat="server" Title="Connector Groups">
                             <div class="grid">
-                                <Rock:Grid ID="gConnectionOpportunityGroupCampuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Campus Connector Group" ShowConfirmDeleteDialog="false">
+                                <Rock:Grid ID="gConnectionOpportunityConnectorGroups" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Campus Connector Group" ShowConfirmDeleteDialog="false">
                                     <Columns>
                                         <Rock:RockBoundField DataField="Group" HeaderText="Group" />
                                         <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
-                                        <Rock:EditField OnClick="gConnectionOpportunityGroupCampuses_Edit" />
-                                        <Rock:DeleteField OnClick="gConnectionOpportunityGroupCampuses_Delete" />
+                                        <Rock:EditField OnClick="gConnectionOpportunityConnectorGroups_Edit" />
+                                        <Rock:DeleteField OnClick="gConnectionOpportunityConnectorGroups_Delete" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -175,14 +172,15 @@
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgGroupCampusDetails" runat="server" ValidationGroup="CampusDetails" SaveButtonText="Add" OnSaveClick="dlgGroupCampusDetails_SaveClick" Title="Select Group">
+        <Rock:ModalDialog ID="dlgConnectorGroupDetails" runat="server" ValidationGroup="ConnectorGroup" SaveButtonText="Add" OnSaveClick="dlgConnectorGroupDetails_SaveClick" Title="Select Group">
             <Content>
+                <asp:ValidationSummary ID="valConnectorGroup" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="ConnectorGroup" />
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:GroupPicker ID="gpGroup" runat="server" Label="Connector Group" ValidationGroup="CampusDetails" />
+                        <Rock:GroupPicker ID="gpGroup" runat="server" Label="Connector Group" ValidationGroup="ConnectorGroup" Required="true"  />
                     </div>
                     <div class="col-md-6">
-                        <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" ValidationGroup="CampusDetails" Required="true" />
+                        <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" ValidationGroup="ConnectorGroup"/>
                     </div>
                 </div>
             </Content>

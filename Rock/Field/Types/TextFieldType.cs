@@ -125,10 +125,23 @@ namespace Rock.Field.Types
 
             if ( condensed )
             {
-                return System.Web.HttpUtility.HtmlEncode( value ).Truncate( 100 );
+                return value.Truncate( 100 );
             }
 
-            return System.Web.HttpUtility.HtmlEncode( value );
+            return value;
+        }
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            return System.Web.HttpUtility.HtmlEncode( FormatValue( parentControl, value, configurationValues, condensed ) );
         }
 
         #endregion
@@ -193,6 +206,28 @@ namespace Rock.Field.Types
         public override bool HasFilterControl()
         {
             return true;
+        }
+
+        /// <summary>
+        /// Gets the filter values.
+        /// </summary>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode )
+        {
+            // If this is a simple filter, only return values if something was actually entered into the filter's text field
+            var values = base.GetFilterValues( filterControl, configurationValues, filterMode );
+            if ( filterMode == FilterMode.SimpleFilter &&
+                values.Count == 2 &&
+                values[0].ConvertToEnum<ComparisonType>() == ComparisonType.Contains &&
+                values[1] == "" )
+            {
+                return new List<string>();
+            }
+
+            return values;
         }
 
         /// <summary>

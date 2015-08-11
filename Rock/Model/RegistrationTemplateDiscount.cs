@@ -98,6 +98,29 @@ namespace Rock.Model
         /// </value>
         public virtual RegistrationTemplate RegistrationTemplate { get; set; }
 
+        /// <summary>
+        /// Gets the discount string.
+        /// </summary>
+        /// <value>
+        /// The discount string.
+        /// </value>
+        [NotMapped]
+        public virtual string DiscountString
+        {
+            get
+            {
+                if ( DiscountAmount != 0.0m )
+                {
+                    return DiscountAmount.ToString( "C2" );
+                }
+                else if ( DiscountPercentage != 0.0m )
+                {
+                    return DiscountPercentage.ToString( "P0" );
+                }
+                return string.Empty;
+            }
+        }
+
         #endregion
 
         #region Methods

@@ -295,17 +295,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            ListControl filterValueControl;
-
-            if ( filterMode == FilterMode.SimpleFilter )
-            {
-
-                filterValueControl = new RockRadioButtonList();
-            }
-            else
-            {
-                filterValueControl = new RockDropDownList();
-            }
+            ListControl filterValueControl = new RockDropDownList();
 
             filterValueControl.ID = string.Format( "{0}_ctlCompareValue", id );
             filterValueControl.AddCssClass( "js-filter-control" );
@@ -389,6 +379,49 @@ namespace Rock.Field.Types
 
             return string.Empty;
         }
+
+        /// <summary>
+        /// Gets the filter value.
+        /// </summary>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode )
+        {
+            if (filterMode == FilterMode.SimpleFilter)
+            {
+                var values = new List<string>();
+
+                if ( filterControl != null )
+                {
+                    try
+                    {
+                        // hard code to EqualTo when in SimpleFilter mode (the comparison control is not visible)
+                        string compare = ComparisonType.EqualTo.ConvertToInt().ToString();
+                        string value = GetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues );
+
+                        if ( value != null )
+                        {
+                            // since SimpleFilter is limit to just IsEqual, only return FilterValues if they actually picked something
+                            values.Add( compare );
+                            values.Add( value );
+                        }
+                    }
+                    catch
+                    {
+                        // intentionally ignore error
+                    }
+                }
+
+                return values;
+            }
+            else
+            {
+                return base.GetFilterValues( filterControl, configurationValues, filterMode );
+            }
+        }
+
 
         /// <summary>
         /// Sets the filter value value.

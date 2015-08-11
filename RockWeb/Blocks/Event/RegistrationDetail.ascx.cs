@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Event
                     registration.FirstName = tbFirstName.Text;
                     registration.LastName = tbLastName.Text;
                     registration.ConfirmationEmail = ebConfirmationEmail.Text;
-                    registration.DiscountCode = tbDiscountCode.Text;
+                    registration.DiscountCode = ddlDiscountCode.SelectedValue;
                     registration.DiscountPercentage = nbDiscountPercentage.Text.AsDecimal() * 0.01m;
                     registration.DiscountAmount = cbDiscountAmount.Text.AsDecimal();
 
@@ -439,6 +439,25 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        protected void ddlDiscountCode_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            RegistrationTemplateDiscount discount = null;
+
+            string code = ddlDiscountCode.SelectedValue;
+            if ( !string.IsNullOrWhiteSpace( code ) )
+            {
+                if ( RegistrationTemplateState != null )
+                {
+                    discount = RegistrationTemplateState.Discounts
+                        .Where( d => d.Code.Equals( code, StringComparison.OrdinalIgnoreCase ) )
+                        .FirstOrDefault();
+                }
+            }
+
+            nbDiscountPercentage.Text = discount != null && discount.DiscountPercentage != 0.0m ? (discount.DiscountPercentage * 100.0m).ToString("N0") : "";
+            cbDiscountAmount.Text = discount != null && discount.DiscountAmount != 0.0m ? discount.DiscountAmount.ToString( "N2" ) : "";
+        }
+        
         protected void lbResendConfirmation_Click( object sender, EventArgs e )
         {
             if ( RegistrationId.HasValue )
@@ -770,9 +789,29 @@ namespace RockWeb.Blocks.Event
             tbFirstName.Text = registration.FirstName;
             tbLastName.Text = registration.LastName;
             ebConfirmationEmail.Text = registration.ConfirmationEmail;
-            tbDiscountCode.Text = registration.DiscountCode;
-            nbDiscountPercentage.Text = nbDiscountPercentage.Text = ( registration.DiscountPercentage * 100.0m ).ToString( "N0" );
-            cbDiscountAmount.Text = registration.DiscountAmount.ToString();
+
+            var discountCodes = new Dictionary<string, string>();
+            if ( RegistrationTemplateState != null )
+            {
+                foreach( var discount in RegistrationTemplateState.Discounts.OrderBy( d => d.Code ) )
+                {
+                    discountCodes.AddOrIgnore( discount.Code, discount.Code + ( string.IsNullOrWhiteSpace( discount.DiscountString ) ? "" :
+                        string.Format( " ({0})", discount.DiscountString ) ) );
+                }
+            }
+
+            if ( !string.IsNullOrWhiteSpace( registration.DiscountCode ))
+            {
+                discountCodes.AddOrIgnore( registration.DiscountCode, registration.DiscountCode );
+            }
+
+            ddlDiscountCode.DataSource = discountCodes;
+            ddlDiscountCode.DataBind();
+            ddlDiscountCode.Items.Insert( 0, new ListItem( "", "" ) );
+            ddlDiscountCode.SetValue( registration.DiscountCode );
+
+            nbDiscountPercentage.Text = registration.DiscountPercentage != 0.0m ? ( registration.DiscountPercentage * 100.0m ).ToString( "N0" ) : "";
+            cbDiscountAmount.Text = registration.DiscountAmount != 0.0m ? registration.DiscountAmount.ToString( "N2" ) : "";
 
             RegistrantsState = null;
             BuildRegistrationControls( true );
@@ -940,7 +979,7 @@ namespace RockWeb.Blocks.Event
                 return false;
             }
 
-            if ( registration == null || registration.RegistrationInstance == null || registration.RegistrationInstance.Account == null )
+            if ( registration == null || registration.RegistrationInstance == null || !registration.RegistrationInstance.AccountId.HasValue || registration.RegistrationInstance.Account == null )
             {
                 errorMessage = "There was a problem with the account configuration for this registration.";
                 return false;
@@ -1008,7 +1047,7 @@ namespace RockWeb.Blocks.Event
 
                 var transactionDetail = new FinancialTransactionDetail();
                 transactionDetail.Amount = amount;
-                transactionDetail.AccountId = registration.RegistrationInstance.AccountId;
+                transactionDetail.AccountId = registration.RegistrationInstance.AccountId.Value;
                 transactionDetail.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
                 transactionDetail.EntityId = registration.Id;
                 transaction.TransactionDetails.Add( transactionDetail );

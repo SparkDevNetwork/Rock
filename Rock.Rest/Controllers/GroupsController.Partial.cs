@@ -304,6 +304,7 @@ namespace Rock.Rest.Controllers
                             guestFamilyMember.CanCheckin = guests.Contains(familyMember.PersonId);
                             guestFamilyMember.Role = familyMember.GroupRole.Name;
                             guestFamilyMember.Age = familyMember.Person.Age;
+                            guestFamilyMember.Gender = familyMember.Person.Gender;
 
                             guestFamily.FamilyMembers.Add(guestFamilyMember);
                         }
@@ -806,6 +807,8 @@ namespace Rock.Rest.Controllers
             public int? Age { get; set; }
 
             public string Role { get; set; }
+
+            public Gender Gender { get; set; }
         }
 
         /// <summary>

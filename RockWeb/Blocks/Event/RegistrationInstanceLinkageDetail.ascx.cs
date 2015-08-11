@@ -199,7 +199,7 @@ namespace RockWeb.Blocks.Event
                 using ( var rockContext = new RockContext() )
                 {
                     ddlCalendarItem.DataSource = new EventCalendarItemService( rockContext )
-                        .Queryable( "EventItem.EventItemOccurrencees.EventItemSchedules.Schedule" )
+                        .Queryable( "EventItem.EventItemOccurrences.Schedule" )
                         .AsNoTracking()
                         .Where( i =>
                             i.EventCalendarId == calendarId.Value &&

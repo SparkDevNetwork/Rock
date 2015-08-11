@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Event
             // Grab events
             // NOTE: Do not use AsNoTracking() so that things can be lazy loaded if needed
             var qry = eventItemOccurrenceService
-                    .Queryable( "EventItem, EventItem.EventItemAudiences,EventItemSchedules.Schedule" )
+                    .Queryable( "EventItem, EventItem.EventItemAudiences,Schedule" )
                     .Where( m =>
                         m.EventItem.EventCalendarItems.Any( i => i.EventCalendarId == eventCalendar.Id ) &&
                         m.EventItem.IsActive );

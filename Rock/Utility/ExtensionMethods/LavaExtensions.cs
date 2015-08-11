@@ -31,7 +31,7 @@ namespace Rock
     /// <summary>
     /// Rock Lava related extensions
     /// </summary>
-    public static class LavaExtensions
+    public static partial class ExtensionMethods
     {
         #region Lava Extensions
 

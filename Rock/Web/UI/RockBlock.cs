@@ -772,8 +772,9 @@ namespace Rock.Web.UI
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
         /// <param name="showPlaceholderImage">if set to <c>true</c> [show placeholder image].</param>
+        /// <param name="isThumbnail">if set to <c>true</c> [is thumbnail].</param>
         /// <returns></returns>
-        public string GetImageTag( int? imageId, int? maxWidth = null, int? maxHeight = null, bool showPlaceholderImage = true )
+        public string GetImageTag( int? imageId, int? maxWidth = null, int? maxHeight = null, bool showPlaceholderImage = true, bool isThumbnail = false )
         {
             var photoUrl = new StringBuilder();
 
@@ -792,7 +793,14 @@ namespace Rock.Web.UI
                     photoUrl.AppendFormat( "&maxheight={0}", maxHeight.Value );
                 }
 
-                return string.Format( "<img src='{0}'/>", photoUrl.ToString() );
+                if ( isThumbnail )
+                {
+                    return string.Format( "<img class='img-thumbnail' src='{0}'/>", photoUrl.ToString() );
+                }
+                else
+                {
+                    return string.Format( "<img src='{0}'/>", photoUrl.ToString() );
+                }
             }
 
             if ( showPlaceholderImage )
@@ -808,7 +816,15 @@ namespace Rock.Web.UI
                         maxHeight.HasValue ? "max-height:" + maxHeight.Value.ToString() + "px;" : "" );
                 }
 
-                return string.Format( "<img src='{0}'{1}/>", photoUrl.ToString(), styleString );
+                if ( isThumbnail )
+                {
+                    return string.Format( "<img class='img-thumbnail' src='{0}'{1}/>", photoUrl.ToString(), styleString );
+                }
+                else
+                {
+                    return string.Format( "<img src='{0}'{1}/>", photoUrl.ToString(), styleString );
+                }
+                
             }
 
             return string.Empty;

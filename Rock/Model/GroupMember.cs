@@ -436,7 +436,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Calculates and Updates the GroupMemberRequirements for the GroupMember, then saves the changes to the database
+        /// If Group has GroupRequirements, will calculate and update the GroupMemberRequirements for the GroupMember, then save the changes to the database
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="saveChanges">if set to <c>true</c> [save changes].</param>

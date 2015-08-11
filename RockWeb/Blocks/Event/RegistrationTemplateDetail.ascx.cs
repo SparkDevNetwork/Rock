@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Event
 </p>
 
 <p>
-    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 0 )]
@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.Event
 </p>
 
 <p>
-    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 1 )]
@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.Event
 
 <p>
     A confirmation email has been sent to {{ Registration.ConfirmationEmail }}. If you have any questions 
-    please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+    please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 ", "", 2 )]
     public partial class RegistrationTemplateDetail : RockBlock
@@ -605,7 +605,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.MaxRegistrants = nbMaxRegistrants.Text.AsInteger();
             RegistrationTemplate.RegistrantsSameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
             RegistrationTemplate.Cost = cbCost.Text.AsDecimal();
-            RegistrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimal();
+            RegistrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
             RegistrationTemplate.FinancialGatewayId = fgpFinancialGateway.SelectedValueAsInt();
 
             RegistrationTemplate.ConfirmationFromName = tbConfirmationFromName.Text;
@@ -1638,11 +1638,11 @@ namespace RockWeb.Blocks.Event
                 registrationTemplate.Id = 0;
                 registrationTemplate.IsActive = true;
                 registrationTemplate.CategoryId = parentCategoryId;
-                registrationTemplate.ConfirmationFromName = "{{ RegistrationInstance.ContactName }}";
+                registrationTemplate.ConfirmationFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
                 registrationTemplate.ConfirmationFromEmail = "{{ RegistrationInstance.ContactEmail }}";
                 registrationTemplate.ConfirmationSubject = "{{ RegistrationInstance.Name }} Confirmation";
                 registrationTemplate.ConfirmationEmailTemplate = GetAttributeValue( "DefaultConfirmationEmail" );
-                registrationTemplate.ReminderFromName = "{{ RegistrationInstance.ContactName }}";
+                registrationTemplate.ReminderFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
                 registrationTemplate.ReminderFromEmail = "{{ RegistrationInstance.ContactEmail }}";
                 registrationTemplate.ReminderSubject = "{{ RegistrationInstance.Name }} Reminder";
                 registrationTemplate.ReminderEmailTemplate = GetAttributeValue( "DefaultReminderEmail" );
@@ -1828,7 +1828,7 @@ namespace RockWeb.Blocks.Event
             nbMaxRegistrants.Text = RegistrationTemplate.MaxRegistrants.ToString();
             rblRegistrantsInSameFamily.SetValue( RegistrationTemplate.RegistrantsSameFamily.ConvertToInt() );
             cbCost.Text = RegistrationTemplate.Cost.ToString();
-            cbMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.ToString();
+            cbMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.ToString( "N2" ) : "";
             fgpFinancialGateway.SetValue( RegistrationTemplate.FinancialGatewayId );
 
             tbConfirmationFromName.Text = RegistrationTemplate.ConfirmationFromName;
@@ -1912,8 +1912,8 @@ namespace RockWeb.Blocks.Event
 
             lCost.Text = RegistrationTemplate.Cost.ToString( "C2" );
 
-            lMinimumInitialPayment.Visible = RegistrationTemplate.MinimumInitialPayment > 0.0m;
-            lMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.ToString( "C2" );
+            lMinimumInitialPayment.Visible = RegistrationTemplate.MinimumInitialPayment.HasValue;
+            lMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.ToString( "C2" ) : "";
 
             rFees.DataSource = RegistrationTemplate.Fees.OrderBy( f => f.Order ).ToList();
             rFees.DataBind();
