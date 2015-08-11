@@ -64,7 +64,7 @@ namespace Rock.Migrations
             {
                 if ( !string.IsNullOrWhiteSpace( encryptedMicr ) )
                 {
-                    string clearMicr = Rock.Security.Encryption.DecryptString( encryptedMicr );
+                    string clearMicr = Rock.Security.Encryption.DecryptString( encryptedMicr ) ?? string.Empty;
                     var parts = clearMicr.Split( '_' );
                     if ( parts.Length >= 2 && ( parts[0] != parts[0].Trim() || parts[1] != parts[1].Trim() ) )
                     {
