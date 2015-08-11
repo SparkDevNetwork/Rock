@@ -130,6 +130,21 @@ a.help {
   opacity: @modal-backdrop-opacity;
 }
 
+// change the color of the none selected links
+// by default bootsrap does not allow the color of a link roll-over to be a different color. Modified it to allow this.
+.nav-pills {
+    > li {
+        > a {
+            color: @nav-pills-link-color;
+
+            &:hover {
+                color: @nav-pills-active-link-hover-color;
+                background-color: @nav-pills-active-link-hover-bg;
+            }
+        }
+    }
+}
+
 .form-right {
     .clearfix();
     text-align: right;
