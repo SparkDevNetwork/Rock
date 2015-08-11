@@ -26,7 +26,7 @@ namespace Rock
     /// <summary>
     /// JSON Extensions
     /// </summary>
-    public static class JsonExtensions
+    public static partial class ExtensionMethods
     {
         #region Json Extensions
 

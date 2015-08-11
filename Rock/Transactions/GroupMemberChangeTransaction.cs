@@ -25,7 +25,7 @@ using Rock.Model;
 namespace Rock.Transactions
 {
     /// <summary>
-    /// Launches a group member change workflow
+    /// Launches a group member change workflow. Will also recalculate group member requirements when a member is added
     /// </summary>
     public class GroupMemberChangeTransaction : ITransaction
     {
@@ -43,7 +43,7 @@ namespace Rock.Transactions
         /// Initializes a new instance of the <see cref="GroupMemberChangeTransaction"/> class.
         /// </summary>
         /// <param name="entry">The entry.</param>
-        public GroupMemberChangeTransaction ( DbEntityEntry entry )
+        public GroupMemberChangeTransaction( DbEntityEntry entry )
         {
             // If entity was a group member, save the values
             var groupMember = entry.Entity as GroupMember;
@@ -84,10 +84,28 @@ namespace Rock.Transactions
         }
 
         /// <summary>
-        /// Execute method to check for any workflows to launch.
+        /// Execute method to check for any workflows to launch and will also recalculate group member requirements when a member is added
         /// </summary>
         public void Execute()
         {
+            // if a GroupMember is getting added, call CalculateRequirements to make sure that group member requirements are calculated (if the group has requirements)
+            if ( State == EntityState.Added )
+            {
+                if ( GroupMemberGuid.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var groupMember = new GroupMemberService( rockContext ).Get( GroupMemberGuid.Value );
+                        if ( groupMember != null )
+                        {
+                            groupMember.CalculateRequirements( rockContext, true );
+                        }
+                    }
+                }
+            }
+
+            GroupMemberWorkflowTriggerType[] groupMemberWorkflowChangeTriggers = new GroupMemberWorkflowTriggerType[] { GroupMemberWorkflowTriggerType.MemberAddedToGroup, GroupMemberWorkflowTriggerType.MemberRemovedFromGroup, GroupMemberWorkflowTriggerType.MemberStatusChanged, GroupMemberWorkflowTriggerType.MemberRoleChanged };
+
             // Verify that valid ids were saved
             if ( GroupId.HasValue && PersonId.HasValue )
             {
@@ -100,7 +118,7 @@ namespace Rock.Transactions
                     // Get the triggers associated to the group 
                     var groupTriggers = cachedTriggers
                         .Where( w =>
-                            w.TriggerType != GroupMemberWorkflowTriggerType.MemberAttendedGroup &&
+                            groupMemberWorkflowChangeTriggers.Contains( w.TriggerType ) &&
                             w.GroupId.HasValue &&
                             w.GroupId.Value == GroupId.Value )
                         .OrderBy( w => w.Order )
@@ -109,7 +127,7 @@ namespace Rock.Transactions
                     // Get any triggers associated to a group type ( if any are found, will then filter by group type )
                     var groupTypeTriggers = cachedTriggers
                         .Where( w =>
-                            w.TriggerType != GroupMemberWorkflowTriggerType.MemberAttendedGroup &&
+                            groupMemberWorkflowChangeTriggers.Contains( w.TriggerType ) &&
                             w.GroupTypeId.HasValue )
                         .OrderBy( w => w.Order )
                         .ToList();
@@ -296,24 +314,7 @@ namespace Rock.Transactions
                 }
 
                 List<string> workflowErrors;
-                if ( workflow.Process( rockContext, groupMember, out workflowErrors ) )
-                {
-                    if ( workflow.IsPersisted || workflowType.IsPersisted )
-                    {
-                        var workflowService = new Rock.Model.WorkflowService( rockContext );
-                        workflowService.Add( workflow );
-
-                        rockContext.WrapTransaction( () =>
-                        {
-                            rockContext.SaveChanges();
-                            workflow.SaveAttributeValues( rockContext );
-                            foreach ( var activity in workflow.Activities )
-                            {
-                                activity.SaveAttributeValues( rockContext );
-                            }
-                        } );
-                    }
-                }
+                new Rock.Model.WorkflowService( rockContext ).Process( workflow, groupMember, out workflowErrors );
             }
         }
     }

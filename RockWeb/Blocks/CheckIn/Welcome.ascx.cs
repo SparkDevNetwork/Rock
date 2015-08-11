@@ -305,7 +305,7 @@ if ($ActiveWhen.text() != '')
                                 sUl.AddCssClass( "kioskmanager-count-schedules" );
                                 gLi.Controls.Add( sUl );
 
-                                foreach ( var scheduleAttendance in groupAttendance.Schedules )		
+                                foreach ( var scheduleAttendance in groupAttendance.Schedules.Where( s => s.IsActive ) )		
                                 {		
                                     var sLi = new HtmlGenericControl( "li" );		
                                     sUl.Controls.Add( sLi );

@@ -80,10 +80,10 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets a collection of the <see cref="Rock.Model.Group">EventCalendarItems</see> that belong to this EventCalendar.
+        /// Gets or sets the event calendar items.
         /// </summary>
         /// <value>
-        /// A collection containing a collection of the <see cref="Rock.Model.Group">EventCalendarItems</see> that belong to this EventCalendar.
+        /// The event calendar items.
         /// </value>
         public virtual ICollection<EventCalendarItem> EventCalendarItems
         {
@@ -91,6 +91,19 @@ namespace Rock.Model
             set { _eventCalenderItems = value; }
         }
         private ICollection<EventCalendarItem> _eventCalenderItems;
+
+        /// <summary>
+        /// Gets or sets the content channels.
+        /// </summary>
+        /// <value>
+        /// The content channels.
+        /// </value>
+        public virtual ICollection<EventCalendarContentChannel> ContentChannels
+        {
+            get { return _contentChannels ?? ( _contentChannels = new Collection<EventCalendarContentChannel>() ); }
+            set { _contentChannels = value; }
+        }
+        private ICollection<EventCalendarContentChannel> _contentChannels;
 
         #endregion
 

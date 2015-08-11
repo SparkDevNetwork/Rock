@@ -223,7 +223,8 @@ namespace RockWeb.Blocks.Reporting
                 metric.DataViewId = null;
             }
 
-            if ( rblScheduleSelect.SelectedValueAsEnum<ScheduleSelectionType>() == ScheduleSelectionType.NamedSchedule )
+            var scheduleSelectionType = rblScheduleSelect.SelectedValueAsEnum<ScheduleSelectionType>();
+            if ( scheduleSelectionType == ScheduleSelectionType.NamedSchedule )
             {
                 metric.ScheduleId = ddlSchedule.SelectedValueAsId();
             }
@@ -264,7 +265,11 @@ namespace RockWeb.Blocks.Reporting
                     schedule.CategoryId = metricScheduleCategoryId;
                 }
 
-                schedule.iCalendarContent = sbSchedule.iCalendarContent;
+                // if the schedule was a unique schedule (configured in the Metric UI, set the schedule's ical content to the schedule builder UI's value
+                if ( scheduleSelectionType == ScheduleSelectionType.Unique )
+                {
+                    schedule.iCalendarContent = sbSchedule.iCalendarContent;
+                }
 
                 if ( !schedule.HasSchedule() )
                 {
@@ -358,6 +363,7 @@ namespace RockWeb.Blocks.Reporting
             }
 
             qryParams["MetricCategoryId"] = hfMetricCategoryId.Value;
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
 
             NavigateToPage( RockPage.Guid, qryParams );
         }

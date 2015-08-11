@@ -225,11 +225,29 @@
                                         <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                                     </div>
                                 </div>
-                                <Rock:RockControlWrapper id="rcwLinkedRegistrations" runat="server" Label="Linked Registrations">
+                                <Rock:RockControlWrapper id="rcwLinkedRegistrations" runat="server" Label="Registrations">
                                     <ul class="list-unstyled">
                                         <asp:Repeater ID="rptLinkedRegistrations" runat="server">
                                             <ItemTemplate>
-                                                <li><a href='<%# RegistrationInstanceUrl( (int)Eval("RegistrationInstanceId" ) ) %>'><%# Eval("Title") %></a></li>
+                                                <li><a href='<%# RegistrationInstanceUrl( (int)Eval("Key" ) ) %>'><%# Eval("Value") %></a></li>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </ul>
+                                </Rock:RockControlWrapper>
+                                <Rock:RockControlWrapper id="rcwEventItemOccurrences" runat="server" Label="Event Item Occurrences">
+                                    <ul class="list-unstyled">
+                                        <asp:Repeater ID="rptEventItemOccurrences" runat="server">
+                                            <ItemTemplate>
+                                                <li><a href='<%# EventItemOccurrenceUrl( (int)Eval("Key" ) ) %>'><%# Eval("Value") %></a></li>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </ul>
+                                </Rock:RockControlWrapper>
+                                <Rock:RockControlWrapper id="rcwContentItems" runat="server" Label="Content Items">
+                                    <ul class="list-unstyled">
+                                        <asp:Repeater ID="rptContentItems" runat="server">
+                                            <ItemTemplate>
+                                                <li><a href='<%# ContentItemUrl( (int)Eval("Key" ) ) %>'><%# Eval("Value") %></a></li>
                                             </ItemTemplate>
                                         </asp:Repeater>
                                     </ul>
@@ -342,8 +360,12 @@
                         <Rock:RockDropDownList ID="ddlTriggerToStatus" runat="server" Label="To Status of" ValidationGroup="Trigger" />
                         <Rock:RockDropDownList ID="ddlTriggerFromRole" runat="server" Label="From Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
                         <Rock:RockDropDownList ID="ddlTriggerToRole" runat="server" Label="To Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
-                        <Rock:RockCheckBox ID="cbTriggerFirstTime" runat="server" Label="First Time" Text="Yes" ValidationGroup="Trigger" 
-                            Help="Select this option if workflow should only be started when person attends the group for the first time. Leave this option unselected if the workflow should be started whenever a person attends the group."/>
+                        <Rock:RockCheckBox ID="cbTriggerFirstTime" runat="server" Label="First Time" Text="Yes" ValidationGroup="Trigger"
+                            Help="Select this option if workflow should only be started when person attends the group for the first time. Leave this option unselected if the workflow should be started whenever a person attends the group." />
+                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereShowNote" runat="server" Label="Show Note" Text="Yes" ValidationGroup="Trigger"
+                            Help="Select this option if workflow should show UI for entering a note when the member is placed." />
+                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereRequireNote" runat="server" Label="Require Note" Text="Yes" ValidationGroup="Trigger"
+                            Help="Select this option if workflow should show UI for entering a note and make it required when the member is placed." />
                     </div>
                 </div>
             </Content>

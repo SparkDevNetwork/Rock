@@ -48,6 +48,8 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Group Map Page", "The page to display detailed group map.", true, "", "", 6 )]
     [LinkedPage( "Attendance Page", "The page to display attendance list.", false, "", "", 7 )]
     [LinkedPage( "Registration Instance Page", "The page to display registration details.", false, "", "", 7 )]
+    [LinkedPage( "Event Item Occurrence Page", "The page to display event item occurrence details.", false, "", "", 8 )]
+    [LinkedPage( "Content Item Page", "The page to display registration details.", false, "", "", 9 )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -1403,24 +1405,53 @@ namespace RockWeb.Blocks.Groups
 
             string groupMapUrl = LinkedPageUrl( "GroupMapPage", pageParams );
 
-            if ( group.Linkages.Any() )
+            var registrations = new Dictionary<int, string>();
+            var eventItemOccurrences = new Dictionary<int, string>();
+            var contentItems = new Dictionary<int, string>();
+
+            var linkages = group.Linkages.ToList();
+            if ( linkages.Any() )
             {
-                rcwLinkedRegistrations.Visible = true;
-                rptLinkedRegistrations.DataSource = group.Linkages
-                    .Where( l => l.RegistrationInstanceId.HasValue )
+                linkages
+                    .Where( l => 
+                        l.RegistrationInstanceId.HasValue )
                     .ToList()
-                    .Select( l => new
-                    {
-                        RegistrationInstanceId = l.RegistrationInstanceId.Value,
-                        Title = l.ToString( true, true, false )
-                    } )
-                    .ToList();
+                    .ForEach( l => registrations
+                        .AddOrIgnore( l.RegistrationInstanceId.Value, l.ToString( true, true, false ) ) );
+
+                linkages
+                    .Where( l => 
+                        l.EventItemOccurrence != null && 
+                        l.EventItemOccurrence.EventItem != null )
+                    .ToList()
+                    .ForEach( l => eventItemOccurrences
+                        .AddOrIgnore( l.EventItemOccurrence.Id, string.Format( "{0} - {1}",
+                            l.EventItemOccurrence.EventItem.Name,
+                            l.EventItemOccurrence.Campus != null ? l.EventItemOccurrence.Campus.Name : "All Campuses" ) ) );
+
+                linkages
+                    .Where( l => 
+                        l.EventItemOccurrence != null && 
+                        l.EventItemOccurrence.EventItem != null && 
+                        l.EventItemOccurrence.ContentChannelItems.Any() )
+                    .SelectMany( l => l.EventItemOccurrence.ContentChannelItems.Where( i => i.ContentChannelItem != null ) )
+                    .ToList()
+                    .ForEach( i => contentItems
+                        .AddOrIgnore( i.ContentChannelItem.Id, i.ContentChannelItem.Title ) );
+
+                rptLinkedRegistrations.DataSource = registrations;
                 rptLinkedRegistrations.DataBind();
+
+                rptEventItemOccurrences.DataSource = eventItemOccurrences;
+                rptEventItemOccurrences.DataBind();
+
+                rptContentItems.DataSource = contentItems;
+                rptContentItems.DataBind();
             }
-            else
-            {
-                rcwLinkedRegistrations.Visible = false;
-            }
+
+            rcwLinkedRegistrations.Visible = registrations.Any();
+            rcwEventItemOccurrences.Visible = eventItemOccurrences.Any();
+            rcwContentItems.Visible = contentItems.Any();
 
             // Get Map Style
             phMaps.Controls.Clear();
@@ -1448,7 +1479,7 @@ namespace RockWeb.Blocks.Groups
                                 var literalcontrol = new Literal()
                                 {
                                     Text = string.Format(
-                                    "<div class='group-location-map'>{0}<a href='{1}'><img src='{2}'/></a></div>",
+                                    "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a></div>",
                                     groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Value + "</h4>" ) : string.Empty,
                                     groupMapUrl,
                                     mapLink ),
@@ -1464,7 +1495,7 @@ namespace RockWeb.Blocks.Groups
                                 mapLink += "&sensor=false&size=350x200&format=png";
                                 phMaps.Controls.Add(
                                     new LiteralControl( string.Format(
-                                        "<div class='group-location-map'>{0}<a href='{1}'><img src='{2}'/></a></div>",
+                                        "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a></div>",
                                         groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Value + "</h4>" ) : string.Empty,
                                         groupMapUrl,
                                         mapLink ) ) );
@@ -1566,6 +1597,20 @@ namespace RockWeb.Blocks.Groups
             var qryParams = new Dictionary<string, string>();
             qryParams.Add( "RegistrationInstanceId", registrationInstanceId.ToString() );
             return LinkedPageUrl( "RegistrationInstancePage", qryParams );
+        }
+
+        protected string EventItemOccurrenceUrl( int eventItemOccurrenceId )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "EventItemOccurrenceId", eventItemOccurrenceId.ToString() );
+            return LinkedPageUrl( "EventItemOccurrencePage", qryParams );
+        }
+
+        protected string ContentItemUrl( int contentItemId )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "ContentItemId", contentItemId.ToString() );
+            return LinkedPageUrl( "ContentItemPage", qryParams );
         }
 
         /// <summary>
@@ -2502,6 +2547,8 @@ namespace RockWeb.Blocks.Groups
             ddlTriggerFromStatus.SetValue( qualifierParts.Length > 2 ? qualifierParts[2] : string.Empty );
             ddlTriggerFromRole.SetValue( qualifierParts.Length > 3 ? qualifierParts[3] : string.Empty );
             cbTriggerFirstTime.Checked = qualifierParts.Length > 4 ? qualifierParts[4].AsBoolean() : false;
+            cbTriggerPlacedElsewhereShowNote.Checked = qualifierParts.Length > 5 ? qualifierParts[5].AsBoolean() : false;
+            cbTriggerPlacedElsewhereRequireNote.Checked = qualifierParts.Length > 6 ? qualifierParts[6].AsBoolean() : false;
 
             ShowTriggerQualifierControls();
             ShowDialog( "MemberWorkflowTriggers", true );
@@ -2528,6 +2575,9 @@ namespace RockWeb.Blocks.Groups
 
                         cbTriggerFirstTime.Visible = false;
 
+                        cbTriggerPlacedElsewhereShowNote.Visible = false;
+                        cbTriggerPlacedElsewhereRequireNote.Visible = false;
+
                         break;
                     }
 
@@ -2540,6 +2590,25 @@ namespace RockWeb.Blocks.Groups
                         ddlTriggerToRole.Visible = false;
 
                         cbTriggerFirstTime.Visible = true;
+
+                        cbTriggerPlacedElsewhereShowNote.Visible = false;
+                        cbTriggerPlacedElsewhereRequireNote.Visible = false;
+
+                        break;
+                    }
+
+                case GroupMemberWorkflowTriggerType.MemberPlacedElsewhere:
+                    {
+                        ddlTriggerFromStatus.Visible = false;
+                        ddlTriggerToStatus.Visible = false;
+
+                        ddlTriggerFromRole.Visible = false;
+                        ddlTriggerToRole.Visible = false;
+
+                        cbTriggerFirstTime.Visible = false;
+
+                        cbTriggerPlacedElsewhereShowNote.Visible = true;
+                        cbTriggerPlacedElsewhereRequireNote.Visible = true;
 
                         break;
                     }
@@ -2555,6 +2624,9 @@ namespace RockWeb.Blocks.Groups
 
                         cbTriggerFirstTime.Visible = false;
 
+                        cbTriggerPlacedElsewhereShowNote.Visible = false;
+                        cbTriggerPlacedElsewhereRequireNote.Visible = false;
+
                         break;
                     }
 
@@ -2568,6 +2640,9 @@ namespace RockWeb.Blocks.Groups
                         ddlTriggerToRole.Visible = false;
 
                         cbTriggerFirstTime.Visible = false;
+
+                        cbTriggerPlacedElsewhereShowNote.Visible = false;
+                        cbTriggerPlacedElsewhereRequireNote.Visible = false;
 
                         break;
                     }
@@ -2671,12 +2746,14 @@ namespace RockWeb.Blocks.Groups
             memberWorkflowTrigger.TriggerType = ddlTriggerType.SelectedValueAsEnum<GroupMemberWorkflowTriggerType>();
 
             memberWorkflowTrigger.TypeQualifier = string.Format(
-                "{0}|{1}|{2}|{3}|{4}",
+                "{0}|{1}|{2}|{3}|{4}|{5}|{6}",
                 ddlTriggerToStatus.SelectedValue,
                 ddlTriggerToRole.SelectedValue,
                 ddlTriggerFromStatus.SelectedValue,
                 ddlTriggerFromRole.SelectedValue,
-                cbTriggerFirstTime.Checked.ToString() );
+                cbTriggerFirstTime.Checked.ToString(),
+                cbTriggerPlacedElsewhereShowNote.Checked.ToString(), 
+                cbTriggerPlacedElsewhereRequireNote.Checked.ToString());
 
             // Controls will show warnings
             if ( !memberWorkflowTrigger.IsValid )

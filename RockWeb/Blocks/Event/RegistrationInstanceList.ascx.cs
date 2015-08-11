@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
@@ -71,6 +72,7 @@ namespace RockWeb.Blocks.Event
                     gInstances.Actions.AddClick += gInstances_AddClick;
                     gInstances.GridRebind += gInstances_GridRebind;
                     gInstances.ExportFilename = _template.Name;
+                    gInstances.ShowConfirmDeleteDialog = false;
 
                     // make sure they have Auth to edit the block OR edit to the Group
                     bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _template.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
@@ -78,6 +80,23 @@ namespace RockWeb.Blocks.Event
                     gInstances.IsDeleteEnabled = canEditBlock;
                 }
             }
+
+            string deleteScript = @"
+    $('table.js-grid-instances a.grid-delete-button').click(function( e ){
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this registration instance? All of the registrations and registrants will also be deleted!', function (result) {
+            if (result) {
+                Rock.dialogs.confirm('Are you really sure? ', function (result) {
+                    if (result) {
+                        window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                    }
+                });
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( gInstances, gInstances.GetType(), "deleteInstanceScript", deleteScript, true );
+
         }
 
         /// <summary>
@@ -175,12 +194,6 @@ namespace RockWeb.Blocks.Event
             RegistrationInstance instance = instanceService.Get( e.RowKeyId );
             if ( instance != null )
             {
-                if ( instance.Registrations.Any() )
-                {
-                    mdGridWarning.Show( "This instance has registrations and cannot be deleted until all the registrations have been deleted.", ModalAlertType.Information );
-                    return;
-                }
-
                 string errorMessage;
                 if ( !instanceService.CanDelete( instance, out errorMessage ) )
                 {
@@ -188,8 +201,13 @@ namespace RockWeb.Blocks.Event
                     return;
                 }
 
-                instanceService.Delete( instance );
-                rockContext.SaveChanges();
+                rockContext.WrapTransaction( () =>
+                {
+                    new RegistrationService( rockContext ).DeleteRange( instance.Registrations );
+                    instanceService.Delete( instance );
+                    rockContext.SaveChanges();
+                } );
+
             }
 
             BindInstancesGrid();

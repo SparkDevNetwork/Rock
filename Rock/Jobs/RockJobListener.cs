@@ -60,6 +60,22 @@ namespace Rock.Jobs
         /// <seealso cref="JobExecutionVetoed(IJobExecutionContext)"/>
         public void JobToBeExecuted( IJobExecutionContext context )
         {
+            StringBuilder message = new StringBuilder();
+
+            // get job type id
+            int jobId = context.JobDetail.Description.AsInteger();
+
+            // load job
+            var rockContext = new RockContext();
+            var jobService = new ServiceJobService( rockContext );
+            var job = jobService.Get( jobId );
+
+            if (job != null && job.Guid != Rock.SystemGuid.ServiceJob.JOB_PULSE.AsGuid())
+            {
+                job.LastStatus = "Running";
+                job.LastStatusMessage = "Started at " + RockDateTime.Now.ToString();
+                rockContext.SaveChanges();
+            }
         }
 
         /// <summary>

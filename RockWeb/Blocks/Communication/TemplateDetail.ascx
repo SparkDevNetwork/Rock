@@ -26,7 +26,7 @@
                     </div>
                 </div>
 
-                <div class="nav navbar nav-pagelist">
+                <div class="well well-pillwrap">                  
                     <ul class="nav nav-pills">
                         <asp:Repeater ID="rptMediums" runat="server">
                             <ItemTemplate>

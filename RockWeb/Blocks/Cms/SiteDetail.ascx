@@ -54,6 +54,10 @@
                             <Rock:DataTextBox ID="tbSiteDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="SiteDomains" TextMode="MultiLine" LabelTextFromPropertyName="false" Label="Domain(s)" Help="A comma delimited list of domain values that are associated with this site.  These values are used by Rock to load the correct site whenever a specific page or route is not provided in the url. Rock will determine the site to use by finding the first site with a domain value that is contained by the current request's hostname in the url.  It will then display that site's default page" />
                             <Rock:DataTextBox ID="tbErrorPage" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="ErrorPage" Help="The url that user will be redirected to if an error occurs on site" />
                             <Rock:DataTextBox ID="tbGoogleAnalytics" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="GoogleAnalyticsCode" Help="Optional Google Analytics Code.  If specified, the Google Analytics script with this code will be added to every page rendered for this site." />
+                            <Rock:RockCheckBox ID="cbEnableMobileRedirect" runat="server" Label="Enable Mobile Redirect" AutoPostBack="true" OnCheckedChanged="cbEnableMobileRedirect_CheckedChanged" CausesValidation="false" />
+                            <Rock:PagePicker ID="ppMobilePage" runat="server" Label="Mobile Page" Required="false" PromptForPageRoute="false" Help="The page that user will be redirected to if accessing site from a mobile device." />
+                            <Rock:DataTextBox ID="tbExternalURL" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="ExternalUrl" Help="If user should be redirected to an external URL when accessing this site from a mobile device, enter the URL here."  />
+                            <Rock:RockCheckBox ID="cbRedirectTablets" runat="server" Label="Redirect Tablets" />
                         </div>
                     </div>
 

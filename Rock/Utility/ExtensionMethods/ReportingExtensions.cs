@@ -22,7 +22,7 @@ namespace Rock
     /// <summary>
     /// Extensions related to Rock Reports, Dataviews and DataFilters
     /// </summary>
-    public static class ReportingExtensions
+    public static partial class ExtensionMethods
     {
         /// <summary>
         /// Compares to the given value returning true if comparable.

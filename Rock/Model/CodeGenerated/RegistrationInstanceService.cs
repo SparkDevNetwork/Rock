@@ -51,12 +51,8 @@ namespace Rock.Model
         public bool CanDelete( RegistrationInstance item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Registration>( Context ).Queryable().Any( a => a.RegistrationInstanceId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", RegistrationInstance.FriendlyTypeName, Registration.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring Registration,RegistrationInstanceId 
             return true;
         }
     }
@@ -98,7 +94,7 @@ namespace Rock.Model
             target.AdditionalConfirmationDetails = source.AdditionalConfirmationDetails;
             target.AdditionalReminderDetails = source.AdditionalReminderDetails;
             target.ContactEmail = source.ContactEmail;
-            target.ContactName = source.ContactName;
+            target.ContactPersonAliasId = source.ContactPersonAliasId;
             target.ContactPhone = source.ContactPhone;
             target.Details = source.Details;
             target.EndDateTime = source.EndDateTime;

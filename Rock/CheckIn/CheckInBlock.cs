@@ -180,6 +180,8 @@ namespace Rock.CheckIn
                 using ( var rockContext = new RockContext() )
                 {
                     var workflowTypeService = new WorkflowTypeService( rockContext );
+                    var workflowService = new WorkflowService( rockContext );
+
                     var workflowType = workflowTypeService.Queryable( "ActivityTypes" )
                         .Where( w => w.Guid.Equals( guid.Value ) )
                         .FirstOrDefault();
@@ -204,7 +206,7 @@ namespace Rock.CheckIn
                         if ( activityType != null )
                         {
                             WorkflowActivity.Activate( activityType, CurrentWorkflow, rockContext );
-                            if ( CurrentWorkflow.Process( rockContext, CurrentCheckInState, out errorMessages ) )
+                            if ( workflowService.Process( CurrentWorkflow, CurrentCheckInState, out errorMessages ) )
                             {
                                 // Keep workflow active for continued processing
                                 CurrentWorkflow.CompletedDateTime = null;

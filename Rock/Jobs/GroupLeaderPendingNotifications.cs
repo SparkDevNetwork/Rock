@@ -36,11 +36,11 @@ namespace Rock.Jobs
     /// Job send list of new pending group members to the group's leaders.
     /// </summary>
     /// 
-    
-    [GroupTypeField("Group Type", "The group type to look for new pending registrations", true, "", "", 0)]
-    [BooleanField("Include Previously Notified", "Includes pending group members that have already been notified.", false, "", 1)]
+
+    [GroupTypeField( "Group Type", "The group type to look for new pending registrations", true, "", "", 0 )]
+    [BooleanField( "Include Previously Notified", "Includes pending group members that have already been notified.", false, "", 1 )]
     [SystemEmailField( "Notification Email", "", true, "", "", 2 )]
-    [GroupRoleField(null, "Group Role Filter", "Optional group role to filter by. To select the role you'll need to select a group type.", false, null, null, 3 )]
+    [GroupRoleField( null, "Group Role Filter", "Optional group role to filter the pending members by. To select the role you'll need to select a group type.", false, null, null, 3 )]
     [DisallowConcurrentExecution]
     public class GroupLeaderPendingNotifications : IJob
     {
@@ -93,7 +93,8 @@ namespace Rock.Jobs
                 }
 
                 // get group members
-                if (groupTypeGuid.HasValue && groupTypeGuid != Guid.Empty) {
+                if ( groupTypeGuid.HasValue && groupTypeGuid != Guid.Empty )
+                {
                     var qry = new GroupMemberService( rockContext ).Queryable( "Person, Group, Group.Members.GroupRole" )
                                             .Where( m => m.Group.GroupType.Guid == groupTypeGuid.Value
                                                 && m.GroupMemberStatus == GroupMemberStatus.Pending );
@@ -149,10 +150,15 @@ namespace Rock.Jobs
                             recipients.Add( new RecipientData( leader.Person.Email, mergeFields ) );
                         }
 
-                        Email.Send( systemEmail.Guid, recipients, appRoot );
+                        if ( pendingIndividuals.Count() > 0 )
+                        {
+                            Email.Send( systemEmail.Guid, recipients, appRoot );
+                        }
 
-                        // mark pending members as notified
-                        foreach(var pendingGroupMember in pendingGroupMembers.Where(m => m.IsNotified == false)){
+                        // mark pending members as notified as we go in case the job fails
+                        var notifiedPersonIds = pendingIndividuals.Select( p => p.Id );
+                        foreach ( var pendingGroupMember in pendingGroupMembers.Where( m => m.IsNotified == false && notifiedPersonIds.Contains( m.PersonId ) ) )
+                        {
                             pendingGroupMember.IsNotified = true;
                         }
 
@@ -161,7 +167,7 @@ namespace Rock.Jobs
                     }
                 }
 
-                
+
             }
             catch ( System.Exception ex )
             {

@@ -54,9 +54,7 @@
 
                         <div class="row">
                             <div class="col-md-2">
-                                <div class="photo photoframe">
-                                    <asp:Literal ID="lImage" runat="server" />
-                                </div>
+                                <asp:Literal ID="lImage" runat="server" />
                             </div>
                             <div class="col-md-6">
                                 <asp:Literal ID="lblMainDetails" runat="server" />

@@ -67,9 +67,6 @@ namespace Rock.Client
     public partial class ConnectionOpportunityGroup : ConnectionOpportunityGroupEntity
     {
         /// <summary />
-        public ConnectionOpportunity ConnectionOpportunity { get; set; }
-
-        /// <summary />
         public Group Group { get; set; }
 
         /// <summary />

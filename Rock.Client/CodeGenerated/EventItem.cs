@@ -98,7 +98,7 @@ namespace Rock.Client
         public PersonAlias ApprovedByPersonAlias { get; set; }
 
         /// <summary />
-        public ICollection<EventItemCampus> EventItemCampuses { get; set; }
+        public ICollection<EventItemOccurrence> EventItemOccurrences { get; set; }
 
         /// <summary />
         public BinaryFile Photo { get; set; }

@@ -26,7 +26,7 @@ namespace Rock
     /// <summary>
     /// Control Extensions
     /// </summary>
-    public static class ControlExtensions
+    public static partial class ExtensionMethods
     {
         #region Control Extensions
 
@@ -130,6 +130,31 @@ namespace Rock
             return result;
         }
 
+        /// <summary>
+        /// Goes up the parent tree of the control returning the first parent that is of the specified type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public static T FirstParentControlOfType<T>( this System.Web.UI.Control control ) where T : System.Web.UI.Control
+        {
+            if ( control != null )
+            {
+                var parentControl = control.Parent;
+                while ( parentControl != null )
+                {
+                    if ( parentControl is T )
+                    {
+                        return parentControl as T;
+                    }
+
+                    parentControl = parentControl.Parent;
+                }
+            }
+
+            return null;
+        }
+
         #endregion Control Extensions
 
         #region WebControl Extensions
@@ -215,7 +240,7 @@ namespace Rock
         /// </summary>
         /// <param name="checkBoxList">The check box list.</param>
         /// <param name="values">The values.</param>
-        public static void SetValues( this CheckBoxList checkBoxList, List<string> values )
+        public static void SetValues( this CheckBoxList checkBoxList, IEnumerable<string> values )
         {
             foreach ( ListItem item in checkBoxList.Items )
             {
@@ -228,7 +253,7 @@ namespace Rock
         /// </summary>
         /// <param name="checkBoxList">The check box list.</param>
         /// <param name="values">The values.</param>
-        public static void SetValues( this CheckBoxList checkBoxList, List<int> values )
+        public static void SetValues( this CheckBoxList checkBoxList, IEnumerable<int> values )
         {
             foreach ( ListItem item in checkBoxList.Items )
             {
@@ -310,21 +335,27 @@ namespace Rock
             listControl.SetValue( value == null ? "" : value.ToString() );
         }
 
-        
-
         /// <summary>
         /// Binds to enum using the enum's integer value as the listitem value
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="listControl">The list control.</param>
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
-        public static void BindToEnum<T>( this ListControl listControl, bool insertBlankOption = false )
+        /// <param name="ignoreTypes">any enums that should not be included in the list control</param>
+        public static void BindToEnum<T>( this ListControl listControl, bool insertBlankOption = false, T[] ignoreTypes = null )
         {
             var enumType = typeof( T );
             var dictionary = new Dictionary<int, string>();
             foreach ( var value in Enum.GetValues( enumType ) )
             {
-                dictionary.Add( Convert.ToInt32( value ), Enum.GetName( enumType, value ).SplitCase() );
+                if ( ignoreTypes != null && ignoreTypes.Contains( (T)value ) )
+                {
+                    continue;
+                }
+                else
+                {
+                    dictionary.Add( Convert.ToInt32( value ), Enum.GetName( enumType, value ).SplitCase() );
+                }
             }
 
             listControl.DataSource = dictionary;

@@ -25,7 +25,7 @@ namespace Rock
     /// <summary>
     /// Handy string extensions
     /// </summary>
-    public static class StringExtensions
+    public static partial class ExtensionMethods
     {
         #region String Extensions
 

@@ -71,15 +71,6 @@ namespace Rock.Client
     public partial class ConnectionOpportunityGroupCampus : ConnectionOpportunityGroupCampusEntity
     {
         /// <summary />
-        public Campus Campus { get; set; }
-
-        /// <summary />
-        public ConnectionOpportunity ConnectionOpportunity { get; set; }
-
-        /// <summary />
-        public Group ConnectorGroup { get; set; }
-
-        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

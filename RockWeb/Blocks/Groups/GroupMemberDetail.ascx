@@ -70,6 +70,8 @@
                         </div>
                     </asp:Panel>
 
+                    <Rock:NotificationBox runat="server" ID="nbRecheckedNotification" NotificationBoxType="Success" Dismissable="true" Text="Successfully re-checked requirements at {0}" Visible="false"/>
+
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
                         <asp:LinkButton ID="btnReCheckRequirements" runat="server" AccessKey="s" Text="Re-Check Requirements" CssClass="btn btn-default" OnClick="btnReCheckRequirements_Click" CausesValidation="false"></asp:LinkButton>

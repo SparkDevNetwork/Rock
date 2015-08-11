@@ -293,6 +293,13 @@ namespace Rock.Apps.CheckScannerUtility
                 }
 
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedDoubleDocDetection", rockConfig.EnableDoubleDocDetection.ToTrueFalse() );
+                
+                // Ranger assigns a score of 1-255 on how confident it is that the character was read correctly (1 unsure, 255 very sure)
+                // If the score is less than 255, it will assign another score to its next best guess.  
+                // For example, if it pretty sure it was a '3', but it thinks it might have been an '8', it might set the score for '3' as 240, but a score of 150 to '8'.
+                // If the difference (Plurality) between the scores isn't high enough, it will reject the char. 
+                rangerScanner.SetDriverOption( "MICR", "Sensitivity", rockConfig.Sensitivity);
+                rangerScanner.SetDriverOption( "MICR", "Plurality", rockConfig.Plurality );
 
                 rangerScanner.EnableOptions();
             }
@@ -845,7 +852,11 @@ namespace Rock.Apps.CheckScannerUtility
                 this.Cursor = null;
                 foreach ( var transaction in transactions )
                 {
-                    transaction.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.CurrencyTypeValueId );
+                    transaction.FinancialPaymentDetail = transaction.FinancialPaymentDetail ?? client.GetData<FinancialPaymentDetail>( string.Format( "api/FinancialPaymentDetails/{0}", transaction.FinancialPaymentDetailId ) );
+                    if ( transaction.FinancialPaymentDetail != null )
+                    {
+                        transaction.FinancialPaymentDetail.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.FinancialPaymentDetail.CurrencyTypeValueId );
+                    }
                 }
 
                 // sort starting with most recent first
@@ -871,9 +882,17 @@ namespace Rock.Apps.CheckScannerUtility
             var transactions = grdBatchItems.DataContext as BindingList<FinancialTransaction>;
             if ( transactions != null )
             {
-                foreach ( var transaction in transactions.Where( a => a.CurrencyTypeValue == null ) )
+                RockConfig rockConfig = RockConfig.Load();
+                var client = new RockRestClient( rockConfig.RockBaseUrl );
+                client.Login( rockConfig.Username, rockConfig.Password );
+                
+                foreach ( var transaction in transactions.Where( a => a.FinancialPaymentDetail == null ) )
                 {
-                    transaction.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.CurrencyTypeValueId );
+                    transaction.FinancialPaymentDetail = transaction.FinancialPaymentDetail ?? client.GetData<FinancialPaymentDetail>( string.Format( "api/FinancialPaymentDetails/{0}", transaction.FinancialPaymentDetailId ) );
+                    if ( transaction.FinancialPaymentDetail != null )
+                    {
+                        transaction.FinancialPaymentDetail.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.FinancialPaymentDetail.CurrencyTypeValueId );
+                    }
                 }
             }
 

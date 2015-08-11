@@ -114,6 +114,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var campusi = CampusCache.All();
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
+            if ( campusi.Count == 1 )
+            {
+                cpCampus.SelectedCampusId = campusi.FirstOrDefault().Id;
+            }
 
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
             if ( familyGroupType != null )

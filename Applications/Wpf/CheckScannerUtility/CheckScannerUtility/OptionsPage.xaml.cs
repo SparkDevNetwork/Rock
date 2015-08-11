@@ -125,6 +125,9 @@ namespace Rock.Apps.CheckScannerUtility
                 cboMagTekCommPort.SelectedItem = string.Format( "COM{0}", rockConfig.MICRImageComPort );
             }
 
+            txtSensitivity.Text = rockConfig.Sensitivity;
+            txtPlurality.Text = rockConfig.Plurality;
+
             cboTransactionSourceType.SelectedItem = ( cboTransactionSourceType.ItemsSource as List<DefinedValue> ).FirstOrDefault( a => a.Guid == rockConfig.SourceTypeValueGuid.AsGuid() );
         }
 
@@ -230,6 +233,9 @@ namespace Rock.Apps.CheckScannerUtility
 
             string imageOption = cboImageOption.SelectedValue as string;
 
+            rockConfig.Sensitivity = txtSensitivity.Text.Trim();
+            rockConfig.Plurality = txtPlurality.Text.Trim();
+
             switch ( imageOption )
             {
                 case "Grayscale":
@@ -301,6 +307,13 @@ namespace Rock.Apps.CheckScannerUtility
             // show Image Option only for Ranger
             lblImageOption.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
             cboImageOption.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
+
+            // show Sensitivity/Plurality Option only for Ranger
+            lblAdvancedInfo.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
+            lblSensitivity.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
+            txtSensitivity.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
+            lblPlurality.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
+            txtPlurality.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
         }
     }
 }

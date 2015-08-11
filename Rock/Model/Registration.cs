@@ -48,6 +48,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember]
+        [IgnoreCanDelete]
         public int RegistrationInstanceId { get; set; }
 
         /// <summary>
@@ -156,6 +157,18 @@ namespace Rock.Model
         public virtual Group Group { get; set; }
 
         /// <summary>
+        /// Gets the person identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
+        [NotMapped]
+        public virtual int? PersonId
+        {
+            get { return PersonAlias != null ? PersonAlias.PersonId : (int?)null; }
+        }
+
+        /// <summary>
         /// Gets or sets the registrants.
         /// </summary>
         /// <value>
@@ -196,6 +209,8 @@ namespace Rock.Model
         /// <value>
         /// The discounted cost.
         /// </value>
+        [NotMapped]
+        [LavaInclude]
         public virtual decimal DiscountedCost
         {
             get
@@ -475,7 +490,7 @@ Registration By: {0} Total Cost/Fees:{1:C2}
         /// <value>
         /// The payment amount.
         /// </value>
-        public decimal PaymentAmount { get; set; }
+        public decimal? PaymentAmount { get; set; }
 
         /// <summary>
         /// Gets or sets the registrants.

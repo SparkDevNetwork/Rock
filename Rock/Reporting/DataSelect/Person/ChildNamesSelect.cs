@@ -98,7 +98,56 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
         {
-            return new ListDelimitedField();
+            var callbackField = new CallbackField();
+            var selectionParts = selection.Split( '|' );
+            bool includeGender = selectionParts.Length > 0 && selectionParts[0].AsBoolean();
+            bool includeAge = selectionParts.Length > 1 && selectionParts[1].AsBoolean();
+            callbackField.OnFormatDataValue += ( sender, e ) =>
+            {
+                var personList = e.DataValue as IEnumerable<Rock.Model.Person>;
+                if ( personList != null )
+                {
+                    var formattedList = new List<string>();
+                    foreach ( var person in personList )
+                    {
+                        var formattedPerson = person.FullName;
+                        var formattedGenderAge = string.Empty;
+
+                        if ( includeGender && person.Gender != Gender.Unknown )
+                        {
+                            // return F for Female, M for Male
+                            if ( person.Gender == Gender.Female )
+                            {
+                                formattedGenderAge += "F";
+                            }
+                            else if ( person.Gender == Gender.Male )
+                            {
+                                formattedGenderAge += "M";
+                            }
+                        }
+
+                        if ( includeAge && person.Age.HasValue )
+                        {
+                            formattedGenderAge += " " + person.Age.Value.ToString();
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( formattedGenderAge ) )
+                        {
+                            formattedPerson += " (" + formattedGenderAge.Trim() + ")";
+                        }
+
+                        formattedList.Add( formattedPerson );
+                    }
+
+                    e.FormattedValue = formattedList.AsDelimited( ", " );
+                }
+                else
+                {
+                    e.FormattedValue = string.Empty;
+                }
+            };
+
+            return callbackField;
         }
 
         /// <summary>
@@ -169,7 +218,17 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
-            return new System.Web.UI.Control[] { };
+            RockCheckBox cbIncludeGender = new RockCheckBox();
+            cbIncludeGender.ID = parentControl.ID + "_cbIncludeGender";
+            cbIncludeGender.Text = "Include Gender";
+            parentControl.Controls.Add( cbIncludeGender );
+
+            RockCheckBox cbIncludeAge = new RockCheckBox();
+            cbIncludeAge.ID = parentControl.ID + "_cbIncludeAge";
+            cbIncludeAge.Text = "Include Age";
+            parentControl.Controls.Add( cbIncludeAge );
+
+            return new System.Web.UI.Control[] { cbIncludeGender, cbIncludeAge };
         }
 
         /// <summary>
@@ -190,7 +249,17 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
-            return null;
+            if ( controls.Count() == 2 )
+            {
+                RockCheckBox cbIncludeGender = controls[0] as RockCheckBox;
+                RockCheckBox cbIncludeAge = controls[1] as RockCheckBox;
+                if ( cbIncludeGender != null && cbIncludeAge != null )
+                {
+                    return string.Format( "{0}|{1}", cbIncludeGender.Checked.ToTrueFalse(), cbIncludeAge.Checked.ToTrueFalse() );
+                }
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -200,7 +269,20 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
-            // nothing to do
+            if ( controls.Count() == 2 )
+            {
+                string[] selectionValues = selection.Split( '|' );
+                if ( selectionValues.Length >= 2 )
+                {
+                    RockCheckBox cbIncludeGender = controls[0] as RockCheckBox;
+                    RockCheckBox cbIncludeAge = controls[1] as RockCheckBox;
+                    if ( cbIncludeGender != null && cbIncludeAge != null )
+                    {
+                        cbIncludeGender.Checked = selectionValues[0].AsBoolean();
+                        cbIncludeAge.Checked = selectionValues[1].AsBoolean();
+                    }
+                }
+            }
         }
 
         #endregion

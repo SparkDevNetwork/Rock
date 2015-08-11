@@ -33,16 +33,16 @@ namespace Rock.Jobs
     /// Sends a birthday email
     /// </summary>
     [SystemEmailField( "Notification Email Template", required: true, order: 0 )]
-    [GroupTypesField("Group Types", "Group types use to check the group requirements on.", order: 1)]
-    [EnumField("Notify Parent Leaders", "", typeof( NotificationOption ), true, "None", order: 2)]
-    [GroupField("Accountability Group", "Optional group that will receive a list of all group members that do not meet requirements.", order: 3)]
-    [TextField("Excluded Group Type Role Id's", "Optional comma delimited list of group type role Id's that should be excluded from the notification.", false, order: 4, key: "ExcludedGroupRoleIds")]
+    [GroupTypesField( "Group Types", "Group types use to check the group requirements on.", order: 1 )]
+    [EnumField( "Notify Parent Leaders", "", typeof( NotificationOption ), true, "None", order: 2 )]
+    [GroupField( "Accountability Group", "Optional group that will receive a list of all group members that do not meet requirements.", order: 3 )]
+    [TextField( "Excluded Group Type Role Id's", "Optional comma delimited list of group type role Id's that should be excluded from the notification.", false, order: 4, key: "ExcludedGroupRoleIds" )]
     [DisallowConcurrentExecution]
     public class SendGroupRequirementsNotification : IJob
     {
         List<NotificationItem> _notificationList = new List<NotificationItem>();
         List<GroupsMissingRequirements> _groupsMissingRequriements = new List<GroupsMissingRequirements>();
-        
+
         /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
@@ -61,7 +61,7 @@ namespace Rock.Jobs
         public void Execute( IJobExecutionContext context )
         {
             var rockContext = new RockContext();
-            
+
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             Guid? systemEmailGuid = dataMap.GetString( "NotificationEmailTemplate" ).AsGuidOrNull();
 
@@ -82,12 +82,14 @@ namespace Rock.Jobs
 
                 var notificationOption = dataMap.GetString( "NotifyParentLeaders" ).ConvertToEnum<NotificationOption>( NotificationOption.None );
 
-                var accountAbilityGroupGuid = dataMap.GetString("AccountabilityGroup").AsGuid();
+                var accountAbilityGroupGuid = dataMap.GetString( "AccountabilityGroup" ).AsGuid();
 
                 // get groups matching of the types provided
                 GroupService groupService = new GroupService( rockContext );
-                var groups = groupService.Queryable( "GroupType, Members.Person, Members.GroupRole" ).AsNoTracking()
-                                .Where( g => selectedGroupTypes.Contains( g.GroupType.Guid ) && g.IsActive == true );
+                var groups = groupService.Queryable().AsNoTracking()
+                                .Where( g => selectedGroupTypes.Contains( g.GroupType.Guid )
+                                    && g.IsActive == true
+                                    && g.GroupRequirements.Any() );
 
                 foreach ( var group in groups )
                 {
@@ -111,11 +113,11 @@ namespace Rock.Jobs
                         groupMissingRequirements.Leaders = group.Members
                                                             .Where( m => m.GroupRole.IsLeader == true && !excludedGroupRoleIds.Contains( m.GroupRoleId ) )
                                                             .Select( m => new GroupMemberResult
-                                                                {
-                                                                    Id = m.Id,
-                                                                    PersonId = m.PersonId,
-                                                                    FullName = m.Person.FullName
-                                                                } )
+                                                            {
+                                                                Id = m.Id,
+                                                                PersonId = m.PersonId,
+                                                                FullName = m.Person.FullName
+                                                            } )
                                                               .ToList();
 
 
@@ -206,7 +208,7 @@ namespace Rock.Jobs
                 foreach ( var recipientId in _notificationList.GroupBy( p => p.Person.Id ) )
                 {
                     var recipient = _notificationList.Where( n => n.Person.Id == recipientId.Key ).Select( n => n.Person ).FirstOrDefault();
-                    
+
                     var mergeFields = new Dictionary<string, object>();
                     mergeFields.Add( "Person", recipient );
 
@@ -271,7 +273,7 @@ namespace Rock.Jobs
         /// <summary>
         /// All parents
         /// </summary>
-        AllParents =2
+        AllParents = 2
     }
 
     /// <summary>
@@ -363,7 +365,7 @@ namespace Rock.Jobs
     /// Group Member Missing Requirements
     /// </summary>
     [DotLiquid.LiquidType( "Id", "PersonId", "FullName", "GroupMemberRole", "MissingRequirements" )]
-    public class GroupMembersMissingRequirements: GroupMemberResult
+    public class GroupMembersMissingRequirements : GroupMemberResult
     {
         /// <summary>
         /// Gets or sets the missing requirements.

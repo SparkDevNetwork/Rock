@@ -76,9 +76,9 @@ namespace RockWeb.Blocks.Event
         {
             using ( var rockContext = new RockContext() )
             {
-                var service = new EventItemCampusGroupMapService( rockContext );
+                var service = new EventItemOccurrenceGroupMapService( rockContext );
 
-                EventItemCampusGroupMap linkage = null;
+                EventItemOccurrenceGroupMap linkage = null;
 
                 int? linkageId = hfLinkageId.Value.AsIntegerOrNull();
                 if ( linkageId.HasValue )
@@ -88,12 +88,12 @@ namespace RockWeb.Blocks.Event
 
                 if ( linkage == null )
                 {
-                    linkage = new EventItemCampusGroupMap();
+                    linkage = new EventItemOccurrenceGroupMap();
                     linkage.RegistrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsInteger();
                     service.Add( linkage );
                 }
 
-                linkage.EventItemCampusId = hfLinkageEventItemCampusId.Value.AsIntegerOrNull();
+                linkage.EventItemOccurrenceId = hfLinkageEventItemOccurrenceId.Value.AsIntegerOrNull();
                 linkage.GroupId = gpLinkageGroup.SelectedValueAsInt();
                 linkage.PublicName = tbLinkagePublicName.Text;
                 linkage.UrlSlug = tbLinkageUrlSlug.Text;
@@ -130,11 +130,11 @@ namespace RockWeb.Blocks.Event
         #region Linkage Dialog Events
 
         /// <summary>
-        /// Handles the Click event of the lbLinkageEventItemCampusAdd control.
+        /// Handles the Click event of the lbLinkageEventItemOccurrenceAdd control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbLinkageEventItemCampusAdd_Click( object sender, EventArgs e )
+        protected void lbLinkageEventItemOccurrenceAdd_Click( object sender, EventArgs e )
         {
             // Event Calendar list for new Linkage dialog
             ddlCalendar.Items.Clear();
@@ -199,14 +199,14 @@ namespace RockWeb.Blocks.Event
                 using ( var rockContext = new RockContext() )
                 {
                     ddlCalendarItem.DataSource = new EventCalendarItemService( rockContext )
-                        .Queryable( "EventItem.EventItemCampuses.EventItemSchedules.Schedule" )
+                        .Queryable( "EventItem.EventItemOccurrences.Schedule" )
                         .AsNoTracking()
                         .Where( i =>
                             i.EventCalendarId == calendarId.Value &&
                             i.EventItem != null &&
                             i.EventItem.IsActive &&
                             i.EventItem.IsApproved &&
-                            i.EventItem.EventItemCampuses.Any() )
+                            i.EventItem.EventItemOccurrences.Any() )
                         .ToList()
                         .Where( i => i.EventItem.GetStartTimes( fromDate, toDate.AddDays( 1 ) ).Any() )
                         .Select( c => new
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Event
                 if ( ddlCalendarItem.Items.Count > 0 )
                 {
                     ddlCalendarItem.SelectedIndex = 0;
-                    BindLinkageCalendarItemCampus();
+                    BindLinkageCalendarItemOccurrence();
 
                     nbNoLinkage.Visible = false;
                     dlgAddCalendarItemPage3.SaveButtonText = "OK";
@@ -247,19 +247,19 @@ namespace RockWeb.Blocks.Event
             // Save selection to hidden field
             using ( var rockContext = new RockContext() )
             {
-                int? eventItemCampusId = ddlCalendarItemCampus.SelectedValueAsInt();
-                if ( eventItemCampusId.HasValue )
+                int? eventItemOccurrenceId = ddlCalendarItemOccurrence.SelectedValueAsInt();
+                if ( eventItemOccurrenceId.HasValue )
                 {
-                    var eventItemCampus = new EventItemCampusService( rockContext )
+                    var eventItemOccurrence = new EventItemOccurrenceService( rockContext )
                         .Queryable( "EventItem,Campus" ).AsNoTracking()
-                        .Where( c => c.Id == eventItemCampusId.Value )
+                        .Where( c => c.Id == eventItemOccurrenceId.Value )
                         .FirstOrDefault();
-                    if ( eventItemCampus != null )
+                    if ( eventItemOccurrence != null )
                     {
-                        hfLinkageEventItemCampusId.Value = eventItemCampus.Id.ToString();
-                        lLinkageEventItemCampus.Text = eventItemCampus.ToString();
-                        lbLinkageEventItemCampusAdd.Visible = false;
-                        lbLinkageEventItemCampusRemove.Visible = true;
+                        hfLinkageEventItemOccurrenceId.Value = eventItemOccurrence.Id.ToString();
+                        lLinkageEventItemOccurrence.Text = eventItemOccurrence.ToString();
+                        lbLinkageEventItemOccurrenceAdd.Visible = false;
+                        lbLinkageEventItemOccurrenceRemove.Visible = true;
                     }
                 }
             }
@@ -268,16 +268,16 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Handles the Click event of the lbLinkageEventItemCampusRemove control.
+        /// Handles the Click event of the lbLinkageEventItemOccurrenceRemove control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbLinkageEventItemCampusRemove_Click( object sender, EventArgs e )
+        protected void lbLinkageEventItemOccurrenceRemove_Click( object sender, EventArgs e )
         {
-            hfLinkageEventItemCampusId.Value = string.Empty;
-            lLinkageEventItemCampus.Text = string.Empty;
-            lbLinkageEventItemCampusAdd.Visible = true;
-            lbLinkageEventItemCampusRemove.Visible = false;
+            hfLinkageEventItemOccurrenceId.Value = string.Empty;
+            lLinkageEventItemOccurrence.Text = string.Empty;
+            lbLinkageEventItemOccurrenceAdd.Visible = true;
+            lbLinkageEventItemOccurrenceRemove.Visible = false;
         }
 
         /// <summary>
@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlCalendarItem_SelectedIndexChanged( object sender, EventArgs e )
         {
-            BindLinkageCalendarItemCampus();
+            BindLinkageCalendarItemOccurrence();
         }
 
         #endregion
@@ -303,37 +303,37 @@ namespace RockWeb.Blocks.Event
         {
             pnlDetails.Visible = true;
 
-            EventItemCampusGroupMap linkage = null;
+            EventItemOccurrenceGroupMap linkage = null;
 
             var rockContext = new RockContext();
 
             if ( !linkageId.Equals( 0 ) )
             {
-                linkage = new EventItemCampusGroupMapService( rockContext ).Get( linkageId );
+                linkage = new EventItemOccurrenceGroupMapService( rockContext ).Get( linkageId );
                 lActionTitle.Text = ActionTitle.Edit( "Linkage" ).FormatAsHtmlTitle();
             }
 
             if ( linkage == null )
             {
-                linkage = new EventItemCampusGroupMap { Id = 0 };
+                linkage = new EventItemOccurrenceGroupMap { Id = 0 };
                 lActionTitle.Text = ActionTitle.Add( "Linkage" ).FormatAsHtmlTitle();
             }
 
             hfLinkageId.Value = linkage.Id.ToString();
 
-            if ( linkage.EventItemCampus != null )
+            if ( linkage.EventItemOccurrence != null )
             {
-                hfLinkageEventItemCampusId.Value = linkage.EventItemCampus.Id.ToString();
-                lLinkageEventItemCampus.Text = linkage.EventItemCampus.ToString();
-                lbLinkageEventItemCampusAdd.Visible = false;
-                lbLinkageEventItemCampusRemove.Visible = true;
+                hfLinkageEventItemOccurrenceId.Value = linkage.EventItemOccurrence.Id.ToString();
+                lLinkageEventItemOccurrence.Text = linkage.EventItemOccurrence.ToString();
+                lbLinkageEventItemOccurrenceAdd.Visible = false;
+                lbLinkageEventItemOccurrenceRemove.Visible = true;
             }
             else
             {
-                hfLinkageEventItemCampusId.Value = string.Empty;
-                lLinkageEventItemCampus.Text = string.Empty;
-                lbLinkageEventItemCampusAdd.Visible = true;
-                lbLinkageEventItemCampusRemove.Visible = false;
+                hfLinkageEventItemOccurrenceId.Value = string.Empty;
+                lLinkageEventItemOccurrence.Text = string.Empty;
+                lbLinkageEventItemOccurrenceAdd.Visible = true;
+                lbLinkageEventItemOccurrenceRemove.Visible = false;
             }
 
             gpLinkageGroup.SetValue( linkage.Group );
@@ -345,16 +345,16 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Binds the linkage calendar item campus.
         /// </summary>
-        private void BindLinkageCalendarItemCampus()
+        private void BindLinkageCalendarItemOccurrence()
         {
-            ddlCalendarItemCampus.Items.Clear();
+            ddlCalendarItemOccurrence.Items.Clear();
 
             int? eventItemId = ddlCalendarItem.SelectedValueAsInt();
             if ( eventItemId.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    ddlCalendarItemCampus.DataSource = new EventItemCampusService( rockContext )
+                    ddlCalendarItemOccurrence.DataSource = new EventItemOccurrenceService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( c => c.EventItemId == eventItemId.Value )
                         .Select( c => new
@@ -366,7 +366,7 @@ namespace RockWeb.Blocks.Event
                         .OrderBy( c => c.Order )
                         .ThenBy( c => c.Name )
                         .ToList();
-                    ddlCalendarItemCampus.DataBind();
+                    ddlCalendarItemOccurrence.DataBind();
 
                     if ( ddlCalendarItem.Items.Count > 0 )
                     {

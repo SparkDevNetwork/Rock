@@ -80,16 +80,6 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets a masked version of the account number. This is a value with "*" and a partial account number (usually the last 4 digits).
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the masked account number.
-        /// </value>
-        [MaxLength( 100 )]
-        [DataMember]
-        public string MaskedAccountNumber { get; set; }
-
-        /// <summary>
         /// Gets or sets the transaction code for the transaction.
         /// </summary>
         /// <value>
@@ -109,27 +99,13 @@ namespace Rock.Model
         public int? FinancialGatewayId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefinedValueId of the currency type <see cref="Rock.Model.DefinedValue"/> indicating the currency that the
-        /// transaction was made in.
+        /// Gets or sets the financial payment detail identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32" /> representing the DefinedValueId of the CurrencyType <see cref="Rock.Model.DefinedValue" /> for this transaction.
+        /// The financial payment detail identifier.
         /// </value>
         [DataMember]
-        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE )]
-        public int? CurrencyTypeValueId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the DefinedValueId of the credit card type <see cref="Rock.Model.DefinedValue"/> indicating the credit card brand/type that was used 
-        /// to make this transaction. This value will be null for transactions that were not made by credit card.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the DefinedValueId of the credit card type <see cref="Rock.Model.DefinedValue"/> that was used to make this transaction.
-        /// This value value will be null for transactions that were not made by credit card.
-        /// </value>
-        [DataMember]
-        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE )]
-        public int? CreditCardTypeValueId { get; set; }
+        public int? FinancialPaymentDetailId { get; set; }
 
         #endregion
 
@@ -161,26 +137,14 @@ namespace Rock.Model
         public virtual FinancialGateway FinancialGateway { get; set; }
 
         /// <summary>
-        /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this 
-        /// transaction.
+        /// Gets or sets the financial payment detail.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for the transaction.
+        /// The financial payment detail.
         /// </value>
         [DataMember]
-        public virtual DefinedValue CurrencyTypeValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the credit card type <see cref="Rock.Model.DefinedValue"/> indicating the type of credit card that was used for this transaction.
-        /// If this was not a credit card based transaction, this value will be null.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Model.DefinedValue" /> indicating the type of credit card that was used for this transaction. This value is null
-        /// for transactions that were not made by credit card.
-        /// </value>
-        [DataMember]
-        public virtual DefinedValue CreditCardTypeValue { get; set; }
-
+        public virtual FinancialPaymentDetail FinancialPaymentDetail { get; set; }
+        
         #endregion
 
         #region Public Methods
@@ -193,7 +157,12 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.MaskedAccountNumber.ToStringSafe();
+            if ( this.FinancialPaymentDetail != null )
+            {
+                return this.FinancialPaymentDetail.AccountNumberMasked.ToStringSafe();
+            }
+
+            return TransactionCode;
         }
 
         /// <summary>
@@ -202,18 +171,24 @@ namespace Rock.Model
         /// <returns></returns>
         public ReferencePaymentInfo GetReferencePayment()
         {
-            var reference = new ReferencePaymentInfo();
-            reference.TransactionCode = this.TransactionCode;
-            reference.ReferenceNumber = this.ReferenceNumber;
-            reference.MaskedAccountNumber = this.MaskedAccountNumber;
-            reference.InitialCurrencyTypeValue = DefinedValueCache.Read( this.CurrencyTypeValue );
-            if ( reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
+            if ( this.FinancialPaymentDetail != null )
             {
-                reference.InitialCreditCardTypeValue = DefinedValueCache.Read( this.CreditCardTypeValue );
+                var reference = new ReferencePaymentInfo();
+                reference.TransactionCode = this.TransactionCode;
+                reference.ReferenceNumber = this.ReferenceNumber;
+                reference.MaskedAccountNumber = this.FinancialPaymentDetail.AccountNumberMasked;
+                reference.InitialCurrencyTypeValue = DefinedValueCache.Read( this.FinancialPaymentDetail.CurrencyTypeValue );
+                if ( reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
+                {
+                    reference.InitialCreditCardTypeValue = DefinedValueCache.Read( this.FinancialPaymentDetail.CreditCardTypeValue );
+                }
+
+                return reference;
             }
 
-            return reference;
+            return null;
         }
+
         #endregion
 
     }
@@ -233,8 +208,7 @@ namespace Rock.Model
             this.HasOptional( t => t.PersonAlias ).WithMany().HasForeignKey( t => t.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Group ).WithMany().HasForeignKey( t => t.GroupId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.FinancialGateway ).WithMany().HasForeignKey( t => t.FinancialGatewayId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.FinancialPaymentDetail ).WithMany().HasForeignKey( t => t.FinancialPaymentDetailId ).WillCascadeOnDelete( false );
         }
     }
 

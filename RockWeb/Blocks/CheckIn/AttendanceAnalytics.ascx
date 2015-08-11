@@ -32,6 +32,7 @@
                             
                         </div>
 
+                        <Rock:NotificationBox ID="nbDateRangeWarning" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" Dismissable="true" />
                         <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" />
 
                         <Rock:RockControlWrapper ID="rcwGroupBy" runat="server" Label="Group By">
@@ -103,6 +104,7 @@
                                                         <asp:LinkButton ID="btnGraphByTotal" runat="server" CssClass="btn btn-xs btn-default active" Text="Total" data-val="0" OnClick="btnGraphBy_Click" />
                                                         <asp:LinkButton ID="btnGraphByGroup" runat="server" CssClass="btn btn-xs btn-default" Text="Group" data-val="1" OnClick="btnGraphBy_Click" />
                                                         <asp:LinkButton ID="btnGraphByCampus" runat="server" CssClass="btn btn-xs btn-default" Text="Campus" data-val="2" OnClick="btnGraphBy_Click" />
+                                                        <asp:LinkButton ID="btnGraphByLocation" runat="server" CssClass="btn btn-xs btn-default" Text="Location" data-val="4" OnClick="btnGraphBy_Click" />
                                                         <asp:LinkButton ID="btnGraphByTime" runat="server" CssClass="btn btn-xs btn-default" Text="Schedule" data-val="3" OnClick="btnGraphBy_Click" />
                                                     </div>
                                                 </div>

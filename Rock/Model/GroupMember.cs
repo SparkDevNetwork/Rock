@@ -411,9 +411,10 @@ namespace Rock.Model
             {
                 GroupRequirementId = a.GroupRequirement.Id,
                 MeetsGroupRequirement = a.RequirementMetDateTime.HasValue
-                    ? MeetsGroupRequirement.Meets
+                    ? a.RequirementWarningDateTime.HasValue ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.Meets
                     : MeetsGroupRequirement.NotMet,
-                a.RequirementWarningDateTime
+                a.RequirementWarningDateTime,
+                a.LastRequirementCheckDateTime,
             } );
 
             // get all the group requirements that apply the group member's role
@@ -427,14 +428,15 @@ namespace Rock.Model
                          {
                              GroupRequirement = groupRequirement,
                              MeetsGroupRequirement = metRequirement != null ? metRequirement.MeetsGroupRequirement : MeetsGroupRequirement.NotMet,
-                             WarningIncluded = metRequirement != null ? metRequirement.RequirementWarningDateTime.HasValue : false
+                             RequirementWarningDateTime = metRequirement != null ? metRequirement.RequirementWarningDateTime : null,
+                             LastRequirementCheckDateTime = metRequirement != null ? metRequirement.LastRequirementCheckDateTime : null
                          };
 
             return result;
         }
 
         /// <summary>
-        /// Calculates and Updates the GroupMemberRequirements for the GroupMember, then saves the changes to the database
+        /// If Group has GroupRequirements, will calculate and update the GroupMemberRequirements for the GroupMember, then save the changes to the database
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="saveChanges">if set to <c>true</c> [save changes].</param>
@@ -450,27 +452,10 @@ namespace Rock.Model
             }
 
             var updatedRequirements = group.PersonMeetsGroupRequirements( this.PersonId, this.GroupRoleId );
-            foreach ( var calculatedRequirement in this.GroupMemberRequirements.Where( a => a.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual ).ToList() )
-            {
-                this.GroupMemberRequirements.Remove( calculatedRequirement );
-                groupMemberRequirementsService.Delete( calculatedRequirement );
-            }
 
-            var currentDateTime = RockDateTime.Now;
             foreach ( var updatedRequirement in updatedRequirements )
             {
-                var existingRequirement = this.GroupMemberRequirements.FirstOrDefault( a => a.GroupRequirementId == updatedRequirement.GroupRequirement.Id );
-                if ( existingRequirement == null && updatedRequirement.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
-                {
-                    this.GroupMemberRequirements.Add(
-                        new GroupMemberRequirement
-                        {
-                            GroupRequirementId = updatedRequirement.GroupRequirement.Id,
-                            LastRequirementCheckDateTime = currentDateTime,
-                            RequirementMetDateTime = currentDateTime,
-                            RequirementWarningDateTime = updatedRequirement.WarningIncluded ? currentDateTime : (DateTime?)null
-                        } );
-                }
+                updatedRequirement.GroupRequirement.UpdateGroupMemberRequirementResult( rockContext, updatedRequirement.PersonId, updatedRequirement.MeetsGroupRequirement );
             }
 
             if ( saveChanges )
