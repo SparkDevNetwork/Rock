@@ -5287,15 +5287,6 @@ a.help {
 .panel-widget .panel-heading small {
   color: #9d9d9d;
 }
-.panel-info {
-  border-top-color: #cdc5ba;
-}
-.panel-info .panel-body {
-  background-color: #edeae6;
-}
-.panel-info .list-group-item {
-  background-color: #edeae6;
-}
 .panel-persondetails {
   border-color: #d8d1c8;
   border-top-color: #cdc5ba;
@@ -6000,6 +5991,15 @@ h4,
 }
 .panel.panel-primary .panel-heading {
   background-color: #ee7624;
+}
+.panel-info {
+  border-top-color: #cdc5ba;
+}
+.panel-info .panel-body {
+  background-color: #edeae6;
+}
+.panel-info .list-group-item {
+  background-color: #edeae6;
 }
 .tag-letterlist a {
   color: #ee7624;
