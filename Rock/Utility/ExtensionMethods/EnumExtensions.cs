@@ -22,7 +22,7 @@ namespace Rock
     /// <summary>
     /// System.Enum extensions
     /// </summary>
-    public static class EnumExtensions
+    public static partial class ExtensionMethods
     {
         #region Enum Extensions
 

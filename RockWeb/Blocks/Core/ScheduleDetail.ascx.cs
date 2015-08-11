@@ -403,8 +403,15 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
+            var friendlyText = schedule.ToFriendlyScheduleText();
+            if (!schedule.HasSchedule())
+            {
+                friendlyText = string.Format( "<label class='label label-warning'>{0}</label>", friendlyText );
+            }
+            
             DescriptionList descriptionList = new DescriptionList()
                 .Add( "Description", schedule.Description ?? string.Empty )
+                .Add( "Schedule", friendlyText )
                 .Add( "Next Occurrence", occurrenceText )
                 .Add( "Category", schedule.Category != null ? schedule.Category.Name : string.Empty );
 

@@ -71,7 +71,7 @@
 
                     $('#' + options.aRemove).show();
                     if (options.postbackScript) {
-                        eval(options.postbackScript);
+                        window.location = "javascript:" + options.postbackScript;
                     }
 
                     if (options.doneFunction) {
@@ -114,7 +114,7 @@
                     $el.attr('style', 'background-image:url(' + noPictureUrl + ');background-size:cover;background-position:50%');
                 }
                 if (options.postbackRemovedScript) {
-                    eval(options.postbackRemovedScript);
+                    window.location = "javascript:" + options.postbackScript;
                 } else {
                     $('#' + options.hfFileId).val('0');
                 }

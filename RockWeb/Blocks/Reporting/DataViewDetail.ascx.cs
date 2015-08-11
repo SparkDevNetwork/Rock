@@ -280,6 +280,17 @@ $(document).ready(function() {
                 else
                 {
                     categoryId = dataView.CategoryId;
+                    
+                    // delete report filter
+                    try
+                    {
+                        DataViewFilterService dataViewFilterService = new DataViewFilterService( rockContext );
+                        DeleteDataViewFilter( dataView.DataViewFilter, dataViewFilterService );
+                    }
+                    catch
+                    {
+                        //
+                    }
 
                     dataViewService.Delete( dataView );
                     rockContext.SaveChanges();
@@ -410,7 +421,13 @@ $(document).ready(function() {
             {
                 btnEdit.Visible = true;
                 string errorMessage = string.Empty;
-                btnDelete.Visible = dataViewService.CanDelete( dataView, out errorMessage );
+                btnDelete.Enabled = dataViewService.CanDelete( dataView, out errorMessage );
+                if (!btnDelete.Enabled)
+                {
+                    btnDelete.ToolTip = errorMessage;
+                    btnDelete.Attributes["onclick"] = null;
+                }
+
                 if ( dataView.Id > 0 )
                 {
                     ShowReadonlyDetails( dataView );
@@ -594,17 +611,17 @@ $(document).ready(function() {
 
                     if ( entityType != null )
                     {
-                        grid.CreatePreviewColumns( entityType );
-
-                        var qry = dataView.GetQuery( grid.SortProperty, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180, out errorMessages );
-
-                        if ( fetchRowCount.HasValue )
-                        {
-                            qry = qry.Take( fetchRowCount.Value );
-                        }
-
                         try
                         {
+                            grid.CreatePreviewColumns( entityType );
+
+                            var qry = dataView.GetQuery( grid.SortProperty, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180, out errorMessages );
+
+                            if ( fetchRowCount.HasValue )
+                            {
+                                qry = qry.Take( fetchRowCount.Value );
+                            }
+                        
                             grid.SetLinqDataSource( qry.AsNoTracking() );
                             grid.DataBind();
                         }

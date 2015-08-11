@@ -93,7 +93,7 @@ namespace Rock.Workflow.Action
                         if ( systemEmail != null )
                         {
                             var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-                            Email.Send( systemEmail.Guid, recipients, appRoot );
+                            Email.Send( systemEmail.Guid, recipients, appRoot, string.Empty, false );
                         }
                         else
                         {

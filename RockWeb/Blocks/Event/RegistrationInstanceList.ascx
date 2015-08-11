@@ -27,7 +27,7 @@
                                     <asp:ListItem Text="Inactive" Value="inactive"></asp:ListItem>
                                 </Rock:RockDropDownList>
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gInstances" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gInstances_Edit" RowItemText="Instance" >
+                            <Rock:Grid ID="gInstances" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gInstances_Edit" RowItemText="Instance" CssClass="js-grid-instances" >
                                 <Columns>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                                     <Rock:DateField DataField="StartDateTime" HeaderText="Start Date" SortExpression="StartDateTime" />

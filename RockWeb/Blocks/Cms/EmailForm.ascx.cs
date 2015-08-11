@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Cms
     <input type=""file"" id=""attachment"" name=""attachment"" /> <br />
     <input type=""file"" id=""attachment2"" name=""attachment2"" />
 </div>
-", "", 5 )]
+", "", 4 )]
     [CodeEditorField( "Message Body", "The email message body. <span class='tip tip-lava'></span>", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, false, @"{{ GlobalAttribute.EmailHeader }}
 
 <p>
@@ -109,12 +109,13 @@ namespace RockWeb.Blocks.Cms
 <p>&nbsp;</p>
 
 {{ GlobalAttribute.EmailFooter }}", "", 5 )]  
-    [CodeEditorField("Response Message", "The message the user will see when they submit the form if no response page if provided.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"<div class=""alert alert-info"">
+    [CodeEditorField("Response Message", "The message the user will see when they submit the form if no response page if provided. Lava merege fields are available for you to use in your message.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"<div class=""alert alert-info"">
     Thank you for your response. We appreciate your feedback!
 </div>","",6)]
     [LinkedPage("Response Page", "The page the use will be taken to after submitting the form. Use the 'Response Message' field if you just need a simple message.", false, "", "", 7)]
     [TextField("Submit Button Text", "The text to display for the submit button.", true, "Submit", "", 8)]
     [BooleanField("Enable Debug", "Shows the fields available to merge in lava.", false, "", 9)]
+    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 10 )]
     public partial class EmailForm : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -296,8 +297,8 @@ namespace RockWeb.Blocks.Cms
                 string fromEmail = GetAttributeValue("FromEmail");
                 string fromName = GetAttributeValue( "FromName" );
                 string subject = GetAttributeValue("Subject");
-                
-                Email.Send(fromEmail, fromName, subject, recipients, message, ResolveRockUrl( "~/"), ResolveRockUrl( "~~/"), attachments);
+
+                Email.Send( fromEmail, fromName, subject, recipients, message, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), attachments, GetAttributeValue( "SaveCommunicationHistory" ).AsBoolean() );
 
                 // set response
                 if ( !string.IsNullOrWhiteSpace(GetAttributeValue("ResponsePage")) )

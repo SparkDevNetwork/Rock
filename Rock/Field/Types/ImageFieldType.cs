@@ -50,7 +50,7 @@ namespace Rock.Field.Types
                 string queryParms = string.Empty;
                 if ( condensed )
                 {
-                    queryParms = "&width=100"; // for grids hardcode to 100px wide
+                    queryParms = "&width=120"; // for grids hardcode to 100px wide
                 }
                 else
                 {
@@ -75,8 +75,7 @@ namespace Rock.Field.Types
                 Guid? imageGuid = value.AsGuidOrNull();
                 if ( imageGuid.HasValue )
                 {
-                    string imageUrlFormat = "<img src='" + imagePath + "?guid={0}{1}' />";
-                    return string.Format( imageUrlFormat, imageGuid, queryParms );
+                    return string.Format("<a href='{0}?guid={1}' target='_blank'><img src='{0}?guid={1}{2}' /></a>", imagePath, imageGuid, queryParms );
                 }
             }
 

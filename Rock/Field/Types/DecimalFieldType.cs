@@ -33,6 +33,28 @@ namespace Rock.Field.Types
         #region Formatting 
 
         /// <summary>
+        /// Formats the value.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            decimal? decimalValue = value.AsDecimalOrNull();
+            if ( decimalValue.HasValue )
+            {
+                // from http://stackoverflow.com/a/216705/1755417 (to trim trailing zeros)
+                return base.FormatValue( parentControl, decimalValue.Value.ToString("G29"), configurationValues, condensed );
+            }
+            else
+            {
+                return base.FormatValue( parentControl, value, configurationValues, condensed );
+            }
+        }
+
+        /// <summary>
         /// Gets the align value that should be used when displaying value
         /// </summary>
         public override System.Web.UI.WebControls.HorizontalAlign AlignValue
@@ -119,6 +141,34 @@ namespace Rock.Field.Types
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, or ValueAsNumeric)
+        /// </summary>
+        /// <value>
+        /// The name of the attribute value field.
+        /// </value>
+        public override string AttributeValueFieldName
+        {
+            get
+            {
+                return "ValueAsNumeric";
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the attribute value field.
+        /// </summary>
+        /// <value>
+        /// The type of the attribute value field.
+        /// </value>
+        public override Type AttributeValueFieldType
+        {
+            get
+            {
+                return typeof( decimal? );
+            }
         }
 
         #endregion

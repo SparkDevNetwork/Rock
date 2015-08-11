@@ -54,17 +54,6 @@
 // 2. HTML Overrides
 //--------------------------------
 
-// text selection color
-::selection {
-	background: @text-selection-color;
-    color: @text-selection-text-color;
-}
-::-moz-selection {
-	background: @text-selection-color;
-    color: @text-selection-text-color;
-}
-
-
 
 // 3. Utility Classes
 //--------------------------------
@@ -100,8 +89,8 @@
     font-family: @font-family-monospace;
     padding: 2px 4px;
     font-size: 90%;
-    color: @accent-text-color;
-    background-color: @accent-color;
+    color: @state-info-text;
+    background-color: @state-info-bg;
     white-space: nowrap;
     border-radius: @border-radius-base;
 }
@@ -135,6 +124,21 @@ a.help {
 // 4. Bootstrap Overrides
 //--------------------------------
 
+// change the color of the none selected links
+// by default bootsrap does not allow the color of a link roll-over to be a different color. Modified it to allow this.
+.nav-pills {
+    > li {
+        > a {
+            color: @nav-pills-link-color;
+
+            &:hover {
+                color: @nav-pills-active-link-hover-color;
+                background-color: @nav-pills-active-link-hover-bg;
+            }
+        }
+    }
+}
+
 .form-right {
     .clearfix();
     text-align: right;
@@ -163,19 +167,23 @@ a.help {
 
 // add badge colors back to BS3
 .badge-danger {
-    background-color: @label-danger-bg;
+    background-color: @label-danger-bg !important;
+    color: #fff !important;
 }
 
 .badge-warning {
-    background-color: @label-warning-bg;
+    background-color: @label-warning-bg !important;
+    color: #fff !important;
 }
 
 .badge-success {
-    background-color: @label-success-bg;
+    background-color: @label-success-bg !important;
+    color: #fff !important;
 }
 
 .badge-info {
-    background-color: @label-info-bg;
+    background-color: @label-info-bg !important;
+    color: #fff !important;
 }
 
 // add alternate popover title style that exists inside of the popover-content to use ajax updates
@@ -215,7 +223,7 @@ a.help {
 .list-group-item {
     .clearfix;
 
-    .toggle-container {   
+    .toggle-container {
         display: inline-block;
     }
 
@@ -228,8 +236,9 @@ a.help {
 
 // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
 .panel {
+
     legend {
-        border-color: @accent-color;
+        border-color: red;// @axxxccent-color;
     }
 
     .panel-heading {
@@ -255,19 +264,22 @@ a.help {
             margin-bottom: 0;
         }
 
-        i.fa {
-            color: lighten(@text-color, 10%);
-        }
+
     }
 
     .panel-body {
         border-radius: 0 0 4px 4px;
     }
+
+    .panel-footer {
+        background-color: @panel-footer-bg;
+        color: @panel-footer-color;
+    }
 }
 
 .panel-widget {
     // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
-    .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 5%););
+    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
     .panel-heading {
         border: 0;
@@ -286,25 +298,17 @@ a.help {
         }
 
         small {
-            color: lighten(@accent-text-color, 20%);
+            color: lighten(@panel-heading-text-color, 20%);
         }
     }
 }
 
-.panel-info {
-
-    .panel-body {
-        background-color: @body-bg;
-    }
-
-    .list-group-item {
-        background-color: @body-bg;
-    }
-}
 
 .panel-persondetails {
     // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
-    .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 5%););
+    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+
+    border-top-color: @panel-top-border-color;
 
     .panel-heading {
         .actions {
@@ -345,7 +349,7 @@ a.help {
 
 .panel-block {
     //.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;)
-    .panel-variant(@panel-default-border; @text-color; @panel-default-heading-bg; darken(@panel-default-heading-bg, 2%););
+    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
     border-top-color: @panel-top-border-color;
 
@@ -440,11 +444,11 @@ a.help {
 }
 
 .btn-authenication {
-    .button-variant(@btn-authenication-color; @btn-authenication-bg; @btn-authenication-border);
+    .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
     width: 100%;
 
     &:hover {
-        background-color: darken(@accent-color, 10%);
+        background-color: darken(@btn-default-bg, 10%);
     }
 
     &.facebook:before {
@@ -475,10 +479,6 @@ a.help {
         color: inherit;
         background-color: transparent;
     }
-}
-// new alert types
-.alert-action {
-    .alert-variant(@accent-color; @accent-color; @accent-text-color);
 }
 
 // make links in alerts the same color as the text with a nice dotted underline
@@ -627,7 +627,7 @@ div.aspNetDisabled {
 //--------------------------------
 
 // abstracted fixed width icon element
-.icon-fw { 
+.icon-fw {
       width: (18em / 14); // font-awesome
       text-align: center;
 }

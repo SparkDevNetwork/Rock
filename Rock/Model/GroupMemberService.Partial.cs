@@ -130,6 +130,22 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> who are members of a specific group.
+        /// </summary>
+        /// <param name="groupGuid">A <see cref="System.Guid"/> representing the Guid of a <see cref="Rock.Model.Group"/> to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.GroupMember">GroupMembers</see> should be included. If <c>true</c> 
+        /// deceased group members will be included, if <c>false</c> deceased group members will not be included. This parameter defaults to false.</param>
+        /// <returns>
+        /// A queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to the specified group.
+        /// </returns>
+        public IQueryable<GroupMember> GetByGroupGuid( Guid groupGuid, bool includeDeceased = false )
+        {
+            return Queryable( "Person,GroupRole,Group", includeDeceased )
+                .Where( t => t.Group.Guid == groupGuid )
+                .OrderBy( g => g.GroupRole.Order );
+        }
+
+        /// <summary>
         /// Returns a collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> by the Id of the <see cref="Rock.Model.Group"/>, the Id of the <see cref="Rock.Model.Person"/>.
         /// </summary>
         /// <param name="groupId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> to search by.</param>
@@ -141,7 +157,6 @@ namespace Rock.Model
         {
             return GetByGroupId(groupId, includeDeceased).Where( g => g.PersonId == personId );
         }
-
 
         /// <summary>
         /// Returns the first <see cref="Rock.Model.GroupMember"/> that mathces the Id of the <see cref="Rock.Model.Group"/>,
@@ -160,7 +175,6 @@ namespace Rock.Model
         {
             return GetByGroupIdAndPersonId( groupId, personId, includeDeceased ).Where( t => t.GroupRoleId == groupRoleId ).FirstOrDefault();
         }
-
 
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> by the Id of the <see cref="Rock.Model.GroupTypeRole"/> that the member belongs to.
@@ -282,7 +296,7 @@ namespace Rock.Model
                 {
                     Guid ownerRoleGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER );
 
-                    var memberInfo = Queryable()
+                    var memberInfo = Queryable( true )
                         .Where( m =>
                             m.GroupId == groupMember.GroupId &&
                             m.GroupRole.Guid.Equals( ownerRoleGuid ) )

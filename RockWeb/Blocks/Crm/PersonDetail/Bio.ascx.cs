@@ -151,7 +151,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         lImage.Text = imgTag;
                     }
 
-                    FollowingsHelper.SetFollowing( Person, pnlFollow, this.CurrentPerson );
+                    FollowingsHelper.SetFollowing( Person.PrimaryAlias, pnlFollow, this.CurrentPerson );
 
                     var socialCategoryGuid = Rock.SystemGuid.Category.PERSON_ATTRIBUTES_SOCIAL.AsGuid();
                     if ( !socialCategoryGuid.IsEmpty() )
@@ -228,7 +228,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                                     {
                                         string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
                                         sbActions.AppendFormat(
-                                            "<li><a href='{0}'><i class='{1}'></i> {2}</a></li>",
+                                            "<li><a href='{0}'><i class='icon-fw {1}'></i> {2}</a></li>",
                                             ResolveRockUrl( url ),
                                             workflowType.IconCssClass,
                                             workflowType.Name );

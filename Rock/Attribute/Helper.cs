@@ -898,6 +898,18 @@ namespace Rock.Attribute
         }
 
         /// <summary>
+        /// Adds the edit controls.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
+        [Obsolete("Use the other AddEditControls (which requires ValidationGroup)")]
+        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue)
+        {
+            AddEditControls( item, parentControl, setValue, "", new List<string>(), false );
+        }
+        
+        /// <summary>
         /// Adds edit controls for each of the item's attributes
         /// </summary>
         /// <param name="item">The item.</param>

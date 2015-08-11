@@ -44,6 +44,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [IgnoreCanDelete]
         public int ConnectionRequestId { get; set; }
 
         /// <summary>

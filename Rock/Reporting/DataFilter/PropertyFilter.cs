@@ -114,9 +114,19 @@ namespace Rock.Reporting.DataFilter
         public override string FormatSelection( Type entityType, string selection )
         {
             string result = entityType.Name.SplitCase() + " Property";
+            List<string> values;
 
             // First value is the field id (property of attribute), remaining values are the field type's filter values
-            var values = JsonConvert.DeserializeObject<List<string>>( selection );
+            try
+            {
+                values = JsonConvert.DeserializeObject<List<string>>( selection );
+            }
+            catch (Exception ex)
+            {
+                ExceptionLogService.LogException( ex, null );
+                return "Error";
+            }
+
             if ( values.Count >= 1 )
             {
                 // First value in array is always the name of the entity field being filtered
@@ -137,7 +147,7 @@ namespace Rock.Reporting.DataFilter
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
+        public override Control[] CreateChildControls( Type entityType, FilterField filterControl, FilterMode filterMode )
         {
             var containerControl = new DynamicControlsPanel();
             containerControl.ID = string.Format( "{0}_containerControl", filterControl.ID );
@@ -149,7 +159,6 @@ namespace Rock.Reporting.DataFilter
             ddlEntityField.ID = string.Format( "{0}_ddlProperty", filterControl.ID );
             ddlEntityField.ClientIDMode = ClientIDMode.Predictable;
             containerControl.Controls.Add( ddlEntityField );
-            this.entityFieldPicker = ddlEntityField;
 
             // add Empty option first
             ddlEntityField.Items.Add( new ListItem() );
@@ -183,7 +192,8 @@ namespace Rock.Reporting.DataFilter
         protected void ddlEntityField_SelectedIndexChanged( object sender, EventArgs e )
         {
             var ddlEntityField = sender as RockDropDownList;
-            var containerControl = ddlEntityField.Parent as DynamicControlsPanel;
+            var containerControl = ddlEntityField.FirstParentControlOfType<DynamicControlsPanel>();
+            FilterField filterControl = ddlEntityField.FirstParentControlOfType<FilterField>();
             
             var entityField = this.entityFields.FirstOrDefault( a => a.Name == ddlEntityField.SelectedValue );
             if ( entityField != null )
@@ -191,7 +201,7 @@ namespace Rock.Reporting.DataFilter
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.Name );
                 if ( !containerControl.Controls.OfType<Control>().Any( a => a.ID == controlId ) )
                 {
-                    var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true );
+                    var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, filterControl.FilterMode );
                     if ( control != null )
                     {
                         // Add the filter controls of the selected field
@@ -201,7 +211,6 @@ namespace Rock.Reporting.DataFilter
             }
         }
 
-        private DropDownList entityFieldPicker = null;
         private List<EntityField> entityFields = null;
 
         /// <summary>
@@ -211,7 +220,8 @@ namespace Rock.Reporting.DataFilter
         /// <param name="filterControl">The filter control.</param>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
+        /// <param name="filterMode"></param>
+        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls, FilterMode filterMode )
         {
             if ( controls.Length > 0 )
             {
@@ -219,31 +229,18 @@ namespace Rock.Reporting.DataFilter
                 
                 var ddlEntityField = containerControl.Controls[0] as DropDownList;
                 var entityFields = EntityHelper.GetEntityFields( entityType );
-                RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, containerControl.Controls.OfType<Control>().ToList(), containerControl.ID );
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [hide entity field picker].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [hide entity field picker]; otherwise, <c>false</c>.
-        /// </value>
-        public void HideEntityFieldPicker()
-        {
-            if ( entityFieldPicker != null )
-            {
-                entityFieldPicker.Style[HtmlTextWriterStyle.Display] = "none";
+                RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, containerControl.Controls.OfType<Control>().ToList(), containerControl.ID, filterMode );
             }
         }
 
         /// <summary>
         /// Gets the selection.
         /// </summary>
-        /// <param name="entityType"></param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
+        /// <param name="filterMode"></param>
         /// <returns></returns>
-        public override string GetSelection( Type entityType, Control[] controls )
+        public override string GetSelection( Type entityType, Control[] controls, FilterMode filterMode )
         {
             var values = new List<string>();
 
@@ -262,7 +259,7 @@ namespace Rock.Reporting.DataFilter
                     if ( control != null )
                     {
                         values.Add( ddlProperty.SelectedValue );
-                        entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig ).ForEach( v => values.Add( v ) );
+                        entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig, filterMode ).ForEach( v => values.Add( v ) );
                     }
                 }
             }
@@ -274,10 +271,11 @@ namespace Rock.Reporting.DataFilter
         /// <summary>
         /// Sets the selection.
         /// </summary>
-        /// <param name="entityType"></param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
-        public override void SetSelection( Type entityType, Control[] controls, string selection )
+        /// <param name="filterMode"></param>
+        public override void SetSelection( Type entityType, Control[] controls, string selection, FilterMode filterMode )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
@@ -305,7 +303,7 @@ namespace Rock.Reporting.DataFilter
         /// <summary>
         /// Gets the expression.
         /// </summary>
-        /// <param name="entityType"></param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>

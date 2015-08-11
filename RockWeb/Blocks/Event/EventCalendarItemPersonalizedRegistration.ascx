@@ -77,7 +77,7 @@
                                              </div>
                                          </div>
                                      
-                                         <%# string.Format(Eval("CampusNote").ToString().Length > 0 ? "<strong>Campus Note:</strong><p>{0}</p>" : "",  Eval("CampusNote")) %>
+                                         <%# string.Format(Eval("Note").ToString().Length > 0 ? "<strong>Note:</strong><p>{0}</p>" : "",  Eval("Note")) %>
                                          <asp:HiddenField ID="hfEventId" runat="server" Value='<%# Eval("Id") %>' />
                                      </div>
                                  </div>

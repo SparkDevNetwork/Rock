@@ -31,7 +31,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sends email
     /// </summary>
-    [Description( "Sends an email.  The recipient can either be a person or email address determined by the 'To Attribute' value, or an email address entered in the 'To' field." )]
+    [Description( "Sends an email.  The recipient can either be a group, person or email address determined by the 'To Attribute' value, or an email address entered in the 'To' field." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Send Email" )]
 
@@ -41,6 +41,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType" } )]
     [TextField( "Subject", "The subject that should be used when sending email. <span class='tip tip-lava'></span>", false, "", "", 2 )]
     [CodeEditorField( "Body", "The body of the email that should be sent. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 3 )]
+    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 4 )]
     public class SendEmail : ActionComponent
     {
         /// <summary>
@@ -61,6 +62,7 @@ namespace Rock.Workflow.Action
             string fromValue = GetAttributeValue( action, "From" );
             string subject = GetAttributeValue( action, "Subject" );
             string body = GetAttributeValue( action, "Body" );
+            bool createCommunicationRecord = GetAttributeValue( action, "SaveCommunicationHistory" ).AsBoolean();
 
             string from = string.Empty;
             Guid? fromGuid = fromValue.AsGuidOrNull();
@@ -112,7 +114,7 @@ namespace Rock.Workflow.Action
                         {
                             case "Rock.Field.Types.TextFieldType":
                                 {
-                                    Send( toValue, from, subject, body, mergeFields, rockContext );
+                                    Send( toValue, from, subject, body, mergeFields, rockContext, createCommunicationRecord );
                                     break;
                                 }
                             case "Rock.Field.Types.PersonFieldType":
@@ -144,7 +146,7 @@ namespace Rock.Workflow.Action
                                         {
                                             var personDict = new Dictionary<string, object>(mergeFields);
                                             personDict.Add("Person", person);
-                                            Send( person.Email, from, subject, body, personDict, rockContext );
+                                            Send( person.Email, from, subject, body, personDict, rockContext, createCommunicationRecord );
                                         }
                                     }
                                     break;
@@ -152,20 +154,37 @@ namespace Rock.Workflow.Action
                             case "Rock.Field.Types.GroupFieldType":
                                 {
                                     int? groupId = toValue.AsIntegerOrNull();
-                                    if ( !groupId.HasValue )
+                                    Guid? groupGuid = toValue.AsGuidOrNull();
+                                    IQueryable<GroupMember> qry = null;
+
+                                    // Handle situations where the attribute value is the ID
+                                    if ( groupId.HasValue )
                                     {
-                                        foreach ( var person in new GroupMemberService( rockContext )
-                                            .GetByGroupId( groupId.Value )
+                                        qry = new GroupMemberService( rockContext ).GetByGroupId( groupId.Value );
+                                    }
+                                    // Handle situations where the attribute value stored the ID
+                                    else if ( groupGuid.HasValue )
+                                    {
+                                        qry = new GroupMemberService( rockContext ).GetByGroupGuid( groupGuid.Value );
+                                    }
+                                    else
+                                    {
+                                        action.AddLogEntry( "Invalid Recipient: No valid group id or Guid", true );
+                                    }
+
+                                    if ( qry != null )
+                                    {
+                                        foreach ( var person in qry
                                             .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                                             .Select( m => m.Person ) )
                                         {
-                                            if ( (person.IsEmailActive ?? true) &&
-                                                person.EmailPreference != EmailPreference.DoNotEmail && 
+                                            if ( ( person.IsEmailActive ?? true ) &&
+                                                person.EmailPreference != EmailPreference.DoNotEmail &&
                                                 !string.IsNullOrWhiteSpace( person.Email ) )
                                             {
                                                 var personDict = new Dictionary<string, object>( mergeFields );
                                                 personDict.Add( "Person", person );
-                                                Send( person.Email, from, subject, body, personDict, rockContext );
+                                                Send( person.Email, from, subject, body, personDict, rockContext, createCommunicationRecord );
                                             }
                                         }
                                     }
@@ -177,13 +196,13 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                Send( to.ResolveMergeFields( mergeFields ), from, subject, body, mergeFields, rockContext );
+                Send( to.ResolveMergeFields( mergeFields ), from, subject, body, mergeFields, rockContext, createCommunicationRecord );
             }
 
             return true;
         }
 
-        private void Send( string recipient, string from, string subject, string body, Dictionary<string, object> mergeFields, RockContext rockContext )
+        private void Send( string recipient, string from, string subject, string body, Dictionary<string, object> mergeFields, RockContext rockContext, bool createCommunicationRecord )
         {
             var recipients = new List<string>();
             recipients.Add( recipient );
@@ -203,7 +222,15 @@ namespace Rock.Workflow.Action
                     if ( transport != null && transport.IsActive )
                     {
                         var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-                        transport.Send( mediumData, recipients, appRoot, string.Empty );
+
+                        if ( transport is Rock.Communication.Transport.SMTPComponent )
+                        {
+                            ( (Rock.Communication.Transport.SMTPComponent)transport ).Send( mediumData, recipients, appRoot, string.Empty, createCommunicationRecord );
+                        }
+                        else
+                        {
+                            transport.Send( mediumData, recipients, appRoot, string.Empty );
+                        }
                     }
                 }
             }

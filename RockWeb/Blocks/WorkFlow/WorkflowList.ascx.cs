@@ -274,8 +274,8 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         try
                         {
-                            var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
-                            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues ).ToJson() );
+                            var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                            gfWorkflows.SaveUserPreference( MakeKeyUniqueToType( attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                         }
                         catch { }
                     }
@@ -351,10 +351,17 @@ namespace RockWeb.Blocks.WorkFlow
             var workflow = new WorkflowService( new RockContext() ).Get( e.RowKeyId );
             if ( workflow != null )
             {
-                var qryParam = new Dictionary<string, string>();
-                qryParam.Add( "WorkflowTypeId", workflow.WorkflowTypeId.ToString() );
-                qryParam.Add( "WorkflowId", workflow.Id.ToString() );
-                NavigateToLinkedPage( "EntryPage", qryParam );
+                if ( workflow.HasActiveEntryForm( CurrentPerson ) )
+                {
+                    var qryParam = new Dictionary<string, string>();
+                    qryParam.Add( "WorkflowTypeId", workflow.WorkflowTypeId.ToString() );
+                    qryParam.Add( "WorkflowId", workflow.Id.ToString() );
+                    NavigateToLinkedPage( "EntryPage", qryParam );
+                }
+                else
+                {
+                    NavigateToLinkedPage( "DetailPage", "workflowId", e.RowKeyId );
+                }
             }
         }
 
@@ -473,7 +480,7 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 foreach ( var attribute in AvailableAttributes )
                 {
-                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false );
+                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
                     if ( control is IRockControl )
                     {
                         var rockControl = (IRockControl)control;
@@ -654,7 +661,7 @@ namespace RockWeb.Blocks.WorkFlow
                             var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
                             if ( filterControl != null )
                             {
-                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
+                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
                                 if ( expression != null )
                                 {

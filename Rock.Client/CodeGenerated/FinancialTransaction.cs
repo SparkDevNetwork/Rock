@@ -47,13 +47,10 @@ namespace Rock.Client
         public string CheckMicrHash { get; set; }
 
         /// <summary />
-        public int? CreditCardTypeValueId { get; set; }
-
-        /// <summary />
-        public int? CurrencyTypeValueId { get; set; }
-
-        /// <summary />
         public int? FinancialGatewayId { get; set; }
+
+        /// <summary />
+        public int? FinancialPaymentDetailId { get; set; }
 
         /// <summary />
         public int? ProcessedByPersonAliasId { get; set; }
@@ -96,9 +93,8 @@ namespace Rock.Client
             this.BatchId = source.BatchId;
             this.CheckMicrEncrypted = source.CheckMicrEncrypted;
             this.CheckMicrHash = source.CheckMicrHash;
-            this.CreditCardTypeValueId = source.CreditCardTypeValueId;
-            this.CurrencyTypeValueId = source.CurrencyTypeValueId;
             this.FinancialGatewayId = source.FinancialGatewayId;
+            this.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
             this.ProcessedByPersonAliasId = source.ProcessedByPersonAliasId;
             this.ProcessedDateTime = source.ProcessedDateTime;
             this.ScheduledTransactionId = source.ScheduledTransactionId;
@@ -119,13 +115,10 @@ namespace Rock.Client
     public partial class FinancialTransaction : FinancialTransactionEntity
     {
         /// <summary />
-        public DefinedValue CreditCardTypeValue { get; set; }
-
-        /// <summary />
-        public DefinedValue CurrencyTypeValue { get; set; }
-
-        /// <summary />
         public FinancialGateway FinancialGateway { get; set; }
+
+        /// <summary />
+        public FinancialPaymentDetail FinancialPaymentDetail { get; set; }
 
         /// <summary />
         public ICollection<FinancialTransactionImage> Images { get; set; }

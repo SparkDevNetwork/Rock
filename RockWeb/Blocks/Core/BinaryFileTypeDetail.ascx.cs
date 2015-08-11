@@ -96,7 +96,7 @@ namespace RockWeb.Blocks.Core
                         var binaryFileType = new BinaryFileType { StorageEntityTypeId = storageEntityType.Id };
                         binaryFileType.LoadAttributes();
                         phAttributes.Controls.Clear();
-                        Rock.Attribute.Helper.AddEditControls( binaryFileType, phAttributes, false );
+                        Rock.Attribute.Helper.AddEditControls( binaryFileType, phAttributes, false, BlockValidationGroup );
                     }
                 }
             }
@@ -199,7 +199,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                Rock.Attribute.Helper.AddEditControls( binaryFileType, phAttributes, true );
+                Rock.Attribute.Helper.AddEditControls( binaryFileType, phAttributes, true, BlockValidationGroup );
             }
 
             // the only thing we'll restrict for restrictedEdit is the Name (plus they won't be able to remove Attributes that are marked as IsSystem

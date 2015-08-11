@@ -460,6 +460,7 @@ $('.checkin-grouptype > .panel-body').on('validation-error', function() {
             // make the ID static so we can handle Postbacks from the Add and Delete actions
             _gCheckinLabels.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             _gCheckinLabels.ID = this.ClientID + "_gCheckinLabels";
+            _gCheckinLabels.CssClass = "margin-b-md";
             _gCheckinLabels.DisplayType = GridDisplayType.Light;
             _gCheckinLabels.ShowActionRow = true;
             _gCheckinLabels.RowItemText = "Label";

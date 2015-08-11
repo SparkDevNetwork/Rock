@@ -13,7 +13,6 @@
     <Grid>
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="36" />
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -21,11 +20,8 @@
             <ColumnDefinition />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <StackPanel Background="Black"
-                    VerticalAlignment="Stretch"
-                    Grid.ColumnSpan="3" />
         <StackPanel Grid.Column="1"
-                    Grid.Row="1">
+                    Grid.Row="0">
 
             <!-- Logo  -->
             <Frame Grid.Column="0"

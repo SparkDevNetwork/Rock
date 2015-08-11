@@ -52,7 +52,7 @@ namespace Rock.Transactions
             {
                 State = entry.State;
                 ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
-                PersonId = connectionRequest.PersonAlias.PersonId;
+                PersonId = connectionRequest.PersonAlias != null ? connectionRequest.PersonAlias.PersonId : (int?)null;
                 ConnectionState = connectionRequest.ConnectionState;
                 ConnectionStatusId = connectionRequest.ConnectionStatusId;
                 AssignedGroupId = connectionRequest.AssignedGroupId;
@@ -183,11 +183,11 @@ namespace Rock.Transactions
                                                 }
                                                 break;
                                             }
-                                        case ConnectionWorkflowTriggerType.ActivityGroupAssigned:
+                                        case ConnectionWorkflowTriggerType.GroupAssigned:
                                             {
                                                 if ( State == EntityState.Modified && QualifiersMatch( rockContext, connectionWorkflow, AssignedGroupId ) )
                                                 {
-                                                    LaunchWorkflow( rockContext, connectionWorkflow, "Activity Group Assigned" );
+                                                    LaunchWorkflow( rockContext, connectionWorkflow, "Group Assigned" );
                                                 }
                                                 break;
                                             }
@@ -333,32 +333,18 @@ namespace Rock.Transactions
                 }
 
                 List<string> workflowErrors;
-                if ( workflow.Process( rockContext, connectionRequest, out workflowErrors ) )
+                new WorkflowService( rockContext ).Process( workflow, connectionRequest, out workflowErrors );
+                if ( workflow.Id != 0 )
                 {
-                    if ( workflow.IsPersisted || workflowType.IsPersisted )
-                    {
-                        var workflowService = new Rock.Model.WorkflowService( rockContext );
-                        workflowService.Add( workflow );
-
-                        rockContext.WrapTransaction( () =>
-                        {
-                            rockContext.SaveChanges();
-                            workflow.SaveAttributeValues( rockContext );
-                            foreach ( var activity in workflow.Activities )
-                            {
-                                activity.SaveAttributeValues( rockContext );
-                            }
-                        } );
-                    }
+                    ConnectionRequestWorkflow connectionRequestWorkflow = new ConnectionRequestWorkflow();
+                    connectionRequestWorkflow.ConnectionRequestId = connectionRequest.Id;
+                    connectionRequestWorkflow.WorkflowId = workflow.Id;
+                    connectionRequestWorkflow.ConnectionWorkflowId = connectionWorkflow.Id;
+                    connectionRequestWorkflow.TriggerType = connectionWorkflow.TriggerType;
+                    connectionRequestWorkflow.TriggerQualifier = connectionWorkflow.QualifierValue;
+                    new ConnectionRequestWorkflowService( rockContext ).Add( connectionRequestWorkflow );
+                    rockContext.SaveChanges();
                 }
-                ConnectionRequestWorkflow connectionRequestWorkflow = new ConnectionRequestWorkflow();
-                connectionRequestWorkflow.ConnectionRequestId = connectionRequest.Id;
-                connectionRequestWorkflow.WorkflowId = workflow.Id;
-                connectionRequestWorkflow.ConnectionWorkflowId = connectionWorkflow.Id;
-                connectionRequestWorkflow.TriggerType = connectionWorkflow.TriggerType;
-                connectionRequestWorkflow.TriggerQualifier = connectionWorkflow.QualifierValue;
-                new ConnectionRequestWorkflowService( rockContext ).Add( connectionRequestWorkflow );
-                rockContext.SaveChanges();
             }
         }
     }

@@ -21,7 +21,7 @@ namespace Rock
     /// <summary>
     /// Rock.Attribute Extensions
     /// </summary>
-    public static class AttributesExtensions
+    public static partial class ExtensionMethods
     {
         #region IHasAttributes extensions
 

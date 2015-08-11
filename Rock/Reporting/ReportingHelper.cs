@@ -153,9 +153,14 @@ namespace Rock.Reporting
                                     boundField = new CallbackField();
                                     boundField.HtmlEncode = false;
                                     ( boundField as CallbackField ).OnFormatDataValue += (sender, e) => {
+                                        string resultHtml = null;
+                                        if (e.DataValue != null)
+                                        {
+                                            bool condensed = true;
+                                            resultHtml = attribute.FieldType.Field.FormatValueAsHtml( gReport, e.DataValue.ToString(), attribute.QualifierValues, condensed );
+                                            
+                                        }
 
-                                        bool condensed = true;
-                                        string resultHtml = attribute.FieldType.Field.FormatValueAsHtml( gReport, e.DataValue as string, attribute.QualifierValues, condensed );
                                         e.FormattedValue = resultHtml ?? string.Empty;
                                     };
                                 }
@@ -195,16 +200,25 @@ namespace Rock.Reporting
                                 var customSortExpression = selectComponent.SortProperties( reportField.Selection );
                                 if ( customSortExpression != null )
                                 {
-                                    columnField.SortExpression = customSortExpression.Split( ',' ).Select( a => string.Format( "Sort_{0}_{1}", a, columnIndex ) ).ToList().AsDelimited( "," );
+                                    if ( customSortExpression == string.Empty )
+                                    {
+                                        // disable sorting if customSortExpression set to string.empty
+                                        columnField.SortExpression = string.Empty;
+                                    }
+                                    else
+                                    {
+                                        columnField.SortExpression = customSortExpression.Split( ',' ).Select( a => string.Format( "Sort_{0}_{1}", a, columnIndex ) ).ToList().AsDelimited( "," );
+                                    }
                                 }
                                 else
                                 {
+                                    // use default sorting if customSortExpression was null
                                     columnField.SortExpression = ( columnField as BoundField ).DataField;
                                 }
                             }
 
                             columnField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
-                            if ( columnField.SortExpression != null )
+                            if ( !string.IsNullOrEmpty(columnField.SortExpression) )
                             {
                                 reportFieldSortExpressions.AddOrReplace( reportField.Guid, columnField.SortExpression );
                             }

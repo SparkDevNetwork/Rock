@@ -83,7 +83,7 @@ namespace Rock.Client
         public int MaxRegistrants { get; set; }
 
         /// <summary />
-        public decimal MinimumInitialPayment { get; set; }
+        public decimal? MinimumInitialPayment { get; set; }
 
         /// <summary />
         public string Name { get; set; }

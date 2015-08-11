@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Core
                     }
                     category.LoadAttributes();
                     phAttributes.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( category, phAttributes, false );
+                    Rock.Attribute.Helper.AddEditControls( category, phAttributes, false, BlockValidationGroup );
 
                     mdDetails.Show();
                 }
@@ -428,7 +428,7 @@ namespace RockWeb.Blocks.Core
 
             category.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( category, phAttributes, true );
+            Rock.Attribute.Helper.AddEditControls( category, phAttributes, true, BlockValidationGroup );
 
             hfIdValue.Value = categoryId.ToString();
             mdDetails.Show();

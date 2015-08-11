@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Net.Mail;
@@ -228,50 +229,50 @@ namespace Rock.Communication.Transport
                                 }
                                 else
                                 {
-                                    message.To.Clear();
-                                    message.Headers.Clear();
-                                    message.AlternateViews.Clear();
-
-                                    message.To.Add( new MailAddress( recipient.PersonAlias.Person.Email, recipient.PersonAlias.Person.FullName ) );
-
-                                    // Create merge field dictionary
-                                    var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
-
-                                    // Subject
-                                    message.Subject = communication.Subject.ResolveMergeFields( mergeObjects, currentPerson );
-
-                                    // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
-                                    message.Subject = message.Subject.ReplaceWordChars();
-
-                                    // Add any additional headers that specific SMTP provider needs
-                                    AddAdditionalHeaders( message, recipient );
-
-                                    // Add text view first as last view is usually treated as the preferred view by email readers (gmail)
-                                    string plainTextBody = Rock.Communication.Medium.Email.ProcessTextBody( communication, globalAttributes, mergeObjects, currentPerson );
-
-                                    // convert any special microsoft word characters to normal chars so they don't look funny
-                                    plainTextBody = plainTextBody.ReplaceWordChars();
-
-                                    if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
-                                    {
-                                        AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Plain ) );
-                                        message.AlternateViews.Add( plainTextView );
-                                    }
-
-                                    // Add Html view
-                                    string htmlBody = Rock.Communication.Medium.Email.ProcessHtmlBody( communication, globalAttributes, mergeObjects, currentPerson );
-
-                                    // convert any special microsoft word characters to normal chars so they don't look funny
-                                    htmlBody = htmlBody.ReplaceWordChars();
-
-                                    if ( !string.IsNullOrWhiteSpace( htmlBody ) )
-                                    {
-                                        AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Html ) );
-                                        message.AlternateViews.Add( htmlView );
-                                    }
-
                                     try
                                     {
+                                        message.To.Clear();
+                                        message.Headers.Clear();
+                                        message.AlternateViews.Clear();
+
+                                        message.To.Add( new MailAddress( recipient.PersonAlias.Person.Email, recipient.PersonAlias.Person.FullName ) );
+
+                                        // Create merge field dictionary
+                                        var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
+
+                                        // Subject
+                                        message.Subject = communication.Subject.ResolveMergeFields( mergeObjects, currentPerson );
+
+                                        // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
+                                        message.Subject = message.Subject.ReplaceWordChars();
+
+                                        // Add any additional headers that specific SMTP provider needs
+                                        AddAdditionalHeaders( message, recipient );
+
+                                        // Add text view first as last view is usually treated as the preferred view by email readers (gmail)
+                                        string plainTextBody = Rock.Communication.Medium.Email.ProcessTextBody( communication, globalAttributes, mergeObjects, currentPerson );
+
+                                        // convert any special microsoft word characters to normal chars so they don't look funny
+                                        plainTextBody = plainTextBody.ReplaceWordChars();
+
+                                        if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
+                                        {
+                                            AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Plain ) );
+                                            message.AlternateViews.Add( plainTextView );
+                                        }
+
+                                        // Add Html view
+                                        string htmlBody = Rock.Communication.Medium.Email.ProcessHtmlBody( communication, globalAttributes, mergeObjects, currentPerson );
+
+                                        // convert any special microsoft word characters to normal chars so they don't look funny
+                                        htmlBody = htmlBody.ReplaceWordChars();
+
+                                        if ( !string.IsNullOrWhiteSpace( htmlBody ) )
+                                        {
+                                            AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Html ) );
+                                            message.AlternateViews.Add( htmlView );
+                                        }
+
                                         smtpClient.Send( message );
                                         recipient.Status = CommunicationRecipientStatus.Delivered;
 
@@ -299,7 +300,7 @@ namespace Rock.Communication.Transport
                                     catch ( Exception ex )
                                     {
                                         recipient.Status = CommunicationRecipientStatus.Failed;
-                                        recipient.StatusNote = "SMTP Exception: " + ex.Message;
+                                        recipient.StatusNote = "Exception: " + ex.Message;
                                     }
                                 }
 
@@ -323,6 +324,19 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         public override void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot )
+        {
+            Send( template, recipients, appRoot, themeRoot, true );
+        }
+
+        /// <summary>
+        /// Sends the specified template.
+        /// </summary>
+        /// <param name="template">The template.</param>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        public void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot, bool createCommunicationHistory )
         {
             var globalAttributes = GlobalAttributesCache.Read();
 
@@ -378,51 +392,78 @@ namespace Rock.Communication.Transport
 
                 using ( var smtpClient = GetSmtpClient() )
                 {
-                    foreach ( var recipientData in recipients )
+                    using ( var rockContext = new RockContext() )
                     {
-                        foreach ( var g in globalConfigValues )
+                        int? senderPersonAliasId = null;
+                        if ( createCommunicationHistory )
                         {
-                            if ( recipientData.MergeFields.ContainsKey( g.Key ) )
+                            var sender = new PersonService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Where( p => p.Email == from )
+                                .FirstOrDefault();
+                            senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
+                        }
+
+                        var communicationService = new CommunicationService( rockContext );
+
+                        foreach ( var recipientData in recipients )
+                        {
+                            foreach ( var g in globalConfigValues )
                             {
-                                recipientData.MergeFields[g.Key] = g.Value;
+                                if ( recipientData.MergeFields.ContainsKey( g.Key ) )
+                                {
+                                    recipientData.MergeFields[g.Key] = g.Value;
+                                }
+                            }
+
+                            // Add the recipients from the template
+                            List<string> sendTo = SplitRecipient( template.To );
+
+                            // Add the recipient from merge data ( if it's not null and not already added )
+                            if ( !string.IsNullOrWhiteSpace( recipientData.To ) && !sendTo.Contains( recipientData.To, StringComparer.OrdinalIgnoreCase ) )
+                            {
+                                sendTo.Add( recipientData.To );
+                            }
+
+                            foreach ( string to in sendTo )
+                            {
+                                message.To.Clear();
+                                message.To.Add( to );
+
+                                string subject = template.Subject.ResolveMergeFields( recipientData.MergeFields );
+                                string body = Regex.Replace( template.Body.ResolveMergeFields( recipientData.MergeFields ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+
+                                if ( !string.IsNullOrWhiteSpace( themeRoot ) )
+                                {
+                                    subject = subject.Replace( "~~/", themeRoot );
+                                    body = body.Replace( "~~/", themeRoot );
+                                }
+
+                                if ( !string.IsNullOrWhiteSpace( appRoot ) )
+                                {
+                                    subject = subject.Replace( "~/", appRoot );
+                                    body = body.Replace( "~/", appRoot );
+                                    body = body.Replace( @" src=""/", @" src=""" + appRoot );
+                                    body = body.Replace( @" href=""/", @" href=""" + appRoot );
+                                }
+
+                                message.Subject = subject;
+                                message.Body = body;
+
+                                smtpClient.Send( message );
+
+                                if ( createCommunicationHistory )
+                                {
+                                    communicationService.CreateEmailCommunication(
+                                        new List<string> { to }, fromName, from, from, subject, body, string.Empty, false,
+                                        CommunicationRecipientStatus.Delivered, senderPersonAliasId );
+                                }
                             }
                         }
 
-                        // Add the recipients from the template
-                        List<string> sendTo = SplitRecipient( template.To );
-
-                        // Add the recipient from merge data ( if it's not null and not already added )
-                        if ( !string.IsNullOrWhiteSpace( recipientData.To ) && !sendTo.Contains( recipientData.To, StringComparer.OrdinalIgnoreCase ) )
+                        if ( createCommunicationHistory )
                         {
-                            sendTo.Add( recipientData.To );
-                        }
-
-                        foreach ( string to in sendTo )
-                        {
-                            message.To.Clear();
-                            message.To.Add( to );
-
-                            string subject = template.Subject.ResolveMergeFields( recipientData.MergeFields );
-                            string body = Regex.Replace( template.Body.ResolveMergeFields( recipientData.MergeFields ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
-
-                            if ( !string.IsNullOrWhiteSpace( themeRoot ) )
-                            {
-                                subject = subject.Replace( "~~/", themeRoot );
-                                body = body.Replace( "~~/", themeRoot );
-                            }
-
-                            if ( !string.IsNullOrWhiteSpace( appRoot ) )
-                            {
-                                subject = subject.Replace( "~/", appRoot );
-                                body = body.Replace( "~/", appRoot );
-                                body = body.Replace( @" src=""/", @" src=""" + appRoot );
-                                body = body.Replace( @" href=""/", @" href=""" + appRoot );
-                            }
-
-                            message.Subject = subject;
-                            message.Body = body;
-
-                            smtpClient.Send( message );
+                            rockContext.SaveChanges();
                         }
                     }
                 }
@@ -436,7 +477,20 @@ namespace Rock.Communication.Transport
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        public override void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
+        public override void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot )
+        {
+            Send( mediumData, recipients, appRoot, themeRoot, true );
+        }
+
+        /// <summary>
+        /// Sends the specified medium data to the specified list of recipients.
+        /// </summary>
+        /// <param name="mediumData">The medium data.</param>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        public void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot, bool createCommunicationHistory )
         {
             try
             {
@@ -503,6 +557,29 @@ namespace Rock.Communication.Transport
                     {
                         smtpClient.Send( message );
                     }
+
+                    if ( createCommunicationHistory )
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            int? senderPersonAliasId = null;
+                            if ( createCommunicationHistory )
+                            {
+                                var sender = new PersonService( rockContext )
+                                    .Queryable().AsNoTracking()
+                                    .Where( p => p.Email == from )
+                                    .FirstOrDefault();
+                                senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
+                            }
+
+                            new CommunicationService( rockContext ).CreateEmailCommunication(
+                                recipients, fromName, from, from, subject, body, string.Empty, false,
+                                CommunicationRecipientStatus.Delivered, senderPersonAliasId );
+
+                            rockContext.SaveChanges();
+                        }
+                    }
+
                 }
             }
 
@@ -542,6 +619,22 @@ namespace Rock.Communication.Transport
             Send( recipients, from, string.Empty, subject, body, appRoot, themeRoot, attachments );
         }
 
+        /// <summary>
+        /// Sends the specified recipients.
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="from">From.</param>
+        /// <param name="fromName">From name.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="attachments">Attachments.</param>
+        public override void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
+        {
+            Send( recipients, from, fromName, subject, body, appRoot, themeRoot, attachments, true );
+        }
+
 
         /// <summary>
         /// Sends the specified recipients.
@@ -554,7 +647,8 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">Attachments.</param>
-        public override void Send(List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        public void Send(List<string> recipients, string from, string fromName, string subject, string body, string appRoot, string themeRoot, List<Attachment> attachments, bool createCommunicationHistory )
         {
             try
             {
@@ -626,6 +720,28 @@ namespace Rock.Communication.Transport
                     using ( var smtpClient = GetSmtpClient() )
                     {
                         smtpClient.Send( message );
+                    }
+
+                    if ( createCommunicationHistory )
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            int? senderPersonAliasId = null;
+                            if ( createCommunicationHistory )
+                            {
+                                var sender = new PersonService( rockContext )
+                                    .Queryable().AsNoTracking()
+                                    .Where( p => p.Email == from )
+                                    .FirstOrDefault();
+                                senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
+                            }
+
+                            new CommunicationService( rockContext ).CreateEmailCommunication(
+                                recipients, fromName, from, from, subject, body, string.Empty, false,
+                                CommunicationRecipientStatus.Delivered, senderPersonAliasId );
+
+                            rockContext.SaveChanges();
+                        }
                     }
                 }
             }

@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupMember.LoadAttributes();
                     phAttributes.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false );
+                    Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false, BlockValidationGroup );
                 }
             }
         }
@@ -161,9 +161,12 @@ namespace RockWeb.Blocks.Groups
                             {
                                 groupMemberRequirement = new GroupMemberRequirement();
                                 groupMemberRequirement.GroupRequirementId = groupRequirementId;
+                                
                                 groupMember.GroupMemberRequirements.Add( groupMemberRequirement );
-                                groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
                             }
+
+                            // set the RequirementMetDateTime if it hasn't been set already
+                            groupMemberRequirement.RequirementMetDateTime = groupMemberRequirement.RequirementMetDateTime ?? RockDateTime.Now;
 
                             groupMemberRequirement.LastRequirementCheckDateTime = RockDateTime.Now;
                         }
@@ -206,17 +209,11 @@ namespace RockWeb.Blocks.Groups
                         groupMemberService.Add( groupMember );
                     }
 
-                    foreach ( var deletedRequirement in groupMember.GroupMemberRequirements.Where( a => a.RequirementMetDateTime == null ).ToList() )
-                    {
-                        // remove any requirements that they no longer meet (manual ones that were un-checked)
-                        groupMemberRequirementService.Delete( deletedRequirement );
-                    }
-
                     rockContext.SaveChanges();
                     groupMember.SaveAttributeValues( rockContext );
-
-                    groupMember.CalculateRequirements( rockContext, true );
                 } );
+
+                groupMember.CalculateRequirements( rockContext, true );
 
                 Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
                 if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
@@ -503,10 +500,16 @@ namespace RockWeb.Blocks.Groups
                 {
                     string labelText;
                     string labelType;
+                    string labelTooltip;
                     if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
                     {
                         labelText = requirementResult.GroupRequirement.GroupRequirementType.PositiveLabel;
                         labelType = "success";
+                    }
+                    else if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
+                    {
+                        labelText = requirementResult.GroupRequirement.GroupRequirementType.WarningLabel;
+                        labelType = "warning";
                     }
                     else
                     {
@@ -514,22 +517,31 @@ namespace RockWeb.Blocks.Groups
                         labelType = "danger";
                     }
 
-                    if ( requirementResult.WarningIncluded )
-                    {
-                        labelText = requirementResult.GroupRequirement.GroupRequirementType.WarningLabel;
-                        labelType = "warning";
-                    }
-
                     if ( string.IsNullOrEmpty( labelText ) )
                     {
                         labelText = requirementResult.GroupRequirement.GroupRequirementType.Name;
                     }
 
+                    if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
+                    {
+                        labelTooltip = requirementResult.RequirementWarningDateTime.HasValue
+                            ? "Last Checked: " + requirementResult.RequirementWarningDateTime.Value.ToString( "g" )
+                            : "Not calculated yet";
+                    }
+                    else
+                    {
+                        labelTooltip = requirementResult.LastRequirementCheckDateTime.HasValue
+                            ? "Last Checked: " + requirementResult.LastRequirementCheckDateTime.Value.ToString( "g" )
+                            : "Not calculated yet";
+                    }
+
+
                     lRequirementsLabels.Text += string.Format(
-                        @"<span class='label label-{1}'>{0}</span>
+                        @"<span class='label label-{1}' title='{2}'>{0}</span>
                         ",
                         labelText,
-                        labelType );
+                        labelType,
+                        labelTooltip);
                 }
             }
 
@@ -580,6 +592,8 @@ namespace RockWeb.Blocks.Groups
         protected void btnReCheckRequirements_Click( object sender, EventArgs e )
         {
             CalculateRequirements();
+            nbRecheckedNotification.Text = "Successfully re-checked requirements.";
+            nbRecheckedNotification.Visible = true;
         }
 
         /// <summary>

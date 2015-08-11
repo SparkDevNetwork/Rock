@@ -29,17 +29,16 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+			// Add new block types
+			RockMigrationHelper.UpdateBlockType("Following By Entity","Takes a entity type and displays a person's following items for that entity using a Lava template.","~/Blocks/Core/FollowingByEntityLava.ascx","Core","36B56055-7AA2-4169-82DD-CCFBD2C7B4CC");
+            RockMigrationHelper.UpdateBlockType("Event Calendar Item Personalized Registration","Simplifies the registration process for a given person and event calendar item.","~/Blocks/Event/EventCalendarItemPersonalizedRegistration.ascx","Event","1A1FFACC-D74C-4061-B6A7-34150C462DB7");
+  
             // Attrib for BlockType: Following By Entity:Link URL
             RockMigrationHelper.AddBlockTypeAttribute( "36B56055-7AA2-4169-82DD-CCFBD2C7B4CC", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Link URL", "LinkUrl", "", "The address to use for the link. The text '[Id]' will be replaced with the Id of the entity '[Guid]' will be replaced with the Guid.", 1, @"/samplepage/[Id]", "9981ABB3-7130-41DB-87AF-973722FBD54E" );
 
             // Attrib for BlockType: Following By Entity:Enable Debug
             RockMigrationHelper.AddBlockTypeAttribute( "36B56055-7AA2-4169-82DD-CCFBD2C7B4CC", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Debug", "EnableDebug", "", "Show merge data to help you see what's available to you.", 3, @"False", "D7094B16-B237-4D97-B1FC-F680C0701583" );
-
 			
-			// Add new block types
-			RockMigrationHelper.UpdateBlockType("Following By Entity","Takes a entity type and displays a person's following items for that entity using a Lava template.","~/Blocks/Core/FollowingByEntityLava.ascx","Core","36B56055-7AA2-4169-82DD-CCFBD2C7B4CC");
-            RockMigrationHelper.UpdateBlockType("Event Calendar Item Personalized Registration","Simplifies the registration process for a given person and event calendar item.","~/Blocks/Event/EventCalendarItemPersonalizedRegistration.ascx","Event","1A1FFACC-D74C-4061-B6A7-34150C462DB7");
-  
 			// Add My Dashboard Page
             RockMigrationHelper.AddPage("20F97A93-7949-4C2A-8A5E-C756FE8585CA","22D220B5-0D34-429A-B9E3-59D80AE423E7","My Dashboard","","AE1818D8-581C-4599-97B9-509EA450376A","fa fa-tachometer"); // Site:Rock RMS
             RockMigrationHelper.AddPageRoute("AE1818D8-581C-4599-97B9-509EA450376A","MyDashboard");// for Page:My Dashboard
@@ -115,7 +114,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue("791A6AA0-D498-4795-BB5F-21609175826F","1B0E8904-196B-433E-B1CC-937AD3CA5BF2",@"My Dashboard^~/MyDashboard|");
 
             // Attrib Value for Block:Login Status, Attribute:Logged In Page List , Layout: Right Sidebar, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue("2356DEDC-803F-4782-A8E9-D0D88393EC2E","1B0E8904-196B-433E-B1CC-937AD3CA5BF2",@"My Dashbaord^~/MyDashboard|");
+            RockMigrationHelper.AddBlockAttributeValue("2356DEDC-803F-4782-A8E9-D0D88393EC2E","1B0E8904-196B-433E-B1CC-937AD3CA5BF2",@"My Dashboard^~/MyDashboard|");
 
             // Attrib Value for Block:Login Status, Attribute:Logged In Page List , Layout: Homepage, Site: External Website
             RockMigrationHelper.AddBlockAttributeValue("5A5C6063-EA0D-4EDD-A394-4B1B772F2041","1B0E8904-196B-433E-B1CC-937AD3CA5BF2",@"");

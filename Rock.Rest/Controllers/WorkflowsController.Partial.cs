@@ -60,24 +60,7 @@ namespace Rock.Rest.Controllers
 
                 // save -> run workflow
                 List<string> workflowErrors;
-                if ( workflow.Process( rockContext, out workflowErrors ) )
-                {
-                    if ( workflow.IsPersisted || workflowType.IsPersisted )
-                    {
-                        var workflowService = new Rock.Model.WorkflowService( rockContext );
-                        workflowService.Add( workflow );
-
-                        rockContext.WrapTransaction( () =>
-                        {
-                            rockContext.SaveChanges();
-                            workflow.SaveAttributeValues( rockContext );
-                            foreach ( var activity in workflow.Activities )
-                            {
-                                activity.SaveAttributeValues( rockContext );
-                            }
-                        } );
-                    }
-                }
+                new Rock.Model.WorkflowService( rockContext ).Process( workflow, out workflowErrors );
 
                 var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
                 return workflow;

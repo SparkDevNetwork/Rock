@@ -931,7 +931,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static int? GetAge( DateTime? birthDate)
         {
-            if ( birthDate.HasValue )
+            if ( birthDate.HasValue && birthDate.Value.Year != DateTime.MinValue.Year )
             {
                 DateTime today = RockDateTime.Today;
                 int age = today.Year - birthDate.Value.Year;
@@ -1312,6 +1312,16 @@ namespace Rock.Model
             {
                 return base.IsAuthorized( action, person );
             }
+        }
+
+        /// <summary>
+        /// Gets the campus.
+        /// </summary>
+        /// <returns></returns>
+        public Campus GetCampus()
+        {
+            var firstFamily = this.GetFamilies().FirstOrDefault();
+            return firstFamily != null ? firstFamily.Campus : null;
         }
 
         #endregion
@@ -1782,18 +1792,25 @@ namespace Rock.Model
         /// <returns></returns>
         public static Location GetHomeLocation( this Person person, RockContext rockContext = null )
         {
-            Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
-            foreach ( var family in person.GetFamilies( rockContext ) )
+            Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
+            if ( homeAddressGuid.HasValue )
             {
-                var loc = family.GroupLocations
-                    .Where( l =>
-                        l.GroupLocationTypeValue.Guid.Equals( homeAddressGuid ) &&
-                        l.IsMappedLocation )
-                    .Select( l => l.Location )
-                    .FirstOrDefault();
-                if ( loc != null )
+                var homeAddressDv = DefinedValueCache.Read( homeAddressGuid.Value );
+                if ( homeAddressDv != null )
                 {
-                    return loc;
+                    foreach ( var family in person.GetFamilies( rockContext ) )
+                    {
+                        var loc = family.GroupLocations
+                            .Where( l =>
+                                l.GroupLocationTypeValueId == homeAddressDv.Id &&
+                                l.IsMappedLocation )
+                            .Select( l => l.Location )
+                            .FirstOrDefault();
+                        if ( loc != null )
+                        {
+                            return loc;
+                        }
+                    }
                 }
             }
 

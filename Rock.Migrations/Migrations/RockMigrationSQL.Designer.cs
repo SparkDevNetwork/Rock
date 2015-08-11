@@ -421,5 +421,117 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201507181918494_ConnectionChangesAndSampleData", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- JE: Reorder the Communication List on the Person Profile Page
+        ///  UPDATE [Block] SET [Order] = 0
+        ///  WHERE [Guid] = &apos;27F84ADB-AA13-439E-A130-FBF73698B172&apos;
+        ///
+        ///  UPDATE [Block] SET [Order] = 1
+        ///  WHERE [Guid] = &apos;2D99AB97-4B9C-4D72-B207-8F36AE90D495&apos;
+        ///
+        ///  UPDATE [Block] SET [Order] = 2
+        ///  WHERE [Guid] = &apos;F98649D7-E522-46CB-8F67-01DB7F59E3AA&apos;
+        ///
+        ///-- JE: Make Involvement Connection Type &quot;Enable Full Activity List&quot; = true
+        ///UPDATE [ConnectionType]
+        ///  SET [EnableFullActivityList] = 1
+        ///  WHERE [Guid] = &apos;DD565087-A4B [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201507281546100_CalendarContentChannel {
+            get {
+                return ResourceManager.GetString("_201507281546100_CalendarContentChannel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Create root DataViewFilter for DataView: Background check about to expire
+        ///IF NOT EXISTS (SELECT * FROM DataViewFilter where [Guid] = &apos;F924B369-FF1B-4254-AEB0-48BF89647205&apos;) BEGIN    
+        ///    DECLARE
+        ///        @ParentDataViewFilterId int = null,
+        ///        @DataViewFilterEntityTypeId int = null
+        ///
+        ///    INSERT INTO [DataViewFilter] (ExpressionType, ParentId, EntityTypeId, Selection, [Guid]) 
+        ///    values (1,@ParentDataViewFilterId,@DataViewFilterEntityTypeId,&apos;&apos;,&apos;F924B369-FF1B-4254-AEB0-48BF89647205&apos;)
+        ///END
+        ///go
+        ///
+        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201508010008536_BackgroundCheckExpiringSoon {
+            get {
+                return ResourceManager.GetString("_201508010008536_BackgroundCheckExpiringSoon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to   -- JE: Change name and icon of the event detail page
+        ///  UPDATE [Page]	SET 
+        ///    [InternalName] = &apos;Event Detail&apos;, 
+        ///    [BrowserTitle] = &apos;Event Detail&apos;, 
+        ///    [PageTitle] = &apos;Event Detail&apos;, 
+        ///    [IconCssClass] = &apos;fa fa-calendar-check-o&apos;
+        ///  WHERE [Guid] = &apos;7FB33834-F40A-4221-8849-BB8C06903B04&apos;
+        ///
+        /// -- JE: Fix Mime Type on Check-in Labels
+        /// UPDATE [BinaryFile] SET [MimeType] = &apos;text/plain&apos;
+        /// WHERE [BinaryFileTypeId] = (SELECT TOP 1 [Id] FROM [BinaryFileType] WHERE [Guid] = &apos;DE0E5C50-234B-474C-940C-C571F385E65 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201508041124356_RegistrationContact {
+            get {
+                return ResourceManager.GetString("_201508041124356_RegistrationContact", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns the Mailing Addresses and any CustomMessages for the Contribution Statement, but not the actual transactions
+        ///		The StatementGenerator utility uses this procedure along with querying transactions thru REST to generate statements
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* GroupId
+        ///		* AddressPersonNames
+        ///		* Street1
+        ///		* Street2
+        ///		* City
+        ///		* State
+        ///		* PostalCode
+        ///		* StartDate
+        ///		* EndDate
+        ///		* CustomMessage1
+        ///		* CustomMessage2
+        ///	&lt;/returns&gt;
+        ///	&lt;par [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201508111253454_SiteMobilePage {
+            get {
+                return ResourceManager.GetString("_201508111253454_SiteMobilePage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- FinancialTransaction
+        ///INSERT INTO [FinancialPaymentDetail] ( [CurrencyTypeValueId], [CreditCardTypeValueId], [Guid], [ForeignId] )
+        ///SELECT [CurrencyTypeValueId], [CreditCardTypeValueId], NEWID(), CAST( [Id] AS VARCHAR )
+        ///FROM [FinancialTransaction]
+        ///
+        ///UPDATE F
+        ///SET [FinancialPaymentDetailId] = D.[Id]
+        ///FROM [FinancialPaymentDetail] D
+        ///INNER JOIN [FinancialTransaction] F ON CAST( F.[ID] AS VARCHAR ) = D.[ForeignId]
+        ///WHERE D.[ForeignId] IS NOT NULL
+        ///
+        ///UPDATE [FinancialPaymentDetail]
+        ///SET [ForeignId] = NULL        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201508111636214_FinancialPaymentDetails {
+            get {
+                return ResourceManager.GetString("_201508111636214_FinancialPaymentDetails", resourceCulture);
+            }
+        }
     }
 }

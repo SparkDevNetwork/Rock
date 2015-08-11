@@ -121,9 +121,8 @@ namespace Rock.Model
         /// <value>
         /// The account identifier.
         /// </value>
-        [Required]
         [DataMember]
-        public int AccountId { get; set; }
+        public int? AccountId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.
@@ -141,8 +140,7 @@ namespace Rock.Model
         /// The name of the contact.
         /// </value>
         [DataMember]
-        [MaxLength( 200 )]
-        public string ContactName { get; set; }
+        public int? ContactPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the contact phone.
@@ -205,6 +203,15 @@ namespace Rock.Model
         public virtual FinancialAccount Account { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> representing the personalias who is the contact person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.PersonAlias"/> representing the personalias who is the contact person.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias ContactPersonAlias { get; set; }
+
+        /// <summary>
         /// Gets or sets the registrations.
         /// </summary>
         /// <value>
@@ -223,12 +230,12 @@ namespace Rock.Model
         /// <value>
         /// The linkages.
         /// </value>
-        public virtual ICollection<EventItemCampusGroupMap> Linkages
+        public virtual ICollection<EventItemOccurrenceGroupMap> Linkages
         {
-            get { return _linkages ?? ( _linkages = new Collection<EventItemCampusGroupMap>() ); }
+            get { return _linkages ?? ( _linkages = new Collection<EventItemOccurrenceGroupMap>() ); }
             set { _linkages = value; }
         }
-        private ICollection<EventItemCampusGroupMap> _linkages;
+        private ICollection<EventItemOccurrenceGroupMap> _linkages;
 
         #endregion
 
@@ -276,7 +283,8 @@ namespace Rock.Model
         public RegistrationInstanceConfiguration()
         {
             this.HasRequired( i => i.RegistrationTemplate ).WithMany( t => t.Instances ).HasForeignKey( i => i.RegistrationTemplateId ).WillCascadeOnDelete( true );
-            this.HasRequired( i => i.Account ).WithMany().HasForeignKey( i => i.AccountId).WillCascadeOnDelete( false );
+            this.HasOptional( i => i.Account ).WithMany().HasForeignKey( i => i.AccountId ).WillCascadeOnDelete( false );
+            this.HasOptional( i => i.ContactPersonAlias ).WithMany().HasForeignKey( i => i.ContactPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 

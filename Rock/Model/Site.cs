@@ -207,6 +207,43 @@ namespace Rock.Model
         public string GoogleAnalyticsCode { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable mobile redirect].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable mobile redirect]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableMobileRedirect { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mobile page identifier.
+        /// </summary>
+        /// <value>
+        /// The mobile page identifier.
+        /// </value>
+        [DataMember]
+        public int? MobilePageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the external URL.
+        /// </summary>
+        /// <value>
+        /// The external URL.
+        /// </value>
+        [MaxLength( 260 )]
+        [DataMember]
+        public string ExternalUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [redirect tablets].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [redirect tablets]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RedirectTablets { get; set; }
+
+        /// <summary>
         /// Gets or sets the Site's Facebook AppId for utilizing the Facebook SDK.
         /// </summary>
         /// <remarks>
@@ -343,6 +380,15 @@ namespace Rock.Model
         [DataMember]
         public virtual PageRoute CommunicationPageRoute { get; set; }
 
+        /// <summary>
+        /// Gets or sets the mobile page.
+        /// </summary>
+        /// <value>
+        /// The mobile page.
+        /// </value>
+        [DataMember]
+        public virtual Page MobilePage { get; set; }
+
         #endregion
 
         #region Methods
@@ -400,6 +446,7 @@ namespace Rock.Model
             this.HasOptional( p => p.PageNotFoundPageRoute).WithMany().HasForeignKey(p => p.PageNotFoundPageRouteId).WillCascadeOnDelete(false);
             this.HasOptional( p => p.CommunicationPage ).WithMany().HasForeignKey( p => p.CommunicationPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.CommunicationPageRoute ).WithMany().HasForeignKey( p => p.CommunicationPageRouteId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.MobilePage ).WithMany().HasForeignKey( p => p.MobilePageId ).WillCascadeOnDelete( false );
         }
     }
 

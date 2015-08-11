@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int AccountId { get; set; }
+        public int? AccountId { get; set; }
 
         /// <summary />
         public string AdditionalConfirmationDetails { get; set; }
@@ -47,7 +47,7 @@ namespace Rock.Client
         public string ContactEmail { get; set; }
 
         /// <summary />
-        public string ContactName { get; set; }
+        public int? ContactPersonAliasId { get; set; }
 
         /// <summary />
         public string ContactPhone { get; set; }
@@ -96,7 +96,7 @@ namespace Rock.Client
             this.AdditionalConfirmationDetails = source.AdditionalConfirmationDetails;
             this.AdditionalReminderDetails = source.AdditionalReminderDetails;
             this.ContactEmail = source.ContactEmail;
-            this.ContactName = source.ContactName;
+            this.ContactPersonAliasId = source.ContactPersonAliasId;
             this.ContactPhone = source.ContactPhone;
             this.Details = source.Details;
             this.EndDateTime = source.EndDateTime;
@@ -120,6 +120,9 @@ namespace Rock.Client
     {
         /// <summary />
         public FinancialAccount Account { get; set; }
+
+        /// <summary />
+        public PersonAlias ContactPersonAlias { get; set; }
 
         /// <summary />
         public RegistrationTemplate RegistrationTemplate { get; set; }

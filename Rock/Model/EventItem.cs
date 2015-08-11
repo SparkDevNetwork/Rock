@@ -149,19 +149,19 @@ namespace Rock.Model
         private ICollection<EventCalendarItem> _eventCalenderItems;
 
         /// <summary>
-        /// Gets or sets a collection of the <see cref="Rock.Model.EventItemCampus">EventItemCampuses</see> that belong to this EventItem.
+        /// Gets or sets a collection of the <see cref="Rock.Model.EventItemOccurrence">EventItemOccurrence</see> that belong to this EventItem.
         /// </summary>
         /// <value>
-        /// A collection containing a collection of the <see cref="Rock.Model.EventItemCampus">EventItemCampuses</see> that belong to this EventItem.
+        /// A collection containing a collection of the <see cref="Rock.Model.EventItemOccurrence">EventItemOccurrence</see> that belong to this EventItem.
         /// </value>
         [DataMember]
-        public virtual ICollection<EventItemCampus> EventItemCampuses
+        public virtual ICollection<EventItemOccurrence> EventItemOccurrences
         {
-            get { return _eventItemCampuses ?? ( _eventItemCampuses = new Collection<EventItemCampus>() ); }
-            set { _eventItemCampuses = value; }
+            get { return _eventItemOccurrences ?? ( _eventItemOccurrences = new Collection<EventItemOccurrence>() ); }
+            set { _eventItemOccurrences = value; }
         }
 
-        private ICollection<EventItemCampus> _eventItemCampuses;
+        private ICollection<EventItemOccurrence> _eventItemOccurrences;
 
         /// <summary>
         /// Gets or sets a collection of the <see cref="Rock.Model.EventItemAudience">EventItemAudiences</see> that belong to this EventItem.
@@ -201,8 +201,7 @@ namespace Rock.Model
         {
             get
             {
-                return EventItemCampuses
-                    .SelectMany( c => c.EventItemSchedules)
+                return EventItemOccurrences
                     .Select( s => s.NextStartDateTime )
                     .DefaultIfEmpty()
                     .Min();
@@ -223,9 +222,9 @@ namespace Rock.Model
         {
             var result = new List<DateTime>();
 
-            foreach ( var eventItemCampus in EventItemCampuses )
+            foreach ( var eventItemOccurrence in EventItemOccurrences )
             {
-                result.AddRange( eventItemCampus.GetStartTimes( beginDateTime, endDateTime ) );
+                result.AddRange( eventItemOccurrence.GetStartTimes( beginDateTime, endDateTime ) );
             }
 
             return result.Distinct().OrderBy( d => d ).ToList();

@@ -55,6 +55,40 @@
                        Style="{StaticResource labelStyle}">Transaction Source Type</Label>
                 <ComboBox Name="cboTransactionSourceType"
                           Style="{StaticResource textboxStyle}" />
+
+                
+                <Label Name="lblAdvancedInfo"
+                       Style="{StaticResource labelStyleAlertInfo}">
+                    Sensitivity and Plurality can be tuned if you are either getting too many rejects, or too few rejects.
+                    If you are getting too many rejects, set Sensitivity to 255 and Plurality to 1.
+                    To use the default, set both to 0 to use the default value of 128.
+                </Label>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0"
+                                Orientation="Vertical">
+                        <Label Name="lblSensitivity"
+                               Style="{StaticResource labelStyle}">Sensitivity</Label>
+                        <TextBox Name="txtSensitivity"
+                                 Style="{StaticResource textboxStyle}"
+                                 Width="120" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1"
+                                Orientation="Vertical">
+                        <Label Name="lblPlurality"
+                               Grid.Column="1"
+                               Style="{StaticResource labelStyle}">Plurality</Label>
+                        <TextBox Name="txtPlurality"
+                                 Grid.Column="1"
+                                 Style="{StaticResource textboxStyle}" Width="120" />
+                    </StackPanel>
+                </Grid>
+
                 <Label Name="lblAlert"
                        Style="{StaticResource labelStyleAlert}"
                        Content="ERROR: ">

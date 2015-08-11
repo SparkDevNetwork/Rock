@@ -92,9 +92,8 @@ namespace Rock.Model
             target.BatchId = source.BatchId;
             target.CheckMicrEncrypted = source.CheckMicrEncrypted;
             target.CheckMicrHash = source.CheckMicrHash;
-            target.CreditCardTypeValueId = source.CreditCardTypeValueId;
-            target.CurrencyTypeValueId = source.CurrencyTypeValueId;
             target.FinancialGatewayId = source.FinancialGatewayId;
+            target.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
             target.ProcessedByPersonAliasId = source.ProcessedByPersonAliasId;
             target.ProcessedDateTime = source.ProcessedDateTime;
             target.ScheduledTransactionId = source.ScheduledTransactionId;

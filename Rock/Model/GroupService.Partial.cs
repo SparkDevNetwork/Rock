@@ -414,54 +414,99 @@ namespace Rock.Model
         public Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> GroupMembersNotMeetingRequirements( int groupId, bool includeWarnings )
         {
             Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> results = new Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>>();
+            
+            var rockContext = this.Context as RockContext;
+            var groupRequirementService = new GroupRequirementService( rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
 
-            var qry = new GroupMemberRequirementService( (RockContext)Context ).Queryable().AsNoTracking()
-                                        .Where( r => r.GroupMember.GroupId == groupId);
-            if (includeWarnings) {
-                qry = qry.Where(r => r.RequirementWarningDateTime != null || r.RequirementFailDateTime != null);
+            var qryGroupRequirements = groupRequirementService.Queryable().Where( a => a.GroupId == groupId );
+            bool hasGroupRequirements = qryGroupRequirements.Any();
+            if ( !hasGroupRequirements )
+            {
+                // if no group requirements, then there are no members that don't meet the requirements, so return an empty dictionary
+                return new Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>>();
+            }
+
+            var qryGroupMembers = groupMemberService.Queryable().Where( a => a.GroupId == groupId );
+            var qryGroupMemberRequirements = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.GroupId == groupId );
+
+            // get a list of group member ids that don't meet all the requirements
+            IQueryable<int> qryGroupMemberIdsThatLackGroupRequirements = qryGroupMembers.Where(
+                                a => !qryGroupRequirements.Select(x => x.Id).All(
+                                    r => a.GroupMemberRequirements.Where( mr => mr.RequirementMetDateTime.HasValue ).Select( x => x.GroupRequirementId ).Contains( r ) ) ).Select(a => a.Id);
+
+            IQueryable<GroupMember> qryMembersWithIssues;
+
+            if ( includeWarnings )
+            {
+                IQueryable<int> qryGroupMemberIdsWithRequirementWarnings = qryGroupMemberRequirements.Where( a => a.RequirementWarningDateTime != null || a.RequirementFailDateTime != null ).Select( a => a.GroupMemberId ).Distinct();
+                qryMembersWithIssues = qryGroupMembers.Where( a => qryGroupMemberIdsThatLackGroupRequirements.Contains( a.Id ) || qryGroupMemberIdsWithRequirementWarnings.Contains( a.Id ) );
             }
             else
             {
-                qry = qry.Where( r => r.RequirementFailDateTime != null );
+                qryMembersWithIssues = qryGroupMembers.Where( a => qryGroupMemberIdsThatLackGroupRequirements.Contains( a.Id ) );
             }
 
-            var groupmembersWithIssues = qry.Select( r => new { 
-                                                r.GroupMember, 
-                                                r.GroupRequirement, 
-                                                r.RequirementFailDateTime,
-                                                r.RequirementWarningDateTime})
-                                            .ToList();
-
-            foreach ( var groupMember in groupmembersWithIssues.GroupBy( g => g.GroupMember ) )
+            var qry = qryMembersWithIssues.Select( a => new
             {
-                var issues = groupmembersWithIssues
-                        .Where(g => g.GroupMember.Id == groupMember.Key.Id)
-                        .Select( r => new {r.GroupRequirement, r.RequirementFailDateTime, r.RequirementWarningDateTime});
+                GroupMember = a,
+                GroupRequirementStatuses = qryGroupMemberRequirements.Where( x => x.GroupMemberId == a.Id )
+            } );
 
-                Dictionary<PersonGroupRequirementStatus, DateTime> statuses = new Dictionary<PersonGroupRequirementStatus,DateTime>();
-                foreach ( var issue in issues )
+            var currentDateTime = RockDateTime.Now;
+
+            foreach (var groupMemberWithIssues in qry)
+            {
+                Dictionary<PersonGroupRequirementStatus, DateTime> statuses = new Dictionary<PersonGroupRequirementStatus, DateTime>();
+                
+                // populate where the status is known
+                foreach ( var requirementStatus in groupMemberWithIssues.GroupRequirementStatuses )
                 {
                     PersonGroupRequirementStatus status = new PersonGroupRequirementStatus();
-                    status.GroupRequirement = issue.GroupRequirement;
-                    status.PersonId = groupMember.Key.PersonId;
+                    status.GroupRequirement = requirementStatus.GroupRequirement;
+                    status.PersonId = groupMemberWithIssues.GroupMember.PersonId;
 
                     DateTime occuranceDate = new DateTime();
 
-                    if ( issue.RequirementFailDateTime != null )
+                    if ( requirementStatus.RequirementMetDateTime == null)
                     {
                         status.MeetsGroupRequirement = MeetsGroupRequirement.NotMet;
-                        occuranceDate = issue.RequirementFailDateTime.Value;
+                        occuranceDate = requirementStatus.RequirementFailDateTime ?? currentDateTime; 
+                    }
+                    else if (requirementStatus.RequirementWarningDateTime.HasValue)
+                    {
+                        status.MeetsGroupRequirement = MeetsGroupRequirement.MeetsWithWarning;
+                        occuranceDate = requirementStatus.RequirementWarningDateTime.Value;
                     }
                     else
                     {
-                        status.MeetsGroupRequirement = MeetsGroupRequirement.MeetsWithWarning;
-                        occuranceDate = issue.RequirementWarningDateTime.Value;
+                        status.MeetsGroupRequirement = MeetsGroupRequirement.Meets;
+                        occuranceDate = requirementStatus.RequirementMetDateTime.Value;
                     }
-
+                    
                     statuses.Add( status, occuranceDate );
                 }
 
-                results.Add( groupMember.Key, statuses );
+                // also add any groupRequirements that they don't have statuses for (and therefore haven't met)
+                foreach (var groupRequirement in qryGroupRequirements)
+                {
+                    if ( !statuses.Any( x => x.Key.GroupRequirement.Id == groupRequirement.Id) )
+                    {
+                        PersonGroupRequirementStatus status = new PersonGroupRequirementStatus();
+                        status.GroupRequirement = groupRequirement;
+                        status.PersonId = groupMemberWithIssues.GroupMember.PersonId;
+                        status.MeetsGroupRequirement = MeetsGroupRequirement.NotMet;
+                        statuses.Add( status, currentDateTime );
+                    }
+                }
+
+                var statusesWithIssues = statuses.Where( a => a.Key.MeetsGroupRequirement != MeetsGroupRequirement.Meets ).ToDictionary( k => k.Key, v => v.Value );
+
+                if ( statusesWithIssues.Any() )
+                {
+                    results.Add( groupMemberWithIssues.GroupMember, statusesWithIssues );
+                }
             }
 
             return results;

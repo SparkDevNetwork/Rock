@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <div class="panel panel-block list-as-blocks">
+        <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-gears"></i> My Workflows</h1>
 
@@ -14,22 +14,23 @@
 
             </div>
             <div class="panel-body">
-
-                <ul>
-                    <asp:Repeater ID="rptWorkflowTypes" runat="server">
-                        <ItemTemplate>
-                            <li class='<%# Eval("Class") %>'>
-                                <asp:LinkButton ID="lbWorkflowType" runat="server" CommandArgument='<%# Eval("WorkflowType.Id") %>' CommandName="Display">
-                                    <i class='<%# Eval("WorkflowType.IconCssClass") %>'></i>
-                                    <h3><%# Eval("WorkflowType.Name") %> </h3>
-                                    <div class="notification">
-                                        <span class="label label-danger"><%# ((int)Eval("Count")).ToString("#,###,###") %></span>
-                                    </div>
-                                </asp:LinkButton>
-                            </li>
-                        </ItemTemplate>
-                    </asp:Repeater>
-                </ul>
+                <div class="list-as-blocks clearfix">
+                    <ul>
+                        <asp:Repeater ID="rptWorkflowTypes" runat="server">
+                            <ItemTemplate>
+                                <li class='<%# Eval("Class") %>'>
+                                    <asp:LinkButton ID="lbWorkflowType" runat="server" CommandArgument='<%# Eval("WorkflowType.Id") %>' CommandName="Display">
+                                        <i class='<%# Eval("WorkflowType.IconCssClass") %>'></i>
+                                        <h3><%# Eval("WorkflowType.Name") %> </h3>
+                                        <div class="notification">
+                                            <span class="label label-danger"><%# ((int)Eval("Count")).ToString("#,###,###") %></span>
+                                        </div>
+                                    </asp:LinkButton>
+                                </li>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </ul>
+                </div>
 
                 <h4><asp:Literal ID="lWorkflow" runat="server"></asp:Literal></h4>
                 <div class="grid">

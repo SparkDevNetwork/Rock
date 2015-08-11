@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Security
                 var recipients = new List<RecipientData>();
                 recipients.Add( new RecipientData( tbEmail.Text, mergeObjects ) );
 
-                Email.Send( GetAttributeValue( "EmailTemplate" ).AsGuid(), recipients, ResolveRockUrlIncludeRoot( "~/" ), ResolveRockUrlIncludeRoot( "~~/" ) );
+                Email.Send( GetAttributeValue( "EmailTemplate" ).AsGuid(), recipients, ResolveRockUrlIncludeRoot( "~/" ), ResolveRockUrlIncludeRoot( "~~/" ), false );
 
                 pnlEntry.Visible = false;
                 pnlSuccess.Visible = true;

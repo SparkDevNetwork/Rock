@@ -81,19 +81,29 @@ namespace Rock.Jobs
             var newActiveJobs = activeJobList.Where( a => !scheduledQuartzJobs.Any( q => q.Name.AsGuid().Equals( a.Guid ) ) );
             foreach ( Rock.Model.ServiceJob job in newActiveJobs )
             {
+                const string errorSchedulingStatus = "Error scheduling Job";
                 try
                 {
                     IJobDetail jobDetail = jobService.BuildQuartzJob( job );
                     ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
                     scheduler.ScheduleJob( jobDetail, jobTrigger );
+
+                    if ( job.LastStatus == errorSchedulingStatus )
+                    {
+                        job.LastStatusMessage = string.Empty;
+                        job.LastStatus = string.Empty;
+                        rockContext.SaveChanges();
+                    }
                 }
                 catch ( Exception ex )
                 {
+                    ExceptionLogService.LogException( ex, null );
+
                     // create a friendly error message
-                    string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assembly, ex.Message );
+                    string message = string.Format( "Error scheduling the job: {0}.\n\n{2}", job.Name, job.Assembly, ex.Message );
                     job.LastStatusMessage = message;
-                    job.LastStatus = "Error Loading Job";
+                    job.LastStatus = errorSchedulingStatus;
                 }
             }
 
@@ -111,9 +121,8 @@ namespace Rock.Jobs
                     var activeJob = activeJobList.FirstOrDefault( a => a.Guid.Equals( jobKey.Name.AsGuid() ) );
                     if ( activeJob != null )
                     {
-
                         bool rescheduleJob = false;
-                        
+
                         // fix up the schedule if it has changed
                         if ( activeJob.CronExpression != jobCronTrigger.CronExpressionString )
                         {
@@ -124,24 +133,44 @@ namespace Rock.Jobs
                         var scheduledJobDetail = scheduler.GetJobDetail( jobKey );
                         var jobDetail = jobService.BuildQuartzJob( activeJob );
 
-                        if (scheduledJobDetail != null && jobDetail != null)
+                        if ( scheduledJobDetail != null && jobDetail != null )
                         {
-                            if (scheduledJobDetail.JobType != jobDetail.JobType)
+                            if ( scheduledJobDetail.JobType != jobDetail.JobType )
                             {
                                 rescheduleJob = true;
                             }
 
-                            if (scheduledJobDetail.JobDataMap.ToJson() != jobDetail.JobDataMap.ToJson())
+                            if ( scheduledJobDetail.JobDataMap.ToJson() != jobDetail.JobDataMap.ToJson() )
                             {
                                 rescheduleJob = true;
                             }
                         }
 
-                        if (rescheduleJob)
+                        if ( rescheduleJob )
                         {
-                            ITrigger newJobTrigger = jobService.BuildQuartzTrigger( activeJob );
-                            scheduler.DeleteJob( jobKey );
-                            scheduler.ScheduleJob( jobDetail, newJobTrigger );
+                            const string errorReschedulingStatus = "Error re-scheduling Job";
+                            try
+                            {
+                                ITrigger newJobTrigger = jobService.BuildQuartzTrigger( activeJob );
+                                bool deletedSuccessfully = scheduler.DeleteJob( jobKey );
+                                scheduler.ScheduleJob( jobDetail, newJobTrigger );
+
+                                if ( activeJob.LastStatus == errorReschedulingStatus )
+                                {
+                                    activeJob.LastStatusMessage = string.Empty;
+                                    activeJob.LastStatus = string.Empty;
+                                    rockContext.SaveChanges();
+                                }
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( ex, null );
+
+                                // create a friendly error message
+                                string message = string.Format( "Error re-scheduling the job: {0}.\n\n{2}", activeJob.Name, activeJob.Assembly, ex.Message );
+                                activeJob.LastStatusMessage = message;
+                                activeJob.LastStatus = errorReschedulingStatus;
+                            }
                         }
                     }
                 }
