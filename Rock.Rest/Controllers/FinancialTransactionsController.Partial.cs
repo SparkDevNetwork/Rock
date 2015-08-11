@@ -47,15 +47,16 @@ namespace Rock.Rest.Controllers
         public HttpResponseMessage PostScanned( [FromBody]FinancialTransactionScannedCheck financialTransactionScannedCheck )
         {
             FinancialTransaction financialTransaction = financialTransactionScannedCheck.FinancialTransaction;
-            financialTransaction.CheckMicrEncrypted = Encryption.EncryptString( financialTransactionScannedCheck.ScannedCheckMicr );
-            financialTransaction.CheckMicrHash = Encryption.GetSHA1Hash( financialTransactionScannedCheck.ScannedCheckMicr );
+            financialTransaction.CheckMicrEncrypted = Encryption.EncryptString( financialTransactionScannedCheck.ScannedCheckMicrData );
+            financialTransaction.CheckMicrHash = Encryption.GetSHA1Hash( financialTransactionScannedCheck.ScannedCheckMicrData );
+            financialTransaction.CheckMicrParts = Encryption.EncryptString( financialTransactionScannedCheck.ScannedCheckMicrParts );
             return this.Post( financialTransaction );
         }
 
         /// <summary>
-        /// Returns true if a transaction with the same routing number, accountnumber and checknumber is already in the database
+        /// Returns true if a transaction with the same MICR track data is already in the database
         /// </summary>
-        /// <param name="scannedCheckMicr">The scanned check micr in the format {RoutingNumber}_{AccountNumber}_{CheckNumber}</param>
+        /// <param name="scannedCheckMicr">The scanned check micr track data</param>
         /// <returns></returns>
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/AlreadyScanned" )]

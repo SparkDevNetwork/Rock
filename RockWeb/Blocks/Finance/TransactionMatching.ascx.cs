@@ -330,14 +330,14 @@ namespace RockWeb.Blocks.Finance
                     ddlIndividual.Attributes.Remove( "disabled" );
                     badgeIndividualCount.InnerText = "";
 
-                    // if this transaction has a CheckMicrEncrypted, try to find matching person(s)
+                    // if this transaction has a CheckMicrParts, try to find matching person(s)
                     string checkMicrHashed = null;
 
-                    if ( !string.IsNullOrWhiteSpace( transactionToMatch.CheckMicrEncrypted ) )
+                    if ( !string.IsNullOrWhiteSpace( transactionToMatch.CheckMicrParts ) )
                     {
                         try
                         {
-                            var checkMicrClearText = Encryption.DecryptString( transactionToMatch.CheckMicrEncrypted );
+                            var checkMicrClearText = Encryption.DecryptString( transactionToMatch.CheckMicrParts );
                             var parts = checkMicrClearText.Split( '_' );
                             if ( parts.Length >= 2 )
                             {
@@ -346,7 +346,7 @@ namespace RockWeb.Blocks.Finance
                         }
                         catch
                         {
-                            // intentionally ignore exception when decripting CheckMicrEncrypted since we'll be checking for null below
+                            // intentionally ignore exception when decripting CheckMicrParts since we'll be checking for null below
                         }
                     }
 
@@ -656,7 +656,7 @@ namespace RockWeb.Blocks.Finance
                             financialPersonBankAccount.PersonAliasId = personAliasId.Value;
                             financialPersonBankAccount.AccountNumberSecured = accountNumberSecured;
 
-                            var checkMicrClearText = Encryption.DecryptString( financialTransaction.CheckMicrEncrypted );
+                            var checkMicrClearText = Encryption.DecryptString( financialTransaction.CheckMicrParts );
                             var parts = checkMicrClearText.Split( '_' );
                             if ( parts.Length >= 2 )
                             {

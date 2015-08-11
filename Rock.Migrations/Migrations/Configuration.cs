@@ -57,9 +57,9 @@ namespace Rock.Migrations
             foreach( string encryptedMicr in txnService
                 .Queryable()
                 .Where( t => 
-                    t.CheckMicrEncrypted != null &&
-                    t.CheckMicrEncrypted != "" )
-                .Select( t => t.CheckMicrEncrypted )
+                    t.CheckMicrParts != null &&
+                    t.CheckMicrParts != "" )
+                .Select( t => t.CheckMicrParts )
                 .Distinct() )
             {
                 if ( !string.IsNullOrWhiteSpace( encryptedMicr ) )

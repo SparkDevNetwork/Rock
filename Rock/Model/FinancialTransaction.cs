@@ -126,20 +126,22 @@ namespace Rock.Model
         public int? SourceTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets an encrypted version of a scanned check's MICR information.
-        /// Plain Text format is {routingnumber}_{accountnumber}_{checknumber}
+        /// Gets or sets an encrypted version of a scanned check's raw track of the MICR data.
+        /// Note that different scanning hardware might use different special characters for fields such as Transit and On-US.
+        /// Also, encryption of the same values results in different encrypted data, so this field can't be used for check matching
         /// </summary>
         /// <value>
         /// The check micr encrypted.
-        /// A <see cref="System.String"/> representing an encrypted version of a scanned check's MICR information.
+        /// A <see cref="System.String"/> representing an encrypted version of a scanned check's MICR track data
         /// </value>
         [DataMember]
         [HideFromReporting]
         public string CheckMicrEncrypted { get; set; }
 
         /// <summary>
-        /// Gets or sets hash of the Check Routing, AccountNumber, and CheckNumber.  Stored as a SHA1 hash so that it can be matched without being known
+        /// One Way Encryption (SHA1 Hash) of Raw Track of the MICR read. The same raw MICR will result in the same hash.  
         /// Enables detection of duplicate scanned checks
+        /// Note: duplicate detection requires that the duplicate check was scanned using the same scanner type (Ranger vs Magtek)
         /// </summary>
         /// <value>
         /// The check micr hash.
@@ -149,6 +151,27 @@ namespace Rock.Model
         [Index]
         [HideFromReporting]
         public string CheckMicrHash { get; set; }
+
+        /// <summary>
+        /// Gets or sets the micr status (if this Transaction is from a scanned check)
+        /// Fail means that the check scanner detected a bad MICR read, but the user choose to Upload it anyway
+        /// </summary>
+        /// <value>
+        /// The micr status.
+        /// </value>
+        [HideFromReporting]
+        public MICRStatus? MICRStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets an encrypted version of a scanned check's parsed MICR in the format {routingnumber}_{accountnumber}_{checknumber}
+        /// </summary>
+        /// <value>
+        /// The check micr encrypted.
+        /// A <see cref="System.String"/> representing an encrypted version of a scanned check's parsed MICR data in the format {routingnumber}_{accountnumber}_{checknumber}
+        /// </value>
+        [DataMember]
+        [HideFromReporting]
+        public string CheckMicrParts { get; set; }
 
         /// <summary>
         /// Gets or sets the ScheduledTransactionId of the <see cref="Rock.Model.FinancialScheduledTransaction" /> that triggered
@@ -359,13 +382,22 @@ namespace Rock.Model
         public FinancialTransaction FinancialTransaction { get; set; }
 
         /// <summary>
-        /// Gets or sets the scanned check MICR.
+        /// Gets or sets the scanned check MICR (the raw track data)
         /// </summary>
         /// <value>
         /// The scanned check MICR.
         /// </value>
         [DataMember]
-        public string ScannedCheckMicr { get; set; }
+        public string ScannedCheckMicrData { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scanned check parsed MICR in the format {routingnumber}_{accountnumber}_{checknumber}
+        /// </summary>
+        /// <value>
+        /// The scanned check micr parts.
+        /// </value>
+        [DataMember]
+        public string ScannedCheckMicrParts { get; set; }
     }
 
     #region Entity Configuration
@@ -394,6 +426,25 @@ namespace Rock.Model
 
     #endregion Entity Configuration
 
+    #region Enumerations
+
+    /// <summary>
+    /// The gender of a person
+    /// </summary>
+    public enum MICRStatus
+    {
+        /// <summary>
+        /// Success means the scanned MICR contains no invalid read chars ('!' for Canon and '?' for Magtek)
+        /// </summary>
+        Success = 0,
+
+        /// <summary>
+        /// Fail means the scanned MICR contains at least one invalid read char ('!' for Canon and '?' for Magtek)
+        /// but the user chose to Upload it anyway
+        /// </summary>
+        Fail = 1
+    }
+
     /// <summary>
     /// For giving analysis reporting
     /// </summary>
@@ -414,4 +465,6 @@ namespace Rock.Model
         /// </summary>
         Campus = 2,
     }
+
+    #endregion
 }

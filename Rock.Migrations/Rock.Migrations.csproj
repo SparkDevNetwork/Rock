@@ -379,6 +379,10 @@
     <Compile Include="Migrations\201508111636214_FinancialPaymentDetails.Designer.cs">
       <DependentUpon>201508111636214_FinancialPaymentDetails.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201508112300341_FinancialTransactionMICRUpdates.cs" />
+    <Compile Include="Migrations\201508112300341_FinancialTransactionMICRUpdates.Designer.cs">
+      <DependentUpon>201508112300341_FinancialTransactionMICRUpdates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2075,6 +2079,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201508111636214_FinancialPaymentDetails.resx">
       <DependentUpon>201508111636214_FinancialPaymentDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201508112300341_FinancialTransactionMICRUpdates.resx">
+      <DependentUpon>201508112300341_FinancialTransactionMICRUpdates.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
