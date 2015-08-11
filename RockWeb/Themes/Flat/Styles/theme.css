@@ -5091,14 +5091,6 @@ a.cke_dialog_ui_button_ok:active {
   width: 50px;
   height: 50px;
 }
-::selection {
-  background: #afd074;
-  color: #ffffff;
-}
-::-moz-selection {
-  background: #afd074;
-  color: #ffffff;
-}
 .clickable {
   cursor: pointer;
 }
