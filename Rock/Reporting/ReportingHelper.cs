@@ -200,16 +200,25 @@ namespace Rock.Reporting
                                 var customSortExpression = selectComponent.SortProperties( reportField.Selection );
                                 if ( customSortExpression != null )
                                 {
-                                    columnField.SortExpression = customSortExpression.Split( ',' ).Select( a => string.Format( "Sort_{0}_{1}", a, columnIndex ) ).ToList().AsDelimited( "," );
+                                    if ( customSortExpression == string.Empty )
+                                    {
+                                        // disable sorting if customSortExpression set to string.empty
+                                        columnField.SortExpression = string.Empty;
+                                    }
+                                    else
+                                    {
+                                        columnField.SortExpression = customSortExpression.Split( ',' ).Select( a => string.Format( "Sort_{0}_{1}", a, columnIndex ) ).ToList().AsDelimited( "," );
+                                    }
                                 }
                                 else
                                 {
+                                    // use default sorting if customSortExpression was null
                                     columnField.SortExpression = ( columnField as BoundField ).DataField;
                                 }
                             }
 
                             columnField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
-                            if ( columnField.SortExpression != null )
+                            if ( !string.IsNullOrEmpty(columnField.SortExpression) )
                             {
                                 reportFieldSortExpressions.AddOrReplace( reportField.Guid, columnField.SortExpression );
                             }
