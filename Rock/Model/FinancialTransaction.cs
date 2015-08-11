@@ -65,6 +65,15 @@ namespace Rock.Model
         public int? FinancialGatewayId { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial payment detail identifier.
+        /// </summary>
+        /// <value>
+        /// The financial payment detail identifier.
+        /// </value>
+        [DataMember]
+        public int? FinancialPaymentDetailId { get; set; }
+
+        /// <summary>
         /// Gets or sets date and time that the transaction occurred. This is the local server time.
         /// </summary>
         /// <value>
@@ -105,29 +114,6 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE )]
         [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 1 )]
         public int TransactionTypeValueId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the DefinedValueId of the currency type <see cref="Rock.Model.DefinedValue"/> indicating the currency that the
-        /// transaction was made in.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32" /> representing the DefinedValueId of the CurrencyType <see cref="Rock.Model.DefinedValue" /> for this transaction.
-        /// </value>
-        [DataMember]
-        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE )]
-        public int? CurrencyTypeValueId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the DefinedValueId of the credit card type <see cref="Rock.Model.DefinedValue"/> indicating the credit card brand/type that was used
-        /// to make this transaction. This value will be null for transactions that were not made by credit card.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the DefinedValueId of the credit card type <see cref="Rock.Model.DefinedValue"/> that was used to make this transaction.
-        /// This value value will be null for transactions that were not made by credit card.
-        /// </value>
-        [DataMember]
-        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE )]
-        public int? CreditCardTypeValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the DefinedValueId of the source type <see cref="Rock.Model.DefinedValue"/> for this transaction. Representing the source (method) of this transaction.
@@ -222,6 +208,15 @@ namespace Rock.Model
         public virtual FinancialGateway FinancialGateway { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial payment detail.
+        /// </summary>
+        /// <value>
+        /// The financial payment detail.
+        /// </value>
+        [DataMember]
+        public virtual FinancialPaymentDetail FinancialPaymentDetail { get; set; }
+        
+        /// <summary>
         /// Gets or sets the transaction type <see cref="Rock.Model.DefinedValue"/> indicating the type of transaction that occurred.
         /// </summary>
         /// <value>
@@ -229,27 +224,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue TransactionTypeValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this
-        /// transaction.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for the transaction.
-        /// </value>
-        [DataMember]
-        public virtual DefinedValue CurrencyTypeValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the credit card type <see cref="Rock.Model.DefinedValue"/> indicating the type of credit card that was used for this transaction.
-        /// If this was not a credit card based transaction, this value will be null.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Model.DefinedValue" /> indicating the type of credit card that was used for this transaction. This value is null
-        /// for transactions that were not made by credit card.
-        /// </value>
-        [DataMember]
-        public virtual DefinedValue CreditCardTypeValue { get; set; }
 
         /// <summary>
         /// Gets or sets the source type <see cref="Rock.Model.DefinedValue"/> indicating where the transaction originated from; the source of the transaction.
@@ -409,9 +383,8 @@ namespace Rock.Model
             this.HasOptional( t => t.AuthorizedPersonAlias ).WithMany().HasForeignKey( t => t.AuthorizedPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Batch ).WithMany( t => t.Transactions ).HasForeignKey( t => t.BatchId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.FinancialGateway ).WithMany().HasForeignKey( t => t.FinancialGatewayId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.FinancialPaymentDetail ).WithMany().HasForeignKey( t => t.FinancialPaymentDetailId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Refund ).WithRequired().WillCascadeOnDelete( true );
             this.HasOptional( t => t.ScheduledTransaction ).WithMany( s => s.Transactions ).HasForeignKey( t => t.ScheduledTransactionId ).WillCascadeOnDelete( false );

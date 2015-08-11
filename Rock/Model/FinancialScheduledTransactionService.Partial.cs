@@ -44,7 +44,7 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<FinancialScheduledTransaction> Get( int? personId, int? givingGroupId, bool includeInactive )
         {
-            var qry = Queryable( "ScheduledTransactionDetails,CurrencyTypeValue,CreditCardTypeValue" )
+            var qry = Queryable( "ScheduledTransactionDetails,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
                 .Where( t => t.IsActive || includeInactive );
 
             if ( givingGroupId.HasValue )
@@ -255,6 +255,7 @@ namespace Rock.Model
                             var txnChanges = new List<string>();
 
                             var transaction = new FinancialTransaction();
+                            transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
 
                             transaction.Guid = Guid.NewGuid();
                             allTxnChanges.Add( transaction.Guid, txnChanges );
@@ -279,24 +280,34 @@ namespace Rock.Model
                             History.EvaluateChange( txnChanges, "Type", string.Empty, contributionTxnType.Value );
 
                             var currencyTypeValue = payment.CurrencyTypeValue;
-                            if ( currencyTypeValue == null && scheduledTransaction.CurrencyTypeValueId.HasValue )
+                            var creditCardTypevalue = payment.CreditCardTypeValue;
+
+                            if ( scheduledTransaction.FinancialPaymentDetail != null )
                             {
-                                currencyTypeValue = DefinedValueCache.Read( scheduledTransaction.CurrencyTypeValueId.Value );
-                            }
-                            if ( currencyTypeValue != null )
-                            {
-                                transaction.CurrencyTypeValueId = currencyTypeValue.Id;
-                                History.EvaluateChange( txnChanges, "Currency Type", string.Empty, currencyTypeValue.Value );
+                                if ( currencyTypeValue == null && scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
+                                {
+                                    currencyTypeValue = DefinedValueCache.Read( scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId.Value );
+                                }
+
+                                if ( creditCardTypevalue == null && scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
+                                {
+                                    creditCardTypevalue = DefinedValueCache.Read( scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId.Value );
+                                }
+
+                                transaction.FinancialPaymentDetail.AccountNumberMasked = scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked;
+                                transaction.FinancialPaymentDetail.NameOnCardEncrypted = scheduledTransaction.FinancialPaymentDetail.NameOnCardEncrypted;
+                                transaction.FinancialPaymentDetail.ExpirationMonthEncrypted = scheduledTransaction.FinancialPaymentDetail.ExpirationMonthEncrypted;
+                                transaction.FinancialPaymentDetail.ExpirationYearEncrypted = scheduledTransaction.FinancialPaymentDetail.ExpirationYearEncrypted;
                             }
 
-                            var creditCardTypevalue = payment.CreditCardTypeValue;
-                            if ( creditCardTypevalue == null && scheduledTransaction.CreditCardTypeValueId.HasValue )
+                            if ( currencyTypeValue != null )
                             {
-                                creditCardTypevalue = DefinedValueCache.Read( scheduledTransaction.CreditCardTypeValueId.Value );
+                                transaction.FinancialPaymentDetail.CurrencyTypeValueId = currencyTypeValue.Id;
+                                History.EvaluateChange( txnChanges, "Currency Type", string.Empty, currencyTypeValue.Value );
                             }
                             if ( creditCardTypevalue != null )
                             {
-                                transaction.CreditCardTypeValueId = creditCardTypevalue.Id;
+                                transaction.FinancialPaymentDetail.CreditCardTypeValueId = creditCardTypevalue.Id;
                                 History.EvaluateChange( txnChanges, "Credit Card Type", string.Empty, creditCardTypevalue.Value );
                             }
 

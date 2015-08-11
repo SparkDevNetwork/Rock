@@ -47,8 +47,8 @@ namespace Rock.Migrations
                 {
                     foreach ( var financialTransaction in financialTransactionService.Queryable().Where( a =>
                         ( a.CheckMicrEncrypted != null && a.CheckMicrEncrypted != string.Empty )
-                        && ( a.TransactionCode == null || a.TransactionCode == string.Empty )
-                        && a.CurrencyTypeValueId == currencyTypeCheckId )
+                        && ( a.TransactionCode == null || a.TransactionCode == string.Empty ) )
+                        //&& a.CurrencyTypeValueId == currencyTypeCheckId )
                         .Select( a => new { a.Id, a.CheckMicrEncrypted } ).ToList() )
                     {
                         string checkMicrDecrypted = Rock.Security.Encryption.DecryptString( financialTransaction.CheckMicrEncrypted ) ?? string.Empty;

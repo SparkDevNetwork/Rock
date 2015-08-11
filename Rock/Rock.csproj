@@ -383,6 +383,7 @@
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\EntitySet.cs" />
     <Compile Include="Model\EntitySetItem.cs" />
+    <Compile Include="Model\FinancialPersonBankAccount.cs" />
     <Compile Include="Model\FinancialTransactionDetailService.Partial.cs" />
     <Compile Include="Model\FinancialPledgeService.Partial.cs" />
     <Compile Include="Model\FollowingService.partial.cs" />
@@ -764,7 +765,7 @@
     <Compile Include="Field\Types\ComponentFieldType.cs" />
     <Compile Include="Model\FinancialTransactionRefund.cs" />
     <Compile Include="Model\FinancialPersonSavedAccount.cs" />
-    <Compile Include="Model\FinancialPersonBankAccount.cs" />
+    <Compile Include="Model\FinancialPaymentDetail.cs" />
     <Compile Include="Model\FinancialScheduledTransactionDetail.cs" />
     <Compile Include="Reporting\DataTransformComponent.cs" />
     <Compile Include="Reporting\DataTransformContainer.cs" />

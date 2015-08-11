@@ -180,7 +180,7 @@ namespace Rock.Rest.Controllers
             var selectQry = qry.Select( a => new
             {
                 a.TransactionDateTime,
-                CurrencyTypeValueName = a.CurrencyTypeValue.Value,
+                CurrencyTypeValueName = a.FinancialPaymentDetail != null ? a.FinancialPaymentDetail.CurrencyTypeValue.Value : "",
                 a.Summary,
                 Details = a.TransactionDetails.Select( d => new
                 {

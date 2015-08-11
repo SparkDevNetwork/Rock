@@ -100,51 +100,15 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<FinancialPersonSavedAccount>( Context ).Queryable().Any( a => a.CreditCardTypeValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialPersonSavedAccount.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<FinancialPersonSavedAccount>( Context ).Queryable().Any( a => a.CurrencyTypeValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialPersonSavedAccount.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<FinancialPledge>( Context ).Queryable().Any( a => a.PledgeFrequencyValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.CreditCardTypeValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.CurrencyTypeValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.TransactionFrequencyValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.CreditCardTypeValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.CurrencyTypeValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
             }  
  
