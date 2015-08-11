@@ -109,6 +109,9 @@ namespace Rock.Apps.CheckScannerUtility
                 imgBack.Source = null;
             }
 
+            lblFront.Visibility = imgFront.Source != null ? Visibility.Visible : Visibility.Collapsed;
+            lblBack.Visibility = imgBack.Source != null ? Visibility.Visible : Visibility.Collapsed;
+
             lblScannedDateTime.Content = financialTransaction.CreatedDateTime.HasValue ? financialTransaction.CreatedDateTime.Value.ToString( "g" ) : null;
             lblTransactionDateTime.Content = financialTransaction.TransactionDateTime.HasValue ? financialTransaction.TransactionDateTime.Value.ToString( "g" ) : null;
             lblBatch.Content = batchPage.SelectedFinancialBatch.Name;
@@ -122,8 +125,17 @@ namespace Rock.Apps.CheckScannerUtility
             lblTransactionCodeLabel.Visibility = hasTransactionCode ? Visibility.Visible : Visibility.Collapsed;
             lblTransactionCodeValue.Visibility = hasTransactionCode ? Visibility.Visible : Visibility.Collapsed;
 
-            financialTransaction.CurrencyTypeValue = financialTransaction.CurrencyTypeValue ?? batchPage.CurrencyValueList.FirstOrDefault( a => a.Id == financialTransaction.CurrencyTypeValueId );
-            lblCurrencyType.Content = financialTransaction.CurrencyTypeValue != null ? financialTransaction.CurrencyTypeValue.Value : null;
+            financialTransaction.FinancialPaymentDetail = financialTransaction.FinancialPaymentDetail ?? client.GetData<FinancialPaymentDetail>( string.Format( "api/FinancialPaymentDetails/{0}", financialTransaction.FinancialPaymentDetailId ) );
+
+            if ( financialTransaction.FinancialPaymentDetail != null )
+            {
+                financialTransaction.FinancialPaymentDetail.CurrencyTypeValue = financialTransaction.FinancialPaymentDetail.CurrencyTypeValue ?? batchPage.CurrencyValueList.FirstOrDefault( a => a.Id == financialTransaction.FinancialPaymentDetail.CurrencyTypeValueId );
+                lblCurrencyType.Content = financialTransaction.FinancialPaymentDetail.CurrencyTypeValue != null ? financialTransaction.FinancialPaymentDetail.CurrencyTypeValue.Value : null;
+            }
+            else
+            {
+                lblCurrencyType.Content = string.Empty;
+            }
         }
     }
 }

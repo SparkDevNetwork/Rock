@@ -852,7 +852,11 @@ namespace Rock.Apps.CheckScannerUtility
                 this.Cursor = null;
                 foreach ( var transaction in transactions )
                 {
-                    transaction.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.CurrencyTypeValueId );
+                    transaction.FinancialPaymentDetail = transaction.FinancialPaymentDetail ?? client.GetData<FinancialPaymentDetail>( string.Format( "api/FinancialPaymentDetails/{0}", transaction.FinancialPaymentDetailId ) );
+                    if ( transaction.FinancialPaymentDetail != null )
+                    {
+                        transaction.FinancialPaymentDetail.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.FinancialPaymentDetail.CurrencyTypeValueId );
+                    }
                 }
 
                 // sort starting with most recent first
@@ -878,9 +882,17 @@ namespace Rock.Apps.CheckScannerUtility
             var transactions = grdBatchItems.DataContext as BindingList<FinancialTransaction>;
             if ( transactions != null )
             {
-                foreach ( var transaction in transactions.Where( a => a.CurrencyTypeValue == null ) )
+                RockConfig rockConfig = RockConfig.Load();
+                var client = new RockRestClient( rockConfig.RockBaseUrl );
+                client.Login( rockConfig.Username, rockConfig.Password );
+                
+                foreach ( var transaction in transactions.Where( a => a.FinancialPaymentDetail == null ) )
                 {
-                    transaction.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.CurrencyTypeValueId );
+                    transaction.FinancialPaymentDetail = transaction.FinancialPaymentDetail ?? client.GetData<FinancialPaymentDetail>( string.Format( "api/FinancialPaymentDetails/{0}", transaction.FinancialPaymentDetailId ) );
+                    if ( transaction.FinancialPaymentDetail != null )
+                    {
+                        transaction.FinancialPaymentDetail.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.FinancialPaymentDetail.CurrencyTypeValueId );
+                    }
                 }
             }
 

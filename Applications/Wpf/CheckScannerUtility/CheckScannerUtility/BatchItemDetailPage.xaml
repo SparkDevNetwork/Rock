@@ -74,6 +74,7 @@
             </Grid.RowDefinitions>
 
             <Label Grid.Row="0"
+                   Name="lblFront"
                    Content="Front"
                    Grid.Column="1"
                    VerticalAlignment="Bottom"
@@ -86,6 +87,7 @@
                    VerticalAlignment="Top"
                    Source="images/check-image.png" />
             <Label Grid.Row="2"
+                   Name="lblBack"
                    Grid.Column="1"
                    Content="Back"
                    VerticalAlignment="Bottom"
