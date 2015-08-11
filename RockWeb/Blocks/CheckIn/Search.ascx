@@ -2,18 +2,6 @@
 <asp:UpdatePanel ID="upContent" runat="server">
 <ContentTemplate>
 
-    <style>
-        input.namesearch{
-            height: 60px;
-            font-weight: 700;
-            font-size: 36px;
-            padding: 6px 20px;
-            width: 360px;
-            float: left;
-            margin-bottom: 10px;
-        }
-    </style>
-
     <script>
         
         Sys.Application.add_load(function () {
