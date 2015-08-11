@@ -123,12 +123,20 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
+        /// Gets the MICR track data that was read off of the check
+        /// </summary>
+        /// <value>
+        /// The scanned check micr.
+        /// </value>
+        public string ScannedCheckMicrData { get; set; }
+
+        /// <summary>
         /// Gets the scanned check micr in the format "{RoutingNumber}_{AccountNumber}_{CheckNumber}";
         /// </summary>
         /// <value>
         /// The scanned check micr.
         /// </value>
-        public string ScannedCheckMicr
+        public string ScannedCheckMicrParts
         {
             get
             {

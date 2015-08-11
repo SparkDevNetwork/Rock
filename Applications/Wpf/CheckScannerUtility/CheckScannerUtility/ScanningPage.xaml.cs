@@ -532,6 +532,8 @@ namespace Rock.Apps.CheckScannerUtility
                     scannedDoc.AccountNumber = accountNumber;
                     scannedDoc.CheckNumber = checkNumber;
 
+                    scannedDoc.ScannedCheckMicrData = checkMicr;
+
                     // look for the "can't read" symbol (or completely blank read ) to detect if the check micr couldn't be read
                     // from http://www.sbulletsupport.com/forum/index.php?topic=172.0
                     if ( checkMicr.Contains('!') || string.IsNullOrWhiteSpace(checkMicr) )
@@ -585,6 +587,8 @@ namespace Rock.Apps.CheckScannerUtility
             string routingNumber = batchPage.micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
             string accountNumber = batchPage.micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
             string checkNumber = batchPage.micrImage.FindElement( 0, "A", 0, "12", ref dummy );
+            short trackNumber = 0;
+            var rawMICR = batchPage.micrImage.GetTrack( ref trackNumber );
 
             ScannedDocInfo scannedDoc = null;
             var rockConfig = RockConfig.Load();
@@ -616,10 +620,12 @@ namespace Rock.Apps.CheckScannerUtility
 
                 if ( scannedDoc.IsCheck )
                 {
+                    scannedDoc.ScannedCheckMicrData = rawMICR;
                     scannedDoc.RoutingNumber = routingNumber;
                     scannedDoc.AccountNumber = accountNumber;
                     scannedDoc.CheckNumber = checkNumber;
-                    WriteToDebugLog( string.Format( "[{0}] - '{1}'", DateTime.Now.ToString( "o" ), scannedDoc.ScannedCheckMicr ) );
+
+                    WriteToDebugLog( string.Format( "[{0}] - '{1}'", DateTime.Now.ToString( "o" ), scannedDoc.ScannedCheckMicrData ) );
                 }
 
                 // set the _currentMagtekScannedDoc in case we are going to scan the back of the image
@@ -790,7 +796,7 @@ namespace Rock.Apps.CheckScannerUtility
                 uploadScannedItemClient.Login( rockConfig.Username, rockConfig.Password );
             }
 
-            var alreadyScanned = uploadScannedItemClient.PostDataWithResult<string, bool>( "api/FinancialTransactions/AlreadyScanned", scannedDoc.ScannedCheckMicr );
+            var alreadyScanned = uploadScannedItemClient.PostDataWithResult<string, bool>( "api/FinancialTransactions/AlreadyScanned", scannedDoc.ScannedCheckMicrData );
             return alreadyScanned;
         }
 
@@ -828,6 +834,11 @@ namespace Rock.Apps.CheckScannerUtility
                 backImageBinaryFileId = client.UploadBinaryFile( backImageFileName, Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid(), scannedDocInfo.BackImagePngBytes, false );
             }
 
+
+            FinancialPaymentDetail financialPaymentDetail = new FinancialPaymentDetail();
+            financialPaymentDetail.CurrencyTypeValueId = scannedDocInfo.CurrencyTypeValue.Id;
+            var financialPaymentDetailId = client.PostData<FinancialPaymentDetail>( "api/FinancialPaymentDetails", financialPaymentDetail ).AsIntegerOrNull();
+            
             FinancialTransaction financialTransaction = new FinancialTransaction();
 
             Guid transactionGuid = Guid.NewGuid();
@@ -839,7 +850,7 @@ namespace Rock.Apps.CheckScannerUtility
             financialTransaction.Guid = transactionGuid;
             financialTransaction.TransactionDateTime = batchPage.SelectedFinancialBatch.BatchStartDateTime;
 
-            financialTransaction.CurrencyTypeValueId = scannedDocInfo.CurrencyTypeValue.Id;
+            financialTransaction.FinancialPaymentDetailId = financialPaymentDetailId;
             financialTransaction.SourceTypeValueId = scannedDocInfo.SourceTypeValue.Id;
 
             financialTransaction.TransactionTypeValueId = transactionTypeValueContribution.Id;
@@ -849,12 +860,14 @@ namespace Rock.Apps.CheckScannerUtility
             if ( scannedDocInfo.IsCheck )
             {
                 financialTransaction.TransactionCode = scannedDocInfo.CheckNumber;
+                financialTransaction.MICRStatus = scannedDocInfo.BadMicr ? MICRStatus.Fail : MICRStatus.Success;
 
                 FinancialTransactionScannedCheck financialTransactionScannedCheck = new FinancialTransactionScannedCheck();
 
                 // Rock server will encrypt CheckMicrPlainText to this since we can't have the DataEncryptionKey in a RestClient
                 financialTransactionScannedCheck.FinancialTransaction = financialTransaction;
-                financialTransactionScannedCheck.ScannedCheckMicr = scannedDocInfo.ScannedCheckMicr;
+                financialTransactionScannedCheck.ScannedCheckMicrData = scannedDocInfo.ScannedCheckMicrData;
+                financialTransactionScannedCheck.ScannedCheckMicrParts = scannedDocInfo.ScannedCheckMicrParts;
 
                 uploadedTransactionId = client.PostData<FinancialTransactionScannedCheck>( "api/FinancialTransactions/PostScanned", financialTransactionScannedCheck ).AsIntegerOrNull();
             }
