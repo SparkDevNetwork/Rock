@@ -615,8 +615,7 @@ namespace RockWeb.Blocks.Connection
                     var instantiatedWorkflows = connectionRequest.ConnectionRequestWorkflows
                         .Where( c =>
                             c.Workflow != null &&
-                            c.Workflow.WorkflowType != null &&
-                            c.TriggerType != null )
+                            c.Workflow.WorkflowType != null )
                         .ToList();
 
                     gConnectionRequestWorkflows.DataSource = instantiatedWorkflows

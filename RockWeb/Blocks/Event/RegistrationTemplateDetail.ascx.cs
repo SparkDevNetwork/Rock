@@ -605,7 +605,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.MaxRegistrants = nbMaxRegistrants.Text.AsInteger();
             RegistrationTemplate.RegistrantsSameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
             RegistrationTemplate.Cost = cbCost.Text.AsDecimal();
-            RegistrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimal();
+            RegistrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
             RegistrationTemplate.FinancialGatewayId = fgpFinancialGateway.SelectedValueAsInt();
 
             RegistrationTemplate.ConfirmationFromName = tbConfirmationFromName.Text;
@@ -1828,7 +1828,7 @@ namespace RockWeb.Blocks.Event
             nbMaxRegistrants.Text = RegistrationTemplate.MaxRegistrants.ToString();
             rblRegistrantsInSameFamily.SetValue( RegistrationTemplate.RegistrantsSameFamily.ConvertToInt() );
             cbCost.Text = RegistrationTemplate.Cost.ToString();
-            cbMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.ToString();
+            cbMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.ToString( "N2" ) : "";
             fgpFinancialGateway.SetValue( RegistrationTemplate.FinancialGatewayId );
 
             tbConfirmationFromName.Text = RegistrationTemplate.ConfirmationFromName;
@@ -1912,8 +1912,8 @@ namespace RockWeb.Blocks.Event
 
             lCost.Text = RegistrationTemplate.Cost.ToString( "C2" );
 
-            lMinimumInitialPayment.Visible = RegistrationTemplate.MinimumInitialPayment > 0.0m;
-            lMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.ToString( "C2" );
+            lMinimumInitialPayment.Visible = RegistrationTemplate.MinimumInitialPayment.HasValue;
+            lMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.ToString( "C2" ) : "";
 
             rFees.DataSource = RegistrationTemplate.Fees.OrderBy( f => f.Order ).ToList();
             rFees.DataBind();

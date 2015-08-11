@@ -979,7 +979,7 @@ namespace RockWeb.Blocks.Event
                 return false;
             }
 
-            if ( registration == null || registration.RegistrationInstance == null || registration.RegistrationInstance.Account == null )
+            if ( registration == null || registration.RegistrationInstance == null || !registration.RegistrationInstance.AccountId.HasValue || registration.RegistrationInstance.Account == null )
             {
                 errorMessage = "There was a problem with the account configuration for this registration.";
                 return false;
@@ -1047,7 +1047,7 @@ namespace RockWeb.Blocks.Event
 
                 var transactionDetail = new FinancialTransactionDetail();
                 transactionDetail.Amount = amount;
-                transactionDetail.AccountId = registration.RegistrationInstance.AccountId;
+                transactionDetail.AccountId = registration.RegistrationInstance.AccountId.Value;
                 transactionDetail.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
                 transactionDetail.EntityId = registration.Id;
                 transaction.TransactionDetails.Add( transactionDetail );

@@ -227,7 +227,7 @@ namespace Rock.Model
         /// The minimum initial payment.
         /// </value>
         [DataMember]
-        public decimal MinimumInitialPayment { get; set; }
+        public decimal? MinimumInitialPayment { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [login required].

@@ -238,17 +238,37 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The account identifier.
         /// </value>
-        public int AccountId
+        public int? AccountId
         {
             get
             {
                 EnsureChildControls();
-                return _apAccount.SelectedValue.AsInteger();
+                return _apAccount.SelectedValue.AsIntegerOrNull();
             }
             set
             {
                 EnsureChildControls();
                 _apAccount.SetValue( value );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show account].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show account]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowAccount
+        {
+            get
+            {
+                EnsureChildControls();
+                return _apAccount.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _apAccount.Visible = value;
             }
         }
 
@@ -459,6 +479,7 @@ namespace Rock.Web.UI.Controls
                 _pnContactPhone.Text = instance.ContactPhone;
                 _ebContactEmail.Text = instance.ContactEmail;
                 _apAccount.SetValue( instance.AccountId );
+                _apAccount.Visible = instance.RegistrationTemplate != null && instance.RegistrationTemplate.FinancialGatewayId.HasValue;
                 _dtpSendReminder.SelectedDateTime = instance.SendReminderDateTime;
                 _cbReminderSent.Checked = instance.ReminderSent;
                 _ceAdditionalReminderDetails.Text = instance.AdditionalReminderDetails;
@@ -505,7 +526,7 @@ namespace Rock.Web.UI.Controls
                 instance.ContactPersonAliasId = _ppContact.PersonAliasId;
                 instance.ContactPhone = _pnContactPhone.Text;
                 instance.ContactEmail = _ebContactEmail.Text;
-                instance.AccountId = _apAccount.SelectedValue.AsInteger();
+                instance.AccountId = _apAccount.SelectedValue.AsIntegerOrNull();
                 instance.SendReminderDateTime = _dtpSendReminder.SelectedDateTime;
                 instance.ReminderSent = _cbReminderSent.Checked;
                 instance.AdditionalReminderDetails = _ceAdditionalReminderDetails.Text;

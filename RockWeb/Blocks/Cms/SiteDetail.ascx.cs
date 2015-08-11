@@ -234,6 +234,10 @@ namespace RockWeb.Blocks.Cms
                 site.PageNotFoundPageRouteId = ppPageNotFoundPage.PageRouteId;
                 site.ErrorPage = tbErrorPage.Text;
                 site.GoogleAnalyticsCode = tbGoogleAnalytics.Text;
+                site.EnableMobileRedirect = cbEnableMobileRedirect.Checked;
+                site.MobilePageId = ppMobilePage.PageId;
+                site.ExternalUrl = tbExternalURL.Text;
+                site.RedirectTablets = cbRedirectTablets.Checked;
 
                 var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
                 site.SiteDomains = site.SiteDomains ?? new List<SiteDomain>();
@@ -350,6 +354,11 @@ namespace RockWeb.Blocks.Cms
                 var site = new SiteService( new RockContext() ).Get( int.Parse( hfSiteId.Value ) );
                 ShowReadonlyDetails( site );
             }
+        }
+
+        protected void cbEnableMobileRedirect_CheckedChanged( object sender, EventArgs e )
+        {
+            SetMobileRedirectVisiblity();
         }
 
         #endregion
@@ -509,6 +518,12 @@ namespace RockWeb.Blocks.Cms
 
             tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.Select( dom => dom.Domain ).ToArray() );
             tbGoogleAnalytics.Text = site.GoogleAnalyticsCode;
+
+            cbEnableMobileRedirect.Checked = site.EnableMobileRedirect;
+            ppMobilePage.SetValue( site.MobilePage );
+            tbExternalURL.Text = site.ExternalUrl;
+            cbRedirectTablets.Checked = site.RedirectTablets;
+            SetMobileRedirectVisiblity();
         }
 
         /// <summary>
@@ -543,6 +558,15 @@ namespace RockWeb.Blocks.Cms
             this.HideSecondaryBlocks( editable );
         }
 
+        private void SetMobileRedirectVisiblity()
+        {
+            bool visible = cbEnableMobileRedirect.Checked;
+            ppMobilePage.Visible = visible;
+            tbExternalURL.Visible = visible;
+            cbRedirectTablets.Visible = visible;
+        }
+
         #endregion
-    }
+
+}
 }
