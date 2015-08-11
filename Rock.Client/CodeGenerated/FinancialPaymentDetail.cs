@@ -27,33 +27,33 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for FinancialPersonSavedAccount that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for FinancialPaymentDetail that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class FinancialPersonSavedAccountEntity
+    public partial class FinancialPaymentDetailEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? FinancialGatewayId { get; set; }
+        public string AccountNumberMasked { get; set; }
 
         /// <summary />
-        public int? FinancialPaymentDetailId { get; set; }
+        public int? BillingLocationId { get; set; }
 
         /// <summary />
-        public int? GroupId { get; set; }
+        public int? CreditCardTypeValueId { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public int? CurrencyTypeValueId { get; set; }
 
         /// <summary />
-        public int? PersonAliasId { get; set; }
+        public string ExpirationMonthEncrypted { get; set; }
 
         /// <summary />
-        public string ReferenceNumber { get; set; }
+        public string ExpirationYearEncrypted { get; set; }
 
         /// <summary />
-        public string TransactionCode { get; set; }
+        public string NameOnCardEncrypted { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -62,19 +62,19 @@ namespace Rock.Client
         public string ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source FinancialPersonSavedAccount object
+        /// Copies the base properties from a source FinancialPaymentDetail object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( FinancialPersonSavedAccount source )
+        public void CopyPropertiesFrom( FinancialPaymentDetail source )
         {
             this.Id = source.Id;
-            this.FinancialGatewayId = source.FinancialGatewayId;
-            this.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
-            this.GroupId = source.GroupId;
-            this.Name = source.Name;
-            this.PersonAliasId = source.PersonAliasId;
-            this.ReferenceNumber = source.ReferenceNumber;
-            this.TransactionCode = source.TransactionCode;
+            this.AccountNumberMasked = source.AccountNumberMasked;
+            this.BillingLocationId = source.BillingLocationId;
+            this.CreditCardTypeValueId = source.CreditCardTypeValueId;
+            this.CurrencyTypeValueId = source.CurrencyTypeValueId;
+            this.ExpirationMonthEncrypted = source.ExpirationMonthEncrypted;
+            this.ExpirationYearEncrypted = source.ExpirationYearEncrypted;
+            this.NameOnCardEncrypted = source.NameOnCardEncrypted;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 
@@ -82,15 +82,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for FinancialPersonSavedAccount that includes all the fields that are available for GETs. Use this for GETs (use FinancialPersonSavedAccountEntity for POST/PUTs)
+    /// Client model for FinancialPaymentDetail that includes all the fields that are available for GETs. Use this for GETs (use FinancialPaymentDetailEntity for POST/PUTs)
     /// </summary>
-    public partial class FinancialPersonSavedAccount : FinancialPersonSavedAccountEntity
+    public partial class FinancialPaymentDetail : FinancialPaymentDetailEntity
     {
         /// <summary />
-        public FinancialGateway FinancialGateway { get; set; }
+        public DefinedValue CreditCardTypeValue { get; set; }
 
         /// <summary />
-        public FinancialPaymentDetail FinancialPaymentDetail { get; set; }
+        public DefinedValue CurrencyTypeValue { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

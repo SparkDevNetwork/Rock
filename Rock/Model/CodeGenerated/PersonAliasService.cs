@@ -76,18 +76,6 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<AttributeValue>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AttributeValue.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<AttributeValue>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AttributeValue.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<Auth>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Auth.FriendlyTypeName );
@@ -745,6 +733,18 @@ namespace Rock.Model
             if ( new Service<FinancialGateway>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialGateway.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialPaymentDetail>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialPaymentDetail.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialPaymentDetail>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialPaymentDetail.FriendlyTypeName );
                 return false;
             }  
  

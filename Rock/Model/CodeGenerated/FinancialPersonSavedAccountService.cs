@@ -89,6 +89,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.FinancialGatewayId = source.FinancialGatewayId;
+            target.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
             target.GroupId = source.GroupId;
             target.Name = source.Name;
             target.PersonAliasId = source.PersonAliasId;
