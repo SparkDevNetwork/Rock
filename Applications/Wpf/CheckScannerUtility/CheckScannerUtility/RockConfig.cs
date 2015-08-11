@@ -322,6 +322,46 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
+        /// Gets or sets the sensitivity.
+        /// </summary>
+        /// <value>
+        /// The sensitivity.
+        /// </value>
+        [UserScopedSetting]
+        public string Sensitivity
+        {
+            get
+            {
+                return this["Sensitivity"] as string ?? "0";
+            }
+
+            set
+            {
+                this["Sensitivity"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the plurality.
+        /// </summary>
+        /// <value>
+        /// The plurality.
+        /// </value>
+        [UserScopedSetting]
+        public string Plurality
+        {
+            get
+            {
+                return this["Plurality"] as string ?? "0";
+            }
+
+            set
+            {
+                this["Plurality"] = value;
+            }
+        }
+
+        /// <summary>
         /// Loads this instance.
         /// </summary>
         /// <returns></returns>

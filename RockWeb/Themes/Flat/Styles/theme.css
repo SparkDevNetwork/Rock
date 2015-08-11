@@ -900,7 +900,7 @@ dl:not(.dl-horizontal) dd {
 }
 /*
     Used to manage styles related to Rock's internal grid component
-    
+
     1. Bootstrap Overrides
     2. Core Table
     3. Filter
@@ -911,7 +911,6 @@ dl:not(.dl-horizontal) dd {
     8. Column Types
     9. Row Types
     10. Responsive Columns
-    11. Hover Colors
 */
 .table > tbody > tr > td {
   color: #6a6a6a;
@@ -1224,11 +1223,6 @@ tr.row-highlight td {
   .table-responsive td[data-priority="6"] {
     display: table-cell;
   }
-}
-.table-hover tbody tr:hover td,
-.table-hover tbody tr:hover th {
-  background-color: #d5e6ed;
-  color: #6a6a6a;
 }
 /*
     Used to manage styles for specific blocks.
@@ -4323,7 +4317,9 @@ ul.list-group-panel .list-group-item:first-child,
 .wizard {
   background-color: #efefef;
   padding: 8px 0;
-  margin-bottom: 12px;
+  margin: -15px;
+  margin-bottom: 24px;
+  margin-top: -16px;
 }
 .wizard:before,
 .wizard:after {
@@ -4332,6 +4328,11 @@ ul.list-group-panel .list-group-item:first-child,
 }
 .wizard:after {
   clear: both;
+}
+@media only screen and (max-width: 480px) {
+  .wizard {
+    display: none;
+  }
 }
 .wizard-item-icon {
   background-color: #597ea2;
@@ -4348,14 +4349,19 @@ ul.list-group-panel .list-group-item:first-child,
   color: #aaaaaa;
 }
 .wizard-item {
-  min-width: 200px;
+  min-width: 100px;
   text-align: center;
   float: left;
   position: relative;
   z-index: 1;
 }
+@media (min-width: 992px) {
+  .wizard-item {
+    min-width: 175px;
+  }
+}
 .wizard-item:before {
-  border-top: 4px solid #d4d4d4;
+  border-top: 4px solid #bbbbbb;
   content: "";
   margin: 0 auto;
   /* this centers the line to the full width specified */
@@ -4368,7 +4374,7 @@ ul.list-group-panel .list-group-item:first-child,
   z-index: -1;
 }
 .wizard-item.active:before {
-  border-top: 4px solid #bbbbbb;
+  border-top: 4px solid #a2a2a2;
 }
 .wizard-item.active .wizard-item-icon {
   background-color: #2c3e50;
@@ -4378,7 +4384,7 @@ ul.list-group-panel .list-group-item:first-child,
   color: #6a6a6a;
 }
 .wizard-item.complete:before {
-  border-top: 4px solid #bbbbbb;
+  border-top: 4px solid #a2a2a2;
 }
 .wizard-item.complete .wizard-item-icon {
   background-color: #2c3e50;
@@ -4388,10 +4394,20 @@ ul.list-group-panel .list-group-item:first-child,
   color: #6a6a6a;
 }
 .wizard-item:first-child:before {
-  left: 110px;
+  left: 55px;
+}
+@media (min-width: 992px) {
+  .wizard-item:first-child:before {
+    left: 100px;
+  }
 }
 .wizard-item:last-child:before {
-  right: 110px;
+  right: 55px;
+}
+@media (min-width: 992px) {
+  .wizard-item:last-child:before {
+    right: 100px;
+  }
 }
 .rock-checkbox-icon {
   cursor: pointer;
@@ -4674,31 +4690,31 @@ ul.list-group-panel .list-group-item:first-child,
   border: 1px solid #128f76;
 }
 .theme-color-5 {
-  background-color: #e3ded7;
-  color: #817b72;
+  background-color: #8aa4be;
+  color: #233140;
 }
 .theme-color-5-bordered {
-  background-color: #e3ded7;
-  color: #817b72;
-  border: 1px solid #cec5b9;
+  background-color: #8aa4be;
+  color: #233140;
+  border: 1px solid #698bac;
 }
 .theme-color-6 {
-  background-color: #edeae6;
-  color: #6a6a6a;
+  background-color: #9ab1c7;
+  color: #354b60;
 }
 .theme-color-6-bordered {
-  background-color: #edeae6;
-  color: #6a6a6a;
-  border: 1px solid #d8d1c8;
+  background-color: #9ab1c7;
+  color: #354b60;
+  border: 1px solid #7997b5;
 }
 .theme-color-7 {
-  background-color: #8cc63e;
+  background-color: #47502c;
   color: #ffffff;
 }
 .theme-color-7-bordered {
-  background-color: #8cc63e;
+  background-color: #47502c;
   color: #ffffff;
-  border: 1px solid #71a130;
+  border: 1px solid #2a2f1a;
 }
 .bg-color {
   background-color: #ffffff;
@@ -5074,14 +5090,6 @@ a.cke_dialog_ui_button_ok:active {
 .ck-files img.file-browser-image {
   width: 50px;
   height: 50px;
-}
-::selection {
-  background: #afd074;
-  color: #ffffff;
-}
-::-moz-selection {
-  background: #afd074;
-  color: #ffffff;
 }
 .clickable {
   cursor: pointer;
@@ -5827,7 +5835,7 @@ div.aspNetDisabled {
   width: 100%;
 }
 /*
-    The accent colors are deprecated and should not be used in new theme development. They will be 
+    The accent colors are deprecated and should not be used in new theme development. They will be
     removed in Rock v 6.0.
 */
 @media print {

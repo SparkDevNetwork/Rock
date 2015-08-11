@@ -30,7 +30,7 @@ namespace Rock
     /// <summary>
     /// Linq, List, Dictionary, etc extensions
     /// </summary>
-    public static class LinqExtensions
+    public static partial class ExtensionMethods
     {
         #region GenericCollection Extensions
 

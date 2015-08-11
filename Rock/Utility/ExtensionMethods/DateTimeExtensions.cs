@@ -21,7 +21,7 @@ namespace Rock
     /// <summary>
     /// DateTime and TimeStamp Extensions
     /// </summary>
-    public static class DateTimeExtensions
+    public static partial class ExtensionMethods
     {
         #region DateTime Extensions
 

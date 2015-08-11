@@ -21,7 +21,7 @@ namespace Rock
     /// <summary>
     /// Boolean Extensions
     /// </summary>
-    public static class BooleanExtensions
+    public static partial class ExtensionMethods
     {
         #region Boolean Extensions
 

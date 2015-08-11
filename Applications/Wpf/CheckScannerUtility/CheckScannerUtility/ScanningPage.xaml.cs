@@ -477,8 +477,8 @@ namespace Rock.Apps.CheckScannerUtility
 
                 if ( scannedDoc.IsCheck )
                 {
-                    string checkMicr = batchPage.rangerScanner.GetMicrText( 1 ).Trim();
-                    WriteToDebugLog( string.Format( "[{0}] - {1}", DateTime.Now.ToString( "o" ), checkMicr ) );
+                    string checkMicr = batchPage.rangerScanner.GetMicrText( 1 );
+                    WriteToDebugLog( string.Format( "[{0}] - '{1}'", DateTime.Now.ToString( "o" ), checkMicr ) );
                     string remainingMicr = checkMicr;
                     string accountNumber = string.Empty;
                     string routingNumber = string.Empty;
@@ -495,7 +495,7 @@ namespace Rock.Apps.CheckScannerUtility
                         remainingMicr = remainingMicr.Remove( transitStart - 1, transitLength + 2 );
                     }
 
-                    // the last 'On-Us' symbol ('c') signifys the end of the account number
+                    // the last 'On-Us' symbol ('c') signifies the end of the account number
                     int lastOnUsPosition = remainingMicr.LastIndexOf( 'c' );
                     if ( lastOnUsPosition > 0 )
                     {
@@ -619,7 +619,7 @@ namespace Rock.Apps.CheckScannerUtility
                     scannedDoc.RoutingNumber = routingNumber;
                     scannedDoc.AccountNumber = accountNumber;
                     scannedDoc.CheckNumber = checkNumber;
-                    WriteToDebugLog( string.Format( "[{0}] - {1}", DateTime.Now.ToString( "o" ), scannedDoc.ScannedCheckMicr ) );
+                    WriteToDebugLog( string.Format( "[{0}] - '{1}'", DateTime.Now.ToString( "o" ), scannedDoc.ScannedCheckMicr ) );
                 }
 
                 // set the _currentMagtekScannedDoc in case we are going to scan the back of the image

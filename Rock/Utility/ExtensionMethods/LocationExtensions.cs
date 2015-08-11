@@ -23,7 +23,7 @@ namespace Rock
     /// <summary>
     /// Rock Location and Geography Extensions
     /// </summary>
-    public static class LocationExtensions
+    public static partial class ExtensionMethods
     {
         #region Geography extension methods
 
