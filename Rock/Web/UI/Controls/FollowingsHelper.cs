@@ -31,7 +31,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Configures a control to display and toggle following for the specified entity
         /// </summary>
-        /// <param name="followEntity">The follow entity.</param>
+        /// <param name="followEntity">The follow entity. NOTE: Make sure to use PersonAlias instead of Person when following a Person</param>
         /// <param name="followControl">The follow control.</param>
         /// <param name="follower">The follower.</param>
         public static void SetFollowing( IEntity followEntity, WebControl followControl, Person follower )
@@ -47,20 +47,9 @@ namespace Rock.Web.UI.Controls
                     var followingQry = followingService.Queryable()
                         .Where( f =>
                             f.EntityTypeId == followingEntityType.Id &&
-
                             f.PersonAlias.PersonId == follower.Id );
 
-                    if ( followEntity is Person )
-                    {
-                        var paQry = personAliasService.Queryable()
-                        .Where( p => p.PersonId == followEntity.Id )
-                        .Select( p => p.Id );
-                        followingQry = followingQry.Where( f => paQry.Contains( f.EntityId ) );
-                    }
-                    else
-                    {
-                        followingQry = followingQry.Where( f => f.EntityId == followEntity.Id );
-                    }
+                    followingQry = followingQry.Where( f => f.EntityId == followEntity.Id );
 
                     if ( followingQry.Any() )
                     {
@@ -73,10 +62,6 @@ namespace Rock.Web.UI.Controls
                 }
 
                 int entityId = followEntity.Id;
-                if ( followEntity is Person )
-                {
-                    entityId = ( followEntity as Person ).PrimaryAliasId.Value;
-                }
 
                 string script = string.Format(
                     @"Rock.controls.followingsToggler.initialize($('#{0}'), {1}, {2}, {3}, {4});",

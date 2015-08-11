@@ -1,34 +1,34 @@
 ﻿
 // Theme Colors *open*
-@theme-1: #ee7624; //orange
+@theme-1: #428bca; // bootstrap primary blue
 @theme-1-text: #fff;
 //--
-@theme-2: #282526; // dark brown
-@theme-2-text: #d3cec5;
+@theme-2: @gray-darker; // admin bar
+@theme-2-text: lighten(@gray-darker, 70%);
 //--
-@theme-3: #c2b8a7; // header tean
-@theme-3-text: #6a6a6a;
+@theme-3: lighten(@theme-1, 20%); // header
+@theme-3-text: darken(@theme-3, 55%);
 //--
-@theme-4: #dbd5cb; // page title 
-@theme-4-text: #413c35;
+@theme-4: lighten(@theme-1, 30%); // page title
+@theme-4-text: darken(@theme-4, 50%);
 //--
-@theme-5: #e3ded7; // badge bar
-@theme-5-text: #817b72;
+@theme-5: lighten(@theme-1, 40%); // badge bar
+@theme-5-text: darken(@theme-5, 45%);
 //--
-@theme-6: #edeae6; // family bar
-@theme-6-text: #6a6a6a;
+@theme-6: lighten(@theme-1, 45%); // family bar
+@theme-6-text: darken(@theme-6, 40%);
 //--
-@theme-7: #8cc63e; // green
+@theme-7: spin(@theme-1, -135); // accent color
 @theme-7-text: #fff;
 //--
-@theme-8: #6a6a6a; // action buttons / type labels
+@theme-8: @gray-light; // action buttons / type labels
 @theme-8-text: #fff;
 
 // Text *open*
-@text-color:             #6a6a6a; // The default text color. #color
-@link-color:             #4f89bd; // The color for all links.
-@link-hover-color:       lighten(@link-color, 15%); // The rollover color for all links.
-@text-muted:             lighten(@text-color, 30%); // The muted color for text #color
+@text-color:             @gray-dark; // The default text color. #color
+@link-color:             @brand-primary; // The color for all links.
+@link-hover-color:       darken(@link-color, 15%); // The rollover color for all links.
+@text-muted:             @gray-light; // The muted color for text #color
 @text-selection-bg:      #afd074; // Text selection background color (used when people select text with the mouse).
 @text-selection-color:   #fff;    // Text selection text color (used when people select text with the mouse).
 @font-family-sans-serif: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif; // The base font to use for text. Be sure when defining this font that the various weights are configured.
@@ -46,21 +46,21 @@
 // Bootstrap Colors
 
 //// Bootstrap Colors {The primary colors defined by the Bootstrap framework. [More Information](http://getbootstrap.com/customize/#colors)}
-@brand-primary:         @theme-1; 
-@brand-success:         #5c9e7d; 
-@brand-warning:         #ecc759; 
-@brand-danger:          #bb5454; 
-@brand-info:            #4099ad; 
+@brand-primary:         @theme-1;
+@brand-success:         #5c9e7d;
+@brand-warning:         #ecc759;
+@brand-danger:          #bb5454;
+@brand-info:            #4099ad;
 //--
-@gray-darker:            lighten(#000, 13.5%); 
-@gray-dark:              lighten(#000, 20%);   
-@gray:                   lighten(#000, 33.5%); 
-@gray-light:             #f3f3f4;   
-@gray-lighter:           #efefef; 
+@gray-darker:            lighten(#000, 13.5%); // #color
+@gray-dark:              lighten(#000, 20%);   // #color
+@gray:                   lighten(#000, 33.5%); // #color
+@gray-light:             lighten(#000, 46.7%); // #color
+@gray-lighter:           lighten(#000, 93.5%); // #color
 
 
 /*
-    The accent colors are deprecated and should not be used in new theme development. They will be 
+    The accent colors are deprecated and should not be used in new theme development. They will be
     removed in Rock v 6.0.
 */
 
@@ -79,7 +79,7 @@
 
 
 // Page Areas *open*
-@body-bg:           #f5f4f2; // The background color of the page.
+@body-bg:           #fff; // The background color of the page.
 
 //// Header
 @header-bg:         @theme-3; // The header background color.
@@ -121,7 +121,7 @@
 
 // Global Styles *open*
 @border-radius-base: 4px;       // The global setting for rounding corners.
-@well-bg: @body-bg;             // The backgroud color for wells. Wells are used to group like content.
+@well-bg: #f5f5f5;             // The backgroud color for wells. Wells are used to group like content.
 @photo-border: @theme-3;   // Standard border color for photos.
 @help-color: #86b8cc;           // The color of the help icon used in Rock.
 @required-field-color: #eca9a7; // Color of the small dot that denotes required fields.
@@ -181,7 +181,7 @@
 
 
 // Grid
-@grid-border-color: @panel-border;   // The border color of the grids cells.
+@grid-border-color: #ddd;   // The border color of the grids cells.
 @grid-padding: 8px;         // The default padding of the grid cells.
 
 //// Filter Section
@@ -189,8 +189,8 @@
 @grid-filter-color: @panel-heading-text-color; // The text color of the filter section of the grid.
 
 //// Grid Header
-@grid-column-header-bg: @panel-heading-bg;                        // The background color of the grid header.
-@grid-column-header-text-color: @panel-heading-text-color;     // The text color of the grid header.
+@grid-column-header-bg: transparent;                        // The background color of the grid header.
+@grid-column-header-text-color: @text-color;     // The text color of the grid header.
 @grid-column-header-font-size: 14px;                    // The font size of the grid header.
 @grid-column-header-font-weight: @font-weight-semibold; // The font weight of the grid header.
 @grid-column-header-border-color: @grid-border-color;    // The border color of the grid header.
@@ -204,7 +204,7 @@
 @grid-row-odd-bg: darken(@grid-row-even-bg, 3%);         // The odd rows background color.
 @grid-row-odd-color: @text-color;   // The odd rows text color.
 
-//// Hover 
+//// Hover
 @grid-hover-bg: #D5E6ED;            // Row background color when hovered over.
 @grid-hover-color: @text-color;     // Row text color when hovered over.
 
@@ -239,7 +239,7 @@
 @persondetails-bio-action-bg: #6a6a6a;
 @persondetails-bio-action-border: darken(@persondetails-bio-action-bg, 5%);
 @persondetails-bio-photo-border: @header-bg;
-@persondetails-bio-photo-following: #817b72; 
+@persondetails-bio-photo-following: #817b72;
 
 //// Badge Bar
 @persondetails-badge-bg: @theme-5;
@@ -327,6 +327,7 @@
 // Wizard Styles { Used on pages like 'Calendar' and 'Event Registration' to help guide the user through a complex series of screens. }
 @wizard-bg: @gray-lighter;
 @wizard-item-bar-color: #bbb;
+@wizard-item-bar-complete-color: darken(@wizard-item-bar-color, 10%);
 //--
 @wizard-item-label-active-color: @text-color;
 @wizard-item-icon-active-color: @nav-pills-active-link-hover-color;
@@ -349,8 +350,8 @@
 // Buttons
 @btn-font-weight:                normal;
 //--
-@btn-default-color:              @theme-3-text;
-@btn-default-bg:                 @theme-3;
+@btn-default-color:              #333;
+@btn-default-bg:                 #fff;
 @btn-default-border:             darken(@body-bg, 20%);
 //--
 @btn-primary-color:              #fff;
