@@ -94,6 +94,7 @@
     <Compile Include="CodeGenerated\FinancialAccount.cs" />
     <Compile Include="CodeGenerated\FinancialBatch.cs" />
     <Compile Include="CodeGenerated\FinancialGateway.cs" />
+    <Compile Include="CodeGenerated\FinancialPaymentDetail.cs" />
     <Compile Include="CodeGenerated\FinancialPersonBankAccount.cs" />
     <Compile Include="CodeGenerated\FinancialPersonSavedAccount.cs" />
     <Compile Include="CodeGenerated\FinancialPledge.cs" />

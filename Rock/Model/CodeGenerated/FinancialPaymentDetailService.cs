@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// FinancialScheduledTransaction Service class
+    /// FinancialPaymentDetail Service class
     /// </summary>
-    public partial class FinancialScheduledTransactionService : Service<FinancialScheduledTransaction>
+    public partial class FinancialPaymentDetailService : Service<FinancialPaymentDetail>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialScheduledTransactionService"/> class
+        /// Initializes a new instance of the <see cref="FinancialPaymentDetailService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public FinancialScheduledTransactionService(RockContext context) : base(context)
+        public FinancialPaymentDetailService(RockContext context) : base(context)
         {
         }
 
@@ -48,13 +48,25 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( FinancialScheduledTransaction item, out string errorMessage )
+        public bool CanDelete( FinancialPaymentDetail item, out string errorMessage )
         {
             errorMessage = string.Empty;
  
-            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.ScheduledTransactionId == item.Id ) )
+            if ( new Service<FinancialPersonSavedAccount>( Context ).Queryable().Any( a => a.FinancialPaymentDetailId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialScheduledTransaction.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialPaymentDetail.FriendlyTypeName, FinancialPersonSavedAccount.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.FinancialPaymentDetailId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialPaymentDetail.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.FinancialPaymentDetailId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialPaymentDetail.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
             }  
             return true;
@@ -64,50 +76,43 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class FinancialScheduledTransactionExtensionMethods
+    public static partial class FinancialPaymentDetailExtensionMethods
     {
         /// <summary>
-        /// Clones this FinancialScheduledTransaction object to a new FinancialScheduledTransaction object
+        /// Clones this FinancialPaymentDetail object to a new FinancialPaymentDetail object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static FinancialScheduledTransaction Clone( this FinancialScheduledTransaction source, bool deepCopy )
+        public static FinancialPaymentDetail Clone( this FinancialPaymentDetail source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as FinancialScheduledTransaction;
+                return source.Clone() as FinancialPaymentDetail;
             }
             else
             {
-                var target = new FinancialScheduledTransaction();
+                var target = new FinancialPaymentDetail();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another FinancialScheduledTransaction object to this FinancialScheduledTransaction object
+        /// Copies the properties from another FinancialPaymentDetail object to this FinancialPaymentDetail object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this FinancialScheduledTransaction target, FinancialScheduledTransaction source )
+        public static void CopyPropertiesFrom( this FinancialPaymentDetail target, FinancialPaymentDetail source )
         {
             target.Id = source.Id;
-            target.AuthorizedPersonAliasId = source.AuthorizedPersonAliasId;
-            target.CardReminderDate = source.CardReminderDate;
-            target.EndDate = source.EndDate;
-            target.FinancialGatewayId = source.FinancialGatewayId;
-            target.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
-            target.GatewayScheduleId = source.GatewayScheduleId;
-            target.IsActive = source.IsActive;
-            target.LastRemindedDate = source.LastRemindedDate;
-            target.LastStatusUpdateDateTime = source.LastStatusUpdateDateTime;
-            target.NextPaymentDate = source.NextPaymentDate;
-            target.NumberOfPayments = source.NumberOfPayments;
-            target.StartDate = source.StartDate;
-            target.TransactionCode = source.TransactionCode;
-            target.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
+            target.AccountNumberMasked = source.AccountNumberMasked;
+            target.BillingLocationId = source.BillingLocationId;
+            target.CreditCardTypeValueId = source.CreditCardTypeValueId;
+            target.CurrencyTypeValueId = source.CurrencyTypeValueId;
+            target.ExpirationMonthEncrypted = source.ExpirationMonthEncrypted;
+            target.ExpirationYearEncrypted = source.ExpirationYearEncrypted;
+            target.NameOnCardEncrypted = source.NameOnCardEncrypted;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
