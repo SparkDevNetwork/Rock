@@ -1,3 +1,7 @@
+/*
+    The accent colors are deprecated and should not be used in new theme development. They will be
+    removed in Rock v 6.0.
+*/
 .watch-msglist {
   padding-left: 1.5em;
   font-family: "DINWebCondensed", sans-serif;

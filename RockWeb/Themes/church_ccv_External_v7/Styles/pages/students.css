@@ -1,3 +1,7 @@
+/*
+    The accent colors are deprecated and should not be used in new theme development. They will be
+    removed in Rock v 6.0.
+*/
 .students-about {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
