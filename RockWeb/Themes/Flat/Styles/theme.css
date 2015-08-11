@@ -4696,31 +4696,31 @@ ul.list-group-panel .list-group-item:first-child,
   border: 1px solid #128f76;
 }
 .theme-color-5 {
-  background-color: #e3ded7;
-  color: #817b72;
+  background-color: #8aa4be;
+  color: #233140;
 }
 .theme-color-5-bordered {
-  background-color: #e3ded7;
-  color: #817b72;
-  border: 1px solid #cec5b9;
+  background-color: #8aa4be;
+  color: #233140;
+  border: 1px solid #698bac;
 }
 .theme-color-6 {
-  background-color: #edeae6;
-  color: #6a6a6a;
+  background-color: #9ab1c7;
+  color: #354b60;
 }
 .theme-color-6-bordered {
-  background-color: #edeae6;
-  color: #6a6a6a;
-  border: 1px solid #d8d1c8;
+  background-color: #9ab1c7;
+  color: #354b60;
+  border: 1px solid #7997b5;
 }
 .theme-color-7 {
-  background-color: #8cc63e;
+  background-color: #47502c;
   color: #ffffff;
 }
 .theme-color-7-bordered {
-  background-color: #8cc63e;
+  background-color: #47502c;
   color: #ffffff;
-  border: 1px solid #71a130;
+  border: 1px solid #2a2f1a;
 }
 .bg-color {
   background-color: #ffffff;
