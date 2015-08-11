@@ -87,7 +87,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof( IEnumerable<Rock.Model.Person> ); }
+            get { return typeof( IEnumerable<string> ); }
         }
 
         /// <summary>
@@ -133,6 +133,20 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
+        /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field
+        /// To disable sorting for this field, return string.Empty;
+        /// </summary>
+        /// <param name="selection"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The sort expression.
+        /// </value>
+        public override string SortProperties( string selection )
+        {
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Gets the expression.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -148,13 +162,13 @@ namespace Rock.Reporting.DataSelect.Person
             var familyGroupMembers = new GroupMemberService( context ).Queryable()
                 .Where( m => m.Group.GroupType.Guid == familyGuid );
 
-            // this returns Enumerable of Person for Parents per row. The Grid then uses ListDelimiterField to convert the list into Parents Names
+            // this returns Enumerable of string for Parents per row. The Grid then uses ListDelimiterField to convert the list into Parents Names
             var personParentsQuery = new PersonService( context ).Queryable()
                 .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid )
                     .SelectMany( m => m.Group.Members )
                     .Where( m => m.GroupRole.Guid == adultGuid )
                     .OrderBy( m => m.Person.Gender )
-                    .Select( m => m.Person ).AsEnumerable() );
+                    .Select( m => m.Person.NickName + " " + m.Person.LastName).AsEnumerable() );
 
             var selectParentsExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personParentsQuery, entityIdProperty, "p" );
 
