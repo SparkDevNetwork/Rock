@@ -1,5 +1,3 @@
-@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
 /*
    Rock's Core CSS
 
@@ -21,6 +19,8 @@
   A better method for styling can be seen below with .jcrop-light
   (Add a class to the holder and style elements for that extended class)
 */
+@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
 .jcrop-holder {
   direction: ltr;
   text-align: left;
@@ -900,7 +900,7 @@ dl:not(.dl-horizontal) dd {
 }
 /*
     Used to manage styles related to Rock's internal grid component
-    
+
     1. Bootstrap Overrides
     2. Core Table
     3. Filter
@@ -911,7 +911,6 @@ dl:not(.dl-horizontal) dd {
     8. Column Types
     9. Row Types
     10. Responsive Columns
-    11. Hover Colors
 */
 .table > tbody > tr > td {
   color: #6a6a6a;
@@ -1224,11 +1223,6 @@ tr.row-highlight td {
   .table-responsive td[data-priority="6"] {
     display: table-cell;
   }
-}
-.table-hover tbody tr:hover td,
-.table-hover tbody tr:hover th {
-  background-color: #d5e6ed;
-  color: #6a6a6a;
 }
 /*
     Used to manage styles for specific blocks.
@@ -4696,31 +4690,31 @@ ul.list-group-panel .list-group-item:first-child,
   border: 1px solid #128f76;
 }
 .theme-color-5 {
-  background-color: #e3ded7;
-  color: #817b72;
+  background-color: #8aa4be;
+  color: #233140;
 }
 .theme-color-5-bordered {
-  background-color: #e3ded7;
-  color: #817b72;
-  border: 1px solid #cec5b9;
+  background-color: #8aa4be;
+  color: #233140;
+  border: 1px solid #698bac;
 }
 .theme-color-6 {
-  background-color: #edeae6;
-  color: #6a6a6a;
+  background-color: #9ab1c7;
+  color: #354b60;
 }
 .theme-color-6-bordered {
-  background-color: #edeae6;
-  color: #6a6a6a;
-  border: 1px solid #d8d1c8;
+  background-color: #9ab1c7;
+  color: #354b60;
+  border: 1px solid #7997b5;
 }
 .theme-color-7 {
-  background-color: #8cc63e;
+  background-color: #47502c;
   color: #ffffff;
 }
 .theme-color-7-bordered {
-  background-color: #8cc63e;
+  background-color: #47502c;
   color: #ffffff;
-  border: 1px solid #71a130;
+  border: 1px solid #2a2f1a;
 }
 .bg-color {
   background-color: #ffffff;
@@ -5097,14 +5091,6 @@ a.cke_dialog_ui_button_ok:active {
   width: 50px;
   height: 50px;
 }
-::selection {
-  background: #afd074;
-  color: #ffffff;
-}
-::-moz-selection {
-  background: #afd074;
-  color: #ffffff;
-}
 .clickable {
   cursor: pointer;
 }
@@ -5151,13 +5137,6 @@ a.help {
 .modal-backdrop,
 .modal-backdrop.fade.in {
   opacity: 0.5;
-}
-.nav-pills > li > a {
-  color: #18bc9c;
-}
-.nav-pills > li > a:hover {
-  color: #ffffff;
-  background-color: #507192;
 }
 .form-right {
   text-align: right;
@@ -5302,15 +5281,6 @@ a.help {
 }
 .panel-widget .panel-heading small {
   color: #666666;
-}
-.panel-info {
-  border-top-color: #c0cdd1;
-}
-.panel-info .panel-body {
-  background-color: #ffffff;
-}
-.panel-info .list-group-item {
-  background-color: #ffffff;
 }
 .panel-persondetails {
   border-color: #cfd9db;
@@ -5849,7 +5819,7 @@ div.aspNetDisabled {
   width: 100%;
 }
 /*
-    The accent colors are deprecated and should not be used in new theme development. They will be 
+    The accent colors are deprecated and should not be used in new theme development. They will be
     removed in Rock v 6.0.
 */
 @media print {

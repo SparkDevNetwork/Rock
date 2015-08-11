@@ -898,7 +898,7 @@ dl:not(.dl-horizontal) dd {
 }
 /*
     Used to manage styles related to Rock's internal grid component
-    
+
     1. Bootstrap Overrides
     2. Core Table
     3. Filter
@@ -909,7 +909,6 @@ dl:not(.dl-horizontal) dd {
     8. Column Types
     9. Row Types
     10. Responsive Columns
-    11. Hover Colors
 */
 .table > tbody > tr > td {
   color: #6a6a6a;
@@ -1222,11 +1221,6 @@ tr.row-highlight td {
   .table-responsive td[data-priority="6"] {
     display: table-cell;
   }
-}
-.table-hover tbody tr:hover td,
-.table-hover tbody tr:hover th {
-  background-color: #d5e6ed;
-  color: #6a6a6a;
 }
 /*
     Used to manage styles for specific blocks.
@@ -5095,14 +5089,6 @@ a.cke_dialog_ui_button_ok:active {
   width: 50px;
   height: 50px;
 }
-::selection {
-  background: #afd074;
-  color: #ffffff;
-}
-::-moz-selection {
-  background: #afd074;
-  color: #ffffff;
-}
 .clickable {
   cursor: pointer;
 }
@@ -5149,13 +5135,6 @@ a.help {
 .modal-backdrop,
 .modal-backdrop.fade.in {
   opacity: 0.4;
-}
-.nav-pills > li > a {
-  color: #6a6a6a;
-}
-.nav-pills > li > a:hover {
-  color: #ffffff;
-  background-color: #bbdd8d;
 }
 .form-right {
   text-align: right;
@@ -5300,15 +5279,6 @@ a.help {
 }
 .panel-widget .panel-heading small {
   color: #9d9d9d;
-}
-.panel-info {
-  border-top-color: #cdc5ba;
-}
-.panel-info .panel-body {
-  background-color: #edeae6;
-}
-.panel-info .list-group-item {
-  background-color: #edeae6;
 }
 .panel-persondetails {
   border-color: #d8d1c8;
@@ -5847,7 +5817,7 @@ div.aspNetDisabled {
   width: 100%;
 }
 /*
-    The accent colors are deprecated and should not be used in new theme development. They will be 
+    The accent colors are deprecated and should not be used in new theme development. They will be
     removed in Rock v 6.0.
 */
 @media print {
@@ -5962,6 +5932,14 @@ pre {
   border-color: #cdc5ba;
   color: #6a6a6a;
 }
+::selection {
+  background: #afd074;
+  color: #ffffff;
+}
+::-moz-selection {
+  background: #afd074;
+  color: #ffffff;
+}
 /*#endregion */
 /*#region
 // 2. Bootstrap Overrides    */
@@ -6007,8 +5985,29 @@ h4,
 .panel.panel-primary .panel-heading {
   background-color: #ee7624;
 }
+.panel-info {
+  border-top-color: #cdc5ba;
+}
+.panel-info .panel-body {
+  background-color: #edeae6;
+}
+.panel-info .list-group-item {
+  background-color: #edeae6;
+}
 .tag-letterlist a {
   color: #ee7624;
+}
+.nav-pills > li > a {
+  color: #6a6a6a;
+}
+.nav-pills > li > a:hover {
+  color: #ffffff;
+  background-color: #bbdd8d;
+}
+.table-hover tbody tr:hover td,
+.table-hover tbody tr:hover th {
+  background-color: #d5e6ed;
+  color: #6a6a6a;
 }
 /*#region
 // 3. Rock Overrides         */

@@ -1,20 +1,35 @@
 
 // Theme Colors *open*
-@theme-1: #3A3A3A;  // dark gray header
-@theme-1-text: #bbb;
+@theme-1: #428bca; // bootstrap primary blue
+@theme-1-text: #fff;
 //--
-@theme-2: #428bca; // blue
-@theme-2-text: #fff;
+@theme-2: @gray-darker; // admin bar
+@theme-2-text: lighten(@gray-darker, 70%);
 //--
-@theme-3: #f6f6f6; // gray
-@theme-3-text: #333333;
+@theme-3: lighten(@theme-1, 20%); // header
+@theme-3-text: darken(@theme-3, 55%);
+//--
+@theme-4: lighten(@theme-1, 30%); // page title
+@theme-4-text: darken(@theme-4, 50%);
+//--
+@theme-5: lighten(@theme-1, 40%); // badge bar
+@theme-5-text: darken(@theme-5, 45%);
+//--
+@theme-6: lighten(@theme-1, 45%); // family bar
+@theme-6-text: darken(@theme-6, 40%);
+//--
+@theme-7: spin(@theme-1, -135); // accent color
+@theme-7-text: #fff;
+//--
+@theme-8: @gray-light; // action buttons / type labels
+@theme-8-text: #fff;
 
 
 // Text *open*
-@text-color:             #6a6a6a; // The default text color. #color
-@link-color:             @theme-2; // The color for all links.
-@link-hover-color:       lighten(@link-color, 15%); // The rollover color for all links.
-@text-muted:             lighten(@text-color, 30%); // The muted color for text #color
+@text-color:             @gray-dark; // The default text color. #color
+@link-color:             @brand-primary; // The color for all links.
+@link-hover-color:       darken(@link-color, 15%); // The rollover color for all links.
+@text-muted:             @gray-light; // The muted color for text #color
 @text-selection-bg:      #afd074; // Text selection background color (used when people select text with the mouse).
 @text-selection-color:   #fff;    // Text selection text color (used when people select text with the mouse).
 @font-family-sans-serif: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif; // The base font to use for text. Be sure when defining this font that the various weights are configured.
@@ -32,44 +47,45 @@
 // Bootstrap Colors
 
 //// Bootstrap Colors {The primary colors defined by the Bootstrap framework. [More Information](http://getbootstrap.com/customize/#colors)}
-@brand-primary:         @theme-2; 
+@brand-primary:         @theme-1;
 @brand-success:         #5cb85c;
 @brand-info:            #5bc0de;
 @brand-warning:         #f0ad4e;
 @brand-danger:          #d9534f;
 //--
-@gray-darker:            lighten(#000, 13.5%); 
-@gray-dark:              lighten(#000, 20%);   
-@gray:                   lighten(#000, 33.5%); 
-@gray-light:             #f3f3f4;   
-@gray-lighter:           #efefef; 
+@gray-darker:            lighten(#000, 13.5%);
+@gray-dark:              lighten(#000, 20%);
+@gray:                   lighten(#000, 33.5%);
+@gray-light:             lighten(#000, 46.7%);
+@gray-lighter:           lighten(#000, 93.5%);
 
 // Page Areas *open*
 @body-bg:           #fff; // The background color of the page.
 
 //// Header
-@header-bg:         @theme-1; // The header background color.
-@header-text-color: @theme-1-text; // The header text color.
+@header-bg:         @theme-2; // The header background color.
+@header-text-color: @theme-2-text; // The header text color.
 //--
 @header-hambuger-color: #fff; // The text color of the header minimizer.
 @header-hambuger-bg: @brand-primary; // The background color of the header minimizer.
 @header-hamburger-border: @brand-primary; // The border color of the header minimizer.
 
 //// Main Navigation
-@nav-bg: @theme-1;                                      // The background color of the main navigation.
-@nav-color: @theme-1-text;                              // The text color of the main navigation.
-@navbar-inverse-border: @theme-1;                       // The main navigation border color.
-@navbar-inverse-link-active-color: @theme-1-text;       // The active page in the header's text color.
-@navbar-inverse-link-active-bg: darken(@theme-1, 15%); // The active page in the header's background color.
+@nav-bg: @theme-1;                                     // The background color of the main navigation.
+@nav-color: lighten(@gray-light, 10%);                 // The text color of the main navigation.
+@navbar-inverse-border: darken(@header-bg, 10%);       // The main navigation border color.
+@navbar-inverse-link-hover-color: @theme-8-text;
+@navbar-inverse-link-active-color: @theme-8-text;      // The active page in the header's text color.
+@navbar-inverse-link-active-bg: darken(@theme-8, 15%); // The active page in the header's background color.
 
 //// Page Title
 @pagetitle-bg: @theme-3;          // The background color of the page title section.
 @pagetitle-text-color: @theme-3-text;  // The text color of the page title section.
 
 //// Breadcrumbs
-@breadcrumb-bg:               @theme-3;
-@breadcrumb-color:            lighten(@theme-3-text, 30%);
-@breadcrumb-active-color:     @breadcrumb-color;
+@breadcrumb-bg:               #f5f5f5;
+@breadcrumb-color:            #ccc;
+@breadcrumb-active-color:     @gray-light;
 @breadcrumb-separator:        "/";
 
 //// Footer
@@ -82,7 +98,7 @@
 
 // Global Styles *open*
 @border-radius-base: 4px;       // The global setting for rounding corners.
-@well-bg: @body-bg;             // The backgroud color for wells. Wells are used to group like content.
+@well-bg: #f5f5f5;             // The backgroud color for wells. Wells are used to group like content.
 @photo-border: @theme-3;   // Standard border color for photos.
 @help-color: #86b8cc;           // The color of the help icon used in Rock.
 @required-field-color: #eca9a7; // Color of the small dot that denotes required fields.
@@ -142,7 +158,7 @@
 
 
 // Grid
-@grid-border-color: @panel-border;   // The border color of the grids cells.
+@grid-border-color: #ddd;   // The border color of the grids cells.
 @grid-padding: 8px;         // The default padding of the grid cells.
 
 //// Filter Section
@@ -150,8 +166,8 @@
 @grid-filter-color: @panel-heading-text-color; // The text color of the filter section of the grid.
 
 //// Grid Header
-@grid-column-header-bg: @panel-heading-bg;                        // The background color of the grid header.
-@grid-column-header-text-color: @panel-heading-text-color;     // The text color of the grid header.
+@grid-column-header-bg: transparent;                        // The background color of the grid header.
+@grid-column-header-text-color: @text-color;     // The text color of the grid header.
 @grid-column-header-font-size: 14px;                    // The font size of the grid header.
 @grid-column-header-font-weight: @font-weight-semibold; // The font weight of the grid header.
 @grid-column-header-border-color: @grid-border-color;    // The border color of the grid header.
@@ -165,7 +181,7 @@
 @grid-row-odd-bg: darken(@grid-row-even-bg, 3%);         // The odd rows background color.
 @grid-row-odd-color: @text-color;   // The odd rows text color.
 
-//// Hover 
+//// Hover
 @grid-hover-bg: #D5E6ED;            // Row background color when hovered over.
 @grid-hover-color: @text-color;     // Row text color when hovered over.
 
@@ -200,7 +216,7 @@
 @persondetails-bio-action-bg: #6a6a6a;
 @persondetails-bio-action-border: darken(@persondetails-bio-action-bg, 5%);
 @persondetails-bio-photo-border: @header-bg;
-@persondetails-bio-photo-following: #817b72; 
+@persondetails-bio-photo-following: #817b72;
 
 //// Badge Bar
 @persondetails-badge-bg: @theme-3;
@@ -245,8 +261,8 @@
 @tooltip-bg: @theme-1;
 
 // Pills
-@nav-pills-active-link-hover-bg:         @theme-2;
-@nav-pills-active-link-hover-color:      @theme-2-text;
+@nav-pills-active-link-hover-bg:         @theme-1;
+@nav-pills-active-link-hover-color:      @theme-1-text;
 @nav-pills-link-color: @link-color;  // The color of the none active pill link.
 
 // List As Blocks { Used on many administration pages and pages like 'My Workflows', 'Connections' and 'Calendar'. }
@@ -308,8 +324,8 @@
 // Buttons
 @btn-font-weight:                normal;
 //--
-@btn-default-color:              @theme-3-text;
-@btn-default-bg:                 @theme-3;
+@btn-default-color:              #333;
+@btn-default-bg:                 #fff;
 @btn-default-border:             darken(@body-bg, 20%);
 //--
 @btn-primary-color:              #fff;

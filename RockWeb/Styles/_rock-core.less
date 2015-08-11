@@ -54,17 +54,6 @@
 // 2. HTML Overrides
 //--------------------------------
 
-// text selection color
-::selection {
-	background: @text-selection-bg;
-    color: @text-selection-color;
-}
-::-moz-selection {
-	background: @text-selection-bg;
-    color: @text-selection-color;
-}
-
-
 
 // 3. Utility Classes
 //--------------------------------
@@ -139,21 +128,6 @@ a.help {
 .modal-backdrop,
 .modal-backdrop.fade.in{
   opacity: @modal-backdrop-opacity;
-}
-
-// change the color of the none selected links
-// by default bootsrap does not allow the color of a link roll-over to be a different color. Modified it to allow this.
-.nav-pills {
-    > li {
-        > a {
-            color: @nav-pills-link-color;
-
-            &:hover {
-                color: @nav-pills-active-link-hover-color;
-                background-color: lighten(@nav-pills-active-link-hover-bg, 20%);
-            }
-        }
-    }  
 }
 
 .form-right {
@@ -240,7 +214,7 @@ a.help {
 .list-group-item {
     .clearfix;
 
-    .toggle-container {   
+    .toggle-container {
         display: inline-block;
     }
 
@@ -281,7 +255,7 @@ a.help {
             margin-bottom: 0;
         }
 
-        
+
     }
 
     .panel-body {
@@ -320,17 +294,6 @@ a.help {
     }
 }
 
-.panel-info {
-    border-top-color: @panel-top-border-color;
-
-    .panel-body {
-        background-color: @body-bg;
-    }
-
-    .list-group-item {
-        background-color: @body-bg;
-    }
-}
 
 .panel-persondetails {
     // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
@@ -655,7 +618,7 @@ div.aspNetDisabled {
 //--------------------------------
 
 // abstracted fixed width icon element
-.icon-fw { 
+.icon-fw {
       width: (18em / 14); // font-awesome
       text-align: center;
 }
