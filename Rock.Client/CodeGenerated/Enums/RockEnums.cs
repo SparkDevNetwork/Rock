@@ -297,6 +297,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum MICRStatus
+    {
+        Success = 0x0,
+        Fail = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum PrintFrom
     {
         Client = 0x0,
