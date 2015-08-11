@@ -5132,10 +5132,6 @@ a.help {
 .well > h4 {
   margin-top: 0;
 }
-.modal-backdrop,
-.modal-backdrop.fade.in {
-  opacity: 0.5;
-}
 .nav-pills > li > a {
   color: #428bca;
 }
