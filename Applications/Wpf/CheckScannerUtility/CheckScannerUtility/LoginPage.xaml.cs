@@ -115,7 +115,6 @@ namespace Rock.Apps.CheckScannerUtility
                     {
                         try
                         {
-                            throw new Exception( "Kaboom!" );
                             batchPage.LoadLookups();
                             batchPage.LoadFinancialBatchesGrid();
                         }
