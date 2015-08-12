@@ -292,7 +292,7 @@ img.jcrop-preview {
   bottom: 0;
   width: 100%;
   height: 36px;
-  z-index: 1049;
+  z-index: 999;
   position: fixed;
   right: 0;
   margin-right: 0;
@@ -4962,6 +4962,50 @@ ul.list-group-panel .list-group-item:first-child,
     display: -ms-flexbox;
     display: flex;
     overflow: hidden;
+  }
+}
+@media (max-width: 767px) {
+  .xs-text-center {
+    text-align: center;
+  }
+  .xs-text-left {
+    text-align: left;
+  }
+  .xs-text-right {
+    text-align: right;
+  }
+}
+@media (min-width: 768px) {
+  .sm-text-center {
+    text-align: center;
+  }
+  .sm-text-left {
+    text-align: left;
+  }
+  .sm-text-right {
+    text-align: right;
+  }
+}
+@media (min-width: 992px) {
+  .md-text-center {
+    text-align: center;
+  }
+  .md-text-left {
+    text-align: left;
+  }
+  .md-text-right {
+    text-align: right;
+  }
+}
+@media (min-width: 1200px) {
+  .lg-text-center {
+    text-align: center;
+  }
+  .lg-text-left {
+    text-align: left;
+  }
+  .lg-text-right {
+    text-align: right;
   }
 }
 .cke_dialog_contents {
