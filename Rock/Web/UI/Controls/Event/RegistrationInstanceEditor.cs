@@ -599,6 +599,7 @@ namespace Rock.Web.UI.Controls
                 _ppContact.ID = this.ID + "_ppContact";
                 _ppContact.Label = "Contact";
                 _ppContact.SelectPerson += _ppContact_SelectPerson;
+                _ppContact.EnableSelfSelection = true;
                 Controls.Add( _ppContact );
 
                 _pnContactPhone = new PhoneNumberBox();
