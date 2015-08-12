@@ -21,7 +21,7 @@ using System.Net;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using Rock.Model;
+using Rock.Client;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -91,7 +91,6 @@ namespace Rock.Apps.CheckScannerUtility
                     }
 
                     Person person = rockRestClient.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", userName ) );
-                    person.Aliases = rockRestClient.GetData<List<PersonAlias>>( "api/PersonAlias/", "PersonId eq " + person.Id );
                     RockConfig rockConfig = RockConfig.Load();
                     rockConfig.RockBaseUrl = txtRockUrl.Text;
                     rockConfig.Username = txtUsername.Text;

@@ -147,7 +147,7 @@ namespace Rock.Net
         {
             this.Headers[HttpRequestHeader.ContentType] = "application/json";
             var loginParameters = new { Username = username, Password = password };
-            this.UploadString( new Uri( rockBaseUri, rockLoginUrl ), loginParameters.ToJson() );
+            this.UploadString( new Uri( rockBaseUri, rockLoginUrl ), ToJson( loginParameters ) );
         }
 
         /// <summary>
@@ -162,55 +162,6 @@ namespace Rock.Net
             /// The identifier.
             /// </value>
             public int Id { get; set; }
-        }
-
-        /// <summary>
-        /// Gets the identifier from unique identifier.
-        /// </summary>
-        /// <param name="getPath">The get path.</param>
-        /// <param name="guid">The unique identifier.</param>
-        /// <returns></returns>
-        /// <exception cref="Rock.Net.HttpErrorException"></exception>
-        public int GetIdFromGuid( string getPath, Guid guid )
-        {
-            HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
-
-            Uri requestUri = new Uri( rockBaseUri, string.Format( "{0}?$filter=Guid eq guid'{1}'&$select=Id", getPath, guid ) );
-
-            HttpContent resultContent;
-            HttpError httpError = null;
-            HttpResponseMessage responseMessage = null;
-            int result = 0;
-
-            httpClient.GetAsync( requestUri ).ContinueWith( ( postTask ) =>
-            {
-                responseMessage = postTask.Result;
-                resultContent = postTask.Result.Content;
-
-                if ( postTask.Result.IsSuccessStatusCode )
-                {
-                    resultContent.ReadAsStringAsync().ContinueWith( s =>
-                    {
-                        var stringResult = s.Result;
-                        var oResult = JsonConvert.DeserializeObject<List<IdResult>>( s.Result ).FirstOrDefault();
-                        result = oResult.Id;
-                    } ).Wait();
-                }
-                else
-                {
-                    resultContent.ReadAsStringAsync().ContinueWith( s =>
-                    {
-                        httpError = GetHttpError( requestUri, httpError, postTask, s );
-                    } ).Wait();
-                }
-            } ).Wait();
-
-            if ( httpError != null )
-            {
-                throw new HttpErrorException( httpError, responseMessage );
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -297,7 +248,7 @@ namespace Rock.Net
         /// <param name="getPath">The get path.</param>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public T GetDataByGuid<T>( string getPath, Guid guid ) where T : Rock.Data.IEntity
+        public T GetDataByGuid<T>( string getPath, Guid guid ) //where T : Rock.Data.IEntity
         {
             return GetData<List<T>>( getPath, string.Format( "Guid eq guid'{0}'", guid ) ).FirstOrDefault();
         }
@@ -321,9 +272,9 @@ namespace Rock.Net
         /// <typeparam name="T"></typeparam>
         /// <param name="postPath">The post path.</param>
         /// <param name="data">The data.</param>
-        public string PostData<T>( string postPath, T data )
+        public string PostData<T>( string postPath, T data)
         {
-            return PostPutData( postPath, data, HttpMethod.Post );
+            return PostPutData( postPath, data, 0, HttpMethod.Post );
         }
 
         /// <summary>
@@ -332,9 +283,9 @@ namespace Rock.Net
         /// <typeparam name="T"></typeparam>
         /// <param name="postPath">The post path.</param>
         /// <param name="data">The data.</param>
-        public string PutData<T>( string postPath, T data )
+        public string PutData<T>( string postPath, T data, int id )
         {
-            return PostPutData( postPath, data, HttpMethod.Put );
+            return PostPutData( postPath, data, id, HttpMethod.Put );
         }
 
         /// <summary>
@@ -369,7 +320,7 @@ namespace Rock.Net
         /// <param name="data">The data.</param>
         /// <param name="httpMethod">The HTTP method.</param>
         /// <exception cref="Rock.Net.HttpErrorException"></exception>
-        private string PostPutData<T>( string postPath, T data, HttpMethod httpMethod )
+        private string PostPutData<T>( string postPath, T data, int id, HttpMethod httpMethod )
         {
             string contentResult = null;
             Uri requestUri = new Uri( rockBaseUri, postPath );
@@ -413,18 +364,9 @@ namespace Rock.Net
             }
             else
             {
-                int? id = data.GetPropertyValue( "Id" ) as int?;
-                if ( id != null )
-                {
-                    // PUT is for UPDATEs
-                    Uri putRequestUri = new Uri( requestUri, string.Format( "{0}", id ) );
-
-                    httpClient.PutAsJsonAsync<T>( putRequestUri.ToString(), data ).ContinueWith( handleContinue ).Wait();
-                }
-                else
-                {
-                    throw new Exception( "Data must be have an 'Id' property to do PUTS" );
-                }
+                // PUT is for UPDATEs
+                Uri putRequestUri = new Uri( requestUri, string.Format( "{0}", id ) );
+                httpClient.PutAsJsonAsync<T>( putRequestUri.ToString(), data ).ContinueWith( handleContinue ).Wait();
             }
 
             if ( httpError != null )
@@ -625,6 +567,20 @@ namespace Rock.Net
 
             dynamic responseObj = JsonConvert.DeserializeObject( response );
             return responseObj.Id;
+        }
+
+        /// <summary>
+        /// Converts object to JSON string
+        /// </summary>
+        /// <param name="obj">Object.</param>
+        /// <returns></returns>
+        public static string ToJson( object obj )
+        {
+            return JsonConvert.SerializeObject( obj, Formatting.Indented,
+                new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                } );
         }
     }
 

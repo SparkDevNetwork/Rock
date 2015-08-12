@@ -387,7 +387,7 @@
                                             CanUserSort="False" />
 
                         <DataGridTextColumn Header="TYPE"
-                                            Binding="{Binding FinancialPaymentDetail.CurrencyTypeValue}"
+                                            Binding="{Binding FinancialPaymentDetail.CurrencyTypeValue.Value}"
                                             HeaderStyle="{StaticResource gridHeaderStyle}"
                                             CellStyle="{StaticResource gridCellStyle}"
                                             Width="*"

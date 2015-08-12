@@ -152,7 +152,7 @@ namespace Rock.Apps.StatementGenerator
         /// <summary>
         /// The _contribution statement options rest
         /// </summary>
-        private Rock.Net.RestParameters.ContributionStatementOptions _contributionStatementOptionsREST = null;
+        private dynamic _contributionStatementOptionsREST = null;
 
         /// <summary>
         /// The _person group address data table
@@ -194,7 +194,7 @@ namespace Rock.Apps.StatementGenerator
             DateTime firstDayOfYear = new DateTime( DateTime.Now.Year, 1, 1 );
 
             // note: if a specific person is specified, get them even if they don't have an address. 
-            _contributionStatementOptionsREST = new Rock.Net.RestParameters.ContributionStatementOptions
+            _contributionStatementOptionsREST = new 
             {
                 StartDate = Options.StartDate ?? firstDayOfYear,
                 EndDate = Options.EndDate,
@@ -318,7 +318,7 @@ namespace Rock.Apps.StatementGenerator
             UpdateProgress( "Getting Data..." );
 
             // get outer query data from Rock database via REST now vs in mainQuery_OpeningRecordSet to make sure we have data
-            DataSet personGroupAddressDataSet = _rockRestClient.PostDataWithResult<Rock.Net.RestParameters.ContributionStatementOptions, DataSet>( "api/FinancialTransactions/GetContributionPersonGroupAddress", _contributionStatementOptionsREST );
+            DataSet personGroupAddressDataSet = _rockRestClient.PostDataWithResult<object, DataSet>( "api/FinancialTransactions/GetContributionPersonGroupAddress", _contributionStatementOptionsREST );
             _personGroupAddressDataTable = personGroupAddressDataSet.Tables[0];
             RecordCount = _personGroupAddressDataTable.Rows.Count;
 
@@ -430,7 +430,7 @@ namespace Rock.Apps.StatementGenerator
                 uriParam = string.Format( "api/FinancialTransactions/GetContributionTransactions/{0}", groupId );
             }
 
-            DataSet transactionsDataSet = _rockRestClient.PostDataWithResult<Rock.Net.RestParameters.ContributionStatementOptions, DataSet>( uriParam, _contributionStatementOptionsREST );
+            DataSet transactionsDataSet = _rockRestClient.PostDataWithResult<object, DataSet>( uriParam, _contributionStatementOptionsREST );
             _transactionsDataTable = transactionsDataSet.Tables[0];
 
             e.RecordSet = new DataTableRecordSet( _transactionsDataTable );
