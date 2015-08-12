@@ -34,7 +34,7 @@
                         <div class="col-md-7">
                             <Rock:NotificationBox ID="nbNoTransactionImageWarning" runat="server" NotificationBoxType="Warning" Text="Warning. No Images found for this transaction." />
                             <Rock:NotificationBox ID="nbIsInProcess" runat="server" NotificationBoxType="Warning" Text="Warning. This transaction is getting processed by ...." />
-                            <Rock:NotificationBox ID="nbNoMicrWarning" runat="server" NotificationBoxType="Danger" Text="Warning. Unable to determine Checking Account Number" />
+                            <Rock:NotificationBox ID="nbBadMicrWarning" runat="server" NotificationBoxType="Warning" Text="Warning. Unable to determine Checking Account Number" />
                             <div>
                                 <asp:Image ID="imgPrimary" runat="server" CssClass="transaction-image" />
                             </div>
