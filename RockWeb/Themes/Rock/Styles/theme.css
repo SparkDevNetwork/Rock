@@ -898,7 +898,7 @@ dl:not(.dl-horizontal) dd {
 }
 /*
     Used to manage styles related to Rock's internal grid component
-    
+
     1. Bootstrap Overrides
     2. Core Table
     3. Filter
@@ -909,7 +909,6 @@ dl:not(.dl-horizontal) dd {
     8. Column Types
     9. Row Types
     10. Responsive Columns
-    11. Hover Colors
 */
 .table > tbody > tr > td {
   color: #6a6a6a;
@@ -1222,11 +1221,6 @@ tr.row-highlight td {
   .table-responsive td[data-priority="6"] {
     display: table-cell;
   }
-}
-.table-hover tbody tr:hover td,
-.table-hover tbody tr:hover th {
-  background-color: #d5e6ed;
-  color: #6a6a6a;
 }
 /*
     Used to manage styles for specific blocks.
@@ -1839,7 +1833,7 @@ table.attribute-grid tr th:nth-child(3) {
 .scheduledtransaction-item {
   margin-bottom: 12px;
   padding-bottom: 6px;
-  border-bottom: 1px solid #efefef;
+  border-bottom: 1px solid #eeeeee;
 }
 .scheduledtransaction-item:last-child {
   border-bottom: 0;
@@ -2456,7 +2450,7 @@ span.field-value {
   color: #bb5454;
 }
 .groupmembers .member.deceased:hover {
-  background-color: #d8d8dc;
+  background-color: #5e5e5e;
 }
 .groupmembers .member.deceased .person-info:after {
   content: 'Deceased';
@@ -2477,7 +2471,7 @@ tr.inactive td {
 }
 .bulk-update .form-group.bulk-item-selected {
   opacity: 1;
-  background-color: #f3f3f4;
+  background-color: #777777;
   padding: 12px;
   border-radius: 4px;
 }
@@ -2493,7 +2487,7 @@ tr.inactive td {
 }
 .grid-table tbody tr.duplicate-source td,
 .grid-table tbody tr.duplicate-source:hover > td {
-  background-color: #f3f3f4;
+  background-color: #777777;
   color: #333333;
 }
 .disc-assessment th {
@@ -2650,7 +2644,7 @@ iframe.email-body {
 }
 .attendance-reporting .analysis-types {
   padding: 15px 0;
-  background-color: #efefef;
+  background-color: #eeeeee;
   margin-bottom: 24px;
 }
 /*
@@ -3565,7 +3559,7 @@ fieldset .actions {
   background-color: #bb5454;
 }
 .label-communicationstatus-draft {
-  background-color: #f3f3f4;
+  background-color: #777777;
 }
 .label-communicationstatus-submitted {
   background-color: #ecc759;
@@ -4319,9 +4313,11 @@ ul.list-group-panel .list-group-item:first-child,
   border-radius: 17.5px;
 }
 .wizard {
-  background-color: #efefef;
+  background-color: #dbd5cb;
   padding: 8px 0;
-  margin-bottom: 12px;
+  margin: -15px;
+  margin-bottom: 24px;
+  margin-top: -16px;
 }
 .wizard:before,
 .wizard:after {
@@ -4331,11 +4327,16 @@ ul.list-group-panel .list-group-item:first-child,
 .wizard:after {
   clear: both;
 }
+@media only screen and (max-width: 480px) {
+  .wizard {
+    display: none;
+  }
+}
 .wizard-item-icon {
-  background-color: #c7e3a0;
+  background-color: #c6bdad;
   border-radius: 24px;
   padding: 6px 8px;
-  color: #ffffff;
+  color: #e5e1da;
   text-align: center;
   display: inline-block;
   margin: 0 auto;
@@ -4343,17 +4344,22 @@ ul.list-group-panel .list-group-item:first-child,
 .wizard-item-label {
   font-weight: 300;
   font-size: 12px;
-  color: #aaaaaa;
+  color: #877d6e;
 }
 .wizard-item {
-  min-width: 200px;
+  min-width: 100px;
   text-align: center;
   float: left;
   position: relative;
   z-index: 1;
 }
+@media (min-width: 992px) {
+  .wizard-item {
+    min-width: 175px;
+  }
+}
 .wizard-item:before {
-  border-top: 4px solid #d4d4d4;
+  border-top: 4px solid #c6bdad;
   content: "";
   margin: 0 auto;
   /* this centers the line to the full width specified */
@@ -4366,30 +4372,40 @@ ul.list-group-panel .list-group-item:first-child,
   z-index: -1;
 }
 .wizard-item.active:before {
-  border-top: 4px solid #bbbbbb;
+  border-top: 4px solid #b1a48f;
 }
 .wizard-item.active .wizard-item-icon {
   background-color: #8cc63e;
   color: #ffffff;
 }
 .wizard-item.active .wizard-item-label {
-  color: #6a6a6a;
+  color: #413c35;
 }
 .wizard-item.complete:before {
-  border-top: 4px solid #bbbbbb;
+  border-top: 4px solid #b1a48f;
 }
 .wizard-item.complete .wizard-item-icon {
   background-color: #8cc63e;
-  color: #ffffff;
+  color: #e5e1da;
 }
 .wizard-item.complete .wizard-item-label {
-  color: #6a6a6a;
+  color: #413c35;
 }
 .wizard-item:first-child:before {
-  left: 110px;
+  left: 55px;
+}
+@media (min-width: 992px) {
+  .wizard-item:first-child:before {
+    left: 100px;
+  }
 }
 .wizard-item:last-child:before {
-  right: 110px;
+  right: 55px;
+}
+@media (min-width: 992px) {
+  .wizard-item:last-child:before {
+    right: 100px;
+  }
 }
 .rock-checkbox-icon {
   cursor: pointer;
@@ -5073,14 +5089,6 @@ a.cke_dialog_ui_button_ok:active {
   width: 50px;
   height: 50px;
 }
-::selection {
-  background: #afd074;
-  color: #ffffff;
-}
-::-moz-selection {
-  background: #afd074;
-  color: #ffffff;
-}
 .clickable {
   cursor: pointer;
 }
@@ -5408,11 +5416,11 @@ a.help {
   }
 }
 .panel-analytics .filter-options {
-  background-color: #efefef;
+  background-color: #eeeeee;
 }
 .panel-analytics .analysis-types {
   padding: 15px 0;
-  background-color: #efefef;
+  background-color: #eeeeee;
   margin-bottom: 15px;
 }
 .btn.aspNetDisabled {
@@ -5825,7 +5833,7 @@ div.aspNetDisabled {
   width: 100%;
 }
 /*
-    The accent colors are deprecated and should not be used in new theme development. They will be 
+    The accent colors are deprecated and should not be used in new theme development. They will be
     removed in Rock v 6.0.
 */
 @media print {
@@ -5939,6 +5947,14 @@ pre {
   background-color: #edeae6;
   border-color: #cdc5ba;
   color: #6a6a6a;
+}
+::selection {
+  background: #afd074;
+  color: #ffffff;
+}
+::-moz-selection {
+  background: #afd074;
+  color: #ffffff;
 }
 /*#endregion */
 /*#region
@@ -6086,7 +6102,7 @@ h4,
   }
 }
 .navbar-top-links ul .divider {
-  background-color: #f3f3f4 !important;
+  background-color: #777777 !important;
 }
 .navbar-top-links .dropdown-menu {
   width: 310px;
@@ -6149,13 +6165,13 @@ a.link-block,
 #content-wrapper header .navbar-default .navbar-nav > .open > a,
 #content-wrapper header .navbar-default .navbar-nav > .open > a:hover,
 #content-wrapper header .navbar-default .navbar-nav > .open > a:focus {
-  background-color: #6a6a6a;
+  background-color: #282526;
 }
 #content-wrapper header .navbar-default .navbar-nav > li > a {
   color: #d3cec5;
 }
 #content-wrapper header .navbar-default .dropdown-menu li.divider {
-  background-color: #dedad4;
+  background-color: #a79d8b;
 }
 #content-wrapper #page-title {
   background-color: #dbd5cb;
@@ -6305,7 +6321,7 @@ body#splash.error #content #logo {
     color: #6a6a6a;
   }
   #content-wrapper header .navbar-default .dropdown-menu li.divider {
-    background-color: #f3f3f4;
+    background-color: #eeeeee;
   }
 }
 /*#endregion */

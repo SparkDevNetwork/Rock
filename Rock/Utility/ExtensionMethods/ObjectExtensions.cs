@@ -23,7 +23,7 @@ namespace Rock
     /// <summary>
     /// Object and Stream Extensions
     /// </summary>
-    public static class ObjectExtensions
+    public static partial class ExtensionMethods
     {
         #region Object Extensions
 

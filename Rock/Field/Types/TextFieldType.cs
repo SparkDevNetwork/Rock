@@ -209,6 +209,28 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Gets the filter values.
+        /// </summary>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode )
+        {
+            // If this is a simple filter, only return values if something was actually entered into the filter's text field
+            var values = base.GetFilterValues( filterControl, configurationValues, filterMode );
+            if ( filterMode == FilterMode.SimpleFilter &&
+                values.Count == 2 &&
+                values[0].ConvertToEnum<ComparisonType>() == ComparisonType.Contains &&
+                values[1] == "" )
+            {
+                return new List<string>();
+            }
+
+            return values;
+        }
+
+        /// <summary>
         /// Gets the filter compare value.
         /// </summary>
         /// <param name="control">The control.</param>

@@ -1,6 +1,6 @@
 ﻿/*
     Used to manage styles related to Rock's internal grid component
-    
+
     1. Bootstrap Overrides
     2. Core Table
     3. Filter
@@ -11,7 +11,6 @@
     8. Column Types
     9. Row Types
     10. Responsive Columns
-    11. Hover Colors
 */
 
 
@@ -153,11 +152,11 @@ td.wrap-contents { // keep cells from scrolling off screen
  }
 
 .grid-filter-overview {
-    
+
     h4 {
         margin: 0;
     }
-    
+
     fieldset {
         margin-bottom: 12px;
     }
@@ -182,13 +181,13 @@ td.wrap-contents { // keep cells from scrolling off screen
     &.ascending a::before {
         padding-right: 5px;
 	    content: "\f0d8";
-	    font-family: FontAwesome; 
+	    font-family: FontAwesome;
     }
 
     &.descending a::before {
         padding-right: 5px;
 	    content: "\f0d7";
-	    font-family: FontAwesome; 
+	    font-family: FontAwesome;
     }
 }
 
@@ -221,8 +220,8 @@ td.wrap-contents { // keep cells from scrolling off screen
                 background-color: @grid-pager-button-active-bg;
             }
         }
-            
-           
+
+
     }
 
     .grid-pager {
@@ -241,7 +240,7 @@ td.wrap-contents { // keep cells from scrolling off screen
     }
 }
 
-// columns 
+// columns
 td.grid-col-actions {
     text-align: right;
 }
@@ -303,9 +302,9 @@ td.grid-col-actions {
 // -------------------------
 
 .grid-select-field { // checkbox field
-    text-align: center;                    
+    text-align: center;
     min-width: 40px;
-    
+
     .checkbox, .radio {
 
         padding-left: 0;
@@ -328,7 +327,7 @@ td.grid-col-actions {
     // future add this: http://webdesign.tutsplus.com/tutorials/quick-tip-easy-css3-checkboxes-and-radio-buttons--webdesign-8953
 }
 
-.table > tbody > tr > th, 
+.table > tbody > tr > th,
 .table > tbody > tr > td { // get buttons and text columns to look good together
 
     padding: 12px;
@@ -368,7 +367,7 @@ td.grid-col-actions {
 // 9. Row Types
 // -------------------------
 .table > tbody > tr.grid-section-header {
-    
+
     > td {
         background-color: @grid-section-bg;
         color: @grid-section-color;
@@ -377,7 +376,7 @@ td.grid-col-actions {
     &:hover > td {
         background-color: @grid-section-bg !important;
     }
-    
+
  }
 
 tr.row-highlight {
@@ -411,59 +410,49 @@ tr.row-highlight {
 
 // classes to show and hide columns based on their priority
 .table-responsive {
-    
+
     th[data-priority],
     td[data-priority] {
        display: none;
     }
 
-    th[data-priority="1"], 
+    th[data-priority="1"],
     td[data-priority="1"] {
         display: table-cell;
     }
 
     @media screen and (min-width: 480px) {
-        th[data-priority="2"], 
+        th[data-priority="2"],
         td[data-priority="2"] {
             display: table-cell;
         }
     }
 
     @media screen and (min-width: 640px) {
-        th[data-priority="3"], 
+        th[data-priority="3"],
         td[data-priority="3"] {
             display: table-cell;
         }
     }
 
     @media screen and (min-width: 800px) {
-        th[data-priority="4"], 
+        th[data-priority="4"],
         td[data-priority="4"] {
             display: table-cell;
         }
     }
 
     @media screen and (min-width: 960px) {
-        th[data-priority="5"], 
+        th[data-priority="5"],
         td[data-priority="5"] {
             display: table-cell;
         }
     }
 
     @media screen and (min-width: 1120px) {
-        th[data-priority="6"], 
+        th[data-priority="6"],
         td[data-priority="6"] {
             display: table-cell;
         }
     }
-}
-
-// 11. Hover Colors (best if left at the end to ensure they are not overwritten)
-// -------------------------
-
-// hover colors
-.table-hover tbody tr:hover td,
-.table-hover tbody tr:hover th {
-  background-color: @grid-hover-bg;
-  color: @grid-hover-color;
 }
