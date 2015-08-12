@@ -635,7 +635,6 @@
     <Compile Include="Model\PageView.cs" />
     <Compile Include="Model\WorkflowActionFormAttribute.cs" />
     <Compile Include="Model\WorkflowActionForm.cs" />
-    <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
     <Compile Include="PersonProfile\Badge\Campus.cs" />
     <Compile Include="PersonProfile\Badge\AttendingDuration.cs" />
     <Compile Include="PersonProfile\Badge\LastVisitOnSite.cs" />

@@ -77,7 +77,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetContributionPersonGroupAddress" )]
-        public DataSet GetContributionPersonGroupAddress( [FromBody]Rock.Net.RestParameters.ContributionStatementOptions options )
+        public DataSet GetContributionPersonGroupAddress( [FromBody]ContributionStatementOptions options )
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add( "startDate", options.StartDate );
@@ -137,7 +137,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetContributionTransactions/{groupId}" )]
-        public DataSet GetContributionTransactions( int groupId, [FromBody]Rock.Net.RestParameters.ContributionStatementOptions options )
+        public DataSet GetContributionTransactions( int groupId, [FromBody]ContributionStatementOptions options )
         {
             return GetContributionTransactions( groupId, null, options );
         }
@@ -153,7 +153,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetContributionTransactions/{groupId}/{personId}" )]
-        public DataSet GetContributionTransactions( int groupId, int? personId, [FromBody]Rock.Net.RestParameters.ContributionStatementOptions options )
+        public DataSet GetContributionTransactions( int groupId, int? personId, [FromBody]ContributionStatementOptions options )
         {
             var qry = Get()
                 .Where( a => a.TransactionDateTime >= options.StartDate )
@@ -240,5 +240,58 @@ namespace Rock.Rest.Controllers
             return dataSet;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public class ContributionStatementOptions
+        {
+            /// <summary>
+            /// Gets or sets the start date.
+            /// </summary>
+            /// <value>
+            /// The start date.
+            /// </value>
+            public DateTime StartDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the end date.
+            /// </summary>
+            /// <value>
+            /// The end date.
+            /// </value>
+            public DateTime? EndDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the account ids.
+            /// </summary>
+            /// <value>
+            /// The account ids.
+            /// </value>
+            public List<int> AccountIds { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person id.
+            /// </summary>
+            /// <value>
+            /// The person id.
+            /// </value>
+            public int? PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [include individuals with no address].
+            /// </summary>
+            /// <value>
+            /// <c>true</c> if [include individuals with no address]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludeIndividualsWithNoAddress { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [order by postal code].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [order by postal code]; otherwise, <c>false</c>.
+            /// </value>
+            public bool OrderByPostalCode { get; set; }
+        }
     }
 }
