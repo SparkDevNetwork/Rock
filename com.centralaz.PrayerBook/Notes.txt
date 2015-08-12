@@ -1,0 +1,38 @@
+﻿
+TODOs:
+
+- Use Nick's badge-character-counter on my text boxes???
+
+
+
+
+OTHER ITEMS:
+
+- Data exporter
+	- All Book data
+		- As XML? JSON?
+
+- Write the Down() methods in my migrations
+	- If you delete a Group, does it cascade and delete GroupMembers and their GroupMemberAttributes?
+	- Remove:
+		- Blocks
+		- BlockAttributes
+		- BlockTypes
+		- BlockTypeAttributes
+		- BlockAttributeValues
+		- Pages
+		- GroupType
+		- GroupTypeAssociation
+		- GroupTypeRole
+		- Groups
+		- GroupTypeAttribute
+		- GroupTypeGroupMemberAttributeDefinedValue
+		- GroupTypeGroupMemberAttributeMemo
+		- GroupMembers
+		- GroupMemberAttributes
+		- DefinedType
+		- DefinedTypeAttribute
+		- DefinedValue
+		- AttributeValue
+		- SecurityAuthForPage
+		- SecurityAuthForBlock

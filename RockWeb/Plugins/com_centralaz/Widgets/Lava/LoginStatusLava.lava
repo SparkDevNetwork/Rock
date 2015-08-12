@@ -1,0 +1,22 @@
+<ul class="nav navbar-nav navbar-secondary">    
+
+	{% if LinkedPages.MyAccountPage != '' and CurrentPerson != null %}
+		<li>
+			<a href="{{ LinkedPages.MyAccountPage }}">Hello {{CurrentPerson.NickName}}</a>
+		</li>
+	{% endif %}
+
+	{% if CurrentUser == null %}
+		<li>
+			<a href="#" onclick="{{ '' | Postback:'UserLoginLogout' }}">Login</a>
+		</li>
+	{% else %}
+		<li>
+			<a href="#" onclick="{{ '' | Postback:'UserLoginLogout' }}">Logout</a>
+		</li>
+	{% endif %}
+
+	<li>
+		<a href="http://rockweb.centralaz.com/#">Give</a>
+	</li>
+</ul>
