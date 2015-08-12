@@ -301,3 +301,30 @@
         overflow: hidden;
     }
 }
+
+// 5. Breakpoint Specific Alignment - provides classes for alignment changes at specific breakpoints
+// -------------------------
+
+@media (max-width: @screen-xs-max) {
+    .xs-text-center { text-align: center; }
+    .xs-text-left { text-align: left; }
+    .xs-text-right { text-align: right; }
+}
+
+@media (min-width: @screen-sm-min) {
+    .sm-text-center { text-align: center; }
+    .sm-text-left { text-align: left; }
+    .sm-text-right { text-align: right; }
+}
+
+@media (min-width: @screen-md-min) {
+    .md-text-center { text-align: center; }
+    .md-text-left { text-align: left; }
+    .md-text-right { text-align: right; }
+}
+
+@media (min-width: @screen-lg-min) {
+    .lg-text-center { text-align: center; }
+    .lg-text-left { text-align: left; }
+    .lg-text-right { text-align: right; }
+}
