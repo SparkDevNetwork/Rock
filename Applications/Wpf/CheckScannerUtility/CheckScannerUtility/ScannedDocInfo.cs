@@ -140,7 +140,15 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                return string.Format( "{0}_{1}_{2}", this.RoutingNumber, this.AccountNumber, this.CheckNumber );
+                if ( string.IsNullOrWhiteSpace( this.RoutingNumber ) && string.IsNullOrWhiteSpace( this.AccountNumber ) && string.IsNullOrWhiteSpace( this.CheckNumber ) )
+                {
+                    // if all three are blank, return empty string
+                    return string.Empty;
+                }
+                else
+                {
+                    return string.Format( "{0}_{1}_{2}", this.RoutingNumber, this.AccountNumber, this.CheckNumber );
+                }
             }
         }
 
