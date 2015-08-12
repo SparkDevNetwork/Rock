@@ -70,6 +70,13 @@ namespace Rock.Apps.CheckScannerUtility
             string userName = txtUsername.Text;
             string password = txtPassword.Password;
 
+            if ( string.IsNullOrWhiteSpace( userName ) )
+            {
+                lblLoginWarning.Content = "Username cannot be blank";
+                lblLoginWarning.Visibility = Visibility.Visible;
+                return;
+            }
+
             // start a background thread to Login since this could take a little while and we want a Wait cursor
             BackgroundWorker bw = new BackgroundWorker();
             bw.DoWork += delegate( object s, DoWorkEventArgs ee )
@@ -108,6 +115,7 @@ namespace Rock.Apps.CheckScannerUtility
                     {
                         try
                         {
+                            throw new Exception( "Kaboom!" );
                             batchPage.LoadLookups();
                             batchPage.LoadFinancialBatchesGrid();
                         }

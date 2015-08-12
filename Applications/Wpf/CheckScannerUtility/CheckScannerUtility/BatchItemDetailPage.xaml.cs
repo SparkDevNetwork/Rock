@@ -125,7 +125,10 @@ namespace Rock.Apps.CheckScannerUtility
             lblTransactionCodeLabel.Visibility = hasTransactionCode ? Visibility.Visible : Visibility.Collapsed;
             lblTransactionCodeValue.Visibility = hasTransactionCode ? Visibility.Visible : Visibility.Collapsed;
 
-            financialTransaction.FinancialPaymentDetail = financialTransaction.FinancialPaymentDetail ?? client.GetData<FinancialPaymentDetail>( string.Format( "api/FinancialPaymentDetails/{0}", financialTransaction.FinancialPaymentDetailId ) );
+            if ( financialTransaction.FinancialPaymentDetailId.HasValue )
+            {
+                financialTransaction.FinancialPaymentDetail = financialTransaction.FinancialPaymentDetail ?? client.GetData<FinancialPaymentDetail>( string.Format( "api/FinancialPaymentDetails/{0}", financialTransaction.FinancialPaymentDetailId ?? 0 ) );
+            }
 
             if ( financialTransaction.FinancialPaymentDetail != null )
             {

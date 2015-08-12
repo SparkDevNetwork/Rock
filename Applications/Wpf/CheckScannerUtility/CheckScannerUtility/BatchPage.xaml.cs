@@ -804,9 +804,9 @@ namespace Rock.Apps.CheckScannerUtility
             lblBatchNameReadOnly.Content = selectedBatch.Name;
             lblBatchIdReadOnly.Content = string.Format( "Batch Id: {0}", selectedBatch.Id );
 
-            lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : string.Empty;
+            lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ?? 0 ) ).Name : string.Empty;
             lblBatchDateReadOnly.Content = selectedBatch.BatchStartDateTime.Value.ToString( "d" );
-            var createdByPerson = client.GetData<Person>( string.Format( "api/People/GetByPersonAliasId/{0}", selectedBatch.CreatedByPersonAliasId ) );
+            var createdByPerson = client.GetData<Person>( string.Format( "api/People/GetByPersonAliasId/{0}", selectedBatch.CreatedByPersonAliasId ?? 0 ) );
             if ( createdByPerson != null )
             {
                 lblBatchCreatedByReadOnly.Content = string.Format("{0} {1}", createdByPerson.NickName, createdByPerson.LastName);
@@ -852,10 +852,13 @@ namespace Rock.Apps.CheckScannerUtility
                 this.Cursor = null;
                 foreach ( var transaction in transactions )
                 {
-                    transaction.FinancialPaymentDetail = transaction.FinancialPaymentDetail ?? client.GetData<FinancialPaymentDetail>( string.Format( "api/FinancialPaymentDetails/{0}", transaction.FinancialPaymentDetailId ) );
-                    if ( transaction.FinancialPaymentDetail != null )
+                    if ( transaction.FinancialPaymentDetailId.HasValue )
                     {
-                        transaction.FinancialPaymentDetail.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.FinancialPaymentDetail.CurrencyTypeValueId );
+                        transaction.FinancialPaymentDetail = transaction.FinancialPaymentDetail ?? client.GetData<FinancialPaymentDetail>( string.Format( "api/FinancialPaymentDetails/{0}", transaction.FinancialPaymentDetailId ?? 0 ) );
+                        if ( transaction.FinancialPaymentDetail != null )
+                        {
+                            transaction.FinancialPaymentDetail.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.FinancialPaymentDetail.CurrencyTypeValueId );
+                        }
                     }
                 }
 
@@ -888,10 +891,13 @@ namespace Rock.Apps.CheckScannerUtility
                 
                 foreach ( var transaction in transactions.Where( a => a.FinancialPaymentDetail == null ) )
                 {
-                    transaction.FinancialPaymentDetail = transaction.FinancialPaymentDetail ?? client.GetData<FinancialPaymentDetail>( string.Format( "api/FinancialPaymentDetails/{0}", transaction.FinancialPaymentDetailId ) );
-                    if ( transaction.FinancialPaymentDetail != null )
+                    if ( transaction.FinancialPaymentDetailId.HasValue )
                     {
-                        transaction.FinancialPaymentDetail.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.FinancialPaymentDetail.CurrencyTypeValueId );
+                        transaction.FinancialPaymentDetail = transaction.FinancialPaymentDetail ?? client.GetData<FinancialPaymentDetail>( string.Format( "api/FinancialPaymentDetails/{0}", transaction.FinancialPaymentDetailId ?? 0 ) );
+                        if ( transaction.FinancialPaymentDetail != null )
+                        {
+                            transaction.FinancialPaymentDetail.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.FinancialPaymentDetail.CurrencyTypeValueId );
+                        }
                     }
                 }
             }
