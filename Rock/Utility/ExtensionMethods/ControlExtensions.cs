@@ -26,7 +26,7 @@ namespace Rock
     /// <summary>
     /// Control Extensions
     /// </summary>
-    public static class ControlExtensions
+    public static partial class ExtensionMethods
     {
         #region Control Extensions
 
