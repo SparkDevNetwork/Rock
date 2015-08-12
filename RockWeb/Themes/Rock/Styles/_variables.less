@@ -148,7 +148,7 @@
 @panel-bg:                    #fcfaf8;                      // The background color of the panel body.
 @panel-text:                  @text-color;                  // The text color of the panel.
 @panel-border:                darken(@theme-6, 10%);        // The panel's border color.
-@panel-top-border-color:      darken(@panel-border, 5%);    // Color of the panel's top border often used as an accent color.
+@panel-top-border-color:      @theme-3;    // Color of the panel's top border often used as an accent color.
 //--
 @panel-heading-bg:            @theme-6;                  // The background color of the panel's header.
 @panel-heading-text-color:    @theme-6-text;             // The heading's text color.
@@ -199,7 +199,7 @@
 @grid-pager-button-bg: @panel-heading-bg;
 @grid-pager-button-color: @text-color;
 @grid-pager-button-border: darken(@grid-pager-button-bg, 15%);
-@grid-pager-button-active-bg: lighten(@grid-pager-button-bg, 10%);
+@grid-pager-button-active-bg: lighten(@grid-pager-button-bg, 5%);
 
 //// Footer
 @grid-footer-bg: @panel-heading-bg;
@@ -322,8 +322,8 @@
 @wizard-item-icon-bg: darken(@wizard-bg, 10%);
 
 // Tree Viewer
-@tree-rollover-bg: lighten(@theme-7, 20%);         // Background color of the rollover for items in the treeview.
-@tree-rollover-color: @theme-7-text;      // Text color of the rollover for items in the treeview.
+@tree-rollover-bg: lighten(@tree-selected-bg, 20%);         // Background color of the rollover for items in the treeview.
+@tree-rollover-color: @tree-selected-color;      // Text color of the rollover for items in the treeview.
 @tree-selected-bg: #6a6a6a;         // Background color of selected items in the treeview.
 @tree-selected-color: #ffffff;      // Text color of selected items in the treeview.
 
