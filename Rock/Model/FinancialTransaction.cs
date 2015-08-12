@@ -159,6 +159,7 @@ namespace Rock.Model
         /// <value>
         /// The micr status.
         /// </value>
+        [DataMember]
         [HideFromReporting]
         public MICRStatus? MICRStatus { get; set; }
 

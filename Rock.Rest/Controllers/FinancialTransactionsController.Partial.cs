@@ -48,9 +48,35 @@ namespace Rock.Rest.Controllers
         {
             FinancialTransaction financialTransaction = financialTransactionScannedCheck.FinancialTransaction;
             financialTransaction.CheckMicrEncrypted = Encryption.EncryptString( financialTransactionScannedCheck.ScannedCheckMicrData );
-            financialTransaction.CheckMicrHash = Encryption.GetSHA1Hash( financialTransactionScannedCheck.ScannedCheckMicrData );
+
+            // note: BadMicr scans don't get checked for duplicates, but just in case, make sure that CheckMicrHash isn't set if this has a bad MICR read
+            if ( financialTransaction.MICRStatus != MICRStatus.Fail )
+            {
+                financialTransaction.CheckMicrHash = Encryption.GetSHA1Hash( financialTransactionScannedCheck.ScannedCheckMicrData );
+            }
+
             financialTransaction.CheckMicrParts = Encryption.EncryptString( financialTransactionScannedCheck.ScannedCheckMicrParts );
             return this.Post( financialTransaction );
+        }
+
+        /// <summary>
+        /// Posts the specified value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override HttpResponseMessage Post( FinancialTransaction value )
+        {
+            if ( !value.FinancialPaymentDetailId.HasValue )
+            {
+                //// manually enforce that FinancialPaymentDetailId has a value so that Pre-V4 check 
+                //// scanners (that don't know about the new FinancialPaymentDetailId) can't post
+                return ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    "FinancialPaymentDetailId cannot be null"
+                     );
+            }
+
+            return base.Post( value );
         }
 
         /// <summary>
