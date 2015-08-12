@@ -307,8 +307,10 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
-            // set the uploadScannedItemClient to null to ensure we have a fresh connection (just in case they changed the url, or if the connection died for some other reason)
-            uploadScannedItemClient = null;
+            // set the uploadScannedItemClient to null and reconnect to ensure we have a fresh connection (just in case they changed the url, or if the connection died for some other reason)
+            _uploadScannedItemClient = null;
+            EnsureUploadScanRestClient();
+
             ShowStartupPage();
             _itemsUploaded = 0;
             _itemsSkipped = 0;
@@ -755,7 +757,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The persisted client.
         /// </value>
-        private RockRestClient uploadScannedItemClient { get; set; }
+        private RockRestClient _uploadScannedItemClient { get; set; }
 
         /// <summary>
         /// Gets or sets the binary file type contribution for uploading transactions
@@ -790,14 +792,16 @@ namespace Rock.Apps.CheckScannerUtility
                 return false;
             }
 
-            if ( uploadScannedItemClient == null )
+            var uploadClient = EnsureUploadScanRestClient();
+
+            if ( uploadClient == null )
             {
                 var rockConfig = RockConfig.Load();
-                uploadScannedItemClient = new RockRestClient( rockConfig.RockBaseUrl );
-                uploadScannedItemClient.Login( rockConfig.Username, rockConfig.Password );
+                uploadClient = new RockRestClient( rockConfig.RockBaseUrl );
+                uploadClient.Login( rockConfig.Username, rockConfig.Password );
             }
 
-            var alreadyScanned = uploadScannedItemClient.PostDataWithResult<string, bool>( "api/FinancialTransactions/AlreadyScanned", scannedDoc.ScannedCheckMicrData );
+            var alreadyScanned = uploadClient.PostDataWithResult<string, bool>( "api/FinancialTransactions/AlreadyScanned", scannedDoc.ScannedCheckMicrData );
             return alreadyScanned;
         }
 
@@ -807,20 +811,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="scannedDocInfo">The scanned document information.</param>
         private void UploadScannedItem( ScannedDocInfo scannedDocInfo )
         {
-            if ( uploadScannedItemClient == null )
-            {
-                RockConfig rockConfig = RockConfig.Load();
-                uploadScannedItemClient = new RockRestClient( rockConfig.RockBaseUrl );
-                uploadScannedItemClient.Login( rockConfig.Username, rockConfig.Password );
-            }
-
-            if ( binaryFileTypeContribution == null || transactionTypeValueContribution == null )
-            {
-                binaryFileTypeContribution = uploadScannedItemClient.GetDataByGuid<BinaryFileType>( "api/BinaryFileTypes", new Guid( Rock.Client.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE ) );
-                transactionTypeValueContribution = uploadScannedItemClient.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.Client.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
-            }
-
-            RockRestClient client = uploadScannedItemClient;
+            RockRestClient client = EnsureUploadScanRestClient();
 
             // upload image of front of doc
             string frontImageFileName = string.Format( "image1_{0}.png", DateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
@@ -904,6 +895,28 @@ namespace Rock.Apps.CheckScannerUtility
             _itemsUploaded++;
             ShowUploadStats();
             ShowUploadSuccess();
+        }
+
+        /// <summary>
+        /// Initializes the RestClient for Uploads and loads any data that is needed for the scan session (if it isn't already initialized)
+        /// </summary>
+        /// <returns></returns>
+        private RockRestClient EnsureUploadScanRestClient()
+        {
+            if ( _uploadScannedItemClient == null )
+            {
+                RockConfig rockConfig = RockConfig.Load();
+                _uploadScannedItemClient = new RockRestClient( rockConfig.RockBaseUrl );
+                _uploadScannedItemClient.Login( rockConfig.Username, rockConfig.Password );
+            }
+
+            if ( binaryFileTypeContribution == null || transactionTypeValueContribution == null )
+            {
+                binaryFileTypeContribution = _uploadScannedItemClient.GetDataByGuid<BinaryFileType>( "api/BinaryFileTypes", new Guid( Rock.Client.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE ) );
+                transactionTypeValueContribution = _uploadScannedItemClient.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.Client.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
+            }
+
+            return _uploadScannedItemClient;
         }
 
         /// <summary>
