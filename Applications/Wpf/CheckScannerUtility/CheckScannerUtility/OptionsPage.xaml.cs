@@ -166,6 +166,7 @@ namespace Rock.Apps.CheckScannerUtility
             cboMagTekCommPort.ItemsSource = System.IO.Ports.SerialPort.GetPortNames();
 
             cboTransactionSourceType.Items.Clear();
+            cboTransactionSourceType.DisplayMemberPath = "Value";
             cboTransactionSourceType.ItemsSource = this.BatchPage.SourceTypeValueList.OrderBy( a => a.Order ).ThenBy( a => a.Value ).ToList();
         }
 

@@ -23,6 +23,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Rock.Client;
+using Rock.Client.Enums;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -837,17 +838,16 @@ namespace Rock.Apps.CheckScannerUtility
 
             FinancialPaymentDetail financialPaymentDetail = new FinancialPaymentDetail();
             financialPaymentDetail.CurrencyTypeValueId = scannedDocInfo.CurrencyTypeValue.Id;
+            financialPaymentDetail.Guid = Guid.NewGuid();
             var financialPaymentDetailId = client.PostData<FinancialPaymentDetail>( "api/FinancialPaymentDetails", financialPaymentDetail ).AsIntegerOrNull();
             
             FinancialTransaction financialTransaction = new FinancialTransaction();
-
-            Guid transactionGuid = Guid.NewGuid();
 
             financialTransaction.BatchId = batchPage.SelectedFinancialBatch.Id;
             financialTransaction.TransactionCode = string.Empty;
             financialTransaction.Summary = string.Empty;
 
-            financialTransaction.Guid = transactionGuid;
+            financialTransaction.Guid = Guid.NewGuid();
             financialTransaction.TransactionDateTime = batchPage.SelectedFinancialBatch.BatchStartDateTime;
 
             financialTransaction.FinancialPaymentDetailId = financialPaymentDetailId;
@@ -881,6 +881,7 @@ namespace Rock.Apps.CheckScannerUtility
             financialTransactionImageFront.BinaryFileId = frontImageBinaryFileId;
             financialTransactionImageFront.TransactionId = uploadedTransactionId.Value;
             financialTransactionImageFront.Order = 0;
+            financialTransactionImageFront.Guid = Guid.NewGuid();
             client.PostData<FinancialTransactionImage>( "api/FinancialTransactionImages", financialTransactionImageFront );
 
             if ( backImageBinaryFileId.HasValue )
@@ -889,6 +890,7 @@ namespace Rock.Apps.CheckScannerUtility
                 financialTransactionImageBack.BinaryFileId = backImageBinaryFileId.Value;
                 financialTransactionImageBack.TransactionId = uploadedTransactionId.Value;
                 financialTransactionImageBack.Order = 1;
+                financialTransactionImageBack.Guid = Guid.NewGuid();
                 client.PostData<FinancialTransactionImage>( "api/FinancialTransactionImages", financialTransactionImageBack );
             }
 
