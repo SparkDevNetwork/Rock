@@ -21,7 +21,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Rock.Model;
+using Rock.Client;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -166,6 +166,7 @@ namespace Rock.Apps.CheckScannerUtility
             cboMagTekCommPort.ItemsSource = System.IO.Ports.SerialPort.GetPortNames();
 
             cboTransactionSourceType.Items.Clear();
+            cboTransactionSourceType.DisplayMemberPath = "Value";
             cboTransactionSourceType.ItemsSource = this.BatchPage.SourceTypeValueList.OrderBy( a => a.Order ).ThenBy( a => a.Value ).ToList();
         }
 
@@ -191,7 +192,6 @@ namespace Rock.Apps.CheckScannerUtility
                 RockRestClient client = new RockRestClient( txtRockUrl.Text );
                 client.Login( rockConfig.Username, rockConfig.Password );
                 BatchPage.LoggedInPerson = client.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", rockConfig.Username ) );
-                BatchPage.LoggedInPerson.Aliases = client.GetData<List<PersonAlias>>( "api/PersonAlias/", "PersonId eq " + BatchPage.LoggedInPerson.Id );
             }
             catch ( WebException wex )
             {
