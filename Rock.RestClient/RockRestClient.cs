@@ -26,12 +26,10 @@ using Newtonsoft.Json;
 namespace Rock.Net
 {
     /// <summary>
-    /// from http://stackoverflow.com/questions/4740752/how-to-login-with-webclient-c-sharp
-    /// and http://stackoverflow.com/questions/1777221/using-cookiecontainer-with-webclient-class
-    /// Used by Apps.CheckScannerUtility
+    /// The RestClient that the WPF CheckScanner and StatementGenerator use. 
+    /// NOTE: If you are developing a new app, you might want to use RestSharp instead of this class
     /// </summary>
     [System.ComponentModel.DesignerCategory( "Code" )]
-    //[Obsolete("The RestSharp library should be used instead of this class.  This class will eventually be removed.")]
     public class RockRestClient : WebClient
     {
         /// <summary>
@@ -39,7 +37,6 @@ namespace Rock.Net
         /// </summary>
         /// <param name="rockBaseUrl">The rock base URL.</param>
         //// </summary>
-        //[Obsolete( "The RestSharp library should be used instead of this class.  This class will eventually be removed." )]
         public RockRestClient( string rockBaseUrl )
             : this( rockBaseUrl, new CookieContainer() )
         {
@@ -51,7 +48,6 @@ namespace Rock.Net
         /// </summary>
         /// <param name="rockBaseUrl">The rock base URL.</param>
         /// <param name="c">The c.</param>
-        //[Obsolete( "The RestSharp library should be used instead of this class.  This class will eventually be removed." )]
         public RockRestClient( string rockBaseUrl, CookieContainer c )
         {
             this.CookieContainer = c;
@@ -248,7 +244,7 @@ namespace Rock.Net
         /// <param name="getPath">The get path.</param>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public T GetDataByGuid<T>( string getPath, Guid guid ) //where T : Rock.Data.IEntity
+        public T GetDataByGuid<T>( string getPath, Guid guid )
         {
             return GetData<List<T>>( getPath, string.Format( "Guid eq guid'{0}'", guid ) ).FirstOrDefault();
         }
@@ -520,7 +516,6 @@ namespace Rock.Net
                     }
                     else
                     {
-
                         HttpError httpError = null;
                         postTask.Result.Content.ReadAsStringAsync().ContinueWith( s =>
                         {
@@ -576,7 +571,9 @@ namespace Rock.Net
         /// <returns></returns>
         public static string ToJson( object obj )
         {
-            return JsonConvert.SerializeObject( obj, Formatting.Indented,
+            return JsonConvert.SerializeObject( 
+                obj, 
+                Formatting.Indented,
                 new JsonSerializerSettings()
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
