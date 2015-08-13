@@ -3255,12 +3255,12 @@ ul.rocktree ul {
   }
 }
 .nav > li.pill-help a {
-  color: inherit;
+  color: #428bca;
 }
 .nav > li.pill-help a:hover,
 .nav > li.pill-help a:focus {
   background-color: transparent;
-  color: inherit;
+  color: #428bca;
 }
 .well-pillwrap {
   background-color: transparent;
@@ -5177,7 +5177,7 @@ a.help {
   margin-top: 0;
 }
 .nav-pills > li > a {
-  color: inherit;
+  color: #428bca;
 }
 .nav-pills > li > a:hover {
   color: #ecf0f3;
