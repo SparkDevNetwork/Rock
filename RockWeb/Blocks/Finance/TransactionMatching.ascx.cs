@@ -361,14 +361,6 @@ namespace RockWeb.Blocks.Finance
                         }
                     }
 
-                    bool requiresMicr = 
-                        transactionToMatch.FinancialPaymentDetail != null &&
-                        transactionToMatch.FinancialPaymentDetail.CurrencyTypeValue != null &&
-                        transactionToMatch.FinancialPaymentDetail.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
-
-                    // if this is a check, and the MICR could not be accurately read, show the warning
-                    nbBadMicrWarning.Visible = requiresMicr && transactionToMatch.MICRStatus == MICRStatus.Fail;
-
                     if ( ddlIndividual.Items.Count == 2 )
                     {
                         // only one person (and the None selection) are in the list, so init to the person
