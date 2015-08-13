@@ -6571,7 +6571,7 @@ h6,
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 100;
+    z-index: 500;
   }
 }
 @media (min-width: 768px) {
