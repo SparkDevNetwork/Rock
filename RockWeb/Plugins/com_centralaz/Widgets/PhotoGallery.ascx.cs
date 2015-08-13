@@ -35,7 +35,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Plugins.com_centralaz.Widgets
 {
     /// <summary>
-    /// Adds an editable HTML fragment to the page.
+    /// A simple, easy to use photo gallery widget that stores photos on the filesystem.
     /// </summary>
     [DisplayName( "Photo Gallery" )]
     [Category( "com_centralaz > Widgets" )]
@@ -44,15 +44,22 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [SecurityAction( Authorization.EDIT, "The roles and/or users that can edit the HTML content.")]
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
 
-    [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 2 )]
+    [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/", false, "", "", 2 )]
+    [IntegerField( "Pause Seconds", "The number of seconds to pause on each photo (default 4 seconds).", false, 4 )]
 
-    [ContextAware]
+    [BooleanField( "Set Size", "If set to true, the Height and Width settings will be used in the image tag's style setting. NOTE: Constraining size can cause distortion to responsive images when user resizes browser window.", false, "Sizing", 0 )]
+    [IntegerField( "Height", "The height (in px) to constrain the photo.", false, -1, "Sizing", 1 )]
+    [IntegerField( "Width", "The width (in px) to constrain the photo.", false, -1, "Sizing", 2 )]
+
     public partial class PhotoGallery : RockBlockCustomSettings
     {
         #region Fields
 
-        private string virtualPath;
-        private string physicalPath;
+        private string _virtualBasePath = "~/Content/ExternalSite/";
+        private string _physicalPath;
+        private int? _height = null;
+        private int? _width = null;
+        private bool? _specifyingSize = null;
 
         #endregion
 
@@ -62,6 +69,78 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         /// Relative path to the Images Folder
         /// </summary>
         public string ImageFolderPath { get; set; }
+
+        /// <summary>
+        /// The number of milliseconds to pause beteween photos.
+        /// </summary>
+        /// <value>
+        /// number of milliseconds
+        /// </value>
+        public int PauseMilliseconds
+        { 
+            get
+            {
+                return GetAttributeValue("PauseSeconds").AsInteger() * 1000;
+            }
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the height and width should be set on each image.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [specifying size]; otherwise, <c>false</c>.
+        /// </value>
+        public bool SpecifyingSize
+        {
+            get
+            {
+                if ( !_specifyingSize.HasValue )
+                {
+                    _specifyingSize = GetAttributeValue( "SetSize" ).AsBooleanOrNull();
+                }
+                return _specifyingSize ?? false;
+            }
+            private set { }
+        }
+
+        /// <summary>
+        /// The height to constrain the photo to use.
+        /// </summary>
+        /// <value>
+        /// height in pixels
+        /// </value>
+        public int? Height
+        {
+            get
+            {
+                if ( ! _height.HasValue )
+                {
+                    _height = GetAttributeValue( "Height" ).AsInteger();
+                }
+                return _height;
+            }
+            private set { }
+        }
+
+        /// <summary>
+        /// The width to constrain the photo to use.
+        /// </summary>
+        /// <value>
+        /// width in pixels
+        /// </value>
+        public int? Width
+        {
+            get
+            {
+                if ( ! _width.HasValue )
+                {
+                    _width = GetAttributeValue( "Width" ).AsInteger();
+                }
+                return _width;
+            }
+            private set { }
+        }
 
         /// <summary>
         /// Gets the settings tool tip.
@@ -91,10 +170,23 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
             RockPage.AddCSSLink( ResolveRockUrl( "~/Plugins/com_centralaz/Widgets/Styles/dropzone.css" ) );
             RockPage.AddScriptLink( "~/Plugins/com_centralaz/Widgets/Scripts/dropzone.js" );
-            ImageFolderPath = GetAttributeValue( "ImageFolderPath" );
 
             this.BlockUpdated += HtmlContentDetail_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlHtmlContent );
+
+            var subfolder = GetAttributeValue( "ImageSubfolder" );
+
+            // Tack on the subfolder if given.
+            if ( !string.IsNullOrEmpty( subfolder ) )
+            {
+                ImageFolderPath = string.Format( "{0}{1}{2}", _virtualBasePath, subfolder.StartsWith("/") ? "" : "/", subfolder);
+            }
+            else
+            {
+                ImageFolderPath = _virtualBasePath;
+            }
+
+            _physicalPath = Server.MapPath( ImageFolderPath );
         }
 
         /// <summary>
@@ -104,18 +196,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            //Update the path
-            //use a default path
-            virtualPath = "~/Content/ExternalSite/Gallery";
-            physicalPath = Server.MapPath( virtualPath );
-
-            //If ImageFolderPath is specified then use that path
-            if ( !string.IsNullOrEmpty( ImageFolderPath ) )
-            {
-                physicalPath = Server.MapPath( ImageFolderPath );
-                virtualPath = ImageFolderPath;
-            }
 
             if ( !this.IsPostBack )
             {
@@ -142,21 +222,11 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         }
 
         /// <summary>
-        /// Handles the Click event of the lbSave control.
+        /// Handles the Click event of the lbOk control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbSave_Click( object sender, EventArgs e )
-        {      
-            ShowView();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbCancel_Click( object sender, EventArgs e )
+        protected void lbOk_Click( object sender, EventArgs e )
         {
             ShowView();
         }
@@ -168,7 +238,17 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         protected void rptPhoto_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-
+            if ( SpecifyingSize  )
+            {
+                if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+                {
+                    var imgPhoto = e.Item.FindControl( "imgPhoto" ) as HtmlImage;
+                    if ( imgPhoto != null )
+                    {
+                        imgPhoto.Attributes.Add( "style", string.Format( "height: {0}px; width:{1}px", Height, Width ) );
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -235,28 +315,26 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         /// <exception cref="System.NotImplementedException"></exception>
         protected override void ShowSettings()
         {
-
             pnlEditModel.Visible = true;
             upnlHtmlContent.Update();
             mdEdit.Show();
-         
         }
 
-        private Dictionary<string, object> GetPageProperties()
-        {
-            Dictionary<string, object> pageProperties = new Dictionary<string, object>();
-            pageProperties.Add( "Id", this.RockPage.PageId.ToString() );
-            pageProperties.Add( "BrowserTitle", this.RockPage.BrowserTitle );
-            pageProperties.Add( "PageTitle", this.RockPage.PageTitle );
-            pageProperties.Add( "Site", this.RockPage.Site.Name );
-            pageProperties.Add( "SiteId", this.RockPage.Site.Id.ToString() );
-            pageProperties.Add( "LayoutId", this.RockPage.Layout.Id.ToString() );
-            pageProperties.Add( "Layout", this.RockPage.Layout.Name );
-            pageProperties.Add( "SiteTheme", this.RockPage.Site.Theme );
-            pageProperties.Add( "PageIcon", this.RockPage.PageIcon );
-            pageProperties.Add( "Description", this.RockPage.MetaDescription );
-            return pageProperties;
-        }
+        //private Dictionary<string, object> GetPageProperties()
+        //{
+        //    Dictionary<string, object> pageProperties = new Dictionary<string, object>();
+        //    pageProperties.Add( "Id", this.RockPage.PageId.ToString() );
+        //    pageProperties.Add( "BrowserTitle", this.RockPage.BrowserTitle );
+        //    pageProperties.Add( "PageTitle", this.RockPage.PageTitle );
+        //    pageProperties.Add( "Site", this.RockPage.Site.Name );
+        //    pageProperties.Add( "SiteId", this.RockPage.Site.Id.ToString() );
+        //    pageProperties.Add( "LayoutId", this.RockPage.Layout.Id.ToString() );
+        //    pageProperties.Add( "Layout", this.RockPage.Layout.Name );
+        //    pageProperties.Add( "SiteTheme", this.RockPage.Site.Theme );
+        //    pageProperties.Add( "PageIcon", this.RockPage.PageIcon );
+        //    pageProperties.Add( "Description", this.RockPage.MetaDescription );
+        //    return pageProperties;
+        //}
 
         /// <summary>
         /// Shows the view.
@@ -320,13 +398,13 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
             try
             {
-                var imagesFolder = new DirectoryInfo( physicalPath );
+                var imagesFolder = new DirectoryInfo( _physicalPath );
                 foreach ( var item in imagesFolder.EnumerateFiles() )
                 {
                     if ( item is FileInfo )
                     {
                         //add virtual path of the image to the images list
-                        images.Add( string.Format( "{0}/{1}", virtualPath, item.Name ) );
+                        images.Add( string.Format( "{0}/{1}", ImageFolderPath, item.Name ) );
                     }
                 }
             }
@@ -339,5 +417,11 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         #endregion
 
-}
+        enum Tristate : byte
+        {
+            Unknown = 0,
+            True = 1,
+            False = 2
+        }
+    }
 }
