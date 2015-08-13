@@ -71,6 +71,10 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             base.OnLoad( e );
         }
 
+        #endregion
+
+        #region Events
+
         /// <summary>
         /// Handles the BlockUpdated event of the GroupList control.
         /// </summary>
@@ -80,8 +84,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         {
             BindGrid();
         }
-
-        #endregion
 
         #region Grid Events
 
@@ -145,6 +147,11 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnUpdate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUpdate_Click( object sender, EventArgs e )
         {
             UpdateBaptismLocations();
@@ -164,6 +171,8 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
 
         #endregion
 
+        #endregion
+
         #region Internal Methods
 
         /// <summary>
@@ -180,7 +189,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                 sortProperty = new SortProperty( new GridViewSortEventArgs( "Name", SortDirection.Ascending ) );
             }
 
-            bool onlySecurityGroups = GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean();
             int baptismLocationGroupTypeId = new GroupTypeService( new RockContext() ).Get( "32F8592C-AE11-44A7-A053-DE43789811D9".AsGuid() ).Id;
             var qryGroups = new GroupService( rockContext ).Queryable().Where( g => g.GroupTypeId == baptismLocationGroupTypeId );
 
@@ -196,6 +204,9 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             gBaptismLocations.DataBind();
         }
 
+        /// <summary>
+        /// Checks for updates.
+        /// </summary>
         private void CheckForUpdates()
         {
             RockContext rockContext = new RockContext();
@@ -219,18 +230,23 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                     needsUpdate = true;
 
                 }
+
                 Group baptismLocationGroup = groupList.Where( g => g.Name.Equals( String.Format( "{0} Baptism Schedule", campus.Name ) ) ).FirstOrDefault();
                 if ( baptismLocationGroup == null )
                 {
                     needsUpdate = true;
                 }
             }
+
             if ( needsUpdate )
             {
                 pnlUpdate.Visible = true;
             }
         }
 
+        /// <summary>
+        /// Updates the baptism locations.
+        /// </summary>
         private void UpdateBaptismLocations()
         {
             RockContext rockContext = new RockContext();
@@ -238,6 +254,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             GroupService groupService = new GroupService( rockContext );
             AttributeService attributeService = new AttributeService( rockContext );
             AttributeValueService attributeValueService = new AttributeValueService( rockContext );
+
             int baptismLocationGroupTypeId = new GroupTypeService( rockContext ).Get( "32F8592C-AE11-44A7-A053-DE43789811D9".AsGuid() ).Id;
             int blackoutParentCategoryId = categoryService.Get( "FFC06491-1BE9-4F3B-AC76-81A47E17D0AE".AsGuid() ).Id;
             int serviceTimesParentCategoryId = categoryService.Queryable().Where( c => c.Name.Equals( "Service Times" ) && c.ParentCategoryId == null ).FirstOrDefault().Id;
@@ -272,6 +289,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                     serviceTimes.IconCssClass = "fa fa-bell";
                     categoryService.Add( serviceTimes );
                 }
+
                 Group baptismLocationGroup = groupList.Where( g => g.Name.Equals( String.Format( "{0} Baptism Schedule", campus.Name ) ) ).FirstOrDefault();
                 if ( baptismLocationGroup == null )
                 {
@@ -300,10 +318,11 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                     serviceTimesAttributeValue.EntityId = baptismLocationGroup.Id;
                     attributeValueService.Add( serviceTimesAttributeValue );
                 }
+
                 rockContext.SaveChanges();
             }
         }
 
         #endregion
-}
+    }
 }

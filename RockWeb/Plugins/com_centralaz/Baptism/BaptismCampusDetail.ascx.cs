@@ -33,12 +33,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
     [TextField( "Report Font", "", true, "Gotham", "", 0 )]
     public partial class BaptismCampusDetail : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
         #region Properties
 
         protected List<Schedule> _blackoutDates;
@@ -49,8 +43,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         #endregion
 
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -63,7 +55,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             RockPage.AddCSSLink( ResolveRockUrl( "~/Plugins/com_centralaz/Baptism/Styles/BaptismCampusDetail.css" ) );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             // register btnDumpDiagnostics as a PostBackControl since it is returning a File download
@@ -81,7 +72,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             GetBlackoutDates();
             UpdateBaptizees();
 
-
             if ( !Page.IsPostBack )
             {
                 if ( PageParameter( "SelectedDate" ).AsDateTime().HasValue )
@@ -92,10 +82,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                 {
                     BindCalendar();
                 }
-            }
-            else
-            {
-                //  UpdateScheduleList();
             }
         }
 
@@ -136,18 +122,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         #endregion
 
         #region Events
-
-        // handlers called by the controls on your block
-
-        /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-
-        }
 
         /// <summary>
         /// Handles the Click event of the lbAddBaptism control.
@@ -217,7 +191,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             //Add church logo
             try
             {
-                var logo = iTextSharp.text.Image.GetInstance( Server.MapPath( ResolveRockUrl( "~/Plugins/com_centralaz/Baptism/Assets/Icons/CentralChristianChurchArizona_165_90.png" ) ) );
+                var logo = iTextSharp.text.Image.GetInstance( Server.MapPath( ResolveRockUrl( "~/Plugins/com_centralaz/Baptism/Assets/Icons/Central_Logo_Black_rgb_165_90.png" ) ));
                 logo.Alignment = iTextSharp.text.Image.RIGHT_ALIGN;
                 logo.ScaleAbsolute( 100, 55 );
                 document.Add( logo );
@@ -268,7 +242,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void calBaptism_SelectionChanged( object sender, EventArgs e )
         {
-            //    PageParameter( "SelectedDate" ) = calBaptism.SelectedDate.ToShortDateString();
             UpdateSchedulePanel();
         }
 
@@ -326,7 +299,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         /// </summary>
         protected void BindCalendar()
         {
-
             calBaptism.SelectedDate = DateTime.Today;
             UpdateSchedulePanel();
         }
@@ -337,7 +309,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         /// <param name="selectedDate"></param>
         protected void BindCalendar( DateTime selectedDate )
         {
-
             calBaptism.SelectedDate = selectedDate;
             UpdateSchedulePanel();
         }
@@ -482,10 +453,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             listSubHeaderTable.AddCell( new Phrase( "Confirmed", listSubHeaderFont ) );
 
             document.Add( listSubHeaderTable );
-
-            //LineSeparator lineSeparator = new LineSeparator();
-            //lineSeparator.LineWidth = 4;
-            //document.Add( new Chunk( new LineSeparator() ) );
         }
 
         /// <summary>
@@ -512,6 +479,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             {
                 phBaptismList.Controls.Add( new LiteralControl( "" ) );
             }
+
             if ( baptizee.Baptizer2 != null )
             {
                 url = ResolveUrl( string.Format( "~/Person/{0}", baptizee.Baptizer2.PersonId ) );
@@ -531,6 +499,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             {
                 theString = "<div class='col-md-2'></div>";
             }
+
             phBaptismList.Controls.Add( new LiteralControl( theString ) );
 
             Dictionary<string, string> dictionaryInfo = new Dictionary<string, string>();
@@ -544,13 +513,13 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                 Text = "<i class='fa fa-pencil'></i>",
                 PostBackUrl = theString
             };
-            //  lbEdit.Click += lbEdit_Click;
+
             phBaptismList.Controls.Add( new LiteralControl( "<div class='col-md-2'>" ) );
             if ( baptizee.IsConfirmed )
             {
                 phBaptismList.Controls.Add( new LiteralControl( "<i class='fa fa-check'></i>" ) );
-
             }
+
             phBaptismList.Controls.Add( new LiteralControl( "  </div>" ) );
             phBaptismList.Controls.Add( new LiteralControl( "<div class='col-md-2'>" ) );
             phBaptismList.Controls.Add( lbEdit );

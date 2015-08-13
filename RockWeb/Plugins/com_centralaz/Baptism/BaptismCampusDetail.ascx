@@ -3,23 +3,19 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <div class="row">
-            <div class="col-md-12">
-                <asp:Panel ID="pnlHeaderBar" runat="server" CssClass="panel panel-block">
-                    <div class="panel-body">
-                        <div class="col-md-2 col-sm-4">
-                            <asp:LinkButton ID="lbAddBaptism" runat="server" CssClass="btn btn-link" OnClick="lbAddBaptism_Click"><h4>+Add Baptism</h4></asp:LinkButton>
-                        </div>
-                        <div class="col-md-2 col-sm-4">
-                            <asp:LinkButton ID="lbAddBlackOut" runat="server" CssClass="btn btn-link" OnClick="lbAddBlackout_Click"><h4>Black Out a Day</h4></asp:LinkButton>
-                        </div>
-                        <div class="col-md-2 col-sm-4">
-                            <asp:LinkButton ID="lbPrintReport" runat="server" CssClass="btn btn-link" OnClick="lbPrintReport_Click"><h4>Print Report</h4></asp:LinkButton>
-                        </div>
-                    </div>
-                </asp:Panel>
+        <asp:Panel ID="pnlHeaderBar" runat="server" CssClass="panel panel-block">
+            <div class="panel-body">
+                <div class="col-md-2 col-sm-4">
+                    <asp:LinkButton ID="lbAddBaptism" runat="server" CssClass="btn btn-link" OnClick="lbAddBaptism_Click"><h4>+Add Baptism</h4></asp:LinkButton>
+                </div>
+                <div class="col-md-2 col-sm-4">
+                    <asp:LinkButton ID="lbAddBlackOut" runat="server" CssClass="btn btn-link" OnClick="lbAddBlackout_Click"><h4>Black Out a Day</h4></asp:LinkButton>
+                </div>
+                <div class="col-md-2 col-sm-4">
+                    <asp:LinkButton ID="lbPrintReport" runat="server" CssClass="btn btn-link" OnClick="lbPrintReport_Click"><h4>Print Report</h4></asp:LinkButton>
+                </div>
             </div>
-        </div>
+        </asp:Panel>
 
         <div class="row">
             <div class="col-md-3">
@@ -44,7 +40,6 @@
                         </div>
                         </center>
                     </div>
-
                 </asp:Panel>
             </div>
 

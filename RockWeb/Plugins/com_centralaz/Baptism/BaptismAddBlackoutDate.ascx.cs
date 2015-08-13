@@ -25,12 +25,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
     [Description( "Block for adding blackout dates to baptism schedules" )]
     public partial class BaptismAddBlackoutDate : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
         #region Properties
 
         protected List<Schedule> _blackoutDates;
@@ -39,8 +33,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         #endregion
 
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -51,7 +43,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             base.OnInit( e );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
@@ -70,7 +61,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                     dpBlackOutDate.SelectedDate = PageParameter( "SelectedDate" ).AsDateTime();
                     btnDelete.Visible = false;
                     lPanelTitle.Text = "Add Blackout Date";
-
                 }
                 else
                 {
@@ -78,6 +68,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                 }
             }
         }
+
         /// <summary>
         /// Returns breadcrumbs specific to the block that should be added to navigation
         /// based on the current page reference.  This function is called during the page's
@@ -114,18 +105,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
 
         #region Events
 
-        // handlers called by the controls on your block
-
-        /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-
-        }
-
         /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
@@ -134,7 +113,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         protected void btnSave_OnClick( object sender, EventArgs e )
         {
             nbNotification.Visible = false;
-            //baptisms exist for blackout date
+
             //blackout date already exists
             GetBlackoutDates();
             if ( _blackoutDates.Any( b => ( b.GetCalenderEvent().DTStart.Date == dpBlackOutDate.SelectedDate.Value.Date ) && ( b.CategoryId == GetCategoryId() ) && ( b.Id != PageParameter( "BlackoutId" ).AsIntegerOrNull() ) ) )
@@ -143,6 +122,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                 nbNotification.Visible = true;
                 return;
             }
+
             //check that group is valid
             int categoryId = GetCategoryId();
             if ( categoryId == -1 )
@@ -151,6 +131,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                 nbNotification.Visible = true;
                 return;
             }
+
             //save blackout date to db
             RockContext rockContext = new RockContext();
             ScheduleService scheduleService = new ScheduleService( rockContext );
@@ -163,6 +144,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             {
                 _blackoutDate = scheduleService.Get( PageParameter( "BlackoutId" ).AsInteger() );
             }
+
             iCalendar calendar = new iCalendar();
             DDay.iCal.IDateTime datetime = new iCalDateTime();
             Event theEvent = new Event();
@@ -171,15 +153,15 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             datetime.Value = dpBlackOutDate.SelectedDate.Value;
             _blackoutDate.Name = string.Format( "{0} blackout", dpBlackOutDate.SelectedDate.Value.ToShortDateString() );
 
-            calendar.Events[0].DTStart = datetime;
-            iCalendarSerializer calSerializer = new iCalendarSerializer( calendar );
-            _blackoutDate.iCalendarContent = calSerializer.SerializeToString();
+            calendar.Events[0].Start = datetime;
+            iCalendarSerializer calSerializer = new iCalendarSerializer();
+            _blackoutDate.iCalendarContent = calSerializer.SerializeToString( calendar );
             _blackoutDate.Description = tbDescription.Text;
             if ( _blackoutDate.Id.Equals( 0 ) )
             {
                 scheduleService.Add( _blackoutDate );
-
             }
+
             rockContext.SaveChanges();
             ReturnToParentPage();
         }
@@ -197,6 +179,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             {
                 _blackoutDate = scheduleService.Get( PageParameter( "BlackoutId" ).AsInteger() );
             }
+
             if ( _blackoutDate != null )
             {
                 scheduleService.Delete( _blackoutDate );

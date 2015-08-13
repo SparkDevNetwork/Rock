@@ -6,8 +6,8 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><asp:Literal ID="lPanelTitle" runat="server" /></h1>
-
+                <h1 class="panel-title">
+                    <asp:Literal ID="lPanelTitle" runat="server" /></h1>
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbErrorWarning" runat="server" NotificationBoxType="Danger" />
@@ -21,7 +21,6 @@
                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_OnClick" />
                 <asp:LinkButton ID="btnDelete" runat="server" Text="<i class='fa fa-trash-o'></i> Delete" CssClass="btn btn-link" OnClick="btnDelete_OnClick" />
                 <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_OnClick" />
-                
             </div>
 
         </asp:Panel>

@@ -33,11 +33,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
     {
         #region Fields
 
-        // used for private variables
-
-        #endregion
-
-        #region Properties
         List<DateTime> _serviceTimes;
         List<DateTime> _specialEvents;
         List<Schedule> _blackoutDates;
@@ -46,8 +41,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         #endregion
 
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -58,7 +51,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             base.OnInit( e );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
@@ -72,8 +64,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
 
             if ( !Page.IsPostBack )
             {
-
-
                 if ( PageParameter( "BaptizeeId" ).AsIntegerOrNull() == null )
                 {
                     btnDelete.Visible = false;
@@ -123,18 +113,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
 
         #region Events
 
-        // handlers called by the controls on your block
-
-        /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-
-        }
-
         /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
@@ -150,12 +128,14 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                 nbErrorWarning.Visible = true;
                 return;
             }
+
             if ( ppBaptizee.PersonId == null )
             {
                 nbErrorWarning.Text = "Please select a person to be baptized";
                 nbErrorWarning.Visible = true;
                 return;
             }
+
             if ( _blackoutDates.Any( b => b.GetCalenderEvent().DTStart.Date == dtpBaptismDate.SelectedDateTime.Value.Date ) )
             {
                 nbErrorWarning.Text = "The date you selected is a blackout date";
@@ -208,12 +188,14 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                 History.EvaluateChange( changes, "Baptizer 1", ( _baptizee.Baptizer1 != null ) ? _baptizee.Baptizer1.Person.FullName : "", ppBaptizer1.PersonName );
                 _baptizee.Baptizer1AliasId = theId;
             }
+
             if ( ppBaptizer2.PersonId != null )
             {
                 theId = (int)personAliasService.GetPrimaryAliasId( (int)ppBaptizer2.PersonId );
                 History.EvaluateChange( changes, "Baptizer 2", ( _baptizee.Baptizer2 != null ) ? _baptizee.Baptizer2.Person.FullName : "", ppBaptizer2.PersonName );
                 _baptizee.Baptizer2AliasId = theId;
             }
+
             if ( ppApprover.PersonId != null )
             {
                 theId = (int)personAliasService.GetPrimaryAliasId( (int)ppApprover.PersonId );
@@ -254,6 +236,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             {
                 _baptizee = baptizeeService.Get( PageParameter( "BaptizeeId" ).AsInteger() );
             }
+
             if ( _baptizee != null )
             {
                 baptizeeService.Delete( _baptizee );
@@ -272,7 +255,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                 HistoryService.AddChanges( rockContext, typeof( Person ), com.centralaz.Baptism.SystemGuid.Category.HISTORY_PERSON_BAPTISM_CHANGES.AsGuid(),
                         (int)ppBaptizee.PersonId, changes );
                 rockContext.SaveChanges();
-
             }
             ReturnToParentPage();
         }
@@ -290,6 +272,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         #endregion
 
         #region Methods
+
         /// <summary>
         /// Grabs the service times for the campus
         /// </summary>
@@ -305,21 +288,22 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             List<Schedule> serviceSchedules = new ScheduleService( new RockContext() ).Queryable()
                 .Where( s => s.CategoryId == category.Id )
                 .ToList();
+
             //What happens in the case of a special service
             foreach ( Schedule s in serviceSchedules )
             {
                 iCalendar calendar = iCalendar.LoadFromStream( new StringReader( s.iCalendarContent ) ).First() as iCalendar;
                 if ( calendar.RecurringItems.FirstOrDefault().RecurrenceRules.Count == 0 )
                 {
-                    var specialEvent = calendar.Events[0].DTStart;
-                    if ( calendar.Events[0].DTStart != null )
+                    var specialEvent = calendar.Events[0].Start;
+                    if ( calendar.Events[0].Start != null )
                     {
                         _specialEvents.Add( specialEvent.Value );
                     }
                 }
                 else
                 {
-                    DateTime serviceTime = calendar.Events[0].DTStart.Value;
+                    DateTime serviceTime = calendar.Events[0].Start.Value;
                     if ( serviceTime != null )
                     {
                         DayOfWeek dayOfWeek = calendar.RecurringItems.FirstOrDefault().RecurrenceRules.FirstOrDefault().ByDay[0].DayOfWeek;
@@ -370,15 +354,17 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             {
                 ppBaptizer1.SetValue( baptizee.Baptizer1.Person );
             }
+
             if ( baptizee.Baptizer2 != null )
             {
                 ppBaptizer2.SetValue( baptizee.Baptizer2.Person );
             }
+
             if ( baptizee.Approver != null )
             {
                 ppApprover.SetValue( baptizee.Approver.Person );
-
             }
+
             cbIsConfirmed.Checked = baptizee.IsConfirmed;
         }
 

@@ -42,7 +42,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
     public partial class LifeGroupSearch : Rock.Web.UI.RockBlock
     {
-        #region ViewState and Dynamic Controls
+        #region Properties
 
         public Dictionary<string, string> ParameterState
         {
