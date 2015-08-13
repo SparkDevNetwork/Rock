@@ -6820,6 +6820,30 @@ h6,
   padding-bottom: 60px;
   margin-bottom: 60px;
 }
+@media (min-width: 768px) {
+  .bigblock-rheight {
+    padding-top: 60px;
+    padding-bottom: 60px;
+  }
+}
+@media (min-width: 992px) {
+  .bigblock-rheight {
+    padding-top: 90px;
+    padding-bottom: 90px;
+  }
+}
+@media (min-width: 1200px) {
+  .bigblock-rheight {
+    padding-top: 120px;
+    padding-bottom: 120px;
+  }
+}
+@media (min-width: 1560px) {
+  .bigblock-rheight {
+    padding-top: 150px;
+    padding-bottom: 150px;
+  }
+}
 .bigblock-flexbg {
   background-size: cover;
   background-position: center center;
@@ -6846,6 +6870,23 @@ h6,
   .bigblock-flexbg-md {
     min-height: 520px;
   }
+}
+.bigblock-shade {
+  position: relative;
+}
+.bigblock-shade:after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+  content: '';
+  z-index: 0;
+}
+.bigblock-shade-inner {
+  position: relative;
+  z-index: 1;
 }
 .brandlist {
   list-style: none;
@@ -7391,4 +7432,7 @@ a.thumbnail {
 .vimeothumb a:hover:before {
   opacity: 1;
   filter: alpha(opacity=100);
+}
+.mfp-iframe-holder .mfp-content {
+  max-width: 1200px;
 }

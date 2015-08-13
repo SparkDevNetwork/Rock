@@ -1,0 +1,116 @@
+{% assign campus = Campuses | Where: 'Id', 1 | First %}
+
+{% comment %} TODO: figure out a way to responsive use bigger images here {% endcomment %}
+<div class="jumbotron bigblock-inverse bigblock-flexbg bigblock-shade bigblock-rheight" style="background-image: url({{ campus | Attribute: 'CoverPhoto', 'Url' }}&width=1000)">
+  <div class="container bigblock-shade-inner">
+    <h1 class="underline">{{ campus.Name }} Campus</h1>
+    {% assign vimeoId = campus | Attribute: 'CampusTourVimeoId' %}
+    {% if vimeoId != empty %}
+      <a class="btn btn-default btn-sm margin-t-sm popup-vimeo" href="//vimeo.com/{{ vimeoId }}" ><i class="fa fa-play-circle"></i> Watch</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="row">
+    <div class="col-md-7">
+      <div id="campus-detail-page-map" data-campus-id="{{ campus.Id }}" style="min-height: 320px;"></div>
+    </div>
+    <div class="col-md-5">
+      <div class="well">
+        <h3>Service Times</h3>
+        <div class="commalist">
+          {% assign hasSaturday = false %}{% assign hasSunday = false %}
+          {% for time in campus.ServiceTimes %}
+            {% if time.Day == 'Saturday' %}
+              {% assign hasSaturday = true %}
+            {% endif %}
+            {% if time.Day == 'Sunday' %}
+              {% assign hasSunday = true %}
+            {% endif %}
+          {% endfor %}
+
+          {% if hasSaturday %}
+            <strong class="margin-r-sm">Saturday</strong>
+            {% for time in campus.ServiceTimes %}
+              {% if time.Day == 'Saturday' %}
+                <span class="commalist-item">{{ time.Time | Remove: ' ' }}</span>
+              {% endif %}
+            {% endfor %}
+            <br>
+          {% endif %}
+
+          {% if hasSunday %}
+            <strong class="margin-r-sm">Sunday</strong>
+            {% for time in campus.ServiceTimes %}
+              {% if time.Day == 'Sunday' %}
+                <span class="commalist-item">{{ time.Time | Remove: ' ' }}</span>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+
+          {% if hasSaturday == false and hasSunday %}
+            <br class="hidden-xs"><br class="hidden-xs">
+          {% endif %}
+        </div>
+      </div>
+      <div class="well margin-b-none">
+        <ul class="fa-ul margin-b-none">
+          <li class="margin-b-sm">
+            {% capture urlString %}{{ campus.Location.Street1 }} {{ campus.Location.Street2 }} {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}{% endcapture %}
+            <i class="fa-li fa fa-map-marker"></i>
+            <a href="http://maps.apple.com/maps?daddr={{ urlString }}">
+              {{ campus.Location.Street1 }}<br>
+              {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}
+            </a>
+          </li>
+          <li>
+            {% capture phoneString %}+1{{ campus.PhoneNumber | Remove: '(' | Remove: ')' | Remove: ' ' | Remove: '-' }}{% endcapture %}
+            <i class="fa-li fa fa-phone"></i>
+            <a href="tel:{{ phoneString }}">{{ campus.PhoneNumber }}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="margin-v-lg">
+
+  <div class="row">
+    <div class="col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-0">
+      <div class="well">
+        {% comment %} TODO: Use actual campus pastor name {% endcomment %}
+        <img src="//placehold.it/400x400" alt="Mike Haas">
+        <h4 class="margin-t-md">Mike Haas <small>Campus Pastor</small></h4>
+        <a href="mailto:MikeHaas@ccv.church">MikeHaas@ccv.church</a>
+      </div>
+    </div>
+    <div class="col-sm-12 col-md-8">
+      <h3>Kids & Students</h3>
+      <p>At CCV, we have exciting, safe programs for kids and teens from birth through high school.</p>
+      <p>
+        <a href="/kids" class="btn btn-default">About Kids</a>
+        <a href="/students" class="btn btn-default">About Students</a>
+      </p>
+      <p class="hidden-xs">&nbsp;</p>
+      <h3>Campus Tour</h3>
+      <p>Come join us for our Saturday morning, Saturday night, or Sunday morning tour of the CCV campus. During your tour you will get to see everything CCV has to offer and ask any questions you might have.</p>
+      <p>
+        {% comment %} TODO: add actual link {% endcomment %}
+        <a href="#" class="btn btn-default">Learn More</a>
+      </p>
+    </div>
+  </div>
+
+</div>
+
+
+{% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
+
+{% comment %}
+<script src="~~/Scripts/_map.js"></script>
+<script src="~~/Scripts/map-campus-detail-page.js"></script>
+{% endcomment %}
+
+<script src="~~/Scripts/min/map-campus-detail-page.min.js"></script>

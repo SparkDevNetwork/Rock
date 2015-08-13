@@ -69,10 +69,31 @@
 .bigblock-stacking {
   margin-bottom: 0;
 }
+
 .bigblock-lg {
   padding-top: @grid-gutter-width*2;
   padding-bottom: @grid-gutter-width*2;
   margin-bottom: @grid-gutter-width*2;
+}
+
+// Responsive height
+.bigblock-rheight {
+  @media @sm {
+    padding-top: @grid-gutter-width*2;
+    padding-bottom: @grid-gutter-width*2;
+  }
+  @media @md {
+    padding-top: @grid-gutter-width*3;
+    padding-bottom: @grid-gutter-width*3;
+  }
+  @media @lg {
+    padding-top: @grid-gutter-width*4;
+    padding-bottom: @grid-gutter-width*4;
+  }
+  @media @xl {
+    padding-top: @grid-gutter-width*5;
+    padding-bottom: @grid-gutter-width*5;
+  }
 }
 
 
@@ -88,4 +109,23 @@
     @media @md { min-height: 400px; }
     @media @lg { min-height: 460px; }
     @media @xl { min-height: 520px;}
+  }
+
+// Apply transparent shade
+.bigblock-shade {
+  position: relative;
+  &:after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.5);
+    content: '';
+    z-index: 0;
+  }
+}
+  .bigblock-shade-inner {
+    position: relative;
+    z-index: 1;
   }
