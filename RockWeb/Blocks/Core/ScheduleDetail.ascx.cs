@@ -406,9 +406,9 @@ namespace RockWeb.Blocks.Core
             }
 
             var friendlyText = schedule.ToFriendlyScheduleText();
-            if (!schedule.HasSchedule())
+            if ( schedule.HasScheduleWarning() )
             {
-                friendlyText = string.Format( "<label class='label label-warning'>{0}</label>", friendlyText );
+                friendlyText = string.Format( "<label class='label label-warning'>{0}</label> <i class='fa fa-exclamation-triangle text-warning'></i>", friendlyText );
             }
             
             DescriptionList descriptionList = new DescriptionList()
