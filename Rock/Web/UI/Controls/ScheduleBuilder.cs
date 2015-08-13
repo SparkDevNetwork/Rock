@@ -1402,7 +1402,6 @@ END:VCALENDAR
             writer.Write( "Recurrence" );
             writer.RenderEndTag();
 
-
             // OccurrencePattern Radiobuttons
             writer.AddAttribute( "class", "form-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -1445,7 +1444,6 @@ END:VCALENDAR
 
             writer.AddAttribute( "id", "add-specific-date-group_" + this.ClientID );
             writer.AddAttribute( "class", "js-add-specific-date-group" );
-
             writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _dpSpecificDate.AddCssClass( "specific-date" );
@@ -1460,8 +1458,9 @@ END:VCALENDAR
                     </a>
                 </div>
 " );
-
             writer.RenderEndTag();
+
+            // end recurrence-pattern-specific-date_
             writer.RenderEndTag();
 
             // daily recurrence panel
@@ -1497,7 +1496,10 @@ END:VCALENDAR
             _radDailyEveryWeekendDay.RenderControl( writer );
             writer.RenderEndTag();
 
+            // end //form-group controls
             writer.RenderEndTag();
+
+            // end recurrence-pattern-daily_
             writer.RenderEndTag();
 
             // weekly recurrence panel
@@ -1530,6 +1532,7 @@ END:VCALENDAR
             _cbWeeklySaturday.RenderControl( writer );
             writer.RenderEndTag();
 
+            // end recurrence-pattern-weekly_
             writer.RenderEndTag();
 
             // monthly
@@ -1542,8 +1545,8 @@ END:VCALENDAR
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.AddAttribute( "class", "form-group controls" );
 
+            writer.AddAttribute( "class", "form-group controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "form-control-group" );
@@ -1567,13 +1570,13 @@ END:VCALENDAR
             _ddlMonthlyDayName.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.RenderEndTag();
+            // end form-group controls
             writer.RenderEndTag();
 
-            // end date
-            writer.Write( @"
-<div class='controls'><hr /></div>
-" );
+            // end recurrence-pattern-monthly_
+            writer.RenderEndTag();
+
+            // 'continue until' controls
             writer.AddAttribute( "class", "continue-until js-continue-until" );
             if ( _radSpecificDates.Checked )
             {
@@ -1581,6 +1584,10 @@ END:VCALENDAR
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.Write( @"
+<div class='controls'><hr /></div>
+" );
+            
             writer.Write( "<label class='control-label'>Continue Until</label>" );
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -1606,15 +1613,13 @@ END:VCALENDAR
             _tbEndByOccurrenceCount.AddCssClass( "margin-l-sm" );
             _tbEndByOccurrenceCount.RenderControl( writer );
             writer.Write( "<span> occurrences</span>" );
-
             writer.RenderEndTag();
 
+            // end "continue-until"
             writer.RenderEndTag();
             writer.RenderEndTag();
 
             // exclusions
-            writer.Write( @"<hr />" );
-
             writer.AddAttribute( "class", "exclusions js-exclusion-dates" );
             if ( _radSpecificDates.Checked )
             {
@@ -1622,6 +1627,7 @@ END:VCALENDAR
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.Write( @"<hr />" );
             writer.Write( @"<label class='control-label'>Exclusions</label>" );
 
             writer.AddAttribute( "id", "recurrence-pattern-exclusions_" + this.ClientID );
@@ -1661,8 +1667,10 @@ END:VCALENDAR
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderEndTag();
 
+            // end add-exclusion
             writer.RenderEndTag();
 
+            // end recurrence-pattern-exclusions_
             writer.RenderEndTag();
 
             // Recurrence Panel: End
@@ -1671,6 +1679,7 @@ END:VCALENDAR
             // write out the closing div for <div class='exclusions'>
             writer.RenderEndTag();
 
+            // end id div tag
             writer.RenderEndTag();
         }
     }
