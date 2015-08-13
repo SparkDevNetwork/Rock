@@ -55,10 +55,6 @@
     <Folder Include="Model\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj">
-      <Project>{b89dfd33-ce93-44e1-8616-c31acdfe89cb}</Project>
-      <Name>Rock.Rest</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
       <Name>Rock</Name>
