@@ -38,12 +38,12 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
     [Category( "com_centralaz > Groups" )]
     [Description( "Central custom group search block." )]
     [LinkedPage( "Life Group List Page", "The page to navigate to for group details.", false, "", "", 0 )]
-    [LinkedPage( "Life Group Map Page", "The page to navigate to for group details.", false, "", "", 0 )]
     [LinkedPage( "Information Security Page", "The page to navigate to for group details.", false, "", "", 0 )]
 
     public partial class LifeGroupSearch : Rock.Web.UI.RockBlock
     {
         #region ViewState and Dynamic Controls
+
         public Dictionary<string, string> ParameterState
         {
             get
@@ -83,8 +83,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
         #region Base Control Methods
 
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -94,7 +92,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             base.OnInit( e );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
             string script = @"
 // groupsearch-filter animation
@@ -155,18 +152,11 @@ $('.groupsearch-filter > .panel-body').on('validation-error', function() {
 
         #region Events
 
-        // handlers called by the controls on your block
-
         /// <summary>
-        /// Handles the BlockUpdated event of the control.
+        /// Handles the Click event of the btnSearch control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-
-        }
-
         protected void btnSearch_Click( object sender, EventArgs e )
         {
             ParameterState.AddOrReplace( "Children", cblChildren.SelectedValues.AsDelimited( ";" ) );
@@ -182,6 +172,11 @@ $('.groupsearch-filter > .panel-body').on('validation-error', function() {
             NavigateToLinkedPage( "LifeGroupListPage" );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbLogin control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbLogin_Click( object sender, EventArgs e )
         {
             var site = RockPage.Layout.Site;
@@ -191,11 +186,11 @@ $('.groupsearch-filter > .panel-body').on('validation-error', function() {
             }
         }
 
-        protected void lbMap_Click( object sender, EventArgs e )
-        {
-            NavigateToLinkedPage( "LifeGroupMapPage", "Campus", ddlCampus.SelectedValue.AsInteger() );
-        }
-
+        /// <summary>
+        /// Handles the Click event of the lbSecurity control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSecurity_Click( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "InformationSecurityPage" );
@@ -203,32 +198,40 @@ $('.groupsearch-filter > .panel-body').on('validation-error', function() {
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
+
+        /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
         private void LoadDropDowns()
         {
             if ( ParameterState.ContainsKey("Pets") )
             {
                 cbPets.Checked = ParameterState["Pets"].AsBoolean();
             }
+
             cblDays.Items.Clear();
             foreach ( var dow in Enum.GetValues( typeof( DayOfWeek ) ).OfType<DayOfWeek>().ToList() )
             {
                 cblDays.Items.Add( new ListItem( dow.ConvertToString().Substring( 0, 3 ), dow.ConvertToInt().ToString() ) );
             }
+
             if ( ParameterState.ContainsKey( "Days" ) )
             {
                 cblDays.SetValues( ParameterState["Days"].Split( ';' ).ToList() );
             }
+
             cblChildren.Items.Clear();
             cblChildren.BindToDefinedType( DefinedTypeCache.Read( "512F355E-9441-4C47-BE47-7FFE19209496".AsGuid() ) );
             if ( ParameterState.ContainsKey( "Children" ) )
             {
                 cblChildren.SetValues( ParameterState["Children"].Split( ';' ).ToList() );
             }
+
             ddlCampus.DataSource = CampusCache.All();
             ddlCampus.DataBind();
         }
-        #endregion
 
+        #endregion
     }
 }

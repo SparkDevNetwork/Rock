@@ -40,10 +40,22 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
     [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 10 )]
-    [ContextAware]
     public partial class LifeGroupList : RockBlock
     {
+        #region Fields
+
         private int _groupTypesCount = 0;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the parameter state.
+        /// </summary>
+        /// <value>
+        /// The state of the parameter.
+        /// </value>
         public Dictionary<string, string> ParameterState
         {
             get
@@ -63,6 +75,9 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 Session["ParameterState"] = value;
             }
         }
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -72,11 +87,8 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            this.BlockUpdated += GroupList_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlGroupList );
         }
-
-
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -92,25 +104,27 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             base.OnLoad( e );
         }
 
+        #endregion
+
+        #region Events
+
         /// <summary>
-        /// Handles the BlockUpdated event of the GroupList control.
+        /// Handles the Click event of the lbReturn control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void GroupList_BlockUpdated( object sender, EventArgs e )
-        {
-
-        }
-
-        #endregion
-
         protected void lbReturn_Click( object sender, EventArgs e )
         {
             NavigateToParentPage();
         }
 
+        #endregion
+
         #region Internal Methods
 
+        /// <summary>
+        /// Loads the list.
+        /// </summary>
         private void LoadList()
         {
             // Build qry
@@ -126,6 +140,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             {
                 qry = qry.Where( g => g.CampusId == ParameterState["Campus"].AsIntegerOrNull() );
             }
+
             if ( !String.IsNullOrWhiteSpace( ParameterState["Days"] ) )
             {
                 List<DayOfWeek> daysList = ParameterState["Days"].Split( ';' ).ToList().Select( i => (DayOfWeek)( i.AsInteger() ) ).ToList();
@@ -135,6 +150,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                     qry = qry.Where( g => daysList.Contains( g.Schedule.WeeklyDayOfWeek.Value ) );
                 }
             }
+
             bool? hasPets = ParameterState["Pets"].AsBooleanOrNull();
             if ( hasPets != null && hasPets.Value )
             {
@@ -145,8 +161,8 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 qry = qry.Where( g => attributeValues.Select( v => v.EntityId ).Contains( g.Id ) );
             }
 
-
             bool shadeRow = false;
+
             // Construct List
             var attributeChildValues = attributeValueService
                                         .Queryable()
@@ -165,6 +181,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                             displayGroup = false;
                         }
                     }
+
                     if ( displayGroup )
                     {
                         if ( shadeRow )
@@ -175,6 +192,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                         {
                             phGroups.Controls.Add( new LiteralControl( "<div class='row'>" ) );
                         }
+
                         phGroups.Controls.Add( new LiteralControl( "<div class='col-md-1'>" ) );
                         phGroups.Controls.Add( new LiteralControl( "<div class='photo'>" ) );
                         GroupMember leader = group.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true );
@@ -226,7 +244,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                         phGroups.Controls.Add( new LiteralControl( String.Format( "<u><b><p style='font-size:24px'>{0}</p></b></u>", group.Name ) ) );
                         phGroups.Controls.Add( new LiteralControl( "</div>" ) );
                         phGroups.Controls.Add( new LiteralControl( "<div class='pull-right'>" ) );
-                        phGroups.Controls.Add( new LiteralControl( string.Format( "<a href='{0}'>View>></a>", ResolveUrl( string.Format( "~/LifeGroup/{0}", group.Id ) ) ) ) );
+                        phGroups.Controls.Add( new LiteralControl( string.Format( "<a href='{0}'>View >></a>", ResolveUrl( string.Format( "~/LifeGroup/{0}", group.Id ) ) ) ) );
                         phGroups.Controls.Add( new LiteralControl( "</div>" ) );
                         phGroups.Controls.Add( new LiteralControl( "</div>" ) );
                         phGroups.Controls.Add( new LiteralControl( "<div class='row'>" ) );
@@ -260,6 +278,12 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             }
 
         }
+
+        /// <summary>
+        /// Gets the distance.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns></returns>
         protected string GetDistance( Group group )
         {
             RockContext rockContext = new RockContext();
@@ -271,6 +295,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 SetGeoPointFromAddress( personLocation );
                 rockContext.SaveChanges();
             }
+
             double? closestLocation = null;
             foreach ( var groupLocation in group.GroupLocations
                         .Where( gl => gl.Location.GeoPoint != null ) )
@@ -295,6 +320,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                     }
                 }
             }
+
             if ( closestLocation != null )
             {
                 return String.Format( "{0}m", closestLocation.Value.ToString( "0.0" ) );
@@ -305,6 +331,10 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             }
         }
 
+        /// <summary>
+        /// Sets the geo point from address.
+        /// </summary>
+        /// <param name="personLocation">The person location.</param>
         private static void SetGeoPointFromAddress( Location personLocation )
         {
             var requestUri = string.Format( "http://maps.googleapis.com/maps/api/geocode/xml?address={0}&sensor=false", Uri.EscapeDataString( personLocation.GetFullStreetAddress() ) );
@@ -319,7 +349,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             var lng = locationElement.Element( "lng" );
             personLocation.SetLocationPointFromLatLong( (double)lat, (double)lng );
         }
-        #endregion
 
+        #endregion
     }
 }

@@ -22,13 +22,11 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -47,14 +45,26 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 3 )]
     [WorkflowTypeField( "Workflow", "An optional workflow to start when registration is created. The GroupMember will set as the workflow 'Entity' when processing is started.", false, false, "", "", 4 )]
     [WorkflowTypeField( "Email Workflow", "An optional workflow to start when an email request is created. The GroupMember will set as the workflow 'Entity' when processing is started.", false, false, "", "", 4 )]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 5 )]
-    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"
-", "", 6 )]
     [LinkedPage( "Result Page", "An optional page to redirect user to after they have been registered for the group.", false, "", "", 7 )]
-    [CodeEditorField( "Result Lava Template", "The lava template to use to format result message after user has been registered. Will only display if user is not redirected to a Result Page ( previous setting ).", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"
-", "", 8 )]
     public partial class LifeGroupDetail : RockBlock
     {
+        #region Fields
+
+        RockContext _rockContext = null;
+        string _mode = "Simple";
+        Group _group = null;
+        GroupTypeRole _defaultGroupRole = null;
+        DefinedValueCache _dvcConnectionStatus = null;
+        DefinedValueCache _dvcRecordStatus = null;
+        DefinedValueCache _married = null;
+        DefinedValueCache _homeAddressType = null;
+        GroupTypeCache _familyType = null;
+        GroupTypeRoleCache _adultRole = null;
+
+        #endregion
+
+        #region Properties
+
         public String focusOnState
         {
             get
@@ -75,19 +85,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 Session["FocusOn"] = value;
             }
         }
-
-        #region Fields
-
-        RockContext _rockContext = null;
-        string _mode = "Simple";
-        Group _group = null;
-        GroupTypeRole _defaultGroupRole = null;
-        DefinedValueCache _dvcConnectionStatus = null;
-        DefinedValueCache _dvcRecordStatus = null;
-        DefinedValueCache _married = null;
-        DefinedValueCache _homeAddressType = null;
-        GroupTypeCache _familyType = null;
-        GroupTypeRoleCache _adultRole = null;
 
         #endregion
 
@@ -114,10 +111,12 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         {
             base.OnLoad( e );
             ClearErrorMessage();
+
             if ( CurrentPerson != null )
             {
                 pnlLogin.Visible = false;
             }
+
             if ( !CheckSettings() )
             {
                 nbNotice.Visible = true;
@@ -132,6 +131,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 }
                 BuildMap();
             }
+
             lbRegister.Attributes.Add( "onclick", "return jumpToControl()" );
             lbEmail.Attributes.Add( "onclick", "return jumpToControl()" );
         }
@@ -150,6 +150,11 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             ShowDetails();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbLogin control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbLogin_Click( object sender, EventArgs e )
         {
             var site = RockPage.Layout.Site;
@@ -264,7 +269,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                             secondPerson.RecordStatusValueId = _dvcRecordStatus.Id;
                             secondPerson.Gender = Gender.Unknown;
 
-                            family = PersonService.SaveNewPerson( secondPerson, rockContext, _group.CampusId, false );
+                            secondFamily = PersonService.SaveNewPerson( secondPerson, rockContext, _group.CampusId, false );
                         }
                         else
                         {
@@ -274,7 +279,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
                             // Get the current person's families
                             var families = secondPerson.GetFamilies( rockContext );
-                            family = families.FirstOrDefault();
+                            secondFamily = families.FirstOrDefault();
 
                         }
 
@@ -287,6 +292,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                         Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, changes );
                     HistoryService.SaveChanges( rockContext, typeof( Person ),
                         Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), person.Id, familyChanges );
+
                     if ( secondPerson != null )
                     {
                         rockContext.SaveChanges();
@@ -331,32 +337,37 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                         pnSecondResultHome.Text = pnSecondHome.Text;
                         tbSecondResultLastName.Text = tbSecondLastName.Text;
                     }
-
-                    // Show lava content
-                    var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "Group", _group );
-                    mergeFields.Add( "GroupMembers", newGroupMembers );
-
-                    bool showDebug = UserCanEdit && GetAttributeValue( "EnableDebug" ).AsBoolean();
-
-                    string template = GetAttributeValue( "ResultLavaTemplate" );
                 }
             }
         }
+
+        /// <summary>
+        /// Handles the Click event of the lbGoBack control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbGoBack_Click( object sender, EventArgs e )
         {
             NavigateToParentPage();
         }
+
+        /// <summary>
+        /// Handles the Click event of the lbRegister control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRegister_Click( object sender, EventArgs e )
         {
             pnHome.Visible = true;
             btnEmail.Visible = false;
             btnRegister.Visible = true;
             cbSecondSignup.Visible = true;
+
             if ( cbSecondSignup.Checked )
             {
                 pnlSecondSignup.Visible = true;
             }
+
             lLastName.Visible = true;
             lHome.Visible = true;
             lEmail.Visible = true;
@@ -364,12 +375,13 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             lFirstName.Text = "We treat Life Groups like family, and to us family uses real names.";
             focusOnState = "tbFirstName";
             tbFirstName.Focus();
-
         }
-        protected void lbPhone_Click( object sender, EventArgs e )
-        {
 
-        }
+        /// <summary>
+        /// Handles the Click event of the lbEmail control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEmail_Click( object sender, EventArgs e )
         {
             pnHome.Visible = false;
@@ -385,6 +397,12 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             focusOnState = "tbFirstName";
             tbFirstName.Focus();
         }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbSecondSignup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbSecondSignup_CheckedChanged( object sender, EventArgs e )
         {
             if ( cbSecondSignup.Checked )
@@ -397,23 +415,11 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             }
         }
 
-        protected void lbExit_Click( object sender, EventArgs e )
-        {
-            NavigateToParentPage();
-        }
-        protected void lbChange_Click( object sender, EventArgs e )
-        {
-            //TODO: cancel incorrect member signup
-            pnlSignup.Visible = true;
-            pnlResult.Visible = false;
-            if ( pnlSecondResult.Visible )
-            {
-                pnlSecondSignup.Visible = true;
-                pnlSecondResult.Visible = false;
-            }
-            btnRegister.Text = "Correct it!";
-        }
-
+        /// <summary>
+        /// Handles the Click event of the btnEmail control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEmail_Click( object sender, EventArgs e )
         {
             if ( Page.IsValid )
@@ -496,12 +502,19 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 var newGroupMembers = new List<GroupMember>();
                 AddPersonToGroup( rockContext, person, workflowType, newGroupMembers, true );
 
-                // Show the results            
-                // NavigateToLinkedPage( "ResultPage" );
-                pnlView.Visible = false;
-                pnlSecondSignup.Visible = false;
-                pnlSignup.Visible = false;
-                pnlEmailSent.Visible = true;
+                // Show the results
+                if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "ResultPage" ) ) )
+                {
+                    NavigateToLinkedPage( "ResultPage" );
+                }
+                else
+                {
+                    pnlView.Visible = false;
+                    pnlSecondSignup.Visible = false;
+                    pnlSignup.Visible = false;
+                    pnlEmailSent.Visible = true;
+                }
+
             }
         }
 
@@ -517,6 +530,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             nbErrorMessage.Title = string.Empty;
             nbErrorMessage.Text = string.Empty;
         }
+
         /// <summary>
         /// Shows the details.
         /// </summary>
@@ -561,18 +575,21 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                         }
                     }
                 }
+
                 string groupPhotoTag1 = GetImageTag( _group.GetAttributeValue( "GroupPhoto1" ), 350, 200 );
                 if ( !string.IsNullOrWhiteSpace( _group.GetAttributeValue( "GroupPhoto1" ) ) )
                 {
                     string imageUrl = ResolveRockUrl( String.Format( "~/GetImage.ashx?guid={0}", _group.GetAttributeValue( "GroupPhoto1" ) ) );
                     lGroupPhoto1.Text = string.Format( "<a href='{0}'>{1}</a>", imageUrl, groupPhotoTag1 );
                 }
+
                 string groupPhotoTag2 = GetImageTag( _group.GetAttributeValue( "GroupPhoto2" ), 350, 200 );
                 if ( !string.IsNullOrWhiteSpace( _group.GetAttributeValue( "GroupPhoto2" ) ) )
                 {
                     string imageUrl = ResolveRockUrl( String.Format( "~/GetImage.ashx?guid={0}", _group.GetAttributeValue( "GroupPhoto2" ) ) );
                     lGroupPhoto2.Text = string.Format( "<a href='{0}'>{1}</a>", imageUrl, groupPhotoTag2 );
                 }
+
                 string groupPhotoTag3 = GetImageTag( _group.GetAttributeValue( "GroupPhoto3" ), 350, 200 );
                 if ( !string.IsNullOrWhiteSpace( _group.GetAttributeValue( "GroupPhoto3" ) ) )
                 {
@@ -580,24 +597,8 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                     lGroupPhoto3.Text = string.Format( "<a href='{0}'>{1}</a>", imageUrl, groupPhotoTag3 );
                 }
 
-
                 lDescription.Text = _group.Description;
                 BuildMap();
-
-                // Show lava content
-                var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Group", _group );
-
-                bool showDebug = UserCanEdit && GetAttributeValue( "EnableDebug" ).AsBoolean();
-                lLavaOutputDebug.Visible = showDebug;
-                if ( showDebug )
-                {
-                    lLavaOutputDebug.Text = mergeFields.lavaDebugInfo( _rockContext );
-                }
-                lGroupName.Text = _group.Name;
-
-                string template = GetAttributeValue( "LavaTemplate" );
-                lLavaOverview.Text = template.ResolveMergeFields( mergeFields );
 
                 pnlSignup.AddCssClass( "col-md-12" );
 
@@ -623,6 +624,13 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             }
         }
 
+        /// <summary>
+        /// Gets the image tag.
+        /// </summary>
+        /// <param name="imageGuid">The image unique identifier.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <returns></returns>
         public string GetImageTag( String imageGuid, int? maxWidth = null, int? maxHeight = null )
         {
             var photoUrl = new StringBuilder();
@@ -658,6 +666,14 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
             return string.Format( "<img src='{0}'{1}/>", photoUrl.ToString(), styleString );
         }
+
+        /// <summary>
+        /// Gets the video tag.
+        /// </summary>
+        /// <param name="videoGuid">The video unique identifier.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <returns></returns>
         public string GetVideoTag( String videoGuid, int? maxWidth = null, int? maxHeight = null )
         {
             var videoUrl = new StringBuilder();
@@ -695,6 +711,9 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             return string.Format( "<video controls {0} name='media'><source src='{1}'{2} type='video/mp4'></video>", videoSize.ToString(), videoUrl.ToString(), styleString );
         }
 
+        /// <summary>
+        /// Builds the map.
+        /// </summary>
         private void BuildMap()
         {
             // Get Map Style
@@ -918,6 +937,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                     {
                         person.PhoneNumbers.Add( phoneNumber );
                     }
+
                     if ( cbSms != null && cbSms.Checked )
                     {
                         phoneNumber.IsMessagingEnabled = true;
@@ -935,6 +955,5 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         }
 
         #endregion
-
     }
 }

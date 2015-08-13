@@ -35,32 +35,19 @@
                 </asp:Panel>
             </div>
             <div class="row">
-                <div class="col-md-4">
-                    <center>
+                <div class="col-md-4 text-center">
                     <asp:Literal ID="lMainMedia" runat="server" />
-                    </center>
                 </div>
                 <div class="col-md-4">
-                    <div class="row">
-                        <center>
-                            <asp:LinkButton ID="lbRegister" runat="server" Text="Sign up!" CssClass="btn btn-primary" OnClick="lbRegister_Click" CausesValidation="false"  />
-                        </center>
+                    <div class="row text-center">
+                        <asp:LinkButton ID="lbRegister" runat="server" Text="Sign up!" CssClass="btn btn-primary" OnClick="lbRegister_Click" CausesValidation="false" />
                     </div>
-                    <div class="row">
-                        <center>                
-                            <asp:LinkButton ID="lbEmail" runat="server" Text="Email" OnClick="lbEmail_Click" CausesValidation="false"/>
-                        </center>
-                    </div>
-                    <div class="row">
-                        <center>                
-                            <asp:LinkButton ID="lbPhone" runat="server" OnClick="lbPhone_Click" />
-                        </center>
+                    <div class="row text-center">
+                        <asp:LinkButton ID="lbEmail" runat="server" Text="Email" OnClick="lbEmail_Click" CausesValidation="false" />
                     </div>
                 </div>
-                <div class="col-md-4 location-maps">
-                    <center>
+                <div class="col-md-4 location-maps text-center">
                     <asp:PlaceHolder ID="phMaps" runat="server" EnableViewState="true" />
-                    </center>
                 </div>
             </div>
             <div class="row">
@@ -79,8 +66,6 @@
                 </div>
             </div>
             <hr />
-            <asp:Literal ID="lLavaOverview" runat="server" />
-            <asp:Literal ID="lLavaOutputDebug" runat="server" />
 
             <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
         </asp:Panel>
@@ -177,18 +162,7 @@
                 You should recieve a confirmation email shortly.
             </h3>
             </center>
-            <div class="col-md-6">
-                <div class="row">
-                    This is the information that was submitted, is this correct?
-                </div>
-                <div class="row">
-                    <asp:LinkButton ID="lbChange" runat="server" Text="Nope, it needs changes" CssClass="btn btn-primary" OnClick="lbChange_Click" Visible="false" />
-                </div>
-                <div class="row">
-                    <asp:LinkButton ID="lbExit" runat="server" Text="Looks perfect!" CssClass="btn btn-primary" OnClick="lbExit_Click" Visible="false" />
-                </div>
-            </div>
-            <div class="col-md-6">
+            <div class="col-md-6 col-md-offset-3">
                 <asp:Panel runat="server">
                     <div class="row">
                         <Rock:RockTextBox ID="tbResultFirstName" runat="server" Enabled="false"></Rock:RockTextBox>
