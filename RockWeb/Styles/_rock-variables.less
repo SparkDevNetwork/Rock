@@ -331,3 +331,32 @@
 @alert-info-link-border-bottom:    1px dotted @alert-info-text;
 @alert-warning-link-border-bottom: 1px dotted @alert-warning-text;
 @alert-danger-link-border-bottom:  1px dotted @alert-danger-text;
+
+
+// Helper Variables
+// -------------------------
+
+// spacing multipliers / used to multiply by the grid-gutter-width to get spacing sizes
+@spacing-sm: 0.25;
+@spacing-md: 0.5;
+@spacing-lg: 1;
+@spacing-xl: 2;
+
+@spacing-sm-px: @grid-gutter-width * @spacing-sm;
+@spacing-md-px: @grid-gutter-width * @spacing-md;
+@spacing-lg-px: @grid-gutter-width * @spacing-lg;
+@spacing-xl-px: @grid-gutter-width * @spacing-xl;
+
+// Media queries
+// Example usage:
+// @media @sm {
+//   body {
+//     background: red;
+//   }
+// }
+@xs: ~"(min-width: @{screen-xs-min})";
+@sm: ~"(min-width: @{screen-sm-min})";
+@md: ~"(min-width: @{screen-md-min})";
+@lg: ~"(min-width: @{screen-lg-min})";
+@sm-only: ~"(min-width: @{screen-sm}) and (max-width: @{screen-sm-max})";
+@md-only: ~"(min-width: @{screen-md}) and (max-width: @{screen-md-max})";
