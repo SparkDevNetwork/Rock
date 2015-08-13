@@ -191,6 +191,11 @@ namespace RockWeb.Blocks.Groups
 
                     if ( _inactiveStatus != null && groupMember.RecordStatusValueId == _inactiveStatus.Id )
                     {
+                        e.Row.AddCssClass( "person-inactive" );
+                    }
+
+                    if ( _inactiveStatus != null && groupMember.GroupMemberStatus == GroupMemberStatus.Inactive )
+                    {
                         e.Row.AddCssClass( "inactive" );
                     }
                 }
