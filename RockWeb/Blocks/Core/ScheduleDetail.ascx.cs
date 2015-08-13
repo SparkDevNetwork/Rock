@@ -136,6 +136,7 @@ namespace RockWeb.Blocks.Core
 
             var qryParams = new Dictionary<string, string>();
             qryParams["ScheduleId"] = schedule.Id.ToString();
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
             NavigateToPage( RockPage.Guid, qryParams );
         }
 
@@ -206,6 +207,7 @@ namespace RockWeb.Blocks.Core
                         qryParams["CategoryId"] = categoryId.ToString();
                     }
 
+                    qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
             }
