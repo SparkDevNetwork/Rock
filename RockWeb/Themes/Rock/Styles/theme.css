@@ -706,7 +706,7 @@ Copyright (c) 2012 Dan Eden*/
 }
 .modal-backdrop,
 .modal-backdrop.fade.in {
-  opacity: 0.7;
+  opacity: 0.4;
   filter: alpha(opacity=70);
   background: #ffffff;
 }
@@ -1051,7 +1051,7 @@ td.wrap-contents {
   border-color: #cdc5ba;
 }
 .grid-paging .pagination li.active > a {
-  background-color: #ffffff;
+  background-color: #f8f6f5;
 }
 .grid-paging .grid-pager {
   float: right;
@@ -1388,7 +1388,7 @@ tr.row-highlight td {
 */
 .panel-note {
   border-color: #d8d1c8;
-  border-top-color: #cdc5ba;
+  border-top-color: #c2b8a7;
 }
 .panel-note > .panel-heading {
   color: #6a6a6a;
@@ -3091,7 +3091,7 @@ ul.rocktree ul {
 .rocktree .rocktree-name:hover,
 .rocktree span:hover,
 .rocktree span:hover a {
-  background: #bbdd8d;
+  background: #9d9d9d;
   color: #ffffff;
 }
 .rocktree .selected,
@@ -4148,11 +4148,11 @@ ul.rocklist .rocklist-item .file-name {
   display: block;
 }
 ul.rocklist .rocklist-item:hover {
-  background: #bbdd8d;
+  background: #9d9d9d;
   color: #ffffff;
 }
 ul.rocklist .rocklist-item.selected {
-  background: #bbdd8d;
+  background: #9d9d9d;
   color: #ffffff;
 }
 .twitter-typeahead .tt-query,
@@ -4433,7 +4433,7 @@ ul.list-group-panel .list-group-item:first-child,
 }
 .panel-follow-status.following {
   opacity: 1;
-  background-color: #cdc5ba;
+  background-color: #c2b8a7;
   color: #fff;
 }
 .panel-follow-status.following:before {
@@ -5329,7 +5329,7 @@ a.help {
 }
 .panel-persondetails {
   border-color: #d8d1c8;
-  border-top-color: #cdc5ba;
+  border-top-color: #c2b8a7;
 }
 .panel-persondetails > .panel-heading {
   color: #6a6a6a;
@@ -5381,7 +5381,7 @@ a.help {
 }
 .panel-block {
   border-color: #d8d1c8;
-  border-top-color: #cdc5ba;
+  border-top-color: #c2b8a7;
 }
 .panel-block > .panel-heading {
   color: #6a6a6a;
@@ -6033,7 +6033,7 @@ h4,
   background-color: #ee7624;
 }
 .panel-info {
-  border-top-color: #cdc5ba;
+  border-top-color: #c2b8a7;
 }
 .panel-info .panel-body {
   background-color: #edeae6;

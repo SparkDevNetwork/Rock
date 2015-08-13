@@ -203,9 +203,11 @@ namespace Rock.Jobs
                 }
 
                 // send out notificatons
+                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
                 var recipients = new List<RecipientData>();
 
-                foreach ( var recipientId in _notificationList.GroupBy( p => p.Person.Id ) )
+                var notificationRecipients = _notificationList.GroupBy( p => p.Person.Id ).ToList();
+                foreach ( var recipientId in notificationRecipients )
                 {
                     var recipient = _notificationList.Where( n => n.Person.Id == recipientId.Key ).Select( n => n.Person ).FirstOrDefault();
 
@@ -217,13 +219,18 @@ namespace Rock.Jobs
                                                     .Select( n => n.GroupId )
                                                     .ToList();
 
-                    mergeFields.Add( "GroupsMissingRequirements", _groupsMissingRequriements.Where( g => notificationGroupIds.Contains( g.Id ) ) );
+                    var missingRequirements = _groupsMissingRequriements.Where( g => notificationGroupIds.Contains( g.Id ) ).ToList();
+
+                    mergeFields.Add( "GroupsMissingRequirements", missingRequirements );
 
                     var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
                     globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
 
                     recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
+                    Email.Send( systemEmailGuid.Value, recipients, appRoot );
+
+                    recipients.Clear();
                 }
 
                 // add accountability group members
@@ -245,8 +252,6 @@ namespace Rock.Jobs
                     }
                 }
 
-
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
                 Email.Send( systemEmailGuid.Value, recipients, appRoot );
 
             }
