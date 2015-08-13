@@ -5447,11 +5447,11 @@ a.help {
   }
 }
 .panel-analytics .filter-options {
-  background-color: #eeeeee;
+  background-color: #f5f9fc;
 }
 .panel-analytics .analysis-types {
   padding: 15px 0;
-  background-color: #eeeeee;
+  background-color: #f5f9fc;
   margin-bottom: 15px;
 }
 .btn.aspNetDisabled {
