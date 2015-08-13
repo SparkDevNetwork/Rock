@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -44,7 +43,6 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Add Business Link", "Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked" )]
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
-
         #region Properties
 
         /// <summary>
@@ -105,7 +103,7 @@ namespace RockWeb.Blocks.Finance
                 _focusControl.Focus();
             }
 
-            //btnNext.AccessKey = new string(new char[] { (char)39 });
+            //// btnNext.AccessKey = new string(new char[] { (char)39 });
 
             base.OnPreRender( e );
         }
@@ -326,9 +324,10 @@ namespace RockWeb.Blocks.Finance
 
                     ddlIndividual.Items.Clear();
                     ddlIndividual.Items.Add( new ListItem( null, null ) );
+
                     // clear any previously shown badges
                     ddlIndividual.Attributes.Remove( "disabled" );
-                    badgeIndividualCount.InnerText = "";
+                    badgeIndividualCount.InnerText = string.Empty;
 
                     // if this transaction has a CheckMicrParts, try to find matching person(s)
                     string checkMicrHashed = null;
@@ -463,13 +462,15 @@ namespace RockWeb.Blocks.Finance
                 int matchedRemainingCount = qryTransactionCount.Count( a => a.AuthorizedPersonAliasId != null && a.Id != currentTranId );
                 int totalBatchItemCount = qryTransactionCount.Count();
 
-                int percentComplete = (int)Math.Round( (double)(100 * matchedRemainingCount) / totalBatchItemCount );
+                int percentComplete = (int)Math.Round( (double)( 100 * matchedRemainingCount ) / totalBatchItemCount );
 
-                lProgressBar.Text = String.Format( @"<div class='progress'>
-                    <div class='progress-bar progress-bar-info' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%;'>
-                        {0}%
-                    </div>
-                </div>", percentComplete);
+                lProgressBar.Text = string.Format(
+                        @"<div class='progress'>
+                            <div class='progress-bar progress-bar-info' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%;'>
+                                {0}%
+                            </div>
+                        </div>",
+                       percentComplete );
 
                 hfBackNextHistory.Value = historyList.AsDelimited( "," );
 
@@ -604,8 +605,7 @@ namespace RockWeb.Blocks.Finance
                     string.Format( "Transaction Id: {0}", financialTransaction.Id ),
                     typeof( FinancialTransaction ),
                     financialTransaction.Id,
-                    false
-                );
+                    false );
 
                 rockContext.SaveChanges();
 
@@ -616,11 +616,6 @@ namespace RockWeb.Blocks.Finance
             // if the transaction is matched to somebody, attempt to save it.  Otherwise, if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction
             if ( financialTransaction != null && authorizedPersonId.HasValue )
             {
-                bool requiresMicr = 
-                    financialTransaction.FinancialPaymentDetail != null &&
-                    financialTransaction.FinancialPaymentDetail.CurrencyTypeValue != null &&
-                    financialTransaction.FinancialPaymentDetail.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
-
                 if ( cbTotalAmount.Text.AsDecimalOrNull() == null )
                 {
                     nbSaveError.Text = "Total amount must be allocated to accounts.";
@@ -686,7 +681,6 @@ namespace RockWeb.Blocks.Finance
                         financialTransactionDetailService.Add( financialTransactionDetail );
 
                         History.EvaluateChange( changes, accountBox.Label, 0.0M.ToString( "C2" ), amount.Value.ToString( "C2" ) );
-
                     }
                 }
 
@@ -704,9 +698,8 @@ namespace RockWeb.Blocks.Finance
                     personAlias != null && personAlias.Person != null ? personAlias.Person.FullName : string.Format( "Transaction Id: {0}", financialTransaction.Id ),
                     typeof( FinancialTransaction ),
                     financialTransaction.Id,
-                    false
-                ); 
-                
+                    false );
+
                 rockContext.SaveChanges();
             }
             else
@@ -729,7 +722,7 @@ namespace RockWeb.Blocks.Finance
 
             LoadPersonPreview( personId );
 
-            if (personId.HasValue)
+            if ( personId.HasValue )
             {
                 // if a person was selected using the PersonDropDown, set the PersonPicker to unselected
                 ppSelectNew.SetValue( null );
@@ -750,7 +743,7 @@ namespace RockWeb.Blocks.Finance
                 LoadPersonPreview( ppSelectNew.PersonId.Value );
                 _focusControl = rptAccounts.ControlsOfTypeRecursive<Rock.Web.UI.Controls.CurrencyBox>().FirstOrDefault();
 
-                nbSaveError.Text = "";
+                nbSaveError.Text = string.Empty;
                 nbSaveError.Visible = false;
             }
         }
@@ -790,6 +783,5 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
-        
-}
+    }
 }
