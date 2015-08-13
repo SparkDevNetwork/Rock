@@ -5449,11 +5449,11 @@ a.help {
   }
 }
 .panel-analytics .filter-options {
-  background-color: #efefef;
+  background-color: #ecf0f1;
 }
 .panel-analytics .analysis-types {
   padding: 15px 0;
-  background-color: #efefef;
+  background-color: #ecf0f1;
   margin-bottom: 15px;
 }
 .btn.aspNetDisabled {
