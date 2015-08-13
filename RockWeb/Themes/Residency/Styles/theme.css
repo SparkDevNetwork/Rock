@@ -3255,12 +3255,12 @@ ul.rocktree ul {
   }
 }
 .nav > li.pill-help a {
-  color: inherit;
+  color: #428bca;
 }
 .nav > li.pill-help a:hover,
 .nav > li.pill-help a:focus {
   background-color: transparent;
-  color: inherit;
+  color: #428bca;
 }
 .well-pillwrap {
   background-color: transparent;
@@ -4605,10 +4605,10 @@ ul.list-group-panel .list-group-item:first-child,
 
   Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
 
-  1. Variables - specific variables for sizing classes and media query helpers
-  2. Colors - creates utility classes for each of the accent colors
-  3. Spacing - provides utility classes for spacing based off of the themes gutter widths
-  4. Even Height Columns - provides classes for making columns even heights
+  1. Colors - creates utility classes for each of the accent colors
+  2. Spacing - provides utility classes for spacing based off of the themes gutter widths
+  3. Even Height Columns - provides classes for making columns even heights
+  4. Breakpoint Specific Alignment - provides classes for alignment changes at specific breakpoints
 
 */
 .accent-color {
@@ -4964,6 +4964,50 @@ ul.list-group-panel .list-group-item:first-child,
     overflow: hidden;
   }
 }
+@media (max-width: 767px) {
+  .xs-text-center {
+    text-align: center;
+  }
+  .xs-text-left {
+    text-align: left;
+  }
+  .xs-text-right {
+    text-align: right;
+  }
+}
+@media (min-width: 768px) {
+  .sm-text-center {
+    text-align: center;
+  }
+  .sm-text-left {
+    text-align: left;
+  }
+  .sm-text-right {
+    text-align: right;
+  }
+}
+@media (min-width: 992px) {
+  .md-text-center {
+    text-align: center;
+  }
+  .md-text-left {
+    text-align: left;
+  }
+  .md-text-right {
+    text-align: right;
+  }
+}
+@media (min-width: 1200px) {
+  .lg-text-center {
+    text-align: center;
+  }
+  .lg-text-left {
+    text-align: left;
+  }
+  .lg-text-right {
+    text-align: right;
+  }
+}
 .cke_dialog_contents {
   background-color: #ffffff !important;
 }
@@ -5133,7 +5177,7 @@ a.help {
   margin-top: 0;
 }
 .nav-pills > li > a {
-  color: inherit;
+  color: #428bca;
 }
 .nav-pills > li > a:hover {
   color: #ecf0f3;

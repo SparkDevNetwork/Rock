@@ -8197,6 +8197,10 @@ button.close {
   }
 }
 /*
+    The accent colors are deprecated and should not be used in new theme development. They will be
+    removed in Rock v 6.0.
+*/
+/*
   Used to style the check-in screens
 
   1. Check-in specific variables
@@ -8888,10 +8892,6 @@ Copyright (c) 2012 Dan Eden*/
   color: #ffffff;
   text-align: left;
 }
-.modal-content.rock-modal .modal-body .nav-pills,
-.rock-modal .modal-content .modal-body .nav-pills {
-  margin: 6px 0 18px;
-}
 .modal-content.rock-modal .modal-body > .scroll-container,
 .rock-modal .modal-content .modal-body > .scroll-container {
   width: 720px;
@@ -8948,10 +8948,10 @@ Copyright (c) 2012 Dan Eden*/
 
   Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
 
-  1. Variables - specific variables for sizing classes and media query helpers
-  2. Colors - creates utility classes for each of the accent colors
-  3. Spacing - provides utility classes for spacing based off of the themes gutter widths
-  4. Even Height Columns - provides classes for making columns even heights
+  1. Colors - creates utility classes for each of the accent colors
+  2. Spacing - provides utility classes for spacing based off of the themes gutter widths
+  3. Even Height Columns - provides classes for making columns even heights
+  4. Breakpoint Specific Alignment - provides classes for alignment changes at specific breakpoints
 
 */
 .accent-color {
@@ -8989,6 +8989,73 @@ Copyright (c) 2012 Dan Eden*/
   background-color: #e2231a;
   color: #ffffff;
   border: 1px solid #b41c15;
+}
+.primary-color {
+  background-color: #e2231a;
+  color: #ffffff;
+}
+.theme-color-1 {
+  background-color: #428bca;
+  color: #ffffff;
+}
+.theme-color-1-bordered {
+  background-color: #428bca;
+  color: #ffffff;
+  border: 1px solid #3071a9;
+}
+.theme-color-2 {
+  background-color: #222222;
+  color: #d5d5d5;
+}
+.theme-color-2-bordered {
+  background-color: #222222;
+  color: #d5d5d5;
+  border: 1px solid #090909;
+}
+.theme-color-3 {
+  background-color: #92bce0;
+  color: #142f46;
+}
+.theme-color-3-bordered {
+  background-color: #92bce0;
+  color: #142f46;
+  border: 1px solid #6aa3d5;
+}
+.theme-color-4 {
+  background-color: #b9d4ec;
+  color: #245682;
+}
+.theme-color-4-bordered {
+  background-color: #b9d4ec;
+  color: #245682;
+  border: 1px solid #92bce0;
+}
+.theme-color-5 {
+  background-color: #e1edf7;
+  color: #357ebd;
+}
+.theme-color-5-bordered {
+  background-color: #e1edf7;
+  color: #357ebd;
+  border: 1px solid #b9d4ec;
+}
+.theme-color-6 {
+  background-color: #f5f9fc;
+  color: #5697d0;
+}
+.theme-color-6-bordered {
+  background-color: #f5f9fc;
+  color: #5697d0;
+  border: 1px solid #cde1f1;
+}
+.theme-color-7 {
+  background-color: #adca42;
+  color: #ffffff;
+}
+.theme-color-7-bordered {
+  background-color: #adca42;
+  color: #ffffff;
+  border: 1px solid #8fa930;
 }
 .bg-color {
   background-color: #ffffff;
@@ -9238,6 +9305,50 @@ Copyright (c) 2012 Dan Eden*/
     display: -ms-flexbox;
     display: flex;
     overflow: hidden;
+  }
+}
+@media (max-width: 767px) {
+  .xs-text-center {
+    text-align: center;
+  }
+  .xs-text-left {
+    text-align: left;
+  }
+  .xs-text-right {
+    text-align: right;
+  }
+}
+@media (min-width: 768px) {
+  .sm-text-center {
+    text-align: center;
+  }
+  .sm-text-left {
+    text-align: left;
+  }
+  .sm-text-right {
+    text-align: right;
+  }
+}
+@media (min-width: 992px) {
+  .md-text-center {
+    text-align: center;
+  }
+  .md-text-left {
+    text-align: left;
+  }
+  .md-text-right {
+    text-align: right;
+  }
+}
+@media (min-width: 1200px) {
+  .lg-text-center {
+    text-align: center;
+  }
+  .lg-text-left {
+    text-align: left;
+  }
+  .lg-text-right {
+    text-align: right;
   }
 }
 @font-face {

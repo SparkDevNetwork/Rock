@@ -1252,7 +1252,7 @@ tr.row-highlight td {
 }
 .lava-debug code {
   background-color: #c4e3f3;
-  color: #3a87ad;
+  color: #31708f;
 }
 .lava-debug p {
   margin-bottom: 10px;
@@ -1269,7 +1269,7 @@ tr.row-highlight td {
 }
 .lava-debug .panel.panel-lavadebug .panel-heading {
   background-color: #cce7f4;
-  color: #3a87ad;
+  color: #31708f;
   border: 0;
   cursor: pointer;
 }
@@ -1459,16 +1459,16 @@ tr.row-highlight td {
 }
 .panel-note article.highlight {
   background-color: #f2dede;
-  border: 1px solid #eed3d7;
-  color: #b94a48;
+  border: 1px solid #ebccd1;
+  color: #a94442;
 }
 .panel-note article.highlight a {
-  color: #b94a48;
+  color: #a94442;
 }
 .panel-note article.personal {
   background-color: #d9edf7;
   border: 1px solid #bce8f1;
-  color: #3a87ad;
+  color: #31708f;
 }
 .panel-note article > img {
   float: left;
@@ -1485,40 +1485,40 @@ tr.row-highlight td {
 .note-deny article,
 .note-danger article,
 .note-security article {
-  border-color: #eed3d7;
+  border-color: #ebccd1;
   background-color: #f2dede;
-  color: #b94a48;
+  color: #a94442;
 }
 .note-deny .actions a,
 .note-danger .actions a,
 .note-security .actions a {
-  color: #b94a48;
+  color: #a94442;
 }
 .note-approve article,
 .note-success article {
   border-color: #d6e9c6;
   background-color: #dff0d8;
-  color: #468847;
+  color: #3c763d;
 }
 .note-approve .actions a,
 .note-success .actions a {
-  color: #468847;
+  color: #3c763d;
 }
 .note-info article {
   border-color: #bce8f1;
   background-color: #d9edf7;
-  color: #3a87ad;
+  color: #31708f;
 }
 .note-info .actions a {
-  color: #3a87ad;
+  color: #31708f;
 }
 .note-warning article {
-  border-color: #fbeed5;
+  border-color: #faebcc;
   background-color: #fcf8e3;
-  color: #c09853;
+  color: #8a6d3b;
 }
 .note-warning .actions a {
-  color: #c09853;
+  color: #8a6d3b;
 }
 .panel-note-light {
   border: 0;
@@ -1654,14 +1654,14 @@ tr.row-highlight td {
   text-decoration: none;
 }
 .panel.workflow-activity.activated-with-workflow {
-  border-color: #468847;
+  border-color: #3c763d;
 }
 .panel.workflow-activity.activated-with-workflow > .panel-heading {
   background-color: #dff0d8;
-  color: #468847;
+  color: #3c763d;
 }
 .panel.workflow-activity.activated-with-workflow > .panel-heading a.btn-link {
-  color: #468847;
+  color: #3c763d;
 }
 .panel.workflow-activity .panel-title:before {
   content: "\f1b3";
@@ -2716,7 +2716,7 @@ iframe.email-body {
 .calendar-month .calendar-today,
 .calendar-month .calendar-selecteditem {
   background-color: #d9edf7 !important;
-  color: #3a87ad !important;
+  color: #31708f !important;
   border-radius: 0;
 }
 .calendar-month .calendar-selecteditem:first-child {
@@ -3255,12 +3255,12 @@ ul.rocktree ul {
   }
 }
 .nav > li.pill-help a {
-  color: inherit;
+  color: #7a1315;
 }
 .nav > li.pill-help a:hover,
 .nav > li.pill-help a:focus {
   background-color: transparent;
-  color: inherit;
+  color: #7a1315;
 }
 .well-pillwrap {
   background-color: transparent;
@@ -4093,23 +4093,23 @@ fieldset .actions {
 }
 .well-message.well-message-info {
   background-color: #d9edf7;
-  color: #3a87ad;
+  color: #31708f;
   border-color: #bce8f1;
 }
 .well-message.well-message-success {
   background-color: #dff0d8;
-  color: #468847;
+  color: #3c763d;
   border-color: #d6e9c6;
 }
 .well-message.well-message-danger {
   background-color: #f2dede;
-  color: #b94a48;
-  border-color: #eed3d7;
+  color: #a94442;
+  border-color: #ebccd1;
 }
 .well-message.well-message-warning {
   background-color: #fcf8e3;
-  color: #c09853;
-  border-color: #fbeed5;
+  color: #8a6d3b;
+  border-color: #faebcc;
 }
 .loginstatus > li {
   min-width: 160px;
@@ -4472,7 +4472,7 @@ ul.list-group-panel .list-group-item:first-child,
 .error-details pre {
   background-color: transparent;
   border: 0;
-  color: #b94a48;
+  color: #a94442;
 }
 .rock-blank {
   background-color: #ffffff;
@@ -4605,10 +4605,10 @@ ul.list-group-panel .list-group-item:first-child,
 
   Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
 
-  1. Variables - specific variables for sizing classes and media query helpers
-  2. Colors - creates utility classes for each of the accent colors
-  3. Spacing - provides utility classes for spacing based off of the themes gutter widths
-  4. Even Height Columns - provides classes for making columns even heights
+  1. Colors - creates utility classes for each of the accent colors
+  2. Spacing - provides utility classes for spacing based off of the themes gutter widths
+  3. Even Height Columns - provides classes for making columns even heights
+  4. Breakpoint Specific Alignment - provides classes for alignment changes at specific breakpoints
 
 */
 .accent-color {
@@ -4964,6 +4964,50 @@ ul.list-group-panel .list-group-item:first-child,
     overflow: hidden;
   }
 }
+@media (max-width: 767px) {
+  .xs-text-center {
+    text-align: center;
+  }
+  .xs-text-left {
+    text-align: left;
+  }
+  .xs-text-right {
+    text-align: right;
+  }
+}
+@media (min-width: 768px) {
+  .sm-text-center {
+    text-align: center;
+  }
+  .sm-text-left {
+    text-align: left;
+  }
+  .sm-text-right {
+    text-align: right;
+  }
+}
+@media (min-width: 992px) {
+  .md-text-center {
+    text-align: center;
+  }
+  .md-text-left {
+    text-align: left;
+  }
+  .md-text-right {
+    text-align: right;
+  }
+}
+@media (min-width: 1200px) {
+  .lg-text-center {
+    text-align: center;
+  }
+  .lg-text-left {
+    text-align: left;
+  }
+  .lg-text-right {
+    text-align: right;
+  }
+}
 .cke_dialog_contents {
   background-color: #ffffff !important;
 }
@@ -5110,7 +5154,7 @@ a.cke_dialog_ui_button_ok:active {
   font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
   padding: 2px 4px;
   font-size: 90%;
-  color: #3a87ad;
+  color: #31708f;
   background-color: #d9edf7;
   white-space: nowrap;
   border-radius: 4px;
@@ -5133,7 +5177,7 @@ a.help {
   margin-top: 0;
 }
 .nav-pills > li > a {
-  color: inherit;
+  color: #7a1315;
 }
 .nav-pills > li > a:hover {
   color: #ffffff;
@@ -5567,28 +5611,28 @@ fieldset[disabled] .btn-authenication.active {
   background-color: transparent;
 }
 .alert-success a {
-  color: #468847;
+  color: #3c763d;
   border-bottom: none;
 }
 .alert-success a.help {
   border-bottom: 0;
 }
 .alert-info a {
-  color: #3a87ad;
+  color: #31708f;
   border-bottom: none;
 }
 .alert-info a.help {
   border-bottom: 0;
 }
 .alert-warning a {
-  color: #c09853;
+  color: #8a6d3b;
   border-bottom: none;
 }
 .alert-warning a.help {
   border-bottom: 0;
 }
 .alert-danger a {
-  color: #b94a48;
+  color: #a94442;
   border-bottom: none;
 }
 .alert-danger a.help {

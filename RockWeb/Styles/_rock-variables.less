@@ -65,12 +65,6 @@
 @pagetitle-bg: @theme-4;          // The background color of the page title section.
 @pagetitle-text-color: @theme-4-text;  // The text color of the page title section.
 
-//// Breadcrumbs
-@breadcrumb-bg:               @theme-4;
-@breadcrumb-color:            lighten(@theme-4-text, 30%);
-@breadcrumb-active-color:     @breadcrumb-color;
-@breadcrumb-separator:        ">";
-
 //// Footer
 @footer-bg: @header-bg;             // The background color of the footer.
 @footer-color: @header-text-color;  // The text color of the footer.
@@ -220,7 +214,7 @@
 @tooltip-header-text-color: @theme-8-text;
 
 // Pills
-@nav-pills-link-color: inherit;  // The color of the none active pill link.
+@nav-pills-link-color: @link-color;  // The color of the none active pill link.
 //--
 @nav-pills-container-bg:                transparent; // the background color for the well-pillwrap class used on the security dialog, communication mediums and template details.
 @nav-pills-container-border:            transparent; // The border color of the well-pillwrap classed used on the security dialog, communication mediums and template details.
@@ -296,23 +290,6 @@
 @label-campus-bg: #83758f;               // Used for identifing campuses.
 @label-type-bg: @theme-8;  // Used for showing the 'type' of an idea. For instance on the group viewer this highlights the group's type.
 
-// Form States and Actions Colors
-@state-warning-text:             #c09853;
-@state-warning-bg:               #fcf8e3;
-@state-warning-border:           darken(spin(@state-warning-bg, -10), 3%);
-//--
-@state-danger-text:              #b94a48;
-@state-danger-bg:                #f2dede;
-@state-danger-border:            darken(spin(@state-danger-bg, -10), 3%);
-//--
-@state-success-text:             #468847;
-@state-success-bg:               #dff0d8;
-@state-success-border:           darken(spin(@state-success-bg, -10), 5%);
-//--
-@state-info-text:                #3a87ad;
-@state-info-bg:                  #d9edf7;
-@state-info-border:              darken(spin(@state-info-bg, -10), 7%);
-
 
 // Below Not in Rock Theme
 
@@ -335,3 +312,32 @@
 @alert-info-link-border-bottom:    1px dotted @alert-info-text;
 @alert-warning-link-border-bottom: 1px dotted @alert-warning-text;
 @alert-danger-link-border-bottom:  1px dotted @alert-danger-text;
+
+
+// Helper Variables
+// -------------------------
+
+// spacing multipliers / used to multiply by the grid-gutter-width to get spacing sizes
+@spacing-sm: 0.25;
+@spacing-md: 0.5;
+@spacing-lg: 1;
+@spacing-xl: 2;
+
+@spacing-sm-px: @grid-gutter-width * @spacing-sm;
+@spacing-md-px: @grid-gutter-width * @spacing-md;
+@spacing-lg-px: @grid-gutter-width * @spacing-lg;
+@spacing-xl-px: @grid-gutter-width * @spacing-xl;
+
+// Media queries
+// Example usage:
+// @media @sm {
+//   body {
+//     background: red;
+//   }
+// }
+@xs: ~"(min-width: @{screen-xs-min})";
+@sm: ~"(min-width: @{screen-sm-min})";
+@md: ~"(min-width: @{screen-md-min})";
+@lg: ~"(min-width: @{screen-lg-min})";
+@sm-only: ~"(min-width: @{screen-sm}) and (max-width: @{screen-sm-max})";
+@md-only: ~"(min-width: @{screen-md}) and (max-width: @{screen-md-max})";
