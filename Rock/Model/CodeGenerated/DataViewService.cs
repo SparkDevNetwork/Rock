@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
@@ -82,6 +83,57 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+
+        /// <summary>
+        /// Create a new non-persisted Data View using an existing Data View as a template. 
+        /// </summary>
+        /// <param name="dataViewId">The identifier of a Data View to use as a template for the new Data View.</param>
+        /// <returns></returns>
+        public DataView GetNewFromTemplate( int dataViewId )
+        {
+            var item = this.Queryable()
+                           .AsNoTracking()
+                           .Include( x => x.DataViewFilter )
+                           .FirstOrDefault( x => x.Id == dataViewId );
+
+            if ( item == null )
+            {
+                throw new Exception( string.Format( "GetNewFromTemplate method failed. Template Data View ID \"{0}\" could not be found.", dataViewId ) );
+            }
+
+            // Deep-clone the Data View and reset the properties that connect it to the permanent store.
+            var newItem = (DataView)( item.Clone( true ) );
+
+            newItem.Id = 0;
+            newItem.Guid = Guid.NewGuid();
+            newItem.ForeignId = null;
+
+            newItem.DataViewFilterId = 0;
+
+            this.ResetPermanentStoreIdentifiers( newItem.DataViewFilter );
+
+            return newItem;
+        }
+
+        /// <summary>
+        /// Reset all of the identifiers on a DataViewFilter that uniquely identify it in the permanent store.
+        /// </summary>
+        /// <param name="filter">The data view filter.</param>
+        private void ResetPermanentStoreIdentifiers( DataViewFilter filter )
+        {
+            if ( filter == null )
+                return;
+
+            filter.Id = 0;
+            filter.Guid = Guid.NewGuid();
+            filter.ForeignId = null;
+
+            // Recursively reset any contained filters.
+            foreach ( var childFilter in filter.ChildFilters )
+            {
+                this.ResetPermanentStoreIdentifiers( childFilter );
+            }
         }
     }
 
