@@ -25,7 +25,7 @@ using System.Text;
 namespace Rock.Net
 {
     /// <summary>
-    /// 
+    /// Used by 3rd Party Plugins
     /// </summary>
     public static class RockWebRequest
     {

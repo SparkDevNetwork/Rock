@@ -419,8 +419,8 @@ namespace RockWeb.Blocks.Finance
                 gCurrencyTypes.DataSource = batch.Transactions
                     .Select( t => new
                     {
-                        CurrencyId = t.CurrencyTypeValue != null ? t.CurrencyTypeValue.Id : 0,
-                        CurrencyName = t.CurrencyTypeValue != null ? t.CurrencyTypeValue.Value : "None",
+                        CurrencyId = t.FinancialPaymentDetail != null && t.FinancialPaymentDetail.CurrencyTypeValue != null ? t.FinancialPaymentDetail.CurrencyTypeValue.Id : 0,
+                        CurrencyName = t.FinancialPaymentDetail != null && t.FinancialPaymentDetail.CurrencyTypeValue != null ? t.FinancialPaymentDetail.CurrencyTypeValue.Value : "None",
                         TotalAmount = t.TotalAmount
                     } )
                     .GroupBy( c => new

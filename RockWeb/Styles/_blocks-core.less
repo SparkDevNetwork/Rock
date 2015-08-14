@@ -33,11 +33,12 @@
 
     article {
         border-radius: @border-radius-base;
-        border: 1px solid darken(@panel-default-heading-bg, @const-border-darken-amt);
+        border: 1px solid @state-info-border;
         padding: @spacing-md-px;
         margin-bottom: @spacing-md-px;
-        background-color: @panel-default-heading-bg;
+        background-color: @state-info-bg;
         position: relative;
+        color: @state-info-text;
 
         .date {
             font-size: 13px;

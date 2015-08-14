@@ -39,30 +39,37 @@
             <div class="scroller">
 
                 <div class="checkin-search-body">
-                <Rock:RockTextBox ID="tbPhone" MaxLength="10" CssClass="checkin-phone-entry" runat="server" Label="Phone Number" />
 
-                <div class="tenkey checkin-phone-keypad">
-                    <div>
-                        <a href="#" class="btn btn-default btn-lg digit">1</a>
-                        <a href="#" class="btn btn-default btn-lg digit">2</a>
-                        <a href="#" class="btn btn-default btn-lg digit">3</a>
+                <asp:Panel ID="pnlSearchPhone" runat="server">
+                    <Rock:RockTextBox ID="tbPhone" MaxLength="10" CssClass="checkin-phone-entry" runat="server" Label="Phone Number" />
+
+                    <div class="tenkey checkin-phone-keypad">
+                        <div>
+                            <a href="#" class="btn btn-default btn-lg digit">1</a>
+                            <a href="#" class="btn btn-default btn-lg digit">2</a>
+                            <a href="#" class="btn btn-default btn-lg digit">3</a>
+                        </div>
+                        <div>
+                            <a href="#" class="btn btn-default btn-lg digit">4</a>
+                            <a href="#" class="btn btn-default btn-lg digit">5</a>
+                            <a href="#" class="btn btn-default btn-lg digit">6</a>
+                        </div>
+                        <div>
+                            <a href="#" class="btn btn-default btn-lg digit">7</a>
+                            <a href="#" class="btn btn-default btn-lg digit">8</a>
+                            <a href="#" class="btn btn-default btn-lg digit">9</a>
+                        </div>
+                        <div>
+                            <a href="#" class="btn btn-default btn-lg command back">Back</a>
+                            <a href="#" class="btn btn-default btn-lg digit">0</a>
+                            <a href="#" class="btn btn-default btn-lg command clear">Clear</a>
+                        </div>
                     </div>
-                    <div>
-                        <a href="#" class="btn btn-default btn-lg digit">4</a>
-                        <a href="#" class="btn btn-default btn-lg digit">5</a>
-                        <a href="#" class="btn btn-default btn-lg digit">6</a>
-                    </div>
-                    <div>
-                        <a href="#" class="btn btn-default btn-lg digit">7</a>
-                        <a href="#" class="btn btn-default btn-lg digit">8</a>
-                        <a href="#" class="btn btn-default btn-lg digit">9</a>
-                    </div>
-                    <div>
-                        <a href="#" class="btn btn-default btn-lg command back">Back</a>
-                        <a href="#" class="btn btn-default btn-lg digit">0</a>
-                        <a href="#" class="btn btn-default btn-lg command clear">Clear</a>
-                    </div>
-                </div>
+                </asp:Panel>
+
+                <asp:Panel ID="pnlSearchName" runat="server">
+                    <Rock:RockTextBox ID="txtName" runat="server" Label="Name" CssClass="namesearch" />
+                </asp:Panel>
 
                 <div class="checkin-actions">
                     <Rock:BootstrapButton CssClass="btn btn-primary" ID="lbSearch" runat="server" OnClick="lbSearch_Click" Text="Search" DataLoadingText="Searching..." ></Rock:BootstrapButton>

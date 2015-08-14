@@ -140,6 +140,7 @@
     <Compile Include="Controllers\CodeGenerated\EventItemOccurrencesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EventItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialGatewaysController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialPaymentDetailsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMemberRequirementsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMemberWorkflowTriggersController.cs" />

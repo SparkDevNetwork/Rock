@@ -931,7 +931,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static int? GetAge( DateTime? birthDate)
         {
-            if ( birthDate.HasValue )
+            if ( birthDate.HasValue && birthDate.Value.Year != DateTime.MinValue.Year )
             {
                 DateTime today = RockDateTime.Today;
                 int age = today.Year - birthDate.Value.Year;

@@ -47,15 +47,42 @@ namespace Rock.Rest.Controllers
         public HttpResponseMessage PostScanned( [FromBody]FinancialTransactionScannedCheck financialTransactionScannedCheck )
         {
             FinancialTransaction financialTransaction = financialTransactionScannedCheck.FinancialTransaction;
-            financialTransaction.CheckMicrEncrypted = Encryption.EncryptString( financialTransactionScannedCheck.ScannedCheckMicr );
-            financialTransaction.CheckMicrHash = Encryption.GetSHA1Hash( financialTransactionScannedCheck.ScannedCheckMicr );
+            financialTransaction.CheckMicrEncrypted = Encryption.EncryptString( financialTransactionScannedCheck.ScannedCheckMicrData );
+
+            // note: BadMicr scans don't get checked for duplicates, but just in case, make sure that CheckMicrHash isn't set if this has a bad MICR read
+            if ( financialTransaction.MICRStatus != MICRStatus.Fail )
+            {
+                financialTransaction.CheckMicrHash = Encryption.GetSHA1Hash( financialTransactionScannedCheck.ScannedCheckMicrData );
+            }
+
+            financialTransaction.CheckMicrParts = Encryption.EncryptString( financialTransactionScannedCheck.ScannedCheckMicrParts );
             return this.Post( financialTransaction );
         }
 
         /// <summary>
-        /// Returns true if a transaction with the same routing number, accountnumber and checknumber is already in the database
+        /// Posts the specified value.
         /// </summary>
-        /// <param name="scannedCheckMicr">The scanned check micr in the format {RoutingNumber}_{AccountNumber}_{CheckNumber}</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override HttpResponseMessage Post( FinancialTransaction value )
+        {
+            if ( !value.FinancialPaymentDetailId.HasValue )
+            {
+                //// manually enforce that FinancialPaymentDetailId has a value so that Pre-V4 check 
+                //// scanners (that don't know about the new FinancialPaymentDetailId) can't post
+                return ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    "FinancialPaymentDetailId cannot be null"
+                     );
+            }
+
+            return base.Post( value );
+        }
+
+        /// <summary>
+        /// Returns true if a transaction with the same MICR track data is already in the database
+        /// </summary>
+        /// <param name="scannedCheckMicr">The scanned check micr track data</param>
         /// <returns></returns>
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/AlreadyScanned" )]
@@ -76,7 +103,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetContributionPersonGroupAddress" )]
-        public DataSet GetContributionPersonGroupAddress( [FromBody]Rock.Net.RestParameters.ContributionStatementOptions options )
+        public DataSet GetContributionPersonGroupAddress( [FromBody]ContributionStatementOptions options )
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add( "startDate", options.StartDate );
@@ -136,7 +163,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetContributionTransactions/{groupId}" )]
-        public DataSet GetContributionTransactions( int groupId, [FromBody]Rock.Net.RestParameters.ContributionStatementOptions options )
+        public DataSet GetContributionTransactions( int groupId, [FromBody]ContributionStatementOptions options )
         {
             return GetContributionTransactions( groupId, null, options );
         }
@@ -152,7 +179,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetContributionTransactions/{groupId}/{personId}" )]
-        public DataSet GetContributionTransactions( int groupId, int? personId, [FromBody]Rock.Net.RestParameters.ContributionStatementOptions options )
+        public DataSet GetContributionTransactions( int groupId, int? personId, [FromBody]ContributionStatementOptions options )
         {
             var qry = Get()
                 .Where( a => a.TransactionDateTime >= options.StartDate )
@@ -180,7 +207,7 @@ namespace Rock.Rest.Controllers
             var selectQry = qry.Select( a => new
             {
                 a.TransactionDateTime,
-                CurrencyTypeValueName = a.CurrencyTypeValue.Value,
+                CurrencyTypeValueName = a.FinancialPaymentDetail != null ? a.FinancialPaymentDetail.CurrencyTypeValue.Value : "",
                 a.Summary,
                 Details = a.TransactionDetails.Select( d => new
                 {
@@ -239,5 +266,58 @@ namespace Rock.Rest.Controllers
             return dataSet;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public class ContributionStatementOptions
+        {
+            /// <summary>
+            /// Gets or sets the start date.
+            /// </summary>
+            /// <value>
+            /// The start date.
+            /// </value>
+            public DateTime StartDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the end date.
+            /// </summary>
+            /// <value>
+            /// The end date.
+            /// </value>
+            public DateTime? EndDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the account ids.
+            /// </summary>
+            /// <value>
+            /// The account ids.
+            /// </value>
+            public List<int> AccountIds { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person id.
+            /// </summary>
+            /// <value>
+            /// The person id.
+            /// </value>
+            public int? PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [include individuals with no address].
+            /// </summary>
+            /// <value>
+            /// <c>true</c> if [include individuals with no address]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludeIndividualsWithNoAddress { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [order by postal code].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [order by postal code]; otherwise, <c>false</c>.
+            /// </value>
+            public bool OrderByPostalCode { get; set; }
+        }
     }
 }

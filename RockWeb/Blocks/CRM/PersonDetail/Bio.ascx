@@ -16,32 +16,7 @@
         </div>
 
         <div class="row">
-            <div class="col-sm-6">
-                <h1 class="title name">
-                    <asp:Literal ID="lName" runat="server" /></h1>
-            </div>
-            <div class="col-sm-6 labels">
-
-                <Rock:PersonProfileBadgeList ID="blStatus" runat="server" />
-
-                <ul id="ulActions" runat="server" class="nav pull-right">
-                    <li class="dropdown">
-                        <a class="persondetails-actions dropdown-toggle" data-toggle="dropdown" href="#" tabindex="0">
-                            <i class="fa fa-cog"></i>
-                            <span>Actions</span>
-                            <b class="caret"></b>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-right">
-                            <asp:Literal ID="lActions" runat="server" />
-                        </ul>
-                    </li>
-                </ul>
-
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-sm-4">
+            <div class="col-sm-3 xs-text-center">
                 <div class="photo">
                     <asp:Literal ID="lImage" runat="server" />
                     <asp:Panel ID="pnlFollow" runat="server" CssClass="following-status"><i class="fa fa-star"></i></asp:Panel>
@@ -53,47 +28,56 @@
                         </ItemTemplate>
                     </asp:Repeater>
                 </ul>
+
+                <ul id="ulActions" runat="server" class="nav">
+                    <li class="dropdown">
+                        <a class="persondetails-actions dropdown-toggle" data-toggle="dropdown" href="#" tabindex="0">
+                            <i class="fa fa-cog"></i>
+                            <span>Actions</span>
+                            <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-left">
+                            <asp:Literal ID="lActions" runat="server" />
+                        </ul>
+                    </li>
+                </ul>
             </div>
+            <div class="col-sm-9 xs-text-center">
 
+                <h1 class="title name"><asp:Literal ID="lName" runat="server" /></h1>
 
+                <Rock:PersonProfileBadgeList ID="blStatus" runat="server" />
 
-            <div class="col-sm-8">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="summary">
-                            <Rock:TagList ID="taglPersonTags" runat="server" CssClass="clearfix" />
-                            <div class="demographics">
-                                <asp:Literal ID="lAge" runat="server" />
-                                <asp:Literal ID="lGender" runat="server" /><br />
-                                <asp:Literal ID="lMaritalStatus" runat="server" />
-                                <asp:Literal ID="lAnniversary" runat="server" /><br />
-                                <asp:Literal ID="lGrade" runat="server" />
-                                <asp:Literal ID="lGraduation" runat="server" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="personcontact">
-
-                            <ul class="list-unstyled phonenumbers">
-                                <asp:Repeater ID="rptPhones" runat="server">
-                                    <ItemTemplate>
-                                        <li data-value="<%# Eval("Number") %>"><%# FormatPhoneNumber( (bool)Eval("IsUnlisted"), Eval("CountryCode"), Eval("Number"), (int)Eval("NumberTypeValueId") ) %></li>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </ul>
-
-                            <div class="email">
-                                <asp:Literal ID="lEmail" runat="server" />
-                            </div>
-                        </div>
+                <div class="summary">
+                    <Rock:TagList ID="taglPersonTags" runat="server" CssClass="clearfix" />
+                    <div class="demographics">
+                        <asp:Literal ID="lAge" runat="server" />
+                        <asp:Literal ID="lGender" runat="server" /><br />
+                        <asp:Literal ID="lMaritalStatus" runat="server" />
+                        <asp:Literal ID="lAnniversary" runat="server" /><br />
+                        <asp:Literal ID="lGrade" runat="server" />
+                        <asp:Literal ID="lGraduation" runat="server" />
                     </div>
                 </div>
+
+                <div class="personcontact">
+
+                    <ul class="list-unstyled phonenumbers">
+                        <asp:Repeater ID="rptPhones" runat="server">
+                            <ItemTemplate>
+                                <li data-value="<%# Eval("Number") %>"><%# FormatPhoneNumber( (bool)Eval("IsUnlisted"), Eval("CountryCode"), Eval("Number"), (int)Eval("NumberTypeValueId") ) %></li>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </ul>
+
+                    <div class="email">
+                        <asp:Literal ID="lEmail" runat="server" />
+                    </div>
+                </div>
+
             </div>
-
-
         </div>
+
     </div>
 
 </asp:Panel>
