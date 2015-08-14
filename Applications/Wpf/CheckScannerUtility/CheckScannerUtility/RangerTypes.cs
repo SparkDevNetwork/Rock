@@ -16,223 +16,7 @@
 //
 namespace Rock.Apps.CheckScannerUtility
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum XportStates
-    {
-        TransportShutDown = 0,
-        TransportStartingUp = 1,
-        TransportChangeOptions = 2,
-        TransportEnablingOptions = 3,
-        TransportReadyToFeed = 4,
-        TransportFeeding = 5,
-        TransportExceptionInProgress = 6,
-        TransportShuttingDown = 7
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum FeedingStoppedReasons
-    {
-        FeedRequestFinished = 0,
-        MainHopperEmpty = 1,
-        MergeHopperEmpty = 2,
-        ManualDropEmpty = 3,
-        FeedStopRequested = 4,
-        ClearTrackRequested = 5,
-        BlackBandItemDetected = 6,
-        EndOfLogicalMicrofilmRoll = 7,
-        ExceptionDetected = 8
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQATestIDs
-    {
-        IQATest_UndersizeImage = 1,
-        IQATest_OversizeImage = 2,
-        IQATest_BelowMinCompressedSize = 3,
-        IQATest_AboveMaxCompressedSize = 4,
-        IQATest_FrontRearDimensionMismatch = 5,
-        IQATest_HorizontalStreaks = 6,
-        IQATest_ImageTooLight = 7,
-        IQATest_ImageTooDark = 8,
-        IQATest_CarbonStrip = 9,
-        IQATest_FramingError = 10,
-        IQATest_ExcessiveSkew = 11,
-        IQATest_TornEdges = 12,
-        IQATest_TornCorners = 13,
-        IQATest_SpotNoise = 14
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQATestStatus
-    {
-        IQATestStatus_NotTested = 0,
-        IQATestStatus_DefectPresent = 1,
-        IQATestStatus_DefectNotPresent = 2
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQAResults
-    {
-        IQAResult_TestResult = 1
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQAResults_UndersizeImage : int
-    {
-        UndersizeImage_ImageWidth = 2,
-        UndersizeImage_ImageHeight = 3
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQAResults_OversizeImage
-    {
-        OversizeImage_ImageWidth = 2,
-        OversizeImage_ImageHeight = 3
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQAResults_BelowMinCompressedSize
-    {
-        BelowMinCompressedSize_CompressedImageSize = 2,
-        BelowMinCompressedSize_ImageResolution = 3
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQAResults_AboveMaxCompressedSize
-    {
-        AboveMaxCompressedSize_CompressedImageSize = 2,
-        AboveMaxCompressedSize_ImageResolution = 3
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQAResults_FrontRearDimensionMismatch
-    {
-        FrontRearDimensionMismatch_WidthDifference = 2,
-        FrontRearDimensionMismatch_HeightDifference = 3
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQAResults_HorizontalStreaks
-    {
-        HorizontalStreaks_StreakCount = 2,
-        HorizontalStreaks_ThickestStreak = 3,
-        HorizontalStreaks_ThickestStreakLocation = 4
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQAResults_ImageTooLight
-    {
-        ImageTooLight_BitonalBlackPixelPercent = 2
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQAResults_ImageTooDark
-    {
-        ImageTooDark_BitonalBlackPixelPercent = 2
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQAResults_FramingError
-    {
-        FramingError_TopEdge = 2,
-        FramingError_LeftEdge = 3,
-        FramingError_BottomEdge = 4,
-        FramingError_RightEdge = 5
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQAResults_ExcessiveSkew
-    {
-        ExcessiveSkew_Angle = 2
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQAResults_TornEdges
-    {
-        TornEdges_LeftTearWidth = 2,
-        TornEdges_LeftTearHeight = 3,
-        TornEdges_BottomTearWidth = 4,
-        TornEdges_BottomTearHeight = 5,
-        TornEdges_RightTearWidth = 6,
-        TornEdges_RightTearHeight = 7,
-        TornEdges_TopTearWidth = 8,
-        TornEdges_TopTearHeight = 9
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQAResults_TornCorners
-    {
-        TornCorners_TopLeftTearWidth = 2,
-        TornCorners_TopLeftTearHeight = 3,
-        TornCorners_BottomLeftTearWidth = 4,
-        TornCorners_BottomLeftTearHeight = 5,
-        TornCorners_TopRightTearWidth = 6,
-        TornCorners_TopRightTearHeight = 7,
-        TornCorners_BottomRightTearWidth = 8,
-        TornCorners_BottomRightTearHeight = 9
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum IQAResults_SpotNoise
-    {
-        SpotNoise_AverageSpotNoiseCount = 2
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum Sides
-    {
-        TransportFront = 0,
-        TransportRear = 1,
-    };
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum ImageColorType
-    {
-        ImageColorTypeUnknown = -1,
-        ImageColorTypeBitonal = 0,
-        ImageColorTypeGrayscale = 1,
-        ImageColorTypeColor = 2
-    };
+    #region added types
 
     /// <summary>
     /// 
@@ -261,4 +45,193 @@ namespace Rock.Apps.CheckScannerUtility
         public const int FeedOne = 1;
     }
 
+    #endregion
+
+    // port of RangerConstants.h
+    #region port of RangerConstants.h
+
+    public enum RangerTransportStates
+    {
+        TransportUnknownState = -1,
+        TransportShutDown = 0,
+        TransportStartingUp = 1,
+        TransportChangeOptions = 2,
+        TransportEnablingOptions = 3,
+        TransportReadyToFeed = 4,
+        TransportFeeding = 5,
+        TransportExceptionInProgress = 6,
+        TransportShuttingDown = 7
+    };
+
+    public enum RangerOpStatus
+    {
+        OpStatusComplete = 0,
+        OpStatusIncomplete = 1,
+        OpStatusUnknown = 2
+    };
+
+    public enum RangerItemStates
+    {
+        RangerItemStateUnknown = 0,
+        RangerItemInProcess = 1,
+        RangerItemInPocket = 2,
+        RangerItemRejected = 3,
+        RangerItemDeleted = 4,
+        RangerItemHandPocketed = 5,
+    };
+
+    public enum RangerFeedSources
+    {
+        FeedSourceUnknown = -1,
+        FeedSourceMainHopper = 0,
+        FeedSourceMergeHopper = 1,
+        FeedSourceManualDrop = 2,
+        FeedSourceCardScanner = 3,
+        FeedSourceAlternateScanner = 4
+    };
+
+    public enum RangerFeedingStoppedReasons
+    {
+        UnknownFeedingStoppedReason = -1,
+        FeedRequestFinished = 0,
+        MainHopperEmpty = 1,
+        MergeHopperEmpty = 2,
+        ManualDropEmpty = 3,
+        FeedStopRequested = 4,
+        ClearTrackRequested = 5,
+        BlackBandItemDetected = 6,
+        EndOfLogicalMicrofilmRoll = 7,
+        ExceptionDetected = 8
+    };
+
+    public enum RangerCommonSymbols
+    {
+        RangerRejectSymbol = '!'
+    };
+
+    public enum RangerE13BMicrSymbols
+    {
+        E13B_AmountSymbol = 'b',
+        E13B_OnUsSymbol = 'c',
+        E13B_TransitSymbol = 'd',
+        E13B_DashSymbol = '-',
+        E13B_RejectSymbol = RangerCommonSymbols.RangerRejectSymbol
+    };
+
+    public enum RangerSides
+    {
+        TransportFront = 0,
+        TransportRear = 1
+    };
+
+    public enum RangerLocations
+    {
+        LocationUnknown = -1,
+        LocationUpstream = 0,
+        LocationDownstream = 1
+    };
+
+    public enum RangerBlipTypes
+    {
+        TransportNoBlip = 0,
+        TransportItemBlip = 1,
+        TransportBatchBlip = 2
+    };
+
+    public enum RangerFeedModes
+    {
+        TransportFeedModeNormal = 0,
+        TransportFeedModeReadAndKey = 1
+    };
+
+    public enum RangerImageColorTypes
+    {
+        ImageColorTypeUnknown = -1,
+        ImageColorTypeBitonal = 0,
+        ImageColorTypeGrayscale = 1,
+        ImageColorTypeColor = 2,
+        ImageColorTypeUltraviolet = 3,    //ImageColorUltraViolet will return the "Type" specified in TransportInfo or the first UltraVioletImage specified in TransportInfo (if multiple)
+        ImageColorTypeBitonalUV = 4,
+        ImageColorTypeGrayscaleUV = 5,
+    };
+
+    public enum RangerExceptionTypes
+    {
+        TransportExceptionUnknown = -1,
+        TransportExceptionNone = 0,
+        TransportExceptionJam = 1,
+        TransportExceptionLatePocket = 2,
+        TransportExceptionInternalSoftwareError = 3,
+        TransportExceptionPocketFull = 4,
+        TransportExceptionTransportOffLine = 5,
+        TransportExceptionImageSubsystemDead = 6,
+        TransportExceptionInitializationError = 7,
+        TransportExceptionItemsInTrack = 8,
+        TransportExceptionDeviceError = 9,
+        TransportExceptionFeedError = 10,
+        TransportExceptionPrinterError = 11,
+        TransportExceptionFeedButtonPressed = 12,
+        TransportExceptionWaitingForFeedButton = 13,
+        TransportExceptionEndOfMicrofilm = 14,
+        TransportExceptionMisfeed = 15,
+        TransportExceptionDogEar = 16,
+        TransportExceptionMediaEmpty = 17,
+        TransportExceptionPrinterInkCartridgeMissing = 18,
+        TransportExceptionPrinterInkOut = 19,
+        TransportExceptionPrinterInkLow = 20,
+        TransportExceptionEndorserInkCartridgeMissing = 21,
+        TransportExceptionEndorserInkOut = 22,
+        TransportExceptionEndorserInkLow = 23,
+        TransportExceptionCoverOpen = 24,
+        TransportExceptionEndorserError = 25,
+        TransportExceptionDoubleFeed = 26,
+        TransportExceptionEndorsementTooLong = 27,
+        TransportExceptionItemTooLong = 28,
+        TransportExceptionItemLengthError = 29
+    };
+
+    public enum RangerExceptionDevices
+    {
+        TransportExceptionDeviceUnknown = -1,
+        TransportExceptionDeviceNone = 0,
+        TransportExceptionDeviceTransport = 1,  //error not related to a specific device
+        TransportExceptionDeviceMainHopper = 2,
+        TransportExceptionDeviceMergeHopper = 3,
+        TransportExceptionDeviceManualDrop = 4,
+        TransportExceptionDeviceMicrReader = 5,
+        TransportExceptionDeviceOcrReader = 6,
+        TransportExceptionDeviceIcrReader = 7,
+        TransportExceptionDeviceViewWindow = 8,
+        TransportExceptionDeviceMicrEncoder = 9,
+        TransportExceptionDeviceMicrVerifier = 10,
+        TransportExceptionDeviceFrontEndorser = 11,
+        TransportExceptionDeviceRearEndorser = 12,
+        TransportExceptionDeviceFrontStamp = 13,
+        TransportExceptionDeviceRearStamp = 14,
+        TransportExceptionDeviceMicrofilmer = 15,
+        TransportExceptionDeviceFrontImageCamera = 16,
+        TransportExceptionDeviceRearImageCamera = 17,
+        TransportExceptionDeviceJournalPrinter = 18,
+        TransportExceptionDevicePocketPrinter = 19,
+        TransportExceptionDeviceImageFileSet = 20,
+        TransportExceptionDeviceImageCameraController = 21,
+        TransportExceptionDevicePocket = 22,
+    };
+
+    public enum RangerButtonTypes
+    {
+        ButtonType_Unknown = 0,
+        ButtonType_Start = 1,
+        ButtonType_Stop = 2,
+        ButtonType_StartStop = 3,
+    };
+
+    public enum RangerEndorseMode
+    {
+        EndorseModeOEM_Batch = 1,
+        EndorseModeCurrentItem = 2,
+        EndorseModeNextItem = 3,
+    };
+
+    #endregion
 }

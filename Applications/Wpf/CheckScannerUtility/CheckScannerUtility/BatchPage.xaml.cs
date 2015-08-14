@@ -218,25 +218,25 @@ namespace Rock.Apps.CheckScannerUtility
             string status = rangerScanner.GetTransportStateString().Replace( "Transport", string.Empty ).SplitCase();
             Color statusColor = Colors.Transparent;
 
-            XportStates xportState = (XportStates)e.currentState;
+            RangerTransportStates xportState = (RangerTransportStates)e.currentState;
 
             switch ( xportState )
             {
-                case XportStates.TransportReadyToFeed:
+                case RangerTransportStates.TransportReadyToFeed:
                     statusColor = Colors.LimeGreen;
                     btnScan.Content = "Scan";
                     break;
-                case XportStates.TransportShutDown:
+                case RangerTransportStates.TransportShutDown:
                     statusColor = Colors.Red;
                     break;
-                case XportStates.TransportFeeding:
+                case RangerTransportStates.TransportFeeding:
                     statusColor = Colors.Blue;
                     btnScan.Content = "Stop";
                     break;
-                case XportStates.TransportStartingUp:
+                case RangerTransportStates.TransportStartingUp:
                     statusColor = Colors.Yellow;
                     break;
-                case XportStates.TransportExceptionInProgress:
+                case RangerTransportStates.TransportExceptionInProgress:
                     statusColor = Colors.Black;
                     break;
                 default:
@@ -257,7 +257,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         private void rangerScanner_TransportChangeOptionsState( object sender, AxRANGERLib._DRangerEvents_TransportChangeOptionsStateEvent e )
         {
-            if ( e.previousState == (int)XportStates.TransportStartingUp )
+            if ( e.previousState == (int)RangerTransportStates.TransportStartingUp )
             {
                 // enable imaging
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedImaging", "True" );
@@ -278,11 +278,11 @@ namespace Rock.Apps.CheckScannerUtility
                 var rockConfig = RockConfig.Load();
                 switch ( rockConfig.ImageColorType )
                 {
-                    case ImageColorType.ImageColorTypeColor:
+                    case RangerImageColorTypes.ImageColorTypeColor:
                         rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage3", "True" );
                         rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage3", rockConfig.EnableRearImage.ToTrueFalse() );
                         break;
-                    case ImageColorType.ImageColorTypeGrayscale:
+                    case RangerImageColorTypes.ImageColorTypeGrayscale:
                         rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage2", "True" );
                         rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage2", rockConfig.EnableRearImage.ToTrueFalse() );
                         break;
@@ -424,7 +424,7 @@ namespace Rock.Apps.CheckScannerUtility
             this.shapeStatus.ToolTip = status;
             this.shapeStatus.Fill = new SolidColorBrush( statusColor );
 
-            ScanningPage.ShowScannerStatus( connected ? XportStates.TransportReadyToFeed : XportStates.TransportShutDown, statusColor, status );
+            ScanningPage.ShowScannerStatus( connected ? RangerTransportStates.TransportReadyToFeed : RangerTransportStates.TransportShutDown, statusColor, status );
         }
 
         /// <summary>
