@@ -1418,11 +1418,12 @@ tr.row-highlight td {
 }
 .panel-note article {
   border-radius: 4px;
-  border: 1px solid #dcdcdc;
+  border: 1px solid #bce8f1;
   padding: 15px;
   margin-bottom: 15px;
-  background-color: #f5f5f5;
+  background-color: #d9edf7;
   position: relative;
+  color: #3a87ad;
 }
 .panel-note article .date {
   font-size: 13px;
@@ -4375,7 +4376,7 @@ ul.list-group-panel .list-group-item:first-child,
   border-top: 4px solid #b1a48f;
 }
 .wizard-item.active .wizard-item-icon {
-  background-color: #bbdd8d;
+  background-color: #8cc63e;
   color: #ffffff;
 }
 .wizard-item.active .wizard-item-label {
@@ -4385,7 +4386,7 @@ ul.list-group-panel .list-group-item:first-child,
   border-top: 4px solid #b1a48f;
 }
 .wizard-item.complete .wizard-item-icon {
-  background-color: #bbdd8d;
+  background-color: #8cc63e;
   color: #e5e1da;
 }
 .wizard-item.complete .wizard-item-label {
@@ -5179,7 +5180,8 @@ a.help {
 .nav-pills > li > a {
   color: #6a6a6a;
 }
-.nav-pills > li > a:hover {
+.nav-pills > li > a:hover,
+.nav-pills > li > a:focus {
   color: #ffffff;
   background-color: #bbdd8d;
 }

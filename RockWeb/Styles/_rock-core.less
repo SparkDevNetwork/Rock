@@ -131,9 +131,10 @@ a.help {
         > a {
             color: @nav-pills-link-color;
 
-            &:hover {
-                color: @nav-pills-active-link-hover-color;
-                background-color: @nav-pills-active-link-hover-bg;
+            &:hover,
+            &:focus {
+                color: lighten(@nav-pills-active-link-hover-color, 20%);
+                background-color: lighten(@nav-pills-active-link-hover-bg, 20%);
             }
         }
     }

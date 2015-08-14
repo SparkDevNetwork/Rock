@@ -1418,11 +1418,12 @@ tr.row-highlight td {
 }
 .panel-note article {
   border-radius: 4px;
-  border: 1px solid #dcdcdc;
+  border: 1px solid #bce8f1;
   padding: 15px;
   margin-bottom: 15px;
-  background-color: #f5f5f5;
+  background-color: #d9edf7;
   position: relative;
+  color: #3a87ad;
 }
 .panel-note article .date {
   font-size: 13px;
@@ -5179,9 +5180,10 @@ a.help {
 .nav-pills > li > a {
   color: #428bca;
 }
-.nav-pills > li > a:hover {
+.nav-pills > li > a:hover,
+.nav-pills > li > a:focus {
   color: #ffffff;
-  background-color: #428bca;
+  background-color: #92bce0;
 }
 .form-right {
   text-align: right;
