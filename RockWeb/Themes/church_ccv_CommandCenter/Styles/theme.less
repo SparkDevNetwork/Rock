@@ -1,6 +1,7 @@
 ﻿
 // Load Master Styles
 // -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
 @import "../../../Styles/_rock-core.less";
 @import "../../../Styles/_rock-variables.less";
 @import "_variables.less";
@@ -13,7 +14,7 @@
     1. HTML Overrides
     2. Bootstrap Overides
     3. Theme Styling
-    4. Responsive Overrides 
+    4. Responsive Overrides
 
 */
 
@@ -60,7 +61,7 @@ h1 {
 	text-transform: uppercase;
     text-align: center;
     font-weight: @font-weight-bold;
-    
+
     .light {
         font-weight: @font-weight-light;
     }
@@ -91,7 +92,7 @@ h3 {
 
 
 .audio-toggle i:before {
-	content: "\f026"; 
+	content: "\f026";
 }
 
 .audio-toggle.enabled i:before {
@@ -107,7 +108,7 @@ h3 {
 }
 
 .fullscreen-toggle i:before {
-	content: "\f065"; 
+	content: "\f065";
 }
 
 
@@ -135,24 +136,24 @@ footer {
 
 
 
-// 4. Responsive Overrides 
+// 4. Responsive Overrides
 // -------------------------
 
 // default styling should be for phones 767px or less
 
 // Small devices (tablets, 768px and up)
 @media (min-width: @screen-sm-min) {
-    
+
 }
 
-// Medium devices (desktops, 992px and up) 
+// Medium devices (desktops, 992px and up)
 @media (min-width: @screen-md-min) {
     .container {
         width: 100%;
     }
 }
 
-// Large devices (large desktops, 1200px and up) 
+// Large devices (large desktops, 1200px and up)
 @media (min-width: @screen-lg-min) {
 
 }

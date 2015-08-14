@@ -1,6 +1,7 @@
 ﻿
 // Load Master Styles
 // -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
 @import "../../../Styles/_rock-core.less";
 @import "../../../Styles/_rock-variables.less";
 @import "_variables.less";
@@ -64,7 +65,7 @@
     1. HTML Overrides
     2. Bootstrap Overides
     3. Theme Styling
-    4. Responsive Overrides 
+    4. Responsive Overrides
 
 */
 
@@ -76,8 +77,8 @@ main {
 }
 
 
-// 2. Bootstrap Overrides 
-// ------------------------- 
+// 2. Bootstrap Overrides
+// -------------------------
 
 .navbar {
     position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013
@@ -94,11 +95,11 @@ a:hover i.fs
     text-decoration: none;
 }
 
-// 3. Theme Styling 
+// 3. Theme Styling
 // -------------------------
 
 header {
-    
+
     .navbar-inverse {
         background: #414141 url('../Assets/Images/header-background.png') no-repeat left center;
     }
@@ -161,9 +162,9 @@ footer {
 }
 
 #splash.error {
-    
+
     background-color: @gray-lighter;
-    
+
     #content {
         margin-top: 20px;
         background-color: @body-bg;
@@ -186,7 +187,7 @@ footer {
     }
 }
 
-// 4. Responsive Overrides 
+// 4. Responsive Overrides
 // -------------------------
 
 // default styling should be for phones 767px or less
@@ -198,12 +199,12 @@ footer {
     }
 }
 
-// Medium devices (desktops, 992px and up) 
+// Medium devices (desktops, 992px and up)
 @media (min-width: @screen-md-min) {
 
 }
 
-// Large devices (large desktops, 1200px and up) 
+// Large devices (large desktops, 1200px and up)
 @media (min-width: @screen-lg-min) {
 
 }
