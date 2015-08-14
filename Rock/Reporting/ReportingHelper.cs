@@ -192,39 +192,47 @@ namespace Rock.Reporting
                         DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
                         if ( selectComponent != null )
                         {
-                            DataControlField columnField = selectComponent.GetGridField( entityType, reportField.Selection ?? string.Empty );
-
-                            if ( columnField is BoundField )
+                            try
                             {
-                                ( columnField as BoundField ).DataField = string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, columnIndex );
-                                var customSortExpression = selectComponent.SortProperties( reportField.Selection ?? string.Empty);
-                                if ( customSortExpression != null )
+                                DataControlField columnField = selectComponent.GetGridField( entityType, reportField.Selection ?? string.Empty );
+
+                                if ( columnField is BoundField )
                                 {
-                                    if ( customSortExpression == string.Empty )
+                                    ( columnField as BoundField ).DataField = string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, columnIndex );
+                                    var customSortExpression = selectComponent.SortProperties( reportField.Selection ?? string.Empty );
+                                    if ( customSortExpression != null )
                                     {
-                                        // disable sorting if customSortExpression set to string.empty
-                                        columnField.SortExpression = string.Empty;
+                                        if ( customSortExpression == string.Empty )
+                                        {
+                                            // disable sorting if customSortExpression set to string.empty
+                                            columnField.SortExpression = string.Empty;
+                                        }
+                                        else
+                                        {
+                                            columnField.SortExpression = customSortExpression.Split( ',' ).Select( a => string.Format( "Sort_{0}_{1}", a, columnIndex ) ).ToList().AsDelimited( "," );
+                                        }
                                     }
                                     else
                                     {
-                                        columnField.SortExpression = customSortExpression.Split( ',' ).Select( a => string.Format( "Sort_{0}_{1}", a, columnIndex ) ).ToList().AsDelimited( "," );
+                                        // use default sorting if customSortExpression was null
+                                        columnField.SortExpression = ( columnField as BoundField ).DataField;
                                     }
                                 }
-                                else
+
+                                columnField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
+                                if ( !string.IsNullOrEmpty( columnField.SortExpression ) )
                                 {
-                                    // use default sorting if customSortExpression was null
-                                    columnField.SortExpression = ( columnField as BoundField ).DataField;
+                                    reportFieldSortExpressions.AddOrReplace( reportField.Guid, columnField.SortExpression );
                                 }
-                            }
 
-                            columnField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
-                            if ( !string.IsNullOrEmpty(columnField.SortExpression) )
+                                columnField.Visible = reportField.ShowInGrid;
+                                gReport.Columns.Add( columnField );
+                            }
+                            catch ( Exception ex )
                             {
-                                reportFieldSortExpressions.AddOrReplace( reportField.Guid, columnField.SortExpression );
+                                ExceptionLogService.LogException( ex, HttpContext.Current );
+                                errors.Add( string.Format( "{0} - {1}", selectComponent, ex.Message ) );
                             }
-
-                            columnField.Visible = reportField.ShowInGrid;
-                            gReport.Columns.Add( columnField );
                         }
                     }
                 }
@@ -278,7 +286,9 @@ namespace Rock.Reporting
                         }
                     }
 
-                    dynamic qry = report.GetQueryable( entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, databaseTimeoutSeconds ?? 180, out errors );
+                    var qryErrors = new List<string>();
+                    dynamic qry = report.GetQueryable( entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, databaseTimeoutSeconds ?? 180, out qryErrors );
+                    errors.AddRange( qryErrors );
                     gReport.SetLinqDataSource( qry );
                     gReport.DataBind();
                 }
@@ -383,11 +393,11 @@ namespace Rock.Reporting
         /// <returns></returns>
         private static DataViewFilter GetFilterFieldControl( FilterField filterField )
         {
-            if (filterField.ShowCheckbox && !filterField.CheckBoxChecked.GetValueOrDefault(true) )
+            if ( filterField.ShowCheckbox && !filterField.CheckBoxChecked.GetValueOrDefault( true ) )
             {
                 return null;
             }
-            
+
             DataViewFilter filter = new DataViewFilter();
             filter.Guid = filterField.DataViewFilterGuid;
             filter.ExpressionType = FilterExpressionType.Filter;
