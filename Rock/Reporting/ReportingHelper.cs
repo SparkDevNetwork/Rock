@@ -192,12 +192,12 @@ namespace Rock.Reporting
                         DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.DataSelectComponentEntityType.Name );
                         if ( selectComponent != null )
                         {
-                            DataControlField columnField = selectComponent.GetGridField( entityType, reportField.Selection );
+                            DataControlField columnField = selectComponent.GetGridField( entityType, reportField.Selection ?? string.Empty );
 
                             if ( columnField is BoundField )
                             {
                                 ( columnField as BoundField ).DataField = string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, columnIndex );
-                                var customSortExpression = selectComponent.SortProperties( reportField.Selection );
+                                var customSortExpression = selectComponent.SortProperties( reportField.Selection ?? string.Empty);
                                 if ( customSortExpression != null )
                                 {
                                     if ( customSortExpression == string.Empty )
