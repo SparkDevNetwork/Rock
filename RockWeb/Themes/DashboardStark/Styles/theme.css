@@ -1176,6 +1176,15 @@ tr.row-highlight td {
   border-color: #2f2f2f;
   vertical-align: top !important;
 }
+.table > tbody > tr.inactive > td {
+  color: #808080;
+}
+.table > tbody > tr.person-inactive > td {
+  color: #808080;
+}
+.table > tbody > tr.deceased > td {
+  color: #d9534f;
+}
 .table-responsive {
   position: relative;
   width: 100%;
