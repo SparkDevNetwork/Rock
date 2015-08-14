@@ -107,12 +107,12 @@ namespace Rock.Apps.CheckScannerUtility
             string feederFriendlyNameType = BatchPage.ScannerFeederType.Equals( FeederType.MultipleItems ) ? "Multiple Items" : "Single Item";
             lblFeederType.Content = string.Format( "Feeder Type: {0}", feederFriendlyNameType );
 
-            switch ( (ImageColorType)rockConfig.ImageColorType )
+            switch ( (RangerImageColorTypes)rockConfig.ImageColorType )
             {
-                case ImageColorType.ImageColorTypeGrayscale:
+                case RangerImageColorTypes.ImageColorTypeGrayscale:
                     cboImageOption.SelectedValue = "Grayscale";
                     break;
-                case ImageColorType.ImageColorTypeColor:
+                case RangerImageColorTypes.ImageColorTypeColor:
                     cboImageOption.SelectedValue = "Color";
                     break;
                 default:
@@ -240,13 +240,13 @@ namespace Rock.Apps.CheckScannerUtility
             switch ( imageOption )
             {
                 case "Grayscale":
-                    rockConfig.ImageColorType = ImageColorType.ImageColorTypeGrayscale;
+                    rockConfig.ImageColorType = RangerImageColorTypes.ImageColorTypeGrayscale;
                     break;
                 case "Color":
-                    rockConfig.ImageColorType = ImageColorType.ImageColorTypeColor;
+                    rockConfig.ImageColorType = RangerImageColorTypes.ImageColorTypeColor;
                     break;
                 default:
-                    rockConfig.ImageColorType = ImageColorType.ImageColorTypeBitonal;
+                    rockConfig.ImageColorType = RangerImageColorTypes.ImageColorTypeBitonal;
                     break;
             }
 

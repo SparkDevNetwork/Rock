@@ -361,14 +361,14 @@ namespace Rock.Apps.CheckScannerUtility
         /// Shows the scanner status.
         /// </summary>
         /// <param name="xportStates">The xport states.</param>
-        public void ShowScannerStatus( XportStates xportStates, System.Windows.Media.Color statusColor, string statusText )
+        public void ShowScannerStatus( RangerTransportStates xportStates, System.Windows.Media.Color statusColor, string statusText )
         {
             switch ( xportStates )
             {
-                case XportStates.TransportReadyToFeed:
+                case RangerTransportStates.TransportReadyToFeed:
                     break;
 
-                case XportStates.TransportFeeding:
+                case RangerTransportStates.TransportFeeding:
                     break;
             }
 
@@ -471,11 +471,11 @@ namespace Rock.Apps.CheckScannerUtility
                 scannedDoc.CurrencyTypeValue = batchPage.SelectedCurrencyValue;
                 scannedDoc.SourceTypeValue = batchPage.SelectedSourceTypeValue;
 
-                scannedDoc.FrontImageData = GetImageBytesFromRanger( Sides.TransportFront );
+                scannedDoc.FrontImageData = GetImageBytesFromRanger( RangerSides.TransportFront );
 
                 if ( rockConfig.EnableRearImage )
                 {
-                    scannedDoc.BackImageData = GetImageBytesFromRanger( Sides.TransportRear );
+                    scannedDoc.BackImageData = GetImageBytesFromRanger( RangerSides.TransportRear );
                 }
 
                 if ( scannedDoc.IsCheck )
@@ -713,9 +713,9 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         /// <param name="side">The side.</param>
         /// <returns></returns>
-        private byte[] GetImageBytesFromRanger( Sides side )
+        private byte[] GetImageBytesFromRanger( RangerSides side )
         {
-            ImageColorType colorType = RockConfig.Load().ImageColorType;
+            RangerImageColorTypes colorType = RockConfig.Load().ImageColorType;
 
             int imageByteCount;
             imageByteCount = batchPage.rangerScanner.GetImageByteCount( (int)side, (int)colorType );
@@ -955,9 +955,9 @@ namespace Rock.Apps.CheckScannerUtility
         {
             lblScannerNotReady.Visibility = Visibility.Collapsed;
 
-            XportStates[] xportStatesNotConnected = new XportStates[] { XportStates.TransportShutDown, XportStates.TransportShuttingDown, XportStates.TransportExceptionInProgress };
+            RangerTransportStates[] xportStatesNotConnected = new RangerTransportStates[] { RangerTransportStates.TransportShutDown, RangerTransportStates.TransportShuttingDown, RangerTransportStates.TransportExceptionInProgress };
 
-            var transportState = (XportStates)batchPage.rangerScanner.GetTransportState();
+            var transportState = (RangerTransportStates)batchPage.rangerScanner.GetTransportState();
             if ( xportStatesNotConnected.Contains( transportState ) )
             {
                 batchPage.ConnectToScanner();
@@ -1026,8 +1026,8 @@ namespace Rock.Apps.CheckScannerUtility
             if ( batchPage.rangerScanner != null )
             {
                 // StartFeeding doesn't work if the Scanner isn't in ReadyToFeed state, so assign StartRangerFeedingWhenReady if it isn't ready yet
-                XportStates xportState = (XportStates)batchPage.rangerScanner.GetTransportState();
-                if ( xportState == XportStates.TransportReadyToFeed )
+                RangerTransportStates xportState = (RangerTransportStates)batchPage.rangerScanner.GetTransportState();
+                if ( xportState == RangerTransportStates.TransportReadyToFeed )
                 {
                     batchPage.rangerScanner.StartFeeding( FeedSource.FeedSourceMainHopper, FeedItemCount.FeedOne );
                 }
