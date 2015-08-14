@@ -1928,6 +1928,16 @@ table.attribute-grid tr th:nth-child(3) {
 .personprofilebar-bio .nav li .persondetails-actions:focus {
   background-color: transparent;
 }
+.personprofilebar-bio .nav-actions {
+  width: 120px;
+  margin: 0 auto 12px auto;
+}
+@media (min-width: 992px) {
+  .personprofilebar-bio .nav-actions {
+    float: right;
+    margin: 0;
+  }
+}
 .personprofilebar-bio .actions {
   position: absolute;
   right: 50%;
@@ -2036,7 +2046,7 @@ table.attribute-grid tr th:nth-child(3) {
 @media (min-width: 992px) {
   .personprofilebar-bio .demographics {
     width: 50%;
-    float: left;
+    float: inherit;
   }
 }
 .personprofilebar-bio .personcontact {
