@@ -395,6 +395,28 @@ tr.row-highlight {
     }
 }
 
+// inactive row
+.table > tbody > tr.inactive {
+
+    > td {
+        color: lighten(@grid-row-even-color, 30%);
+    }
+ }
+
+.table > tbody > tr.person-inactive {
+
+    > td {
+        color: lighten(@grid-row-even-color, 30%);
+    }
+ }
+
+.table > tbody > tr.deceased {
+
+    > td {
+        color: @brand-danger;
+    }
+ }
+
 // 10. Responsive Columns
 // -------------------------
 

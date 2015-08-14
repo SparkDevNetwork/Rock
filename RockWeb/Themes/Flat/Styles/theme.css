@@ -1,3 +1,5 @@
+@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
 /*
 
   Rock's Core CSS
@@ -19,8 +21,6 @@
   A better method for styling can be seen below with .jcrop-light
   (Add a class to the holder and style elements for that extended class)
 */
-@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
 .jcrop-holder {
   direction: ltr;
   text-align: left;
@@ -1177,6 +1177,15 @@ tr.row-highlight td {
   color: #ffffff;
   border-color: #354b60;
   vertical-align: top !important;
+}
+.table > tbody > tr.inactive > td {
+  color: #b7b7b7;
+}
+.table > tbody > tr.person-inactive > td {
+  color: #b7b7b7;
+}
+.table > tbody > tr.deceased > td {
+  color: #e74c3c;
 }
 .table-responsive {
   position: relative;
