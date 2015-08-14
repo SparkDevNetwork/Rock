@@ -2046,7 +2046,7 @@ table.attribute-grid tr th:nth-child(3) {
 @media (min-width: 992px) {
   .personprofilebar-bio .demographics {
     width: 50%;
-    float: inherit;
+    float: left;
   }
 }
 .personprofilebar-bio .personcontact {
