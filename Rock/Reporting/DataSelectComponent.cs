@@ -294,6 +294,34 @@ namespace Rock.Reporting
             return GetExpression( context as RockContext, entityIdProperty, selection );
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            string title = null;
+            try
+            {
+                title = this.GetTitle( null );
+            }
+            catch
+            {
+                //
+            }
+            
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                return title;
+            }
+            else
+            { 
+                return base.ToString();
+            }
+        }
+
         #endregion
     }
 }
