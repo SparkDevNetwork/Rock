@@ -38,7 +38,7 @@
                         <h1 class="title name"><asp:Literal ID="lName" runat="server" /></h1>
                     </div>
                     <div class="col-sm-3">
-                        <ul id="ulActions" runat="server" class="nav pull-right">
+                        <ul id="ulActions" runat="server" class="nav nav-actions">
                             <li class="dropdown">
                                 <a class="persondetails-actions dropdown-toggle" data-toggle="dropdown" href="#" tabindex="0">
                                     <i class="fa fa-cog"></i>
