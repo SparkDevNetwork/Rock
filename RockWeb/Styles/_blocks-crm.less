@@ -50,6 +50,7 @@
     .name {
         text-align: center;
         margin-top: 0;
+        margin-bottom: 4px;
 
         .full-name, .previous-names {
             font-size: 18px;
@@ -190,18 +191,28 @@
     }
 
     .taglist {
-        margin-top: @spacing-sm-px;
+        margin-top: @spacing-md-px;
     }
 
     .demographics {
-        margin-top: @spacing-lg-px;
+        margin-top: @spacing-md-px;
         text-align: center;
+
+        @media @md { 
+            width: 50%;
+            float: left;
+        }
     }
 
     .personcontact {
         text-align: center;
         margin-top: @spacing-md-px;
         padding-bottom: 30px;
+
+        @media @md { 
+            width: 50%;
+            float: left;
+        }
 
         .email {
             .email-status i {
@@ -711,10 +722,6 @@ span.field-value {
             margin: 0;
         }
 
-        .taglist {
-            margin-top: 0;
-        }
-
         .demographics {
             text-align: left;
         }
@@ -740,17 +747,6 @@ span.field-value {
             &:last-child {
                 text-align: right;
             }
-        }
-    }
-}
-
-/* Medium devices (desktops, 992px and up) */
-@media (min-width: @screen-md-min) {
-
-    // bio bar
-    .personprofilebar-bio {
-        .personcontact {
-            margin-top: 0;
         }
     }
 }
