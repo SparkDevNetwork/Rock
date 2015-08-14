@@ -1176,13 +1176,13 @@ tr.row-highlight td {
   border-color: #2f2f2f;
   vertical-align: top !important;
 }
-.table > tbody > tr.inactive > td {
+.table > tbody > tr.is-inactive > td {
   color: #808080;
 }
-.table > tbody > tr.person-inactive > td {
+.table > tbody > tr.is-inactive-person > td {
   color: #808080;
 }
-.table > tbody > tr.deceased > td {
+.table > tbody > tr.is-deceased > td {
   color: #d9534f;
 }
 .table-responsive {
@@ -1908,6 +1908,7 @@ table.attribute-grid tr th:nth-child(3) {
 .personprofilebar-bio .name {
   text-align: center;
   margin-top: 0;
+  margin-bottom: 4px;
 }
 .personprofilebar-bio .name .full-name,
 .personprofilebar-bio .name .previous-names {
@@ -2024,16 +2025,28 @@ table.attribute-grid tr th:nth-child(3) {
   margin-left: 0;
 }
 .personprofilebar-bio .taglist {
-  margin-top: 7.5px;
+  margin-top: 15px;
 }
 .personprofilebar-bio .demographics {
-  margin-top: 30px;
+  margin-top: 15px;
   text-align: center;
+}
+@media (min-width: 992px) {
+  .personprofilebar-bio .demographics {
+    width: 50%;
+    float: left;
+  }
 }
 .personprofilebar-bio .personcontact {
   text-align: center;
   margin-top: 15px;
   padding-bottom: 30px;
+}
+@media (min-width: 992px) {
+  .personprofilebar-bio .personcontact {
+    width: 50%;
+    float: left;
+  }
 }
 .personprofilebar-bio .personcontact .email .email-status i {
   color: #231f20;
@@ -2416,9 +2429,6 @@ span.field-value {
   .personprofilebar-bio .photo {
     margin: 0;
   }
-  .personprofilebar-bio .taglist {
-    margin-top: 0;
-  }
   .personprofilebar-bio .demographics {
     text-align: left;
   }
@@ -2437,12 +2447,6 @@ span.field-value {
   }
   .personprofilebar-badge .badge-group:last-child {
     text-align: right;
-  }
-}
-/* Medium devices (desktops, 992px and up) */
-@media (min-width: 992px) {
-  .personprofilebar-bio .personcontact {
-    margin-top: 0;
   }
 }
 /* Large devices (large desktops, 1200px and up) */
@@ -3250,6 +3254,9 @@ div.tagsinput {
   border-bottom-right-radius: 4px;
   border-top-right-radius: 4px;
 }
+.taglist .tag:first-child {
+  margin-left: 10px;
+}
 .taglist .tag span {
   white-space: nowrap;
   overflow: hidden;
@@ -3290,6 +3297,12 @@ div.tagsinput {
   border-radius: 2px;
   background: #d6d6d6;
   box-shadow: -1px -1px 2px #c4ced6;
+}
+@media (min-width: 768px) {
+  div.tagsinput div[id$=addTag] {
+    float: left;
+    margin-left: 12px;
+  }
 }
 div.tagsinput span.tag.personal {
   background: #aec2d4;
