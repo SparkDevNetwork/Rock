@@ -1,12 +1,12 @@
 /*
-   Rock's Core CSS
 
-    1. Imports - Used to import the various core less files
-    2. HTML Overrides - Style overrides for basic HTML tags
-    3. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
-    4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
-    5. ASP.Net Overrides - Yep they get it wrong too sometimes
+  Rock's Core CSS
 
+  1. Imports - Used to import the various core less files
+  2. HTML Overrides - Style overrides for basic HTML tags
+  3. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
+  4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
+  5. ASP.Net Overrides - Yep they get it wrong too sometimes
 
 */
 
@@ -59,67 +59,66 @@
 //--------------------------------
 
 .clickable {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .tip {
-    background-color: #71a5bf;
-    color: #fff;
-    padding: 0 6px 2px;
-    border-radius: 4px;
-    font-size: 11px;
+  background-color: #71a5bf;
+  color: #fff;
+  padding: 0 6px 2px;
+  border-radius: 4px;
+  font-size: 11px;
 
-    &.tip-liquid,
-    &.tip-lava {
-        &:after {
-            content: '{{ Lava }}';
-        }
+  &.tip-liquid,
+  &.tip-lava {
+    &:after {
+      content: '{{ Lava }}';
     }
+  }
 
-    &.tip-html {
-        &:after {
-            content: '< HTML />';
-        }
+  &.tip-html {
+    &:after {
+      content: '< HTML />';
     }
+  }
 }
 
-
-
 .navigation-tip { // used to show the user directions to a page (e.g. 'Administration > General Settings')
-    font-family: @font-family-monospace;
-    padding: 2px 4px;
-    font-size: 90%;
-    color: @state-info-text;
-    background-color: @state-info-bg;
-    white-space: nowrap;
-    border-radius: @border-radius-base;
+  font-family: @font-family-monospace;
+  padding: 2px 4px;
+  font-size: 90%;
+  color: @state-info-text;
+  background-color: @state-info-bg;
+  white-space: nowrap;
+  border-radius: @border-radius-base;
 }
 
 // context help
 a.help {
-    margin-left: 6px;
-    outline: 0;
-    color: @help-color;
+  margin-left: 6px;
+  outline: 0;
+  color: @help-color;
 }
 
 .help-message {
-    font-weight: normal;
+  font-weight: normal;
 }
 
 .photo {
-    img {
-        width: 100%;
-    }
+  img {
+    width: 100%;
+  }
 }
 
 .well {
-    & > h1,
-    & > h2,
-    & > h3,
-    & > h4 {
-        margin-top: 0;
-    }
+  & > h1,
+  & > h2,
+  & > h3,
+  & > h4 {
+    margin-top: 0;
+  }
 }
+
 
 // 4. Bootstrap Overrides
 //--------------------------------
@@ -127,463 +126,460 @@ a.help {
 // change the color of the none selected links
 // by default bootsrap does not allow the color of a link roll-over to be a different color. Modified it to allow this.
 .nav-pills {
-    > li {
-        > a {
-            color: @nav-pills-link-color;
+  > li {
+    > a {
+      color: @nav-pills-link-color;
 
-            &:hover,
-            &:focus {
-                color: lighten(@nav-pills-active-link-hover-color, 20%);
-                background-color: lighten(@nav-pills-active-link-hover-bg, 20%);
-            }
-        }
+      &:hover,
+      &:focus {
+        color: lighten(@nav-pills-active-link-hover-color, 20%);
+        background-color: lighten(@nav-pills-active-link-hover-bg, 20%);
+      }
     }
+  }
 }
 
 .form-right {
-    .clearfix();
-    text-align: right;
-    margin-bottom: 12px;
+  .clearfix();
+  text-align: right;
+  margin-bottom: 12px;
 
-    .control-label {
-        display: block;
-    }
+  .control-label {
+    display: block;
+  }
 
-    .input-group {
-        float: right;
-    }
+  .input-group {
+    float: right;
+  }
 }
 
 .btn-tabled {
-    a {
-        &:hover {
-            text-decoration: underline;
-        }
+  a {
+    &:hover {
+      text-decoration: underline;
     }
+  }
 }
 
 .control-label {
-    font-weight: @font-weight-bold;
+  font-weight: @font-weight-bold;
 }
 
 // add badge colors back to BS3
 .badge-danger {
-    background-color: @label-danger-bg !important;
-    color: #fff !important;
+  background-color: @label-danger-bg !important;
+  color: #fff !important;
 }
 
 .badge-warning {
-    background-color: @label-warning-bg !important;
-    color: #fff !important;
+  background-color: @label-warning-bg !important;
+  color: #fff !important;
 }
 
 .badge-success {
-    background-color: @label-success-bg !important;
-    color: #fff !important;
+  background-color: @label-success-bg !important;
+  color: #fff !important;
 }
 
 .badge-info {
-    background-color: @label-info-bg !important;
-    color: #fff !important;
+  background-color: @label-info-bg !important;
+  color: #fff !important;
 }
 
 // add alternate popover title style that exists inside of the popover-content to use ajax updates
 .popover-content {
-    header {
-        .clearfix();
-        margin: -9px -14px 8px -14px;
-        padding: 8px 14px;
-        font-size: @font-size-base;
-        font-weight: normal;
-        line-height: 18px;
-        background-color: @popover-title-bg;
-        border-bottom: 1px solid darken(@popover-title-bg, 5%);
-        border-radius: 5px 5px 0 0;
+  header {
+    .clearfix();
+    margin: -9px -14px 8px -14px;
+    padding: 8px 14px;
+    font-size: @font-size-base;
+    font-weight: normal;
+    line-height: 18px;
+    background-color: @popover-title-bg;
+    border-bottom: 1px solid darken(@popover-title-bg, 5%);
+    border-radius: 5px 5px 0 0;
 
-        img {
-            float: left;
-            margin-right: 6px;
-            width: 32px;
-        }
-
-        h3 {
-            float: left;
-            font-size: 18px;
-            margin-top: 2px;
-
-            small {
-                display: block;
-            }
-        }
+    img {
+      float: left;
+      margin-right: 6px;
+      width: 32px;
     }
-}
 
+    h3 {
+      float: left;
+      font-size: 18px;
+      margin-top: 2px;
+
+      small {
+        display: block;
+      }
+    }
+  }
+}
 
 // list group additions
 
 .list-group-item {
-    .clearfix;
+  .clearfix;
 
-    .toggle-container {
-        display: inline-block;
-    }
+  .toggle-container {
+    display: inline-block;
+  }
 
-    .content {
-        display: block;
-        float: left;
-    }
+  .content {
+    display: block;
+    float: left;
+  }
 }
-
 
 // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
 .panel {
 
-    legend {
-        border-color: red;// @axxxccent-color;
+  legend {
+    border-color: red;// @axxxccent-color;
+  }
+
+  .panel-heading {
+    .panel-title {
+      small {
+        opacity: .5;
+      }
     }
 
-    .panel-heading {
-        .panel-title {
-            small {
-                opacity: .5;
-            }
-        }
-
-        .checkbox {
-            margin: 0;
-        }
-
-        .panel-labels {
-            float: right;
-        }
-
-        .panel-actions {
-            margin-top: 4px;
-        }
-
-        .form-group {
-            margin-bottom: 0;
-        }
-
-
+    .checkbox {
+      margin: 0;
     }
 
-    .panel-body {
-        border-radius: 0 0 4px 4px;
+    .panel-labels {
+      float: right;
     }
 
-    .panel-footer {
-        background-color: @panel-footer-bg;
-        color: @panel-footer-color;
+    .panel-actions {
+      margin-top: 4px;
     }
+
+    .form-group {
+      margin-bottom: 0;
+    }
+
+
+  }
+
+  .panel-body {
+    border-radius: 0 0 4px 4px;
+  }
+
+  .panel-footer {
+    background-color: @panel-footer-bg;
+    color: @panel-footer-color;
+  }
 }
 
 .panel-widget {
-    // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
-    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+  // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
+  .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
-    .panel-heading {
-        border: 0;
+  .panel-heading {
+    border: 0;
 
-        .checkbox {
-            display: inline;
-            margin-top: 0;
-            margin-bottom: 0;
-            float: left;
-        }
-
-        .actions {
-            a {
-                margin-left: 4px;
-            }
-        }
-
-        small {
-            color: lighten(@panel-heading-text-color, 20%);
-        }
+    .checkbox {
+      display: inline;
+      margin-top: 0;
+      margin-bottom: 0;
+      float: left;
     }
+
+    .actions {
+      a {
+        margin-left: 4px;
+      }
+    }
+
+    small {
+      color: lighten(@panel-heading-text-color, 20%);
+    }
+  }
 }
 
-
 .panel-persondetails {
-    // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
-    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+  // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
+  .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
-    border-top-color: @panel-top-border-color;
+  border-top-color: @panel-top-border-color;
 
-    .panel-heading {
-        .actions {
-            a {
-                margin-left: 4px;
-            }
-        }
+  .panel-heading {
+    .actions {
+      a {
+        margin-left: 4px;
+      }
+    }
+  }
+
+  .panel-body {
+    background-color: #fff;
+
+    .form-group.static-control {
+      .clearfix();
+      margin-bottom: 2px;
+
+      label {
+        width: 40%;
+        text-align: right;
+        float: left;
+        padding-right: 12px;
+      }
+
+      .form-control-static {
+        width: 60%;
+        float: left;
+        padding-top: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
 
-    .panel-body {
-        background-color: #fff;
-
-        .form-group.static-control {
-            .clearfix();
-            margin-bottom: 2px;
-
-            label {
-                width: 40%;
-                text-align: right;
-                float: left;
-                padding-right: 12px;
-            }
-
-            .form-control-static {
-                width: 60%;
-                float: left;
-                padding-top: 0;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-        }
-
-        i.fa.fa-bars {
-            cursor: pointer;
-        }
+    i.fa.fa-bars {
+      cursor: pointer;
     }
+  }
 }
 
 .panel-block {
-    //.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;)
-    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+  //.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;)
+  .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
-    border-top-color: @panel-top-border-color;
+  border-top-color: @panel-top-border-color;
 
-    > .panel-heading {
-        .clearfix();
+  > .panel-heading {
+    .clearfix();
 
-        .panel-title {
-            float: left;
+    .panel-title {
+      float: left;
 
-            i {
-                color: #6a6a6a;
-            }
+      i {
+        color: #6a6a6a;
+      }
+    }
+  }
+
+  .list-group-item {
+    background-color: transparent;
+  }
+
+  .panel-body {
+
+    .grid.grid-panel {
+      margin: -15px;
+
+      .grid-filter {
+        border-radius: 0;
+      }
+
+      .table-bordered {
+        border-width: 1px 0 0 0;
+
+        & > tfoot > tr > td {
+          border: 0px;
         }
+      }
     }
-
-    .list-group-item {
-        background-color: transparent;
-    }
-
-    .panel-body {
-
-        .grid.grid-panel {
-            margin: -15px;
-
-            .grid-filter {
-                border-radius: 0;
-            }
-
-            .table-bordered {
-                border-width: 1px 0 0 0;
-
-                & > tfoot > tr > td {
-                    border: 0px;
-                }
-            }
-        }
-    }
+  }
 }
 
 .panel-analytics {
-    .panel-body {
-        padding-top: 0;
-        padding-bottom: 0;
+  .panel-body {
+    padding-top: 0;
+    padding-bottom: 0;
 
-        & > .row > [class*="col-"]:first-child {
-            padding-top: 15px;
-            padding-bottom: 15px;
+    & > .row > [class*="col-"]:first-child {
+      padding-top: 15px;
+      padding-bottom: 15px;
 
-        }
-
-        .col-md-9 {
-            margin-right: -2px;
-        }
-
-        .grid.grid-panel {
-            margin-bottom: 0;
-        }
-
-        @media @md {
-            .row {
-                margin-left: -16px;
-            }
-        }
     }
 
-    .filter-options {
-        background-color: @panel-heading-bg;
+    .col-md-9 {
+      margin-right: -2px;
     }
 
-    .analysis-types {
-        padding: 15px 0;
-        background-color: @panel-heading-bg;
-        margin-bottom: 15px;
+    .grid.grid-panel {
+      margin-bottom: 0;
     }
+
+    @media @md {
+      .row {
+        margin-left: -16px;
+      }
+    }
+  }
+
+  .filter-options {
+    background-color: @panel-heading-bg;
+  }
+
+  .analysis-types {
+    padding: 15px 0;
+    background-color: @panel-heading-bg;
+    margin-bottom: 15px;
+  }
 }
 
 // extensions for buttons    ->   .button-variant(@color; @background; @border) {}
 
 .btn.aspNetDisabled {
-    cursor: not-allowed;
-    pointer-events: none; // Future-proof disabling of clicks
-    .opacity(.65);
-    .box-shadow(none);
+  cursor: not-allowed;
+  pointer-events: none; // Future-proof disabling of clicks
+  .opacity(.65);
+  .box-shadow(none);
 }
 
 .btn-action {
-    .button-variant(@btn-action-color; @btn-action-bg; @btn-action-border);
+  .button-variant(@btn-action-color; @btn-action-bg; @btn-action-border);
 }
 
 .btn-security {
-    .button-variant(@btn-security-color; @btn-security-bg; @btn-security-border);
+  .button-variant(@btn-security-color; @btn-security-bg; @btn-security-border);
 }
 
 .btn-authenication {
-    .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
-    width: 100%;
+  .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
+  width: 100%;
 
-    &:hover {
-        background-color: darken(@btn-default-bg, 10%);
-    }
+  &:hover {
+    background-color: darken(@btn-default-bg, 10%);
+  }
 
-    &.facebook:before {
-        font-family: 'FontAwesome';
-        content: @fa-var-facebook;
-        margin-right: 12px;
-    }
+  &.facebook:before {
+    font-family: 'FontAwesome';
+    content: @fa-var-facebook;
+    margin-right: 12px;
+  }
 
-    &.google:before {
-        font-family: 'FontAwesome';
-        content: @fa-var-google;
-        margin-right: 12px;
-    }
+  &.google:before {
+    font-family: 'FontAwesome';
+    content: @fa-var-google;
+    margin-right: 12px;
+  }
 }
 
 .btn-minimal {
-    text-decoration: none;
-    color: lighten(@text-color, 30%);
-    padding: 0;
+  text-decoration: none;
+  color: lighten(@text-color, 30%);
+  padding: 0;
 }
 
 // alert extentions
 .alert { // styling for exceptions
 
-    pre {
-        border: 0;
-        padding: 0;
-        color: inherit;
-        background-color: transparent;
-    }
+  pre {
+    border: 0;
+    padding: 0;
+    color: inherit;
+    background-color: transparent;
+  }
 }
 
 // make links in alerts the same color as the text with a nice dotted underline
 .alert-success {
-    a {
-        color: @alert-success-text;
-        border-bottom: @alert-success-link-border-bottom;
-    }
+  a {
+    color: @alert-success-text;
+    border-bottom: @alert-success-link-border-bottom;
+  }
 
-    a.help {
-        border-bottom: 0;
-    }
+  a.help {
+    border-bottom: 0;
+  }
 }
 
 .alert-info {
-    a {
-        color: @alert-info-text;
-        border-bottom: @alert-info-link-border-bottom;
-    }
+  a {
+    color: @alert-info-text;
+    border-bottom: @alert-info-link-border-bottom;
+  }
 
-    a.help {
-        border-bottom: 0;
-    }
+  a.help {
+    border-bottom: 0;
+  }
 }
 
 .alert-warning {
-    a {
-        color: @alert-warning-text;
-        border-bottom: @alert-warning-link-border-bottom;
-    }
-    a.help {
-        border-bottom: 0;
-    }
+  a {
+    color: @alert-warning-text;
+    border-bottom: @alert-warning-link-border-bottom;
+  }
+  a.help {
+    border-bottom: 0;
+  }
 }
 
 .alert-danger {
-    a {
-        color: @alert-danger-text;
-        border-bottom: @alert-danger-link-border-bottom;
-    }
-    a.help {
-        border-bottom: 0;
-    }
+  a {
+    color: @alert-danger-text;
+    border-bottom: @alert-danger-link-border-bottom;
+  }
+  a.help {
+    border-bottom: 0;
+  }
 }
 
 .alert { // hide the styling of pre's inside of alerts
-    pre {
-        background-color: transparent;
-        border: 0;
-        padding: 0;
-        color: inherit;
-    }
+  pre {
+    background-color: transparent;
+    border: 0;
+    padding: 0;
+    color: inherit;
+  }
 }
 
 // system errors
 
 .system-error {
-    pre {
-        background-color: transparent;
-        border: 0;
-        color: inherit;
-    }
+  pre {
+    background-color: transparent;
+    border: 0;
+    color: inherit;
+  }
 
-    .close {
-        color: inherit;
-    }
+  .close {
+    color: inherit;
+  }
 }
 
 // modify BS3 to use fontawesome for carousel icons
 .carousel-control .fa-chevron-left,
 .carousel-control .fa-chevron-right {
-    position: absolute;
-    top: 50%;
-    z-index: 5;
-    display: inline-block;
-    margin-top: -10px;
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  display: inline-block;
+  margin-top: -10px;
 }
 
 .carousel-control .fa-chevron-left {
-    left: 40px;
+  left: 40px;
 }
 
 .carousel-control .fa-chevron-right {
-    right: 40px;
+  right: 40px;
 }
 
 // form extensions
 
 .form-no-margin {
-    margin: 0;
+  margin: 0;
 }
 
 // list extensions
 
 ul.list-padded {
+  margin-top: 12px;
+
+  li {
     margin-top: 12px;
 
-    li {
-        margin-top: 12px;
-
-        &:first-child {
-            margin-top: 0;
-        }
+    &:first-child {
+      margin-top: 0;
     }
+  }
 }
 
 // typography
@@ -594,33 +590,34 @@ h3.condensed,
 h4.condensed,
 h5.condensed,
 h6.condensed {
-    margin-top: 0;
-    margin-bottom: 0;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 // add 10 column row
 .col-md-2-10 {
-    padding-right: 15px;
-    padding-left: 15px;
+  padding-right: 15px;
+  padding-left: 15px;
 }
 
 @media (min-width: 992px) {
-    .col-md-2-10 {
-        width: 20%;
-        float: left;
-        position: relative;
-        min-height: 1px;
-        padding-right: 15px;
-        padding-left: 15px;
-    }
+  .col-md-2-10 {
+    width: 20%;
+    float: left;
+    position: relative;
+    min-height: 1px;
+    padding-right: 15px;
+    padding-left: 15px;
+  }
 }
+
 
 // 5. ASP.Net Overrides
 //--------------------------------
 
 // to make asp.net panels look disabled when enabled is false
 div.aspNetDisabled {
-    opacity: 0.5;
+  opacity: 0.5;
 }
 
 
@@ -629,7 +626,7 @@ div.aspNetDisabled {
 
 // abstracted fixed width icon element
 .icon-fw {
-      width: (18em / 14); // font-awesome
-      text-align: center;
+  width: (18em / 14); // font-awesome
+  text-align: center;
 }
 
