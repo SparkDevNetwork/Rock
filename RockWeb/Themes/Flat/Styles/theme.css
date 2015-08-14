@@ -5179,14 +5179,6 @@ a.help {
 .well > h4 {
   margin-top: 0;
 }
-.nav-pills > li > a {
-  color: #18bc9c;
-}
-.nav-pills > li > a:hover,
-.nav-pills > li > a:focus {
-  color: #ffffff;
-  background-color: #507192;
-}
 .form-right {
   text-align: right;
   margin-bottom: 12px;

@@ -5177,14 +5177,6 @@ a.help {
 .well > h4 {
   margin-top: 0;
 }
-.nav-pills > li > a {
-  color: #6a6a6a;
-}
-.nav-pills > li > a:hover,
-.nav-pills > li > a:focus {
-  color: #ffffff;
-  background-color: #bbdd8d;
-}
 .form-right {
   text-align: right;
   margin-bottom: 12px;
@@ -6045,6 +6037,14 @@ h4,
 }
 .tag-letterlist a {
   color: #ee7624;
+}
+.nav-pills > li > a {
+  color: #6a6a6a;
+}
+.nav-pills > li > a:hover,
+.nav-pills > li > a:focus {
+  color: #ffffff;
+  background-color: #bbdd8d;
 }
 /*#region
 // 3. Rock Overrides         */

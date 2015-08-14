@@ -123,22 +123,6 @@ a.help {
 // 4. Bootstrap Overrides
 //--------------------------------
 
-// change the color of the none selected links
-// by default bootsrap does not allow the color of a link roll-over to be a different color. Modified it to allow this.
-.nav-pills {
-  > li {
-    > a {
-      color: @nav-pills-link-color;
-
-      &:hover,
-      &:focus {
-        color: lighten(@nav-pills-active-link-hover-color, 20%);
-        background-color: lighten(@nav-pills-active-link-hover-bg, 20%);
-      }
-    }
-  }
-}
-
 .form-right {
   .clearfix();
   text-align: right;
