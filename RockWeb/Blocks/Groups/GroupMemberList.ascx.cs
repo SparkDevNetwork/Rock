@@ -186,17 +186,17 @@ namespace RockWeb.Blocks.Groups
                 {
                     if ( groupMember != null && groupMember.IsDeceased )
                     {
-                        e.Row.AddCssClass( "deceased" );
+                        e.Row.AddCssClass( "is-deceased" );
                     }
 
                     if ( _inactiveStatus != null && groupMember.RecordStatusValueId == _inactiveStatus.Id )
                     {
-                        e.Row.AddCssClass( "person-inactive" );
+                        e.Row.AddCssClass( "is-inactive-person" );
                     }
 
                     if ( _inactiveStatus != null && groupMember.GroupMemberStatus == GroupMemberStatus.Inactive )
                     {
-                        e.Row.AddCssClass( "inactive" );
+                        e.Row.AddCssClass( "is-inactive" );
                     }
                 }
             }
