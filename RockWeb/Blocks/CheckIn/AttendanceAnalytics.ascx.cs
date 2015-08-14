@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.CheckIn
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked" )]
     [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true )]
-    [GroupTypeField( "Check-in Type", required: false, key: "GroupTypeTemplate", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
+    [GroupTypeField( "Attendance Type", required: false, key: "GroupTypeTemplate" )]
     [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false )]
     public partial class AttendanceAnalytics : RockBlock
     {
