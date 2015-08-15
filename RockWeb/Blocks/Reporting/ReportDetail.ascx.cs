@@ -248,6 +248,33 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
+        /// Handles the Click event of the Copy button control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCopy_Click( object sender, EventArgs e )
+        {
+            // Create a new Report using the current item as a template.
+            var id = int.Parse( hfReportId.Value );
+
+            var reportService = new ReportService( new RockContext() );
+
+            var newItem = reportService.GetNewFromTemplate( id );
+
+            if (newItem == null)
+            {
+                return;
+            }
+
+            newItem.Name += " (Copy)";
+
+            // Reset the stored identifier for the active Report.
+            hfReportId.Value = "0";
+
+            ShowEditDetails( newItem );
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnDelete control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -437,7 +464,16 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            if ( hfReportId.Value.Equals( "0" ) )
+            // Check if we are editing an existing Report.
+            int reportId = hfReportId.Value.AsInteger();
+
+            if (reportId == 0)
+            {
+                // If not, check if we are editing a new copy of an existing Report.
+                reportId = PageParameter( "ReportId" ).AsInteger();
+            }
+
+            if ( reportId == 0 )
             {
                 int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
@@ -457,7 +493,7 @@ namespace RockWeb.Blocks.Reporting
             {
                 // Cancelling on Edit.  Return to Details
                 ReportService service = new ReportService( new RockContext() );
-                Report item = service.Get( int.Parse( hfReportId.Value ) );
+                Report item = service.Get( reportId );
                 ShowReadonlyDetails( item );
             }
         }
