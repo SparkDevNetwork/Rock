@@ -1,7 +1,12 @@
 {% assign campus = Campuses | Where: 'Id', 1 | First %}
+{% assign campusTourLink = "/page/852" %}
 
-{% comment %} TODO: figure out a way to responsive use bigger images here {% endcomment %}
-<div class="jumbotron bigblock-inverse bigblock-flexbg bigblock-shade bigblock-rheight" style="background-image: url({{ campus | Attribute: 'CoverPhoto', 'Url' }}&width=1000)">
+{% assign campusLeader = campus.LeaderPersonAliasId | PersonByAliasId %}
+
+<div class="jumbotron bigblock-inverse bigblock-pflexbg bigblock-shade bigblock-rheight">
+  <div class="bigblock-pflexbgholder">
+    <div class="delayed-image-load" data-src="{{ campus | Attribute: 'CoverPhoto', 'Url' }}&width={width}" data-alt="Campus Photo"></div>
+  </div>
   <div class="container bigblock-shade-inner">
     <h1 class="underline">{{ campus.Name }} Campus</h1>
     {% assign vimeoId = campus | Attribute: 'CampusTourVimeoId' %}
@@ -78,14 +83,17 @@
   <hr class="margin-v-lg">
 
   <div class="row">
+
+    {% if campusLeader %}
     <div class="col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-0">
       <div class="well">
-        {% comment %} TODO: Use actual campus pastor name {% endcomment %}
-        <img src="//placehold.it/400x400" alt="Mike Haas">
-        <h4 class="margin-t-md">Mike Haas <small>Campus Pastor</small></h4>
-        <a href="mailto:MikeHaas@ccv.church">MikeHaas@ccv.church</a>
+        <img class="img-rounded" src="{{ campusLeader.Photo.Url }}" alt="{{ campusLeader.FullName }}">
+        <h4 class="margin-t-md">{{ campusLeader.FullName }} <small>Campus Pastor</small></h4>
+        <a href="mailto:{{ campusLeader.Email }}">{{ campusLeader.Email }}</a>
       </div>
     </div>
+    {% endif %}
+
     <div class="col-sm-12 col-md-8">
       <h3>Kids & Students</h3>
       <p>At CCV, we have exciting, safe programs for kids and teens from birth through high school.</p>
@@ -93,18 +101,31 @@
         <a href="/kids" class="btn btn-default">About Kids</a>
         <a href="/students" class="btn btn-default">About Students</a>
       </p>
+
+      {% if campusTourLink %}
       <p class="hidden-xs">&nbsp;</p>
       <h3>Campus Tour</h3>
       <p>Come join us for our Saturday morning, Saturday night, or Sunday morning tour of the CCV campus. During your tour you will get to see everything CCV has to offer and ask any questions you might have.</p>
       <p>
-        {% comment %} TODO: add actual link {% endcomment %}
-        <a href="#" class="btn btn-default">Learn More</a>
+        <a href="{{ campusTourLink }}" class="btn btn-default">Learn More</a>
       </p>
+      {% endif %}
+
     </div>
   </div>
 
 </div>
 
+<script src="~~/Scripts/Vendor/Imager.min.js"></script>
+
+<script>
+  new Imager({
+    availableWidths: [320, 375, 600, 1000, 1400, 1920],
+    widthInterpolator: function(width, pixelRatio) {
+      return width * pixelRatio;
+    }
+  });
+</script>
 
 {% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
 

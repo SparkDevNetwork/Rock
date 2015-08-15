@@ -97,8 +97,7 @@
 }
 
 
-// Other
-
+// Flex Bg
 .bigblock-flexbg {
   background-size: cover;
   background-position: center center;
@@ -109,6 +108,22 @@
     @media @md { min-height: 400px; }
     @media @lg { min-height: 460px; }
     @media @xl { min-height: 520px;}
+  }
+
+// Pseudo Flex Bg (introduced for campus detail page)
+.bigblock-pflexbg {
+  position: relative;
+  overflow: hidden;
+}
+  .bigblock-pflexbgholder {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100%;
+    > img {
+      width: 100%
+    }
   }
 
 // Apply transparent shade

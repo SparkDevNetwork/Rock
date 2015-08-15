@@ -6873,6 +6873,20 @@ h6,
     min-height: 520px;
   }
 }
+.bigblock-pflexbg {
+  position: relative;
+  overflow: hidden;
+}
+.bigblock-pflexbgholder {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+}
+.bigblock-pflexbgholder > img {
+  width: 100%;
+}
 .bigblock-shade {
   position: relative;
 }
