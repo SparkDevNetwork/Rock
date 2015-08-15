@@ -209,7 +209,7 @@ namespace RockWeb.Blocks.Connection
                 rptConnectionOpportunities.DataBind();
                 //rptConnectionOpportunities.ItemCommand += rptConnectionOpportunities_ItemCommand;
 
-                lConnectionTypeName.Text = String.Format( "<h4>{0}</h4>", connectionType.Name );
+                lConnectionTypeName.Text = String.Format( "<h4 class='block-title'>{0}</h4>", connectionType.Name );
             }
         }
 
