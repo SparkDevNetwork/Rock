@@ -108,6 +108,20 @@
                             123456789
                         </Label>
                     </StackPanel>
+                    <StackPanel Name="spOtherData"
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Orientation="Horizontal"
+                                Margin="8,4">
+                        <Label Name="lblOtherDataCaption"
+                               Style="{StaticResource labelStyleBold}">
+                            Other Data:
+                        </Label>
+                        <Label Name="lblOtherData"
+                               Style="{StaticResource labelStyle}">
+                            123456789
+                        </Label>
+                    </StackPanel>
                     <StackPanel Grid.Row="1"
                                 Grid.Column="0"
                                 Orientation="Horizontal"

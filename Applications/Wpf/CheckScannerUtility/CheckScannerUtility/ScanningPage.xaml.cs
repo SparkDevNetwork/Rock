@@ -293,6 +293,8 @@ namespace Rock.Apps.CheckScannerUtility
                 lblRoutingNumber.Content = scannedDocInfo.RoutingNumber ?? "--";
                 lblAccountNumber.Content = scannedDocInfo.AccountNumber ?? "--";
                 lblCheckNumber.Content = scannedDocInfo.CheckNumber ?? "--";
+                lblOtherData.Content = scannedDocInfo.OtherData;
+                spOtherData.Visibility = !string.IsNullOrWhiteSpace( scannedDocInfo.OtherData ) ? Visibility.Visible : Visibility.Collapsed;
             }
             else
             {
@@ -315,7 +317,6 @@ namespace Rock.Apps.CheckScannerUtility
             _itemsUploaded = 0;
             _itemsSkipped = 0;
             _itemsScanned = 0;
-            _firstNoItemsWarning = true;
             ShowUploadStats();
             StartScanning();
             lblScanItemCountInfo.Visibility = Visibility.Collapsed;
@@ -385,7 +386,9 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         public void rangerScanner_TransportFeedingStopped( object sender, AxRANGERLib._DRangerEvents_TransportFeedingStoppedEvent e )
         {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportFeedingStopped", DateTime.Now.ToString( "o" ) ) );
+            RangerFeedingStoppedReasons rangerFeedingStoppedReason = (RangerFeedingStoppedReasons)e.reason;
+            
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportFeedingStopped, reason:", DateTime.Now.ToString( "o" ), rangerFeedingStoppedReason.ConvertToString() ) );
             if ( pnlPromptForUpload.Visibility != Visibility.Visible )
             {
                 btnStart.IsEnabled = true;
@@ -405,13 +408,11 @@ namespace Rock.Apps.CheckScannerUtility
                     lblStartupInfo.Visibility = Visibility.Visible;
                 }
 
-                // show a "No Items" warning if they clicked Start but no items were scanned, and this is the 2nd+ time they tried
-                if ( !_firstNoItemsWarning )
+                // show a "No Items" warning if they clicked Start but it stopped because of MainHopperEmpty
+                if ( rangerFeedingStoppedReason == RangerFeedingStoppedReasons.MainHopperEmpty )
                 {
                     lblNoItemsFound.Visibility = Visibility.Visible;
                 }
-
-                _firstNoItemsWarning = false;
             }
         }
 
@@ -488,8 +489,8 @@ namespace Rock.Apps.CheckScannerUtility
                     string checkNumber = string.Empty;
 
                     // there should always be two transit symbols ('d').  The transit number is between them
-                    int transitSymbol1 = remainingMicr.IndexOf( 'd' );
-                    int transitSymbol2 = remainingMicr.LastIndexOf( 'd' );
+                    int transitSymbol1 = remainingMicr.IndexOf( (char)RangerE13BMicrSymbols.E13B_TransitSymbol );
+                    int transitSymbol2 = remainingMicr.LastIndexOf( (char)RangerE13BMicrSymbols.E13B_TransitSymbol );
                     int transitStart = transitSymbol1 + 1;
                     int transitLength = transitSymbol2 - transitSymbol1 - 1;
                     if ( transitLength > 0 )
@@ -498,17 +499,19 @@ namespace Rock.Apps.CheckScannerUtility
                         remainingMicr = remainingMicr.Remove( transitStart - 1, transitLength + 2 );
                     }
 
+                    char[] separatorSymbols = new char[] { (char)RangerE13BMicrSymbols.E13B_TransitSymbol, (char)RangerE13BMicrSymbols.E13B_OnUsSymbol, (char)RangerE13BMicrSymbols.E13B_AmountSymbol };
+                    
                     // the last 'On-Us' symbol ('c') signifies the end of the account number
-                    int lastOnUsPosition = remainingMicr.LastIndexOf( 'c' );
+                    int lastOnUsPosition = remainingMicr.LastIndexOf( (char)RangerE13BMicrSymbols.E13B_OnUsSymbol );
                     if ( lastOnUsPosition > 0 )
                     {
                         int accountNumberDigitPosition = lastOnUsPosition - 1;
 
-                        // read all digits to the left of the last 'c' until you run into another 'c' or 'd'
+                        // read all digits to the left of the last 'OnUs' until you run into another seperator symbol
                         while ( accountNumberDigitPosition >= 0 )
                         {
                             char accountNumberDigit = remainingMicr[accountNumberDigitPosition];
-                            if ( accountNumberDigit == 'c' || accountNumberDigit == 'd' )
+                            if ( separatorSymbols.Contains( accountNumberDigit ) )
                             {
                                 break;
                             }
@@ -525,21 +528,28 @@ namespace Rock.Apps.CheckScannerUtility
                     }
 
                     // any remaining digits that aren't the account number and transit number are probably the check number
-                    string[] remainingMicrParts = remainingMicr.Split( new char[] { 'c', ' ' }, StringSplitOptions.RemoveEmptyEntries );
+                    string[] remainingMicrParts = remainingMicr.Split( new char[] { (char)RangerE13BMicrSymbols.E13B_OnUsSymbol, ' ' }, StringSplitOptions.RemoveEmptyEntries );
+                    string otherData = null;
                     if ( remainingMicrParts.Any() )
                     {
                         checkNumber = remainingMicrParts.Last();
+                        
+                        // throw any remaining data into 'otherData' (a reject symbol could be in the other data)
+                        remainingMicr = remainingMicr.Replace( (char)RangerE13BMicrSymbols.E13B_OnUsSymbol, ' ' );
+                        remainingMicr = remainingMicr.Replace( checkNumber, string.Empty );
+                        otherData = remainingMicr;
                     }
 
                     scannedDoc.RoutingNumber = routingNumber;
                     scannedDoc.AccountNumber = accountNumber;
                     scannedDoc.CheckNumber = checkNumber;
+                    scannedDoc.OtherData = otherData;
 
                     scannedDoc.ScannedCheckMicrData = checkMicr;
 
                     // look for the "can't read" symbol (or completely blank read ) to detect if the check micr couldn't be read
                     // from http://www.sbulletsupport.com/forum/index.php?topic=172.0
-                    if ( checkMicr.Contains('!') || string.IsNullOrWhiteSpace(checkMicr) )
+                    if ( checkMicr.Contains( (char)RangerCommonSymbols.RangerRejectSymbol ) || string.IsNullOrWhiteSpace( checkMicr ) )
                     {
                         scannedDoc.BadMicr = true;
                         scannedDoc.Upload = false;
@@ -813,9 +823,13 @@ namespace Rock.Apps.CheckScannerUtility
         {
             RockRestClient client = EnsureUploadScanRestClient();
 
-            // upload image of front of doc
-            string frontImageFileName = string.Format( "image1_{0}.png", DateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
-            int frontImageBinaryFileId = client.UploadBinaryFile( frontImageFileName, Rock.Client.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid(), scannedDocInfo.FrontImagePngBytes, false );
+            // upload image of front of doc (if was successfully scanned)
+            int? frontImageBinaryFileId = null;
+            if ( scannedDocInfo.FrontImageData != null )
+            {
+                string frontImageFileName = string.Format( "image1_{0}.png", DateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
+                frontImageBinaryFileId = client.UploadBinaryFile( frontImageFileName, Rock.Client.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid(), scannedDocInfo.FrontImagePngBytes, false );
+            }
 
             // upload image of back of doc (if it exists)
             int? backImageBinaryFileId = null;
@@ -868,12 +882,15 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             // upload FinancialTransactionImage records for front/back
-            FinancialTransactionImage financialTransactionImageFront = new FinancialTransactionImage();
-            financialTransactionImageFront.BinaryFileId = frontImageBinaryFileId;
-            financialTransactionImageFront.TransactionId = uploadedTransactionId.Value;
-            financialTransactionImageFront.Order = 0;
-            financialTransactionImageFront.Guid = Guid.NewGuid();
-            client.PostData<FinancialTransactionImage>( "api/FinancialTransactionImages", financialTransactionImageFront );
+            if ( frontImageBinaryFileId.HasValue )
+            {
+                FinancialTransactionImage financialTransactionImageFront = new FinancialTransactionImage();
+                financialTransactionImageFront.BinaryFileId = frontImageBinaryFileId.Value;
+                financialTransactionImageFront.TransactionId = uploadedTransactionId.Value;
+                financialTransactionImageFront.Order = 0;
+                financialTransactionImageFront.Guid = Guid.NewGuid();
+                client.PostData<FinancialTransactionImage>( "api/FinancialTransactionImages", financialTransactionImageFront );
+            }
 
             if ( backImageBinaryFileId.HasValue )
             {
@@ -943,7 +960,6 @@ namespace Rock.Apps.CheckScannerUtility
         private bool _keepScanning;
         private int _itemsSkipped;
         private int _itemsScanned;
-        private bool _firstNoItemsWarning;
         private int _itemsUploaded;
 
         /// <summary>
