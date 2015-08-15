@@ -782,7 +782,7 @@ namespace RockWeb.Blocks.Connection
                 int? opportunityId = e.Row.DataItem.GetPropertyValue( "OpportunityId" ) as int?;
                 if ( opportunityId.HasValue && opportunityId.Value == connectionOpportunityId )
                 {
-                    e.Row.AddCssClass( "warning" );
+                    e.Row.AddCssClass( "info" );
                 }
 
                 bool canEdit = e.Row.DataItem.GetPropertyValue( "CanEdit" ) as bool? ?? false;
