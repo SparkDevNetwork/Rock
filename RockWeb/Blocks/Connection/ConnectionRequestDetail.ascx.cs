@@ -1092,7 +1092,7 @@ namespace RockWeb.Blocks.Connection
                 lbProfilePage.Visible = false;
             }
 
-            string imgTag = Rock.Model.Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 200, 200 );
+            string imgTag = Rock.Model.Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 200, 200, className: "img-thumbnail" );
             if ( person.PhotoId.HasValue )
             {
                 lPortrait.Text = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, imgTag );
