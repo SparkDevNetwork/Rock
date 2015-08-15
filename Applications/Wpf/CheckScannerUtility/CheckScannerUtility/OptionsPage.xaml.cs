@@ -125,8 +125,24 @@ namespace Rock.Apps.CheckScannerUtility
                 cboMagTekCommPort.SelectedItem = string.Format( "COM{0}", rockConfig.MICRImageComPort );
             }
 
-            txtSensitivity.Text = rockConfig.Sensitivity;
-            txtPlurality.Text = rockConfig.Plurality;
+            if (rockConfig.Sensitivity.AsInteger() == 0)
+            {
+                txtSensitivity.Text = string.Empty;
+            }
+            else
+            {
+                txtSensitivity.Text = rockConfig.Sensitivity;
+            }
+
+            if ( rockConfig.Plurality.AsInteger() == 0)
+            {
+                txtPlurality.Text = string.Empty;
+            }
+            else
+            {
+                txtPlurality.Text = rockConfig.Plurality;
+            }
+            
 
             cboTransactionSourceType.SelectedItem = ( cboTransactionSourceType.ItemsSource as List<DefinedValue> ).FirstOrDefault( a => a.Guid == rockConfig.SourceTypeValueGuid.AsGuid() );
         }
@@ -137,7 +153,7 @@ namespace Rock.Apps.CheckScannerUtility
         private void LoadDropDowns()
         {
             cboImageOption.Items.Clear();
-            cboImageOption.Items.Add( "Black and Whilte" );
+            cboImageOption.Items.Add( "Black and White" );
             cboImageOption.Items.Add( "Grayscale" );
             cboImageOption.Items.Add( "Color" );
 
@@ -234,8 +250,8 @@ namespace Rock.Apps.CheckScannerUtility
 
             string imageOption = cboImageOption.SelectedValue as string;
 
-            rockConfig.Sensitivity = txtSensitivity.Text.Trim();
-            rockConfig.Plurality = txtPlurality.Text.Trim();
+            rockConfig.Sensitivity = txtSensitivity.Text.Trim().AsInteger().ToString();
+            rockConfig.Plurality = txtPlurality.Text.Trim().AsInteger().ToString();
 
             switch ( imageOption )
             {
