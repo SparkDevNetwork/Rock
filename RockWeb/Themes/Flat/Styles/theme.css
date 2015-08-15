@@ -3143,6 +3143,9 @@ ul.rocktree ul {
 .touch .rollover-item {
   opacity: 1;
 }
+.block-title {
+  margin: 0;
+}
 .list-as-blocks h3 {
   margin-top: 0;
   font-size: 14px;
