@@ -83,6 +83,7 @@ namespace Rock.Model
         /// <value>
         /// The campus.
         /// </value>
+        [DataMember]
         public virtual Campus Campus { get; set; }
 
         /// <summary>
@@ -91,6 +92,7 @@ namespace Rock.Model
         /// <value>
         /// The connector group.
         /// </value>
+        [DataMember]
         public virtual Group ConnectorGroup { get; set; }
 
         #endregion

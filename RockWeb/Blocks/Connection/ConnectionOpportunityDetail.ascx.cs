@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Connection
         #region Properties
 
         public List<ConnectionOpportunityGroup> GroupsState { get; set; }
-        public List<ConnectionOpportunityConnectorGroup> GroupCampusesState { get; set; }
+        public List<ConnectionOpportunityConnectorGroup> ConnectorGroupsState { get; set; }
         public List<ConnectionWorkflow> WorkflowsState { get; set; }
 
         #endregion
@@ -77,14 +77,14 @@ namespace RockWeb.Blocks.Connection
                 GroupsState = JsonConvert.DeserializeObject<List<ConnectionOpportunityGroup>>( json );
             }
 
-            json = ViewState["GroupCampusesState"] as string;
+            json = ViewState["ConnectorGroupsState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
-                GroupCampusesState = new List<ConnectionOpportunityConnectorGroup>();
+                ConnectorGroupsState = new List<ConnectionOpportunityConnectorGroup>();
             }
             else
             {
-                GroupCampusesState = JsonConvert.DeserializeObject<List<ConnectionOpportunityConnectorGroup>>( json );
+                ConnectorGroupsState = JsonConvert.DeserializeObject<List<ConnectionOpportunityConnectorGroup>>( json );
             }
 
             json = ViewState["WorkflowsState"] as string;
@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Connection
             };
 
             ViewState["GroupsState"] = JsonConvert.SerializeObject( GroupsState, Formatting.None, jsonSetting );
-            ViewState["GroupCampusesState"] = JsonConvert.SerializeObject( GroupCampusesState, Formatting.None, jsonSetting );
+            ViewState["ConnectorGroupsState"] = JsonConvert.SerializeObject( ConnectorGroupsState, Formatting.None, jsonSetting );
             ViewState["WorkflowsState"] = JsonConvert.SerializeObject( WorkflowsState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
@@ -348,15 +348,15 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 // remove any group campuses that removed in the UI
-                var uiGroupCampuses = GroupCampusesState.Select( l => l.Guid );
-                foreach ( var connectionOpportunityConnectorGroups in connectionOpportunity.ConnectionOpportunityConnectorGroups.Where( l => !uiGroupCampuses.Contains( l.Guid ) ).ToList() )
+                var uiConnectorGroups = ConnectorGroupsState.Select( l => l.Guid );
+                foreach ( var connectionOpportunityConnectorGroups in connectionOpportunity.ConnectionOpportunityConnectorGroups.Where( l => !uiConnectorGroups.Contains( l.Guid ) ).ToList() )
                 {
                     connectionOpportunity.ConnectionOpportunityConnectorGroups.Remove( connectionOpportunityConnectorGroups );
                     connectionOpportunityConnectorGroupsService.Delete( connectionOpportunityConnectorGroups );
                 }
 
                 // Add or Update group campuses from the UI
-                foreach ( var connectionOpportunityConnectorGroupsState in GroupCampusesState )
+                foreach ( var connectionOpportunityConnectorGroupsState in ConnectorGroupsState )
                 {
                     ConnectionOpportunityConnectorGroup connectionOpportunityConnectorGroups = connectionOpportunity.ConnectionOpportunityConnectorGroups.Where( a => a.Guid == connectionOpportunityConnectorGroupsState.Guid ).FirstOrDefault();
                     if ( connectionOpportunityConnectorGroups == null )
@@ -610,8 +610,8 @@ namespace RockWeb.Blocks.Connection
         protected void gConnectionOpportunityConnectorGroups_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = (Guid)e.RowKeyValue;
-            GroupCampusesState.RemoveEntity( rowGuid );
-            BindGroupCampusGrid();
+            ConnectorGroupsState.RemoveEntity( rowGuid );
+            BindConnectorGroupsGrid();
         }
 
         /// <summary>
@@ -621,27 +621,28 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgConnectorGroupDetails_SaveClick( object sender, EventArgs e )
         {
-            ConnectionOpportunityConnectorGroup connectionOpportunityConnectorGroups = new ConnectionOpportunityConnectorGroup();
-            connectionOpportunityConnectorGroups.CampusId = cpCampus.SelectedCampusId;
-            if ( connectionOpportunityConnectorGroups.CampusId.HasValue )
-            {
-                connectionOpportunityConnectorGroups.Campus = new CampusService( new RockContext() ).Get( connectionOpportunityConnectorGroups.CampusId.Value );
-            }
-            connectionOpportunityConnectorGroups.ConnectorGroupId = gpGroup.ItemId.AsInteger();
-            connectionOpportunityConnectorGroups.ConnectorGroup = new GroupService( new RockContext() ).Queryable().Where( g => g.Id.ToString() == gpGroup.ItemId ).FirstOrDefault();
-            // Controls will show warnings
-            if ( !connectionOpportunityConnectorGroups.IsValid )
-            {
-                return;
-            }
+            ConnectionOpportunityConnectorGroup connectorGroup = null;
 
-            if ( GroupCampusesState.Any( a => a.Guid.Equals( connectionOpportunityConnectorGroups.Guid ) ) )
+            Guid? guid = hfConnectorGroupGuid.Value.AsGuidOrNull();
+            if ( guid.HasValue )
             {
-                GroupCampusesState.RemoveEntity( connectionOpportunityConnectorGroups.Guid );
+                connectorGroup = ConnectorGroupsState.Where( g => g.Guid.Equals( guid.Value ) ).FirstOrDefault();
             }
+            if ( connectorGroup == null )
+            {
+                connectorGroup = new ConnectionOpportunityConnectorGroup();
+                connectorGroup.Guid = Guid.NewGuid();
+                ConnectorGroupsState.Add( connectorGroup );
+            }
+            connectorGroup.CampusId = cpCampus.SelectedCampusId;
+            if ( connectorGroup.CampusId.HasValue )
+            {
+                connectorGroup.Campus = new CampusService( new RockContext() ).Get( connectorGroup.CampusId.Value );
+            }
+            connectorGroup.ConnectorGroupId = gpGroup.ItemId.AsInteger();
+            connectorGroup.ConnectorGroup = new GroupService( new RockContext() ).Queryable().Where( g => g.Id.ToString() == gpGroup.ItemId ).FirstOrDefault();
 
-            GroupCampusesState.Add( connectionOpportunityConnectorGroups );
-            BindGroupCampusGrid();
+            BindConnectorGroupsGrid();
             HideDialog();
         }
 
@@ -652,7 +653,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gConnectionOpportunityConnectorGroups_GridRebind( object sender, EventArgs e )
         {
-            BindGroupCampusGrid();
+            BindConnectorGroupsGrid();
         }
 
         /// <summary>
@@ -662,6 +663,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gConnectionOpportunityConnectorGroups_Add( object sender, EventArgs e )
         {
+            dlgConnectorGroupDetails.SaveButtonText = "Add";
             gConnectionOpportunityConnectorGroups_ShowEdit( Guid.Empty );
         }
 
@@ -672,6 +674,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gConnectionOpportunityConnectorGroups_Edit( object sender, RowEventArgs e )
         {
+            dlgConnectorGroupDetails.SaveButtonText = "Save";
             Guid connectionOpportunityConnectorGroupsGuid = (Guid)e.RowKeyValue;
             gConnectionOpportunityConnectorGroups_ShowEdit( connectionOpportunityConnectorGroupsGuid );
         }
@@ -682,15 +685,17 @@ namespace RockWeb.Blocks.Connection
         /// <param name="connectionOpportunityConnectorGroupsGuid">The connection opportunity group campus unique identifier.</param>
         protected void gConnectionOpportunityConnectorGroups_ShowEdit( Guid connectionOpportunityConnectorGroupsGuid )
         {
-            ConnectionOpportunityConnectorGroup connectionGroupCampus = GroupCampusesState.FirstOrDefault( l => l.Guid.Equals( connectionOpportunityConnectorGroupsGuid ) );
-            if ( connectionGroupCampus != null )
+            ConnectionOpportunityConnectorGroup connectorGroup = ConnectorGroupsState.FirstOrDefault( l => l.Guid.Equals( connectionOpportunityConnectorGroupsGuid ) );
+            if ( connectorGroup != null )
             {
                 cpCampus.Campuses = CampusCache.All();
-                cpCampus.SetValue( connectionGroupCampus.CampusId );
-                gpGroup.SetValue( connectionGroupCampus.ConnectorGroupId );
+                hfConnectorGroupGuid.Value = connectionOpportunityConnectorGroupsGuid.ToString();
+                cpCampus.SetValue( connectorGroup.CampusId );
+                gpGroup.SetValue( connectorGroup.ConnectorGroupId );
             }
             else
             {
+                hfConnectorGroupGuid.Value = string.Empty;
                 gpGroup.SetValue( null );
                 cpCampus.Campuses = CampusCache.All();
             }
@@ -701,14 +706,14 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Binds the campus grid.
         /// </summary>
-        private void BindGroupCampusGrid()
+        private void BindConnectorGroupsGrid()
         {
-            gConnectionOpportunityConnectorGroups.DataSource = GroupCampusesState.Select( g => new
+            gConnectionOpportunityConnectorGroups.DataSource = ConnectorGroupsState.Select( g => new
             {
                 g.Id,
                 g.Guid,
-                Campus = g.Campus.Name,
-                Group = g.ConnectorGroup.Name
+                Campus = g.Campus != null ? g.Campus.Name : "",
+                Group = g.ConnectorGroup != null ? g.ConnectorGroup.Name : ""
             } ).ToList();
             gConnectionOpportunityConnectorGroups.DataBind();
         }
@@ -1180,7 +1185,7 @@ namespace RockWeb.Blocks.Connection
             WorkflowsState = connectionOpportunity.ConnectionWorkflows.ToList();
             WorkflowsState.AddRange( connectionOpportunity.ConnectionType.ConnectionWorkflows.ToList() );
             GroupsState = connectionOpportunity.ConnectionOpportunityGroups.ToList();
-            GroupCampusesState = connectionOpportunity.ConnectionOpportunityConnectorGroups.ToList();
+            ConnectorGroupsState = connectionOpportunity.ConnectionOpportunityConnectorGroups.ToList();
 
             imgupPhoto.BinaryFileId = connectionOpportunity.PhotoId;
 
@@ -1190,7 +1195,7 @@ namespace RockWeb.Blocks.Connection
 
             BindGroupGrid();
             BindWorkflowGrid();
-            BindGroupCampusGrid();
+            BindConnectorGroupsGrid();
         }
 
         /// <summary>
@@ -1340,7 +1345,7 @@ namespace RockWeb.Blocks.Connection
                     dlgGroupDetails.Show();
                     break;
 
-                case "GROUPCAMPUSDETAILS":
+                case "CONNECTORGROUPDETAILS":
                     dlgConnectorGroupDetails.Show();
                     break;
 
@@ -1361,7 +1366,7 @@ namespace RockWeb.Blocks.Connection
                     dlgGroupDetails.Hide();
                     break;
 
-                case "GROUPCAMPUSDETAILS":
+                case "CONNECTORGROUPDETAILS":
                     dlgConnectorGroupDetails.Hide();
                     break;
 
