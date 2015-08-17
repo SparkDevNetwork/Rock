@@ -29,7 +29,11 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
     [ContextAware]
     public partial class GroupsOfGroupTypeList : Rock.Web.UI.RockBlock, Rock.Web.UI.ISecondaryBlock
     {
+        #region Properties
+
         public int _groupTypesCount = 0;
+
+        #endregion
 
         #region Control Methods
 
@@ -201,7 +205,6 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         /// </summary>
         private void BindFilter()
         {
-
             // Set the Active Status
             var itemActiveStatus = ddlActiveFilter.Items.FindByValue( gfSettings.GetUserPreference( "Active Status" ) );
             if ( itemActiveStatus != null )
@@ -343,9 +346,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
 
             gGroups.DataBind();
         }
-
-        #endregion
-
+        
         /// <summary>
         /// Determines the visibility of the block.
         /// </summary>
@@ -354,5 +355,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         {
             pnlContent.Visible = visible;
         }
+        
+        #endregion
     }
 }

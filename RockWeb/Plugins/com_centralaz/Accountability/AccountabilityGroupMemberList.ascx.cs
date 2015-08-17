@@ -100,16 +100,21 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         {
             base.OnLoad( e );
 
+            int groupId = int.Parse( PageParameter( "GroupId" ) );
+
+            if ( _responseSets == null )
+            {
+                _responseSets = new ResponseSetService( new AccountabilityContext() ).GetResponseSetsForGroup( groupId );
+            }
+
             if ( !Page.IsPostBack )
             {
-                int groupId = int.Parse( PageParameter( "GroupId" ) );
                 if ( groupId == 0 )
                 {
                     SetVisible( false );
                 }
                 else
                 {
-                    _responseSets = new ResponseSetService( new AccountabilityContext() ).GetResponseSetsForGroup( groupId );
                     Group group = new GroupService( new RockContext() ).Get( groupId );
                     group.LoadAttributes();
                     _reportStartDate = DateTime.Parse( group.GetAttributeValue( "ReportStartDate" ) );

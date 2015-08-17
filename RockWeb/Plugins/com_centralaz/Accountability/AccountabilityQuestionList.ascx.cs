@@ -44,7 +44,6 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             bool canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             gAccountabilityQuestions.RowItemText = "Questions";
@@ -74,16 +73,6 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         #region Events
 
         /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-
-        }
-
-        /// <summary>
         /// Handles the Add event of the gAccountabilityQuestions control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -110,9 +99,10 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gAccountabilityQuestions_Delete( object sender, RowEventArgs e )
         {
-            var dataContext = new AccountabilityContext();
-            var questionService = new QuestionService( dataContext );
-            var responseService = new ResponseService( new AccountabilityContext() );
+            var accountabilityContext = new AccountabilityContext();
+            var questionService = new QuestionService( accountabilityContext );
+            var responseService = new ResponseService( accountabilityContext );
+
             var accountabilityQuestion = questionService.Get( (int)e.RowKeyValue );
             if ( accountabilityQuestion != null )
             {
@@ -128,7 +118,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                     responseService.Delete( i );
                 }
                 questionService.Delete( accountabilityQuestion );
-                dataContext.SaveChanges();
+                accountabilityContext.SaveChanges();
             }
 
             BindGrid();
@@ -147,19 +137,19 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         protected void mdDialog_SaveClick( object sender, EventArgs e )
         {
             Question question;
-            var dataContext = new AccountabilityContext();
-            var service = new QuestionService( dataContext );
+            var accountabilityContext = new AccountabilityContext();
+            var questionService = new QuestionService( accountabilityContext );
 
             int questionId = int.Parse( hfQuestionId.Value );
 
             if ( questionId == 0 )
             {
                 question = new Question();
-                service.Add( question );
+                questionService.Add( question );
             }
             else
             {
-                question = service.Get( questionId );
+                question = questionService.Get( questionId );
             }
 
             question.ShortForm = tbMdShortForm.Text;
@@ -172,7 +162,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                 return;
             }
 
-            dataContext.SaveChanges();
+            accountabilityContext.SaveChanges();
 
             mdDialog.Hide();
 
@@ -188,8 +178,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         /// </summary>
         private void BindGrid()
         {
-            var service = new QuestionService( new AccountabilityContext() );
-            SortProperty sortProperty = gAccountabilityQuestions.SortProperty;
+            var questionService = new QuestionService( new AccountabilityContext() );
             int? groupTypeId = PageParameter( "groupTypeId" ).AsIntegerOrNull();
             GroupType accountabilityGroupType = null;
             if ( groupTypeId.HasValue )
@@ -201,20 +190,13 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             {
                 accountabilityGroupType = new GroupType { Id = 0, Name = "", Description = "" };
             }
+
             hfGroupTypeId.Value = accountabilityGroupType.Id.ToString();
-            var qry = service.Queryable( "GroupType" );
+            var qry = questionService.Queryable( "GroupType" );
 
             qry = qry.Where( a => a.GroupTypeId == accountabilityGroupType.Id );
 
-            // Sort results
-            if ( sortProperty != null )
-            {
-                gAccountabilityQuestions.DataSource = qry.Sort( sortProperty ).ToList();
-            }
-            else
-            {
-                gAccountabilityQuestions.DataSource = qry.OrderBy( a => a.ShortForm ).ToList();
-            }
+            gAccountabilityQuestions.DataSource = qry.OrderBy( a => a.ShortForm ).ToList();
 
             gAccountabilityQuestions.DataBind();
         }
@@ -227,8 +209,8 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         {
             if ( questionId != 0 )
             {
-                var service = new QuestionService( new AccountabilityContext() );
-                Question question = service.Get( questionId );
+                var questionService = new QuestionService( new AccountabilityContext() );
+                Question question = questionService.Get( questionId );
                 mdDialog.Title = "Edit Question";
                 hfQuestionId.Value = questionId.ToString();
                 tbMdShortForm.Text = question.ShortForm;
@@ -245,8 +227,6 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             }
         }
 
-        #endregion
-
         /// <summary>
         /// Hides the question block if the group type detail is in edit mode
         /// </summary>
@@ -255,5 +235,9 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         {
             pnlContent.Visible = visible;
         }
+
+        #endregion
+
+
     }
 }

@@ -119,7 +119,7 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
                     note.NoteTypeId = noteType.Id;
                     note.EntityId = match.PersonAlias.PersonId;
                     note.IsAlert = true;
-                    note.Text = String.Format( "<a href='http://www.icrimewatch.net/results.php?AgencyID=55662&SubmitNameSearch=1&OfndrLast={0}&OfndrFirst={1}&OfndrCity='>{1}</a>", match.Offender.LastName, match.Offender.FirstName, GetAttributeValue( "NoteText" ) );
+                    note.Text = String.Format( "<a href='http://www.icrimewatch.net/results.php?AgencyID=55662&SubmitNameSearch=1&OfndrLast={0}&OfndrFirst={1}&OfndrCity='>{2}</a>", match.Offender.LastName, match.Offender.FirstName, GetAttributeValue( "NoteText" ) );
                     noteService.Add( note );
 
                 }
@@ -127,6 +127,7 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
                 match.VerifiedDate = DateTime.Now;
                 dpsMatchContext.SaveChanges();
 
+                // The change to the person is done after the DPS MAtch context has saved changes because the person model's PreSaveChanges function can't cast a custom context to a rock context.
                 if ( match.PersonAlias.Person.ModifiedDateTime == null || match.PersonAlias.Person.ModifiedDateTime < DateTime.Now.Date )
                 {
                     match.PersonAlias.Person.ModifiedDateTime = DateTime.Now.Date;

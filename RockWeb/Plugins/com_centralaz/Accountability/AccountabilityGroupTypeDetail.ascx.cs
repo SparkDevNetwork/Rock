@@ -407,7 +407,6 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             return groupType;
         }
 
-
         #endregion
     }
 }

@@ -6,19 +6,19 @@
             <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title"><i runat="server" id="iIcon"></i>
-                        <asp:Literal ID="lTitle" runat="server" Text="Group List" /></h1>
+                        Group List</h1>
                 </div>
                 <div class="panel-body">
 
                     <div class="grid grid-panel">
                         <Rock:GridFilter ID="gfSettings" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-
                             <Rock:RockDropDownList ID="ddlActiveFilter" runat="server" Label="Active Status">
                                 <asp:ListItem Text="[All]" Value="all"></asp:ListItem>
                                 <asp:ListItem Text="Active" Value="active"></asp:ListItem>
                                 <asp:ListItem Text="Inactive" Value="inactive"></asp:ListItem>
                             </Rock:RockDropDownList>
                         </Rock:GridFilter>
+
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                         <Rock:Grid ID="gGroups" runat="server" RowItemText="Group" AllowSorting="true" OnRowSelected="gGroups_Edit">
                             <Columns>

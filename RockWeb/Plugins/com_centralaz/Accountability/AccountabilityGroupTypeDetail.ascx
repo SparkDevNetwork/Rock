@@ -12,7 +12,6 @@
                     <h1 class="panel-title pull-left">
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />
                     </h1>
-
                 </div>
 
                 <div class="panel-body">
