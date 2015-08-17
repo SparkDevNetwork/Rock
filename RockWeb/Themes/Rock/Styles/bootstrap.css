@@ -5515,7 +5515,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   line-height: 1;
   color: #555555;
   text-align: center;
-  background-color: #f0f0f0;
+  background-color: #edeae6;
   border: 1px solid #cccccc;
   border-radius: 4px;
 }
