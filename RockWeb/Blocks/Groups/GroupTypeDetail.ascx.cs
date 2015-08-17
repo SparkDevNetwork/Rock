@@ -434,6 +434,7 @@ namespace RockWeb.Blocks.Groups
             groupType.GroupTypePurposeValueId = ddlGroupTypePurpose.SelectedValueAsInt();
             groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
             groupType.InheritedGroupTypeId = gtpInheritedGroupType.SelectedGroupTypeId;
+            groupType.IgnorePersonInactivated = cbDontInactivateMembers.Checked;
             groupType.EnableLocationSchedules = cbEnableLocationSchedules.Checked;
 
             groupType.ChildGroupTypes = new List<GroupType>();
@@ -725,6 +726,8 @@ namespace RockWeb.Blocks.Groups
             // Attributes
             gtpInheritedGroupType.Enabled = !groupType.IsSystem;
             gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
+
+            cbDontInactivateMembers.Checked = groupType.IgnorePersonInactivated;
 
             GroupTypeRolesState = new List<GroupTypeRole>();
             foreach ( var role in groupType.Roles )
