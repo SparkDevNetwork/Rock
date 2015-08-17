@@ -242,6 +242,14 @@
     <Compile Include="Field\Types\EventItemFieldType.cs" />
     <Compile Include="Field\Types\NoteTypesFieldType.cs" />
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
+    <Compile Include="Follow\Suggestion\InGroupTogether.cs" />
+    <Compile Include="Follow\Event\BirthdayEvent.cs" />
+    <Compile Include="Follow\SuggestionComponent.cs" />
+    <Compile Include="Follow\EventComponent.cs" />
+    <Compile Include="Follow\SuggestionContainer.cs" />
+    <Compile Include="Follow\EventContainer.cs" />
+    <Compile Include="Jobs\SendFollowingEvents.cs" />
+    <Compile Include="Jobs\SendFollowingSuggestions.cs" />
     <Compile Include="Jobs\SendRegistrationReminders.cs" />
     <Compile Include="Jobs\SendGroupRequirementsNotification.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionActivityTypeService.cs" />
@@ -313,6 +321,10 @@
     <Compile Include="Model\BenevolenceResult.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\CodeGenerated\FollowingEventSubscriptionService.cs" />
+    <Compile Include="Model\CodeGenerated\FollowingEventTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\FollowingSuggestedService.cs" />
+    <Compile Include="Model\CodeGenerated\FollowingSuggestionTypeService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPaymentDetailService.cs" />
     <Compile Include="Model\CommunicationService.Partial.cs" />
     <Compile Include="Model\ConnectionOpportunityCampus.cs" />
@@ -379,6 +391,10 @@
     <Compile Include="Model\EventCalendar.cs" />
     <Compile Include="Model\EventCalendarItem.cs" />
     <Compile Include="Model\EventItem.cs" />
+    <Compile Include="Model\FollowingSuggested.cs" />
+    <Compile Include="Model\FollowingEventSubscription.cs" />
+    <Compile Include="Model\FollowingEventType.cs" />
+    <Compile Include="Model\FollowingSuggestionType.cs" />
     <Compile Include="Model\EventItemOccurrence.cs" />
     <Compile Include="Model\FinancialGateway.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
@@ -447,6 +463,7 @@
     <Compile Include="Reporting\ReportingHelper.cs" />
     <Compile Include="Reporting\DataSelect\Person\GroupParticipationSelect.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
+    <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />
     <Compile Include="Security\Authentication\Facebook.cs">

@@ -268,6 +268,18 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.GROUPTYPE_PURPOSE )]
         public int? GroupTypePurposeValueId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to ignore person inactivated.
+        /// By default group members are inactivated in their group whenever the person
+        /// is inactivated. If this value is set to true, members in groups of this type
+        /// will not be marked inactive when the person is inactivated
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [ignore person inactivated]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IgnorePersonInactivated { get; set; }
+
         #endregion
 
         #region Virtual Properties

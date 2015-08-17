@@ -187,4 +187,7 @@
   <data name="_201508111636214_FinancialPaymentDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201508111636214_financialpaymentdetails.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201508162108504_FollowingEventsSuggestions" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201508162108504_followingeventssuggestions.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

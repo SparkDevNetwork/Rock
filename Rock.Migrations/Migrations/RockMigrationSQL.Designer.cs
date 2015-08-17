@@ -533,5 +533,28 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201508111636214_FinancialPaymentDetails", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Update the Homepage and Error layouts on RockRMS site to be system
+        ///DECLARE @SiteId int = ( SELECT TOP 1 [Id] FROM [Site] WHERE [Guid] = &apos;C2D29296-6A87-47A9-A753-EE4E9159C4C4&apos; )
+        ///UPDATE [Layout] SET 
+        ///	 [IsSystem] = 1
+        ///	,[Guid] = &apos;CABD576F-C700-4690-835A-1BFBDD7DCBE6&apos;
+        ///WHERE [SiteId] = @SiteId
+        ///AND [FileName] = &apos;HomePage&apos;
+        ///
+        ///UPDATE [Layout] SET 
+        ///	 [IsSystem] = 1
+        ///	,[Guid] = &apos;7E816087-6A8C-498E-BFE7-D0B684A9DD45&apos;
+        ///WHERE [SiteId] = @SiteId
+        ///AND [FileName] = &apos;Error&apos;
+        ///
+        ///-- Update the Blank layout on externa [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201508162108504_FollowingEventsSuggestions {
+            get {
+                return ResourceManager.GetString("_201508162108504_FollowingEventsSuggestions", resourceCulture);
+            }
+        }
     }
 }

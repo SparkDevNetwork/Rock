@@ -207,11 +207,15 @@ namespace RockWeb.Blocks.Administration
             {
                 job.Class = ddlJobTypes.SelectedValue;
                 lCronExpressionDesc.Visible = false;
+                lLastStatusMessage.Visible = false;
             }
             else
             {
                 lCronExpressionDesc.Text = ExpressionDescriptor.GetDescription( job.CronExpression, new Options { ThrowExceptionOnParseError = false } );
                 lCronExpressionDesc.Visible = true;
+
+                lLastStatusMessage.Text = job.LastStatusMessage.ConvertCrLfToHtmlBr();
+                lLastStatusMessage.Visible = true;
             }
 
             job.LoadAttributes();

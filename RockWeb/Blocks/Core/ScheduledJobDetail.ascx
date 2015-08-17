@@ -35,18 +35,14 @@
                         <Rock:DataTextBox ID="tbNotificationEmails" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="NotificationEmails" TabIndex="4" />
                         <Rock:NotificationBox ID="nbJobTypeError" runat="server" NotificationBoxType="Danger" Dismissable="true" />
                         <Rock:RockDropDownList ID="ddlJobTypes" runat="server" Label="Job Type" OnSelectedIndexChanged="ddlJobTypes_SelectedIndexChanged" AutoPostBack="true" TabIndex="6" Required="true" />
+                        <Rock:DynamicControlsPanel ID="phAttributes" runat="server" ></Rock:DynamicControlsPanel>
+                        <Rock:DynamicControlsPanel ID="phAttributesReadOnly" runat="server" Visible="false" ></Rock:DynamicControlsPanel>
                     </div>
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbCronExpression" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="CronExpression" 
                             Help="Add a valid cron expression. Need help? Try <a href='http://www.cronmaker.com' target='_blank'>CronMaker</a>." TabIndex="7" />
                         <Rock:RockLiteral ID="lCronExpressionDesc" Label="Cron Description" runat="server" />
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:DynamicControlsPanel ID="phAttributes" runat="server" ></Rock:DynamicControlsPanel>
-                        <Rock:DynamicControlsPanel ID="phAttributesReadOnly" runat="server" Visible="false" ></Rock:DynamicControlsPanel>
+                        <Rock:RockLiteral ID="lLastStatusMessage" Label="Last Status Message" runat="server" />
                     </div>
                 </div>
 
