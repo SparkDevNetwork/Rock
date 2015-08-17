@@ -106,6 +106,13 @@
     <Compile Include="CodeGenerated\FinancialTransactionRefund.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionScannedCheck.cs" />
     <Compile Include="CodeGenerated\Following.cs" />
+    <Compile Include="CodeGenerated\FollowingEvent.cs" />
+    <Compile Include="CodeGenerated\FollowingEventSubscription.cs" />
+    <Compile Include="CodeGenerated\FollowingEventType.cs" />
+    <Compile Include="CodeGenerated\FollowingSuggested.cs" />
+    <Compile Include="CodeGenerated\FollowingSuggestion.cs" />
+    <Compile Include="CodeGenerated\FollowingSuggestionSubscription.cs" />
+    <Compile Include="CodeGenerated\FollowingSuggestionType.cs" />
     <Compile Include="CodeGenerated\Group.cs" />
     <Compile Include="CodeGenerated\GroupLocation.cs" />
     <Compile Include="CodeGenerated\GroupMember.cs" />
