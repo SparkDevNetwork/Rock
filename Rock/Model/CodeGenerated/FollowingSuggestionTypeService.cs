@@ -89,10 +89,12 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.Description = source.Description;
+            target.EntityNotificationFormatLava = source.EntityNotificationFormatLava;
             target.EntityTypeId = source.EntityTypeId;
             target.IsActive = source.IsActive;
             target.Name = source.Name;
             target.ReasonNote = source.ReasonNote;
+            target.ReminderDays = source.ReminderDays;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

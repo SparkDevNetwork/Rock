@@ -89,7 +89,9 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.Description = source.Description;
+            target.EntityNotificationFormatLava = source.EntityNotificationFormatLava;
             target.EntityTypeId = source.EntityTypeId;
+            target.FollowedEntityTypeId = source.FollowedEntityTypeId;
             target.IsActive = source.IsActive;
             target.IsNoticeRequired = source.IsNoticeRequired;
             target.LastCheckDateTime = source.LastCheckDateTime;

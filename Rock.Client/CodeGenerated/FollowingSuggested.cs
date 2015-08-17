@@ -44,9 +44,6 @@ namespace Rock.Client
         public DateTime? LastPromotedDateTime { get; set; }
 
         /// <summary />
-        public string Note { get; set; }
-
-        /// <summary />
         public int PersonAliasId { get; set; }
 
         /// <summary />
@@ -54,6 +51,9 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime StatusChangedDateTime { get; set; }
+
+        /// <summary />
+        public int SuggestionTypeId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -71,10 +71,10 @@ namespace Rock.Client
             this.EntityId = source.EntityId;
             this.EntityTypeId = source.EntityTypeId;
             this.LastPromotedDateTime = source.LastPromotedDateTime;
-            this.Note = source.Note;
             this.PersonAliasId = source.PersonAliasId;
             this.Status = source.Status;
             this.StatusChangedDateTime = source.StatusChangedDateTime;
+            this.SuggestionTypeId = source.SuggestionTypeId;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 
@@ -91,6 +91,9 @@ namespace Rock.Client
 
         /// <summary />
         public PersonAlias PersonAlias { get; set; }
+
+        /// <summary />
+        public FollowingSuggestionType SuggestionType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }
