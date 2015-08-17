@@ -5249,8 +5249,9 @@ a.help {
   display: block;
   float: left;
 }
-.panel legend {
-  border-color: red;
+.panel .panel-heading i.fa-chevron-up,
+.panel .panel-heading i.fa-chevron-down {
+  color: #6a6a6a;
 }
 .panel .panel-heading .panel-title small {
   opacity: .5;
