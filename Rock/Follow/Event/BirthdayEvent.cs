@@ -52,6 +52,7 @@ namespace Rock.Follow.Event
         /// <summary>
         /// Determines whether [has event happened] [the specified entity].
         /// </summary>
+        /// <param name="followingEvent">The following event.</param>
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
         public override bool HasEventHappened( FollowingEventType followingEvent, IEntity entity )
@@ -105,6 +106,12 @@ namespace Rock.Follow.Event
             return false;
         }
 
+        /// <summary>
+        /// Formats the entity notification.
+        /// </summary>
+        /// <param name="followingEvent">The following event.</param>
+        /// <param name="entity">The entity.</param>
+        /// <returns></returns>
         public override string FormatEntityNotification( FollowingEventType followingEvent, IEntity entity )
         {
             return base.FormatEntityNotification( followingEvent, entity );
