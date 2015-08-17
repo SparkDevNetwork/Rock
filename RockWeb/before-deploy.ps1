@@ -2,8 +2,8 @@
 Import-Module WebAdministration
 
 # Get the application (web root) and the root folder
-$webfolder = $env:APPLICATION_PATH
-$rootfolder = Split-Path -Parent $webfolder
+$webroot = $env:RockWebRootPath
+$rootfolder = Split-Path -Parent $webroot
 
 Write-Output "Running pre-deploy script"
 Write-Output "--------------------------------------------------"
@@ -19,6 +19,7 @@ $ErrorActionPreference = "Stop"
 # stop-service -servicename w3svc
 
 # stop web site and app pool
+Write-Host "Stopping Website and ApplicationPool"
 Stop-Website -Name $env:APPLICATION_SITE_NAME
 Stop-WebAppPool -Name (Get-Website -Name $env:APPLICATION_SITE_NAME).applicationPool
 

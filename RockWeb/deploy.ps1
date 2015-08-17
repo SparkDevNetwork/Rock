@@ -2,14 +2,13 @@
 Import-Module WebAdministration
 
 # Get the application (web root) and the root folder
-$webfolder = $env:APPLICATION_PATH
-$rootfolder = Split-Path -Parent $webfolder
+$webroot = $env:RockWebRootPath
+$rootfolder = Split-Path -Parent $webroot
 
 Write-Output "Running post-deploy script"
 Write-Output "--------------------------------------------------"
 Write-Output "Root folder: $rootfolder"
 Write-Output "Web root folder: $webroot"
-Write-Output APPLICATION_PATH
 Write-Output "Running script as: $env:userdomain\$env:username"
 
 # ensure that the compilation debug is false
@@ -36,6 +35,7 @@ Write-Host "Starting Web Publishing Service"
 start-service -servicename w3svc
 
 # start web site and app pool
+Write-Host "Starting ApplicationPool and Website"
 Start-WebAppPool -Name (Get-Website -Name $env:APPLICATION_SITE_NAME).applicationPool
 Start-Website -Name $env:APPLICATION_SITE_NAME
 
