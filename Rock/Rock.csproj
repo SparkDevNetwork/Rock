@@ -414,6 +414,7 @@
     <Compile Include="Model\RegistrationRegistrant.cs" />
     <Compile Include="Model\Registration.cs" />
     <Compile Include="Model\RegistrationRegistrantFee.cs" />
+    <Compile Include="Model\ReportService.partial.cs" />
     <Compile Include="Model\RegistrationTemplateFee.cs" />
     <Compile Include="Model\RegistrationTemplateDiscount.cs" />
     <Compile Include="Model\RegistrationTemplateFormField.cs" />
