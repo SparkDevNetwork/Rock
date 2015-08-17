@@ -30,10 +30,6 @@ namespace com.centralaz.DpsMatch.Migrations
                            ,[Name]
                            ,[Order]
                            ,[Guid]
-                           ,[CreatedDateTime]
-                           ,[ModifiedDateTime]
-                           ,[CreatedByPersonAliasId]
-                           ,[ModifiedByPersonAliasId]
                            ,[Description]
                            ,[ForeignId]
                            ,[OwnerPersonAliasId])
@@ -45,10 +41,6 @@ namespace com.centralaz.DpsMatch.Migrations
                            ,N'Offender'
                            ,0
                            ,N'A585EC28-64D7-463F-98E9-B0D957D0DBBC'
-                           ,GetDate()
-                           ,GetDate()
-                           ,1
-                           ,1
                            ,N'This person is a sexual offender'
                            ,NULL
                            ,NULL)
