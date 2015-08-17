@@ -134,6 +134,8 @@
                                 </Rock:RockControlWrapper>
                                 <Rock:GroupTypePicker ID="gtpInheritedGroupType" runat="server" Label="Inherited Group Type" 
                                     Help="Group Type to inherit attributes from" AutoPostBack="true" OnSelectedIndexChanged="gtpInheritedGroupType_SelectedIndexChanged" />
+                                <Rock:RockCheckBox ID="cbDontInactivateMembers" runat="server" Label="Don't Inactivate Members" 
+                                    Help="By default, whenever a person record is inactivated, all of that person's group memberships are also inactivated. Check this option if members in groups of this type should not be inactivated when their person record is inactivated." />
                             </div>
                         </div>
                     </Rock:PanelWidget>

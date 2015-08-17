@@ -258,3 +258,8 @@ UPDATE [Attribute] SET [DefaultValue] = null WHERE [Id] = @CheckinTypeAttributeI
 DECLARE @InvolvementId int = (SELECT TOP 1 [Id] FROM [ConnectionType] WHERE [Guid] = N'DD565087-A4BE-4943-B123-BF22777E8426')
 INSERT [dbo].[ConnectionActivityType] ( [Name], [ConnectionTypeId], [IsActive], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [Guid], [ForeignId]) 
 VALUES ( N'Called', @InvolvementId, 0, getdate(), getdate(), null, null, N'2437D702-E02E-4D8E-48DF-7CEFE4609F35', NULL)
+
+-- DT: Update Family, Known Relationships, and Implied Relationships to ignore the person inactivated
+UPDATE [GroupType]
+SET [IgnorePersonInactivated] = 1
+WHERE [Guid] IN ('790E3215-3B10-442B-AF69-616C0DCB998E','E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF','8C0E5852-F08F-4327-9AA5-87800A6AB53E')
