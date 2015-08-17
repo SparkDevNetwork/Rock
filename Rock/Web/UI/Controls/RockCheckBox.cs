@@ -341,7 +341,9 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                writer.WriteLine(string.Format("<div><i class=\"{0}\"></i> {1}</div>", this.Checked ? "fa fa-check-square-o" : "fa fa-square-o", this.Text));
+                string selectedCss = string.IsNullOrWhiteSpace( SelectedIconCssClass ) ? "fa fa-check-square-o" : SelectedIconCssClass;
+                string unselectedCss = string.IsNullOrWhiteSpace( UnSelectedIconCssClass ) ? "fa fa-square-o" : UnSelectedIconCssClass;
+                writer.WriteLine( string.Format( "<div><i class=\"{0}\"></i> {1}</div>", this.Checked ? selectedCss : unselectedCss, this.Text ) );
             }
         }
     }

@@ -190,6 +190,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum FollowingSuggestedStatus
+    {
+        Suggested = 0x0,
+        Ignored = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum Format
     {
         JPG = 0x0,

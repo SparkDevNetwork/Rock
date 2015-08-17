@@ -943,6 +943,32 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the next birth day.
+        /// </summary>
+        /// <value>
+        /// The next birth day.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual DateTime? NextBirthDay
+        {
+            get
+            {
+                if ( BirthMonth.HasValue && BirthDay.HasValue )
+                {
+                    var today = RockDateTime.Today;
+                    DateTime nextBirthDay = new DateTime( today.Year, BirthMonth.Value, BirthDay.Value );
+                    if ( nextBirthDay.CompareTo( today ) < 0 )
+                    {
+                        nextBirthDay = nextBirthDay.AddYears( 1 );
+                    }
+                    return nextBirthDay;
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Gets the number of days until the Person's birthday.
         /// </summary>
         /// <value>

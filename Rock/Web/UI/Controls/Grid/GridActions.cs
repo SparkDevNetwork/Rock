@@ -201,10 +201,10 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Recreates the child controls in a control derived from <see cref="T:System.Web.UI.WebControls.CompositeControl"/>.
         /// </summary>
-        protected override void RecreateChildControls()
-        {
-            EnsureChildControls();
-        }
+        //protected override void RecreateChildControls()
+        //{
+        //    EnsureChildControls();
+        //}
 
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
