@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Event
 {% for registrant in Registration.Registrants %}
     <li>
     
-        {{ registrant.PersonAlias.Person.FullName }}
+        <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
         
         {% if registrant.Cost > 0 %}
             - {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
@@ -110,24 +110,44 @@ namespace RockWeb.Blocks.Event
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 0 )]
 
     [CodeEditorField( "Default Reminder Email", "The default Reminder Email Template value to use for a new template", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
+{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
+{% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
+{% assign registrantCount = Registration.Registrants | Size %}
 
-<p>
-    {{ Registration.Registrants | Map:'NickName' | Join:', ' | ReplaceLast:',',' and' }},
-</p>
-
-<p>
-    Just a reminder that you are registered for {{ RegistrationInstance.Name }}.
-</p>
+<h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Reminder</h1>
 
 <p>
     {{ RegistrationInstance.AdditionalReminderDetails }}
 </p>
 
 <p>
-    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
+    The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+    {% if registrantCount > 1 %}have{% else %}has{% endif %} been registered:
 </p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}", "", 1 )]
+<ul>
+{% for registrant in Registration.Registrants %}
+    <li>{{ registrant.PersonAlias.Person.FullName }}</li>
+{% endfor %}
+</ul>
+
+
+{% if Registration.BalanceDue > 0 %}
+<p>
+    This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} has a remaining balance 
+    of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}.
+    You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
+    using our <a href='{{ externalSite }}/Registration?RegistrationInstanceId={{ RegistrationInstance.Id }}'>
+    online registration page</a>.
+</p>
+{% endif %}
+
+<p>
+    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+</p>
+
+{{ 'Global' | Attribute:'EmailFooter' }}
+", "", 1 )]
 
     [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
