@@ -186,3 +186,75 @@ VALUES ( 0, @AttributeId, @JobId, '8f5a9400-aed2-48a4-b5c8-c9b5d5669f4c', NEWID(
 SET @AttributeId = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'B1E268B0-F890-433A-9FED-331CF4D4FD2E' )
 INSERT INTO [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid] )
 VALUES ( 0, @AttributeId, @JobId, '2c112948-ff4c-46e7-981a-0257681eadf4', NEWID() )
+
+-- ** Migration Rollups **
+
+-- MP: Update CalculateGroupRequirement Job to IsSystem=0
+UPDATE ServiceJob
+SET [IsSystem] = 0
+WHERE [Guid] = 'ADC8FE8B-2C7D-46A4-885D-3EBB811DC03F'
+AND [IsSystem] = 1
+
+-- JE: Update System Email for Group Requirements Notification
+UPDATE [SystemEmail]
+SET [Body] = 
+'{{ ''Global'' | Attribute:''EmailHeader'' }}
+
+<p>
+    {{ Person.NickName }}:
+</p>
+
+<p>
+    Below are groups that have members with requirements that are either not met or are in a warning state.
+</p>
+
+
+{% for group in GroupsMissingRequirements %}
+    {% assign leaderCount = group.Leaders | Size %}
+    
+    <table style="border: 1px solid #c4c4c4; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; width: 100%; margin-bottom: 24px;" cellspacing="0" cellpadding="4">
+        <tr style="border: 1px solid #c4c4c4;">
+            <td colspan="2" bgcolor="#a6a5a5" align="left" style="color: #ffffff; padding: 4px 8px; border: 1px solid #c4c4c4;">
+                <h4 style="color: #ffffff; line-height: 1.2em;"><a style="color: #ffffff;" href="{{ ''Global'' | Attribute:''InternalApplicationRoot'' }}Group/{{ group.Id }}">{{ group.Name }}</a> <small>({{ group.GroupTypeName }})</small></h4>
+                <small>{{ group.AncestorPathName }}</small> <br />
+                <small>{{ ''Leader'' | PluralizeForQuantity:leaderCount }}:</strong> {{ group.Leaders | Map:''FullName'' | Join:'', '' | ReplaceLast:'','','' and'' }}</small> <br />
+            </td>
+        </tr>
+        
+        {% for groupMember in group.GroupMembersMissingRequirements %}
+            <tr style="border: 1px solid #c4c4c4;">
+                <td style="border: 1px solid #c4c4c4; padding: 6px; width: 50%;">
+                    {{ groupMember.FullName }} <small>( {{ groupMember.GroupMemberRole }} )</small><br />
+                </td>
+                <td style="border: 1px solid #c4c4c4; width: 50%;">
+                    <table style="width: 100%; margin: 0; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;" cellspacing="0" cellpadding="4">{% for missingRequirement in groupMember.MissingRequirements -%}
+                        {% case missingRequirement.Status -%}
+                            {% when ''NotMet'' -%}
+                                {% assign messageColor = "#d9534f" -%}
+                            {% when ''MeetsWithWarning'' -%}
+                                {% assign messageColor = "#f0ad4e" -%}
+                        {% endcase -%}<tr><td style="border-bottom: 1px solid #ffffff; color: {{ messageColor }}; padding: 6px;"><small>{{ missingRequirement.Message }} as of {{ missingRequirement.OccurrenceDate | Date:''M/d/yyyy'' }}</small></td></tr>
+                    {% endfor -%}</table>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    &nbsp;
+
+{% endfor %}
+
+<p>&nbsp;</p>
+
+{{ ''Global'' | Attribute:''EmailFooter'' }}'
+WHERE [Guid] = '91EA23C3-2E16-2597-4EAF-27C40D3A66D8'
+
+-- JE: Remove checkin type setting from default config
+DECLARE @CheckinTypeAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '6CD6EDD9-5DDD-4EAA-9447-A7B61091754D')
+DECLARE @AttendanceAnalysisBlockId int = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '3EF007F1-6B46-4BCD-A435-345C03EBCA17')
+DELETE FROM [AttributeValue] WHERE [AttributeId] = @CheckinTypeAttributeId AND [EntityId] = @AttendanceAnalysisBlockId
+UPDATE [Attribute] SET [DefaultValue] = null WHERE [Id] = @CheckinTypeAttributeId
+
+-- JE: Add new connection activity 'Called'
+DECLARE @InvolvementId int = (SELECT TOP 1 [Id] FROM [ConnectionType] WHERE [Guid] = N'DD565087-A4BE-4943-B123-BF22777E8426')
+INSERT [dbo].[ConnectionActivityType] ( [Name], [ConnectionTypeId], [IsActive], [CreatedDateTime], [ModifiedDateTime], [CreatedByPersonAliasId], [ModifiedByPersonAliasId], [Guid], [ForeignId]) 
+VALUES ( N'Called', @InvolvementId, 0, getdate(), getdate(), null, null, N'2437D702-E02E-4D8E-48DF-7CEFE4609F35', NULL)
