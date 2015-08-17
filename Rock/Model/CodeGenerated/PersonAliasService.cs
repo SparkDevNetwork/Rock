@@ -76,6 +76,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<AttributeValue>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AttributeValue.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<AttributeValue>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AttributeValue.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Auth>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Auth.FriendlyTypeName );
@@ -895,6 +907,54 @@ namespace Rock.Model
             if ( new Service<Following>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Following.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FollowingEventSubscription>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FollowingEventSubscription.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FollowingEventSubscription>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FollowingEventSubscription.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FollowingEventType>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FollowingEventType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FollowingEventType>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FollowingEventType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FollowingSuggested>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FollowingSuggested.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FollowingSuggested>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FollowingSuggested.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FollowingSuggestionType>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FollowingSuggestionType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FollowingSuggestionType>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FollowingSuggestionType.FriendlyTypeName );
                 return false;
             }  
  

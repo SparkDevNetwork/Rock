@@ -38,6 +38,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public string EntityNotificationFormatLava { get; set; }
+
+        /// <summary />
         public int? EntityTypeId { get; set; }
 
         /// <summary />
@@ -48,6 +51,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ReasonNote { get; set; }
+
+        /// <summary />
+        public int? ReminderDays { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -63,10 +69,12 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.Description = source.Description;
+            this.EntityNotificationFormatLava = source.EntityNotificationFormatLava;
             this.EntityTypeId = source.EntityTypeId;
             this.IsActive = source.IsActive;
             this.Name = source.Name;
             this.ReasonNote = source.ReasonNote;
+            this.ReminderDays = source.ReminderDays;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 

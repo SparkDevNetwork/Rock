@@ -38,7 +38,13 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public string EntityNotificationFormatLava { get; set; }
+
+        /// <summary />
         public int? EntityTypeId { get; set; }
+
+        /// <summary />
+        public int? FollowedEntityTypeId { get; set; }
 
         /// <summary />
         public bool IsActive { get; set; }
@@ -69,7 +75,9 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.Description = source.Description;
+            this.EntityNotificationFormatLava = source.EntityNotificationFormatLava;
             this.EntityTypeId = source.EntityTypeId;
+            this.FollowedEntityTypeId = source.FollowedEntityTypeId;
             this.IsActive = source.IsActive;
             this.IsNoticeRequired = source.IsNoticeRequired;
             this.LastCheckDateTime = source.LastCheckDateTime;
@@ -88,6 +96,9 @@ namespace Rock.Client
     {
         /// <summary />
         public EntityType EntityType { get; set; }
+
+        /// <summary />
+        public EntityType FollowedEntityType { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

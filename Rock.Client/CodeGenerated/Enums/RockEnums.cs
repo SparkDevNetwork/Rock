@@ -192,8 +192,9 @@ namespace Rock.Client.Enums
     /// </summary>
     public enum FollowingSuggestedStatus
     {
-        Suggested = 0x0,
-        Ignored = 0x1,
+        PendingNotification = 0x0,
+        Suggested = 0x1,
+        Ignored = 0x2,
     }
 
     /// <summary>

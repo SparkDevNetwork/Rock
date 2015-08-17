@@ -94,6 +94,7 @@ namespace Rock.Model
             target.PersonAliasId = source.PersonAliasId;
             target.Status = source.Status;
             target.StatusChangedDateTime = source.StatusChangedDateTime;
+            target.SuggestionTypeId = source.SuggestionTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

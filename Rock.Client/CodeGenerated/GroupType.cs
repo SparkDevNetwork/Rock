@@ -68,6 +68,9 @@ namespace Rock.Client
         public string IconCssClass { get; set; }
 
         /// <summary />
+        public bool IgnorePersonInactivated { get; set; }
+
+        /// <summary />
         public int? InheritedGroupTypeId { get; set; }
 
         /// <summary />
@@ -118,6 +121,7 @@ namespace Rock.Client
             this.GroupTerm = source.GroupTerm;
             this.GroupTypePurposeValueId = source.GroupTypePurposeValueId;
             this.IconCssClass = source.IconCssClass;
+            this.IgnorePersonInactivated = source.IgnorePersonInactivated;
             this.InheritedGroupTypeId = source.InheritedGroupTypeId;
             this.IsSystem = source.IsSystem;
             this.LocationSelectionMode = source.LocationSelectionMode;
