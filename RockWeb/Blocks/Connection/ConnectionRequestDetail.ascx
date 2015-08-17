@@ -121,7 +121,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlAssignedGroup" runat="server" Label="Assigned Group" />
+                            <Rock:RockDropDownList ID="ddlPlacementGroup" runat="server" Label="Placement Group" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" />
