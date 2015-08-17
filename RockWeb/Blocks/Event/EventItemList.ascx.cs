@@ -402,6 +402,7 @@ namespace RockWeb.Blocks.Event
             // Remove status columns
             foreach ( var column in gEventCalendarItems.Columns.OfType<BoundField>()
                 .Where( c =>
+                    c.DataField == "Instances" ||
                     c.DataField == "Status" ||
                     c.DataField == "ApprovalStatus" )
                 .ToList() )
@@ -469,6 +470,18 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
+
+            // Add Occurences Count column
+            var occurrencesField = new BadgeField();
+            occurrencesField.ImportantMin = int.MaxValue;
+            occurrencesField.WarningMin = 0;
+            occurrencesField.WarningMax = 0;
+            occurrencesField.InfoMin = 1;
+            occurrencesField.InfoMax = int.MaxValue;
+            occurrencesField.DataField = "Occurrences";
+            occurrencesField.HeaderText = "Occurrences";
+            occurrencesField.HtmlEncode = false;
+            gEventCalendarItems.Columns.Add( occurrencesField );
 
             // Add Status column
             var statusField = new BoundField();
@@ -668,7 +681,9 @@ namespace RockWeb.Blocks.Event
                     i.EventCalendarItem.EventItem.Guid,
                     Date = i.NextStartDateTime.HasValue ? i.NextStartDateTime.Value.ToShortDateString() : "N/A",
                     Name = i.EventCalendarItem.EventItem.Name,
-                    Campus = i.EventCalendarItem.EventItem.EventItemOccurrences.ToList().Select( c => c.Campus != null ? c.Campus.Name : "All Campuses" ).ToList().AsDelimited( "<br>" ),
+                    Occurrences = campusIds.Any() ? 
+                        i.EventCalendarItem.EventItem.EventItemOccurrences.Where( c => !c.CampusId.HasValue || campusIds.Contains( c.CampusId.Value ) ).Count() :
+                        i.EventCalendarItem.EventItem.EventItemOccurrences.Count(),
                     Calendar = i.EventCalendarItem.EventItem.EventCalendarItems.ToList().Select( c => c.EventCalendar.Name ).ToList().AsDelimited( "<br>" ),
                     Audience = i.EventCalendarItem.EventItem.EventItemAudiences.ToList().Select( a => a.DefinedValue.Value ).ToList().AsDelimited( "<br>" ),
                     Status = i.EventCalendarItem.EventItem.IsActive ? "<span class='label label-success'>Active</span>" : "<span class='label label-default'>Inactive</span>",
