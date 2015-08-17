@@ -289,6 +289,12 @@ namespace Rock.Migrations
 
             Sql( MigrationSQL._201508162108504_FollowingEventsSuggestions );
 
+            // JE: Event Reg Security Updates
+            // add security to the event reg pages/blocks
+            RockMigrationHelper.AddSecurityRoleGroup( "RSR - Event Registration Administration", "Gives access to create and administrate event registration templates and instances.", Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS );
+            RockMigrationHelper.AddSecurityAuthForPage( Rock.SystemGuid.Page.EVENT_REGISTRATION, 0, Rock.Security.Authorization.VIEW, true, Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS, 0, "4C63D597-1C2E-D7BA-4C71-34724D5C9670" );
+            RockMigrationHelper.AddSecurityAuthForPage( Rock.SystemGuid.Page.EVENT_REGISTRATION, 0, Rock.Security.Authorization.EDIT, true, Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS, 0, "514591FB-4972-93AE-438C-A410739BDBD1" );
+
         }
         
         /// <summary>
@@ -296,6 +302,11 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            RockMigrationHelper.DeleteSecurityAuthForPage( "4C63D597-1C2E-D7BA-4C71-34724D5C9670" );
+            RockMigrationHelper.DeleteSecurityAuthForPage( "514591FB-4972-93AE-438C-A410739BDBD1" );
+            RockMigrationHelper.DeleteGroup( Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS );
+
+
             // Attrib for BlockType: Person Suggestion Notice:List Page
             RockMigrationHelper.DeleteAttribute( "419C144C-B688-4D7A-B14D-0D90156BB0C0" );
             // Attrib for BlockType: Suggestion List:Detail Page
