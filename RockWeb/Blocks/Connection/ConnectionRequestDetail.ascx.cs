@@ -1111,13 +1111,13 @@ namespace RockWeb.Blocks.Connection
                 
                 string url = LinkedPageUrl( "GroupDetailPage", qryParams );
 
-                lAssignedGroup.Text = !string.IsNullOrWhiteSpace( url ) ?
+                lPlacementGroup.Text = !string.IsNullOrWhiteSpace( url ) ?
                     string.Format( "<a href='{0}'>{1}</a>", url, connectionRequest.AssignedGroup.Name ) :
                     connectionRequest.AssignedGroup.Name;
             }
             else
             {
-                lAssignedGroup.Text = "No assigned group";
+                lPlacementGroup.Text = "No group assigned";
             }
 
             if ( connectionRequest.ConnectorPersonAlias != null )
@@ -1126,7 +1126,7 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                lConnector.Text = "No assigned connector";
+                lConnector.Text = "No connector assigned";
             }
 
             hlState.Visible = true;
