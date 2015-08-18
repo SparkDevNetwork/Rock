@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -40,6 +42,8 @@ namespace RockWeb.Blocks.Cms
     [DisplayName("Content Channel Item Detail")]
     [Category("CMS")]
     [Description("Displays the details for a content channel item.")]
+
+    [LinkedPage( "Event Occurrence Page" )]
     public partial class ContentChannelItemDetail : RockBlock, IDetailBlock
     {
 
@@ -412,6 +416,21 @@ namespace RockWeb.Blocks.Cms
                 contentItem.LoadAttributes();
                 phAttributes.Controls.Clear();
                 Rock.Attribute.Helper.AddEditControls( contentItem, phAttributes, true, BlockValidationGroup );
+
+                var occurrenceLinks = new List<string>();
+                foreach( var occurrence in contentItem.EventItemOccurrences
+                    .Where( o => o.EventItemOccurrence != null )
+                    .Select( o => o.EventItemOccurrence ) )
+                {
+
+                    var qryParams = new Dictionary<string, string> { { "EventItemOccurrenceId", occurrence.Id.ToString() }};
+                    string url = LinkedPageUrl( "EventOccurrencePage", qryParams );
+                    occurrenceLinks.Add( string.Format( "<li><a href='{0}'>{1}</a> {2}</li>", url, occurrence.ToString(),
+                        occurrence.Schedule != null ? occurrence.Schedule.FriendlyScheduleText : string.Empty ) );
+                }
+                phOccurrences.Controls.Clear();
+                phOccurrences.Controls.Add( new LiteralControl( occurrenceLinks.AsDelimited( Environment.NewLine ) ) );
+                rcwOccurrences.Visible = occurrenceLinks.Any();
             }
             else
             {

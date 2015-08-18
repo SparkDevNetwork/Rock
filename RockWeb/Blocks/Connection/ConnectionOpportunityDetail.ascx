@@ -110,7 +110,8 @@
 
                         <Rock:PanelWidget ID="wpConnectionOpportunityWorkflow" runat="server" Title="Workflows">
                             <div class="grid">
-                                <Rock:Grid ID="gConnectionOpportunityWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow" OnRowDataBound="gConnectionOpportunityWorkflows_RowDataBound">
+                                <Rock:Grid ID="gConnectionOpportunityWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow" 
+                                    ShowConfirmDeleteDialog="false" OnRowDataBound="gConnectionOpportunityWorkflows_RowDataBound">
                                     <Columns>
                                         <Rock:RockBoundField DataField="WorkflowType" HeaderText="Workflow Type" HtmlEncode="false" />
                                         <Rock:RockBoundField DataField="Trigger" HeaderText="Trigger" />
@@ -142,28 +143,24 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" DataTextField="Name" DataValueField="Id" OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" AutoPostBack="true" />
+                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" DataTextField="Name" DataValueField="Id" 
+                            OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" AutoPostBack="true" Required="true" ValidationGroup="WorkflowDetails" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlWorkflowType" runat="server" Label="Workflow Type" DataTextField="Name" DataValueField="Id" />
+                        <Rock:RockDropDownList ID="ddlWorkflowType" runat="server" Label="Workflow Type" DataTextField="Name" DataValueField="Id" 
+                            Required="true" ValidationGroup="WorkflowDetails" />
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlPrimaryQualifier" runat="server" Visible="false" />
+                        <Rock:RockDropDownList ID="ddlPrimaryQualifier" runat="server" Visible="false" ValidationGroup="WorkflowDetails" />
+                        <Rock:RockDropDownList ID="ddlSecondaryQualifier" runat="server" Visible="false" ValidationGroup="WorkflowDetails" />
                     </div>
                     <div class="col-md-6">
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlSecondaryQualifier" runat="server" Visible="false" />
-                    </div>
-                    <div class="col-md-6">
-                    </div>
-                </div>
             </Content>
         </Rock:ModalDialog>
 
