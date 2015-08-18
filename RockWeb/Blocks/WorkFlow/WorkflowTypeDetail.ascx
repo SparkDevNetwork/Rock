@@ -64,6 +64,7 @@
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
+                                     <Rock:RockBoundField DataField="Key" HeaderText="Key" />
                                     <Rock:RockBoundField DataField="FieldType" HeaderText="Field Type" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                     <Rock:EditField OnClick="gAttributes_Edit" />
