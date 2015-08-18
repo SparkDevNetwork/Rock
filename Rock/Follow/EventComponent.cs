@@ -172,8 +172,9 @@ namespace Rock.Follow
         /// </summary>
         /// <param name="followingEvent">The following event.</param>
         /// <param name="entity">The entity.</param>
+        /// <param name="lastNotified">The last notified.</param>
         /// <returns></returns>
-        public abstract bool HasEventHappened( FollowingEventType followingEvent, IEntity entity );
+        public abstract bool HasEventHappened( FollowingEventType followingEvent, IEntity entity, DateTime? lastNotified );
 
     }
 }

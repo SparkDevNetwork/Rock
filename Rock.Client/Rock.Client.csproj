@@ -107,6 +107,7 @@
     <Compile Include="CodeGenerated\FinancialTransactionScannedCheck.cs" />
     <Compile Include="CodeGenerated\Following.cs" />
     <Compile Include="CodeGenerated\FollowingEvent.cs" />
+    <Compile Include="CodeGenerated\FollowingEventNotification.cs" />
     <Compile Include="CodeGenerated\FollowingEventSubscription.cs" />
     <Compile Include="CodeGenerated\FollowingEventType.cs" />
     <Compile Include="CodeGenerated\FollowingSuggested.cs" />
