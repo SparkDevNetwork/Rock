@@ -45,6 +45,12 @@ namespace Rock.CodeGeneration
                 lblAssemblyPath.Text = fi.FullName;
                 lblAssemblyDateTime.Text = fi.LastWriteTime.ToElapsedString();
                 toolTip1.SetToolTip( lblAssemblyDateTime, fi.LastWriteTime.ToString() );
+
+                SqlConnection sqlconn = GetSqlConnection( RootFolder().FullName );
+                if (sqlconn != null)
+                {
+                    lblDatabase.Text = sqlconn.Database;
+                }
             }
 
             ofdAssembly.InitialDirectory = Path.GetDirectoryName( lblAssemblyPath.Text );
@@ -315,18 +321,15 @@ namespace Rock.CodeGeneration
         /// <param name="rootFolder">The root folder.</param>
         /// <param name="type">The type.</param>
         /// <returns></returns>
-        private string GetCanDeleteCode( string rootFolder, Type type )
+        private string GetCanDeleteCode( string serviceFolder, Type type )
         {
-            var di = new DirectoryInfo( rootFolder );
-            var file = new FileInfo( Path.Combine( di.Parent.FullName, @"RockWeb\web.ConnectionStrings.config" ) );
-            if ( !file.Exists )
+            
+            SqlConnection sqlconn = GetSqlConnection( new DirectoryInfo(serviceFolder).Parent.FullName );
+            if (sqlconn == null)
+            {
                 return string.Empty;
+            }
 
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load( file.FullName );
-            XmlNode root = xmlDoc.DocumentElement;
-            XmlNode node = root.SelectNodes( "add[@name = \"RockContext\"]" )[0];
-            SqlConnection sqlconn = new SqlConnection( node.Attributes["connectionString"].Value );
             sqlconn.Open();
 
             string sql = @"
@@ -466,6 +469,22 @@ order by [parentTable], [columnName]
 
             return canDeleteBegin + canDeleteMiddle + canDeleteEnd;
 
+        }
+
+        private static SqlConnection GetSqlConnection( string rootFolder )
+        {
+            var file = new FileInfo( Path.Combine( rootFolder, @"RockWeb\web.ConnectionStrings.config" ) );
+            if ( !file.Exists )
+            {
+                return null;
+            }
+
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load( file.FullName );
+            XmlNode root = xmlDoc.DocumentElement;
+            XmlNode node = root.SelectNodes( "add[@name = \"RockContext\"]" )[0];
+            SqlConnection sqlconn = new SqlConnection( node.Attributes["connectionString"].Value );
+            return sqlconn;
         }
 
         /// <summary>
