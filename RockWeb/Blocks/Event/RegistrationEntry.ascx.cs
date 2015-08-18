@@ -914,7 +914,6 @@ namespace RockWeb.Blocks.Event
                             var registrationService = new RegistrationService( rockContext );
                             var newRegistration = registrationService
                                 .Queryable( "Registrants.PersonAlias.Person,Registrants.GroupMember,RegistrationInstance.Account,RegistrationInstance.RegistrationTemplate.Fees,RegistrationInstance.RegistrationTemplate.Discounts,RegistrationInstance.RegistrationTemplate.Forms.Fields.Attribute,RegistrationInstance.RegistrationTemplate.FinancialGateway" )
-                                .AsNoTracking()
                                 .Where( r => r.Id == registration.Id )
                                 .FirstOrDefault();
                             if ( newRegistration != null )
