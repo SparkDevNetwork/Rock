@@ -12018,6 +12018,7 @@ BEGIN
             ,[Guid]
             ,[RecordTypeValueId]
             ,[RecordStatusValueId]
+			,[IsDeceased]
             ,[CreatedDateTime]
             )
         VALUES (
@@ -12035,6 +12036,7 @@ BEGIN
             ,@personGuid
             ,@personRecordType
             ,@activeRecordStatus
+			,0
             ,SYSDATETIME()
             )
 
@@ -12109,6 +12111,7 @@ BEGIN
             ,[Guid]
             ,[RecordTypeValueId]
             ,[RecordStatusValueId]
+			,[IsDeceased]
             ,[CreatedDateTime]
             )
         VALUES (
@@ -12127,6 +12130,7 @@ BEGIN
             ,@spousePersonGuid
             ,@personRecordType
             ,@activeRecordStatus
+			,0
             ,SYSDATETIME()
             )
 
