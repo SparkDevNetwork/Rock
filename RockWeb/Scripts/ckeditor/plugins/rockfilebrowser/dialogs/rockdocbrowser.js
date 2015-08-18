@@ -30,8 +30,8 @@
         onOk: function (sender) {
             var fileResult = $('#iframe-rockdocbrowser_' + editor.id).contents().find('.js-filebrowser-result input[type=hidden]').val();
             if (fileResult) {
-                // iframe returns the result in the format "href,text"
-                var resultParts = fileResult.split(',');
+                // iframe returns the result in the format "href|text"
+                var resultParts = fileResult.split('|');
                 var imageHtml = '<a href="' + Rock.settings.get('baseUrl') + resultParts[0] + '" >' + resultParts[1] + '</a>';
                 editor.insertHtml(imageHtml);
             }
