@@ -29,6 +29,11 @@
                             <Rock:DateTimeField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" />
                             <Rock:DateTimeField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" />
                             <Rock:RockBoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
+                            <Rock:TemplateFieldUnselected HeaderText="Calendar Occurrences">
+                                <ItemTemplate>
+                                    <%# (int)Eval("Occurrences") > 0 ? "<span class='badge badge-info'>" + ((int)Eval("Occurrences")).ToString("N0") + "</span>" : "" %>
+                                </ItemTemplate>
+                            </Rock:TemplateFieldUnselected>
                         </Columns>
                     </Rock:Grid>
                 </div>

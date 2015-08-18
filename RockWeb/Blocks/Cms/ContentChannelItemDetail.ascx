@@ -61,16 +61,23 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DateTimePicker ID="dtpStart" runat="server" Label="Start" Required="true" />
+                            <Rock:DateTimePicker ID="dtpExpire" runat="server" Label="Expire" />
                             <Rock:NumberBox ID="nbPriority" runat="server" Label="Priority" />
+                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:DateTimePicker ID="dtpExpire" runat="server" Label="Expire" />
+                            <Rock:RockControlWrapper ID="rcwOccurrences" runat="server" Label="Calendar Item Event Occurrences">
+                                <ul class="list-unstyled">
+                                    <asp:PlaceHolder ID="phOccurrences" runat="server" />
+                                </ul>
+                            </Rock:RockControlWrapper>
                         </div>
                     </div>
 
                     <div class="row">
-                        <div class="col-md-12">
-                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
+                        <div class="col-md-6">
+                        </div>
+                        <div class="col-md-6">
                         </div>
                     </div>
 

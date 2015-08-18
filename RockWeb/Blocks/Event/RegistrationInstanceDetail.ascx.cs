@@ -1095,7 +1095,7 @@ namespace RockWeb.Blocks.Event
                                 {
                                     var qryParams = new Dictionary<string, string>();
                                     qryParams.Add( "EventCalendarId", calendarItem.EventCalendarId.ToString() );
-                                    qryParams.Add( "EventItemId", calendarItem.Id.ToString() );
+                                    qryParams.Add( "EventItemId", calendarItem.EventItem.Id.ToString() );
                                     calendarItems.Add( string.Format( "<a href='{0}'>{1}</a> ({2})",
                                         LinkedPageUrl( "CalendarItemPage", qryParams ),
                                         calendarItem.EventItem.Name,

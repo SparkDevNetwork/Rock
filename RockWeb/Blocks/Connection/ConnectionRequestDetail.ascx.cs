@@ -1536,7 +1536,7 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.ConnectionOpportunity != null &&
                     connectionRequest.ConnectionOpportunity.ConnectionType != null )
                 {
-                    foreach ( var activityType in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionActivityTypes )
+                    foreach ( var activityType in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionActivityTypes.OrderBy( a => a.Name ) )
                     {
                         if ( activityType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         {
