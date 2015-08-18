@@ -826,42 +826,48 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void BindConnectionRequestActivitiesGrid( ConnectionRequest connectionRequest, RockContext rockContext )
         {
-            var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
-            var qry = connectionRequestActivityService
-                .Queryable( "ConnectionActivityType,ConnectionOpportunity,ConnectorPersonAlias.Person" )
-                .Where( a =>
-                    a.ConnectionActivityType != null &&
-                    a.ConnectionOpportunity != null );
-
-            if ( connectionRequest != null && 
-                connectionRequest.ConnectionOpportunity != null &&
-                connectionRequest.ConnectionOpportunity.ConnectionType != null &&
-                connectionRequest.ConnectionOpportunity.ConnectionType.EnableFullActivityList )
+            if ( connectionRequest != null && connectionRequest.PersonAlias != null )
             {
-                qry = qry.Where( a => a.ConnectionOpportunity.ConnectionTypeId == connectionRequest.ConnectionOpportunity.ConnectionTypeId );
-            }
-            else
-            {
-                qry = qry.Where( a => a.ConnectionRequestId == connectionRequest.Id );
-            }
+                var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
+                var qry = connectionRequestActivityService
+                    .Queryable( "ConnectionActivityType,ConnectionOpportunity,ConnectorPersonAlias.Person" )
+                    .Where( a =>
+                        a.ConnectionRequest != null &&
+                        a.ConnectionRequest.PersonAlias != null &&
+                        a.ConnectionRequest.PersonAlias.PersonId == connectionRequest.PersonAlias.PersonId &&
+                        a.ConnectionActivityType != null &&
+                        a.ConnectionOpportunity != null );
 
-            gConnectionRequestActivities.DataSource = qry.ToList()
-                .Select( a => new
-                    {
-                        a.Id,
-                        a.Guid,
-                        CreatedDate = a.CreatedDateTime,
-                        Date = a.CreatedDateTime.HasValue ? a.CreatedDateTime.Value.ToShortDateString() : "",
-                        Activity = a.ConnectionActivityType.Name,
-                        Opportunity = a.ConnectionOpportunity.Name,
-                        OpportunityId = a.ConnectionOpportunityId,
-                        Connector = a.ConnectorPersonAlias != null && a.ConnectorPersonAlias.Person != null ? a.ConnectorPersonAlias.Person.FullName : "",
-                        Note = a.Note,
-                        CanEdit = a.ConnectorPersonAliasId.Equals( CurrentPersonAliasId ) && a.ConnectionActivityType.ConnectionTypeId.HasValue
-                    } )
-                .OrderByDescending( a => a.CreatedDate )
-                .ToList();
-            gConnectionRequestActivities.DataBind();
+                if ( connectionRequest != null &&
+                    connectionRequest.ConnectionOpportunity != null &&
+                    connectionRequest.ConnectionOpportunity.ConnectionType != null &&
+                    connectionRequest.ConnectionOpportunity.ConnectionType.EnableFullActivityList )
+                {
+                    qry = qry.Where( a => a.ConnectionOpportunity.ConnectionTypeId == connectionRequest.ConnectionOpportunity.ConnectionTypeId );
+                }
+                else
+                {
+                    qry = qry.Where( a => a.ConnectionRequestId == connectionRequest.Id );
+                }
+
+                gConnectionRequestActivities.DataSource = qry.ToList()
+                    .Select( a => new
+                        {
+                            a.Id,
+                            a.Guid,
+                            CreatedDate = a.CreatedDateTime,
+                            Date = a.CreatedDateTime.HasValue ? a.CreatedDateTime.Value.ToShortDateString() : "",
+                            Activity = a.ConnectionActivityType.Name,
+                            Opportunity = a.ConnectionOpportunity.Name,
+                            OpportunityId = a.ConnectionOpportunityId,
+                            Connector = a.ConnectorPersonAlias != null && a.ConnectorPersonAlias.Person != null ? a.ConnectorPersonAlias.Person.FullName : "",
+                            Note = a.Note,
+                            CanEdit = a.ConnectorPersonAliasId.Equals( CurrentPersonAliasId ) && a.ConnectionActivityType.ConnectionTypeId.HasValue
+                        } )
+                    .OrderByDescending( a => a.CreatedDate )
+                    .ToList();
+                gConnectionRequestActivities.DataBind();
+            }
         }
 
         #endregion
