@@ -264,6 +264,7 @@ namespace Rock.Apps.CheckScannerUtility
                 bitmapImageFront.StreamSource = new MemoryStream( scannedDocInfo.FrontImageData );
                 bitmapImageFront.EndInit();
                 imgFront.Source = bitmapImageFront;
+                Rock.Wpf.WpfHelper.FadeIn( imgFront, 100 );
                 lblFront.Visibility = Visibility.Visible;
             }
             else
@@ -279,12 +280,15 @@ namespace Rock.Apps.CheckScannerUtility
                 bitmapImageBack.StreamSource = new MemoryStream( scannedDocInfo.BackImageData );
                 bitmapImageBack.EndInit();
                 imgBack.Source = bitmapImageBack;
+                Rock.Wpf.WpfHelper.FadeIn( imgBack, 100 );
                 lblBack.Visibility = Visibility.Visible;
+                colBackImage.Width = new GridLength( 1, GridUnitType.Star );
             }
             else
             {
                 imgBack.Source = null;
                 lblBack.Visibility = Visibility.Hidden;
+                colBackImage.Width = new GridLength( 0, GridUnitType.Star );
             }
 
             if ( scannedDocInfo.IsCheck )
@@ -1001,9 +1005,6 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         public void StartScanning()
         {
-            _itemsUploaded = 0;
-            _itemsSkipped = 0;
-            _itemsScanned = 0;
             _keepScanning = true;
             ResumeScanning();
         }

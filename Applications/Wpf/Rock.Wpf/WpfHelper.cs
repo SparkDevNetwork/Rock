@@ -32,7 +32,7 @@ namespace Rock.Wpf
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="speed">The speed.</param>
-        public static void FadeIn( Control control, int speed = 0 )
+        public static void FadeIn( FrameworkElement control, int speed = 0 )
         {
             control.Opacity = 0;
             control.Visibility = Visibility.Visible;
@@ -58,7 +58,7 @@ namespace Rock.Wpf
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="speed">The speed.</param>
-        public static void FadeOut( Control control, int speed = 2000 )
+        public static void FadeOut( FrameworkElement control, int speed = 2000 )
         {
             Storyboard storyboard = new Storyboard();
             TimeSpan duration = new TimeSpan( 0, 0, 0, 0, (int)speed );
