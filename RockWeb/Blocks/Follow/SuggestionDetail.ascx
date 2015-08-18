@@ -61,7 +61,7 @@
                                 Help="The number of days to wait before notifying person of this suggestion again if they have not followed or ignored the suggestion. Leave blank if person should never be reminded." />
                         </div>
                         <div class="col-md-6">
-                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
+                            <asp:PlaceHolder ID="phAttributes" runat="server" />
                         </div>
                     </div>
 

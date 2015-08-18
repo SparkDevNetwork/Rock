@@ -38,7 +38,7 @@ INNER JOIN [Block] B
 WHERE P.[Guid] = 'AE1818D8-581C-4599-97B9-509EA450376A'
 
 -- Add Birthday following event types
-DECLARE @PersonEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Person' )
+DECLARE @PersonAliasEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.PersonAlias' )
 DECLARE @EntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '532A7405-A3FB-4147-BE67-3B75A230AADE' )
 DECLARE @AttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'F5B35909-5A4A-4203-84A8-7F493E56548B' )
 IF @EntityTypeId IS NOT NULL
@@ -46,7 +46,7 @@ BEGIN
 
 	INSERT INTO [FollowingEventType] ( [Name], [Description], [EntityTypeId], [FollowedEntityTypeId], [IsActive], [SendOnWeekends], [IsNoticeRequired], [EntityNotificationFormatLava], [Guid] )
 	VALUES 
-	    ( 'Upcoming Birthday', 'Person with an upcoming birthday', @EntityTypeId, @PersonEntityTypeId, 1, 0, 0, 
+	    ( 'Upcoming Birthday', 'Person with an upcoming birthday', @EntityTypeId, @PersonAliasEntityTypeId, 1, 0, 0, 
 '<tr>
     <td>
         {% if Entity.Person.PhotoId %} 
@@ -73,7 +73,7 @@ BEGIN
         
     </td>
 </tr>', 'E1C2F8BD-E875-4C7B-91A1-EDB98AB01BDC' ),
-	    ( 'Birthday', 'Person with a birthday today (or this weekend)', @EntityTypeId, @PersonEntityTypeId, 1, 0, 1, 
+	    ( 'Birthday', 'Person with a birthday today (or this weekend)', @EntityTypeId, @PersonAliasEntityTypeId, 1, 0, 1, 
 '<tr>
     <td>
         {% if Entity.Person.PhotoId %} 
