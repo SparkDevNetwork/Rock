@@ -448,6 +448,8 @@
     <Compile Include="Reporting\DataFilter\IUpdateSelectionFromPageParameters.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\GroupDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\GroupMemberDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FirstContributionDateFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\GroupAttendanceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupGeofenceFilter.cs" />
