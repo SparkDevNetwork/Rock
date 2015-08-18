@@ -315,6 +315,7 @@ namespace RockWeb.Blocks.Connection
                 connectionOpportunity.GroupTypeId = ddlGroupType.SelectedValue.AsInteger();
                 connectionOpportunity.GroupMemberRoleId = ddlGroupRole.SelectedValue.AsInteger();
                 connectionOpportunity.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
+                connectionOpportunity.UseAllGroupsOfType = tglUseAllGroupsOfGroupType.Checked;
 
                 int? orphanedPhotoId = null;
                 if ( imgupPhoto.BinaryFileId != null )
