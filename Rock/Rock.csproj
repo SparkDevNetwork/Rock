@@ -242,8 +242,12 @@
     <Compile Include="Field\Types\EventItemFieldType.cs" />
     <Compile Include="Field\Types\NoteTypesFieldType.cs" />
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
+    <Compile Include="Follow\Event\PersonFirstAttendedGroupType.cs" />
+    <Compile Include="Follow\Event\PersonFirstJoinedGroupType.cs" />
+    <Compile Include="Follow\Event\PersonBaptized.cs" />
+    <Compile Include="Follow\Event\PersonAnniversary.cs" />
     <Compile Include="Follow\Suggestion\InGroupTogether.cs" />
-    <Compile Include="Follow\Event\BirthdayEvent.cs" />
+    <Compile Include="Follow\Event\PersonBirthday.cs" />
     <Compile Include="Follow\SuggestionComponent.cs" />
     <Compile Include="Follow\EventComponent.cs" />
     <Compile Include="Follow\SuggestionContainer.cs" />
@@ -321,6 +325,7 @@
     <Compile Include="Model\BenevolenceResult.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\CodeGenerated\FollowingEventNotificationService.cs" />
     <Compile Include="Model\CodeGenerated\FollowingEventSubscriptionService.cs" />
     <Compile Include="Model\CodeGenerated\FollowingEventTypeService.cs" />
     <Compile Include="Model\CodeGenerated\FollowingSuggestedService.cs" />
@@ -391,6 +396,7 @@
     <Compile Include="Model\EventCalendar.cs" />
     <Compile Include="Model\EventCalendarItem.cs" />
     <Compile Include="Model\EventItem.cs" />
+    <Compile Include="Model\FollowingEventNotification.cs" />
     <Compile Include="Model\FollowingSuggested.cs" />
     <Compile Include="Model\FollowingEventSubscription.cs" />
     <Compile Include="Model\FollowingEventType.cs" />

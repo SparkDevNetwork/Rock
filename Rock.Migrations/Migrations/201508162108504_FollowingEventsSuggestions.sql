@@ -46,7 +46,7 @@ BEGIN
 
 	INSERT INTO [FollowingEventType] ( [Name], [Description], [EntityTypeId], [FollowedEntityTypeId], [IsActive], [SendOnWeekends], [IsNoticeRequired], [EntityNotificationFormatLava], [Guid] )
 	VALUES 
-	    ( 'Person Birthday (5 day notice)', 'Upcoming Birthday', @EntityTypeId, @PersonEntityTypeId, 1, 0, 0, 
+	    ( 'Upcoming Birthday', 'Person with an upcoming birthday', @EntityTypeId, @PersonEntityTypeId, 1, 0, 0, 
 '<tr>
     <td>
         {% if Entity.Person.PhotoId %} 
@@ -73,7 +73,7 @@ BEGIN
         
     </td>
 </tr>', 'E1C2F8BD-E875-4C7B-91A1-EDB98AB01BDC' ),
-	    ( 'Person Birthday (day of notice)', 'Birthday Today', @EntityTypeId, @PersonEntityTypeId, 1, 0, 1, 
+	    ( 'Birthday', 'Person with a birthday today (or this weekend)', @EntityTypeId, @PersonEntityTypeId, 1, 0, 1, 
 '<tr>
     <td>
         {% if Entity.Person.PhotoId %} 
@@ -118,44 +118,8 @@ END
 SET @EntityTypeId = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '20AC7F2A-D42F-438D-93D7-46E3C6769B8F' )
 IF @EntityTypeId IS NOT NULL
 BEGIN
-	
     INSERT INTO [FollowingSuggestionType] ( [Name], [Description], [ReasonNote], [ReminderDays], [EntityTypeId], [IsActive], [EntityNotificationFormatLava], [Guid] )
-	VALUES 
-	    ( 'In Family Together', 'Your Family Members', 'Family Member', 30, @EntityTypeId, 1, 
-'<tr>
-    <td>
-        {% if Entity.Person.PhotoId %} 
-            <img src=''{{ ''Global'' | Attribute:''PublicApplicationRoot'' }}GetImage.ashx?id={{ Entity.Person.PhotoId }}&maxwidth=120&maxheight=120''/>
-        {% endif %}
-    </td>
-    <td>
-        <strong>{{ Entity.Person.FullName }}</strong><br />
-
-        {% if Entity.Person.Email != empty %}
-            Email: <a href="mailto:{{ Entity.Person.Email }}">{{ Entity.Person.Email }}</a><br />
-        {% endif %}
-
-        {% assign mobilePhone = Entity.Person.PhoneNumbers | Where:''NumberTypeValueId'', 136 | Select:''NumberFormatted'' %}
-        {% if mobilePhone != empty %}
-            Cell: {{ mobilePhone }}<br />
-        {% endif %}
-        
-        {% assign homePhone = Entity.Person.PhoneNumbers | Where:''NumberTypeValueId'', 13 | Select:''NumberFormatted'' %}
-        {% if homePhone != empty %}
-            Home: {{ homePhone }}<br />
-        {% endif %}
-        
-    </td>
-</tr>', '8641F468-272B-4617-91ED-AB312D0F273C' )
-
-    SET @AttributeId = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'AB754108-EB85-422B-A898-90C47495174A' )
-	IF @AttributeId IS NOT NULL
-	BEGIN
-		INSERT INTO [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid] )
-		SELECT 0, @AttributeId, [Id], '790E3215-3B10-442B-AF69-616C0DCB998E', NEWID()
-		FROM [FollowingSuggestionType] WHERE [Guid] = '8641F468-272B-4617-91ED-AB312D0F273C'
-	END
-
+	VALUES ( 'Family Members', 'People in the same family', 'Family Member', 30, @EntityTypeId, 1, '', '8641F468-272B-4617-91ED-AB312D0F273C' )
 END
 
 -- Event Notification Job

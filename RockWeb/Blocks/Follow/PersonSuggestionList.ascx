@@ -11,7 +11,7 @@
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">
-                    <Rock:Grid ID="gSuggestions" runat="server" AllowSorting="true" RowItemText="Following">
+                    <Rock:Grid ID="gSuggestions" runat="server" AllowSorting="true" RowItemText="Suggestions" EmptyDataText="You do not have any pending suggestions">
                         <Columns>
                             <Rock:SelectField />
                             <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="LastName,NickName" />
