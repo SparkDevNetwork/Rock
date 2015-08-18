@@ -31,8 +31,8 @@
         onOk: function (sender) {
             var fileResult = $('#iframe-rockimagebrowser_' + editor.id).contents().find('.js-filebrowser-result input[type=hidden]').val();
             if (fileResult) {
-                // iframe returns the result in the format "imageSrcUrl,imageAltText"
-                var resultParts = fileResult.split(',');
+                // iframe returns the result in the format "imageSrcUrl|imageAltText"
+                var resultParts = fileResult.split('|');
                 var imageHtml = '<img src="' + Rock.settings.get('baseUrl') + resultParts[0] + '" alt="' + resultParts[1] + '" />';
                 editor.insertHtml(imageHtml);
             }
