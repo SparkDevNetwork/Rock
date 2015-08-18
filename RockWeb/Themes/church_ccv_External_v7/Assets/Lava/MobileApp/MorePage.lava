@@ -1,0 +1,63 @@
+<div class="container">
+
+
+  <h3 class="text-center">Peoria Campus</h3>
+
+  <div class="clearfix margin-b-lg">
+    <div class="pull-left">
+      <i class="fa fa-clock-o fa-2x"></i>
+    </div>
+    <div class="pull-left margin-l-md">
+      <strong>Saturday</strong> &nbsp; 4:30pm &nbsp; 6:00pm<br>
+      <strong>Sunday</strong> &nbsp; 9:00qm &nbsp; 10:30am &nbsp; 12:00pm
+    </div>
+  </div>
+
+  <div class="row margin-b-lg">
+    <div class="col-xs-6">
+      <a href="#" class="btn btn-primary btn-sm btn-block"><i class="fa fa-location-arrow"></i> Get Directions</a>
+    </div>
+    <div class="col-xs-6">
+      <a href="#" class="btn btn-default btn-sm btn-block"><i class="fa fa-phone"></i> Call</a>
+    </div>
+  </div>
+
+  <div id="single-campus-map" class="responsive-map" data-campus-id="1" data-map-type="mobile"></div>
+
+
+  <div class="row">
+    <div class="col-sm-6">
+      <hr>
+
+      <h4>Kids</h4>
+      <p>We have excellent programs for kids (infants - 6th grade) during all adult services.</p>
+      <p><a href="#" class="btn btn-sm btn-default">Learn More</a></p>
+    </div>
+    <div class="col-sm-6">
+      <hr>
+
+      <h4>Students</h4>
+      <p>Jr. High and High School students meet for separate weekend experiences.</p>
+      <p><a href="#" class="btn btn-sm btn-default">Learn More</a></p>
+    </div>
+  </div>
+
+
+</div>
+
+{% comment %}<hr>
+
+<div class="container">
+  <p class="text-muted small">© <script>document.write(new Date().getFullYear())</script> Christ’s Church of The Valley</p>
+</div>{% endcomment %}
+
+<p>&nbsp;</p>
+
+{% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
+
+
+<script src="~~/Scripts/_map.js"></script>
+<script src="~~/Scripts/map-single-campus.js"></script>
+
+
+{% comment %}<script src="~~/Scripts/min/map-single-campus.min.js"></script>{% endcomment %}

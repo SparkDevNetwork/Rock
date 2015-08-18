@@ -20,7 +20,7 @@
 
   <div class="row">
     <div class="col-md-7">
-      <div id="campus-detail-page-map" data-campus-id="{{ campus.Id }}" style="min-height: 320px;"></div>
+      <div id="single-campus-map" data-campus-id="{{ campus.Id }}" style="min-height: 320px;"></div>
     </div>
     <div class="col-md-5">
       <div class="well">
@@ -131,7 +131,7 @@
 
 {% comment %}
 <script src="~~/Scripts/_map.js"></script>
-<script src="~~/Scripts/map-campus-detail-page.js"></script>
+<script src="~~/Scripts/map-single-campus.js"></script>
 {% endcomment %}
 
-<script src="~~/Scripts/min/map-campus-detail-page.min.js"></script>
+<script src="~~/Scripts/min/map-single-campus.min.js"></script>

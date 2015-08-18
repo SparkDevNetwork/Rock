@@ -20,12 +20,14 @@ Rock.controls.util.loadGoogleMapsApi('https://maps.googleapis.com/maps/api/js?se
 
 $(window).on('googleMapsIsLoaded', function(){
 
-  holder = document.getElementById('campus-detail-page-map')
+  holder = document.getElementById('single-campus-map')
   campusId = $(holder).attr('data-campus-id')
 
   window.campusDetailPageMap = new CCV.campusMap(holder, campusId)
 
-  campusDetailPageMap.useScrollZoom = false
+  var isMobile =  ($(holder).attr('data-map-type') == "mobile")
+
+  campusDetailPageMap.useScrollZoom = isMobile
 
   campusDetailPageMap.draw()
 
