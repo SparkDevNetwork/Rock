@@ -957,10 +957,10 @@ namespace Rock.Model
                 if ( BirthMonth.HasValue && BirthDay.HasValue )
                 {
                     var today = RockDateTime.Today;
-                    DateTime nextBirthDay = new DateTime( today.Year, BirthMonth.Value, BirthDay.Value );
-                    if ( nextBirthDay.CompareTo( today ) < 0 )
+                    var nextBirthDay = RockDateTime.New( today.Year, BirthMonth.Value, BirthDay.Value );
+                    if ( nextBirthDay.HasValue && nextBirthDay.Value.CompareTo( today ) < 0 )
                     {
-                        nextBirthDay = nextBirthDay.AddYears( 1 );
+                        nextBirthDay = RockDateTime.New( today.Year + 1, BirthMonth.Value, BirthDay.Value);
                     }
                     return nextBirthDay;
                 }
@@ -1059,10 +1059,10 @@ namespace Rock.Model
                 if ( AnniversaryDate.HasValue )
                 {
                     var today = RockDateTime.Today;
-                    DateTime nextAnniversary = new DateTime( today.Year, AnniversaryDate.Value.Month, AnniversaryDate.Value.Day );
-                    if ( nextAnniversary.CompareTo( today ) < 0 )
+                    var nextAnniversary = RockDateTime.New( today.Year, AnniversaryDate.Value.Month, AnniversaryDate.Value.Day );
+                    if ( nextAnniversary.HasValue && nextAnniversary.Value.CompareTo( today ) < 0 )
                     {
-                        nextAnniversary = nextAnniversary.AddYears( 1 );
+                        nextAnniversary = RockDateTime.New( today.Year + 1, AnniversaryDate.Value.Month, AnniversaryDate.Value.Day );
                     }
                     return nextAnniversary;
                 }

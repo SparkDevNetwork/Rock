@@ -239,7 +239,7 @@ namespace Rock.Migrations
 </p>
 
 <p>
-    Listed below are following events that you have requested to be notified about.
+    Listed below are events that you have requested to be notified about.
 </p>
 
 {% for event in EventTypes %}
@@ -261,7 +261,7 @@ namespace Rock.Migrations
 </p>
 
 <p>
-    Listed below are some following suggestions for you to review. You can choose <a href=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}Page/426"">to follow</a> (or ignore) any of these suggestions from your Rock dashboard.
+    Listed below are some suggestions for you to review. You can choose <a href=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}Page/426"">to follow</a> (or ignore) any of these suggestions from your Rock dashboard.
 </p>
 
 {% for suggestion in Suggestions %}

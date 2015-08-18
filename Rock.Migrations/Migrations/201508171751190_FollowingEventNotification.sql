@@ -1,5 +1,5 @@
-DECLARE @PersonEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Person' )
-IF @PersonEntityTypeId IS NOT NULL
+DECLARE @PersonAliasEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.PersonAlias' )
+IF @PersonAliasEntityTypeId IS NOT NULL
 BEGIN
 
     DECLARE @EntityTypeId int 
@@ -9,7 +9,7 @@ BEGIN
     SET @EntityTypeId = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '17DFDE21-0C1E-426F-8516-4BBA9ED28385' )
 	INSERT INTO [FollowingEventType] ( [Name], [Description], [EntityTypeId], [FollowedEntityTypeId], [IsActive], [SendOnWeekends], [IsNoticeRequired], [EntityNotificationFormatLava], [Guid] )
 	VALUES 
-	    ( 'Upcoming Anniversary', 'Person with an upcoming anniversary', @EntityTypeId, @PersonEntityTypeId, 1, 0, 0, 
+	    ( 'Upcoming Anniversary', 'Person with an upcoming anniversary', @EntityTypeId, @PersonAliasEntityTypeId, 1, 0, 0, 
 '<tr>
     <td>
         {% if Entity.Person.PhotoId %} 
@@ -18,7 +18,7 @@ BEGIN
     </td>
     <td>
         <strong><a href="{{ ''Global'' | Attribute:''PublicApplicationRoot'' }}Person/{{ Entity.PersonId }}">{{ Entity.Person.FullName }}</a> has a 
-        {{ Entity.Person.AnniversaryDate | DateDiff:Entity.Person.NextAnniversary,''y'' }} year anniversary on 
+        {{ Entity.Person.AnniversaryDate | DateDiff:Entity.Person.NextAnniversary,''Y'' }} year anniversary on 
         {{ Entity.Person.NextAnniversary | Date:''dddd, MMMM dd'' }} ({{ Entity.Person.NextAnniversary | HumanizeDateTime }})</strong><br />
 
         {% if Entity.Person.Email != empty %}
@@ -50,7 +50,7 @@ BEGIN
     SET @EntityTypeId = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'A156E5A0-FEE8-4730-8AC7-B3239B35F9F2' )
 	INSERT INTO [FollowingEventType] ( [Name], [Description], [EntityTypeId], [FollowedEntityTypeId], [IsActive], [SendOnWeekends], [IsNoticeRequired], [EntityNotificationFormatLava], [Guid] )
 	VALUES 
-	    ( 'Baptized', 'Person was recently baptized', @EntityTypeId, @PersonEntityTypeId, 1, 0, 0, 
+	    ( 'Baptized', 'Person was recently baptized', @EntityTypeId, @PersonAliasEntityTypeId, 1, 0, 0, 
 '<tr>
     <td>
         {% if Entity.Person.PhotoId %} 
@@ -86,7 +86,7 @@ BEGIN
     SET @EntityTypeId = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '4CDE3741-D284-4B32-9F8A-DFB63C600594' )
 	INSERT INTO [FollowingEventType] ( [Name], [Description], [EntityTypeId], [FollowedEntityTypeId], [IsActive], [SendOnWeekends], [IsNoticeRequired], [EntityNotificationFormatLava], [Guid] )
 	VALUES 
-	    ( 'Began Serving', 'Person recently began serving', @EntityTypeId, @PersonEntityTypeId, 1, 0, 0, 
+	    ( 'Began Serving', 'Person recently began serving', @EntityTypeId, @PersonAliasEntityTypeId, 1, 0, 0, 
 '<tr>
     <td>
         {% if Entity.Person.PhotoId %} 
@@ -94,7 +94,8 @@ BEGIN
         {% endif %}
     </td>
     <td>
-        <strong><a href="{{ ''Global'' | Attribute:''PublicApplicationRoot'' }}Person/{{ Entity.PersonId }}">{{ Entity.Person.FullName }}</a> recently began serving.
+        <strong><a href="{{ ''Global'' | Attribute:''PublicApplicationRoot'' }}Person/{{ Entity.PersonId }}">{{ Entity.Person.FullName }}</a> recently 
+        began serving.</strong><br />
 
         {% if Entity.Person.Email != empty %}
             Email: <a href="mailto:{{ Entity.Person.Email }}">{{ Entity.Person.Email }}</a><br />
@@ -123,7 +124,7 @@ BEGIN
 
 	INSERT INTO [FollowingEventType] ( [Name], [Description], [EntityTypeId], [FollowedEntityTypeId], [IsActive], [SendOnWeekends], [IsNoticeRequired], [EntityNotificationFormatLava], [Guid] )
 	VALUES 
-	    ( 'Joined Small Group', 'Person joined a small group', @EntityTypeId, @PersonEntityTypeId, 1, 0, 0, 
+	    ( 'Joined Small Group', 'Person joined a small group', @EntityTypeId, @PersonAliasEntityTypeId, 1, 0, 0, 
 '<tr>
     <td>
         {% if Entity.Person.PhotoId %} 
@@ -131,7 +132,8 @@ BEGIN
         {% endif %}
     </td>
     <td>
-        <strong><a href="{{ ''Global'' | Attribute:''PublicApplicationRoot'' }}Person/{{ Entity.PersonId }}">{{ Entity.Person.FullName }}</a> recently joined a small group.
+        <strong><a href="{{ ''Global'' | Attribute:''PublicApplicationRoot'' }}Person/{{ Entity.PersonId }}">{{ Entity.Person.FullName }}</a> 
+        recently joined a small group.</strong><br />
 
         {% if Entity.Person.Email != empty %}
             Email: <a href="mailto:{{ Entity.Person.Email }}">{{ Entity.Person.Email }}</a><br />
@@ -214,6 +216,13 @@ BEGIN
 	INSERT INTO [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid] )
 	SELECT 0, @AttributeId, [Id], '2c112948-ff4c-46e7-981a-0257681eadf4', NEWID()
 	FROM [FollowingSuggestionType] WHERE [Guid] = 'FC72D537-9C0C-40E3-884A-9FC5AA0AAF90'
+
+    -- Known Relationship owner role
+    SET @AttributeId = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '4C538BAC-943D-4DBF-BB09-1842C2E40515' )
+    DELETE [AttributeValue] WHERE [AttributeId] = @AttributeId
+	INSERT INTO [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid] )
+	SELECT 0, @AttributeId, [Id], '7bc6c12e-0cd1-4dfd-8d5b-1b35ae714c42', NEWID()
+	FROM [FollowingSuggestionType] WHERE [Guid] = 'DFB3459C-2022-4A4F-A968-D8FFFF150DAB'
 
 END
 
