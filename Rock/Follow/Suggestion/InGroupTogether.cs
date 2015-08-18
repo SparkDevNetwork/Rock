@@ -36,8 +36,10 @@ namespace Rock.Follow.Suggestion
     [ExportMetadata( "ComponentName", "InGroupTogether" )]
 
     [GroupTypeField("Group Type","The group type", true, order: 0 )]
-    [GroupRoleField( "", "Follower Group Type (optional)", "If specified, only people with this role will be be notified (Make sure to select same group type as above).", false, order:1, key:"FollowerGroupType" )]
-    [GroupRoleField( "", "Followed Group Type (optional)", "If specified, only people with this role will be suggested to the follower (Make sure to select same group type as above).", false, order:2, key:"FollowedGroupType" )]
+    [GroupField("Group (optional)", "A specific group to evaluate (Make sure to select group with same group type as above).", false, order:1, key:"Group" )]
+    [SecurityRoleField("Security Role (optional)", "A specific group to evaluate (Make sure to select group with same group type as above).", false, order:2, key:"SecurityRole")]
+    [GroupRoleField( null, "Follower Group Type (optional)", "If specified, only people with this role will be be notified (Make sure to select same group type as above).", false, order:3, key:"FollowerGroupType" )]
+    [GroupRoleField( null, "Followed Group Type (optional)", "If specified, only people with this role will be suggested to the follower (Make sure to select same group type as above).", false, order:4, key:"FollowedGroupType" )]
     public class InGroupTogether : SuggestionComponent
     {
         #region Suggestion Component Implementation
@@ -75,6 +77,16 @@ namespace Rock.Follow.Suggestion
                             m.Group != null &&
                             m.Group.GroupType.Guid.Equals( groupTypeGuid.Value ) &&
                             followerPersonIds.Contains( m.PersonId ) );
+
+                    Guid? groupGuid = GetAttributeValue( followingSuggestionType, "Group" ).AsGuidOrNull();
+                    if ( !groupGuid.HasValue )
+                    {
+                        groupGuid = GetAttributeValue( followingSuggestionType, "SecurityRole" ).AsGuidOrNull();
+                    }
+                    if ( groupGuid.HasValue )
+                    {
+                        followers = followers.Where( m => m.Group.Guid.Equals( groupGuid.Value ) );
+                    }
 
                     Guid? followerRoleGuid = GetAttributeValue( followingSuggestionType, "FollowerGroupType" ).AsGuidOrNull();
                     if ( followerRoleGuid.HasValue )
