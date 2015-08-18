@@ -168,11 +168,29 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     {
                         if ( campus != null && campusContext.HasValue )
                         {
-                            currentMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
+
+                            var currentweekMetricValue = newMetric.MetricValues
                                 .Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End && a.EntityId.ToString() == campus.Id.ToString() )
                                 .Select( a => a.YValue )
-                                .Sum()
-                                );
+                                .Sum();
+                            
+                            currentMetricValue.Value = string.Format( "{0:n0}", currentweekMetricValue );
+
+                            // Compare currentMetricValue to the same date range 7 days previous
+
+                            var previousweekMetricValue = newMetric.MetricValues
+                                .Where( a => a.MetricValueDateTime >= dateRange.Start.Value.AddDays( -7 ) && a.MetricValueDateTime <= dateRange.End.Value.AddDays( -7 ) && a.EntityId.ToString() == campus.Id.ToString() )
+                                .Select( a => a.YValue )
+                                .Sum();
+
+                            if ( currentweekMetricValue > previousweekMetricValue )
+                            {
+                                metricClass.Value = "fa-caret-up brand-success";
+                            }
+                            else if ( currentweekMetricValue < previousweekMetricValue )
+                            {
+                                metricClass.Value = "fa-caret-down brand-danger";
+                            }
 
                             if ( MetricCompareLastYear == "Yes" )
                             {
@@ -185,11 +203,28 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                         }
                         else
                         {
-                            currentMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
+                            var currentweekMetricValue = newMetric.MetricValues
                                 .Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End )
                                 .Select( a => a.YValue )
-                                .Sum()
-                                );
+                                .Sum();
+
+                            currentMetricValue.Value = string.Format( "{0:n0}", currentweekMetricValue );
+
+                            // Compare currentMetricValue to the same date range 7 days previous
+
+                            var previousweekMetricValue = newMetric.MetricValues
+                                .Where( a => a.MetricValueDateTime >= dateRange.Start.Value.AddDays( -7 ) && a.MetricValueDateTime <= dateRange.End.Value.AddDays( -7 ) )
+                                .Select( a => a.YValue )
+                                .Sum();
+
+                            if ( currentweekMetricValue > previousweekMetricValue )
+                            {
+                                metricClass.Value = "fa-caret-up brand-success";
+                            }
+                            else if ( currentweekMetricValue < previousweekMetricValue )
+                            {
+                                metricClass.Value = "fa-caret-down brand-danger";
+                            }
 
                             if ( MetricCompareLastYear == "Yes" )
                             {

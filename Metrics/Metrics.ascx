@@ -106,16 +106,13 @@
                     pointDotStrokeWidth: 3,
                 }
 
-                $( "#bid_<%= metricBlockNumber.Value %>" ).on( "load", "<%= metricBlockId.Value %>Chart", function() {
-                    
-                    var <%= metricBlockId.Value %> = document.getElementById("<%= metricBlockId.Value %>Chart").getContext("2d");
-                    window.<%= metricBlockId.Value %>Chart = new Chart(<%= metricBlockId.Value %>).Doughnut(<%= metricBlockValues %>, pieOptions);
-
-
+                $('body').on('ajaxSuccess', 'body', function() {
+                    console.log('loaded');
                 });
 
                 $( document ).ready( function() {
-                    
+                    var <%= metricBlockId.Value %> = document.getElementById("<%= metricBlockId.Value %>Chart").getContext("2d");
+                    window.<%= metricBlockId.Value %>Chart = new Chart(<%= metricBlockId.Value %>).Doughnut(<%= metricBlockValues %>, pieOptions);
                 });
             </script>
 
