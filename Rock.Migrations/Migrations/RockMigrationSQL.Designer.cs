@@ -556,5 +556,23 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201508162108504_FollowingEventsSuggestions", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @PersonEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Model.Person&apos; )
+        ///IF @PersonEntityTypeId IS NOT NULL
+        ///BEGIN
+        ///
+        ///    DECLARE @EntityTypeId int 
+        ///    DECLARE @AttributeId int 
+        ///    DECLARE @EntityId int
+        ///
+        ///    SET @EntityTypeId = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = &apos;17DFDE21-0C1E-426F-8516-4BBA9ED28385&apos; )
+        ///	INSERT INTO [FollowingEventType] ( [Name], [Description], [EntityTypeId], [FollowedEntityTypeId], [IsActive], [SendOnWeekends], [IsNoticeRequired [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201508171751190_FollowingEventNotification {
+            get {
+                return ResourceManager.GetString("_201508171751190_FollowingEventNotification", resourceCulture);
+            }
+        }
     }
 }

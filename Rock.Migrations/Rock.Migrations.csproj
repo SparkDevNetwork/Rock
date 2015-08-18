@@ -387,6 +387,10 @@
     <Compile Include="Migrations\201508162108504_FollowingEventsSuggestions.Designer.cs">
       <DependentUpon>201508162108504_FollowingEventsSuggestions.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201508171751190_FollowingEventNotification.cs" />
+    <Compile Include="Migrations\201508171751190_FollowingEventNotification.Designer.cs">
+      <DependentUpon>201508171751190_FollowingEventNotification.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2090,6 +2094,9 @@
     <EmbeddedResource Include="Migrations\201508162108504_FollowingEventsSuggestions.resx">
       <DependentUpon>201508162108504_FollowingEventsSuggestions.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201508171751190_FollowingEventNotification.resx">
+      <DependentUpon>201508171751190_FollowingEventNotification.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
     </EmbeddedResource>
@@ -3191,6 +3198,7 @@
     <Content Include="Migrations\201508041124356_RegistrationContact.sql" />
     <Content Include="Migrations\201508010008536_BackgroundCheckExpiringSoon.sql" />
     <Content Include="Migrations\201508111253454_SiteMobilePage.sql" />
+    <Content Include="Migrations\201508171751190_FollowingEventNotification.sql" />
     <Content Include="Migrations\201508162108504_FollowingEventsSuggestions.sql" />
     <Content Include="Migrations\201508111636214_FinancialPaymentDetails.sql" />
   </ItemGroup>
