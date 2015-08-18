@@ -42,17 +42,8 @@ namespace RockWeb.Blocks.Follow
 
         #region Properties
 
-        public int EventId
-        {
-            get { return ViewState["EventId"] as int? ?? 0; }
-            set { ViewState["EventId"] = value; }
-        }
-
-        public int? EventEntityTypeId
-        {
-            get { return ViewState["EventEntityTypeId"] as int?; }
-            set { ViewState["EventEntityTypeId"] = value; }
-        }
+        public int EventId { get; set; }
+        public int? EventEntityTypeId { get; set; } 
 
         #endregion
 
@@ -61,6 +52,9 @@ namespace RockWeb.Blocks.Follow
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
+
+            EventId = ViewState["EventId"] as int? ?? 0;
+            EventEntityTypeId = ViewState["EventEntityTypeId"] as int?;
 
             var followingEvent = new FollowingEventType { Id = EventId, EntityTypeId = EventEntityTypeId };
             BuildDynamicControls( followingEvent, false );
@@ -78,6 +72,13 @@ namespace RockWeb.Blocks.Follow
             {
                 ShowDetail( PageParameter( "eventId" ).AsInteger() );
             }
+        }
+
+        protected override object SaveViewState()
+        {
+            ViewState["EventId"] = EventId;
+            ViewState["EventEntityTypeId"] = EventEntityTypeId;
+            return base.SaveViewState();
         }
 
         #endregion
@@ -273,19 +274,26 @@ namespace RockWeb.Blocks.Follow
 
         private void BuildDynamicControls( FollowingEventType followingEvent, bool SetValues )
         {
-            EventEntityTypeId = followingEvent.EntityTypeId;
-            if ( followingEvent.EntityTypeId.HasValue )
+            if ( SetValues )
             {
-                var EventComponentEntityType = EntityTypeCache.Read( followingEvent.EntityTypeId.Value );
-                var EventEntityType = EntityTypeCache.Read( "Rock.Model.FollowingEventType" );
-                if ( EventComponentEntityType != null && EventEntityType != null )
+                EventEntityTypeId = followingEvent.EntityTypeId;
+                if ( followingEvent.EntityTypeId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    var EventComponentEntityType = EntityTypeCache.Read( followingEvent.EntityTypeId.Value );
+                    var EventEntityType = EntityTypeCache.Read( "Rock.Model.FollowingEventType" );
+                    if ( EventComponentEntityType != null && EventEntityType != null )
                     {
-                        Rock.Attribute.Helper.UpdateAttributes( EventComponentEntityType.GetEntityType(), EventEntityType.Id, "EntityTypeId", EventComponentEntityType.Id.ToString(), rockContext );
-                        followingEvent.LoadAttributes( rockContext );
+                        using ( var rockContext = new RockContext() )
+                        {
+                            Rock.Attribute.Helper.UpdateAttributes( EventComponentEntityType.GetEntityType(), EventEntityType.Id, "EntityTypeId", EventComponentEntityType.Id.ToString(), rockContext );
+                        }
                     }
                 }
+            }
+
+            if ( followingEvent.Attributes == null )
+            {
+                followingEvent.LoadAttributes();
             }
 
             phAttributes.Controls.Clear();

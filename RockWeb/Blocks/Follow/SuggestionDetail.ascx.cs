@@ -28,6 +28,7 @@ using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Follow
 {
@@ -41,21 +42,15 @@ namespace RockWeb.Blocks.Follow
     {
         #region Control Methods
 
-        public int SuggestionId
-        {
-            get { return ViewState["SuggestionId"] as int? ?? 0; }
-            set { ViewState["SuggestionId"] = value; }
-        }
-
-        public int? SuggestionEntityTypeId
-        {
-            get { return ViewState["SuggestionEntityTypeId"] as int?; }
-            set { ViewState["SuggestionEntityTypeId"] = value; }
-        }
+        public int SuggestionId { get; set; }
+        public int? SuggestionEntityTypeId { get; set; } 
 
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
+
+            SuggestionId = ViewState["SuggestionId"] as int? ?? 0;
+            SuggestionEntityTypeId = ViewState["SuggestionEntityTypeId"] as int?;
 
             var followingSuggestion = new FollowingSuggestionType { Id = SuggestionId, EntityTypeId = SuggestionEntityTypeId };
             BuildDynamicControls( followingSuggestion, false );
@@ -76,6 +71,13 @@ namespace RockWeb.Blocks.Follow
         }
 
         #endregion
+
+        protected override object SaveViewState()
+        {
+            ViewState["SuggestionId"] = SuggestionId;
+            ViewState["SuggestionEntityTypeId"] = SuggestionEntityTypeId;
+            return base.SaveViewState();
+        }
 
         #region Events
 
@@ -256,19 +258,26 @@ namespace RockWeb.Blocks.Follow
 
         private void BuildDynamicControls( FollowingSuggestionType followingSuggestion, bool SetValues )
         {
-            SuggestionEntityTypeId = followingSuggestion.EntityTypeId;
-            if ( followingSuggestion.EntityTypeId.HasValue )
+            if ( SetValues )
             {
-                var SuggestionComponentEntityType = EntityTypeCache.Read( followingSuggestion.EntityTypeId.Value );
-                var SuggestionEntityType = EntityTypeCache.Read( "Rock.Model.FollowingSuggestionType" );
-                if ( SuggestionComponentEntityType != null && SuggestionEntityType != null )
+                SuggestionEntityTypeId = followingSuggestion.EntityTypeId;
+                if ( followingSuggestion.EntityTypeId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    var SuggestionComponentEntityType = EntityTypeCache.Read( followingSuggestion.EntityTypeId.Value );
+                    var SuggestionEntityType = EntityTypeCache.Read( "Rock.Model.FollowingSuggestionType" );
+                    if ( SuggestionComponentEntityType != null && SuggestionEntityType != null )
                     {
-                        Rock.Attribute.Helper.UpdateAttributes( SuggestionComponentEntityType.GetEntityType(), SuggestionEntityType.Id, "EntityTypeId", SuggestionComponentEntityType.Id.ToString(), rockContext );
-                        followingSuggestion.LoadAttributes( rockContext );
+                        using ( var rockContext = new RockContext() )
+                        {
+                            Rock.Attribute.Helper.UpdateAttributes( SuggestionComponentEntityType.GetEntityType(), SuggestionEntityType.Id, "EntityTypeId", SuggestionComponentEntityType.Id.ToString(), rockContext );
+                        }
                     }
                 }
+            }
+
+            if ( followingSuggestion.Attributes == null )
+            {
+                followingSuggestion.LoadAttributes();
             }
 
             phAttributes.Controls.Clear();
