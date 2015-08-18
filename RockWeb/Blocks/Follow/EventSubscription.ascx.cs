@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Follow
                         {
                             f.Id,
                             f.IsNoticeRequired,
-                            Name = f.IsNoticeRequired ? f.Name + " (required)" : f.Name,
+                            Name = f.IsNoticeRequired ? f.Name + " <span class='label label-info'>required</span>" : f.Name,
                             f.Description,
                             Selected = f.IsNoticeRequired || _currentSubscriptions.Contains( f.Id )
                         } )

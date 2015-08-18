@@ -176,10 +176,32 @@ namespace Rock.Follow
 
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class PersonEntitySuggestion
     {
+        /// <summary>
+        /// Gets or sets the person identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
         public int PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity identifier.
+        /// </summary>
+        /// <value>
+        /// The entity identifier.
+        /// </value>
         public int EntityId { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonEntitySuggestion"/> class.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
         public PersonEntitySuggestion( int personId, int entityId )
         {
             PersonId = personId;

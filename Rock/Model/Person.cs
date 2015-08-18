@@ -1045,6 +1045,32 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the next anniversary.
+        /// </summary>
+        /// <value>
+        /// The next anniversary.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual DateTime? NextAnniversary
+        {
+            get
+            {
+                if ( AnniversaryDate.HasValue )
+                {
+                    var today = RockDateTime.Today;
+                    DateTime nextAnniversary = new DateTime( today.Year, AnniversaryDate.Value.Month, AnniversaryDate.Value.Day );
+                    if ( nextAnniversary.CompareTo( today ) < 0 )
+                    {
+                        nextAnniversary = nextAnniversary.AddYears( 1 );
+                    }
+                    return nextAnniversary;
+                }
+                return null;
+            }
+        }
+        
+        /// <summary>
         /// Gets or sets the grade offset, which is the number of years until their graduation date.  This is used to determine which Grade (Defined Value) they are in
         /// </summary>
         /// <value>

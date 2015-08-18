@@ -1811,6 +1811,7 @@ namespace RockWeb.Blocks.WorkFlow
                     a.Guid,
                     a.Name,
                     a.Description,
+                    a.Key,
                     FieldType = FieldTypeCache.GetName(a.FieldTypeId),
                     a.IsRequired
                 } )

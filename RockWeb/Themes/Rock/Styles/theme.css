@@ -2886,7 +2886,7 @@ iframe.email-body {
   padding: 6px 12px;
   font-size: 14px;
   color: #555555;
-  background-color: #f0f0f0;
+  background-color: #edeae6;
   border: 1px solid #cccccc;
   border-radius: 4px;
   display: inline-block;
@@ -3797,7 +3797,7 @@ fieldset .actions {
   height: 30px;
   border: 1px solid #cccccc;
   border-radius: 0 0 4px 4px;
-  background-color: #f0f0f0;
+  background-color: #edeae6;
   text-align: center;
   padding-top: 8px;
   position: relative;
@@ -3858,7 +3858,7 @@ fieldset .actions {
   height: 50px;
   border-radius: 3px;
   font-size: 10px;
-  background-color: #f0f0f0;
+  background-color: #edeae6;
   color: #555555;
   display: block;
   padding-top: 2px;
@@ -3871,7 +3871,7 @@ fieldset .actions {
   content: '\f016';
   font-family: FontAwesome;
   font-size: 28px;
-  color: #cacaca;
+  color: #cdc5ba;
   -webkit-font-smoothing: antialiased;
   margin-left: 42px;
   position: absolute;
@@ -3882,7 +3882,7 @@ fieldset .actions {
 }
 .fileupload-group .fileupload-thumbnail .file-link.file-exists:after {
   content: '\f15c';
-  color: #cacaca;
+  color: #cdc5ba;
   margin-top: -10px;
 }
 .fileupload-group .fileupload-remove {
@@ -3901,7 +3901,7 @@ fieldset .actions {
 .fileupload-group .fileupload-dropzone,
 .fileupload-group .fileupload-button {
   height: 30px;
-  background-color: #f0f0f0;
+  background-color: #edeae6;
   text-align: center;
   padding-top: 8px;
   position: relative;
@@ -5249,8 +5249,9 @@ a.help {
   display: block;
   float: left;
 }
-.panel legend {
-  border-color: red;
+.panel .panel-heading i.fa-chevron-up,
+.panel .panel-heading i.fa-chevron-down {
+  color: #6a6a6a;
 }
 .panel .panel-heading .panel-title small {
   opacity: .5;

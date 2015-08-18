@@ -219,33 +219,33 @@ a.help {
 // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
 .panel {
 
-  legend {
-    border-color: red;// @axxxccent-color;
-  }
+      .panel-heading {
+            i.fa-chevron-up,
+            i.fa-chevron-down {
+                color: @panel-heading-text-color;
+            }  
+          
+            .panel-title {
+                small {
+                opacity: .5;
+            }
+       }
 
-  .panel-heading {
-    .panel-title {
-      small {
-        opacity: .5;
-      }
-    }
+        .checkbox {
+          margin: 0;
+        }
 
-    .checkbox {
-      margin: 0;
-    }
+        .panel-labels {
+          float: right;
+        }
 
-    .panel-labels {
-      float: right;
-    }
+        .panel-actions {
+          margin-top: 4px;
+        }
 
-    .panel-actions {
-      margin-top: 4px;
-    }
-
-    .form-group {
-      margin-bottom: 0;
-    }
-
+        .form-group {
+          margin-bottom: 0;
+        }
 
   }
 

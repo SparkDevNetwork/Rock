@@ -15,10 +15,9 @@
                     <Rock:Grid ID="rGridEvent" runat="server"  RowItemText="Event" OnRowSelected="rGridEvent_Edit" TooltipField="Description" AllowSorting="true">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:TemplateField HeaderText="Event Type" SortExpression="EntityType.Name">
+                            <asp:TemplateField HeaderText="Type" SortExpression="EntityType.Name">
                                 <ItemTemplate><%# GetComponentName( Eval( "EntityType") )%></ItemTemplate>
                             </asp:TemplateField>
-                            <Rock:DateTimeField DataField="LastCheckDateTime" HeaderText="Last Checked" SortExpression="LastCheckDateTime" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
                             <Rock:DeleteField OnClick="rGridEvent_Delete" />
                         </Columns>

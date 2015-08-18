@@ -52,9 +52,11 @@ namespace Rock.Follow.Event
         /// <summary>
         /// Determines whether [has event happened] [the specified entity].
         /// </summary>
+        /// <param name="followingEvent">The following event.</param>
         /// <param name="entity">The entity.</param>
+        /// <param name="lastNotified">The last notified.</param>
         /// <returns></returns>
-        public override bool HasEventHappened( FollowingEventType followingEvent, IEntity entity )
+        public override bool HasEventHappened( FollowingEventType followingEvent, IEntity entity, DateTime? lastNotified )
         {
             if ( followingEvent != null && entity != null )
             {
@@ -62,9 +64,9 @@ namespace Rock.Follow.Event
                 if ( personAlias != null && personAlias.Person != null )
                 {
                     var person = personAlias.Person;
-                    if ( person.BirthDay.HasValue && person.BirthMonth.HasValue )
+                    DateTime? nextBirthDay = person.NextBirthDay;
+                    if ( nextBirthDay.HasValue )
                     {
-                        DateTime lastCheck = followingEvent.LastCheckDateTime.HasValue ? followingEvent.LastCheckDateTime.Value : DateTime.MinValue;
                         int leadDays = GetAttributeValue( followingEvent, "LeadDays" ).AsInteger();
 
                         var today = RockDateTime.Today;
@@ -87,14 +89,8 @@ namespace Rock.Follow.Event
                             }
                         }
 
-                        DateTime nextBirthDay = new DateTime( today.Year, person.BirthMonth.Value, person.BirthDay.Value );
-                        if ( nextBirthDay.CompareTo( today ) < 0 )
-                        {
-                            nextBirthDay = nextBirthDay.AddYears( 1 );
-                        }
-
-                        if ( ( nextBirthDay.Subtract( processDate ).Days <= leadDays ) &&
-                            ( nextBirthDay.Subtract( lastCheck.Date ).Days > leadDays ) )
+                        if ( ( nextBirthDay.Value.Subtract( processDate ).Days <= leadDays ) &&
+                            ( !lastNotified.HasValue || nextBirthDay.Value.Subtract( lastNotified.Value.Date ).Days > leadDays ) )
                         {
                             return true;
                         }
@@ -103,11 +99,6 @@ namespace Rock.Follow.Event
             }
 
             return false;
-        }
-
-        public override string FormatEntityNotification( FollowingEventType followingEvent, IEntity entity )
-        {
-            return base.FormatEntityNotification( followingEvent, entity );
         }
 
         #endregion

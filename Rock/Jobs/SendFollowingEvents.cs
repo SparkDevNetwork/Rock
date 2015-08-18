@@ -66,6 +66,7 @@ namespace Rock.Jobs
 
                 var followingService = new FollowingService( rockContext );
                 var followingEventTypeService = new FollowingEventTypeService( rockContext );
+                var followingEventNotificationService = new FollowingEventNotificationService( rockContext );
 
                 // Get all the active event types
                 var eventTypes = followingEventTypeService
@@ -154,6 +155,8 @@ namespace Rock.Jobs
                     personFollowings.Add( personId, personFollowing );
                 }
 
+                var timestamp = RockDateTime.Now;
+
                 // foreach followed entitytype
                 foreach ( var keyVal in followedEntityIds )
                 {
@@ -184,17 +187,39 @@ namespace Rock.Jobs
                                     var eventComponent = eventType.GetEventComponent();
                                     if ( eventComponent != null )
                                     {
+                                        // Get the previous notificatoins for this event type
+                                        var previousNotifications = followingEventNotificationService
+                                            .Queryable()
+                                            .Where( n => n.FollowingEventTypeId == eventType.Id )
+                                            .ToList();
+
                                         // check each entity that is followed (by anyone)
                                         foreach ( IEntity entity in entityList )
                                         {
+                                            var previousNotification = previousNotifications
+                                                .Where( n => n.EntityId == entity.Id )
+                                                .FirstOrDefault();
+                                            DateTime? lastNotification = previousNotification != null ? previousNotification.LastNotified : (DateTime?)null;
+
                                             // if the event happened
-                                            if ( eventComponent.HasEventHappened( eventType, entity ) )
+                                            if ( eventComponent.HasEventHappened( eventType, entity, lastNotification ) )
                                             {
                                                 // Store the event type id and the entity for later processing of notifications
                                                 eventsThatHappened.AddOrIgnore( eventType.Id, new Dictionary<int, string>() );
                                                 eventsThatHappened[eventType.Id].Add( entity.Id, eventComponent.FormatEntityNotification( eventType, entity ) );
+
+                                                if ( previousNotification == null )
+                                                {
+                                                    previousNotification = new FollowingEventNotification();
+                                                    previousNotification.FollowingEventTypeId = eventType.Id;
+                                                    previousNotification.EntityId = entity.Id;
+                                                    followingEventNotificationService.Add( previousNotification );
+                                                }
+                                                previousNotification.LastNotified = timestamp;
                                             }
                                         }
+
+                                        rockContext.SaveChanges();
                                     }
 
                                     eventType.LastCheckDateTime = RockDateTime.Now;
