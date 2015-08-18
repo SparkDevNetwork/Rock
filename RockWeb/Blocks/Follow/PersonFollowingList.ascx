@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonFollowingList.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonFollowingList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonFollowingList.ascx.cs" Inherits="RockWeb.Blocks.Follow.PersonFollowingList" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -13,14 +13,13 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gFollowings" runat="server" AllowSorting="true" RowItemText="Following">
                         <Columns>
-                            <Rock:RockBoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
-                            <Rock:RockBoundField DataField="NickName" HeaderText="First Name" SortExpression="NickName" />
+                            <Rock:SelectField />
+                            <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="LastName,NickName" />
                             <Rock:DateField DataField="BirthDate" HeaderText="Birthdate" SortExpression="BirthDate" ColumnPriority="Desktop" />
                             <Rock:RockBoundField DataField="Email" HeaderText="Email" SortExpression="Email" ColumnPriority="DesktopLarge" />
                             <Rock:RockBoundField DataField="HomePhone" HeaderText="Home Phone" ColumnPriority="DesktopLarge" />
                             <Rock:RockBoundField DataField="CellPhone" HeaderText="Cell Phone" ColumnPriority="DesktopLarge" />
-                            <Rock:RockBoundField DataField="SpouseName" HeaderText="Spouse's Name" ColumnPriority="Desktop" />
-                            <Rock:DeleteField OnClick="gFollowings_Delete" />
+                            <Rock:PersonField DataField="Spouse" HeaderText="Spouse" ColumnPriority="Desktop" />
                         </Columns>
                     </Rock:Grid>
                 </div>

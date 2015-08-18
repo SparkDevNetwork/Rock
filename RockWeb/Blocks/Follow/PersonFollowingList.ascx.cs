@@ -30,16 +30,15 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Crm
+namespace RockWeb.Blocks.Follow
 {
     /// <summary>
     /// Block for displaying people that current person follows.  
     /// </summary>
     [DisplayName( "Person Following List" )]
-    [Category( "CRM" )]
+    [Category( "Follow" )]
     [Description( "Block for displaying people that current person follows." )]
 
-    [LinkedPage("Person Profile Page", "The person profile page.")]
     public partial class PersonFollowingList : Rock.Web.UI.RockBlock
     {
 
@@ -58,10 +57,29 @@ namespace RockWeb.Blocks.Crm
             base.OnInit( e );
 
             gFollowings.DataKeyNames = new string[] { "Id" };
-            gFollowings.IsDeleteEnabled = true;
+            gFollowings.IsDeleteEnabled = false;
             gFollowings.GridRebind += gFollowings_GridRebind;
-            gFollowings.RowSelected += gFollowings_Selected;
             gFollowings.RowDataBound += new GridViewRowEventHandler( gFollowings_RowDataBound );
+            gFollowings.PersonIdField = "Id";
+
+            var lbUnfollow = new LinkButton();
+            lbUnfollow.ID = "lbUnfollow";
+            lbUnfollow.CssClass = "btn btn-default btn-sm pull-left js-unfollow";
+            lbUnfollow.Text = "<i class='fa fa-flag-o'></i> Unfollow";
+            lbUnfollow.Click += lbUnfollow_Click;
+            gFollowings.Actions.AddCustomActionControl( lbUnfollow );
+
+            string unfollowConfirmScript = @"
+    $('a.js-unfollow').click(function( e ){
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to unfollow the selected people?', function (result) {
+            if (result) {
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( gFollowings, gFollowings.GetType(), "unfollowConfirmScript", unfollowConfirmScript, true );
         }
 
         /// <summary>
@@ -97,43 +115,37 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
-        /// Handles the Selected event of the gFollowings control.
+        /// Handles the Click event of the lbUnfollow control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gFollowings_Selected( object sender, RowEventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void lbUnfollow_Click( object sender, EventArgs e )
         {
-            var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "PersonId", e.RowKeyId.ToString() );
-            NavigateToLinkedPage( "PersonProfilePage", queryParams );
-        }
+            var itemsSelected = new List<int>();
+            gFollowings.SelectedKeys.ToList().ForEach( f => itemsSelected.Add( f.ToString().AsInteger() ) );
 
-        /// <summary>
-        /// Handles the Delete event of the gFollowings control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gFollowings_Delete( object sender, RowEventArgs e )
-        {
-            var rockContext = new RockContext();
-            var personAliasService = new PersonAliasService( rockContext );
-            var followingService = new FollowingService( rockContext );
-
-            var paQry = personAliasService.Queryable()
-                .Where( p => p.PersonId == e.RowKeyId )
-                .Select( p => p.Id );
-
-            int personAliasEntityTypeId = EntityTypeCache.Read( "Rock.Model.PersonAlias" ).Id;
-            foreach ( var following in followingService.Queryable()
-                .Where( f =>
-                    f.EntityTypeId == personAliasEntityTypeId &&
-                    paQry.Contains( f.EntityId ) &&
-                    f.PersonAliasId == CurrentPersonAlias.Id ) )
+            if ( itemsSelected.Any() )
             {
-                followingService.Delete( following );
-            }
+                var rockContext = new RockContext();
+                var personAliasService = new PersonAliasService( rockContext );
+                var followingService = new FollowingService( rockContext );
 
-            rockContext.SaveChanges();
+                var paQry = personAliasService.Queryable()
+                    .Where( p => itemsSelected.Contains( p.PersonId ) )
+                    .Select( p => p.Id );
+
+                int personAliasEntityTypeId = EntityTypeCache.Read( "Rock.Model.PersonAlias" ).Id;
+                foreach ( var following in followingService.Queryable()
+                    .Where( f =>
+                        f.EntityTypeId == personAliasEntityTypeId &&
+                        paQry.Contains( f.EntityId ) &&
+                        f.PersonAliasId == CurrentPersonAlias.Id ) )
+                {
+                    followingService.Delete( following );
+                }
+
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -172,7 +184,7 @@ namespace RockWeb.Blocks.Crm
                 var rockContext = new RockContext();
 
                 int personAliasEntityTypeId = EntityTypeCache.Read( "Rock.Model.PersonAlias" ).Id;
-                var personAliasIds = new FollowingService( new RockContext() ).Queryable()
+                var personAliasIds = new FollowingService( rockContext ).Queryable()
                     .Where( f =>
                         f.EntityTypeId == personAliasEntityTypeId &&
                         f.PersonAliasId == CurrentPersonAlias.Id )
@@ -200,6 +212,7 @@ namespace RockWeb.Blocks.Crm
                 gFollowings.DataSource = qry.Sort( sortProperty )
                     .Select( p => new
                         {
+                            Person = p,
                             p.Id,
                             p.LastName,
                             p.NickName,
@@ -213,7 +226,7 @@ namespace RockWeb.Blocks.Crm
                                 .Where( n => n.NumberTypeValue.Guid.Equals( cellPhoneGuid ) )
                                 .Select( n => n.NumberFormatted )
                                 .FirstOrDefault(),
-                            SpouseName = p.Members
+                            Spouse = p.Members
                                 .Where( m => 
                                     p.MaritalStatusValue.Guid.Equals(marriedGuid) &&
                                     m.GroupRole.Guid.Equals(adultGuid))
@@ -222,7 +235,7 @@ namespace RockWeb.Blocks.Crm
                                     m.PersonId != p.Id &&
                                     m.GroupRole.Guid.Equals(adultGuid) &&
                                     m.Person.MaritalStatusValue.Guid.Equals(marriedGuid) )
-                                .Select( s => s.Person.NickName + " " + s.Person.LastName)
+                                .Select( s => s.Person )
                                 .FirstOrDefault()
                         } ).ToList();
 

@@ -328,6 +328,7 @@ namespace RockWeb.Blocks.Crm
                     }
 
                     _inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+                    gPeople.EntityTypeId = EntityTypeCache.GetId<Person>();
 
                     gPeople.DataSource = personList;
                     gPeople.DataBind();

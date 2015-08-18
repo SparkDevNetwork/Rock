@@ -1,12 +1,12 @@
 /*
-   Rock's Core CSS
 
-    1. Imports - Used to import the various core less files
-    2. HTML Overrides - Style overrides for basic HTML tags
-    3. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
-    4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
-    5. ASP.Net Overrides - Yep they get it wrong too sometimes
+  Rock's Core CSS
 
+  1. Imports - Used to import the various core less files
+  2. HTML Overrides - Style overrides for basic HTML tags
+  3. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
+  4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
+  5. ASP.Net Overrides - Yep they get it wrong too sometimes
 
 */
 /* jquery.Jcrop.css v0.9.12 - MIT License */
@@ -1176,6 +1176,15 @@ tr.row-highlight td {
   border-color: #353133;
   vertical-align: top !important;
 }
+.table > tbody > tr.is-inactive > td {
+  color: #b7b7b7;
+}
+.table > tbody > tr.is-inactive-person > td {
+  color: #b7b7b7;
+}
+.table > tbody > tr.is-deceased > td {
+  color: #bb5454;
+}
 .table-responsive {
   position: relative;
   width: 100%;
@@ -1899,6 +1908,7 @@ table.attribute-grid tr th:nth-child(3) {
 .personprofilebar-bio .name {
   text-align: center;
   margin-top: 0;
+  margin-bottom: 4px;
 }
 .personprofilebar-bio .name .full-name,
 .personprofilebar-bio .name .previous-names {
@@ -1915,6 +1925,16 @@ table.attribute-grid tr th:nth-child(3) {
 .personprofilebar-bio .nav li .persondetails-actions:hover,
 .personprofilebar-bio .nav li .persondetails-actions:focus {
   background-color: transparent;
+}
+.personprofilebar-bio .nav-actions {
+  width: 120px;
+  margin: 0 auto 12px auto;
+}
+@media (min-width: 992px) {
+  .personprofilebar-bio .nav-actions {
+    float: right;
+    margin: 0;
+  }
 }
 .personprofilebar-bio .actions {
   position: absolute;
@@ -2015,16 +2035,28 @@ table.attribute-grid tr th:nth-child(3) {
   margin-left: 0;
 }
 .personprofilebar-bio .taglist {
-  margin-top: 7.5px;
+  margin-top: 15px;
 }
 .personprofilebar-bio .demographics {
-  margin-top: 30px;
+  margin-top: 15px;
   text-align: center;
+}
+@media (min-width: 992px) {
+  .personprofilebar-bio .demographics {
+    width: 50%;
+    float: left;
+  }
 }
 .personprofilebar-bio .personcontact {
   text-align: center;
   margin-top: 15px;
   padding-bottom: 30px;
+}
+@media (min-width: 992px) {
+  .personprofilebar-bio .personcontact {
+    width: 50%;
+    float: left;
+  }
 }
 .personprofilebar-bio .personcontact .email .email-status i {
   color: #413c35;
@@ -2407,9 +2439,6 @@ span.field-value {
   .personprofilebar-bio .photo {
     margin: 0;
   }
-  .personprofilebar-bio .taglist {
-    margin-top: 0;
-  }
   .personprofilebar-bio .demographics {
     text-align: left;
   }
@@ -2428,12 +2457,6 @@ span.field-value {
   }
   .personprofilebar-badge .badge-group:last-child {
     text-align: right;
-  }
-}
-/* Medium devices (desktops, 992px and up) */
-@media (min-width: 992px) {
-  .personprofilebar-bio .personcontact {
-    margin-top: 0;
   }
 }
 /* Large devices (large desktops, 1200px and up) */
@@ -2804,55 +2827,6 @@ iframe.email-body {
   text-align: right;
 }
 /*
-    
-
-    table.calendar th.calendar-day-header {
-        text-align: center;
-        color: #6a6a6a !important;
-    }
-
-    
-    table.calendar td.calendar-last-month,
-    table.calendar td.calendar-day {
-        padding: 5px;
-    }
-    
-        table.calendar td.calendar-last-month a {
-            color: #dfdfdf !important;
-            font-size: 12px;
-        }
-        
-        table.calendar td.calendar-day a,
-        table.calendar td.calendar-today a,
-        table.calendar td.calendar-selected a {
-            font-size: 14px;
-            color: #6a6a6a;
-        }
-
-        table.calendar td.calendar-today {  
-            background-color: #FCF8E3!important; 
-        }
-
-        table.calendar td.calendar-today a {
-            color:#c09853 !important;
-            font-weight:bold;
-        }
-
-        table.calendar td.calendar-today a:after {
-            content:"TODAY"; 
-            color:#000; 
-            font-size:0.5em;
-            pointer-events:none; 
-            width:100%; 
-            float:left;
-        }
-
-        table.calendar td.calendar-today a:hover {  
-            background-color: #fcf8e3;  
-        }
-
-    */
-/*
   Used to manage styles related to reusable components / widgets.
 
   1. Pickers - used to pick complex data types
@@ -2912,7 +2886,7 @@ iframe.email-body {
   padding: 6px 12px;
   font-size: 14px;
   color: #555555;
-  background-color: #f0f0f0;
+  background-color: #edeae6;
   border: 1px solid #cccccc;
   border-radius: 4px;
   display: inline-block;
@@ -3167,6 +3141,9 @@ ul.rocktree ul {
 .touch .rollover-item {
   opacity: 1;
 }
+.block-title {
+  margin: 0;
+}
 .list-as-blocks h3 {
   margin-top: 0;
   font-size: 14px;
@@ -3290,6 +3267,9 @@ div.tagsinput {
   border-bottom-right-radius: 4px;
   border-top-right-radius: 4px;
 }
+.taglist .tag:first-child {
+  margin-left: 10px;
+}
 .taglist .tag span {
   white-space: nowrap;
   overflow: hidden;
@@ -3330,6 +3310,12 @@ div.tagsinput {
   border-radius: 2px;
   background: #dbd5cb;
   box-shadow: -1px -1px 2px #c2b8a7;
+}
+@media (min-width: 768px) {
+  div.tagsinput div[id$=addTag] {
+    float: left;
+    margin-left: 12px;
+  }
 }
 div.tagsinput span.tag.personal {
   background: #d0c6b4;
@@ -3811,7 +3797,7 @@ fieldset .actions {
   height: 30px;
   border: 1px solid #cccccc;
   border-radius: 0 0 4px 4px;
-  background-color: #f0f0f0;
+  background-color: #edeae6;
   text-align: center;
   padding-top: 8px;
   position: relative;
@@ -3872,7 +3858,7 @@ fieldset .actions {
   height: 50px;
   border-radius: 3px;
   font-size: 10px;
-  background-color: #f0f0f0;
+  background-color: #edeae6;
   color: #555555;
   display: block;
   padding-top: 2px;
@@ -3885,7 +3871,7 @@ fieldset .actions {
   content: '\f016';
   font-family: FontAwesome;
   font-size: 28px;
-  color: #cacaca;
+  color: #cdc5ba;
   -webkit-font-smoothing: antialiased;
   margin-left: 42px;
   position: absolute;
@@ -3896,7 +3882,7 @@ fieldset .actions {
 }
 .fileupload-group .fileupload-thumbnail .file-link.file-exists:after {
   content: '\f15c';
-  color: #cacaca;
+  color: #cdc5ba;
   margin-top: -10px;
 }
 .fileupload-group .fileupload-remove {
@@ -3915,7 +3901,7 @@ fieldset .actions {
 .fileupload-group .fileupload-dropzone,
 .fileupload-group .fileupload-button {
   height: 30px;
-  background-color: #f0f0f0;
+  background-color: #edeae6;
   text-align: center;
   padding-top: 8px;
   position: relative;
@@ -5177,14 +5163,6 @@ a.help {
 .well > h4 {
   margin-top: 0;
 }
-.nav-pills > li > a {
-  color: #6a6a6a;
-}
-.nav-pills > li > a:hover,
-.nav-pills > li > a:focus {
-  color: #ffffff;
-  background-color: #bbdd8d;
-}
 .form-right {
   text-align: right;
   margin-bottom: 12px;
@@ -5271,8 +5249,9 @@ a.help {
   display: block;
   float: left;
 }
-.panel legend {
-  border-color: red;
+.panel .panel-heading i.fa-chevron-up,
+.panel .panel-heading i.fa-chevron-down {
+  color: #6a6a6a;
 }
 .panel .panel-heading .panel-title small {
   opacity: .5;
@@ -6045,6 +6024,14 @@ h4,
 }
 .tag-letterlist a {
   color: #ee7624;
+}
+.nav-pills > li > a {
+  color: #6a6a6a;
+}
+.nav-pills > li > a:hover,
+.nav-pills > li > a:focus {
+  color: #ffffff;
+  background-color: #bbdd8d;
 }
 /*#region
 // 3. Rock Overrides         */

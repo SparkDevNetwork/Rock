@@ -455,6 +455,8 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        private static string _fingerPrintVersion = null;
+
         /// <summary>
         /// Renders the base control.
         /// </summary>
@@ -469,6 +471,12 @@ if (!$('#ckeditorJsLib').length) {{
     // by default, jquery adds a cache-busting parameter on dynamically added script tags. set the ajaxSetup cache:true to prevent this
     $.ajaxSetup({{ cache: true }});
     $('head').prepend(""<script id='ckeditorJsLib' src='{12}' />"");
+}}
+
+var pluginTimestamp = '_v{14}'
+if ( !(CKEDITOR.timestamp.indexOf(pluginTimestamp) >=0) )
+{{
+    CKEDITOR.timestamp = CKEDITOR.timestamp + pluginTimestamp;
 }}
 
 // allow i tags to be empty (for font awesome)
@@ -591,6 +599,34 @@ CKEDITOR.replace('{0}', {{
 
             string ckEditorLib = ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/ckeditor/ckeditor.js", true );
 
+            try
+            {
+                //// ckeditor dynamically loads plugin js files, so our normal fingerprinting won't work and could cause the cache to be stale
+                //// so, get a fingerprint from the latest plug .js file and use that in addition to the regular ckeditor timestamp
+                if ( _fingerPrintVersion == null )
+                {
+                    var ckpluginsFolderName = System.Web.Hosting.HostingEnvironment.MapPath( "~/Scripts/ckeditor/plugins" );
+
+                    if ( System.IO.Directory.Exists( ckpluginsFolderName ) )
+                    {
+                        var lastUpdatedFile = new System.IO.DirectoryInfo( ckpluginsFolderName ).EnumerateFiles( "*.js", System.IO.SearchOption.AllDirectories ).OrderByDescending( a => a.LastWriteTime ).FirstOrDefault();
+                        if ( lastUpdatedFile != null )
+                        {
+                            _fingerPrintVersion = lastUpdatedFile.LastWriteTime.Ticks.ToString();
+                        }
+                        else
+                        {
+                            _fingerPrintVersion = "0";
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // ignore exception and just
+                _fingerPrintVersion = "0";
+            }
+
             string ckeditorInitScript = string.Format( ckeditorInitScriptFormat,
                 this.ClientID,                                                  // {0}
                 this.Toolbar.ConvertToString(),                                 // {1}
@@ -605,7 +641,8 @@ CKEDITOR.replace('{0}', {{
                 this.MergeFields.AsDelimited( "," ),                            // {10}
                 this.AdditionalConfigurations,                                  // {11}
                 ckEditorLib,                                                    // {12}
-                ( (RockPage)this.Page ).Site.Theme                              // {13}
+                ( (RockPage)this.Page ).Site.Theme,                             // {13}
+                _fingerPrintVersion                                              // {14}
                 );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );

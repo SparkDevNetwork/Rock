@@ -410,6 +410,10 @@ ul.rocktree ul {
 // 6. Pagelist
 // -------------------------
 
+.block-title {
+    margin: 0;
+}
+
 .list-as-blocks {
 
   h3 {
@@ -578,6 +582,10 @@ div.tagsinput
     border-bottom-right-radius: @tag-border-radius;
     border-top-right-radius: @tag-border-radius;
 
+    &:first-child {
+        margin-left: 10px;
+    }
+
     span {
       white-space: nowrap;
       overflow: hidden;
@@ -622,6 +630,16 @@ div.tagsinput
       box-shadow: -1px -1px 2px @tag-bg;
     }
   }
+}
+
+div.tagsinput {
+    div[id$=addTag] {
+     
+        @media @sm {
+            float: left;
+            margin-left: 12px;
+        }
+    }
 }
 
 div.tagsinput span.tag.personal
