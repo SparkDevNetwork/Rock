@@ -23,8 +23,25 @@ If (Test-Path "$webroot\Content"){
 Write-Host "Moving Contents folder back from temp directory"
 Move-Item "$rootfolder\temp\Content" "$webroot"
 
+# move App_Data Cache back from temp
+Move-Item  "$rootfolder\temp\Cache" "$webroot\App_Data"
+
+# move App_Data Logs back from temp
+Move-Item  "$rootfolder\temp\Logs" "$webroot\App_Data"
+
+# move App_Data Packages back from temp
+Move-Item  "$rootfolder\temp\Packages" "$webroot\App_Data"
+
+# move App_Data Uploads back from temp
+Move-Item  "$rootfolder\temp\Uploads" "$webroot\App_Data"
+
 # move custom themes back from temp
 Move-Item "$rootfolder\temp\Ulfberht" "$webroot\Themes"
+
+# move a robots file back from temp if it exists
+If (Test-Path "$rootfolder\temp\robots.txt"){
+	Move-Item "$rootfolder\temp\robots.txt" "$webroot"
+}
 
 # copy new connection string file
 Write-Host "Copying new web.ConnectionStrings.config to web dir"
@@ -36,8 +53,8 @@ start-service -servicename w3svc
 
 # start web site and app pool
 Write-Host "Starting ApplicationPool and Website"
-Start-WebAppPool -Name (Get-Website -Name $env:APPLICATION_SITE_NAME).applicationPool
-Start-Website -Name $env:APPLICATION_SITE_NAME
+Start-WebAppPool -Name (Get-Website -Name "$env:APPLICATION_SITE_NAME").applicationPool
+Start-Website -Name "$env:APPLICATION_SITE_NAME"
 
 # create empty migration flag
 New-Item "$webroot\App_Data\Run.Migration" -type file -force
