@@ -21,11 +21,11 @@
     <main class="container">
 
         <div class="row">
-            <div class="col-md-9">
-                <Rock:Zone Name="Main" runat="server" />
-            </div>
-            <div class="col-md-3">
+            <div class="col-md-3 col-md-push-9">
                 <Rock:Zone Name="Sidebar 1" runat="server" />
+            </div>
+            <div class="col-md-9 col-md-pull-3">
+                <Rock:Zone Name="Main" runat="server" />
             </div>
         </div>
 
