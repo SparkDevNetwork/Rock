@@ -1,0 +1,34 @@
+{% comment %}
+
+{% capture panelTitle %}Register for {{ EventItem.Name }} <small style="display: inline-block">{{ EventItemOccurrences[0].Campus.Name }} Campus</small>{% endcapture %}
+
+{% assign emptyMessage = "There are currently no events scheduled" %}
+
+{% capture emptyMessage %}There are currently no events scheduled for the {{ Context.Campus.Name }} Campus{% endcapture %}
+
+{% endcomment %}
+
+
+{% capture defaultPanelTitle %}Register for {{ EventItem.Name }} <small style="display: inline-block">{{ EventItemOccurrences[0].Campus.Name }} Campus</small>{% endcapture %}
+
+{% if EventItemOccurrences != empty %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">{{ panelTitle | Default: defaultPanelTitle }}</h3>
+    </div>
+    <div class="list-group">
+      {% for occurrence in EventItemOccurrences %}
+        {% comment %}<a class="list-group-item" href="{{ RegistrationPage }}?RegistrationInstanceId={{ occurrence.Linkages | Select: 'RegistrationInstanceId' }}">{% endcomment %}
+        <a class="list-group-item" href="{{ RegistrationPage }}?EventOccurrenceId={{ occurrence.Id }}">
+          {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'dddd, MMM d / h:mmtt'  }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+{% else %}
+  <div class="panel panel-default">
+    <div class="panel-body">
+      {{ emptyMessage | Default: "There are currently no events scheduled" }}
+    </div>
+  </div>
+{% endif %}
