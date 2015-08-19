@@ -101,6 +101,11 @@ namespace Rock.MergeTemplates
         protected Regex nextRecordRegEx = new Regex( @"{%\s*\bnext\b\s*%}", RegexOptions.IgnoreCase );
 
         /// <summary>
+        /// The RegEx for finding the "next_empty" delimiter/indicator
+        /// </summary>
+        protected Regex nextEmptyRecordRegEx = new Regex( @"{%\s*\bnext_empty\b\s*%}", RegexOptions.IgnoreCase );
+
+        /// <summary>
         /// The RegEx of "." that matches anything
         /// </summary>
         protected Regex regExDot = new Regex( "." );

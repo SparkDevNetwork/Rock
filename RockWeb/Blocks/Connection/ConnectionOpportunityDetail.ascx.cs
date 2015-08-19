@@ -745,6 +745,7 @@ namespace RockWeb.Blocks.Connection
             connectionOpportunityWorkflow.WorkflowType = new WorkflowTypeService( new RockContext() ).Get( ddlWorkflowType.SelectedValueAsId().Value ) ?? null;
             connectionOpportunityWorkflow.WorkflowTypeId = ddlWorkflowType.SelectedValueAsId().Value;
             connectionOpportunityWorkflow.TriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
+            connectionOpportunityWorkflow.QualifierValue = String.Format( "|{0}|{1}|", ddlPrimaryQualifier.SelectedValue, ddlSecondaryQualifier.SelectedValue );
             connectionOpportunityWorkflow.ConnectionOpportunityId = 0;
 
             if ( !connectionOpportunityWorkflow.IsValid )
@@ -920,7 +921,7 @@ namespace RockWeb.Blocks.Connection
                     ddlSecondaryQualifier.Items.Clear();
                     break;
 
-                case ConnectionWorkflowTriggerType.RequestCompleted:
+                case ConnectionWorkflowTriggerType.RequestConnected:
                     ddlPrimaryQualifier.Visible = false;
                     ddlPrimaryQualifier.Items.Clear();
                     ddlSecondaryQualifier.Visible = false;
@@ -984,16 +985,9 @@ namespace RockWeb.Blocks.Connection
                     ddlSecondaryQualifier.Items.Clear();
                     break;
 
-                case ConnectionWorkflowTriggerType.GroupAssigned:
-                    var groupList = new GroupService( rockContext ).Queryable().ToList();
-                    ddlPrimaryQualifier.Label = "Activity Group";
-                    ddlPrimaryQualifier.Visible = true;
+                case ConnectionWorkflowTriggerType.PlacementGroupAssigned:
+                    ddlPrimaryQualifier.Visible = false;
                     ddlPrimaryQualifier.Items.Clear();
-                    ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                    foreach ( var group in groupList )
-                    {
-                        ddlPrimaryQualifier.Items.Add( new ListItem( group.Name, group.Id.ToString().ToUpper() ) );
-                    }
                     ddlSecondaryQualifier.Visible = false;
                     ddlSecondaryQualifier.Items.Clear();
                     break;
@@ -1004,12 +998,12 @@ namespace RockWeb.Blocks.Connection
                 if ( connectionWorkflow.TriggerType == ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() )
                 {
                     qualifierValues = connectionWorkflow.QualifierValue.SplitDelimitedValues();
-                    if ( ddlPrimaryQualifier.Visible )
+                    if ( ddlPrimaryQualifier.Visible && qualifierValues.Length > 0 )
                     {
                         ddlPrimaryQualifier.SelectedValue = qualifierValues[0];
                     }
 
-                    if ( ddlSecondaryQualifier.Visible )
+                    if ( ddlSecondaryQualifier.Visible && qualifierValues.Length > 1 )
                     {
                         ddlSecondaryQualifier.SelectedValue = qualifierValues[1];
                     }

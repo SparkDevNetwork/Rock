@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Connection
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", true )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the connection type name.", false )]
-    [BooleanField( "Display Name Filter", "Display the name filter", true )]
+    [BooleanField( "Display Name Filter", "Display the name filter", false )]
     [BooleanField( "Display Campus Filter", "Display the campus filter", true )]
     [BooleanField( "Display Attribute Filters", "Display the attribute filters", true )]
     [LinkedPage( "Detail Page", "The page used to view a connection opportunity." )]

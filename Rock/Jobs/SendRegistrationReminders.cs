@@ -56,7 +56,7 @@ namespace Rock.Jobs
                 DateTime now = RockDateTime.Now;
 
                 foreach ( var instance in new RegistrationInstanceService( rockContext )
-                    .Queryable( "RegistrationTemplate,Registrations" ).AsNoTracking()
+                    .Queryable( "RegistrationTemplate,Registrations" )
                     .Where( i => 
                         i.IsActive &&
                         i.RegistrationTemplate.IsActive &&
