@@ -82,6 +82,11 @@ begin
         set @CampusId = (select top 1 Id from Campus order by newid()) 
         set @AttendanceCodeId = (select top 1 Id from @attendanceCodeIds order by newid())
 
+		if ( FLOOR(rand() * 10) = 5) begin
+			-- randomly set CampusId to null since some types of attendance don't have a campus (like neighborhood groups )
+			set @CampusId = null
+		end
+
         INSERT INTO @attendanceTable
                    ([LocationId]
                     ,[ScheduleId]
