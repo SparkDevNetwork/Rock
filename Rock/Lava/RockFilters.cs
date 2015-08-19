@@ -897,6 +897,84 @@ namespace Rock.Lava
             return string.Format( "{0:" + format + "}", input );
         }
 
+        /// <summary>
+        /// Addition - Overriding this to change the logic. The default filter will concat if the type is 
+        /// string. This one does the math if the input can be parsed as a int
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object Plus( object input, object operand )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            int iInput = -1;
+            int iOperand = -1;
+
+            if ( int.TryParse( input.ToString(), out iInput ) && int.TryParse(operand.ToString(), out iOperand) )
+            {
+                return iInput + iOperand;
+            }
+            else
+            {
+                return string.Concat( input, operand );
+            }
+        }
+
+        /// <summary>
+        /// Minus - Overriding this to change the logic. This one does the math if the input can be parsed as a int
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object Minus( object input, object operand )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            int iInput = -1;
+            int iOperand = -1;
+
+            if ( int.TryParse( input.ToString(), out iInput ) && int.TryParse( operand.ToString(), out iOperand ) )
+            {
+                return iInput - iOperand;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Times - Overriding this to change the logic. This one does the math if the input can be parsed as a int
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object Times( object input, object operand )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            int iInput = -1;
+            int iOperand = -1;
+
+            if ( int.TryParse( input.ToString(), out iInput ) && int.TryParse( operand.ToString(), out iOperand ) )
+            {
+                return iInput * iOperand;
+            }
+            else
+            {
+                return Enumerable.Repeat( (string)input, (int)operand );
+            }
+        }
 
         /// <summary>
         /// Divideds the by.
