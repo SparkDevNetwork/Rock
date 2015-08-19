@@ -268,7 +268,8 @@ namespace RockWeb.Blocks.Core
                                         selectedCategory = CategoryCache.Read( entity.CategoryId.Value );
                                         if ( selectedCategory != null )
                                         {
-                                            parentIdList.Insert( 0, selectedCategory.Id.ToString() );
+                                            string categoryExpandedID = CategoryNodePrefix + selectedCategory.Id.ToString();
+                                            parentIdList.Insert( 0, CategoryNodePrefix + categoryExpandedID );
                                         }
                                     }
                                 }
@@ -283,9 +284,10 @@ namespace RockWeb.Blocks.Core
                         category = category.ParentCategory;
                         if ( category != null )
                         {
-                            if ( !parentIdList.Contains( category.Id.ToString() ) )
+                            string categoryExpandedID = CategoryNodePrefix + category.Id.ToString();
+                            if ( !parentIdList.Contains( categoryExpandedID ) )
                             {
-                                parentIdList.Insert( 0, category.Id.ToString() );
+                                parentIdList.Insert( 0, categoryExpandedID );
                             }
                             else
                             {

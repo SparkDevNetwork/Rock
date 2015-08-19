@@ -512,7 +512,8 @@ namespace Rock
         }
 
         /// <summary>
-        /// Determines whether string has merge fields in it.
+        /// Determines whether the string potentially has merge fields in it.
+        /// NOTE: Might return true even though it doesn't really have merge fields, but something like looks like it. For example '{56408602-5E41-4D66-98C7-BD361CD93AED}'
         /// </summary>
         /// <param name="content">The content.</param>
         /// <returns></returns>

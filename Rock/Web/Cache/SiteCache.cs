@@ -329,6 +329,38 @@ namespace Rock.Web.Cache
         public string GoogleAnalyticsCode { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable mobile redirect].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable mobile redirect]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableMobileRedirect { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mobile page identifier.
+        /// </summary>
+        /// <value>
+        /// The mobile page identifier.
+        /// </value>
+        public int? MobilePageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the external URL.
+        /// </summary>
+        /// <value>
+        /// The external URL.
+        /// </value>
+        public string ExternalUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [redirect tablets].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [redirect tablets]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RedirectTablets { get; set; }
+
+        /// <summary>
         /// Gets or sets the facebook app id.
         /// </summary>
         /// <value>
@@ -393,6 +425,10 @@ namespace Rock.Web.Cache
                 this.GoogleAnalyticsCode = site.GoogleAnalyticsCode;
                 this.PageNotFoundPageId = site.PageNotFoundPageId;
                 this.PageNotFoundPageRouteId = site.PageNotFoundPageRouteId;
+                this.EnableMobileRedirect = site.EnableMobileRedirect;
+                this.MobilePageId = site.MobilePageId;
+                this.ExternalUrl = site.ExternalUrl;
+                this.RedirectTablets = site.RedirectTablets;
 
                 foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
                 {

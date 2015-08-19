@@ -1101,6 +1101,57 @@ namespace Rock.Lava
         #region Person Filters
 
         /// <summary>
+        /// Persons the by identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person PersonById( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            int personId = -1;
+
+            if (! Int32.TryParse(input.ToString(), out personId)) {
+                return null;
+            }
+
+            var rockContext = new RockContext();
+
+            return new PersonService( rockContext ).Get( personId );
+
+        }
+
+        /// <summary>
+        /// Persons the by alias identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person PersonByAliasId( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            int personAliasId = -1;
+
+            if ( !Int32.TryParse( input.ToString(), out personAliasId ) )
+            {
+                return null;
+            }
+
+            var rockContext = new RockContext();
+
+            return new PersonAliasService( rockContext ).Get( personAliasId ).Person;
+
+        }
+
+        /// <summary>
         /// Gets an address for a person object
         /// </summary>
         /// <param name="context">The context.</param>

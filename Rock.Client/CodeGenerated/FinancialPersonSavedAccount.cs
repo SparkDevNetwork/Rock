@@ -35,19 +35,13 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int? CreditCardTypeValueId { get; set; }
-
-        /// <summary />
-        public int? CurrencyTypeValueId { get; set; }
-
-        /// <summary />
         public int? FinancialGatewayId { get; set; }
 
         /// <summary />
-        public int? GroupId { get; set; }
+        public int? FinancialPaymentDetailId { get; set; }
 
         /// <summary />
-        public string MaskedAccountNumber { get; set; }
+        public int? GroupId { get; set; }
 
         /// <summary />
         public string Name { get; set; }
@@ -74,11 +68,9 @@ namespace Rock.Client
         public void CopyPropertiesFrom( FinancialPersonSavedAccount source )
         {
             this.Id = source.Id;
-            this.CreditCardTypeValueId = source.CreditCardTypeValueId;
-            this.CurrencyTypeValueId = source.CurrencyTypeValueId;
             this.FinancialGatewayId = source.FinancialGatewayId;
+            this.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
             this.GroupId = source.GroupId;
-            this.MaskedAccountNumber = source.MaskedAccountNumber;
             this.Name = source.Name;
             this.PersonAliasId = source.PersonAliasId;
             this.ReferenceNumber = source.ReferenceNumber;
@@ -95,13 +87,10 @@ namespace Rock.Client
     public partial class FinancialPersonSavedAccount : FinancialPersonSavedAccountEntity
     {
         /// <summary />
-        public DefinedValue CreditCardTypeValue { get; set; }
-
-        /// <summary />
-        public DefinedValue CurrencyTypeValue { get; set; }
-
-        /// <summary />
         public FinancialGateway FinancialGateway { get; set; }
+
+        /// <summary />
+        public FinancialPaymentDetail FinancialPaymentDetail { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

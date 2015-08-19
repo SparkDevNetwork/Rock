@@ -93,7 +93,7 @@ namespace Rock.Model
         public EventItemOccurrenceChannelItemConfiguration()
         {
             this.HasRequired( p => p.EventItemOccurrence ).WithMany( e => e.ContentChannelItems ).HasForeignKey( p => p.EventItemOccurrenceId ).WillCascadeOnDelete( true );
-            this.HasRequired( p => p.ContentChannelItem ).WithMany().HasForeignKey( p => p.ContentChannelItemId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.ContentChannelItem ).WithMany( i => i.EventItemOccurrences ).HasForeignKey( p => p.ContentChannelItemId ).WillCascadeOnDelete( true );
         }
     }
 

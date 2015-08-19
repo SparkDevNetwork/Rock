@@ -85,14 +85,14 @@ namespace Rock.Model
         /// <param name="startDate">The start date.</param>
         /// <param name="endDate">The end date.</param>
         /// <param name="groupIds">The group ids.</param>
-        /// <param name="campusIds">The campus ids.</param>
+        /// <param name="campusIds">The campus ids. Include the keyword 'null' in the list to include CampusId is null</param>
         /// <param name="dataViewId">The data view identifier.</param>
         /// <returns></returns>
         public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null, int? dataViewId = null )
         {
             var qryAttendance = Queryable().AsNoTracking()
-                .Where( a => 
-                    a.DidAttend.HasValue && 
+                .Where( a =>
+                    a.DidAttend.HasValue &&
                     a.DidAttend.Value &&
                     a.PersonAlias != null );
 
@@ -135,22 +135,33 @@ namespace Rock.Model
                 qryAttendance = qryAttendance.Where( a => a.GroupId.HasValue && groupIdList.Contains( a.GroupId.Value ) );
             }
 
-            // If campuses were included, filter attendances by those that have selected campus, otherwise only include those without a campus
-            if ( !string.IsNullOrWhiteSpace( campusIds ) )
+            //// If campuses were included, filter attendances by those that have selected campuses
+            //// if 'null' is one of the campuses, treat that as a 'CampusId is Null'
+            var includeNullCampus = ( campusIds ?? "" ).Split( ',' ).ToList().Any( a => a.Equals( "null", StringComparison.OrdinalIgnoreCase ) );
+            var campusIdList = ( campusIds ?? "" ).Split( ',' ).AsIntegerList();
+
+            // remove 0 from the list, just in case it is there 
+            campusIdList.Remove( 0 );
+
+            if ( campusIdList.Any() )
             {
-                var campusIdList = campusIds.Split( ',' ).AsIntegerList();
-                if ( campusIdList.Any() )
+                if ( includeNullCampus )
                 {
-                    if ( campusIdList.Count == 1 && campusIdList[0] == 0 )
-                    {
-                        qryAttendance = qryAttendance.Where( a => !a.CampusId.HasValue );
-                    }
-                    else
-                    {
-                        qryAttendance = qryAttendance.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
-                    }
+                    // show records that have a campusId in the campusIdsList + records that have a null campusId
+                    qryAttendance = qryAttendance.Where( a => ( a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) ) || !a.CampusId.HasValue );
+                }
+                else
+                {
+                    // only show records that have a campusId in the campusIdList
+                    qryAttendance = qryAttendance.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
                 }
             }
+            else if ( includeNullCampus )
+            {
+                // 'null' was the only campusId in the campusIds parameter, so only show records that have a null CampusId
+                qryAttendance = qryAttendance.Where( a => !a.CampusId.HasValue );
+            }
+
 
             var qryAttendanceWithSummaryDateTime = qryAttendance.GetAttendanceWithSummaryDateTime( groupBy );
 
@@ -172,7 +183,7 @@ namespace Rock.Model
                     Id = a.Attendance.ScheduleId,
                     Name = a.Attendance.Schedule.Name
                 },
-                Location = new 
+                Location = new
                 {
                     Id = a.Attendance.LocationId,
                     Name = a.Attendance.Location.Name

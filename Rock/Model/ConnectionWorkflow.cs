@@ -149,9 +149,9 @@ public enum ConnectionWorkflowTriggerType
     RequestStarted = 0,
 
     /// <summary>
-    /// Request Completed
+    /// Request Connected
     /// </summary>
-    RequestCompleted = 1,
+    RequestConnected = 1,
 
     /// <summary>
     /// Status Changed
@@ -169,9 +169,9 @@ public enum ConnectionWorkflowTriggerType
     ActivityAdded = 4,
 
     /// <summary>
-    /// Activity Group Assigned
+    /// Activity placed in a group
     /// </summary>
-    GroupAssigned = 5,
+    PlacementGroupAssigned = 5,
 
     /// <summary>
     /// Manual

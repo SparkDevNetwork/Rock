@@ -190,6 +190,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum FollowingSuggestedStatus
+    {
+        PendingNotification = 0x0,
+        Suggested = 0x1,
+        Ignored = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum Format
     {
         JPG = 0x0,
@@ -293,6 +302,14 @@ namespace Rock.Client.Enums
     {
         Measure = 0x0,
         Goal = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum MICRStatus
+    {
+        Success = 0x0,
+        Fail = 0x1,
     }
 
     /// <summary>

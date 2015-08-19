@@ -417,6 +417,11 @@ namespace RockWeb.Blocks.Finance
 
                         if ( transaction != null )
                         {
+                            if ( transaction.FinancialPaymentDetail == null )
+                            {
+                                transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+                            }
+
                             var txnChanges = new List<string>();
                             txnChanges.Add( "Created Transaction (from kiosk)" );
 
@@ -442,14 +447,18 @@ namespace RockWeb.Blocks.Finance
                             transaction.TransactionTypeValueId = txnType.Id;
                             History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
 
-                            transaction.CurrencyTypeValueId = swipeInfo.CurrencyTypeValue.Id;
+                            transaction.FinancialPaymentDetail.AccountNumberMasked = swipeInfo.MaskedNumber;
+
+                            transaction.FinancialPaymentDetail.CurrencyTypeValueId = swipeInfo.CurrencyTypeValue.Id;
                             History.EvaluateChange( txnChanges, "Currency Type", string.Empty, swipeInfo.CurrencyTypeValue.Value );
 
                             if ( swipeInfo.CreditCardTypeValue != null )
                             {
-                                transaction.CreditCardTypeValueId = swipeInfo.CreditCardTypeValue.Id;
+                                transaction.FinancialPaymentDetail.CreditCardTypeValueId = swipeInfo.CreditCardTypeValue.Id;
                                 History.EvaluateChange( txnChanges, "Credit Card Type", string.Empty, swipeInfo.CreditCardTypeValue.Value );
                             }
+
+                            transaction.FinancialPaymentDetail.NameOnCardEncrypted = Rock.Security.Encryption.EncryptString( swipeInfo.FullName );
 
                             Guid sourceGuid = Guid.Empty;
                             if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )

@@ -238,7 +238,8 @@ namespace Rock.MergeTemplates
 
                                     foreach ( var xml in xmlChunks )
                                     {
-                                        if ( xml.HasMergeFields() )
+                                        bool incRecordIndex = true;
+                                        if ( lavaRegEx.IsMatch(xml) )
                                         {
                                             if ( recordIndex < recordCount )
                                             {
@@ -252,7 +253,13 @@ namespace Rock.MergeTemplates
                                                         wordMergeObjects.Add( field.Key, field.Value );
                                                     }
 
-                                                    mergedXml += xml.ResolveMergeFields( wordMergeObjects, true, true );
+                                                    var resolvedXml = xml.ResolveMergeFields( wordMergeObjects, true, true );
+                                                    mergedXml += resolvedXml;
+                                                    if (resolvedXml == xml)
+                                                    {
+                                                        // there weren't any MergeFields after all, so don't move to the next record
+                                                        incRecordIndex = false;
+                                                    }
                                                 }
                                                 catch ( Exception ex )
                                                 {
@@ -261,12 +268,15 @@ namespace Rock.MergeTemplates
                                                     mergedXml += xml;
                                                 }
 
-                                                recordIndex++;
+                                                if ( incRecordIndex )
+                                                {
+                                                    recordIndex++;
+                                                }
                                             }
                                             else
                                             {
-                                                // out of records, so just keep it as the templated xml
-                                                mergedXml += xml;
+                                                // out of records, so put a special '{% next_empty %}' that we can use to clear up unmerged parts of the template
+                                                mergedXml += " {% next_empty %} " + xml;
                                             }
                                         }
                                         else
@@ -314,6 +324,31 @@ namespace Rock.MergeTemplates
 
                     // remove all the 'next' delimiters
                     OpenXmlRegex.Replace( outputBodyNode.Nodes().OfType<XElement>(), this.nextRecordRegEx, string.Empty, ( xx, mm ) => { return true; } );
+
+                    // find all the 'next_empty' delimiters that we might have added and clear out the content in the paragraph nodes that follow
+                    OpenXmlRegex.Match(
+                        outputBodyNode.Nodes().OfType<XElement>(),
+                        this.nextEmptyRecordRegEx,
+                        ( xx, mm ) =>
+                        {
+                            var afterSiblings = xx.ElementsAfterSelf().ToList();
+                            
+                            // get all the paragraph elements after the 'next_empty' node and clear out the content
+                            var nodesToClean = afterSiblings.Where( a => a.Name.LocalName == "p" ).ToList();
+                            
+                            // add the next_empty node so it gets cleaned too
+                            nodesToClean.Add( xx );
+                            
+                            foreach (var node in nodesToClean)
+                            {
+                                // remove all child nodes from each paragraph node
+                                if (node.HasElements)
+                                {
+                                    node.RemoveNodes();
+                                }
+                            }
+
+                        } );
 
                     // remove all but the last SectionProperties element (there should only be one per section (body))
                     var sectPrItems = outputBodyNode.Nodes().OfType<XElement>().Where( a => a.Name.LocalName == "sectPr" );

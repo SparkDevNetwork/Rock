@@ -490,7 +490,7 @@ Registration By: {0} Total Cost/Fees:{1:C2}
         /// <value>
         /// The payment amount.
         /// </value>
-        public decimal PaymentAmount { get; set; }
+        public decimal? PaymentAmount { get; set; }
 
         /// <summary>
         /// Gets or sets the registrants.

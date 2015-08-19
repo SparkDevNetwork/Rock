@@ -535,6 +535,14 @@ namespace Rock.Data
         public DbSet<FinancialGateway> FinancialGateways { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial payment details.
+        /// </summary>
+        /// <value>
+        /// The financial payment details.
+        /// </value>
+        public DbSet<FinancialPaymentDetail> FinancialPaymentDetails { get; set; }
+
+        /// <summary>
         /// Gets or sets the financial person bank account.
         /// </summary>
         /// <value>

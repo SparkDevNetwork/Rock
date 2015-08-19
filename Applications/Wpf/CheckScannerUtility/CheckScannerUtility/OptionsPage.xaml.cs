@@ -21,7 +21,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Rock.Model;
+using Rock.Client;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -107,12 +107,12 @@ namespace Rock.Apps.CheckScannerUtility
             string feederFriendlyNameType = BatchPage.ScannerFeederType.Equals( FeederType.MultipleItems ) ? "Multiple Items" : "Single Item";
             lblFeederType.Content = string.Format( "Feeder Type: {0}", feederFriendlyNameType );
 
-            switch ( (ImageColorType)rockConfig.ImageColorType )
+            switch ( (RangerImageColorTypes)rockConfig.ImageColorType )
             {
-                case ImageColorType.ImageColorTypeGrayscale:
+                case RangerImageColorTypes.ImageColorTypeGrayscale:
                     cboImageOption.SelectedValue = "Grayscale";
                     break;
-                case ImageColorType.ImageColorTypeColor:
+                case RangerImageColorTypes.ImageColorTypeColor:
                     cboImageOption.SelectedValue = "Color";
                     break;
                 default:
@@ -125,8 +125,24 @@ namespace Rock.Apps.CheckScannerUtility
                 cboMagTekCommPort.SelectedItem = string.Format( "COM{0}", rockConfig.MICRImageComPort );
             }
 
-            txtSensitivity.Text = rockConfig.Sensitivity;
-            txtPlurality.Text = rockConfig.Plurality;
+            if (rockConfig.Sensitivity.AsInteger() == 0)
+            {
+                txtSensitivity.Text = string.Empty;
+            }
+            else
+            {
+                txtSensitivity.Text = rockConfig.Sensitivity;
+            }
+
+            if ( rockConfig.Plurality.AsInteger() == 0)
+            {
+                txtPlurality.Text = string.Empty;
+            }
+            else
+            {
+                txtPlurality.Text = rockConfig.Plurality;
+            }
+            
 
             cboTransactionSourceType.SelectedItem = ( cboTransactionSourceType.ItemsSource as List<DefinedValue> ).FirstOrDefault( a => a.Guid == rockConfig.SourceTypeValueGuid.AsGuid() );
         }
@@ -137,7 +153,7 @@ namespace Rock.Apps.CheckScannerUtility
         private void LoadDropDowns()
         {
             cboImageOption.Items.Clear();
-            cboImageOption.Items.Add( "Black and Whilte" );
+            cboImageOption.Items.Add( "Black and White" );
             cboImageOption.Items.Add( "Grayscale" );
             cboImageOption.Items.Add( "Color" );
 
@@ -166,6 +182,7 @@ namespace Rock.Apps.CheckScannerUtility
             cboMagTekCommPort.ItemsSource = System.IO.Ports.SerialPort.GetPortNames();
 
             cboTransactionSourceType.Items.Clear();
+            cboTransactionSourceType.DisplayMemberPath = "Value";
             cboTransactionSourceType.ItemsSource = this.BatchPage.SourceTypeValueList.OrderBy( a => a.Order ).ThenBy( a => a.Value ).ToList();
         }
 
@@ -191,7 +208,6 @@ namespace Rock.Apps.CheckScannerUtility
                 RockRestClient client = new RockRestClient( txtRockUrl.Text );
                 client.Login( rockConfig.Username, rockConfig.Password );
                 BatchPage.LoggedInPerson = client.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", rockConfig.Username ) );
-                BatchPage.LoggedInPerson.Aliases = client.GetData<List<PersonAlias>>( "api/PersonAlias/", "PersonId eq " + BatchPage.LoggedInPerson.Id );
             }
             catch ( WebException wex )
             {
@@ -234,19 +250,19 @@ namespace Rock.Apps.CheckScannerUtility
 
             string imageOption = cboImageOption.SelectedValue as string;
 
-            rockConfig.Sensitivity = txtSensitivity.Text.Trim();
-            rockConfig.Plurality = txtPlurality.Text.Trim();
+            rockConfig.Sensitivity = txtSensitivity.Text.Trim().AsInteger().ToString();
+            rockConfig.Plurality = txtPlurality.Text.Trim().AsInteger().ToString();
 
             switch ( imageOption )
             {
                 case "Grayscale":
-                    rockConfig.ImageColorType = ImageColorType.ImageColorTypeGrayscale;
+                    rockConfig.ImageColorType = RangerImageColorTypes.ImageColorTypeGrayscale;
                     break;
                 case "Color":
-                    rockConfig.ImageColorType = ImageColorType.ImageColorTypeColor;
+                    rockConfig.ImageColorType = RangerImageColorTypes.ImageColorTypeColor;
                     break;
                 default:
-                    rockConfig.ImageColorType = ImageColorType.ImageColorTypeBitonal;
+                    rockConfig.ImageColorType = RangerImageColorTypes.ImageColorTypeBitonal;
                     break;
             }
 

@@ -539,7 +539,7 @@ achieve our mission.  We are so grateful for your commitment.
                     {
                         var service = new FinancialScheduledTransactionService( rockContext );
                         var scheduledTransaction = service
-                            .Queryable( "AuthorizedPersonAlias.Person,ScheduledTransactionDetails,FinancialGateway,CurrencyTypeValue,CreditCardTypeValue" )
+                            .Queryable( "AuthorizedPersonAlias.Person,ScheduledTransactionDetails,FinancialGateway,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
                             .Where( t =>
                                 t.Id == txnId &&
                                 ( t.AuthorizedPersonAlias.PersonId == targetPerson.Id || t.AuthorizedPersonAlias.Person.GivingGroupId == targetPerson.GivingGroupId ) )
@@ -653,7 +653,8 @@ achieve our mission.  We are so grateful for your commitment.
 
             if ( scheduledTransaction != null && Gateway != null )
             {
-                if ( scheduledTransaction.CurrencyTypeValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ).Id )
+                if ( scheduledTransaction.FinancialPaymentDetail != null &&
+                    scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ).Id )
                 {
                     ccEnabled = true;
                     txtCardFirstName.Visible = Gateway.SplitNameOnCard;
@@ -678,7 +679,8 @@ achieve our mission.  We are so grateful for your commitment.
                     mypExpiration.MinimumYear = RockDateTime.Now.Year;
                 }
 
-                if ( scheduledTransaction.CurrencyTypeValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ).Id )
+                if ( scheduledTransaction.FinancialPaymentDetail != null &&
+                    scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ).Id )
                 {
                     achEnabled = true;
                 }
@@ -734,12 +736,13 @@ achieve our mission.  We are so grateful for your commitment.
                         rblSavedCC.DataSource = savedAccounts
                             .Where( a =>
                                 a.FinancialGateway.EntityTypeId == Gateway.TypeId &&
-                                a.CurrencyTypeValueId == ccCurrencyType.Id )
+                                a.FinancialPaymentDetail != null &&
+                                a.FinancialPaymentDetail.CurrencyTypeValueId == ccCurrencyType.Id )
                             .OrderBy( a => a.Name )
                             .Select( a => new
                             {
                                 Id = a.Id,
-                                Name = "Use " + a.Name + " (" + a.MaskedAccountNumber + ")"
+                                Name = "Use " + a.Name + " (" + a.FinancialPaymentDetail.AccountNumberMasked + ")"
                             } ).ToList();
                         rblSavedCC.DataBind();
                         if ( rblSavedCC.Items.Count > 0 )
@@ -754,12 +757,13 @@ achieve our mission.  We are so grateful for your commitment.
                         rblSavedAch.DataSource = savedAccounts
                             .Where( a =>
                                 a.FinancialGateway.EntityTypeId == Gateway.TypeId &&
-                                a.CurrencyTypeValueId == achCurrencyType.Id )
+                                a.FinancialPaymentDetail != null &&
+                                a.FinancialPaymentDetail.CurrencyTypeValueId == achCurrencyType.Id )
                             .OrderBy( a => a.Name )
                             .Select( a => new
                             {
                                 Id = a.Id,
-                                Name = "Use " + a.Name + " (" + a.MaskedAccountNumber + ")"
+                                Name = "Use " + a.Name + " (" + a.FinancialPaymentDetail.AccountNumberMasked + ")"
                             } ).ToList();
                         rblSavedAch.DataBind();
                         if ( rblSavedAch.Items.Count > 0 )
@@ -1006,6 +1010,11 @@ achieve our mission.  We are so grateful for your commitment.
                     return false;
                 }
 
+                if ( scheduledTransaction.FinancialPaymentDetail == null )
+                {
+                    scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+                }
+
                 if ( scheduledTransaction.FinancialGateway != null )
                 {
                     scheduledTransaction.FinancialGateway.LoadAttributes();
@@ -1059,17 +1068,17 @@ achieve our mission.  We are so grateful for your commitment.
                     if ( paymentInfo.CurrencyTypeValue != null )
                     {
                         changeSummary.Append( paymentInfo.CurrencyTypeValue.Value );
-                        scheduledTransaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
+                        scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
 
                         DefinedValueCache creditCardTypeValue = paymentInfo.CreditCardTypeValue;
                         if ( creditCardTypeValue != null )
                         {
                             changeSummary.AppendFormat( " - {0}", creditCardTypeValue.Value );
-                            scheduledTransaction.CreditCardTypeValueId = creditCardTypeValue.Id;
+                            scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId = creditCardTypeValue.Id;
                         }
                         else
                         {
-                            scheduledTransaction.CreditCardTypeValueId = null;
+                            scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId = null;
                         }
                         changeSummary.AppendFormat( " {0}", paymentInfo.MaskedNumber );
                         changeSummary.AppendLine();

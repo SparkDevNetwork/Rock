@@ -979,7 +979,7 @@ namespace RockWeb.Blocks.Event
                 return false;
             }
 
-            if ( registration == null || registration.RegistrationInstance == null || registration.RegistrationInstance.Account == null )
+            if ( registration == null || registration.RegistrationInstance == null || !registration.RegistrationInstance.AccountId.HasValue || registration.RegistrationInstance.Account == null )
             {
                 errorMessage = "There was a problem with the account configuration for this registration.";
                 return false;
@@ -1022,13 +1022,22 @@ namespace RockWeb.Blocks.Event
                 transaction.TransactionTypeValueId = txnType.Id;
                 History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
 
-                transaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
+                if ( transaction.FinancialPaymentDetail == null )
+                {
+                    transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+                }
+
+                transaction.FinancialPaymentDetail.NameOnCardEncrypted = Rock.Security.Encryption.EncryptString( paymentInfo.NameOnCard );
+                transaction.FinancialPaymentDetail.AccountNumberMasked = paymentInfo.MaskedNumber;
+                transaction.FinancialPaymentDetail.ExpirationMonthEncrypted = Rock.Security.Encryption.EncryptString( paymentInfo.ExpirationDate.Month.ToString() );
+                transaction.FinancialPaymentDetail.ExpirationYearEncrypted = Rock.Security.Encryption.EncryptString( paymentInfo.ExpirationDate.Year.ToString() );
+                transaction.FinancialPaymentDetail.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
                 History.EvaluateChange( txnChanges, "Currency Type", string.Empty, paymentInfo.CurrencyTypeValue.Value );
 
-                transaction.CreditCardTypeValueId = paymentInfo.CreditCardTypeValue != null ? paymentInfo.CreditCardTypeValue.Id : (int?)null;
-                if ( transaction.CreditCardTypeValueId.HasValue )
+                transaction.FinancialPaymentDetail.CreditCardTypeValueId = paymentInfo.CreditCardTypeValue != null ? paymentInfo.CreditCardTypeValue.Id : (int?)null;
+                if ( transaction.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
                 {
-                    var ccType = DefinedValueCache.Read( transaction.CreditCardTypeValueId.Value );
+                    var ccType = DefinedValueCache.Read( transaction.FinancialPaymentDetail.CreditCardTypeValueId.Value );
                     History.EvaluateChange( txnChanges, "Credit Card Type", string.Empty, ccType.Value );
                 }
 
@@ -1047,7 +1056,7 @@ namespace RockWeb.Blocks.Event
 
                 var transactionDetail = new FinancialTransactionDetail();
                 transactionDetail.Amount = amount;
-                transactionDetail.AccountId = registration.RegistrationInstance.AccountId;
+                transactionDetail.AccountId = registration.RegistrationInstance.AccountId.Value;
                 transactionDetail.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
                 transactionDetail.EntityId = registration.Id;
                 transaction.TransactionDetails.Add( transactionDetail );

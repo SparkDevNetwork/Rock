@@ -159,7 +159,7 @@ namespace Rock.Transactions
                                                 }
                                                 break;
                                             }
-                                        case ConnectionWorkflowTriggerType.RequestCompleted:
+                                        case ConnectionWorkflowTriggerType.RequestConnected:
                                             {
                                                 if ( State == EntityState.Modified && ConnectionState == global::ConnectionState.Inactive )
                                                 {
@@ -183,7 +183,7 @@ namespace Rock.Transactions
                                                 }
                                                 break;
                                             }
-                                        case ConnectionWorkflowTriggerType.GroupAssigned:
+                                        case ConnectionWorkflowTriggerType.PlacementGroupAssigned:
                                             {
                                                 if ( State == EntityState.Modified && QualifiersMatch( rockContext, connectionWorkflow, AssignedGroupId ) )
                                                 {

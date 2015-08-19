@@ -35,7 +35,10 @@ namespace Rock.Client
         public FinancialTransaction FinancialTransaction { get; set; }
 
         /// <summary />
-        public string ScannedCheckMicr { get; set; }
+        public string ScannedCheckMicrData { get; set; }
+
+        /// <summary />
+        public string ScannedCheckMicrParts { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source FinancialTransactionScannedCheck object
@@ -44,7 +47,8 @@ namespace Rock.Client
         public void CopyPropertiesFrom( FinancialTransactionScannedCheck source )
         {
             this.FinancialTransaction = source.FinancialTransaction;
-            this.ScannedCheckMicr = source.ScannedCheckMicr;
+            this.ScannedCheckMicrData = source.ScannedCheckMicrData;
+            this.ScannedCheckMicrParts = source.ScannedCheckMicrParts;
 
         }
     }
