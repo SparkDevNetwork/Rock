@@ -22,6 +22,11 @@ DECLARE @i INT
         FROM DefinedValue
         WHERE guid = '5FE5A540-7D9F-433E-B47E-4229D1472248'
         )
+	,@maritalStatusSingle INT = (
+        SELECT id
+        FROM DefinedValue
+        WHERE guid = 'F19FC180-FE8F-4B72-A59C-8013E3B0EB0D'
+        )
     ,@personId INT
     ,@personGuid UNIQUEIDENTIFIER
     ,@spousePersonId INT
@@ -36,7 +41,10 @@ DECLARE @i INT
     ,@day INT
     ,@personCounter INT = 0
     ,@maxPerson INT = 99999
-    ,@createGroups INT = 1
+	,@kidCountMax int
+	,@kidCounter int
+	,@kidPersonId int
+	,@kidPersonGuid uniqueidentifier
     ,@familyGroupType INT = (
         SELECT id
         FROM GroupType
@@ -46,6 +54,11 @@ DECLARE @i INT
         SELECT id
         FROM GroupTypeRole
         WHERE guid = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42'
+        )
+	,@childRole INT = (
+        SELECT id
+        FROM GroupTypeRole
+        WHERE guid = 'C8B1814F-6AA7-4055-B2D7-48FE20429CB9'
         )
     ,@groupId INT
     ,@locationId INT
@@ -12170,104 +12183,193 @@ BEGIN
             ,@homePhone
             );
 
-        IF @createGroups = 1
-        BEGIN
-            INSERT INTO [Group] (
-                IsSystem
-                ,GroupTypeId
-                ,NAME
-                ,IsSecurityRole
-                ,IsActive
-                ,[Guid]
-                ,[Order]
-                )
-            VALUES (
-                0
-                ,@familyGroupType
-                ,@lastName + ' Family'
-                ,0
-                ,1
-                ,NEWID()
-                ,0
-                )
+		-- create family
+		INSERT INTO [Group] (
+            IsSystem
+            ,GroupTypeId
+            ,NAME
+            ,IsSecurityRole
+            ,IsActive
+            ,[Guid]
+            ,[Order]
+            )
+        VALUES (
+            0
+            ,@familyGroupType
+            ,@lastName + ' Family'
+            ,0
+            ,1
+            ,NEWID()
+            ,0
+            )
 
-            SET @groupId = SCOPE_IDENTITY()
+        SET @groupId = SCOPE_IDENTITY()
 
-            INSERT INTO [GroupMember] (
-                IsSystem
-                ,GroupId
-                ,PersonId
-                ,GroupRoleId
-                ,[Guid]
-                ,GroupMemberStatus
-                )
-            VALUES (
-                0
-                ,@groupId
-                ,@personId
-                ,@adultRole
-                ,newid()
-                ,0
-                )
+        INSERT INTO [GroupMember] (
+            IsSystem
+            ,GroupId
+            ,PersonId
+            ,GroupRoleId
+            ,[Guid]
+            ,GroupMemberStatus
+            )
+        VALUES (
+            0
+            ,@groupId
+            ,@personId
+            ,@adultRole
+            ,newid()
+            ,0
+            )
 
-            INSERT INTO [GroupMember] (
-                IsSystem
-                ,GroupId
-                ,PersonId
-                ,GroupRoleId
-                ,[Guid]
-                ,GroupMemberStatus
-                )
-            VALUES (
-                0
-                ,@groupId
-                ,@spousePersonId
-                ,@adultRole
-                ,newid()
-                ,0
-                )
+        INSERT INTO [GroupMember] (
+            IsSystem
+            ,GroupId
+            ,PersonId
+            ,GroupRoleId
+            ,[Guid]
+            ,GroupMemberStatus
+            )
+        VALUES (
+            0
+            ,@groupId
+            ,@spousePersonId
+            ,@adultRole
+            ,newid()
+            ,0
+            )
 
-            SET @zipCode = ROUND(rand() * 9999, 0) + 80000;
-            SET @streetAddress = ROUND(rand() * 9999, 0) + 100;
+		-- Kids loop
+		set @kidCountMax = floor(rand() * 4);
+		set @kidCounter = 0;
+		while (@kidCounter < @kidCountMax) 
+		begin
+			SET @personCounter += 1;
+			SET @kidPersonGuid = NEWID();
+			SET @month = CONVERT(NVARCHAR(100), ROUND(rand() * 11, 0) + 1);
+			SET @day = CONVERT(NVARCHAR(100), ROUND(rand() * 26, 0) + 1);
+			SET @year = datepart(year, sysdatetime()) - ROUND(rand() * 16, 0);
 
-            INSERT INTO [Location] (
-                Street1
-                ,Street2
-                ,City
-                ,[State]
-                ,PostalCode
-                ,IsActive
-                ,[Guid]
-                )
-            VALUES (
-                CONVERT(VARCHAR(max), @streetAddress) + ' Random Street'
-                ,''
-                ,'Phoenix'
-                ,'AZ'
-                ,@zipCode
-                ,1
-                ,NEWID()
-                )
+			SELECT @genderInt = floor(rand() * 2) + 1
 
-            SET @locationId = SCOPE_IDENTITY()
+			INSERT INTO [Person] (
+				[IsSystem]
+				,[FirstName]
+				,[NickName]
+				,[LastName]
+				,[BirthDay]
+				,[BirthMonth]
+				,[BirthYear]
+				,[Gender]
+				,[MaritalStatusValueId]
+				,[Email]
+				,[IsEmailActive]
+				,[EmailPreference]
+				,[Guid]
+				,[RecordTypeValueId]
+				,[RecordStatusValueId]
+				,[IsDeceased]
+				,[CreatedDateTime]
+				)
+			VALUES (
+				0
+				,concat('Kid',@kidCounter)
+				,concat('Kid',@kidCounter)
+				,@lastName
+				,@day
+				,@month
+				,@year
+				,@genderInt
+				,@maritalStatusSingle
+				,null
+				,1
+				,0
+				,@kidPersonGuid
+				,@personRecordType
+				,@activeRecordStatus
+				,0
+				,SYSDATETIME()
+				)
 
-            INSERT INTO [GroupLocation] (
-                GroupId
-                ,LocationId
-                ,GroupLocationTypeValueId
-                ,[Guid]
-                ,IsMailingLocation
-                ,IsMappedLocation
-                )
-            VALUES (
-                @groupId
-                ,@locationId
-                ,@locationTypeValueHome
-                ,NEWID()
-                ,1
-                ,0
-                )
-        END
+			SET @kidPersonId = SCOPE_IDENTITY()
+
+			INSERT INTO [PersonAlias] (
+				PersonId
+				,AliasPersonId
+				,AliasPersonGuid
+				,[Guid]
+				)
+			VALUES (
+				@kidPersonId
+				,@kidPersonId
+				,@kidPersonGuid
+				,NEWID()
+				);
+
+			INSERT INTO [GroupMember] (
+				IsSystem
+				,GroupId
+				,PersonId
+				,GroupRoleId
+				,[Guid]
+				,GroupMemberStatus
+				)
+			VALUES (
+				0
+				,@groupId
+				,@kidPersonId
+				,@childRole
+				,newid()
+				,0
+				)
+
+			set @kidCounter += 1
+		end
+		-- end kids loop
+
+        
+
+        SET @zipCode = ROUND(rand() * 9999, 0) + 80000;
+        SET @streetAddress = ROUND(rand() * 9999, 0) + 100;
+
+        INSERT INTO [Location] (
+            Street1
+            ,Street2
+            ,City
+            ,[State]
+            ,PostalCode
+            ,IsActive
+            ,[Guid]
+            )
+        VALUES (
+            CONVERT(VARCHAR(max), @streetAddress) + ' Random Street'
+            ,''
+            ,'Phoenix'
+            ,'AZ'
+            ,@zipCode
+            ,1
+            ,NEWID()
+            )
+
+        SET @locationId = SCOPE_IDENTITY()
+
+        INSERT INTO [GroupLocation] (
+            GroupId
+            ,LocationId
+            ,GroupLocationTypeValueId
+            ,[Guid]
+            ,IsMailingLocation
+            ,IsMappedLocation
+            )
+        VALUES (
+            @groupId
+            ,@locationId
+            ,@locationTypeValueHome
+            ,NEWID()
+            ,1
+            ,0
+            )
+        
 
         SET @personCounter += 2;
     END
