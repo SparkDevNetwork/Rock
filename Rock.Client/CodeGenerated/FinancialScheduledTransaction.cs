@@ -41,16 +41,13 @@ namespace Rock.Client
         public DateTime? CardReminderDate { get; set; }
 
         /// <summary />
-        public int? CreditCardTypeValueId { get; set; }
-
-        /// <summary />
-        public int? CurrencyTypeValueId { get; set; }
-
-        /// <summary />
         public DateTime? EndDate { get; set; }
 
         /// <summary />
         public int? FinancialGatewayId { get; set; }
+
+        /// <summary />
+        public int? FinancialPaymentDetailId { get; set; }
 
         /// <summary />
         public string GatewayScheduleId { get; set; }
@@ -94,10 +91,9 @@ namespace Rock.Client
             this.Id = source.Id;
             this.AuthorizedPersonAliasId = source.AuthorizedPersonAliasId;
             this.CardReminderDate = source.CardReminderDate;
-            this.CreditCardTypeValueId = source.CreditCardTypeValueId;
-            this.CurrencyTypeValueId = source.CurrencyTypeValueId;
             this.EndDate = source.EndDate;
             this.FinancialGatewayId = source.FinancialGatewayId;
+            this.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
             this.GatewayScheduleId = source.GatewayScheduleId;
             this.IsActive = source.IsActive;
             this.LastRemindedDate = source.LastRemindedDate;
@@ -119,13 +115,10 @@ namespace Rock.Client
     public partial class FinancialScheduledTransaction : FinancialScheduledTransactionEntity
     {
         /// <summary />
-        public DefinedValue CreditCardTypeValue { get; set; }
-
-        /// <summary />
-        public DefinedValue CurrencyTypeValue { get; set; }
-
-        /// <summary />
         public FinancialGateway FinancialGateway { get; set; }
+
+        /// <summary />
+        public FinancialPaymentDetail FinancialPaymentDetail { get; set; }
 
         /// <summary />
         public ICollection<FinancialScheduledTransactionDetail> ScheduledTransactionDetails { get; set; }

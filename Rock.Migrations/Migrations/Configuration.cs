@@ -57,14 +57,14 @@ namespace Rock.Migrations
             foreach( string encryptedMicr in txnService
                 .Queryable()
                 .Where( t => 
-                    t.CheckMicrEncrypted != null &&
-                    t.CheckMicrEncrypted != "" )
-                .Select( t => t.CheckMicrEncrypted )
+                    t.CheckMicrParts != null &&
+                    t.CheckMicrParts != "" )
+                .Select( t => t.CheckMicrParts )
                 .Distinct() )
             {
                 if ( !string.IsNullOrWhiteSpace( encryptedMicr ) )
                 {
-                    string clearMicr = Rock.Security.Encryption.DecryptString( encryptedMicr );
+                    string clearMicr = Rock.Security.Encryption.DecryptString( encryptedMicr ) ?? string.Empty;
                     var parts = clearMicr.Split( '_' );
                     if ( parts.Length >= 2 && ( parts[0] != parts[0].Trim() || parts[1] != parts[1].Trim() ) )
                     {

@@ -250,6 +250,18 @@
     <Compile Include="Field\Types\EventItemFieldType.cs" />
     <Compile Include="Field\Types\NoteTypesFieldType.cs" />
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
+    <Compile Include="Follow\Event\PersonFirstAttendedGroupType.cs" />
+    <Compile Include="Follow\Event\PersonFirstJoinedGroupType.cs" />
+    <Compile Include="Follow\Event\PersonBaptized.cs" />
+    <Compile Include="Follow\Event\PersonAnniversary.cs" />
+    <Compile Include="Follow\Suggestion\InGroupTogether.cs" />
+    <Compile Include="Follow\Event\PersonBirthday.cs" />
+    <Compile Include="Follow\SuggestionComponent.cs" />
+    <Compile Include="Follow\EventComponent.cs" />
+    <Compile Include="Follow\SuggestionContainer.cs" />
+    <Compile Include="Follow\EventContainer.cs" />
+    <Compile Include="Jobs\SendFollowingEvents.cs" />
+    <Compile Include="Jobs\SendFollowingSuggestions.cs" />
     <Compile Include="Jobs\SendRegistrationReminders.cs" />
     <Compile Include="Jobs\SendGroupRequirementsNotification.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionActivityTypeService.cs" />
@@ -321,6 +333,12 @@
     <Compile Include="Model\BenevolenceResult.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\CodeGenerated\FollowingEventNotificationService.cs" />
+    <Compile Include="Model\CodeGenerated\FollowingEventSubscriptionService.cs" />
+    <Compile Include="Model\CodeGenerated\FollowingEventTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\FollowingSuggestedService.cs" />
+    <Compile Include="Model\CodeGenerated\FollowingSuggestionTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialPaymentDetailService.cs" />
     <Compile Include="Model\CommunicationService.Partial.cs" />
     <Compile Include="Model\ConnectionOpportunityCampus.cs" />
     <Compile Include="Model\ConnectionRequest.cs" />
@@ -386,11 +404,17 @@
     <Compile Include="Model\EventCalendar.cs" />
     <Compile Include="Model\EventCalendarItem.cs" />
     <Compile Include="Model\EventItem.cs" />
+    <Compile Include="Model\FollowingEventNotification.cs" />
+    <Compile Include="Model\FollowingSuggested.cs" />
+    <Compile Include="Model\FollowingEventSubscription.cs" />
+    <Compile Include="Model\FollowingEventType.cs" />
+    <Compile Include="Model\FollowingSuggestionType.cs" />
     <Compile Include="Model\EventItemOccurrence.cs" />
     <Compile Include="Model\FinancialGateway.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\EntitySet.cs" />
     <Compile Include="Model\EntitySetItem.cs" />
+    <Compile Include="Model\FinancialPersonBankAccount.cs" />
     <Compile Include="Model\FinancialTransactionDetailService.Partial.cs" />
     <Compile Include="Model\FinancialPledgeService.Partial.cs" />
     <Compile Include="Model\FollowingService.partial.cs" />
@@ -404,6 +428,7 @@
     <Compile Include="Model\RegistrationRegistrant.cs" />
     <Compile Include="Model\Registration.cs" />
     <Compile Include="Model\RegistrationRegistrantFee.cs" />
+    <Compile Include="Model\ReportService.partial.cs" />
     <Compile Include="Model\RegistrationTemplateFee.cs" />
     <Compile Include="Model\RegistrationTemplateDiscount.cs" />
     <Compile Include="Model\RegistrationTemplateFormField.cs" />
@@ -421,7 +446,7 @@
     <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
     <Compile Include="Model\GroupMemberWorkflowTrigger.cs" />
-    <Compile Include="Net\RockRestClient.cs" />
+    <Compile Include="Net\RockWebRequest.cs" />
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
@@ -437,9 +462,12 @@
     <Compile Include="Reporting\DataFilter\IUpdateSelectionFromPageParameters.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\GroupDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\GroupMemberDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FirstContributionDateFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\GroupAttendanceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupGeofenceFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\HistoryDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupFilter.cs" />
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
@@ -450,9 +478,11 @@
     <Compile Include="Reporting\DataSelect\Person\RelatedPeopleSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\TotalGivingAmountSelect.cs" />
+    <Compile Include="Reporting\DataTransform\Person\ChildrenTransform.cs" />
     <Compile Include="Reporting\ReportingHelper.cs" />
     <Compile Include="Reporting\DataSelect\Person\GroupParticipationSelect.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
+    <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />
     <Compile Include="Security\Authentication\Facebook.cs">
@@ -642,7 +672,6 @@
     <Compile Include="Model\PageView.cs" />
     <Compile Include="Model\WorkflowActionFormAttribute.cs" />
     <Compile Include="Model\WorkflowActionForm.cs" />
-    <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
     <Compile Include="PersonProfile\Badge\Campus.cs" />
     <Compile Include="PersonProfile\Badge\AttendingDuration.cs" />
     <Compile Include="PersonProfile\Badge\LastVisitOnSite.cs" />
@@ -708,9 +737,6 @@
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
     <Compile Include="Model\BinaryFileData.cs" />
-    <Compile Include="Net\RockWebRequest.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="PersonProfile\BadgeComponent.cs" />
     <Compile Include="PersonProfile\BadgeContainer.cs" />
     <Compile Include="PersonProfile\Badge\FamilyAttendance.cs" />
@@ -772,7 +798,7 @@
     <Compile Include="Field\Types\ComponentFieldType.cs" />
     <Compile Include="Model\FinancialTransactionRefund.cs" />
     <Compile Include="Model\FinancialPersonSavedAccount.cs" />
-    <Compile Include="Model\FinancialPersonBankAccount.cs" />
+    <Compile Include="Model\FinancialPaymentDetail.cs" />
     <Compile Include="Model\FinancialScheduledTransactionDetail.cs" />
     <Compile Include="Reporting\DataTransformComponent.cs" />
     <Compile Include="Reporting\DataTransformContainer.cs" />

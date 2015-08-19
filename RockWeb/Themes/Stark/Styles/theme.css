@@ -1,12 +1,12 @@
 /*
-   Rock's Core CSS
 
-    1. Imports - Used to import the various core less files
-    2. HTML Overrides - Style overrides for basic HTML tags
-    3. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
-    4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
-    5. ASP.Net Overrides - Yep they get it wrong too sometimes
+  Rock's Core CSS
 
+  1. Imports - Used to import the various core less files
+  2. HTML Overrides - Style overrides for basic HTML tags
+  3. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
+  4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
+  5. ASP.Net Overrides - Yep they get it wrong too sometimes
 
 */
 /* jquery.Jcrop.css v0.9.12 - MIT License */
@@ -292,7 +292,7 @@ img.jcrop-preview {
   bottom: 0;
   width: 100%;
   height: 36px;
-  z-index: 1049;
+  z-index: 999;
   position: fixed;
   right: 0;
   margin-right: 0;
@@ -706,7 +706,7 @@ Copyright (c) 2012 Dan Eden*/
 }
 .modal-backdrop,
 .modal-backdrop.fade.in {
-  opacity: 0.7;
+  opacity: 0.5;
   filter: alpha(opacity=70);
   background: #000000;
 }
@@ -1176,6 +1176,15 @@ tr.row-highlight td {
   border-color: #5697d0;
   vertical-align: top !important;
 }
+.table > tbody > tr.is-inactive > td {
+  color: #808080;
+}
+.table > tbody > tr.is-inactive-person > td {
+  color: #808080;
+}
+.table > tbody > tr.is-deceased > td {
+  color: #d9534f;
+}
 .table-responsive {
   position: relative;
   width: 100%;
@@ -1418,11 +1427,12 @@ tr.row-highlight td {
 }
 .panel-note article {
   border-radius: 4px;
-  border: 1px solid #dcdcdc;
+  border: 1px solid #bce8f1;
   padding: 15px;
   margin-bottom: 15px;
-  background-color: #f5f5f5;
+  background-color: #d9edf7;
   position: relative;
+  color: #3a87ad;
 }
 .panel-note article .date {
   font-size: 13px;
@@ -1898,6 +1908,7 @@ table.attribute-grid tr th:nth-child(3) {
 .personprofilebar-bio .name {
   text-align: center;
   margin-top: 0;
+  margin-bottom: 4px;
 }
 .personprofilebar-bio .name .full-name,
 .personprofilebar-bio .name .previous-names {
@@ -1914,6 +1925,16 @@ table.attribute-grid tr th:nth-child(3) {
 .personprofilebar-bio .nav li .persondetails-actions:hover,
 .personprofilebar-bio .nav li .persondetails-actions:focus {
   background-color: transparent;
+}
+.personprofilebar-bio .nav-actions {
+  width: 120px;
+  margin: 0 auto 12px auto;
+}
+@media (min-width: 992px) {
+  .personprofilebar-bio .nav-actions {
+    float: right;
+    margin: 0;
+  }
 }
 .personprofilebar-bio .actions {
   position: absolute;
@@ -2014,16 +2035,28 @@ table.attribute-grid tr th:nth-child(3) {
   margin-left: 0;
 }
 .personprofilebar-bio .taglist {
-  margin-top: 7.5px;
+  margin-top: 15px;
 }
 .personprofilebar-bio .demographics {
-  margin-top: 30px;
+  margin-top: 15px;
   text-align: center;
+}
+@media (min-width: 992px) {
+  .personprofilebar-bio .demographics {
+    width: 50%;
+    float: left;
+  }
 }
 .personprofilebar-bio .personcontact {
   text-align: center;
   margin-top: 15px;
   padding-bottom: 30px;
+}
+@media (min-width: 992px) {
+  .personprofilebar-bio .personcontact {
+    width: 50%;
+    float: left;
+  }
 }
 .personprofilebar-bio .personcontact .email .email-status i {
   color: #142f46;
@@ -2406,9 +2439,6 @@ span.field-value {
   .personprofilebar-bio .photo {
     margin: 0;
   }
-  .personprofilebar-bio .taglist {
-    margin-top: 0;
-  }
   .personprofilebar-bio .demographics {
     text-align: left;
   }
@@ -2427,12 +2457,6 @@ span.field-value {
   }
   .personprofilebar-badge .badge-group:last-child {
     text-align: right;
-  }
-}
-/* Medium devices (desktops, 992px and up) */
-@media (min-width: 992px) {
-  .personprofilebar-bio .personcontact {
-    margin-top: 0;
   }
 }
 /* Large devices (large desktops, 1200px and up) */
@@ -2803,55 +2827,6 @@ iframe.email-body {
   text-align: right;
 }
 /*
-    
-
-    table.calendar th.calendar-day-header {
-        text-align: center;
-        color: #6a6a6a !important;
-    }
-
-    
-    table.calendar td.calendar-last-month,
-    table.calendar td.calendar-day {
-        padding: 5px;
-    }
-    
-        table.calendar td.calendar-last-month a {
-            color: #dfdfdf !important;
-            font-size: 12px;
-        }
-        
-        table.calendar td.calendar-day a,
-        table.calendar td.calendar-today a,
-        table.calendar td.calendar-selected a {
-            font-size: 14px;
-            color: #6a6a6a;
-        }
-
-        table.calendar td.calendar-today {  
-            background-color: #FCF8E3!important; 
-        }
-
-        table.calendar td.calendar-today a {
-            color:#c09853 !important;
-            font-weight:bold;
-        }
-
-        table.calendar td.calendar-today a:after {
-            content:"TODAY"; 
-            color:#000; 
-            font-size:0.5em;
-            pointer-events:none; 
-            width:100%; 
-            float:left;
-        }
-
-        table.calendar td.calendar-today a:hover {  
-            background-color: #fcf8e3;  
-        }
-
-    */
-/*
   Used to manage styles related to reusable components / widgets.
 
   1. Pickers - used to pick complex data types
@@ -3166,6 +3141,9 @@ ul.rocktree ul {
 .touch .rollover-item {
   opacity: 1;
 }
+.block-title {
+  margin: 0;
+}
 .list-as-blocks h3 {
   margin-top: 0;
   font-size: 14px;
@@ -3191,7 +3169,7 @@ ul.rocktree ul {
   background-color: #92bce0;
   display: block;
   color: #142f46;
-  height: 80px;
+  height: 90px;
   padding: 15px;
   border-radius: 4px;
   -webkit-transition: background-color 200ms linear;
@@ -3289,6 +3267,9 @@ div.tagsinput {
   border-bottom-right-radius: 4px;
   border-top-right-radius: 4px;
 }
+.taglist .tag:first-child {
+  margin-left: 10px;
+}
 .taglist .tag span {
   white-space: nowrap;
   overflow: hidden;
@@ -3329,6 +3310,12 @@ div.tagsinput {
   border-radius: 2px;
   background: #dbd5cb;
   box-shadow: -1px -1px 2px #c2b8a7;
+}
+@media (min-width: 768px) {
+  div.tagsinput div[id$=addTag] {
+    float: left;
+    margin-left: 12px;
+  }
 }
 div.tagsinput span.tag.personal {
   background: #d0c6b4;
@@ -4605,10 +4592,10 @@ ul.list-group-panel .list-group-item:first-child,
 
   Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
 
-  1. Variables - specific variables for sizing classes and media query helpers
-  2. Colors - creates utility classes for each of the accent colors
-  3. Spacing - provides utility classes for spacing based off of the themes gutter widths
-  4. Even Height Columns - provides classes for making columns even heights
+  1. Colors - creates utility classes for each of the accent colors
+  2. Spacing - provides utility classes for spacing based off of the themes gutter widths
+  3. Even Height Columns - provides classes for making columns even heights
+  4. Breakpoint Specific Alignment - provides classes for alignment changes at specific breakpoints
 
 */
 .accent-color {
@@ -4964,6 +4951,50 @@ ul.list-group-panel .list-group-item:first-child,
     overflow: hidden;
   }
 }
+@media (max-width: 767px) {
+  .xs-text-center {
+    text-align: center;
+  }
+  .xs-text-left {
+    text-align: left;
+  }
+  .xs-text-right {
+    text-align: right;
+  }
+}
+@media (min-width: 768px) {
+  .sm-text-center {
+    text-align: center;
+  }
+  .sm-text-left {
+    text-align: left;
+  }
+  .sm-text-right {
+    text-align: right;
+  }
+}
+@media (min-width: 992px) {
+  .md-text-center {
+    text-align: center;
+  }
+  .md-text-left {
+    text-align: left;
+  }
+  .md-text-right {
+    text-align: right;
+  }
+}
+@media (min-width: 1200px) {
+  .lg-text-center {
+    text-align: center;
+  }
+  .lg-text-left {
+    text-align: left;
+  }
+  .lg-text-right {
+    text-align: right;
+  }
+}
 .cke_dialog_contents {
   background-color: #ffffff !important;
 }
@@ -5132,17 +5163,6 @@ a.help {
 .well > h4 {
   margin-top: 0;
 }
-.modal-backdrop,
-.modal-backdrop.fade.in {
-  opacity: 0.5;
-}
-.nav-pills > li > a {
-  color: #428bca;
-}
-.nav-pills > li > a:hover {
-  color: #ffffff;
-  background-color: #92bce0;
-}
 .form-right {
   text-align: right;
   margin-bottom: 12px;
@@ -5229,8 +5249,9 @@ a.help {
   display: block;
   float: left;
 }
-.panel legend {
-  border-color: red;
+.panel .panel-heading i.fa-chevron-up,
+.panel .panel-heading i.fa-chevron-down {
+  color: #142f46;
 }
 .panel .panel-heading .panel-title small {
   opacity: .5;
@@ -5286,15 +5307,6 @@ a.help {
 }
 .panel-widget .panel-heading small {
   color: #2a6496;
-}
-.panel-info {
-  border-top-color: #5697d0;
-}
-.panel-info .panel-body {
-  background-color: #ffffff;
-}
-.panel-info .list-group-item {
-  background-color: #ffffff;
 }
 .panel-persondetails {
   border-color: #6aa3d5;
@@ -5416,11 +5428,11 @@ a.help {
   }
 }
 .panel-analytics .filter-options {
-  background-color: #eeeeee;
+  background-color: #92bce0;
 }
 .panel-analytics .analysis-types {
   padding: 15px 0;
-  background-color: #eeeeee;
+  background-color: #92bce0;
   margin-bottom: 15px;
 }
 .btn.aspNetDisabled {

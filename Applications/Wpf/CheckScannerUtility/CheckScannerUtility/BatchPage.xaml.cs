@@ -23,10 +23,10 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-
-using Rock.Constants;
-using Rock.Model;
+using Rock.Client;
+using Rock.Client.Enums;
 using Rock.Net;
+
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -218,25 +218,25 @@ namespace Rock.Apps.CheckScannerUtility
             string status = rangerScanner.GetTransportStateString().Replace( "Transport", string.Empty ).SplitCase();
             Color statusColor = Colors.Transparent;
 
-            XportStates xportState = (XportStates)e.currentState;
+            RangerTransportStates xportState = (RangerTransportStates)e.currentState;
 
             switch ( xportState )
             {
-                case XportStates.TransportReadyToFeed:
+                case RangerTransportStates.TransportReadyToFeed:
                     statusColor = Colors.LimeGreen;
                     btnScan.Content = "Scan";
                     break;
-                case XportStates.TransportShutDown:
+                case RangerTransportStates.TransportShutDown:
                     statusColor = Colors.Red;
                     break;
-                case XportStates.TransportFeeding:
+                case RangerTransportStates.TransportFeeding:
                     statusColor = Colors.Blue;
                     btnScan.Content = "Stop";
                     break;
-                case XportStates.TransportStartingUp:
+                case RangerTransportStates.TransportStartingUp:
                     statusColor = Colors.Yellow;
                     break;
-                case XportStates.TransportExceptionInProgress:
+                case RangerTransportStates.TransportExceptionInProgress:
                     statusColor = Colors.Black;
                     break;
                 default:
@@ -257,7 +257,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         private void rangerScanner_TransportChangeOptionsState( object sender, AxRANGERLib._DRangerEvents_TransportChangeOptionsStateEvent e )
         {
-            if ( e.previousState == (int)XportStates.TransportStartingUp )
+            if ( e.previousState == (int)RangerTransportStates.TransportStartingUp )
             {
                 // enable imaging
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedImaging", "True" );
@@ -278,11 +278,11 @@ namespace Rock.Apps.CheckScannerUtility
                 var rockConfig = RockConfig.Load();
                 switch ( rockConfig.ImageColorType )
                 {
-                    case ImageColorType.ImageColorTypeColor:
+                    case RangerImageColorTypes.ImageColorTypeColor:
                         rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage3", "True" );
                         rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage3", rockConfig.EnableRearImage.ToTrueFalse() );
                         break;
-                    case ImageColorType.ImageColorTypeGrayscale:
+                    case RangerImageColorTypes.ImageColorTypeGrayscale:
                         rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage2", "True" );
                         rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage2", rockConfig.EnableRearImage.ToTrueFalse() );
                         break;
@@ -343,7 +343,7 @@ namespace Rock.Apps.CheckScannerUtility
             cbCampus.SelectedValuePath = "Id";
             cbCampus.DisplayMemberPath = "Name";
             cbCampus.Items.Clear();
-            cbCampus.Items.Add( new Campus { Id = None.Id, Name = None.Text } );
+            cbCampus.Items.Add( new Campus { Id = 0, Name = string.Empty } );
             foreach ( var campus in campusList.OrderBy( a => a.Name ) )
             {
                 cbCampus.Items.Add( campus );
@@ -351,10 +351,10 @@ namespace Rock.Apps.CheckScannerUtility
 
             cbCampus.SelectedIndex = 0;
 
-            var currencyTypeDefinedType = client.GetDataByGuid<DefinedType>( "api/DefinedTypes", Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() );
+            var currencyTypeDefinedType = client.GetDataByGuid<DefinedType>( "api/DefinedTypes", Rock.Client.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() );
             this.CurrencyValueList = client.GetData<List<DefinedValue>>( "api/DefinedValues", "DefinedTypeId eq " + currencyTypeDefinedType.Id.ToString() );
 
-            var sourceTypeDefinedType = client.GetDataByGuid<DefinedType>( "api/DefinedTypes", Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() );
+            var sourceTypeDefinedType = client.GetDataByGuid<DefinedType>( "api/DefinedTypes", Rock.Client.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() );
             this.SourceTypeValueList = client.GetData<List<DefinedValue>>( "api/DefinedValues", "DefinedTypeId eq " + sourceTypeDefinedType.Id.ToString() );
         }
 
@@ -424,7 +424,7 @@ namespace Rock.Apps.CheckScannerUtility
             this.shapeStatus.ToolTip = status;
             this.shapeStatus.Fill = new SolidColorBrush( statusColor );
 
-            ScanningPage.ShowScannerStatus( connected ? XportStates.TransportReadyToFeed : XportStates.TransportShutDown, statusColor, status );
+            ScanningPage.ShowScannerStatus( connected ? RangerTransportStates.TransportReadyToFeed : RangerTransportStates.TransportShutDown, statusColor, status );
         }
 
         /// <summary>
@@ -637,7 +637,7 @@ namespace Rock.Apps.CheckScannerUtility
                 FinancialBatch financialBatch = null;
                 if ( SelectedFinancialBatch == null || SelectedFinancialBatch.Id == 0 )
                 {
-                    financialBatch = new FinancialBatch { Id = 0, Guid = Guid.NewGuid(), Status = BatchStatus.Pending, CreatedByPersonAliasId = LoggedInPerson.PrimaryAlias.Id };
+                    financialBatch = new FinancialBatch { Id = 0, Guid = Guid.NewGuid(), Status = BatchStatus.Pending, CreatedByPersonAliasId = LoggedInPerson.PrimaryAliasId };
                 }
                 else
                 {
@@ -686,7 +686,7 @@ namespace Rock.Apps.CheckScannerUtility
                 }
                 else
                 {
-                    client.PutData<FinancialBatch>( "api/FinancialBatches/", financialBatch );
+                    client.PutData<FinancialBatch>( "api/FinancialBatches/", financialBatch, financialBatch.Id );
                 }
 
                 if ( SelectedFinancialBatch == null || SelectedFinancialBatch.Id == 0 )
@@ -804,12 +804,12 @@ namespace Rock.Apps.CheckScannerUtility
             lblBatchNameReadOnly.Content = selectedBatch.Name;
             lblBatchIdReadOnly.Content = string.Format( "Batch Id: {0}", selectedBatch.Id );
 
-            lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : None.Text;
+            lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ?? 0 ) ).Name : string.Empty;
             lblBatchDateReadOnly.Content = selectedBatch.BatchStartDateTime.Value.ToString( "d" );
-            var createdByPerson = client.GetData<Person>( string.Format( "api/People/GetByPersonAliasId/{0}", selectedBatch.CreatedByPersonAliasId ) );
+            var createdByPerson = client.GetData<Person>( string.Format( "api/People/GetByPersonAliasId/{0}", selectedBatch.CreatedByPersonAliasId ?? 0 ) );
             if ( createdByPerson != null )
             {
-                lblBatchCreatedByReadOnly.Content = createdByPerson.FullName;
+                lblBatchCreatedByReadOnly.Content = string.Format("{0} {1}", createdByPerson.NickName, createdByPerson.LastName);
             }
             else
             {
@@ -852,7 +852,14 @@ namespace Rock.Apps.CheckScannerUtility
                 this.Cursor = null;
                 foreach ( var transaction in transactions )
                 {
-                    transaction.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.CurrencyTypeValueId );
+                    if ( transaction.FinancialPaymentDetailId.HasValue )
+                    {
+                        transaction.FinancialPaymentDetail = transaction.FinancialPaymentDetail ?? client.GetData<FinancialPaymentDetail>( string.Format( "api/FinancialPaymentDetails/{0}", transaction.FinancialPaymentDetailId ?? 0 ) );
+                        if ( transaction.FinancialPaymentDetail != null )
+                        {
+                            transaction.FinancialPaymentDetail.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.FinancialPaymentDetail.CurrencyTypeValueId );
+                        }
+                    }
                 }
 
                 // sort starting with most recent first
@@ -878,9 +885,20 @@ namespace Rock.Apps.CheckScannerUtility
             var transactions = grdBatchItems.DataContext as BindingList<FinancialTransaction>;
             if ( transactions != null )
             {
-                foreach ( var transaction in transactions.Where( a => a.CurrencyTypeValue == null ) )
+                RockConfig rockConfig = RockConfig.Load();
+                var client = new RockRestClient( rockConfig.RockBaseUrl );
+                client.Login( rockConfig.Username, rockConfig.Password );
+                
+                foreach ( var transaction in transactions.Where( a => a.FinancialPaymentDetail == null ) )
                 {
-                    transaction.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.CurrencyTypeValueId );
+                    if ( transaction.FinancialPaymentDetailId.HasValue )
+                    {
+                        transaction.FinancialPaymentDetail = transaction.FinancialPaymentDetail ?? client.GetData<FinancialPaymentDetail>( string.Format( "api/FinancialPaymentDetails/{0}", transaction.FinancialPaymentDetailId ?? 0 ) );
+                        if ( transaction.FinancialPaymentDetail != null )
+                        {
+                            transaction.FinancialPaymentDetail.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.FinancialPaymentDetail.CurrencyTypeValueId );
+                        }
+                    }
                 }
             }
 
@@ -913,7 +931,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnAddBatch_Click( object sender, RoutedEventArgs e )
         {
-            var financialBatch = new FinancialBatch { Id = 0, BatchStartDateTime = DateTime.Now.Date, CreatedByPersonAliasId = LoggedInPerson.PrimaryAlias.Id };
+            var financialBatch = new FinancialBatch { Id = 0, BatchStartDateTime = DateTime.Now.Date, CreatedByPersonAliasId = LoggedInPerson.PrimaryAliasId };
             UpdateBatchUI( financialBatch );
             ShowBatch( true );
         }

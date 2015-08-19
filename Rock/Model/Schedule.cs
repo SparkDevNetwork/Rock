@@ -443,6 +443,46 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// returns true if there is a blank schedule or a schedule that is incomplete
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool HasScheduleWarning()
+        {
+            DDay.iCal.Event calEvent = GetCalenderEvent();
+            if ( calEvent != null && calEvent.DTStart != null )
+            {
+                if ( calEvent.RecurrenceRules.Any() )
+                {
+                    IRecurrencePattern rrule = calEvent.RecurrenceRules[0];
+                    if ( rrule.Frequency == FrequencyType.Weekly )
+                    {
+                        // if it has a Weekly schedule, but no days are selected, return true that is has a warning
+                        if ( !rrule.ByDay.Any() )
+                        {
+                            return true;
+                        }
+                    }
+                    else if ( rrule.Frequency == FrequencyType.Monthly )
+                    {
+                        // if it has a Monthly schedule, but not configured, return true that is has a warning
+                        if ( !rrule.ByDay.Any() && !rrule.ByMonthDay.Any() )
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                // is scheduled, and doesn't have any warnings
+                return false;
+            }
+            else
+            {
+                // if there is no CalEvent, it might be scheduled using WeeklyDayOfWeek, but if it isn't, return true that is has a warning
+                return !WeeklyDayOfWeek.HasValue;
+            }
+        }
+
+        /// <summary>
         /// Gets the Friendly Text of the Calendar Event.
         /// For example, "Every 3 days at 10:30am", "Monday, Wednesday, Friday at 5:00pm", "Saturday at 4:30pm"
         /// </summary>
@@ -478,6 +518,11 @@ namespace Rock.Model
                         case FrequencyType.Weekly:
 
                             result = rrule.ByDay.Select( a => a.DayOfWeek.ConvertToString() ).ToList().AsDelimited( "," );
+                            if ( string.IsNullOrEmpty( result ) )
+                            {
+                                // no day selected, so it has an incomplete schedule
+                                return "No Scheduled Days";
+                            }
 
                             if ( rrule.Interval > 1 )
                             {

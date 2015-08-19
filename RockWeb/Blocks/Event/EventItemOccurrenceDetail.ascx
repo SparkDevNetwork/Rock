@@ -68,7 +68,7 @@
 
                         <div class="col-md-6">
 
-                            <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" OnSelectPerson="ppContact_SelectPerson" />
+                            <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" EnableSelfSelection="true" OnSelectPerson="ppContact_SelectPerson" />
                             <Rock:PhoneNumberBox ID="pnPhone" runat="server" Label="Phone" />
                             <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" />
 

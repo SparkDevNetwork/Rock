@@ -931,7 +931,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static int? GetAge( DateTime? birthDate)
         {
-            if ( birthDate.HasValue )
+            if ( birthDate.HasValue && birthDate.Value.Year != DateTime.MinValue.Year )
             {
                 DateTime today = RockDateTime.Today;
                 int age = today.Year - birthDate.Value.Year;
@@ -940,6 +940,32 @@ namespace Rock.Model
             }
             
             return null;
+        }
+
+        /// <summary>
+        /// Gets the next birth day.
+        /// </summary>
+        /// <value>
+        /// The next birth day.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual DateTime? NextBirthDay
+        {
+            get
+            {
+                if ( BirthMonth.HasValue && BirthDay.HasValue )
+                {
+                    var today = RockDateTime.Today;
+                    var nextBirthDay = RockDateTime.New( today.Year, BirthMonth.Value, BirthDay.Value );
+                    if ( nextBirthDay.HasValue && nextBirthDay.Value.CompareTo( today ) < 0 )
+                    {
+                        nextBirthDay = RockDateTime.New( today.Year + 1, BirthMonth.Value, BirthDay.Value);
+                    }
+                    return nextBirthDay;
+                }
+                return null;
+            }
         }
 
         /// <summary>
@@ -1018,6 +1044,32 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the next anniversary.
+        /// </summary>
+        /// <value>
+        /// The next anniversary.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual DateTime? NextAnniversary
+        {
+            get
+            {
+                if ( AnniversaryDate.HasValue )
+                {
+                    var today = RockDateTime.Today;
+                    var nextAnniversary = RockDateTime.New( today.Year, AnniversaryDate.Value.Month, AnniversaryDate.Value.Day );
+                    if ( nextAnniversary.HasValue && nextAnniversary.Value.CompareTo( today ) < 0 )
+                    {
+                        nextAnniversary = RockDateTime.New( today.Year + 1, AnniversaryDate.Value.Month, AnniversaryDate.Value.Day );
+                    }
+                    return nextAnniversary;
+                }
+                return null;
+            }
+        }
+        
         /// <summary>
         /// Gets or sets the grade offset, which is the number of years until their graduation date.  This is used to determine which Grade (Defined Value) they are in
         /// </summary>
@@ -1238,11 +1290,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Pres the save.
+        /// Pres the save changes.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        /// <param name="entry">The entry.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
             var inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
             var deceased = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() );
@@ -1255,6 +1307,25 @@ namespace Rock.Model
                     ( RecordStatusReasonValue != null && RecordStatusReasonValue.Id == deceased.Id );
 
                 IsDeceased = isInactive && isReasonDeceased;
+
+                if ( isInactive )
+                {
+                    // If person was just inactivated, update the group member status for all their group memberships to be inactive
+                    var dbPropertyEntry = entry.Property( "RecordStatusValueId" );
+                    if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
+                    {
+                        var rockContext = (RockContext)dbContext;
+                        foreach( var groupMember in new GroupMemberService(rockContext)
+                            .Queryable()
+                            .Where( m => 
+                                m.PersonId == Id &&
+                                m.GroupMemberStatus != GroupMemberStatus.Inactive &&
+                                !m.Group.GroupType.IgnorePersonInactivated ) )
+                        {
+                            groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
+                        }
+                    }
+                }
             }
 
             if ( string.IsNullOrWhiteSpace( NickName ) )
@@ -1275,7 +1346,6 @@ namespace Rock.Model
             // ensure person has a PersonAlias/PrimaryAlias
             if ( !this.Aliases.Any() || !this.Aliases.Any( a => a.AliasPersonId == this.Id ) )
             {
-                
                 this.Aliases.Add( new PersonAlias { AliasPerson = this, AliasPersonGuid = this.Guid, Guid = Guid.NewGuid() } );
             }
 

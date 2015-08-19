@@ -152,8 +152,8 @@ namespace RockWeb.Blocks.Finance
                         scheduleSummary.Add( "DaysSinceLastPayment", null );
                     }
 
-                    scheduleSummary.Add("CurrencyType", schedule.CurrencyTypeValue.Value);
-                    scheduleSummary.Add( "CreditCardType", (schedule.CreditCardTypeValue == null) ? "" : schedule.CreditCardTypeValue.Value );
+                    scheduleSummary.Add("CurrencyType", schedule.FinancialPaymentDetail != null ? schedule.FinancialPaymentDetail.CurrencyTypeValue.Value : "" );
+                    scheduleSummary.Add( "CreditCardType", ( schedule.FinancialPaymentDetail != null && schedule.FinancialPaymentDetail.CreditCardTypeValue != null) ? schedule.FinancialPaymentDetail.CreditCardTypeValue.Value : "" );
                     scheduleSummary.Add("UrlEncryptedKey", schedule.UrlEncodedKey);
                     scheduleSummary.Add("Frequency",  schedule.TransactionFrequencyValue.Value);
                     scheduleSummary.Add("FrequencyDescription", schedule.TransactionFrequencyValue.Description);

@@ -67,7 +67,7 @@
 
                     <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Opportunity Attributes">
                         <div class="grid">
-                            <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Opportunity Attribute">
+                            <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Opportunity Attribute" ShowConfirmDeleteDialog="false" >
                                 <Columns>
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
@@ -82,7 +82,7 @@
 
                     <Rock:PanelWidget ID="wpActivityTypes" runat="server" Title="Activities">
                         <div class="grid">
-                            <Rock:Grid ID="gActivityTypes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Activity">
+                            <Rock:Grid ID="gActivityTypes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Activity" ShowConfirmDeleteDialog="false" >
                                 <Columns>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Activities" />
                                     <Rock:EditField OnClick="gActivityTypes_Edit" />
@@ -94,7 +94,7 @@
 
                     <Rock:PanelWidget ID="wpStatuses" runat="server" Title="Statuses">
                         <div class="grid">
-                            <Rock:Grid ID="gStatuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Status">
+                            <Rock:Grid ID="gStatuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Status" ShowConfirmDeleteDialog="false" >
                                 <Columns>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
@@ -107,7 +107,7 @@
 
                     <Rock:PanelWidget ID="wpWorkflow" runat="server" Title="Workflows">
                         <div class="grid">
-                            <Rock:Grid ID="gWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow">
+                            <Rock:Grid ID="gWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow" ShowConfirmDeleteDialog="false" >
                                 <Columns>
                                     <Rock:RockBoundField DataField="WorkflowType" HeaderText="Workflow Type" />
                                     <Rock:RockBoundField DataField="Trigger" HeaderText="Trigger" />
@@ -166,7 +166,7 @@
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgConnectionWorkflow" runat="server" Title="Create Connection Workflow" OnSaveClick="dlgConnectionWorkflow_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ConnectionWorkflow">
+        <Rock:ModalDialog ID="dlgConnectionWorkflow" runat="server" Title="Select Workflow" OnSaveClick="dlgConnectionWorkflow_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ConnectionWorkflow">
             <Content>
 
                 <asp:HiddenField ID="hfAddConnectionWorkflowGuid" runat="server" />
@@ -175,28 +175,24 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="TriggerType" OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" AutoPostBack="true" />
+                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" DataTextField="Name" DataValueField="Id" 
+                            OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" AutoPostBack="true" Required="true" ValidationGroup="ConnectionWorkflow" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlWorkflowType" runat="server" Label="Workflow Type" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="WorkflowType" />
+                        <Rock:RockDropDownList ID="ddlWorkflowType" runat="server" Label="Workflow Type" DataTextField="Name" DataValueField="Id" 
+                            Required="true" ValidationGroup="ConnectionWorkflow" />
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlPrimaryQualifier" runat="server" Visible="false" />
+                        <Rock:RockDropDownList ID="ddlPrimaryQualifier" runat="server" Visible="false" ValidationGroup="ConnectionWorkflow" />
+                        <Rock:RockDropDownList ID="ddlSecondaryQualifier" runat="server" Visible="false" ValidationGroup="ConnectionWorkflow" />
                     </div>
                     <div class="col-md-6">
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlSecondaryQualifier" runat="server" Visible="false" />
-                    </div>
-                    <div class="col-md-6">
-                    </div>
-                </div>
             </Content>
         </Rock:ModalDialog>
     </ContentTemplate>

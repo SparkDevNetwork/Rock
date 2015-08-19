@@ -97,8 +97,9 @@ namespace Rock.Model
             {
                 qry = qry
                     .Where( t =>
-                        t.Transaction.CurrencyTypeValueId.HasValue &&
-                        distictCurrencyTypeIds.Contains( t.Transaction.CurrencyTypeValueId.Value ) );
+                        t.Transaction.FinancialPaymentDetail != null &&
+                        t.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue &&
+                        distictCurrencyTypeIds.Contains( t.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) );
             }
 
             // Source Type Filter

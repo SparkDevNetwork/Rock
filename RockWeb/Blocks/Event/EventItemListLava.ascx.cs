@@ -187,6 +187,7 @@ namespace RockWeb.Blocks.Event
                         eventCampusSummaries.Add( new EventOccurrenceSummary
                         {
                             EventItemOccurrence = eventItemOccurrence,
+                            EventItem = eventItemOccurrence.EventItem,
                             Name = eventItemOccurrence.EventItem.Name,
                             DateTime = datetime,
                             Date = datetime.ToShortDateString(),
@@ -239,9 +240,17 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// A class to store event item occurrence data for liquid
         /// </summary>
-        [DotLiquid.LiquidType( "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "Location", "Description", "Summary", "DetailPage" )]
+        [DotLiquid.LiquidType( "EventItem", "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "Location", "Description", "Summary", "DetailPage" )]
         public class EventOccurrenceSummary
         {
+            /// <summary>
+            /// Gets or sets the event item.
+            /// </summary>
+            /// <value>
+            /// The event item.
+            /// </value>
+            public EventItem EventItem { get; set; }
+            
             /// <summary>
             /// Gets or sets the event item occurrence.
             /// </summary>

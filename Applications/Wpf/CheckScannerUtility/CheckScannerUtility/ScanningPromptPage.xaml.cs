@@ -29,8 +29,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Rock.Model;
-using Rock.Net;
+using Rock.Client;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -72,7 +71,7 @@ namespace Rock.Apps.CheckScannerUtility
                 btnToggle.IsChecked = btnToggle == btnToggleSelected;
             }
             
-            var scanningChecks = (Guid)btnToggleSelected.Tag == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            var scanningChecks = (Guid)btnToggleSelected.Tag == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
             chkDoubleDocDetection.IsChecked = scanningChecks;
             chkEnableSmartScan.Visibility = scanningChecks ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -160,7 +159,7 @@ namespace Rock.Apps.CheckScannerUtility
                 spTenderButtons.Children.Add( btnToggle );
             }
 
-            var scanningChecks = rockConfig.TenderTypeValueGuid.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            var scanningChecks = rockConfig.TenderTypeValueGuid.AsGuid() == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
             chkDoubleDocDetection.IsChecked = scanningChecks;
             chkEnableSmartScan.Visibility = scanningChecks ? Visibility.Visible : Visibility.Collapsed;
 

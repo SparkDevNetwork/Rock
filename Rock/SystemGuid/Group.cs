@@ -37,6 +37,11 @@ namespace Rock.SystemGuid
         public const string GROUP_BENEVOLENCE = "02FA0881-3552-42B8-A519-D021139B800F";
 
         /// <summary>
+        /// RSR - Event Registration Administration Guid
+        /// </summary>
+        public const string GROUP_EVENT_REGISTRATION_ADMINISTRATORS = "2A92086B-DFF0-4B9C-46CB-4DAD805615AF";
+
+        /// <summary>
         /// The Calendar Administrators Group guid
         /// </summary>
         public const string GROUP_CALENDAR_ADMINISTRATORS = "FDA9D63F-B0B1-43E8-8B82-0255E5D99F26";

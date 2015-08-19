@@ -50,7 +50,13 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool EnableMobileRedirect { get; set; }
+
+        /// <summary />
         public string ErrorPage { get; set; }
+
+        /// <summary />
+        public string ExternalUrl { get; set; }
 
         /// <summary />
         public string GoogleAnalyticsCode { get; set; }
@@ -65,6 +71,9 @@ namespace Rock.Client
         public int? LoginPageRouteId { get; set; }
 
         /// <summary />
+        public int? MobilePageId { get; set; }
+
+        /// <summary />
         public string Name { get; set; }
 
         /// <summary />
@@ -72,6 +81,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? PageNotFoundPageRouteId { get; set; }
+
+        /// <summary />
+        public bool RedirectTablets { get; set; }
 
         /// <summary />
         public int? RegistrationPageId { get; set; }
@@ -100,14 +112,18 @@ namespace Rock.Client
             this.DefaultPageId = source.DefaultPageId;
             this.DefaultPageRouteId = source.DefaultPageRouteId;
             this.Description = source.Description;
+            this.EnableMobileRedirect = source.EnableMobileRedirect;
             this.ErrorPage = source.ErrorPage;
+            this.ExternalUrl = source.ExternalUrl;
             this.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
             this.IsSystem = source.IsSystem;
             this.LoginPageId = source.LoginPageId;
             this.LoginPageRouteId = source.LoginPageRouteId;
+            this.MobilePageId = source.MobilePageId;
             this.Name = source.Name;
             this.PageNotFoundPageId = source.PageNotFoundPageId;
             this.PageNotFoundPageRouteId = source.PageNotFoundPageRouteId;
+            this.RedirectTablets = source.RedirectTablets;
             this.RegistrationPageId = source.RegistrationPageId;
             this.RegistrationPageRouteId = source.RegistrationPageRouteId;
             this.Theme = source.Theme;
@@ -142,6 +158,9 @@ namespace Rock.Client
 
         /// <summary />
         public PageRoute LoginPageRoute { get; set; }
+
+        /// <summary />
+        public Page MobilePage { get; set; }
 
         /// <summary />
         public Page PageNotFoundPage { get; set; }

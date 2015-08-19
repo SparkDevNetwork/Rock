@@ -288,12 +288,12 @@ namespace RockWeb.Blocks.Finance
                     .Add( "Next Payment Date", txn.NextPaymentDate.HasValue ? txn.NextPaymentDate.Value.ToShortDateString() : string.Empty )
                     .Add( "Last Status Refresh", txn.LastStatusUpdateDateTime.HasValue ? txn.LastStatusUpdateDateTime.Value.ToString( "g" ) : string.Empty );
 
-                if ( txn.CurrencyTypeValue != null )
+                if ( txn.FinancialPaymentDetail != null && txn.FinancialPaymentDetail.CurrencyTypeValue != null )
                 {
-                    string currencyType = txn.CurrencyTypeValue.Value;
-                    if ( txn.CurrencyTypeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ) )
+                    string currencyType = txn.FinancialPaymentDetail.CurrencyTypeValue.Value;
+                    if ( txn.FinancialPaymentDetail.CurrencyTypeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ) )
                     {
-                        currencyType += txn.CreditCardTypeValue != null ? ( " - " + txn.CreditCardTypeValue.Value ) : string.Empty;
+                        currencyType += txn.FinancialPaymentDetail.CreditCardTypeValue != null ? ( " - " + txn.FinancialPaymentDetail.CreditCardTypeValue.Value ) : string.Empty;
                     }
                     detailsLeft.Add( "Currency Type", currencyType );
                 }
@@ -349,7 +349,7 @@ namespace RockWeb.Blocks.Finance
                 var rockContext = new RockContext();
                 var service = new FinancialScheduledTransactionService( rockContext );
                 return service
-                    .Queryable( "ScheduledTransactionDetails,FinancialGateway,CurrencyTypeValue,CreditCardTypeValue" )
+                    .Queryable( "ScheduledTransactionDetails,FinancialGateway,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
                     .Where( t => t.Id == txnId.Value )
                     .FirstOrDefault();
             }

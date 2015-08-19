@@ -482,5 +482,97 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201508041124356_RegistrationContact", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns the Mailing Addresses and any CustomMessages for the Contribution Statement, but not the actual transactions
+        ///		The StatementGenerator utility uses this procedure along with querying transactions thru REST to generate statements
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* GroupId
+        ///		* AddressPersonNames
+        ///		* Street1
+        ///		* Street2
+        ///		* City
+        ///		* State
+        ///		* PostalCode
+        ///		* StartDate
+        ///		* EndDate
+        ///		* CustomMessage1
+        ///		* CustomMessage2
+        ///	&lt;/returns&gt;
+        ///	&lt;par [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201508111253454_SiteMobilePage {
+            get {
+                return ResourceManager.GetString("_201508111253454_SiteMobilePage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- FinancialTransaction
+        ///INSERT INTO [FinancialPaymentDetail] ( [CurrencyTypeValueId], [CreditCardTypeValueId], [Guid], [ForeignId] )
+        ///SELECT [CurrencyTypeValueId], [CreditCardTypeValueId], NEWID(), CAST( [Id] AS VARCHAR )
+        ///FROM [FinancialTransaction]
+        ///
+        ///UPDATE F
+        ///SET [FinancialPaymentDetailId] = D.[Id]
+        ///FROM [FinancialPaymentDetail] D
+        ///INNER JOIN [FinancialTransaction] F ON CAST( F.[ID] AS VARCHAR ) = D.[ForeignId]
+        ///WHERE D.[ForeignId] IS NOT NULL
+        ///
+        ///UPDATE [FinancialPaymentDetail]
+        ///SET [ForeignId] = NULL        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201508111636214_FinancialPaymentDetails {
+            get {
+                return ResourceManager.GetString("_201508111636214_FinancialPaymentDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Update the Homepage and Error layouts on RockRMS site to be system
+        ///DECLARE @SiteId int = ( SELECT TOP 1 [Id] FROM [Site] WHERE [Guid] = &apos;C2D29296-6A87-47A9-A753-EE4E9159C4C4&apos; )
+        ///UPDATE [Layout] SET 
+        ///	 [IsSystem] = 1
+        ///	,[Guid] = &apos;CABD576F-C700-4690-835A-1BFBDD7DCBE6&apos;
+        ///WHERE [SiteId] = @SiteId
+        ///AND [FileName] = &apos;HomePage&apos;
+        ///
+        ///UPDATE [Layout] SET 
+        ///	 [IsSystem] = 1
+        ///	,[Guid] = &apos;7E816087-6A8C-498E-BFE7-D0B684A9DD45&apos;
+        ///WHERE [SiteId] = @SiteId
+        ///AND [FileName] = &apos;Error&apos;
+        ///
+        ///-- Update the Blank layout on externa [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201508162108504_FollowingEventsSuggestions {
+            get {
+                return ResourceManager.GetString("_201508162108504_FollowingEventsSuggestions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @PersonEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Model.Person&apos; )
+        ///IF @PersonEntityTypeId IS NOT NULL
+        ///BEGIN
+        ///
+        ///    DECLARE @EntityTypeId int 
+        ///    DECLARE @AttributeId int 
+        ///    DECLARE @EntityId int
+        ///
+        ///    SET @EntityTypeId = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = &apos;17DFDE21-0C1E-426F-8516-4BBA9ED28385&apos; )
+        ///	INSERT INTO [FollowingEventType] ( [Name], [Description], [EntityTypeId], [FollowedEntityTypeId], [IsActive], [SendOnWeekends], [IsNoticeRequired [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201508171751190_FollowingEventNotification {
+            get {
+                return ResourceManager.GetString("_201508171751190_FollowingEventNotification", resourceCulture);
+            }
+        }
     }
 }

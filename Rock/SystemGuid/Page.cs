@@ -553,6 +553,12 @@ namespace Rock.SystemGuid
         public const string ENTITY_ATTRIBUTES = "23507C90-3F78-40D4-B847-6FE8941FCD32";
 
         /// <summary>
+        /// Gets the Event Registration page guid
+        /// ParentPage: Website
+        /// </summary>
+        public const string EVENT_REGISTRATION = "614AF351-6C48-4B6B-B50E-9F7E03BC00A4";
+
+        /// <summary>
         /// Gets the Exception Detail page guid
         /// ParentPage: Exception List
         /// </summary>

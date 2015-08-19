@@ -31,6 +31,7 @@ namespace RockWeb.Blocks.CheckIn
     [IntegerField( "Minimum Phone Number Length", "Minimum length for phone number searches (defaults to 4).", false, 4 )]
     [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10 )]
     [TextField("Search Regex", "Regular Expression to run the search input through before sending it to the workflow. Useful for stripping off characters.", false)]
+    [DefinedValueField(Rock.SystemGuid.DefinedType.CHECKIN_SEARCH_TYPE, "Search Type", "The type of search to use for check-in (default is phone number).", true, false, Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER, order: 4 )]
     public partial class Search : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -52,6 +53,19 @@ namespace RockWeb.Blocks.CheckIn
             if ( !Page.IsPostBack )
             {
                 this.Page.Form.DefaultButton = lbSearch.UniqueID;
+
+                // set search type
+                var searchTypeValue = GetAttributeValue( "SearchType" ).AsGuid();
+                if ( searchTypeValue == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER.AsGuid() )
+                {
+                    pnlSearchName.Visible = false;
+                    pnlSearchPhone.Visible = true;
+                }
+                else
+                {
+                    pnlSearchName.Visible = true;
+                    pnlSearchPhone.Visible = false;
+                }
             }
         }
 
@@ -59,42 +73,67 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( KioskCurrentlyActive )
             {
-                // TODO: Validate text entered
-                int minLength = int.Parse( GetAttributeValue( "MinimumPhoneNumberLength" ) );
-                int maxLength = int.Parse( GetAttributeValue( "MaximumPhoneNumberLength" ) );
-                if ( tbPhone.Text.Length >= minLength && tbPhone.Text.Length <= maxLength )
-                {
-                    string searchInput = tbPhone.Text;
-                    
-                    // run regex expression on input if provided
-                    if (! string.IsNullOrWhiteSpace(GetAttributeValue("SearchRegex")))
-                    {
-                        Regex regex = new Regex( GetAttributeValue( "SearchRegex" ) );
-                        Match match = regex.Match( searchInput );
-                        if ( match.Success )
-                        {
-                            if ( match.Groups.Count == 2 )
-                            {
-                                searchInput = match.Groups[1].ToString();
-                            }
-                        }
-                    }
-                    
-                    CurrentCheckInState.CheckIn.UserEnteredSearch = true;
-                    CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
-                    CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
-                    CurrentCheckInState.CheckIn.SearchValue = searchInput;
+                // check search type
+                var searchTypeValue = GetAttributeValue( "SearchType" ).AsGuid();
 
-                    ProcessSelection();
+                if ( searchTypeValue == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER.AsGuid() )
+                {
+                    SearchByPhone();
                 }
                 else
                 {
-                    string errorMsg = ( tbPhone.Text.Length > maxLength )
-                        ? string.Format( "<p>Please enter no more than {0} numbers</p>", maxLength )
-                        : string.Format( "<p>Please enter at least {0} numbers</p>", minLength );
+                    SearchByName();
+                }               
+            }
+        }
 
-                    maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+        private void SearchByName()
+        {
+            CurrentCheckInState.CheckIn.UserEnteredSearch = true;
+            CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
+            CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME );
+            CurrentCheckInState.CheckIn.SearchValue = txtName.Text;
+
+            ProcessSelection();
+        }
+
+        private void SearchByPhone()
+        {
+            // TODO: Validate text entered
+            int minLength = int.Parse( GetAttributeValue( "MinimumPhoneNumberLength" ) );
+            int maxLength = int.Parse( GetAttributeValue( "MaximumPhoneNumberLength" ) );
+            if ( tbPhone.Text.Length >= minLength && tbPhone.Text.Length <= maxLength )
+            {
+                string searchInput = tbPhone.Text;
+
+                // run regex expression on input if provided
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "SearchRegex" ) ) )
+                {
+                    Regex regex = new Regex( GetAttributeValue( "SearchRegex" ) );
+                    Match match = regex.Match( searchInput );
+                    if ( match.Success )
+                    {
+                        if ( match.Groups.Count == 2 )
+                        {
+                            searchInput = match.Groups[1].ToString();
+                        }
+                    }
                 }
+
+                CurrentCheckInState.CheckIn.UserEnteredSearch = true;
+                CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
+                CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
+                CurrentCheckInState.CheckIn.SearchValue = searchInput;
+
+                ProcessSelection();
+            }
+            else
+            {
+                string errorMsg = ( tbPhone.Text.Length > maxLength )
+                    ? string.Format( "<p>Please enter no more than {0} numbers</p>", maxLength )
+                    : string.Format( "<p>Please enter at least {0} numbers</p>", minLength );
+
+                maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
             }
         }
 

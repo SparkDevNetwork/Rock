@@ -52,6 +52,8 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             var globalAttributesCache = GlobalAttributesCache.Read();
+
+            // Update a JobPulse global attribute value so that 3rd Party plugins could query this value in case they need to know
             globalAttributesCache.SetValue( "JobPulse", RockDateTime.Now.ToString(), true );
 
             UpdateScheduledJobs( context );

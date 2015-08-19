@@ -29,7 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// DataView Service and Data access class
     /// </summary>
-    public partial class DataViewService 
+    public partial class DataViewService
     {
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.EntityType">EntityTypes</see> that have a DataView associated with them.
@@ -59,7 +59,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dataViewId">The data view identifier.</param>
         /// <returns></returns>
-        public List<int> GetIds ( int dataViewId )
+        public List<int> GetIds( int dataViewId )
         {
             var dataView = Queryable().AsNoTracking().FirstOrDefault( d => d.Id == dataViewId );
             if ( dataView != null && dataView.EntityTypeId.HasValue )
@@ -127,5 +127,58 @@ namespace Rock.Model
 
             return filter.ChildFilters.Any( childFilter => IsViewInFilter( dataViewId, childFilter, dataViewFilterEntityId ) );
         }
+
+
+        /// <summary>
+        /// Create a new non-persisted Data View using an existing Data View as a template. 
+        /// </summary>
+        /// <param name="dataViewId">The identifier of a Data View to use as a template for the new Data View.</param>
+        /// <returns></returns>
+        public DataView GetNewFromTemplate( int dataViewId )
+        {
+            var item = this.Queryable()
+                           .AsNoTracking()
+                           .Include( x => x.DataViewFilter )
+                           .FirstOrDefault( x => x.Id == dataViewId );
+
+            if ( item == null )
+            {
+                throw new Exception( string.Format( "GetNewFromTemplate method failed. Template Data View ID \"{0}\" could not be found.", dataViewId ) );
+            }
+
+            // Deep-clone the Data View and reset the properties that connect it to the permanent store.
+            var newItem = (DataView)( item.Clone( true ) );
+
+            newItem.Id = 0;
+            newItem.Guid = Guid.NewGuid();
+            newItem.ForeignId = null;
+
+            newItem.DataViewFilterId = 0;
+
+            this.ResetPermanentStoreIdentifiers( newItem.DataViewFilter );
+
+            return newItem;
+        }
+
+        /// <summary>
+        /// Reset all of the identifiers on a DataViewFilter that uniquely identify it in the permanent store.
+        /// </summary>
+        /// <param name="filter">The data view filter.</param>
+        private void ResetPermanentStoreIdentifiers( DataViewFilter filter )
+        {
+            if ( filter == null )
+                return;
+
+            filter.Id = 0;
+            filter.Guid = Guid.NewGuid();
+            filter.ForeignId = null;
+
+            // Recursively reset any contained filters.
+            foreach ( var childFilter in filter.ChildFilters )
+            {
+                this.ResetPermanentStoreIdentifiers( childFilter );
+            }
+        }
+
     }
 }
