@@ -12270,6 +12270,7 @@ BEGIN
 				,[RecordStatusValueId]
 				,[IsDeceased]
 				,[CreatedDateTime]
+				,[GivingGroupId]
 				)
 			VALUES (
 				0
@@ -12289,6 +12290,7 @@ BEGIN
 				,@activeRecordStatus
 				,0
 				,SYSDATETIME()
+				,@groupId
 				)
 
 			SET @kidPersonId = SCOPE_IDENTITY()
@@ -12327,7 +12329,11 @@ BEGIN
 		end
 		-- end kids loop
 
-        
+		-- if kids were added to the family, set them all to the same giving group
+		if (@kidCountMax > 0) begin
+          update Person set GivingGroupId = @groupId where Id = @personId;
+	  	  update Person set GivingGroupId = @groupId where Id = @spousePersonId;
+        end  
 
         SET @zipCode = ROUND(rand() * 9999, 0) + 80000;
         SET @streetAddress = ROUND(rand() * 9999, 0) + 100;
