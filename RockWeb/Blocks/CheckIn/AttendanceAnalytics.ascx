@@ -48,8 +48,8 @@
                             </div>
                         </Rock:RockControlWrapper>
 
-                        <Rock:CampusesPicker ID="cpCampuses" runat="server" CssClass="campuses-picker-vertical" Label="Campuses" 
-                            Help="The campus to display attendance for. Leave unselected to view attendance not associated to any campus." />
+                        <Rock:RockCheckBoxList ID="clbCampuses" runat="server" CssClass="campuses-picker-vertical" Label="Campuses" 
+                            Help="The campuses to display attendance for. Leave blank to not filter by campus." />
                         
                         <Rock:NotificationBox ID="nbGroupsWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one group." Visible="false"/>
                         <h4>Group</h4>
