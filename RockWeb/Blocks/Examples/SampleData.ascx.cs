@@ -440,6 +440,9 @@ namespace RockWeb.Blocks.Examples
                 AppendFormat( "{0:00}:{1:00}.{2:00} data deleted <br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
             } );
 
+            // make sure the database auth MEF component is initialized in case it hasn't done its first Load/Save Attributes yet (prevents possible lockup)
+            var authenticationComponent = Rock.Security.AuthenticationContainer.GetComponent( EntityTypeCache.Read(_authenticationDatabaseEntityTypeId).Name );
+
             // Import the sample data
             // using RockContext in case there are multiple saves (like Attributes)
             rockContext.WrapTransaction( () =>
