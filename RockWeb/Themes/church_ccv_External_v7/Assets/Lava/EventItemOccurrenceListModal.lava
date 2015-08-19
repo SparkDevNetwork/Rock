@@ -1,0 +1,56 @@
+{% comment %}
+
+{% capture modalTitle %}Register for {{ EventItem.Name }} <small style="display: inline-block">{{ EventItemOccurrences[0].Campus.Name }} Campus</small>{% endcapture %}
+
+{% capture emptyMessage %}There are currently no events scheduled for the {{ Context.Campus.Name }} Campus{% endcapture %}
+
+{% assign showButton = false %}
+{% assign modalId = "StartingPointModal" %}
+<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#StartingPointModal">
+  Register Now
+</button>
+
+{% endcomment %}
+
+{% capture defaultModalId %}{{ EventItem.Name | ToPascal }}Modal{% endcapture %}
+{% assign _modalId = modalId | Default: defaultModalId %}
+
+
+{% capture defaultModalTitle %}Register for {{ EventItem.Name }} <small style="display: inline-block">{{ EventItemOccurrences[0].Campus.Name }} Campus</small>{% endcapture %}
+
+{% unless showButton == false %}
+<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#{{ _modalId }}">
+  Register Now
+</button>
+{% endunless %}
+
+
+<div class="modal fade" id="{{ _modalId }}" tabindex="-1" role="dialog" aria-labelledby="{{ _modalId }}Label">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      {% if EventItemOccurrences != empty %}
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="{{ _modalId }}Label">{{ modalTitle | Default: defaultModalTitle }}</h4>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          {% for occurrence in EventItemOccurrences %}
+            <div class="col-sm-6 margin-v-sm">
+              {% comment %}<a class="btn btn-primary btn-block no-caps" href="{{ RegistrationPage }}?RegistrationInstanceId={{ occurrence.Linkages | Select: 'RegistrationInstanceId' }}">{% endcomment %}
+              <a class="btn btn-primary btn-block no-caps" href="{{ RegistrationPage }}?EventOccurrenceId={{ occurrence.Id }}">
+                {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'dddd, MMM d / h:mmtt'  }}
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div class="modal-body">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        {{ emptyMessage | Default: "There are currently no events scheduled" }}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
