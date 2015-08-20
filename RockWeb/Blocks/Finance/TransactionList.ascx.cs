@@ -758,7 +758,8 @@ namespace RockWeb.Blocks.Finance
                 // otherwise set the selection based on filter settings
                 if ( _person != null )
                 {
-                    qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == _person.Id );
+                    // get the transactions for the person or all the members in the person's giving group (Family)
+                    qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingId == _person.GivingId );
                 }
 
                 // Date Range
