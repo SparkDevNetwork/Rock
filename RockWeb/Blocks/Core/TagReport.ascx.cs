@@ -103,6 +103,17 @@ namespace RockWeb.Blocks.Core
                                 gReport.Columns.Add( column );
                             }
 
+                            // Add a CreatedDateTime if one does not exist
+                            var gridBoundColumns = gReport.Columns.OfType<BoundField>();
+                            if( gridBoundColumns.Any( c => c.DataField.Equals( "CreatedDateTime" ) ) == false )
+                            {
+                                BoundField addedDateTime = new DateField();
+                                addedDateTime.DataField = "CreatedDateTime";
+                                addedDateTime.SortExpression = "CreatedDateTime";
+                                addedDateTime.HeaderText = "Date Tagged";
+                                gReport.Columns.Add( addedDateTime );
+                            }
+
                             // Add delete column
                             var deleteField = new DeleteField();
                             gReport.Columns.Add( deleteField );
@@ -187,9 +198,32 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            var guids = new TaggedItemService( new RockContext() ).Queryable().Where( t => t.TagId == TagId.Value ).Select( t => t.EntityGuid ).ToList();
+            var guids = new TaggedItemService( new RockContext() ).Queryable().Where( t => t.TagId == TagId.Value )
+                .Select( t => new { t.EntityGuid, t.CreatedDateTime } )
+                .ToDictionary(  o => o.EntityGuid, o => o.CreatedDateTime );
 
-            gReport.DataSource = InvokeServiceMethod( "GetListByGuids", new Type[] { typeof( List<Guid> ) }, new object[] { guids } );
+            gReport.DataSource = InvokeServiceMethod( "GetListByGuids", new Type[] { typeof( List<Guid> ) }, new object[] { guids.Keys.ToList() } );
+
+            // Since we don't really know what is in the "obj" that was returned, we check if it's
+            // enumerable then reuse the CreatedDateTime property of the DataSource if it has one.
+            // In the future, perhaps consider creating a merged data source so the CreatedDateTime
+            // property/column doesn't have to be hijacked.
+            var enumerable = gReport.DataSource as System.Collections.IEnumerable;
+            if ( enumerable != null )
+            {
+                foreach ( var entity in enumerable )
+                {
+                    var property = entity.GetType().GetProperty( "CreatedDateTime" );
+                    var guid = entity.GetType().GetProperty( "Guid" );
+                    // Now re-set the CreatedDateTime with the tag's CreatedDateTime (if that property is in the entity)
+                    if ( property != null && guid != null )
+                    {
+                        var val = (Guid) guid.GetValue(entity, null );
+                        property.SetValue( entity, guids[val], null );
+                    }
+                }
+            }
+
             gReport.DataBind();
         }
 
