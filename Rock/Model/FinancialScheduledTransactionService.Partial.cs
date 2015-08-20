@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
@@ -34,7 +35,7 @@ namespace Rock.Model
     {
         /// <summary>
         /// Gets schedule transactions associated to a person.  Includes any transactions associated to person
-        /// or any other perosn with same giving group id
+        /// or any other person with same giving group id
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="givingGroupId">The giving group identifier.</param>
@@ -44,8 +45,15 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<FinancialScheduledTransaction> Get( int? personId, int? givingGroupId, bool includeInactive )
         {
-            var qry = Queryable( "ScheduledTransactionDetails,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
-                .Where( t => t.IsActive || includeInactive );
+            var qry = Queryable()
+                .Include(a => a.ScheduledTransactionDetails)
+                .Include(a => a.FinancialPaymentDetail.CurrencyTypeValue)
+                .Include(a => a.FinancialPaymentDetail.CreditCardTypeValue);
+
+            if (!includeInactive)
+            {
+                qry = qry.Where( t => t.IsActive );
+            }
 
             if ( givingGroupId.HasValue )
             {
