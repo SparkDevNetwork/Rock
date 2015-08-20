@@ -2,43 +2,43 @@
 	<div class="col-md-4">
 		<div class="well">
 			{% assign linkage = EventItemOccurrence.Linkages | First %}
-			
+
 			{% if EventItemOccurrence.Campus != null %}
-				<h4> {{EventItemOccurrence.Campus.Name}} Campus</h4> 
+				<h4> {{EventItemOccurrence.Campus.Name}} Campus</h4>
 			{% endif %}
-				
+
 			<p>
 				<strong>Contact</strong><br />
 				{% if EventItemOccurrence.ContactPersonAlias != null %}
 					{{ EventItemOccurrence.ContactPersonAlias.Person.FullName }} <br />
 				{% endif %}
-					
+
 				{{ EventItemOccurrence.ContactEmail }} <br />
 				{{ EventItemOccurrence.ContactPhone }}
 			</p>
-				
+
 			{% if EventItemOccurrence.Location != '' %}
 				<p>
 					<strong> Location</strong> <br />
 					{{ EventItemOccurrence.Location }}
 				</p>
 			{% endif %}
-				
+
 			<p>
 				<strong>Date / Time</strong> <br />
-				{{ EventItemOccurrence.EventItemSchedules | Select:'Schedule' | Select:'iCalendarContent' | DatesFromICal | First | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}
-			</p>
-				
-			{% if EventItemOccurrence.CampusNote != '' %}
+                {{ EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}
+            </p>
+
+			{% if EventItemOccurrence.Note != '' %}
 				<strong>Note</strong><br />
-				{{ EventItemOccurrence.CampusNote }}
+				{{ EventItemOccurrence.Note }}
 			{% endif %}
-				
+
 			{% if linkage.RegistrationInstanceId > 0 ) %}
 				<a href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}" class="btn btn-primary btn-block margin-t-md">Register</a>
 			{% endif %}
 		</div>
-		
+
 		<script>function fbs_click() { u = location.href; t = document.title; window.open('http://www.facebook.com/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436'); return false; }</script>
 		<ul class="socialsharing">
 			<li>
@@ -69,10 +69,10 @@
     <h1>{{Event.Name}}</h1>
     {{Event.Description}}
   </div>
-</div> 
-  
-  
+</div>
 
 
 
-   
+
+
+
