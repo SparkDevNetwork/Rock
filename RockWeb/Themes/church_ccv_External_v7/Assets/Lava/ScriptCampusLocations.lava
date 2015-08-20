@@ -22,7 +22,7 @@ CCV.locations = [
     zip: '{{ campus.Location.PostalCode }}',
     photo: '{{ campus.Location.ImageUrl }}',
     url: '{{ campus.Url }}',
-    vimeoid: '{{ campus.CampusTourVimeoID }}',
+    vimeoid: '{{ campus.CampusTourVimeoId }}',
     facebook: '{{ campus.FacebookURL }}',
     serviceTimes: {
       {% capture renderedTimes %}
