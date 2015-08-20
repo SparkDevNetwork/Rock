@@ -239,11 +239,23 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     }
                     else if ( metricCustomDates == "One Year Ago" )
                     {
-                        currentMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
-                            .Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == calendar.GetWeekOfYear( DateTime.Now.AddYears(-1).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) )
+                        if ( campus != null && campusContext.HasValue )
+                        {
+
+                            currentMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
+                                .Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == calendar.GetWeekOfYear( DateTime.Now.AddYears( -1 ).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) && a.MetricValueDateTime.Value.Year.ToString() == DateTime.Now.AddYears(-1).ToString() && a.EntityId.ToString() == campus.Id.ToString() )
+                                .Select( a => a.YValue )
+                                .Sum()
+                            );
+                        }
+                        else
+                        {
+                            currentMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
+                            .Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == calendar.GetWeekOfYear( DateTime.Now.AddYears( -1 ).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) && a.MetricValueDateTime.Value.Year.ToString() == DateTime.Now.AddYears( -1 ).ToString() )
                             .Select( a => a.YValue )
                             .Sum()
                             );
+                        }
                     }
 
                     // Still Need to add the trending arrows back in
@@ -404,11 +416,13 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                                     .FirstOrDefault()
                                     );
                             }
-
-                            currentWeekMetric = metricItem.MetricValues
-                                .Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End )
-                                .Select( a => a.YValue )
-                                .FirstOrDefault();
+                            else
+                            {
+                                currentWeekMetric = metricItem.MetricValues
+                                    .Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End )
+                                    .Select( a => a.YValue )
+                                    .FirstOrDefault();
+                            }
 
                         } else {
 
