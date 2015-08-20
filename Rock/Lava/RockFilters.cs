@@ -911,10 +911,10 @@ namespace Rock.Lava
                 return input;
             }
 
-            int iInput = -1;
-            int iOperand = -1;
+            decimal iInput = -1;
+            decimal iOperand = -1;
 
-            if ( int.TryParse( input.ToString(), out iInput ) && int.TryParse(operand.ToString(), out iOperand) )
+            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
             {
                 return iInput + iOperand;
             }
@@ -937,10 +937,10 @@ namespace Rock.Lava
                 return input;
             }
 
-            int iInput = -1;
-            int iOperand = -1;
+            decimal iInput = -1;
+            decimal iOperand = -1;
 
-            if ( int.TryParse( input.ToString(), out iInput ) && int.TryParse( operand.ToString(), out iOperand ) )
+            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
             {
                 return iInput - iOperand;
             }
@@ -963,10 +963,10 @@ namespace Rock.Lava
                 return input;
             }
 
-            int iInput = -1;
-            int iOperand = -1;
+            decimal iInput = -1;
+            decimal iOperand = -1;
 
-            if ( int.TryParse( input.ToString(), out iInput ) && int.TryParse( operand.ToString(), out iOperand ) )
+            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
             {
                 return iInput * iOperand;
             }
