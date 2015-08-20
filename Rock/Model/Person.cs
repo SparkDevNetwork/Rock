@@ -289,7 +289,7 @@ namespace Rock.Model
         public int? GivingGroupId { get; set; }
 
         /// <summary>
-        /// Gets the giver identifier.
+        /// Gets the computed giver identifier in the format G{GivingGroupId} if they are part of a GivingGroup, or P{Personid} if they give individually
         /// </summary>
         /// <value>
         /// The giver identifier.
