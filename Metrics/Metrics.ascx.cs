@@ -164,7 +164,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 {
                     var churchMetricValue = newMetric.MetricValues;
 
-                    if ( dateRange != null )
+                    if ( dateRange.Start.HasValue && dateRange.End.HasValue )
                     {
                         if ( campus != null && campusContext.HasValue )
                         {
@@ -269,7 +269,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     var metricPreviousYear = new List<MetricJson>();
 
                     // Search for data if a source is selected
-                    if ( dateRange != null )
+                    if ( dateRange.Start.HasValue && dateRange.End.HasValue )
                     {
 
                         if ( campus != null && campusContext.HasValue )
@@ -394,7 +394,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                         var previousWeekMetric = new decimal?();
 
                         // Search DB Based on Current Week of Year
-                        if ( dateRange != null )
+                        if ( dateRange.Start.HasValue && dateRange.End.HasValue )
                         {
                             if ( campus != null && campusContext.HasValue )
                             {
