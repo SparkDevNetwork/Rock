@@ -16,7 +16,7 @@
       <h1 class="underline">{{ campus.Name }} Campus</h1>
       {% assign vimeoId = campus | Attribute: 'CampusTourVimeoId' %}
       {% if vimeoId != empty %}
-        <a class="btn btn-default btn-sm margin-t-sm popup-vimeo" href="//vimeo.com/{{ vimeoId }}" ><i class="fa fa-play-circle"></i> Watch</a>
+        <a class="btn btn-default btn-sm margin-t-sm popup-vimeo" href="//vimeo.com/{{ vimeoId }}" ><i class="fa fa-play-circle"></i> Take a Tour</a>
       {% endif %}
     </div>
   </div>
@@ -59,10 +59,6 @@
                 {% endif %}
               {% endfor %}
             {% endif %}
-
-            {% if hasSaturday == false and hasSunday %}
-              <br class="hidden-xs"><br class="hidden-xs">
-            {% endif %}
           </div>
         </div>
         <div class="well margin-b-none">
@@ -100,10 +96,21 @@
       {% endif %}
 
       <div class="col-sm-12 col-md-8">
-        <h3>Kids & Students</h3>
-        <p>At CCV, we have exciting, safe programs for kids and teens from birth through high school.</p>
+        <h3>Kids</h3>
+        <p>For infants - 6th grade, we have safe, fun and interactive programs available during all adult services.</p>
         <p>
           <a href="/kids" class="btn btn-default">About Kids</a>
+        </p>
+
+        <p class="hidden-xs">&nbsp;</p>
+
+        <h3>Students</h3>
+        <p>Jr High and High School students meet for seperate weekend services.</p>
+        <p>
+          <strong>7th - 8th Grade</strong> {{ campus | Attribute: 'JrHighTime' }}<br>
+          <strong>9th - 12th Grade</strong> {{ campus | Attribute: 'HighSchoolTime' }}
+        </p>
+        <p>
           <a href="/students" class="btn btn-default">About Students</a>
         </p>
 
