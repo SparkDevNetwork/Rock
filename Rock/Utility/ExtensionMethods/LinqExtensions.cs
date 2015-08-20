@@ -360,6 +360,22 @@ namespace Rock
             return result;
         }
 
+        /// <summary>
+        /// Forces an Inner Join to the Person table using the specified key selector expression.
+        /// Handy for optimizing a query that would have normally done an outer join 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="qry">The qry.</param>
+        /// <param name="keySelector">The key selector.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<T> InnerJoinPerson<T>( this IQueryable<T> qry, Expression<Func<T, int>> keySelector, RockContext rockContext ) where T : IEntity
+        {
+            var qryPerson = new PersonService( rockContext ).Queryable( true, true );
+            qry = qry.Join( qryPerson, keySelector, p => p.Id, ( t, p ) => t );
+            return qry;
+        }
+
         #endregion IQueryable extensions
 
         #region Dictionary<TKey, TValue> extension methods
