@@ -513,7 +513,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed && !IsUserAuthorized( Authorization.EDIT ) )
+            if ( !editAllowed )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
@@ -557,7 +557,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
 
             if ( readOnly )
             {
-                pnlDetails.Visible = false;
+                lbEdit.Visible = false;
                 ShowReadonlyDetails( group );
             }
             else
