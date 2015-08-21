@@ -60,6 +60,15 @@ namespace Rock.Model
         public string PublicName { get; set; }
 
         /// <summary>
+        /// Gets or sets the summary.
+        /// </summary>
+        /// <value>
+        /// The summary.
+        /// </value>
+        [DataMember]
+        public string Summary { get; set; }
+
+        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>

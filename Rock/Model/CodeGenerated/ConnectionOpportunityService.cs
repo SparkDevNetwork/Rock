@@ -104,6 +104,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.PhotoId = source.PhotoId;
             target.PublicName = source.PublicName;
+            target.Summary = source.Summary;
             target.UseAllGroupsOfType = source.UseAllGroupsOfType;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

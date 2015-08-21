@@ -65,6 +65,9 @@ namespace Rock.Client
         public string PublicName { get; set; }
 
         /// <summary />
+        public string Summary { get; set; }
+
+        /// <summary />
         public bool UseAllGroupsOfType { get; set; }
 
         /// <summary />
@@ -90,6 +93,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.PhotoId = source.PhotoId;
             this.PublicName = source.PublicName;
+            this.Summary = source.Summary;
             this.UseAllGroupsOfType = source.UseAllGroupsOfType;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;

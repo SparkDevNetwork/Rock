@@ -223,7 +223,8 @@ namespace RockWeb.Blocks.Connection
                         IconCssClass = opportunity.IconCssClass,
                         Name = opportunity.PublicName,
                         PhotoUrl = opportunity.PhotoUrl,
-                        Description = opportunity.Description.ScrubHtmlAndConvertCrLfToBr(),
+                        Description = opportunity.Description,
+                        Summary = opportunity.Summary,
                         Id = opportunity.Id
                     } );
                 }
@@ -375,13 +376,14 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// A class for lava to access connection opportunity data
         /// </summary>
-        [DotLiquid.LiquidType( "IconCssClass", "Name", "PhotoUrl", "Description", "Id" )]
+        [DotLiquid.LiquidType( "IconCssClass", "Name", "PhotoUrl", "Summary", "Description", "Id" )]
         public class OpportunitySummary
         {
-            public String IconCssClass { get; set; }
-            public String Name { get; set; }
-            public String PhotoUrl { get; set; }
-            public String Description { get; set; }
+            public string IconCssClass { get; set; }
+            public string Name { get; set; }
+            public string PhotoUrl { get; set; }
+            public string Description { get; set; }
+            public string Summary { get; set; }
             public int Id { get; set; }
         }
 
