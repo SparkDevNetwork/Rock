@@ -16,7 +16,7 @@
         </li>
       {% else %}
         {% for gchildPage in childPage.Pages %}
-          <li class="{% if childPage.Current == 'true' %}active {% endif%}{{ pageMenuItemSubClasses }}">
+          <li class="{% if gchildPage.Current == 'true' %}active {% endif%}{{ pageMenuItemSubClasses }}">
             <a href="{{ gchildPage.Url }}">{{ gchildPage.Title }}</a>
           </li>
         {% endfor %}
