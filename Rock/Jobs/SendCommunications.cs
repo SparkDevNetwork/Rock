@@ -64,14 +64,31 @@ namespace Rock.Jobs
                         ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) >= 0 && c.FutureSendDateTime.Value.CompareTo( endWindow ) <= 0 )
                     ) );
 
+            var exceptionMsgs = new List<string>();
+
             foreach ( var comm in qry.AsNoTracking().ToList() )
             {
-                var medium = comm.Medium;
-                if ( medium != null )
+                try 
+                { 
+                    var medium = comm.Medium;
+                    if ( medium != null )
+                    {
+                        medium.Send( comm );
+                    }
+                }
+
+                catch ( Exception ex )
                 {
-                    medium.Send( comm );
+                    exceptionMsgs.Add( string.Format( "Exception occurred sending communication ID:{0}:{1}    {2}", comm.Id, Environment.NewLine, ex.Messages().AsDelimited( Environment.NewLine + "   " ) ) );
+                    ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
                 }
             }
+
+            if ( exceptionMsgs.Any() )
+            {
+                throw new Exception( "One or more exceptions occurred sending communications..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
+            }
+
         }
     }
 }
