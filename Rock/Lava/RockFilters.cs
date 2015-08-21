@@ -28,6 +28,7 @@ using DDay.iCal;
 using DotLiquid;
 using DotLiquid.Util;
 using Humanizer;
+using Humanizer.Localisation;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -691,12 +692,13 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static string HumanizeDateTime( object input )
+        public static string HumanizeDateTime( object input, object compareDate = null )
         {
             if ( input == null )
                 return string.Empty;
 
             DateTime dtInput;
+            DateTime dtCompare;
 
             if ( input is DateTime )
             {
@@ -710,7 +712,12 @@ namespace Rock.Lava
                 }
             }
 
-            return dtInput.Humanize( false, RockDateTime.Now );
+            if ( !DateTime.TryParse( compareDate.ToString(), out dtCompare ) )
+            {
+                dtCompare = RockDateTime.Now;
+            }
+
+            return dtInput.Humanize( false, dtCompare );
 
         }
 
@@ -723,49 +730,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string HumanizeTimeSpan( object sStartDate, object sEndDate, int precision = 1 )
         {
-            DateTime startDate = DateTime.MinValue;
-            DateTime endDate = DateTime.MinValue;
-
-            // convert start date if string
-            if ( sStartDate is String )
-            {
-                if ( (string)sStartDate == "Now" )
-                {
-                    startDate = RockDateTime.Now;
-                }
-                else
-                {
-                    if ( !DateTime.TryParse( (string)sStartDate, out startDate ) )
-                    {
-                        return null;
-                    }
-                }
-            }
-            else if ( sStartDate is DateTime )
-            {
-                startDate = (DateTime)sStartDate;
-            }
-
-            // convert end date if string
-            if ( sEndDate is String )
-            {
-                if ( (string)sEndDate == "Now" )
-                {
-                    endDate = RockDateTime.Now;
-                }
-                else
-                {
-                    if ( !DateTime.TryParse( (string)sEndDate, out endDate ) )
-                    {
-                        return null;
-                    }
-                }
-            }
-            else if ( sEndDate is DateTime )
-            {
-                endDate = (DateTime)sEndDate;
-            }
-
+            DateTime startDate = GetDateFromObject(sStartDate);
+            DateTime endDate = GetDateFromObject(sEndDate);
 
             if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
@@ -779,6 +745,96 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Humanizes the time span.
+        /// </summary>
+        /// <param name="sStartDate">The s start date.</param>
+        /// <param name="sEndDate">The s end date.</param>
+        /// <param name="unit">The minimum unit.</param>
+        /// <returns></returns>
+        public static string HumanizeTimeSpan( object sStartDate, object sEndDate, string unit, string direction )
+        {
+            DateTime startDate = GetDateFromObject( sStartDate );
+            DateTime endDate = GetDateFromObject( sEndDate );
+
+            TimeUnit minUnitValue = TimeUnit.Day;
+
+            switch(unit)
+            {
+                case "Year":
+                    minUnitValue = TimeUnit.Year;
+                    break;
+                case "Month":
+                    minUnitValue = TimeUnit.Month;
+                    break;
+                case "Week":
+                    minUnitValue = TimeUnit.Week;
+                    break;
+                case "Day":
+                    minUnitValue = TimeUnit.Day;
+                    break;
+                case "Hour":
+                    minUnitValue = TimeUnit.Hour;
+                    break;
+                case "Minute":
+                    minUnitValue = TimeUnit.Minute;
+                    break;
+                case "Second":
+                    minUnitValue = TimeUnit.Second;
+                    break;
+            }
+
+            if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
+            {
+                TimeSpan difference = endDate - startDate;
+                
+                if (direction.ToLower() == "max") {
+                    return difference.Humanize( maxUnit: minUnitValue );
+                } else {
+                    return difference.Humanize( minUnit: minUnitValue );
+                }
+            }
+            else
+            {
+                return "Could not parse one or more of the dates provided into a valid DateTime";
+            }
+        }
+
+        /// <summary>
+        /// Gets the date from object.
+        /// </summary>
+        /// <param name="date">The date.</param>
+        /// <returns></returns>
+        private static DateTime GetDateFromObject( object date )
+        {
+            DateTime oDateTime = DateTime.MinValue;
+            
+            if ( date is String )
+            {
+                if ( (string)date == "Now" )
+                {
+                    return RockDateTime.Now;
+                }
+                else
+                {
+                    if ( DateTime.TryParse( (string)date, out oDateTime ) )
+                    {
+                        return oDateTime;
+                    }
+                    else
+                    {
+                        return DateTime.MinValue;
+                    }
+                }
+            }
+            else if ( date is DateTime )
+            {
+                return (DateTime)date;
+            }
+
+            return DateTime.MinValue;
+        }
+
+        /// <summary>
         /// takes two datetimes and returns the difference in the unit you provide
         /// </summary>
         /// <param name="sStartDate">The s start date.</param>
@@ -787,51 +843,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Int64? DateDiff( object sStartDate, object sEndDate, string unit )
         {
-
-            DateTime startDate = DateTime.MinValue;
-            DateTime endDate = DateTime.MinValue;
-
-            // convert start date if string
-            if ( sStartDate is String )
-            {
-                if ( (string)sStartDate == "Now" )
-                {
-                    startDate = RockDateTime.Now;
-                }
-                else
-                {
-                    if ( !DateTime.TryParse( (string)sStartDate, out startDate ) )
-                    {
-                        return null;
-                    }
-                }
-            }
-            else if ( sStartDate is DateTime )
-            {
-                startDate = (DateTime)sStartDate;
-            }
-
-            // convert end date if string
-            if ( sEndDate is String )
-            {
-                if ( (string)sEndDate == "Now" )
-                {
-                    endDate = RockDateTime.Now;
-                }
-                else
-                {
-                    if ( !DateTime.TryParse( (string)sEndDate, out endDate ) )
-                    {
-                        return null;
-                    }
-                }
-            }
-            else if ( sEndDate is DateTime )
-            {
-                endDate = (DateTime)sEndDate;
-            }
-
-
+            DateTime startDate = GetDateFromObject( sStartDate );
+            DateTime endDate = GetDateFromObject( sEndDate );
 
             if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
