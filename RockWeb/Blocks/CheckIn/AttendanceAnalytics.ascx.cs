@@ -194,17 +194,17 @@ namespace RockWeb.Blocks.CheckIn
             if ( !groupTypeTemplateGuid.HasValue )
             {
                 // show the CheckinType(GroupTypeTemplate) control if there isn't a block setting for it
-                ddlCheckinType.Visible = true;
+                ddlAttendanceType.Visible = true;
                 var groupTypeService = new GroupTypeService( _rockContext );
                 Guid groupTypePurposeGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
-                ddlCheckinType.GroupTypes = groupTypeService.Queryable()
+                ddlAttendanceType.GroupTypes = groupTypeService.Queryable()
                         .Where( a => a.GroupTypePurposeValue.Guid == groupTypePurposeGuid )
                         .OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             }
             else
             {
                 // hide the CheckinType(GroupTypeTemplate) control if there is a block setting for it
-                ddlCheckinType.Visible = false;
+                ddlAttendanceType.Visible = false;
             }
         }
 
@@ -241,9 +241,9 @@ namespace RockWeb.Blocks.CheckIn
             var groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
             if ( !groupTypeTemplateGuid.HasValue )
             {
-                if ( ddlCheckinType.SelectedGroupTypeId.HasValue )
+                if ( ddlAttendanceType.SelectedGroupTypeId.HasValue )
                 {
-                    var groupType = GroupTypeCache.Read( ddlCheckinType.SelectedGroupTypeId.Value );
+                    var groupType = GroupTypeCache.Read( ddlAttendanceType.SelectedGroupTypeId.Value );
                     if ( groupType != null )
                     {
                         groupTypeTemplateGuid = groupType.Guid;
@@ -419,7 +419,7 @@ function(item) {
         {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
-            this.SetUserPreference( keyPrefix + "TemplateGroupTypeId", ddlCheckinType.SelectedGroupTypeId.ToString(), false );
+            this.SetUserPreference( keyPrefix + "TemplateGroupTypeId", ddlAttendanceType.SelectedGroupTypeId.ToString(), false );
 
             this.SetUserPreference( keyPrefix + "SlidingDateRange", drpSlidingDateRange.DelimitedValues, false );
             this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value, false );
@@ -478,7 +478,7 @@ function(item) {
         {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
-            ddlCheckinType.SelectedGroupTypeId = this.GetUserPreference( keyPrefix + "TemplateGroupTypeId" ).AsIntegerOrNull();
+            ddlAttendanceType.SelectedGroupTypeId = this.GetUserPreference( keyPrefix + "TemplateGroupTypeId" ).AsIntegerOrNull();
             BuildGroupTypesUI();
 
             string slidingDateRangeSettings = this.GetUserPreference( keyPrefix + "SlidingDateRange" );
