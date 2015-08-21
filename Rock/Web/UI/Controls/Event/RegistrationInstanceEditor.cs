@@ -49,8 +49,8 @@ namespace Rock.Web.UI.Controls
         EmailBox _ebContactEmail;
         DateTimePicker _dtpSendReminder;
         RockCheckBox _cbReminderSent;
-        CodeEditor _ceAdditionalReminderDetails;
-        CodeEditor _ceAdditionalConfirmationDetails;
+        HtmlEditor _htmlAdditionalReminderDetails;
+        HtmlEditor _htmlAdditionalConfirmationDetails;
 
         /// <summary>
         /// Gets or sets a value indicating whether active checkbox should be displayed
@@ -392,12 +392,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _ceAdditionalReminderDetails.Text;
+                return _htmlAdditionalReminderDetails.Text;
             }
             set
             {
                 EnsureChildControls();
-                _ceAdditionalReminderDetails.Text = value;
+                _htmlAdditionalReminderDetails.Text = value; 
             }
         }
 
@@ -412,12 +412,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _ceAdditionalConfirmationDetails.Text;
+                return _htmlAdditionalConfirmationDetails.Text; 
             }
             set
             {
                 EnsureChildControls();
-                _ceAdditionalConfirmationDetails.Text = value;
+                _htmlAdditionalConfirmationDetails.Text = value; 
             }
         }
 
@@ -451,8 +451,8 @@ namespace Rock.Web.UI.Controls
                 _apAccount.ValidationGroup = value;
                 _dtpSendReminder.ValidationGroup = value;
                 _cbReminderSent.ValidationGroup = value;
-                _ceAdditionalReminderDetails.ValidationGroup = value;
-                _ceAdditionalConfirmationDetails.ValidationGroup = value;
+                _htmlAdditionalConfirmationDetails.ValidationGroup = value;
+                _htmlAdditionalReminderDetails.ValidationGroup = value;
             }
         }
 
@@ -482,8 +482,8 @@ namespace Rock.Web.UI.Controls
                 _apAccount.Visible = instance.RegistrationTemplate != null && instance.RegistrationTemplate.FinancialGatewayId.HasValue;
                 _dtpSendReminder.SelectedDateTime = instance.SendReminderDateTime;
                 _cbReminderSent.Checked = instance.ReminderSent;
-                _ceAdditionalReminderDetails.Text = instance.AdditionalReminderDetails;
-                _ceAdditionalConfirmationDetails.Text = instance.AdditionalConfirmationDetails;
+                _htmlAdditionalReminderDetails.Text = instance.AdditionalReminderDetails;
+                _htmlAdditionalConfirmationDetails.Text = instance.AdditionalConfirmationDetails;
             }
             else
             {
@@ -499,8 +499,8 @@ namespace Rock.Web.UI.Controls
                 _apAccount.SetValue( null );
                 _dtpSendReminder.SelectedDateTime = null;
                 _cbReminderSent.Checked = false;
-                _ceAdditionalReminderDetails.Text = string.Empty;
-                _ceAdditionalConfirmationDetails.Text = string.Empty;
+                _htmlAdditionalReminderDetails.Text = string.Empty;
+                _htmlAdditionalConfirmationDetails.Text = string.Empty;
             }
         }
 
@@ -529,8 +529,8 @@ namespace Rock.Web.UI.Controls
                 instance.AccountId = _apAccount.SelectedValue.AsIntegerOrNull();
                 instance.SendReminderDateTime = _dtpSendReminder.SelectedDateTime;
                 instance.ReminderSent = _cbReminderSent.Checked;
-                instance.AdditionalReminderDetails = _ceAdditionalReminderDetails.Text;
-                instance.AdditionalConfirmationDetails = _ceAdditionalConfirmationDetails.Text;
+                instance.AdditionalReminderDetails = _htmlAdditionalReminderDetails.Text; 
+                instance.AdditionalConfirmationDetails = _htmlAdditionalConfirmationDetails.Text; 
             }
         }
 
@@ -623,23 +623,21 @@ namespace Rock.Web.UI.Controls
                 _cbReminderSent.Text = "Yes";
                 Controls.Add( _cbReminderSent );
 
-                _ceAdditionalReminderDetails = new CodeEditor();
-                _ceAdditionalReminderDetails.ID = this.ID + "_ceAdditionalReminderDetails";
-                _ceAdditionalReminderDetails.Label = "Additional Reminder Details";
-                _ceAdditionalReminderDetails.Help = "These reminder details will be appended to those in the registration template when sending the reminder email.";
-                _ceAdditionalReminderDetails.EditorMode = CodeEditorMode.Html;
-                _ceAdditionalReminderDetails.EditorTheme = CodeEditorTheme.Rock;
-                _ceAdditionalReminderDetails.EditorHeight = "100";
-                Controls.Add( _ceAdditionalReminderDetails );
+                _htmlAdditionalReminderDetails = new HtmlEditor();
+                _htmlAdditionalReminderDetails.ID = this.ID + "_htmlAdditionalReminderDetails";
+                _htmlAdditionalReminderDetails.Toolbar = HtmlEditor.ToolbarConfig.Light;
+                _htmlAdditionalReminderDetails.Label = "Additional Reminder Details";
+                _htmlAdditionalReminderDetails.Help = "These confirmation details will be appended to those from the registration template when displayed at the end of the registration process.";
+                _htmlAdditionalReminderDetails.Height = 200;
+                Controls.Add( _htmlAdditionalReminderDetails );
 
-                _ceAdditionalConfirmationDetails = new CodeEditor();
-                _ceAdditionalConfirmationDetails.ID = this.ID + "_ceAdditionalConfirmationDetails";
-                _ceAdditionalConfirmationDetails.Label = "Additional Confirmation Details";
-                _ceAdditionalConfirmationDetails.Help = "These confirmation details will be appended to those from the registration template when displayed at the end of the registration process.";
-                _ceAdditionalConfirmationDetails.EditorMode = CodeEditorMode.Html;
-                _ceAdditionalConfirmationDetails.EditorTheme = CodeEditorTheme.Rock;
-                _ceAdditionalConfirmationDetails.EditorHeight = "100";
-                Controls.Add( _ceAdditionalConfirmationDetails );
+                _htmlAdditionalConfirmationDetails = new HtmlEditor();
+                _htmlAdditionalConfirmationDetails.ID = this.ID + "_htmlAdditionalConfirmationDetails";
+                _htmlAdditionalConfirmationDetails.Toolbar = HtmlEditor.ToolbarConfig.Light;
+                _htmlAdditionalConfirmationDetails.Label = "Additional Reminder Details";
+                _htmlAdditionalConfirmationDetails.Help = "These confirmation details will be appended to those from the registration template when displayed at the end of the registration process.";
+                _htmlAdditionalConfirmationDetails.Height = 200;
+                Controls.Add( _htmlAdditionalConfirmationDetails );
 
                 _controlsLoaded = true;
             }
@@ -756,9 +754,9 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderEndTag();  // row
 
-            _ceAdditionalReminderDetails.RenderControl( writer );
+            _htmlAdditionalReminderDetails.RenderControl( writer );
 
-            _ceAdditionalConfirmationDetails.RenderControl( writer );
+            _htmlAdditionalConfirmationDetails.RenderControl( writer );
 
         }
 
