@@ -74,7 +74,9 @@ namespace Rock.Follow.Suggestion
 
                     var followers = groupMemberService.Queryable()
                         .Where( m =>
+                            m.GroupMemberStatus == GroupMemberStatus.Active &&
                             m.Group != null &&
+                            m.Group.IsActive && 
                             m.Group.GroupType.Guid.Equals( groupTypeGuid.Value ) &&
                             followerPersonIds.Contains( m.PersonId ) );
 
