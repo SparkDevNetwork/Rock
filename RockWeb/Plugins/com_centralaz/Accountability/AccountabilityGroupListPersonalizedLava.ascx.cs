@@ -38,7 +38,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
     [Description( "Lists all group that the person is a member of using a Lava template." )]
 
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
-    [CodeEditorField( "Lava Template", "The lava template to use to format the group list.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, "{% include '~~/Plugins/com_centralaz/Accountability/Lava/AccountabilityGroupListSidebar.lava' %}", "", 6 )]
+    [CodeEditorField( "Lava Template", "The lava template to use to format the group list.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, "{% include '~/Plugins/com_centralaz/Accountability/Lava/AccountabilityGroupListSidebar.lava' %}", "", 6 )]
     [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 7 )]
     public partial class AccountabilityGroupListPersonalizedLava : RockBlock
     {

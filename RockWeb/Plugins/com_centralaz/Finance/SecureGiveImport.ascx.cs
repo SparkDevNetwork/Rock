@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -8,7 +7,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
 using System.Text;
-
+using System.Text.RegularExpressions;
 
 using Rock;
 using Rock.Data;
@@ -33,29 +32,24 @@ namespace RockWeb.Plugins.com_centralaz.Finance
     [IntegerField( "Anonymous Giver PersonAliasID", "PersonAliasId to use in case of anonymous giver", true )]
     [BooleanField( "Use Negative Foreign Keys", "Indicates whether Rock uses the negative of the SecureGive reference ID for the contribution record's foreign key", false )]
     [TextField( "Batch Name", "The name that should be used for the batches created", true, "SecureGive Import" )]
+    [TextField( "Tender Mappings", "If you don't want to clutter your tender types, just map them here. Split them with commas or semicolons, and write them in the format 'SecureGive Tender Type=Rock Tender type'. Do not use commas unless they are in the tender type names." )]
     [LinkedPage( "Batch Detail Page", "The page used to display the contributions for a specific batch", true, "", "", 0 )]
     [LinkedPage( "Contribution Detail Page", "The page used to display the contribution details", true, "", "", 1 )]
     public partial class SecureGiveImport : Rock.Web.UI.RockBlock
     {
         #region Fields
 
+        private int _anonymousPersonAliasId = 0;
         private FinancialBatch _financialBatch;
         private List<string> _errors = new List<string>();
         private List<XElement> _errorElements = new List<XElement>();
+
         private Dictionary<int, FinancialAccount> _financialAccountCache = new Dictionary<int, FinancialAccount>();
         private Dictionary<string, DefinedValue> _tenderTypeDefinedValueCache = new Dictionary<string, DefinedValue>();
-        private int _anonymousPersonAliasId = 0;
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
 
         #endregion
 
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -70,7 +64,6 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             gErrors.RowDataBound += gErrors_RowDataBound;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
@@ -84,19 +77,25 @@ namespace RockWeb.Plugins.com_centralaz.Finance
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
             if ( !Page.IsPostBack )
             {
                 tbBatchName.Text = GetAttributeValue( "BatchName" );
                 BindGrid();
                 BindErrorGrid();
             }
+
         }
 
         #endregion
 
         #region Events
 
-        // handlers called by the controls on your block
+        /// <summary>
+        /// Handles the Click event of the lbImport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbImport_Click( object sender, EventArgs e )
         {
             if ( fuImport.HasFile )
@@ -135,9 +134,13 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                 var xdoc = XDocument.Load( System.Xml.XmlReader.Create( fuImport.FileContent ) );
                 var elemDonations = xdoc.Element( "Donation" );
 
+                Dictionary<String, String> mappingDictionary = Regex.Matches( GetAttributeValue( "TenderMappings" ), @"\s*(.*?)\s*=\s*(.*?)\s*(;|,|$)" )
+                    .OfType<Match>()
+                    .ToDictionary( m => m.Groups[1].Value, m => m.Groups[2].Value );
+
                 foreach ( var elemGift in elemDonations.Elements( "Gift" ) )
                 {
-                    ProcessGift( elemGift, rockContext );
+                    ProcessGift( elemGift, mappingDictionary, rockContext );
                 }
 
                 rockContext.SaveChanges();
@@ -156,16 +159,6 @@ namespace RockWeb.Plugins.com_centralaz.Finance
         }
 
         /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-
-        }
-
-        /// <summary>
         /// Handles the GridRebind event of the gPledges control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -175,16 +168,144 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gErrors control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gErrors_GridRebind( object sender, EventArgs e )
         {
             BindErrorGrid();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gErrors control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gErrors_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var elemError = e.Row.DataItem as XElement;
+                if ( elemError != null )
+                {
+                    Literal lReferenceNumber = e.Row.FindControl( "lReferenceNumber" ) as Literal;
+                    if ( lReferenceNumber != null && elemError.Element( "ReferenceNumber" ) != null )
+                    {
+                        lReferenceNumber.Text = elemError.Element( "ReferenceNumber" ).Value.ToString();
+                    }
+
+                    Literal lChurchCode = e.Row.FindControl( "lChurchCode" ) as Literal;
+                    if ( lChurchCode != null && elemError.Element( "ChurchCode" ) != null )
+                    {
+                        lChurchCode.Text = elemError.Element( "ChurchCode" ).Value.ToString();
+                    }
+
+                    Literal lIndividualId = e.Row.FindControl( "lIndividualId" ) as Literal;
+                    if ( lIndividualId != null && elemError.Element( "IndividualID" ) != null )
+                    {
+                        lIndividualId.Text = elemError.Element( "IndividualID" ).Value.ToString();
+                    }
+
+                    Literal lContributorName = e.Row.FindControl( "lContributorName" ) as Literal;
+                    if ( lContributorName != null && elemError.Element( "ContributorName" ) != null )
+                    {
+                        lContributorName.Text = elemError.Element( "ContributorName" ).Value.ToString();
+                    }
+
+                    Literal lFundName = e.Row.FindControl( "lFundName" ) as Literal;
+                    if ( lFundName != null && elemError.Element( "FundName" ) != null )
+                    {
+                        lFundName.Text = elemError.Element( "FundName" ).Value.ToString();
+                    }
+
+                    Literal lFundCode = e.Row.FindControl( "lFundCode" ) as Literal;
+                    if ( lFundCode != null && elemError.Element( "FundCode" ) != null )
+                    {
+                        lFundCode.Text = elemError.Element( "FundCode" ).Value.ToString();
+                    }
+
+                    Literal lReceivedDate = e.Row.FindControl( "lReceivedDate" ) as Literal;
+                    if ( lReceivedDate != null && elemError.Element( "ReceivedDate" ) != null )
+                    {
+                        DateTime receivedDate = DateTime.Parse( elemError.Element( "ReceivedDate" ).Value );
+                        lReceivedDate.Text = receivedDate.ToString();
+                    }
+
+                    Literal lAmount = e.Row.FindControl( "lAmount" ) as Literal;
+                    if ( lAmount != null && elemError.Element( "Amount" ) != null )
+                    {
+                        lAmount.Text = elemError.Element( "Amount" ).Value.ToString();
+                    }
+
+                    Literal lTransactionId = e.Row.FindControl( "lTransactionId" ) as Literal;
+                    if ( lTransactionId != null && elemError.Element( "TransactionID" ) != null )
+                    {
+                        lTransactionId.Text = elemError.Element( "TransactionID" ).Value.ToString();
+                    }
+
+                    Literal lContributionType = e.Row.FindControl( "lContributionType" ) as Literal;
+                    if ( lContributionType != null && elemError.Element( "ContributionType" ) != null )
+                    {
+                        lContributionType.Text = elemError.Element( "ContributionType" ).Value.ToString();
+                    }
+
+                    Literal lError = e.Row.FindControl( "lError" ) as Literal;
+                    if ( lError != null && elemError.Element( "Error" ) != null )
+                    {
+                        lError.Text = elemError.Element( "Error" ).Value.ToString();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gContributions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gContributions_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                FinancialTransactionDetail financialTransactionDetail = e.Row.DataItem as FinancialTransactionDetail;
+                if ( financialTransactionDetail != null )
+                {
+                    Literal lTransactionID = e.Row.FindControl( "lTransactionID" ) as Literal;
+                    if ( lTransactionID != null )
+                    {
+                        Dictionary<string, string> dictionaryInfo = new Dictionary<string, string>();
+                        dictionaryInfo.Add( "transactionId", financialTransactionDetail.TransactionId.ToString() );
+                        string url = LinkedPageUrl( "ContributionDetailPage", dictionaryInfo );
+                        String theString = String.Format( "<a href=\"{0}\">{1}</a>", url, financialTransactionDetail.TransactionId.ToString() );
+                        lTransactionID.Text = theString;
+                    }
+
+                    Literal lFullName = e.Row.FindControl( "lFullName" ) as Literal;
+                    if ( lFullName != null )
+                    {
+                        String url = ResolveUrl( string.Format( "~/Person/{0}", financialTransactionDetail.Transaction.AuthorizedPersonAlias.PersonId ) );
+                        String theString = String.Format( "<a href=\"{0}\">{1}</a>", url, financialTransactionDetail.Transaction.AuthorizedPersonAlias.Person.FullName );
+                        lFullName.Text = theString;
+                    }
+                }
+            }
         }
 
         #endregion
 
         #region Methods
 
-        private void ProcessGift( XElement elemGift, RockContext rockContext )
+        /// <summary>
+        /// Processes the gift.
+        /// </summary>
+        /// <param name="elemGift">The elem gift.</param>
+        /// <param name="mappingDictionary">The mapping dictionary.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <exception cref="System.Exception">
+        /// </exception>
+        private void ProcessGift( XElement elemGift, Dictionary<String, String> mappingDictionary, RockContext rockContext )
         {
             FinancialAccountService financialAccountService = new FinancialAccountService( rockContext );
             DefinedValueService definedValueService = new DefinedValueService( rockContext );
@@ -221,11 +342,35 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                             .FirstOrDefault();
                         if ( contributionTenderType != null )
                         {
+
                             _tenderTypeDefinedValueCache.Add( elemValue, contributionTenderType );
                         }
                         else
                         {
-                            throw new Exception( string.Format( "Unable to match contribution type {0}", elemValue ) );
+
+                            if ( mappingDictionary[elemValue] != null )
+                            {
+                                String mappedValue = mappingDictionary[elemValue];
+                                if ( !_tenderTypeDefinedValueCache.ContainsKey( mappedValue ) )
+                                {
+                                    contributionTenderType = definedValueService.Queryable()
+                                        .Where( d => d.DefinedTypeId == tenderType.Id && d.Value == mappedValue )
+                                        .FirstOrDefault();
+
+                                    if ( contributionTenderType != null )
+                                    {
+                                        _tenderTypeDefinedValueCache.Add( mappedValue, contributionTenderType );
+                                    }
+                                    else
+                                    {
+                                        throw new Exception( string.Format( "Unable to match contribution type {0}", elemValue ) );
+                                    }
+                                }
+                                else
+                                {
+                                    contributionTenderType = _tenderTypeDefinedValueCache[mappedValue];
+                                }
+                            }
                         }
                     }
                     else
@@ -239,7 +384,6 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                     }
 
                     financialTransaction.FinancialPaymentDetail.CurrencyTypeValue = contributionTenderType;
-
                 }
 
                 if ( elemGift.Element( "TransactionID" ) != null )
@@ -313,9 +457,10 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                 financialTransaction.TransactionDetails.Add( financialTransactionDetail );
                 _financialBatch.Transactions.Add( financialTransaction );
             }
-            catch ( Exception )
+            catch ( Exception ex )
             {
                 _errors.Add( elemGift.Element( "ReferenceNumber" ).Value.ToString() );
+                elemGift.Add( new XElement( "Error", ex.Message ) );
                 _errorElements.Add( elemGift );
                 return;
             }
@@ -354,6 +499,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             {
                 gErrors.DataSource = _errorElements;
             }
+
             gErrors.DataBind();
 
             if ( gErrors.Rows.Count > 0 )
@@ -364,103 +510,5 @@ namespace RockWeb.Plugins.com_centralaz.Finance
         }
 
         #endregion
-        protected void gErrors_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
-                var elemError = e.Row.DataItem as XElement;
-                if ( elemError != null )
-                {
-                    Literal lReferenceNumber = e.Row.FindControl( "lReferenceNumber" ) as Literal;
-                    if ( lReferenceNumber != null )
-                    {
-                        lReferenceNumber.Text = elemError.Element( "ReferenceNumber" ).Value.ToString();
-                    }
-
-                    Literal lChurchCode = e.Row.FindControl( "lChurchCode" ) as Literal;
-                    if ( lChurchCode != null && elemError.Element( "ChurchCode" ) != null )
-                    {
-                        lChurchCode.Text = elemError.Element( "ChurchCode" ).Value.ToString();
-                    }
-
-                    Literal lIndividualId = e.Row.FindControl( "lIndividualId" ) as Literal;
-                    if ( lIndividualId != null )
-                    {
-                        lIndividualId.Text = elemError.Element( "IndividualID" ).Value.ToString();
-                    }
-
-                    Literal lContributorName = e.Row.FindControl( "lContributorName" ) as Literal;
-                    if ( lContributorName != null )
-                    {
-                        lContributorName.Text = elemError.Element( "ContributorName" ).Value.ToString();
-                    }
-
-                    Literal lFundName = e.Row.FindControl( "lFundName" ) as Literal;
-                    if ( lFundName != null )
-                    {
-                        lFundName.Text = elemError.Element( "FundName" ).Value.ToString();
-                    }
-
-                    Literal lFundCode = e.Row.FindControl( "lFundCode" ) as Literal;
-                    if ( lFundCode != null )
-                    {
-                        lFundCode.Text = elemError.Element( "FundCode" ).Value.ToString();
-                    }
-
-                    Literal lReceivedDate = e.Row.FindControl( "lReceivedDate" ) as Literal;
-                    if ( lReceivedDate != null )
-                    {
-                        DateTime receivedDate = DateTime.Parse( elemError.Element( "ReceivedDate" ).Value );
-                        lReceivedDate.Text = receivedDate.ToString();
-                    }
-
-                    Literal lAmount = e.Row.FindControl( "lAmount" ) as Literal;
-                    if ( lAmount != null )
-                    {
-                        lAmount.Text = elemError.Element( "Amount" ).Value.ToString();
-                    }
-
-                    Literal lTransactionId = e.Row.FindControl( "lTransactionId" ) as Literal;
-                    if ( lTransactionId != null )
-                    {
-                        lTransactionId.Text = elemError.Element( "TransactionID" ).Value.ToString();
-                    }
-
-                    Literal lContributionType = e.Row.FindControl( "lContributionType" ) as Literal;
-                    if ( lContributionType != null )
-                    {
-                        lContributionType.Text = elemError.Element( "ContributionType" ).Value.ToString();
-                    }
-                }
-            }
-        }
-
-        protected void gContributions_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
-                FinancialTransactionDetail financialTransactionDetail = e.Row.DataItem as FinancialTransactionDetail;
-                if ( financialTransactionDetail != null )
-                {
-                    Literal lTransactionID = e.Row.FindControl( "lTransactionID" ) as Literal;
-                    if ( lTransactionID != null )
-                    {
-                        Dictionary<string, string> dictionaryInfo = new Dictionary<string, string>();
-                        dictionaryInfo.Add( "transactionId", financialTransactionDetail.TransactionId.ToString() );
-                        string url = LinkedPageUrl( "ContributionDetailPage", dictionaryInfo );
-                        String theString = String.Format( "<a href=\"{0}\">{1}</a>", url, financialTransactionDetail.TransactionId.ToString() );
-                        lTransactionID.Text = theString;
-                    }
-
-                    Literal lFullName = e.Row.FindControl( "lFullName" ) as Literal;
-                    if ( lFullName != null )
-                    {
-                        String url = ResolveUrl( string.Format( "~/Person/{0}", financialTransactionDetail.Transaction.AuthorizedPersonAlias.PersonId ) );
-                        String theString = String.Format( "<a href=\"{0}\">{1}</a>", url, financialTransactionDetail.Transaction.AuthorizedPersonAlias.Person.FullName );
-                        lFullName.Text = theString;
-                    }
-                }
-            }
-        }
     }
 }

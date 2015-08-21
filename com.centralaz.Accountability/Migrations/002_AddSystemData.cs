@@ -16,7 +16,7 @@ namespace com.centralaz.Accountability.Migrations
         {
             RockMigrationHelper.AddDefinedValue( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE, "Accountability Group", "A group type for accountability groups", "ECF09F24-41DD-4E57-9642-A4CAE0B29E14", false );
             RockMigrationHelper.AddGroupType( "Accountability Group", "", "Group", "Member", false, true, true, "fa fa-eye", 0, null, 0, null, "DC99BF69-8A1A-411F-A267-1AE75FDC2341", false );
-            RockMigrationHelper.AddGroupTypeGroupAttribute( "DC99BF69-8A1A-411F-A267-1AE75FDC2341", Rock.SystemGuid.FieldType.DATE, "Report Start Date", "The first report submit date for the group", 0, "10/1/2014", "37D911E7-5E0A-45CE-A35A-91F75480DB6B" );
+            RockMigrationHelper.AddGroupTypeGroupAttribute( "DC99BF69-8A1A-411F-A267-1AE75FDC2341", Rock.SystemGuid.FieldType.DATE, "Report Start Date", "The first report submit date for the group", 0, DateTime.Now.ToShortDateString(), "37D911E7-5E0A-45CE-A35A-91F75480DB6B" );
            
             RockMigrationHelper.AddPage( "B0F4B33D-DD11-4CCC-B79D-9342831B8701", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Accountability Groups", "", "1D5A2E3C-8D8A-4086-9FF5-CE173874568D", "fa fa-eye" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( "1D5A2E3C-8D8A-4086-9FF5-CE173874568D", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Accountability Group Detail", "", "6B3C673B-E693-48EF-8262-C9EA46B70C3F", "" ); // Site:Rock RMS
@@ -203,9 +203,6 @@ namespace com.centralaz.Accountability.Migrations
 
             // Attrib for BlockType: Accountability Group Detail:Group Types
             RockMigrationHelper.AddBlockTypeAttribute( "0F962947-0DE7-408D-BCBE-24B44E0CD14C", "F725B854-A15E-46AE-9D4C-0608D4154F1E", "Group Types", "GroupTypes", "", "Select group types to show in this block.  Leave all unchecked to show all group types.", 0, @"", "21B030FD-108E-4AB3-A21E-4858F09BF8C5" );
-
-            // Attrib for BlockType: Accountability Group Detail:Show Edit
-            RockMigrationHelper.AddBlockTypeAttribute( "0F962947-0DE7-408D-BCBE-24B44E0CD14C", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Edit", "ShowEdit", "", "", 1, @"True", "50A3724A-219C-4611-AC52-B64FB1D52A78" );
 
             // Attrib for BlockType: Accountability Group Detail:Limit to Group Types that are shown in navigation
             RockMigrationHelper.AddBlockTypeAttribute( "0F962947-0DE7-408D-BCBE-24B44E0CD14C", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Limit to Group Types that are shown in navigation", "LimitToShowInNavigationGroupTypes", "", "", 3, @"False", "4E1C2BA2-52E3-4777-88ED-255DF39D3DFE" );
