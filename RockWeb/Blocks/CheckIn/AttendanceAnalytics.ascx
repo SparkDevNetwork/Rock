@@ -182,12 +182,14 @@
                                                     <span>Attended at least </span>
                                                     <Rock:NumberBox ID="tbPatternXTimes" runat="server" CssClass="input-width-xs" /><asp:Literal ID="lPatternXFor" runat="server" Text=" times for the selected date range" />
                                                 </div>
-                                                <div class="padding-l-lg">
+                                                <div class="padding-l-lg margin-t-sm">
                                                     <div class="form-inline">
                                                         <Rock:RockCheckBox ID="cbPatternAndMissed" runat="server" />and missed at least                                                           
                                                                     <Rock:NumberBox ID="tbPatternMissedXTimes" runat="server" CssClass="input-width-xs" />&nbsp;<asp:Literal ID="lPatternAndMissedXBetween" runat="server" Text=" weeks between" />
                                                         <Rock:NotificationBox ID="nbMissedDateRangeRequired" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" />
-                                                        <Rock:DateRangePicker ID="drpPatternDateRange" runat="server" />
+                                                        <div class="margin-t-sm">
+                                                            <Rock:DateRangePicker ID="drpPatternDateRange" runat="server" />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </asp:Panel>
