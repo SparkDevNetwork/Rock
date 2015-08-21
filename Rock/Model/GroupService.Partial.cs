@@ -410,6 +410,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
         /// <param name="includeWarnings">if set to <c>true</c> [include warnings].</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
         /// <returns></returns>
         public Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> GroupMembersNotMeetingRequirements( int groupId, bool includeWarnings, bool includeInactive = false )
         {
