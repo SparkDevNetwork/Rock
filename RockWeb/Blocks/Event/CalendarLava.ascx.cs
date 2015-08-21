@@ -342,7 +342,7 @@ namespace RockWeb.Blocks.Event
 
             CalendarEventDates = new List<DateTime>();
 
-            var eventCampusSummaries = new List<EventOccurrenceSummary>();
+            var eventOccurrenceSummaries = new List<EventOccurrenceSummary>();
             foreach ( var occurrenceDates in occurrencesWithDates )
             {
                 var eventItemOccurrence = occurrenceDates.EventItemOccurrence;
@@ -352,7 +352,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( datetime >= beginDate && datetime < endDate )
                     {
-                        eventCampusSummaries.Add( new EventOccurrenceSummary
+                        eventOccurrenceSummaries.Add( new EventOccurrenceSummary
                         {
                             EventItemOccurrence = eventItemOccurrence,
                             Name = eventItemOccurrence.EventItem.Name,
@@ -368,7 +368,7 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            eventCampusSummaries = eventCampusSummaries
+            eventOccurrenceSummaries = eventOccurrenceSummaries
                 .OrderBy( e => e.DateTime )
                 .ThenBy( e => e.Name )
                 .ToList();
@@ -376,7 +376,7 @@ namespace RockWeb.Blocks.Event
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "TimeFrame", ViewMode );
             mergeFields.Add( "DetailsPage", LinkedPageUrl( "DetailsPage", null ) );
-            mergeFields.Add( "EventItemOccurrences", eventCampusSummaries );
+            mergeFields.Add( "EventItemOccurrences", eventOccurrenceSummaries );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
 
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
