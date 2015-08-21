@@ -25,7 +25,7 @@
                 <div class="row row-eq-height-md">
                     <div class="col-md-3 filter-options">
 
-                        <Rock:GroupTypePicker ID="ddlCheckinType" runat="server" Label="Check-in Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
+                        <Rock:GroupTypePicker ID="ddlAttendanceType" runat="server" Label="Attendance Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
                         <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="false" />
 
                         <div class="actions margin-b-md">
