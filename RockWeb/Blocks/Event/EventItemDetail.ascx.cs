@@ -723,10 +723,29 @@ namespace RockWeb.Blocks.Event
             }
 
             lSummary.Text = eventItem.Summary;
-            lCalendar.Text = eventItem.EventCalendarItems
-                .Select( c => c.EventCalendar.Name ).ToList().AsDelimited( ", " );
-            lAudiences.Text = eventItem.EventItemAudiences
-                .Select( a => a.DefinedValue.Value ).ToList().AsDelimited( ", " );
+            var calendars = eventItem.EventCalendarItems
+                .Select( c => c.EventCalendar.Name ).ToList();
+            if ( calendars.Any() )
+            {
+                lCalendar.Visible = true;
+                lCalendar.Text = calendars.AsDelimited( ", " );
+            }
+            else
+            {
+                lCalendar.Visible = false;
+            }
+
+            var audiences = eventItem.EventItemAudiences
+                .Select( a => a.DefinedValue.Value ).ToList();
+            if ( audiences.Any() )
+            {
+                lAudiences.Visible = true;
+                lAudiences.Text = audiences.AsDelimited( ", " );
+            }
+            else
+            {
+                lAudiences.Visible = false;
+            }
 
             phAttributesView.Controls.Clear();
             foreach ( var eventCalendarItem in eventItem.EventCalendarItems )
@@ -736,17 +755,14 @@ namespace RockWeb.Blocks.Event
                 {
                     foreach ( var attr in eventCalendarItem.Attributes )
                     {
-                        if ( attr.Value.IsGridColumn )
+                        string value = eventCalendarItem.GetAttributeValue( attr.Key );
+                        if ( !string.IsNullOrWhiteSpace( value ) )
                         {
-                            string value = eventCalendarItem.GetAttributeValue( attr.Key );
-                            if ( !string.IsNullOrWhiteSpace( value ) )
-                            {
-                                var rl = new RockLiteral();
-                                rl.ID = "attr_" + attr.Key;
-                                rl.Label = attr.Value.Name;
-                                rl.Text = attr.Value.FieldType.Field.FormatValueAsHtml( null, value, attr.Value.QualifierValues, false );
-                                phAttributesView.Controls.Add( rl );
-                            }
+                            var rl = new RockLiteral();
+                            rl.ID = "attr_" + attr.Key;
+                            rl.Label = attr.Value.Name;
+                            rl.Text = attr.Value.FieldType.Field.FormatValueAsHtml( null, value, attr.Value.QualifierValues, false );
+                            phAttributesView.Controls.Add( rl );
                         }
                     }
                 }
