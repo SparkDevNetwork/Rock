@@ -140,6 +140,7 @@ namespace Rock.Model
         /// <value>
         /// A collection containing a collection of the <see cref="Rock.Model.EventCalendarItem">EventCalendarItems</see> that belong to this EventItem.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<EventCalendarItem> EventCalendarItems
         {
             get { return _eventCalenderItems ?? ( _eventCalenderItems = new Collection<EventCalendarItem>() ); }

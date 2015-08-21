@@ -163,11 +163,13 @@ namespace RockWeb.Blocks.Event
                 int maxItems = GetAttributeValue( "MaxOccurrences" ).AsInteger();
                 itemOccurrences = itemOccurrences.OrderBy( i => i.NextStartDateTime ).Take( maxItems ).ToList();
                 
-                
+                // load event item
+                var eventItem = new EventItemService( rockContext ).Get( eventItemGuid );
+
                 // make lava merge fields
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
-                mergeFields.Add( "EventItem", new EventItemService( rockContext ).Get( eventItemGuid ) );
+                mergeFields.Add( "EventItem", eventItem);
                 mergeFields.Add( "EventItemOccurrences", itemOccurrences );
                
                 lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
