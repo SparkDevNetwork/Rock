@@ -306,6 +306,7 @@ namespace Rock.Model
                                 transaction.FinancialPaymentDetail.NameOnCardEncrypted = scheduledTransaction.FinancialPaymentDetail.NameOnCardEncrypted;
                                 transaction.FinancialPaymentDetail.ExpirationMonthEncrypted = scheduledTransaction.FinancialPaymentDetail.ExpirationMonthEncrypted;
                                 transaction.FinancialPaymentDetail.ExpirationYearEncrypted = scheduledTransaction.FinancialPaymentDetail.ExpirationYearEncrypted;
+                                transaction.FinancialPaymentDetail.BillingLocationId = scheduledTransaction.FinancialPaymentDetail.BillingLocationId;
                             }
 
                             if ( currencyTypeValue != null )
