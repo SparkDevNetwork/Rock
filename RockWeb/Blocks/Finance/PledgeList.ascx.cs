@@ -16,6 +16,7 @@
 //
 using System;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock;
@@ -33,8 +34,21 @@ namespace RockWeb.Blocks.Finance
     [Description( "Generic list of all pledges in the system." )]
 
     [LinkedPage( "Detail Page" )]
+    [ContextAware]
     public partial class PledgeList : RockBlock
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets the target person.
+        /// </summary>
+        /// <value>
+        /// The target person.
+        /// </value>
+        protected Person TargetPerson { get; private set; }
+
+        #endregion
+        
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -51,6 +65,8 @@ namespace RockWeb.Blocks.Finance
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gPledges.Actions.ShowAdd = canAddEditDelete;
             gPledges.IsDeleteEnabled = canAddEditDelete;
+
+            TargetPerson = ContextEntity<Person>();
         }
 
         /// <summary>
@@ -75,7 +91,17 @@ namespace RockWeb.Blocks.Finance
         {
             drpDates.DelimitedValues = gfPledges.GetUserPreference( "Date Range" );
             apFilterAccount.SetValues( gfPledges.GetUserPreference( "Accounts" ).Split(',').AsIntegerList());
-            ppFilterPerson.SetValue( new PersonService( new RockContext() ).Get( gfPledges.GetUserPreference( "Person" ).AsInteger() ) );
+
+            // only show the Person filter if context is not set to a specific person
+            if ( TargetPerson == null )
+            {
+                ppFilterPerson.Visible = true;
+                ppFilterPerson.SetValue( new PersonService( new RockContext() ).Get( gfPledges.GetUserPreference( "Person" ).AsInteger() ) );
+            }
+            else
+            {
+                ppFilterPerson.Visible = false;
+            }
         }
 
         /// <summary>
@@ -223,15 +249,25 @@ namespace RockWeb.Blocks.Finance
             var sortProperty = gPledges.SortProperty;
             var pledges = pledgeService.Queryable();
 
-            int? personId = gfPledges.GetUserPreference("Person").AsIntegerOrNull();
-
-            if ( personId.HasValue )
+            Person person = null;
+            if ( TargetPerson != null )
             {
-                var person = new PersonService( rockContext ).Get( personId.Value );
-                if ( person != null )
+                person = TargetPerson;
+            }
+            else
+            {
+                int? personId = gfPledges.GetUserPreference( "Person" ).AsIntegerOrNull();
+                if ( personId.HasValue )
                 {
-                    pledges = pledges.Where( p => p.PersonAlias.PersonId == person.Id );
+                    person = new PersonService( rockContext ).Get( personId.Value );
                 }
+            }
+            
+            if ( person != null )
+            {
+                // if a person is specified, get pledges for that person ( and also anybody in their GivingUnit )
+                pledges = pledges.InnerJoinPerson( a => a.PersonAlias.PersonId, rockContext );
+                pledges = pledges.Where( p => p.PersonAlias.Person.GivingId == person.GivingId );
             }
 
             // get the accounts and make sure they still exist by checking the database
@@ -268,6 +304,7 @@ namespace RockWeb.Blocks.Finance
              ***/
 
             // exclude pledges that start after the filter's end date or end before the filter's start date
+            pledges = pledges.Include( a => a.PersonAlias.Person );
             pledges = pledges.Where( p => !( p.StartDate > filterEndDate ) && !( p.EndDate < filterStartDate ) );
 
             gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.AccountId ).ToList();
