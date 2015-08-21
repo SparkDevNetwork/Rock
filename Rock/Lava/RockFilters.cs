@@ -1006,6 +1006,44 @@ namespace Rock.Lava
             }
         }
 
+        public static object Floor( object input)
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            decimal iInput = -1;
+
+            if ( decimal.TryParse( input.ToString(), out iInput ) )
+            {
+                    return decimal.Floor( iInput );                
+            }
+            else
+            {
+                return "Could not convert input to number to round";
+            }
+        }
+
+        public static object Ceiling( object input )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            decimal iInput = -1;
+
+            if ( decimal.TryParse( input.ToString(), out iInput ) )
+            {
+                return decimal.Ceiling( iInput );
+            }
+            else
+            {
+                return "Could not convert input to number to round";
+            }
+        }
+
         #endregion
 
         #region Attribute Filters
