@@ -36,27 +36,21 @@
 
                 <div id="pnlViewDetails" runat="server">
 
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div id="divImage" runat="server" class="pull-right margin-l-sm margin-b-sm">
-                                <asp:Literal ID="lImage" runat="server" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockLiteral ID="lSummary" runat="server" Label="Summary" />
+                                <Rock:RockLiteral ID="lCalendar" runat="server" Label="Calendars" />
+                                <Rock:RockLiteral ID="lAudiences" runat="server" Label="Audiences" />
                             </div>
-
-                            <p>
-                                <asp:Literal ID="lSummary" runat="server"></asp:Literal>
-                            </p>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <Rock:RockLiteral ID="lCalendar" runat="server" Label="Calendars" />
-                                    <Rock:RockLiteral ID="lAudiences" runat="server" Label="Audiences" />
+                            <div class="col-sm-6">
+                                <div id="divImage" runat="server" class="margin-b-sm">
+                                    <asp:Literal ID="lImage" runat="server" />
                                 </div>
-                                <div class="col-sm-6">
-                                    <asp:PlaceHolder id="phAttributesView" runat="server" /> 
-                               </div>
+                                    
+                                <asp:PlaceHolder id="phAttributesView" runat="server" /> 
                             </div>
-
                         </div>
+
                     </div>
 
                     <div class="actions">
