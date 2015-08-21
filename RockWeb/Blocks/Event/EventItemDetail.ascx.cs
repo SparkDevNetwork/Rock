@@ -722,7 +722,9 @@ namespace RockWeb.Blocks.Event
                 divImage.Visible = false;
             }
 
+            lSummary.Visible = !string.IsNullOrWhiteSpace( eventItem.Summary );
             lSummary.Text = eventItem.Summary;
+            
             var calendars = eventItem.EventCalendarItems
                 .Select( c => c.EventCalendar.Name ).ToList();
             if ( calendars.Any() )
