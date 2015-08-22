@@ -1926,6 +1926,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a Person's spouse with a selector that lets you only fetch the properties that you need
+        /// </summary>
+        /// <param name="person">The <see cref="Rock.Model.Person"/> entity of the Person to retrieve the spouse of.</param>
+        /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's spouse. If the provided Person's spouse is not found, this value will be null.</returns>
+        public static TResult GetSpouse<TResult>( this Person person, System.Linq.Expressions.Expression<Func<GroupMember, TResult>> selector, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person, selector );
+        }
+
+        /// <summary>
         /// limits the PersonQry to people that have an Age that is between MinAge and MaxAge (inclusive)
         /// </summary>
         /// <param name="personQry">The person qry.</param>
