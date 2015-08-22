@@ -1,16 +1,45 @@
 {{ "../Styles/pages/events.css" | AddLinkTagToHead:'rel','stylesheet' }}
-{% assign firstEventCampusSummary = EventCampusSummaries | First %}
-{% assign firstMonth = firstEventCampusSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'MMMM' %}
+{% assign firstEventOccurrenceSummary = EventOccurrenceSummaries | First %}
+{% assign firstMonth = firstEventOccurrenceSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'MMMM' %}
 {% assign currentMonth = firstMonth %}
 
+{% assign tier1Classes = "panel panel-card panel-card-half" %}
+{% assign tier2Classes = "panel panel-card panel-card-half panel-card-black" %}
+{% assign tier3Classes = "panel panel-card panel-card-half panel-card-red" %}
+{% assign tier4Classes = "panel panel-default panel-card" %}
+
+{% assign fullSizeClasses = "col-sm-12 col-md-8 col-lg-6" %}
+{% assign halfSizeClasses = "col-sm-6 col-md-4 col-lg-3" %}
 
 <h2 class="page-header">{{ firstMonth }}</h2>
 
 <div class="row">
 
-  {% for eventCampusSummary in EventCampusSummaries %}
+  {% for eventOccurrenceSummary in EventOccurrenceSummaries %}
 
-    {% assign thisMonth = eventCampusSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'MMMM' %}
+    {% assign thisMonth = eventOccurrenceSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'MMMM' %}
+    {% comment %} EventCalendarId 1 is public calendar {% endcomment %}
+    {% assign eventCalendarItems = eventOccurrenceSummary.EventItem.EventCalendarItems | Where: 'EventCalendarId', 1 %}
+    {% assign tierLevel = 0 %}
+    {% assign tierLevel = eventCalendarItems[0] | Attribute: 'TierLevel' %}
+
+    {% case tierLevel %}
+      {% when 1 %}
+        {% assign cardClasses = tier1Classes %}
+        {% assign wrapperClasses = halfSizeClasses %}
+      {% when 2 %}
+        {% assign cardClasses = tier2Classes %}
+        {% assign wrapperClasses = halfSizeClasses %}
+      {% when 3 %}
+        {% assign cardClasses = tier3Classes %}
+        {% assign wrapperClasses = halfSizeClasses %}
+      {% when 4 %}
+        {% assign cardClasses = tier4Classes %}
+        {% assign wrapperClasses = fullSizeClasses %}
+      {% else %}
+        {% assign cardClasses = tier1Classes %}
+        {% assign wrapperClasses = halfSizeClasses %}
+    {% endcase %}
 
     {% if thisMonth != currentMonth %}
 </div>
@@ -19,16 +48,16 @@
 <div class="row">
     {% endif %}
 
-    <div class="col-sm-6 col-md-4 col-lg-3">
-      <div class="panel panel-card panel-card-half" href="#">
+    <div class="{{ wrapperClasses }}">
+      <div class="{{ cardClasses }}" href="#">
         <a class="panel-body" href="#">
-          <h3 class="panel-title">{{ eventCampusSummary.Name }}</h3>
+          <h3 class="panel-title">{{ eventOccurrenceSummary.Name }}</h3>
         </a>
         <div class="panel-footer clearfix">
           {% if DetailsPage != empty %}
-            <a class="btn btn-default btn-sm pull-right" href="{{ DetailsPage }}?EventOccurrenceId={{ eventCampusSummary.EventItemOccurrence.Id }}">More <i class="fa fa-caret-right"></i></a>
+            <a class="btn btn-default btn-sm pull-right" href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}">More <i class="fa fa-caret-right"></i></a>
           {% endif %}
-          {{ eventCampusSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'ddd, MMM d / h:mmtt' }}
+          {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'ddd, MMM d / h:mmtt' }}
         </div>
       </div>
     </div>
