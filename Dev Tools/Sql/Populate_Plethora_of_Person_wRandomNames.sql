@@ -12024,6 +12024,7 @@ BEGIN
             ,[BirthDay]
             ,[BirthMonth]
             ,[BirthYear]
+			,[MaritalStatusValueId]
             ,[Gender]
             ,[Email]
             ,[IsEmailActive]
@@ -12042,6 +12043,7 @@ BEGIN
             ,@day
             ,@month
             ,@year
+			,@maritalStatusMarried
             ,@genderInt
             ,@email
             ,1
