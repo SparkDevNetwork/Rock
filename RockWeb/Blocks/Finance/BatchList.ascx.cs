@@ -637,7 +637,7 @@ namespace RockWeb.Blocks.Finance
                     {
                         case BatchStatus.Closed: return "label label-default";
                         case BatchStatus.Open: return "label label-info";
-                        case BatchStatus.Pending: return "label label-default";
+                        case BatchStatus.Pending: return "label label-warning";
                     }
 
                     return string.Empty;
