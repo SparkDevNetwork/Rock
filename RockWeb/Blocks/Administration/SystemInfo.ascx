@@ -31,7 +31,7 @@
 
 </script>
 
-<ul class="nav nav-pills" >
+<ul class="nav nav-pills margin-b-md" >
     <li class='active'><a pill="version-info" class="show-pill" href="#">Version Info</a></li>
     <li><a pill="diagnostics-tab" class="show-pill" href="#">Diagnostics</a></li>
 </ul>
