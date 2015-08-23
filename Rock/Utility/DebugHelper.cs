@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Data.Entity.Infrastructure.Interception;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Rock
@@ -31,11 +32,26 @@ namespace Rock
         {
             public override void ReaderExecuting( System.Data.Common.DbCommand command, DbCommandInterceptionContext<System.Data.Common.DbDataReader> interceptionContext )
             {
-                System.Diagnostics.Debug.WriteLine( "\n\nBEGIN\n" );
+                System.Diagnostics.Debug.WriteLine( "\n" );
 
+                StackTrace st = new StackTrace( 1, true );
+                var frames = st.GetFrames().Where( a => a.GetFileName() != null );
+                System.Diagnostics.Debug.WriteLine( string.Format( "/*\n{0}*/", frames.ToList().AsDelimited("") ) );
+                
+                System.Diagnostics.Debug.WriteLine( "BEGIN\n" );
 
                 var declares = command.Parameters.OfType<System.Data.SqlClient.SqlParameter>()
-                    .Select( p => string.Format( "@{0} {1} = '{2}'", p.ParameterName, p.SqlDbType, p.SqlValue ) ).ToList().AsDelimited( ",\n" );
+                    .Select( p => 
+                    {
+                        if ( p.SqlDbType == System.Data.SqlDbType.NVarChar )
+                        {
+                            return string.Format( "@{0} {1}({2}) = '{3}'", p.ParameterName, p.SqlDbType, p.Size, p.SqlValue );
+                        }
+                        else
+                        {
+                            return string.Format( "@{0} {1} = '{2}'", p.ParameterName, p.SqlDbType, p.SqlValue );
+                        }
+                    }).ToList().AsDelimited( ",\n" );
 
                 if ( !string.IsNullOrEmpty( declares ) )
                 {

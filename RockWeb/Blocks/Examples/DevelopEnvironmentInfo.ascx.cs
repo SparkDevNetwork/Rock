@@ -19,6 +19,8 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Web.UI;
+using Rock;
+using Rock.Data;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Examples
@@ -50,13 +52,13 @@ namespace RockWeb.Blocks.Examples
 
             if ( !Page.IsPostBack )
             {
-                var csBuilder = new SqlConnectionStringBuilder( ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString );
+                var rockContext = new RockContext();
                 lDatabaseName.Text = string.Format(
                     @"
 Database: {0}
 Server: {1}",
-            csBuilder.InitialCatalog,
-            csBuilder.DataSource );
+            rockContext.Database.Connection.Database,
+            rockContext.Database.Connection.DataSource );
 
                 lHostingEnvironment.Text = string.Format(
                     @"
@@ -80,6 +82,26 @@ Path: {2}",
         {
             System.Web.Hosting.HostingEnvironment.InitiateShutdown();
             NavigateToPage( new Rock.Web.PageReference( this.RockPage.PageId ) );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnStartLogSQL control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnStartLogSQL_Click( object sender, EventArgs e )
+        {
+            DebugHelper.SQLLoggingStart();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnStopLogSQL control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnStopLogSQL_Click( object sender, EventArgs e )
+        {
+            DebugHelper.SQLLoggingStop();
         }
 
         #endregion

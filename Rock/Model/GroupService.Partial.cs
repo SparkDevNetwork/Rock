@@ -410,8 +410,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
         /// <param name="includeWarnings">if set to <c>true</c> [include warnings].</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
         /// <returns></returns>
-        public Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> GroupMembersNotMeetingRequirements( int groupId, bool includeWarnings )
+        public Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> GroupMembersNotMeetingRequirements( int groupId, bool includeWarnings, bool includeInactive = false )
         {
             Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> results = new Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>>();
             
@@ -430,6 +431,11 @@ namespace Rock.Model
 
             var qryGroupMembers = groupMemberService.Queryable().Where( a => a.GroupId == groupId );
             var qryGroupMemberRequirements = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.GroupId == groupId );
+
+            if ( !includeInactive )
+            {
+                qryGroupMembers = qryGroupMembers.Where( a => a.GroupMemberStatus == GroupMemberStatus.Active );
+            }
 
             // get a list of group member ids that don't meet all the requirements
             IQueryable<int> qryGroupMemberIdsThatLackGroupRequirements = qryGroupMembers.Where(

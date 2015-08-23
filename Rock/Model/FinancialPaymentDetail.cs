@@ -25,6 +25,9 @@ using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 using Rock.Data;
+using Rock.Financial;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -133,6 +136,15 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue CreditCardTypeValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets the billing location.
+        /// </summary>
+        /// <value>
+        /// The billing location.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue BillingLocation { get; set; }        
+        
         #endregion
 
         #region Public Methods
@@ -146,6 +158,52 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.AccountNumberMasked;
+        }
+
+        /// <summary>
+        /// Sets from payment information.
+        /// </summary>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="paymentGateway">The payment gateway.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="changes">The changes.</param>
+        public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext, List<string> changes = null )
+        {
+            if ( changes != null )
+            {
+                History.EvaluateChange( changes, "Account Number", AccountNumberMasked, paymentInfo.MaskedNumber );
+                History.EvaluateChange( changes, "Currency Type", DefinedValueCache.GetName( CurrencyTypeValueId ),
+                    paymentInfo.CurrencyTypeValue != null ? paymentInfo.CurrencyTypeValue.Value : string.Empty );
+                History.EvaluateChange( changes, "Credit Card Type", DefinedValueCache.GetName( CreditCardTypeValueId ),
+                    paymentInfo.CreditCardTypeValue != null ? paymentInfo.CreditCardTypeValue.Value : string.Empty );
+            }
+
+            AccountNumberMasked = paymentInfo.MaskedNumber;
+            CurrencyTypeValueId = paymentInfo.CurrencyTypeValue != null ? paymentInfo.CurrencyTypeValue.Id : (int?)null;
+            CreditCardTypeValueId = paymentInfo.CreditCardTypeValue != null ? paymentInfo.CreditCardTypeValue.Id : (int?)null;
+
+            if ( paymentInfo is CreditCardPaymentInfo )
+            {
+                var ccPaymentInfo = (CreditCardPaymentInfo)paymentInfo;
+
+                string nameOnCard = paymentGateway.SplitNameOnCard ? ccPaymentInfo.NameOnCard + " " + ccPaymentInfo.LastNameOnCard : ccPaymentInfo.NameOnCard;
+                var newLocation = new LocationService( rockContext ).Get(
+                    ccPaymentInfo.BillingStreet1, ccPaymentInfo.BillingStreet2, ccPaymentInfo.BillingCity, ccPaymentInfo.BillingState, ccPaymentInfo.BillingPostalCode, ccPaymentInfo.BillingCountry );
+
+                if ( changes != null )
+                {
+                    string oldNameOnCard = Encryption.DecryptString( NameOnCardEncrypted );
+                    History.EvaluateChange( changes, "Name on Card", oldNameOnCard, nameOnCard );
+                    History.EvaluateChange( changes, "Expiration Month", Encryption.DecryptString( ExpirationMonthEncrypted ), ccPaymentInfo.ExpirationDate.Month.ToString() );
+                    History.EvaluateChange( changes, "Expiration Year", Encryption.DecryptString( ExpirationYearEncrypted ), ccPaymentInfo.ExpirationDate.Year.ToString() );
+                    History.EvaluateChange( changes, "Billing Location", BillingLocation != null ? BillingLocation.ToString() : string.Empty, newLocation != null ? newLocation.ToString() : string.Empty );
+                }
+
+                NameOnCardEncrypted = Encryption.EncryptString( nameOnCard );
+                ExpirationMonthEncrypted = Encryption.EncryptString( ccPaymentInfo.ExpirationDate.Month.ToString() );
+                ExpirationYearEncrypted = Encryption.EncryptString( ccPaymentInfo.ExpirationDate.Year.ToString() );
+                BillingLocationId = newLocation != null ? newLocation.Id : (int?)null;
+            }
         }
 
         #endregion
@@ -165,6 +223,7 @@ namespace Rock.Model
         {
             this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.BillingLocation ).WithMany().HasForeignKey( t => t.BillingLocationId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -17,7 +17,8 @@
                 </h1>
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlContentChannel" runat="server" LabelType="Type" />
-                    <Rock:HighlightLabel ID="hlStatus" runat="server"  />
+                    <Rock:HighlightLabel ID="hlStatus" runat="server" />
+                    <asp:PlaceHolder ID="phOccurrences" runat="server" />
                 </div>
             </div>
 
@@ -61,21 +62,16 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DateTimePicker ID="dtpStart" runat="server" Label="Start" Required="true" />
-                            <Rock:DateTimePicker ID="dtpExpire" runat="server" Label="Expire" />
-                            <Rock:NumberBox ID="nbPriority" runat="server" Label="Priority" />
-                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockControlWrapper ID="rcwOccurrences" runat="server" Label="Calendar Item Event Occurrences">
-                                <ul class="list-unstyled">
-                                    <asp:PlaceHolder ID="phOccurrences" runat="server" />
-                                </ul>
-                            </Rock:RockControlWrapper>
+                            <Rock:DateTimePicker ID="dtpExpire" runat="server" Label="Expire" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
+                            <Rock:NumberBox ID="nbPriority" runat="server" Label="Priority" />
+                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
                         </div>
                         <div class="col-md-6">
                         </div>

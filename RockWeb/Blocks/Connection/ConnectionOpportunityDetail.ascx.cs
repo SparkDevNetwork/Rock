@@ -308,7 +308,8 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 connectionOpportunity.Name = tbName.Text;
-                connectionOpportunity.Description = tbDescription.Text;
+                connectionOpportunity.Summary = htmlSummary.Text;
+                connectionOpportunity.Description = htmlDescription.Text;
                 connectionOpportunity.IsActive = cbIsActive.Checked;
                 connectionOpportunity.PublicName = tbPublicName.Text;
                 connectionOpportunity.IconCssClass = tbIconCssClass.Text;
@@ -1173,7 +1174,8 @@ namespace RockWeb.Blocks.Connection
             tbName.Text = connectionOpportunity.Name;
             tbPublicName.Text = connectionOpportunity.PublicName;
             tbIconCssClass.Text = connectionOpportunity.IconCssClass;
-            tbDescription.Text = connectionOpportunity.Description;
+            htmlSummary.Text = connectionOpportunity.Summary;
+            htmlDescription.Text = connectionOpportunity.Description;
             cbIsActive.Checked = connectionOpportunity.IsActive;
             tglUseAllGroupsOfGroupType.Checked = connectionOpportunity.UseAllGroupsOfType;
 

@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Connection
 
             AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
 
-            SetFilters();
+            SetFilters( false );
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace RockWeb.Blocks.Connection
             base.OnLoad( e );
             if ( !Page.IsPostBack )
             {
-                SetFilters();
+                SetFilters( true );
                 UpdateList();
             }
         }
@@ -155,6 +155,8 @@ namespace RockWeb.Blocks.Connection
         {
             using ( var rockContext = new RockContext() )
             {
+                var searchSelections = new Dictionary<string, string>();
+
                 var connectionType = new ConnectionTypeService( rockContext ).Get( GetAttributeValue( "ConnectionTypeId" ).AsInteger() );
                 var qrySearch = connectionType.ConnectionOpportunities.ToList();
 
@@ -162,6 +164,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     if ( !string.IsNullOrWhiteSpace( tbSearchName.Text ) )
                     {
+                        searchSelections.Add( "tbSearchName", tbSearchName.Text );
                         var searchTerms = tbSearchName.Text.ToLower().SplitDelimitedValues( true );
                         qrySearch = qrySearch.Where( o => searchTerms.Any( t => t.Contains( o.Name.ToLower() ) || o.Name.ToLower().Contains( t ) ) ).ToList();
                     }
@@ -172,6 +175,7 @@ namespace RockWeb.Blocks.Connection
                     var searchCampuses = cblCampus.SelectedValuesAsInt;
                     if ( searchCampuses.Count > 0 )
                     {
+                        searchSelections.Add( "cblCampus", searchCampuses.AsDelimited("|") );
                         qrySearch = qrySearch.Where( o => o.ConnectionOpportunityCampuses.Any( c => searchCampuses.Contains( c.CampusId ) ) ).ToList();
                     }
                 }
@@ -186,13 +190,15 @@ namespace RockWeb.Blocks.Connection
 
                         foreach ( var attribute in AvailableAttributes )
                         {
-                            var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                            string filterControlId = "filter_" + attribute.Id.ToString();
+                            var filterControl = phAttributeFilters.FindControl( filterControlId );
                             if ( filterControl != null )
                             {
                                 var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
                                 if ( expression != null )
                                 {
+                                    searchSelections.Add( filterControlId, filterValues.ToJson() );
                                     var attributeValues = attributeValueService
                                         .Queryable()
                                         .Where( v => v.Attribute.Id == attribute.Id );
@@ -206,6 +212,9 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
+                string sessionKey = string.Format( "ConnectionSearch_{0}", this.BlockId );
+                Session[sessionKey] = searchSelections;
+
                 var opportunitySummaries = new List<OpportunitySummary>();
                 foreach ( var opportunity in qrySearch )
                 {
@@ -214,7 +223,8 @@ namespace RockWeb.Blocks.Connection
                         IconCssClass = opportunity.IconCssClass,
                         Name = opportunity.PublicName,
                         PhotoUrl = opportunity.PhotoUrl,
-                        Description = opportunity.Description.ScrubHtmlAndConvertCrLfToBr(),
+                        Description = opportunity.Description,
+                        Summary = opportunity.Summary,
                         Id = opportunity.Id
                     } );
                 }
@@ -252,10 +262,14 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Sets the filters.
         /// </summary>
-        private void SetFilters()
+        private void SetFilters( bool setValues )
         {
             using ( var rockContext = new RockContext() )
             {
+                string sessionKey = string.Format( "ConnectionSearch_{0}", this.BlockId );
+                var searchSelections = Session[sessionKey] as Dictionary<string, string>;
+                setValues = setValues && searchSelections != null;
+
                 var connectionType = new ConnectionTypeService( rockContext ).Get( GetAttributeValue( "ConnectionTypeId" ).AsInteger() );
 
                 if ( !GetAttributeValue( "DisplayNameFilter" ).AsBoolean() )
@@ -274,7 +288,19 @@ namespace RockWeb.Blocks.Connection
                     cblCampus.Visible = false;
                 }
 
-                if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
+                if ( setValues )
+                {
+                    if ( searchSelections.ContainsKey( "tbSearchName" ) )
+                    {
+                        tbSearchName.Text = searchSelections["tbSearchName"];
+                    }
+                    if ( searchSelections.ContainsKey( "cblCampus" ) )
+                    {
+                        var selectedItems = searchSelections["cblCampus"].SplitDelimitedValues().AsIntegerList();
+                        cblCampus.SetValues( selectedItems );
+                    }
+                }
+                else if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
                 {
                     var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
                     var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
@@ -311,7 +337,8 @@ namespace RockWeb.Blocks.Connection
                     {
                         foreach ( var attribute in AvailableAttributes )
                         {
-                            var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
+                            string controlId = "filter_" + attribute.Id.ToString();
+                            var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, controlId, false, Rock.Reporting.FilterMode.SimpleFilter );
                             if ( control != null )
                             {
                                 if ( control is IRockControl )
@@ -329,6 +356,12 @@ namespace RockWeb.Blocks.Connection
                                     wrapper.Controls.Add( control );
                                     phAttributeFilters.Controls.Add( wrapper );
                                 }
+
+                                if ( setValues && searchSelections.ContainsKey(controlId))
+                                {
+                                    var values = searchSelections[controlId].FromJsonOrNull<List<string>>();
+                                    attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, values );
+                                }
                             }
                         }
                     }
@@ -343,13 +376,14 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// A class for lava to access connection opportunity data
         /// </summary>
-        [DotLiquid.LiquidType( "IconCssClass", "Name", "PhotoUrl", "Description", "Id" )]
+        [DotLiquid.LiquidType( "IconCssClass", "Name", "PhotoUrl", "Summary", "Description", "Id" )]
         public class OpportunitySummary
         {
-            public String IconCssClass { get; set; }
-            public String Name { get; set; }
-            public String PhotoUrl { get; set; }
-            public String Description { get; set; }
+            public string IconCssClass { get; set; }
+            public string Name { get; set; }
+            public string PhotoUrl { get; set; }
+            public string Description { get; set; }
+            public string Summary { get; set; }
             public int Id { get; set; }
         }
 
