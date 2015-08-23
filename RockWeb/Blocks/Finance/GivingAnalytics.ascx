@@ -27,20 +27,6 @@
                     <div class="col-md-3 filter-options">
 
                         <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" />
-
-                        <Rock:RockControlWrapper ID="rcwGroupBy" runat="server" Label="Group By">
-                            <div class="controls">
-                                <div class="js-group-by">
-                                    <Rock:HiddenFieldWithClass ID="hfGroupBy" CssClass="js-hidden-selected" runat="server" />
-                                    <div class="btn-group">
-                                        <asp:LinkButton ID="btnGroupByWeek" runat="server" CssClass="btn btn-xs btn-default active" Text="Week" data-val="0" OnClick="btnGroupBy_Click" />
-                                        <asp:LinkButton ID="btnGroupByMonth" runat="server" CssClass="btn btn-xs btn-default" Text="Month" data-val="1" OnClick="btnGroupBy_Click" />
-                                        <asp:LinkButton ID="btnGroupByYear" runat="server" CssClass="btn btn-xs btn-default" Text="Year" data-val="2" OnClick="btnGroupBy_Click" />
-                                    </div>
-                                </div>
-                            </div>
-                        </Rock:RockControlWrapper>
-
                         <Rock:NumberRangeEditor ID="nreAmount" runat="server" NumberType="Currency" Label="Total Amount" />
                         <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" AutoPostBack="true" OnSelectedIndexChanged="dvpDataView_SelectedIndexChanged" />
                         <Rock:RockCheckBoxList ID="cblCurrencyTypes" runat="server" Label="Currency Types" RepeatDirection="Vertical" />
@@ -76,6 +62,21 @@
                         <asp:Panel ID="pnlChart" runat="server">
 
                             <div class="clearfix">
+                                <div class="pull-left">
+                                    <Rock:RockControlWrapper ID="rcwGroupBy" runat="server" Label="Group By">
+                                        <div class="controls">
+                                            <div class="js-group-by">
+                                                <Rock:HiddenFieldWithClass ID="hfGroupBy" CssClass="js-hidden-selected" runat="server" />
+                                                <div class="btn-group">
+                                                    <asp:LinkButton ID="btnGroupByWeek" runat="server" CssClass="btn btn-xs btn-default active" Text="Week" data-val="0" OnClick="btnGroupBy_Click" />
+                                                    <asp:LinkButton ID="btnGroupByMonth" runat="server" CssClass="btn btn-xs btn-default" Text="Month" data-val="1" OnClick="btnGroupBy_Click" />
+                                                    <asp:LinkButton ID="btnGroupByYear" runat="server" CssClass="btn btn-xs btn-default" Text="Year" data-val="2" OnClick="btnGroupBy_Click" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Rock:RockControlWrapper>
+                                </div>
+                                
                                 <div class="pull-right">
                                     <Rock:RockControlWrapper ID="rcwGraphBy" runat="server" Label="Graph By">
                                         <div class="controls">
@@ -153,7 +154,7 @@
                                         <asp:Panel ID="pnlByPatternOptions" runat="server" CssClass="js-givers-by-pattern-options padding-l-lg">
                                             <div class="form-inline">
                                                 <span>Gave at least </span>
-                                                <Rock:NumberBox ID="tbPatternXTimes" runat="server" CssClass="input-width-xs" /><span> times for the selected date range </span>
+                                                <Rock:NumberBox ID="tbPatternXTimes" runat="server" CssClass="input-width-xs" /><span> times in the selected date range </span>
                                             </div>
                                             <div class="padding-l-lg">
                                                 <div class="form-inline">
