@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
+using System.Linq;
+
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
@@ -60,11 +62,20 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     pnlSearchName.Visible = false;
                     pnlSearchPhone.Visible = true;
+                    lPageTitle.Text = "Search By Phone";
+                }
+                else if ( searchTypeValue == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid() )
+                {
+                    pnlSearchName.Visible = true;
+                    pnlSearchPhone.Visible = false;
+                    lPageTitle.Text = "Search By Name";
                 }
                 else
                 {
                     pnlSearchName.Visible = true;
                     pnlSearchPhone.Visible = false;
+                    txtName.Label = "Name or Phone";
+                    lPageTitle.Text = "Search By Name or Phone";
                 }
             }
         }
@@ -80,9 +91,22 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     SearchByPhone();
                 }
-                else
+                else if ( searchTypeValue == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid() )
                 {
                     SearchByName();
+                }
+                else
+                {
+                    // name and phone search (this option uses the name search panel as UI)
+                    if ( txtName.Text.Any( c => char.IsLetter( c ) ) )
+                    {
+                        SearchByName();
+                    }
+                    else
+                    {
+                        tbPhone.Text = txtName.Text;
+                        SearchByPhone();
+                    }
                 }               
             }
         }
