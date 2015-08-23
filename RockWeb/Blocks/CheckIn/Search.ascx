@@ -30,7 +30,7 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <div class="checkin-header">
-        <h1>Search By Phone</h1>
+        <h1><asp:Literal ID="lPageTitle" runat="server" /></h1>
     </div>
                 
     <div class="checkin-body">
