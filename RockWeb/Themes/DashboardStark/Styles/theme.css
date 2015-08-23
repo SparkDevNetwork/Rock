@@ -2397,8 +2397,8 @@ span.field-name {
   font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
   padding: 2px 4px;
   font-size: 90%;
-  color: #515151;
-  background-color: #d9e1e8;
+  color: #245682;
+  background-color: #c7cacd;
   white-space: nowrap;
   border-radius: 4px;
 }
@@ -2406,8 +2406,8 @@ span.field-value {
   font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
   padding: 2px 4px;
   font-size: 90%;
-  color: #515151;
-  background-color: #d9e1e8;
+  color: #245682;
+  background-color: #c7cacd;
   white-space: nowrap;
   border-radius: 4px;
 }
@@ -2864,6 +2864,7 @@ iframe.email-body {
   33. Wizard
   34. Checkbox
   35. Follow button
+  36. Number Range Editor
 
   xx. Misc
 */
@@ -4425,6 +4426,9 @@ ul.list-group-panel .list-group-item:first-child,
 }
 .panel-follow-status.following:before {
   content: "\f005";
+}
+.number-range-editor .form-control-group .form-control {
+  margin-bottom: 6px;
 }
 /*
     Used to manage styles for specific blocks.
