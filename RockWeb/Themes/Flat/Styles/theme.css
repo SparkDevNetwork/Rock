@@ -2866,7 +2866,7 @@ iframe.email-body {
   33. Wizard
   34. Checkbox
   35. Follow button
-  36. Number Range Editor
+  36. Range Editors
 
   xx. Misc
 */
@@ -4430,6 +4430,9 @@ ul.list-group-panel .list-group-item:first-child,
   content: "\f005";
 }
 .number-range-editor .form-control-group .form-control {
+  margin-bottom: 6px;
+}
+.date-range-picker .input-group {
   margin-bottom: 6px;
 }
 /*
