@@ -34,7 +34,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:RockLiteral ID="lOccurrenceNotes" runat="server" />
+                            <Rock:RockLiteral ID="lOccurrenceNotes" Label="Occurrence Note" runat="server" />
                         </div>
                     </div>
 

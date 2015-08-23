@@ -14,8 +14,10 @@ declare
   @sourceTypeWeb int = (select Id from DefinedValue where Guid = '7D705CE7-7B11-4342-A58E-53617C5B4E69'),
   @accountId int,
   @transactionId int,
-  @checkMicrEncrypted nvarchar(max),
-  @checkMicrHash nvarchar(128),
+  @financialPaymentDetailId int,
+  @checkMicrEncrypted nvarchar(max) = null,
+  @checkMicrHash nvarchar(128) = null,
+  @checkMicrParts nvarchar(max) = null,
   @yearsBack int = 4
 
 declare
@@ -44,8 +46,11 @@ while @transactionCounter < @maxTransactionCount
           set @authorizedPersonAliasId =  (select top 1 Id from PersonAlias where Id <= rand() * @maxPersonAliasIdForTransactions order by Id desc);
         end
 
-        set @checkMicrEncrypted = replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '');
+        --set @checkMicrEncrypted = replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '');
         set @checkMicrHash = replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '');
+
+		insert into FinancialPaymentDetail ( CurrencyTypeValueId, CreditCardTypeValueId, [Guid] ) values (@currencyTypeCash, @creditCardTypeVisa, NEWID());
+		set @financialPaymentDetailId = SCOPE_IDENTITY()
 
         INSERT INTO [dbo].[FinancialTransaction]
                    ([AuthorizedPersonAliasId]
@@ -54,11 +59,11 @@ while @transactionCounter < @maxTransactionCount
                    ,[TransactionCode]
                    ,[Summary]
                    ,[TransactionTypeValueId]
-                   ,[CurrencyTypeValueId]
-                   ,[CreditCardTypeValueId]
+				   ,[FinancialPaymentDetailId]
                    ,[SourceTypeValueId]
                    ,[CheckMicrEncrypted]
                    ,[CheckMicrHash]
+				   ,[CheckMicrParts]
                    ,[Guid])
              VALUES
                    (@authorizedPersonAliasId
@@ -67,14 +72,15 @@ while @transactionCounter < @maxTransactionCount
                    ,null
                    ,@transactionNote
                    ,@transactionTypeValueId
-                   ,@currencyTypeCash
-                   ,@creditCardTypeVisa
+				   ,@financialPaymentDetailId
                    ,@sourceTypeWeb
                    ,@checkMicrEncrypted
                    ,@checkMicrHash
+				   ,@checkMicrParts
                    ,NEWID()
         )
         set @transactionId = SCOPE_IDENTITY()
+
         set @accountId = (select top 1 id from FinancialAccount where Id = round(RAND() * 2, 0) + 1)
  
         -- For contributions, we just need to put in the AccountId (entitytype/entityid would be null)

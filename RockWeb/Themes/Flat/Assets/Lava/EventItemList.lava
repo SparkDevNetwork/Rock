@@ -1,15 +1,15 @@
-{% for eventCampusSummary in EventCampusSummaries %}
+{% for eventOccurrenceSummary in EventOccurrenceSummaries %}
   <div class="margin-b-lg">
 
     {% if DetailsPage != empty %}
-      {% capture eventName %}<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventCampusSummary.EventItemOccurrence.EventItemId }}">{{ eventCampusSummary.Name }}</a>{% endcapture %}
+      {% capture eventName %}<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.EventItemId }}">{{ eventOccurrenceSummary.Name }}</a>{% endcapture %}
     {% else %}
-      {% assign eventName = eventCampusSummary.Name %}
+      {% assign eventName = eventOccurrenceSummary.Name %}
     {% endif %}
 
-    <h4>{{ eventName }} <small>{{ eventCampusSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'ddd, MMM d / h:mmtt' }}</small></h4>
+    <h4>{{ eventName }} <small>{{ eventOccurrenceSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'ddd, MMM d / h:mmtt' }}</small></h4>
 
 
-    <p>{{ eventCampusSummary.Summary }}</p>
+    <p>{{ eventOccurrenceSummary.Summary }}</p>
   </div>
 {% endfor %}

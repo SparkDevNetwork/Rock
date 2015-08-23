@@ -52,7 +52,8 @@
                             </div>
                         </div>
 
-                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.ConnectionOpportunity, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" ValidateRequestMode="Disabled" />
+                        <Rock:HtmlEditor ID="htmlSummary" runat="server" Label="Summary" Help="The content to display as a public summary for this opportunity (i.e. in search results)." />
+                        <Rock:HtmlEditor ID="htmlDescription" runat="server" Label="Details" Help="The complete details of this opportunity." />
 
                         <div class="row">
                             <div class="col-md-6">

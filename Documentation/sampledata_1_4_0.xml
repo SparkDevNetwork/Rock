@@ -549,5 +549,21 @@
         <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
       </members>
     </group>
+    <group name="RSR - Calendar Administration" guid="FDA9D63F-B0B1-43E8-8B82-0255E5D99F26" >
+      <members>
+        <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+      </members>
+    </group>
+    <group name="RSR - Event Registration Administration" guid="2A92086B-DFF0-4B9C-46CB-4DAD805615AF" >
+      <members>
+        <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+      </members>
+    </group>
+    <group name="RSR - Involvement Administration" guid="060971D2-EAF9-4C0D-B6F6-F01725CAA5AC" >
+      <members>
+        <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+        <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+      </members>
+    </group>
   </securityRoles>
 </data>

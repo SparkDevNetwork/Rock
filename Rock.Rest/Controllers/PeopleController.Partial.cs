@@ -502,10 +502,17 @@ namespace Rock.Rest.Controllers
 
                 if ( familyGroupMember.GroupRoleId == adultRoleId )
                 {
-                    Person spouse = person.GetSpouse( this.Service.Context as Rock.Data.RockContext );
+                    var personService = this.Service as PersonService;
+                    var spouse = personService.GetSpouse( person, a => new
+                    {
+                        a.Person.NickName,
+                        a.Person.LastName,
+                        a.Person.SuffixValueId
+                    } );
+
                     if ( spouse != null )
                     {
-                        string spouseFullName = spouse.FullName;
+                        string spouseFullName = Person.FormatFullName( spouse.NickName, spouse.LastName, spouse.SuffixValueId );
                         personInfoHtml += "<p><strong>Spouse:</strong> " + spouseFullName + "</p>";
                         personSearchResult.SpouseName = spouseFullName;
                     }
