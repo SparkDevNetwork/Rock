@@ -143,7 +143,7 @@ namespace Rock.Model
         /// The billing location.
         /// </value>
         [DataMember]
-        public virtual DefinedValue BillingLocation { get; set; }        
+        public virtual Location BillingLocation { get; set; }        
         
         #endregion
 
