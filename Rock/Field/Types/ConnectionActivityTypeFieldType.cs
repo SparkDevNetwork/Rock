@@ -28,10 +28,10 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a dropdown list of connection statuses
-    /// Stored as ConnectionStatus.Guid
+    /// Field Type used to display a dropdown list of connection activity types
+    /// Stored as ConnectionActivityType.Guid
     /// </summary>
-    public class ConnectionStatusFieldType : FieldType
+    public class ConnectionActivityTypeFieldType : FieldType
     {
 
         #region Formatting
@@ -51,10 +51,10 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if (guid.HasValue)
             {
-                var status = new ConnectionStatusService( new RockContext() ).Get( guid.Value );
-                if ( status != null )
+                var activityType = new ConnectionActivityTypeService( new RockContext() ).Get( guid.Value );
+                if ( activityType != null )
                 {
-                    formattedValue = status.Name;
+                    formattedValue = activityType.Name;
                 }
             }
 
@@ -78,7 +78,7 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var statuses = new ConnectionStatusService( new RockContext() )
+            var activityTypes = new ConnectionActivityTypeService( new RockContext() )
                 .Queryable().AsNoTracking()
                 .OrderBy( s => s.ConnectionType.Name )
                 .ThenBy( s => s.Name )
@@ -90,12 +90,12 @@ namespace Rock.Field.Types
                 } )
                 .ToList();
 
-            if ( statuses.Any() )
+            if ( activityTypes.Any() )
             {
-                foreach ( var status in statuses )
+                foreach ( var activity in activityTypes )
                 {
-                    var listItem = new ListItem( status.Name, status.Guid.ToString().ToUpper() );
-                    listItem.Attributes.Add( "OptionGroup", status.ConnectionTypeName );
+                    var listItem = new ListItem( activity.Name, activity.Guid.ToString().ToUpper() );
+                    listItem.Attributes.Add( "OptionGroup", activity.ConnectionTypeName );
                     editControl.Items.Add( listItem );
                 }
 
@@ -116,7 +116,7 @@ namespace Rock.Field.Types
             var picker = control as DropDownList;
             if (picker != null)
             {
-                // picker has value as ConnectionStatus.Guid
+                // picker has value as ConnectionActivityType.Guid
                 return picker.SelectedValue;
             }
 
