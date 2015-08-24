@@ -64,7 +64,15 @@ namespace com.centralaz.Prayerbook.Migrations
             RockMigrationHelper.AddBlockAttributeValue( com.centralaz.Prayerbook.SystemGuid.Block.CONTRIBUTORS_GROUP_MEMBER_LIST_BLOCK, com.centralaz.Prayerbook.SystemGuid.Attribute.ROCK_GROUPMEMBERLIST_GROUP_ATTRIBUTE, com.centralaz.Prayerbook.SystemGuid.Group.CONTRIBUTORS_GROUP );
 
             StringBuilder s = new StringBuilder();
-            s.Append( @"{% for subpage in Page.Pages %}{% if forloop.last == false %}<a href={{ subpage.Url }}>{{ subpage.Title }}</a> | {% else %}<a href={{ subpage.Url }}>{{ subpage.Title }}</a>{% endif %}{% endfor %}" );
+            s.Append( @"<nav>
+<ul class=""nav nav-tabs"">
+    {% for subpage in Page.Pages %}
+        <li role=""presentation"">
+            <a href={{ subpage.Url }}>{{ subpage.Title }}</a>
+        </li>
+    {% endfor %}
+</ul>
+</nav>" );
             RockMigrationHelper.AddBlockAttributeValue( com.centralaz.Prayerbook.SystemGuid.Block.HOMEPAGE_PAGEMENU_BLOCK, com.centralaz.Prayerbook.SystemGuid.Attribute.ROCK_PAGEMENU_TEMPLATE_ATTRIBUTE, s.ToString() );
 
             RockMigrationHelper.AddBlockAttributeValue( com.centralaz.Prayerbook.SystemGuid.Block.HOMEPAGE_PAGEMENU_BLOCK, com.centralaz.Prayerbook.SystemGuid.Attribute.ROCK_PAGEMENU_ROOTPAGE_ATTRIBUTE, com.centralaz.Prayerbook.SystemGuid.Page.APP_MANAGEMENT_PAGE );
