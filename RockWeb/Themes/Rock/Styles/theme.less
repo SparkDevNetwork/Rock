@@ -86,9 +86,14 @@
 // 1. HTML Overrides         */
 // -------------------------
 
+@-ms-viewport {
+  width: device-width;
+}
+
 html {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  -ms-overflow-style: scrollbar; // need for IE 10 issue with scrollbars being on TOP of the content
 }
 
 main {
