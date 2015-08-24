@@ -95,6 +95,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [highlight today].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [highlight today]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HighlightToday
+        {
+            get
+            {
+                return ViewState["HighlightToday"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["HighlightToday"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
         /// <value>
@@ -429,8 +448,8 @@ namespace Rock.Web.UI.Controls
             dateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
             dateFormat = dateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
 
-            var script = string.Format( @"Rock.controls.dateTimePicker.initialize({{ id: '{0}', startView: {1}, format: '{2}' }});",
-                this.ClientID, this.StartView.ConvertToInt(), dateFormat );
+            var script = string.Format( @"Rock.controls.dateTimePicker.initialize({{ id: '{0}', startView: {1}, format: '{2}', todayHighlight: {3} }});",
+                this.ClientID, this.StartView.ConvertToInt(), dateFormat, this.HighlightToday.ToString().ToLower() );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "datetime_picker-" + this.ClientID, script, true );
         }
 
