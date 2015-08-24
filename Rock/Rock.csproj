@@ -142,8 +142,11 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\ConnectionStatusFieldAttribute.cs" />
+    <Compile Include="Attribute\ConnectionOpportunityFieldAttribute.cs" />
     <Compile Include="Attribute\EventItemFieldAttribute.cs" />
     <Compile Include="Attribute\EventCalendarFieldAttribute.cs" />
+    <Compile Include="Attribute\ConnectionRequestFieldAttribute.cs" />
     <Compile Include="Attribute\IHasAttributesWrapper.cs" />
     <Compile Include="Attribute\NoteTypeFieldAttribute.cs" />
     <Compile Include="Attribute\FinancialGatewayFieldAttribute.cs" />
@@ -239,8 +242,11 @@
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
+    <Compile Include="Field\Types\ConnectionStatusFieldType.cs" />
+    <Compile Include="Field\Types\ConnectionOpportunityFieldType.cs" />
     <Compile Include="Field\Types\EventCalendarFieldType.cs" />
     <Compile Include="Field\Types\EventItemFieldType.cs" />
+    <Compile Include="Field\Types\ConnectionRequestFieldType.cs" />
     <Compile Include="Field\Types\NoteTypesFieldType.cs" />
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
     <Compile Include="Follow\Event\PersonFirstAttendedGroupType.cs" />
@@ -478,6 +484,7 @@
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />
     <Compile Include="Security\Authentication\Facebook.cs">
       <SubType>Code</SubType>
@@ -1076,6 +1083,7 @@
     <Compile Include="Workflow\Action\AssignActivityToSecurityRole.cs" />
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
     <Compile Include="Workflow\Action\AssignActivityToGroup.cs" />
+    <Compile Include="Workflow\Action\CreateConnectionRequest.cs" />
     <Compile Include="Workflow\Action\Delay.cs" />
     <Compile Include="Workflow\Action\DeleteWorkflow.cs" />
     <Compile Include="Workflow\Action\BackgroundCheckRequest.cs" />
