@@ -24,5 +24,11 @@
 .workflowNotifications .badge {
     position: absolute;
     right: -10px;
-    top: -6px;
+    top: -10px;
+}
+
+.workflowNotifications .badge.badge-danger {
+    border-color: #6bac43;
+    border-style: solid;
+    border-width: 3px
 }
