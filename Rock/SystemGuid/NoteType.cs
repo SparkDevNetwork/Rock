@@ -29,6 +29,11 @@ namespace Rock.SystemGuid
         public const string PERSON_TIMELINE_NOTE = "66A1B9D7-7EFA-40F3-9415-E54437977D60";
 
         /// <summary>
+        /// Person event registration
+        /// </summary>
+        public const string PERSON_EVENT_REGISTRATION = "BBADA8EF-23FC-4B46-B7A7-0F6D31F8C045";
+        
+        /// <summary>
         /// Generic prayer comment note type
         /// </summary>
         public const string PRAYER_COMMENT = "0EBABD75-0890-4756-A9EE-62626282BB5D";
