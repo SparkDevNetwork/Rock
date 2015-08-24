@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -949,6 +950,9 @@ namespace RockWeb.Blocks.Event
             var registrantService = new RegistrationRegistrantService( rockContext );
             var personService = new PersonService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
+            var noteService = new NoteService( rockContext );
+
+            Person registrar = null;
 
             // variables to keep track of the family that new people should be added to
             int? singleFamilyId = null;
@@ -984,6 +988,7 @@ namespace RockWeb.Blocks.Event
                 CurrentPerson.LastName.Trim().Equals( registration.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
             {
                 registration.PersonAliasId = CurrentPerson.PrimaryAliasId;
+                registrar = CurrentPerson;
             }
             else
             {
@@ -991,7 +996,8 @@ namespace RockWeb.Blocks.Event
                 var personMatches = personService.GetByMatch( registration.FirstName, registration.LastName, registration.ConfirmationEmail );
                 if ( personMatches.Count() == 1 )
                 {
-                    registration.PersonAliasId = personMatches.First().PrimaryAliasId;
+                    registrar = personMatches.First();
+                    registration.PersonAliasId = registrar.PrimaryAliasId;
                 }
             }
 
@@ -1015,7 +1021,8 @@ namespace RockWeb.Blocks.Event
                     person.RecordStatusValueId = dvcRecordStatus.Id;
                 }
 
-                registration.PersonAliasId = SavePerson( rockContext, person, Guid.NewGuid(), null, null, adultRoleId, childRoleId, multipleFamilyGroupIds, singleFamilyId );
+                registrar = SavePerson( rockContext, person, Guid.NewGuid(), null, null, adultRoleId, childRoleId, multipleFamilyGroupIds, singleFamilyId );
+                registration.PersonAliasId = registrar != null ? registrar.PrimaryAliasId : (int?)null;
             }
 
             // Save the registration ( so we can get an id )
@@ -1026,6 +1033,14 @@ namespace RockWeb.Blocks.Event
             if ( GroupId.HasValue )
             {
                 group = new GroupService( rockContext ).Get( GroupId.Value );
+            }
+
+            // Setup Note settings
+            NoteTypeCache noteType = null;
+            var registrantNames = new Dictionary<int, string>();
+            if ( RegistrationTemplate != null && RegistrationTemplate.AddPersonNote )
+            {
+                noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PERSON_EVENT_REGISTRATION.AsGuid() );
             }
 
             // Get each registrant
@@ -1091,7 +1106,7 @@ namespace RockWeb.Blocks.Event
                                     if ( fieldValue != null )
                                     {
                                         campusId = fieldValue.ToString().AsIntegerOrNull();
-                                    } 
+                                    }
                                     break;
                                 }
 
@@ -1126,7 +1141,7 @@ namespace RockWeb.Blocks.Event
 
                             case RegistrationPersonFieldType.MaritalStatus:
                                 {
-                                    if ( fieldValue != null  )
+                                    if ( fieldValue != null )
                                     {
                                         int? newMaritalStatusId = fieldValue.ToString().AsIntegerOrNull();
                                         History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
@@ -1158,6 +1173,7 @@ namespace RockWeb.Blocks.Event
 
                 // Save the person ( and family if needed )
                 SavePerson( rockContext, person, registrantInfo.FamilyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, singleFamilyId );
+                registrantNames.Add( person.Id, person.FullName );
 
                 // Load the person's attributes
                 person.LoadAttributes();
@@ -1165,7 +1181,7 @@ namespace RockWeb.Blocks.Event
                 // Set any of the template's person fields
                 foreach ( var field in RegistrationTemplate.Forms
                     .SelectMany( f => f.Fields
-                        .Where( t => 
+                        .Where( t =>
                             t.FieldSource == RegistrationFieldSource.PersonAttribute &&
                             t.AttributeId.HasValue ) ) )
                 {
@@ -1312,7 +1328,67 @@ namespace RockWeb.Blocks.Event
 
                     registrant.SaveAttributeValues( rockContext );
                 }
+
+                // Add a note to the registrant's person notes (if they aren't the one doing the registering)
+                if ( noteType != null )
+                {
+                    var noteText = new StringBuilder();
+                    if ( registrar == null || registrar.Id != person.Id )
+                    {
+                        noteText.AppendFormat( "Registered for {0} ({1})", RegistrationInstanceState.Name, RegistrationInstanceState.Id );
+                        if ( registrar != null )
+                        {
+                            noteText.AppendFormat( " by {0}", registrar.FullName );
+                        }
+
+                        var note = new Note();
+                        note.NoteTypeId = noteType.Id;
+                        note.IsSystem = false;
+                        note.IsAlert = false;
+                        note.EntityId = person.Id;
+                        note.Caption = string.Empty;
+                        note.Text = noteText.ToString();
+                        noteService.Add( note );
+                    }
+                }
+
             }
+
+            // Add a note to the registrars notes
+            if ( noteType != null && registrar != null && registrantNames.Any() )
+            {
+                string namesText = string.Empty;
+                if ( registrantNames.Count > 1 || registrantNames.First().Key != registrar.Id )
+                {
+                    if ( registrantNames.ContainsKey( registrar.Id ) )
+                    {
+                        registrantNames[registrar.Id] = registrar.Gender == Gender.Male ? "himself" : registrar.Gender == Gender.Female ? "herself" : "themselves";
+                    }
+
+                    if ( registrantNames.Count >= 2 )
+                    {
+                        int lessOne = registrantNames.Count - 1;
+                        namesText = registrantNames.Take( lessOne ).Select( n => n.Value ).ToList().AsDelimited(", ") + 
+                            " and " +
+                            registrantNames.Skip( lessOne ).Take( 1 ).First().Value + " ";
+                    }
+                    else
+                    {
+                        namesText = registrantNames.First().Value + " ";
+                    }
+                }
+
+                var note = new Note();
+                note.NoteTypeId = noteType.Id;
+                note.IsSystem = false;
+                note.IsAlert = false;
+                note.EntityId = registrar.Id;
+                note.Caption = string.Empty;
+                note.Text = string.Format( "Registered {0}for {1} ({2})", namesText, RegistrationInstanceState.Name, RegistrationInstanceState.Id );
+                noteService.Add( note );
+            }
+
+            rockContext.SaveChanges();
 
             return registration;
 
@@ -1331,7 +1407,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
         /// <param name="singleFamilyId">The single family identifier.</param>
         /// <returns></returns>
-        private int? SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId,
+        private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId,
             Dictionary<Guid, int> multipleFamilyGroupIds, int? singleFamilyId )
         {
             if ( person.Id > 0 )
@@ -1399,8 +1475,7 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            var newPerson = new PersonService( rockContext ).Get( person.Id );
-            return newPerson != null ? newPerson.PrimaryAliasId : (int?)null;
+            return new PersonService( rockContext ).Get( person.Id );
         }
 
         /// <summary>
