@@ -5,7 +5,7 @@
 <ContentTemplate>
 
     <asp:HiddenField ID="hfOption" runat="server" Value="Page" />
-    <ul id="zone-block-options" class="nav nav-pills">
+    <ul id="zone-block-options" class="nav nav-pills margin-b-md">
         <li id="liPage" runat="server" ><a href='#<%=divPage.ClientID%>'  data-toggle="pill">Current Page</a></li>
         <li id="liLayout" runat="server" ><a href='#<%=divLayout.ClientID%>' data-toggle="pill"><asp:Literal ID="lAllPages" runat="server"></asp:Literal></a></li>
     </ul>

@@ -113,7 +113,6 @@ namespace RockWeb.Blocks.Connection
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var personService = new PersonService( rockContext );
 
-
                 // Get the opportunity and default status
                 int opportunityId = PageParameter( "OpportunityId" ).AsInteger();
                 var opportunity = opportunityService
@@ -134,7 +133,7 @@ namespace RockWeb.Blocks.Connection
                     string firstName = tbFirstName.Text.Trim();
                     string lastName = tbLastName.Text.Trim();
                     string email = tbEmail.Text.Trim();
-                    int? campudId = cpCampus.SelectedCampusId;
+                    int? campusId = cpCampus.SelectedCampusId;
 
                     if ( CurrentPerson != null &&
                         CurrentPerson.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase ) &&
@@ -179,7 +178,7 @@ namespace RockWeb.Blocks.Connection
                             person.RecordStatusValueId = dvcRecordStatus.Id;
                         }
 
-                        PersonService.SaveNewPerson( person, rockContext, campudId, false );
+                        PersonService.SaveNewPerson( person, rockContext, campusId, false );
                         person = personService.Get( person.Id );
                     }
 
@@ -215,7 +214,7 @@ namespace RockWeb.Blocks.Connection
                         connectionRequest.ConnectionOpportunityId = opportunity.Id;
                         connectionRequest.ConnectionState = ConnectionState.Active;
                         connectionRequest.ConnectionStatusId = defaultStatusId;
-                        connectionRequest.CampusId = campudId;
+                        connectionRequest.CampusId = campusId;
 
                         if ( !connectionRequest.IsValid )
                         {
