@@ -43,7 +43,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Sets the value.
         /// </summary>
-        /// <param name="ConnectionRequest">The ConnectionRequest.</param>
+        /// <param name="connectionRequest">The connection request.</param>
         public void SetValue( ConnectionRequest connectionRequest )
         {
             if ( connectionRequest != null && 

@@ -690,7 +690,8 @@ namespace Rock.Lava
         /// <summary>
         /// takes a date time and compares it to RockDateTime.Now and returns a human friendly string like 'yesterday' or '2 hours ago'
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="input">The input.</param>
+        /// <param name="compareDate">The compare date.</param>
         /// <returns></returns>
         public static string HumanizeDateTime( object input, object compareDate = null )
         {
@@ -750,6 +751,7 @@ namespace Rock.Lava
         /// <param name="sStartDate">The s start date.</param>
         /// <param name="sEndDate">The s end date.</param>
         /// <param name="unit">The minimum unit.</param>
+        /// <param name="direction">The direction.</param>
         /// <returns></returns>
         public static string HumanizeTimeSpan( object sStartDate, object sEndDate, string unit, string direction )
         {
@@ -1019,6 +1021,11 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Floors the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
         public static object Floor( object input)
         {
             if ( input == null )
@@ -1038,6 +1045,11 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Ceilings the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
         public static object Ceiling( object input )
         {
             if ( input == null )
