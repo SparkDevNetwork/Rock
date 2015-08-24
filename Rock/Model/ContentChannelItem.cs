@@ -15,11 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -166,6 +167,19 @@ namespace Rock.Model
         /// The approved by person alias.
         /// </value>
         public virtual PersonAlias ApprovedByPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content channel items.
+        /// </summary>
+        /// <value>
+        /// The content channel items.
+        /// </value>
+        public virtual ICollection<EventItemOccurrenceChannelItem> EventItemOccurrences
+        {
+            get { return _eventItemOccurrences ?? ( _eventItemOccurrences = new Collection<EventItemOccurrenceChannelItem>() ); }
+            set { _eventItemOccurrences = value; }
+        }
+        private ICollection<EventItemOccurrenceChannelItem> _eventItemOccurrences;
 
         /// <summary>
         /// Gets the parent authority.

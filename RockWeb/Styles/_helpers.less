@@ -2,47 +2,24 @@
 
   Used to provide extensible classes for plugin developers to use to help them match the themes they are running in
 
-  1. Variables - specific variables for sizing classes and media query helpers
-  2. Colors - creates utility classes for each of the accent colors
-  3. Spacing - provides utility classes for spacing based off of the themes gutter widths
-  4. Even Height Columns - provides classes for making columns even heights
+  1. Colors - creates utility classes for each of the accent colors
+  2. Spacing - provides utility classes for spacing based off of the themes gutter widths
+  3. Even Height Columns - provides classes for making columns even heights
+  4. Breakpoint Specific Alignment - provides classes for alignment changes at specific breakpoints
 
 */
 
 
-// 1. Variables
+// About Helper Variables
 // -------------------------
+// Spacing, sizing, and media query helpers can be found in _rock-variables.less
 
-// spacing multipliers / used to multiply by the grid-gutter-width to get spacing sizes
-@spacing-sm: 0.25;
-@spacing-md: 0.5;
-@spacing-lg: 1;
-@spacing-xl: 2;
 
-@spacing-sm-px: @grid-gutter-width * @spacing-sm;
-@spacing-md-px: @grid-gutter-width * @spacing-md;
-@spacing-lg-px: @grid-gutter-width * @spacing-lg;
-@spacing-xl-px: @grid-gutter-width * @spacing-xl;
-
-// Media queries
-// Example usage:
-// @media @sm {
-//   body {
-//     background: red;
-//   }
-// }
-@xs: ~"(min-width: @{screen-xs-min})";
-@sm: ~"(min-width: @{screen-sm-min})";
-@md: ~"(min-width: @{screen-md-min})";
-@lg: ~"(min-width: @{screen-lg-min})";
-@sm-only: ~"(min-width: @{screen-sm}) and (max-width: @{screen-sm-max})";
-@md-only: ~"(min-width: @{screen-md}) and (max-width: @{screen-md-max})";
-
-// 2. Colors
+// 1. Colors
 // -------------------------
 
 // accent color (DEPRACATED DO NOT USE: INSTEAD USER @theme-color-X)
-.accent-color { 
+.accent-color {
   background-color: @accent-color;
   color: @accent-text-color;
 }
@@ -91,104 +68,105 @@
 
 // primary color
 .primary-color {
-    background-color: @btn-primary-bg;
-    color: @btn-primary-color;
+  background-color: @btn-primary-bg;
+  color: @btn-primary-color;
 }
 
 // theme color 1
 .theme-color-1 {
-    background-color: @theme-1;
-    color: @theme-1-text;
+  background-color: @theme-1;
+  color: @theme-1-text;
 }
 
 .theme-color-1-bordered {
-    background-color: @theme-1;
-    color: @theme-1-text;
-    border: 1px solid darken(@theme-1, 10%);
+  background-color: @theme-1;
+  color: @theme-1-text;
+  border: 1px solid darken(@theme-1, 10%);
 }
 
 // theme color 2
 .theme-color-2 {
-    background-color: @theme-2;
-    color: @theme-2-text;
+  background-color: @theme-2;
+  color: @theme-2-text;
 }
 
 .theme-color-2-bordered {
-    background-color: @theme-2;
-    color: @theme-2-text;
-    border: 1px solid darken(@theme-2, 10%);
+  background-color: @theme-2;
+  color: @theme-2-text;
+  border: 1px solid darken(@theme-2, 10%);
 }
 
 // theme color 3
 .theme-color-3 {
-    background-color: @theme-3;
-    color: @theme-3-text;
+  background-color: @theme-3;
+  color: @theme-3-text;
 }
 
 .theme-color-3-bordered {
-    background-color: @theme-3;
-    color: @theme-3-text;
-    border: 1px solid darken(@theme-3, 10%);
+  background-color: @theme-3;
+  color: @theme-3-text;
+  border: 1px solid darken(@theme-3, 10%);
 }
 
 // theme color 4
 .theme-color-4 {
-    background-color: @theme-4;
-    color: @theme-4-text;
+  background-color: @theme-4;
+  color: @theme-4-text;
 }
 
 .theme-color-4-bordered {
-    background-color: @theme-4;
-    color: @theme-4-text;
-    border: 1px solid darken(@theme-4, 10%);
+  background-color: @theme-4;
+  color: @theme-4-text;
+  border: 1px solid darken(@theme-4, 10%);
 }
 
 // theme color 5
 .theme-color-5 {
-    background-color: @theme-5;
-    color: @theme-5-text;
+  background-color: @theme-5;
+  color: @theme-5-text;
 }
 
 .theme-color-5-bordered {
-    background-color: @theme-5;
-    color: @theme-5-text;
-    border: 1px solid darken(@theme-5, 10%);
+  background-color: @theme-5;
+  color: @theme-5-text;
+  border: 1px solid darken(@theme-5, 10%);
 }
 
 // theme color 6
 .theme-color-6 {
-    background-color: @theme-6;
-    color: @theme-6-text;
+  background-color: @theme-6;
+  color: @theme-6-text;
 }
 
 .theme-color-6-bordered {
-    background-color: @theme-6;
-    color: @theme-6-text;
-    border: 1px solid darken(@theme-6, 10%);
+  background-color: @theme-6;
+  color: @theme-6-text;
+  border: 1px solid darken(@theme-6, 10%);
 }
 
 // theme color 7
 .theme-color-7 {
-    background-color: @theme-7;
-    color: @theme-7-text;
+  background-color: @theme-7;
+  color: @theme-7-text;
 }
 
 .theme-color-7-bordered {
-    background-color: @theme-7;
-    color: @theme-7-text;
-    border: 1px solid darken(@theme-7, 10%);
+  background-color: @theme-7;
+  color: @theme-7-text;
+  border: 1px solid darken(@theme-7, 10%);
 }
 
 // background colors
 .bg-color {
-    background-color: @body-bg;
+  background-color: @body-bg;
 }
 
 .text-color {
-    color: @text-color;
+  color: @text-color;
 }
 
-// 3. Spacing (note: default @grid-gutter-width is 30px in BS3)
+
+// 2. Spacing (note: default @grid-gutter-width is 30px in BS3)
 // -------------------------
 
 // all (top, bottom, right, left)
@@ -282,49 +260,50 @@
 .margin-l-lg {margin-left: @grid-gutter-width * @spacing-lg !important;}
 .margin-l-xl {margin-left: @grid-gutter-width * @spacing-xl !important;}
 
-// 4. Even Height Columns - provides classes for making columns even heights
+
+// 3. Even Height Columns - provides classes for making columns even heights
 // -------------------------
 
 .row-eq-height {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  overflow: hidden;
+}
+
+@media @md {
+ .row-eq-height-md {
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
     overflow: hidden;
+  }
 }
 
 
-@media @md {
-   .row-eq-height-md {
-        display: -webkit-flex;
-        display: -ms-flexbox;
-        display: flex;
-        overflow: hidden;
-    }
-}
-
-// 5. Breakpoint Specific Alignment - provides classes for alignment changes at specific breakpoints
+// 4. Breakpoint Specific Alignment - provides classes for alignment changes at specific breakpoints
 // -------------------------
 
 @media (max-width: @screen-xs-max) {
-    .xs-text-center { text-align: center; }
-    .xs-text-left { text-align: left; }
-    .xs-text-right { text-align: right; }
+  .xs-text-center { text-align: center; }
+  .xs-text-left { text-align: left; }
+  .xs-text-right { text-align: right; }
 }
 
 @media (min-width: @screen-sm-min) {
-    .sm-text-center { text-align: center; }
-    .sm-text-left { text-align: left; }
-    .sm-text-right { text-align: right; }
+  .sm-text-center { text-align: center; }
+  .sm-text-left { text-align: left; }
+  .sm-text-right { text-align: right; }
 }
 
 @media (min-width: @screen-md-min) {
-    .md-text-center { text-align: center; }
-    .md-text-left { text-align: left; }
-    .md-text-right { text-align: right; }
+  .md-text-center { text-align: center; }
+  .md-text-left { text-align: left; }
+  .md-text-right { text-align: right; }
 }
 
 @media (min-width: @screen-lg-min) {
-    .lg-text-center { text-align: center; }
-    .lg-text-left { text-align: left; }
-    .lg-text-right { text-align: right; }
+  .lg-text-center { text-align: center; }
+  .lg-text-left { text-align: left; }
+  .lg-text-right { text-align: right; }
 }

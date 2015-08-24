@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.CheckIn
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked" )]
     [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true )]
-    [GroupTypeField( "Check-in Type", required: false, key: "GroupTypeTemplate", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
+    [GroupTypeField( "Attendance Type", required: false, key: "GroupTypeTemplate" )]
     [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false )]
     public partial class AttendanceAnalytics : RockBlock
     {
@@ -177,23 +177,34 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         public void LoadDropDowns()
         {
-            cpCampuses.Campuses = CampusCache.All();
+            clbCampuses.Items.Clear();
+            var noCampusListItem = new ListItem();
+            noCampusListItem.Text = "<span title='Include records that are not associated with a campus'>No Campus</span>";
+            noCampusListItem.Value = "null";
+            clbCampuses.Items.Add( noCampusListItem );
+            foreach (var campus in CampusCache.All().OrderBy(a => a.Name))
+            {
+                var listItem = new ListItem();
+                listItem.Text = campus.Name;
+                listItem.Value = campus.Id.ToString();
+                clbCampuses.Items.Add( listItem );
+            }
 
             var groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
             if ( !groupTypeTemplateGuid.HasValue )
             {
                 // show the CheckinType(GroupTypeTemplate) control if there isn't a block setting for it
-                ddlCheckinType.Visible = true;
+                ddlAttendanceType.Visible = true;
                 var groupTypeService = new GroupTypeService( _rockContext );
                 Guid groupTypePurposeGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
-                ddlCheckinType.GroupTypes = groupTypeService.Queryable()
+                ddlAttendanceType.GroupTypes = groupTypeService.Queryable()
                         .Where( a => a.GroupTypePurposeValue.Guid == groupTypePurposeGuid )
                         .OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             }
             else
             {
                 // hide the CheckinType(GroupTypeTemplate) control if there is a block setting for it
-                ddlCheckinType.Visible = false;
+                ddlAttendanceType.Visible = false;
             }
         }
 
@@ -230,9 +241,9 @@ namespace RockWeb.Blocks.CheckIn
             var groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
             if ( !groupTypeTemplateGuid.HasValue )
             {
-                if ( ddlCheckinType.SelectedGroupTypeId.HasValue )
+                if ( ddlAttendanceType.SelectedGroupTypeId.HasValue )
                 {
-                    var groupType = GroupTypeCache.Read( ddlCheckinType.SelectedGroupTypeId.Value );
+                    var groupType = GroupTypeCache.Read( ddlAttendanceType.SelectedGroupTypeId.Value );
                     if ( groupType != null )
                     {
                         groupTypeTemplateGuid = groupType.Guid;
@@ -352,8 +363,9 @@ function(item) {
 
             dataSourceParams.AddOrReplace( "graphBy", hfGraphBy.Value.AsInteger() );
 
-            var selectedCampusIds = cpCampuses.SelectedCampusIds;
-            string campusIdsValue = selectedCampusIds.Any() ? selectedCampusIds.AsDelimited( "," ) : "0";
+            var selectedCampusValues = clbCampuses.SelectedValues;
+
+            string campusIdsValue = selectedCampusValues.AsDelimited( "," );
             dataSourceParams.AddOrReplace( "campusIds", campusIdsValue );
 
             var selectedGroupIds = GetSelectedGroupIds();
@@ -407,12 +419,12 @@ function(item) {
         {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
-            this.SetUserPreference( keyPrefix + "TemplateGroupTypeId", ddlCheckinType.SelectedGroupTypeId.ToString(), false );
+            this.SetUserPreference( keyPrefix + "TemplateGroupTypeId", ddlAttendanceType.SelectedGroupTypeId.ToString(), false );
 
             this.SetUserPreference( keyPrefix + "SlidingDateRange", drpSlidingDateRange.DelimitedValues, false );
             this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value, false );
             this.SetUserPreference( keyPrefix + "GraphBy", hfGraphBy.Value, false );
-            this.SetUserPreference( keyPrefix + "CampusIds", cpCampuses.SelectedCampusIds.AsDelimited( "," ), false );
+            this.SetUserPreference( keyPrefix + "CampusIds", clbCampuses.SelectedValues.AsDelimited(","), false );
             this.SetUserPreference( keyPrefix + "DataView", dvpDataView.SelectedValue, false );
 
             var selectedGroupIds = GetSelectedGroupIds();
@@ -466,7 +478,7 @@ function(item) {
         {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
-            ddlCheckinType.SelectedGroupTypeId = this.GetUserPreference( keyPrefix + "TemplateGroupTypeId" ).AsIntegerOrNull();
+            ddlAttendanceType.SelectedGroupTypeId = this.GetUserPreference( keyPrefix + "TemplateGroupTypeId" ).AsIntegerOrNull();
             BuildGroupTypesUI();
 
             string slidingDateRangeSettings = this.GetUserPreference( keyPrefix + "SlidingDateRange" );
@@ -492,12 +504,12 @@ function(item) {
             if ( sessionPreferences.ContainsKey( campusKey ) )
             {
                 campusIdList = sessionPreferences[campusKey].Split( ',' ).ToList();
-                cpCampuses.SetValues( campusIdList );
+                clbCampuses.SetValues( campusIdList );
             }
             else
             {
                 // if previous campus selection has never been made, default to showing all of them
-                foreach ( ListItem item in cpCampuses.Items )
+                foreach ( ListItem item in clbCampuses.Items )
                 {
                     item.Selected = true;
                 }
@@ -634,8 +646,8 @@ function(item) {
 
             string groupIds = GetSelectedGroupIds().AsDelimited( "," );
 
-            var selectedCampusIds = cpCampuses.SelectedCampusIds;
-            string campusIds = selectedCampusIds.Any() ? selectedCampusIds.AsDelimited( "," ) : "0";
+            var selectedCampusIds = clbCampuses.SelectedValues;
+            string campusIds = selectedCampusIds.AsDelimited( "," );
 
             var chartData = new AttendanceService( _rockContext ).GetChartData(
                 hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week,
@@ -690,18 +702,31 @@ function(item) {
                 qryAttendance = qryAttendance.Where( a => a.GroupId.HasValue && groupIdList.Contains( a.GroupId.Value ) );
             }
 
-            // If campuses were included, filter attendances by those that have selected campus, otherwise only include those without a campus
-            var campusIdList = cpCampuses.SelectedCampusIds;
+            //// If campuses were included, filter attendances by those that have selected campuses
+            //// if 'null' is one of the campuses, treat that as a 'CampusId is Null'
+            var includeNullCampus = clbCampuses.SelectedValues.Any( a => a.Equals( "null", StringComparison.OrdinalIgnoreCase ) );
+            var campusIdList = clbCampuses.SelectedValues.AsIntegerList();
+
+            // remove 0 from the list, just in case it is there 
+            campusIdList.Remove( 0 );
+
             if ( campusIdList.Any() )
             {
-                if ( campusIdList.Count == 1 && campusIdList[0] == 0 )
+                if ( includeNullCampus )
                 {
-                    qryAttendance = qryAttendance.Where( a => !a.CampusId.HasValue );
+                    // show records that have a campusId in the campusIdsList + records that have a null campusId
+                    qryAttendance = qryAttendance.Where( a => ( a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) ) || !a.CampusId.HasValue );
                 }
                 else
                 {
+                    // only show records that have a campusId in the campusIdList
                     qryAttendance = qryAttendance.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
                 }
+            }
+            else if ( includeNullCampus )
+            {
+                // 'null' was the only campusId in the campusIds parameter, so only show records that have a null CampusId
+                qryAttendance = qryAttendance.Where( a => !a.CampusId.HasValue );
             }
 
             // have the "Missed" query be the same as the qry before the Main date range is applied since it'll have a different date range

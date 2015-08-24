@@ -26,19 +26,59 @@
                     </asp:Calendar>
                 </asp:Panel>
 
-                <%-- Note: RockControlWrapper/Div/CheckboxList is being used instead of just a RockCheckBoxList, because autopostback does not currently work for RockControlCheckbox--%>
-                <Rock:RockControlWrapper ID="rcwCampus" runat="server" Label="Filter by Campus">
-                    <div class="controls">
-                        <asp:CheckBoxList ID="cblCampus" RepeatDirection="Vertical" runat="server" DataTextField="Name" DataValueField="Id" 
-                            OnSelectedIndexChanged="cblCampus_SelectedIndexChanged" AutoPostBack="true" />
-                    </div>
-                </Rock:RockControlWrapper>
+                <% if ( CampusPanelOpen || CampusPanelClosed )
+                  { %>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" href="#collapseOne">Campuses
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapseOne" class='<%= CampusPanelOpen ? "panel-collapse collapse in" : "panel-collapse collapse out" %>'>
+                            <div class="panel-body">
+                <% } %>
 
-                <Rock:RockControlWrapper ID="rcwCategory" runat="server" Label="Filter by Category">
-                    <div class="controls">
-                        <asp:CheckBoxList ID="cblCategory" RepeatDirection="Vertical" runat="server" DataTextField="Value" DataValueField="Id" OnSelectedIndexChanged="cblCategory_SelectedIndexChanged" AutoPostBack="true" />
+                                <%-- Note: RockControlWrapper/Div/CheckboxList is being used instead of just a RockCheckBoxList, because autopostback does not currently work for RockControlCheckbox--%>
+                                <Rock:RockControlWrapper ID="rcwCampus" runat="server" Label="Filter by Campus">
+                                    <div class="controls">
+                                        <asp:CheckBoxList ID="cblCampus" RepeatDirection="Vertical" runat="server" DataTextField="Name" DataValueField="Id"
+                                            OnSelectedIndexChanged="cblCampus_SelectedIndexChanged" AutoPostBack="true" />
+                                    </div>
+                                </Rock:RockControlWrapper>
+
+                <% if ( CampusPanelOpen || CampusPanelClosed )
+                    { %>
+                            </div>
+                        </div>
                     </div>
-                </Rock:RockControlWrapper>
+                <% } %>
+
+                <% if ( CategoryPanelOpen || CategoryPanelClosed )
+                   { %>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" href="#collapseTwo">Categories
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapseTwo" class='<%= CategoryPanelOpen ? "panel-collapse collapse in" : "panel-collapse collapse out" %>'>
+                            <div class="panel-body">
+                <% } %>
+
+                                <Rock:RockControlWrapper ID="rcwCategory" runat="server" Label="Filter by Category">
+                                    <div class="controls">
+                                        <asp:CheckBoxList ID="cblCategory" RepeatDirection="Vertical" runat="server" DataTextField="Value" DataValueField="Id" OnSelectedIndexChanged="cblCategory_SelectedIndexChanged" AutoPostBack="true" />
+                                    </div>
+                                </Rock:RockControlWrapper>
+
+                <% if ( CategoryPanelOpen || CategoryPanelClosed )
+                    { %>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
 
                 <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Select Range" /><asp:LinkButton ID="lbDateRangeRefresh" runat="server" CssClass="btn btn-default btn-sm" Text="Refresh" OnClick="lbDateRangeRefresh_Click" />
 

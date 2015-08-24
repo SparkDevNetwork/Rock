@@ -112,6 +112,8 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+            mdCategoryTreeConfig.Visible = false;
+
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
 
             // hide all the actions if user doesn't have EDIT to the block
@@ -268,7 +270,8 @@ namespace RockWeb.Blocks.Core
                                         selectedCategory = CategoryCache.Read( entity.CategoryId.Value );
                                         if ( selectedCategory != null )
                                         {
-                                            parentIdList.Insert( 0, selectedCategory.Id.ToString() );
+                                            string categoryExpandedID = CategoryNodePrefix + selectedCategory.Id.ToString();
+                                            parentIdList.Insert( 0, CategoryNodePrefix + categoryExpandedID );
                                         }
                                     }
                                 }
@@ -283,9 +286,10 @@ namespace RockWeb.Blocks.Core
                         category = category.ParentCategory;
                         if ( category != null )
                         {
-                            if ( !parentIdList.Contains( category.Id.ToString() ) )
+                            string categoryExpandedID = CategoryNodePrefix + category.Id.ToString();
+                            if ( !parentIdList.Contains( categoryExpandedID ) )
                             {
-                                parentIdList.Insert( 0, category.Id.ToString() );
+                                parentIdList.Insert( 0, categoryExpandedID );
                             }
                             else
                             {
@@ -394,6 +398,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         protected override void ShowSettings()
         {
+            mdCategoryTreeConfig.Visible = true;
             var entityType = EntityTypeCache.Read( this.GetAttributeValue( "EntityType" ).AsGuid() );
             var rootCategory = new CategoryService( new RockContext() ).Get( this.GetAttributeValue( "RootCategory" ).AsGuid() );
             
@@ -457,6 +462,8 @@ namespace RockWeb.Blocks.Core
 
             mdCategoryTreeConfig.Hide();
             Block_BlockUpdated( sender, e );
+
+            mdCategoryTreeConfig.Visible = false;
         }
     }
 }

@@ -49,6 +49,8 @@
             this.fdbRockClient = new System.Windows.Forms.FolderBrowserDialog();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.lblAssemblyDateTime = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.lblDatabase = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnLoad
@@ -78,9 +80,9 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cblModels.FormattingEnabled = true;
-            this.cblModels.Location = new System.Drawing.Point(15, 54);
+            this.cblModels.Location = new System.Drawing.Point(15, 70);
             this.cblModels.Name = "cblModels";
-            this.cblModels.Size = new System.Drawing.Size(587, 292);
+            this.cblModels.Size = new System.Drawing.Size(587, 276);
             this.cblModels.TabIndex = 3;
             // 
             // cbSelectAll
@@ -226,11 +228,31 @@
             this.lblAssemblyDateTime.Text = "unknown";
             this.lblAssemblyDateTime.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(12, 54);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(57, 13);
+            this.label1.TabIndex = 16;
+            this.label1.Text = "Database:";
+            // 
+            // lblDatabase
+            // 
+            this.lblDatabase.AutoSize = true;
+            this.lblDatabase.Location = new System.Drawing.Point(66, 54);
+            this.lblDatabase.Name = "lblDatabase";
+            this.lblDatabase.Size = new System.Drawing.Size(31, 13);
+            this.lblDatabase.TabIndex = 17;
+            this.lblDatabase.Text = "none";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(614, 483);
+            this.Controls.Add(this.lblDatabase);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.lblAssemblyDateTime);
             this.Controls.Add(this.tbClientFolder);
             this.Controls.Add(this.tbRestFolder);
@@ -276,6 +298,8 @@
         private System.Windows.Forms.FolderBrowserDialog fdbRockClient;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Label lblAssemblyDateTime;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lblDatabase;
     }
 }
 

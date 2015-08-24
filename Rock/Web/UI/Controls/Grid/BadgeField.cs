@@ -183,6 +183,44 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the Hide minimum value rule.
+        /// </summary>
+        /// <value>
+        /// The minimum value to be considered Hide.
+        /// </value>
+        public int HideMin
+        {
+            get
+            {
+                int? i = ViewState["HideMin"] as int?;
+                return ( i == null ) ? int.MaxValue : i.Value;
+            }
+            set
+            {
+                ViewState["HideMin"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Hide maximum value rule.
+        /// </summary>
+        /// <value>
+        /// The maximum value to be considered Hide.
+        /// </value>
+        public int HideMax
+        {
+            get
+            {
+                int? i = ViewState["HideMax"] as int?;
+                return ( i == null ) ? int.MaxValue : i.Value;
+            }
+            set
+            {
+                ViewState["HideMax"] = value;
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="BadgeField" /> class.
         /// </summary>
         public BadgeField()
@@ -209,6 +247,11 @@ namespace Rock.Web.UI.Controls
             if ( SetBadgeType != null )
             {
                 SetBadgeType( this, eventArg );
+            }
+
+            if ( eventArg.BadgeType == "Hide" )
+            {
+                return string.Empty;
             }
 
             string css = "badge";
@@ -244,6 +287,10 @@ namespace Rock.Web.UI.Controls
             else if ( InfoMin <= count && count <= InfoMax )
             {
                 e.BadgeType = "Info";
+            }
+            else if ( HideMin <= count && count <= HideMax )
+            {
+                e.BadgeType = "Hide";
             }
         }
         

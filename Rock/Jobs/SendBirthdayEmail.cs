@@ -90,11 +90,8 @@ namespace Rock.Jobs
                 personQry = personQry.WhereAgeRange( minimumAge, maximumAge, true );
             }
 
-            // only include people whose birthday is today
-            var currentDate = RockDateTime.Today;
-            int currentMonth = currentDate.Month;
-            int currentDay = currentDate.Day;
-            personQry = personQry.Where( a => a.BirthMonth == currentMonth && a.BirthDay == currentDay );
+            // only include people whose birthday is today (which can be determined from the computed DaysUntilBirthday column)
+            personQry = personQry.Where( a => a.DaysUntilBirthday.HasValue && a.DaysUntilBirthday == 0 );
 
             var connectionStatusGuids = ( dataMap.GetString( "ConnectionStatuses" ) ?? string.Empty ).Split( ',' ).AsGuidList();
 

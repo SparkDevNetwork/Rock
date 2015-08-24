@@ -142,6 +142,47 @@ $(document).ready(function() {
         }
 
         /// <summary>
+        /// Handles the Click event of the Copy button control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCopy_Click( object sender, EventArgs e )
+        {
+            // Create a new Data View using the current item as a template.
+            var id = int.Parse( hfDataViewId.Value );
+            
+            var dataViewService = new DataViewService( new RockContext() );
+
+            var newItem = dataViewService.GetNewFromTemplate( id );
+
+            if (newItem == null)
+                return;
+
+            newItem.Name += " (Copy)";
+
+            // Reset the stored identifier for the active Data View.
+            hfDataViewId.Value = "0";
+
+            ShowEditDetails( newItem );
+        }
+
+        /// <summary>
+        /// Set the Guids on the datafilter and it's children to Guid.NewGuid
+        /// </summary>
+        /// <param name="dataViewFilter">The data view filter.</param>
+        private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )
+        {
+            if ( dataViewFilter != null )
+            {
+                dataViewFilter.Guid = Guid.NewGuid();
+                foreach ( var childFilter in dataViewFilter.ChildFilters )
+                {
+                    SetNewDataFilterGuids( childFilter );
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -231,7 +272,16 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            if ( hfDataViewId.Value.Equals( "0" ) )
+            // Check if we are editing an existing Data View.
+            int dataViewId = hfDataViewId.Value.AsInteger();
+
+            if (dataViewId == 0)
+            {
+                // If not, check if we are editing a new copy of an existing Data View.
+                dataViewId = PageParameter( "DataViewId" ).AsInteger();
+            }
+
+            if ( dataViewId == 0 )
             {
                 int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
@@ -251,7 +301,7 @@ $(document).ready(function() {
             {
                 // Cancelling on Edit.  Return to Details
                 DataViewService service = new DataViewService( new RockContext() );
-                DataView item = service.Get( int.Parse( hfDataViewId.Value ) );
+                DataView item = service.Get( dataViewId );
                 ShowReadonlyDetails( item );
             }
         }

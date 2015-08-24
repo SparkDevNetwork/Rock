@@ -492,6 +492,12 @@ namespace RockWeb
                             {
                                 assemblies.Add( assemblyName, new Dictionary<int, Type>() );
                             }
+
+                            // Check to make sure no another migration has same number
+                            if ( assemblies[assemblyName].ContainsKey( migrationNumberAttr.Number ) )
+                            {
+                                throw new Exception( string.Format( "The '{0}' plugin assembly contains duplicate migration numbers ({1}).", assemblyName, migrationNumberAttr.Number ) );
+                            }
                             assemblies[assemblyName].Add( migrationNumberAttr.Number, migrationType );
                         }
                     }
@@ -664,6 +670,11 @@ namespace RockWeb
                     Rock.Web.Cache.AttributeCache.Read( attribute, new Dictionary<string, string>() );
             }
 
+            // cache all the Country Defined Values since those can be loaded in just a few millisecond here, but take around 1-2 seconds if first loaded when formatting an address
+            foreach (var definedValue in new Rock.Model.DefinedValueService(rockContext).GetByDefinedTypeGuid(Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid()))
+            {
+                DefinedValueCache.Read( definedValue, rockContext );
+            }
         }
 
 

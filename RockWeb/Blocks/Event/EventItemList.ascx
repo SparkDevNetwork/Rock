@@ -39,7 +39,6 @@
                                 <Columns>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="EventItem.Name" />
                                     <Rock:RockBoundField DataField="Date" HeaderText="Next Start Date" SortExpression="Date" />
-                                    <Rock:RockBoundField DataField="Campus" HeaderText="Campuses" HtmlEncode="false" />
                                     <Rock:RockBoundField DataField="Calendar" HeaderText="Calendars" HtmlEncode="false" />
                                     <Rock:RockBoundField DataField="Audience" HeaderText="Audiences" HtmlEncode="false" />
                                 </Columns>

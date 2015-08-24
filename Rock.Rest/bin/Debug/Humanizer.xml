@@ -107,6 +107,155 @@
             Registers the localiser factory for the culture provided
             </summary>
         </member>
+        <member name="T:Humanizer.DateTimeHumanizeStrategy.DateTimeHumanizeAlgorithms">
+            <summary>
+            Algorithms used to convert distance between two dates into words.
+            </summary>
+        </member>
+        <member name="M:Humanizer.DateTimeHumanizeStrategy.DateTimeHumanizeAlgorithms.PrecisionHumanize(System.DateTime,System.DateTime,System.Double,System.Globalization.CultureInfo)">
+            <summary>
+            Returns localized &amp; humanized distance of time between two dates; given a specific precision.
+            </summary>
+        </member>
+        <member name="M:Humanizer.DateTimeHumanizeStrategy.DateTimeHumanizeAlgorithms.DefaultHumanize(System.DateTime,System.DateTime,System.Globalization.CultureInfo)">
+            <summary>
+            Calculates the distance of time in words between two provided dates
+            </summary>
+        </member>
+        <member name="T:Humanizer.DateTimeHumanizeStrategy.DefaultDateTimeHumanizeStrategy">
+            <summary>
+            The default 'distance of time' -> words calculator.
+            </summary>
+        </member>
+        <member name="T:Humanizer.DateTimeHumanizeStrategy.IDateTimeHumanizeStrategy">
+            <summary>
+            Implement this interface to create a new strategy for DateTime.Humanize and hook it in the Configurator.DateTimeHumanizeStrategy
+            </summary>
+        </member>
+        <member name="M:Humanizer.DateTimeHumanizeStrategy.IDateTimeHumanizeStrategy.Humanize(System.DateTime,System.DateTime,System.Globalization.CultureInfo)">
+            <summary>
+            Calculates the distance of time in words between two provided dates used for DateTime.Humanize
+            </summary>
+        </member>
+        <member name="M:Humanizer.DateTimeHumanizeStrategy.DefaultDateTimeHumanizeStrategy.Humanize(System.DateTime,System.DateTime,System.Globalization.CultureInfo)">
+            <summary>
+            Calculates the distance of time in words between two provided dates
+            </summary>
+        </member>
+        <member name="T:Humanizer.DateTimeHumanizeStrategy.DefaultDateTimeOffsetHumanizeStrategy">
+            <summary>
+            The default 'distance of time' -> words calculator.
+            </summary>
+        </member>
+        <member name="T:Humanizer.DateTimeHumanizeStrategy.IDateTimeOffsetHumanizeStrategy">
+            <summary>
+            Implement this interface to create a new strategy for DateTime.Humanize and hook it in the Configurator.DateTimeOffsetHumanizeStrategy
+            </summary>
+        </member>
+        <member name="M:Humanizer.DateTimeHumanizeStrategy.IDateTimeOffsetHumanizeStrategy.Humanize(System.DateTimeOffset,System.DateTimeOffset,System.Globalization.CultureInfo)">
+            <summary>
+            Calculates the distance of time in words between two provided dates used for DateTimeOffset.Humanize
+            </summary>
+        </member>
+        <member name="M:Humanizer.DateTimeHumanizeStrategy.DefaultDateTimeOffsetHumanizeStrategy.Humanize(System.DateTimeOffset,System.DateTimeOffset,System.Globalization.CultureInfo)">
+            <summary>
+            Calculates the distance of time in words between two provided dates
+            </summary>
+        </member>
+        <member name="T:Humanizer.DateTimeHumanizeStrategy.PrecisionDateTimeOffsetHumanizeStrategy">
+            <summary>
+            Precision-based calculator for distance between two times
+            </summary>
+        </member>
+        <member name="M:Humanizer.DateTimeHumanizeStrategy.PrecisionDateTimeOffsetHumanizeStrategy.#ctor(System.Double)">
+            <summary>
+            Constructs a precision-based calculator for distance of time with default precision 0.75.
+            </summary>
+            <param name="precision">precision of approximation, if not provided  0.75 will be used as a default precision.</param>
+        </member>
+        <member name="M:Humanizer.DateTimeHumanizeStrategy.PrecisionDateTimeOffsetHumanizeStrategy.Humanize(System.DateTimeOffset,System.DateTimeOffset,System.Globalization.CultureInfo)">
+            <summary>
+            Returns localized &amp; humanized distance of time between two dates; given a specific precision.
+            </summary>
+        </member>
+        <member name="T:Humanizer.Inflections.Vocabularies">
+            <summary>
+            Container for registered Vocabularies.  At present, only a single vocabulary is supported: Default.
+            </summary>
+        </member>
+        <member name="P:Humanizer.Inflections.Vocabularies.Default">
+            <summary>
+            The default vocabulary used for singular/plural irregularities.
+            Rules can be added to this vocabulary and will be picked up by called to Singularize() and Pluralize().
+            At this time, multiple vocabularies and removing existing rules are not supported.
+            </summary>
+        </member>
+        <member name="T:Humanizer.Inflections.Vocabulary">
+            <summary>
+            A container for exceptions to simple pluralization/singularization rules.
+            Vocabularies.Default contains an extensive list of rules for US English.
+            At this time, multiple vocabularies and removing existing rules are not supported.
+            </summary>
+        </member>
+        <member name="M:Humanizer.Inflections.Vocabulary.AddIrregular(System.String,System.String)">
+            <summary>
+            Adds a word to the vocabulary which cannot easily be pluralized/singularized by RegEx, e.g. "person" and "people".
+            </summary>
+            <param name="singular">The singular form of the irregular word, e.g. "person".</param>
+            <param name="plural">The plural form of the irregular word, e.g. "people".</param>
+        </member>
+        <member name="M:Humanizer.Inflections.Vocabulary.AddUncountable(System.String)">
+            <summary>
+            Adds an uncountable word to the vocabulary, e.g. "fish".  Will be ignored when plurality is changed.
+            </summary>
+            <param name="word">Word to be added to the list of uncountables.</param>
+        </member>
+        <member name="M:Humanizer.Inflections.Vocabulary.AddPlural(System.String,System.String)">
+            <summary>
+            Adds a rule to the vocabulary that does not follow trivial rules for pluralization, e.g. "bus" -> "buses"
+            </summary>
+            <param name="rule">RegEx to be matched, case insensitive, e.g. "(bus)es$"</param>
+            <param name="replacement">RegEx replacement  e.g. "$1"</param>
+        </member>
+        <member name="M:Humanizer.Inflections.Vocabulary.AddSingular(System.String,System.String)">
+            <summary>
+            Adds a rule to the vocabulary that does not follow trivial rules for singularization, e.g. "vertices/indices -> "vertex/index"
+            </summary>
+            <param name="rule">RegEx to be matched, case insensitive, e.g. ""(vert|ind)ices$""</param>
+            <param name="replacement">RegEx replacement  e.g. "$1ex"</param>
+        </member>
+        <member name="M:Humanizer.Inflections.Vocabulary.Pluralize(System.String,System.Boolean)">
+            <summary>
+            Pluralizes the provided input considering irregular words
+            </summary>
+            <param name="word">Word to be pluralized</param>
+            <param name="inputIsKnownToBeSingular">Normally you call Pluralize on singular words; but if you're unsure call it with false</param>
+            <returns></returns>
+        </member>
+        <member name="M:Humanizer.Inflections.Vocabulary.Pluralize(System.String,Humanizer.Plurality)">
+            <summary>
+            Pluralizes the provided input considering irregular words
+            </summary>
+            <param name="word">Word to be pluralized</param>
+            <param name="plurality">Normally you call Pluralize on singular words; but if you're unsure call it with Plurality.CouldBeEither</param>
+            <returns></returns>
+        </member>
+        <member name="M:Humanizer.Inflections.Vocabulary.Singularize(System.String,System.Boolean)">
+            <summary>
+            Singularizes the provided input considering irregular words
+            </summary>
+            <param name="word">Word to be singularized</param>
+            <param name="inputIsKnownToBePlural">Normally you call Singularize on plural words; but if you're unsure call it with false</param>
+            <returns></returns>
+        </member>
+        <member name="M:Humanizer.Inflections.Vocabulary.Singularize(System.String,Humanizer.Plurality)">
+            <summary>
+            Singularizes the provided input considering irregular words
+            </summary>
+            <param name="word">Word to be singularized</param>
+            <param name="plurality">Normally you call Singularize on plural words; but if you're unsure call it with Plurality.CouldBeEither</param>
+            <returns></returns>
+        </member>
         <member name="T:Humanizer.Localisation.CollectionFormatters.ICollectionFormatter">
             <summary>
             An interface you should implement to localize Humanize for collections
@@ -645,6 +794,13 @@
             <param name="input"></param>
             <returns></returns>
         </member>
+        <member name="M:Humanizer.ByteSizeExtensions.Bytes(System.Int64)">
+            <summary>
+            Considers input as bytes
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
         <member name="M:Humanizer.ByteSizeExtensions.Kilobytes(System.Byte)">
             <summary>
             Considers input as kilobytes
@@ -688,6 +844,13 @@
             <returns></returns>
         </member>
         <member name="M:Humanizer.ByteSizeExtensions.Kilobytes(System.Double)">
+            <summary>
+            Considers input as kilobytes
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Humanizer.ByteSizeExtensions.Kilobytes(System.Int64)">
             <summary>
             Considers input as kilobytes
             </summary>
@@ -743,6 +906,13 @@
             <param name="input"></param>
             <returns></returns>
         </member>
+        <member name="M:Humanizer.ByteSizeExtensions.Megabytes(System.Int64)">
+            <summary>
+            Considers input as megabytes
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
         <member name="M:Humanizer.ByteSizeExtensions.Gigabytes(System.Byte)">
             <summary>
             Considers input as gigabytes
@@ -792,6 +962,13 @@
             <param name="input"></param>
             <returns></returns>
         </member>
+        <member name="M:Humanizer.ByteSizeExtensions.Gigabytes(System.Int64)">
+            <summary>
+            Considers input as gigabytes
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
         <member name="M:Humanizer.ByteSizeExtensions.Terabytes(System.Byte)">
             <summary>
             Considers input as terabytes
@@ -835,6 +1012,13 @@
             <returns></returns>
         </member>
         <member name="M:Humanizer.ByteSizeExtensions.Terabytes(System.Double)">
+            <summary>
+            Considers input as terabytes
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Humanizer.ByteSizeExtensions.Terabytes(System.Int64)">
             <summary>
             Considers input as terabytes
             </summary>
@@ -917,6 +1101,11 @@
             The strategy to be used for DateTime.Humanize
             </summary>
         </member>
+        <member name="P:Humanizer.Configuration.Configurator.DateTimeOffsetHumanizeStrategy">
+            <summary>
+            The strategy to be used for DateTimeOffset.Humanize
+            </summary>
+        </member>
         <member name="P:Humanizer.Configuration.Configurator.EnumDescriptionPropertyLocator">
             <summary>
             A predicate function for description property of attribute to use for Enum.Humanize
@@ -937,33 +1126,18 @@
             <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
             <returns>distance of time in words</returns>
         </member>
-        <member name="T:Humanizer.DateTimeHumanizeStrategy.DefaultDateTimeHumanizeStrategy">
+        <member name="M:Humanizer.DateHumanizeExtensions.Humanize(System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Globalization.CultureInfo)">
             <summary>
-            The default 'distance of time' -> words calculator.
+            Turns the current or provided date into a human readable sentence
             </summary>
-        </member>
-        <member name="T:Humanizer.DateTimeHumanizeStrategy.IDateTimeHumanizeStrategy">
-            <summary>
-            Implement this interface to create a new strategy for DateTime.Humanize and hook it in the Configurator.DateTimeHumanizeStrategy
-            </summary>
-        </member>
-        <member name="M:Humanizer.DateTimeHumanizeStrategy.IDateTimeHumanizeStrategy.Humanize(System.DateTime,System.DateTime,System.Globalization.CultureInfo)">
-            <summary>
-            Calculates the distance of time in words between two provided dates used for DateTime.Humanize
-            </summary>
-        </member>
-        <member name="M:Humanizer.DateTimeHumanizeStrategy.DefaultDateTimeHumanizeStrategy.Humanize(System.DateTime,System.DateTime,System.Globalization.CultureInfo)">
-            <summary>
-                Calculates the distance of time in words between two provided dates
-            </summary>
-            <param name="input"></param>
-            <param name="comparisonBase"></param>
-            <param name="culture"></param>
-            <returns></returns>
+            <param name="input">The date to be humanized</param>
+            <param name="dateToCompareAgainst">Date to compare the input against. If null, current date is used as base</param>
+            <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
+            <returns>distance of time in words</returns>
         </member>
         <member name="T:Humanizer.DateTimeHumanizeStrategy.PrecisionDateTimeHumanizeStrategy">
             <summary>
-            
+            Precision-based calculator for distance between two times
             </summary>
         </member>
         <member name="M:Humanizer.DateTimeHumanizeStrategy.PrecisionDateTimeHumanizeStrategy.#ctor(System.Double)">
@@ -976,10 +1150,6 @@
             <summary>
             Returns localized &amp; humanized distance of time between two dates; given a specific precision.
             </summary>
-            <param name="input"></param>
-            <param name="comparisonBase"></param>
-            <param name="culture"></param>
-            <returns></returns>
         </member>
         <member name="T:Humanizer.Localisation.Ordinalizers.IOrdinalizer">
             <summary>
@@ -1018,21 +1188,43 @@
             Indicates the past.
             </summary>
         </member>
+        <member name="T:Humanizer.Plurality">
+            <summary>
+            Provides hint for Humanizer as to whether a word is singular, plural or with unknown plurality
+            </summary>
+        </member>
+        <member name="F:Humanizer.Plurality.Singular">
+            <summary>
+            The word is singular
+            </summary>
+        </member>
+        <member name="F:Humanizer.Plurality.Plural">
+            <summary>
+            The word is plural
+            </summary>
+        </member>
+        <member name="F:Humanizer.Plurality.CouldBeEither">
+            <summary>
+            I am unsure of the plurality
+            </summary>
+        </member>
         <member name="T:Humanizer.TimeSpanHumanizeExtensions">
             <summary>
             Humanizes TimeSpan into human readable form
             </summary>
         </member>
-        <member name="M:Humanizer.TimeSpanHumanizeExtensions.Humanize(System.TimeSpan,System.Int32,System.Globalization.CultureInfo)">
+        <member name="M:Humanizer.TimeSpanHumanizeExtensions.Humanize(System.TimeSpan,System.Int32,System.Globalization.CultureInfo,Humanizer.Localisation.TimeUnit,Humanizer.Localisation.TimeUnit)">
             <summary>
             Turns a TimeSpan into a human readable form. E.g. 1 day.
             </summary>
             <param name="timeSpan"></param>
             <param name="precision">The maximum number of time units to return. Defaulted is 1 which means the largest unit is returned</param>
             <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
+            <param name="maxUnit">The maximum unit of time to output.</param>
+            <param name="minUnit">The minimum unit of time to output.</param>
             <returns></returns>
         </member>
-        <member name="M:Humanizer.TimeSpanHumanizeExtensions.Humanize(System.TimeSpan,System.Int32,System.Boolean,System.Globalization.CultureInfo)">
+        <member name="M:Humanizer.TimeSpanHumanizeExtensions.Humanize(System.TimeSpan,System.Int32,System.Boolean,System.Globalization.CultureInfo,Humanizer.Localisation.TimeUnit,Humanizer.Localisation.TimeUnit)">
             <summary>
             Turns a TimeSpan into a human readable form. E.g. 1 day.
             </summary>
@@ -1040,6 +1232,8 @@
             <param name="precision">The maximum number of time units to return.</param>
             <param name="countEmptyUnits">Controls whether empty time units should be counted towards maximum number of time units. Leading empty time units never count.</param>
             <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
+            <param name="maxUnit">The maximum unit of time to output.</param>
+            <param name="minUnit">The minimum unit of time to output.</param>
             <returns></returns>
         </member>
         <member name="T:Humanizer.In">
@@ -3960,12 +4154,12 @@
             <param name="input">Integer input</param>
             <returns>Roman number</returns>
         </member>
-        <member name="T:Humanizer.StringExentions">
+        <member name="T:Humanizer.StringExtensions">
             <summary>
             Extension methods for String type.
             </summary>
         </member>
-        <member name="M:Humanizer.StringExentions.FormatWith(System.String,System.Object[])">
+        <member name="M:Humanizer.StringExtensions.FormatWith(System.String,System.Object[])">
             <summary>
             Extension method to format string with passed arguments. Current thread's current culture is used
             </summary>
@@ -3973,7 +4167,7 @@
             <param name="args">arguments</param>
             <returns></returns>
         </member>
-        <member name="M:Humanizer.StringExentions.FormatWith(System.String,System.IFormatProvider,System.Object[])">
+        <member name="M:Humanizer.StringExtensions.FormatWith(System.String,System.IFormatProvider,System.Object[])">
             <summary>
             Extension method to format string with passed arguments using specified format provider (i.e. CultureInfo)
             </summary>
@@ -4572,26 +4766,6 @@
             </summary>
             <param name="input"></param>
             <returns></returns>
-        </member>
-        <member name="T:Humanizer.Plurality">
-            <summary>
-            Provides hint for Humanizer as to whether a word is singular, plural or with unknown plurality
-            </summary>
-        </member>
-        <member name="F:Humanizer.Plurality.Singular">
-            <summary>
-            The word is singular
-            </summary>
-        </member>
-        <member name="F:Humanizer.Plurality.Plural">
-            <summary>
-            The word is plural
-            </summary>
-        </member>
-        <member name="F:Humanizer.Plurality.CouldBeEither">
-            <summary>
-            I am unsure of the plurality
-            </summary>
         </member>
         <member name="T:Humanizer.InflectorExtensions">
             <summary>

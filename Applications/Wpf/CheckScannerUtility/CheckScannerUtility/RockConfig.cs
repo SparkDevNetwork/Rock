@@ -118,11 +118,11 @@ namespace Rock.Apps.CheckScannerUtility
         /// </value>
         [DefaultSettingValueAttribute( "0" )]
         [UserScopedSetting]
-        public ImageColorType ImageColorType
+        public RangerImageColorTypes ImageColorType
         {
             get
             {
-                return (ImageColorType)this["ImageColorType"];
+                return (RangerImageColorTypes)this["ImageColorType"];
             }
 
             set

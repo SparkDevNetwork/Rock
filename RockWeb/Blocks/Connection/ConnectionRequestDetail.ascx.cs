@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Data.Entity;
 
 using Rock;
 using Rock.Constants;
@@ -258,7 +259,7 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.PersonAlias = personAliasService.Get( ppRequestor.PersonAliasId.Value );
                     connectionRequest.ConnectionState = rblState.SelectedValueAsEnum<ConnectionState>();
                     connectionRequest.ConnectionStatusId = rblStatus.SelectedValueAsId().Value;
-                    connectionRequest.AssignedGroupId = ddlAssignedGroup.SelectedValueAsId();
+                    connectionRequest.AssignedGroupId = ddlPlacementGroup.SelectedValueAsId();
                     connectionRequest.CampusId = ddlCampus.SelectedValueAsId().Value;
                     connectionRequest.Comments = tbComments.Text.ScrubHtmlAndConvertCrLfToBr();
                     connectionRequest.FollowupDate = dpFollowUp.SelectedDate;
@@ -782,7 +783,7 @@ namespace RockWeb.Blocks.Connection
                 int? opportunityId = e.Row.DataItem.GetPropertyValue( "OpportunityId" ) as int?;
                 if ( opportunityId.HasValue && opportunityId.Value == connectionOpportunityId )
                 {
-                    e.Row.AddCssClass( "warning" );
+                    e.Row.AddCssClass( "info" );
                 }
 
                 bool canEdit = e.Row.DataItem.GetPropertyValue( "CanEdit" ) as bool? ?? false;
@@ -826,42 +827,48 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void BindConnectionRequestActivitiesGrid( ConnectionRequest connectionRequest, RockContext rockContext )
         {
-            var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
-            var qry = connectionRequestActivityService
-                .Queryable( "ConnectionActivityType,ConnectionOpportunity,ConnectorPersonAlias.Person" )
-                .Where( a =>
-                    a.ConnectionActivityType != null &&
-                    a.ConnectionOpportunity != null );
-
-            if ( connectionRequest != null && 
-                connectionRequest.ConnectionOpportunity != null &&
-                connectionRequest.ConnectionOpportunity.ConnectionType != null &&
-                connectionRequest.ConnectionOpportunity.ConnectionType.EnableFullActivityList )
+            if ( connectionRequest != null && connectionRequest.PersonAlias != null )
             {
-                qry = qry.Where( a => a.ConnectionOpportunity.ConnectionTypeId == connectionRequest.ConnectionOpportunity.ConnectionTypeId );
-            }
-            else
-            {
-                qry = qry.Where( a => a.ConnectionRequestId == connectionRequest.Id );
-            }
+                var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
+                var qry = connectionRequestActivityService
+                    .Queryable( "ConnectionActivityType,ConnectionOpportunity,ConnectorPersonAlias.Person" )
+                    .Where( a =>
+                        a.ConnectionRequest != null &&
+                        a.ConnectionRequest.PersonAlias != null &&
+                        a.ConnectionRequest.PersonAlias.PersonId == connectionRequest.PersonAlias.PersonId &&
+                        a.ConnectionActivityType != null &&
+                        a.ConnectionOpportunity != null );
 
-            gConnectionRequestActivities.DataSource = qry.ToList()
-                .Select( a => new
-                    {
-                        a.Id,
-                        a.Guid,
-                        CreatedDate = a.CreatedDateTime,
-                        Date = a.CreatedDateTime.HasValue ? a.CreatedDateTime.Value.ToShortDateString() : "",
-                        Activity = a.ConnectionActivityType.Name,
-                        Opportunity = a.ConnectionOpportunity.Name,
-                        OpportunityId = a.ConnectionOpportunityId,
-                        Connector = a.ConnectorPersonAlias != null && a.ConnectorPersonAlias.Person != null ? a.ConnectorPersonAlias.Person.FullName : "",
-                        Note = a.Note,
-                        CanEdit = a.ConnectorPersonAliasId.Equals( CurrentPersonAliasId ) && a.ConnectionActivityType.ConnectionTypeId.HasValue
-                    } )
-                .OrderByDescending( a => a.CreatedDate )
-                .ToList();
-            gConnectionRequestActivities.DataBind();
+                if ( connectionRequest != null &&
+                    connectionRequest.ConnectionOpportunity != null &&
+                    connectionRequest.ConnectionOpportunity.ConnectionType != null &&
+                    connectionRequest.ConnectionOpportunity.ConnectionType.EnableFullActivityList )
+                {
+                    qry = qry.Where( a => a.ConnectionOpportunity.ConnectionTypeId == connectionRequest.ConnectionOpportunity.ConnectionTypeId );
+                }
+                else
+                {
+                    qry = qry.Where( a => a.ConnectionRequestId == connectionRequest.Id );
+                }
+
+                gConnectionRequestActivities.DataSource = qry.ToList()
+                    .Select( a => new
+                        {
+                            a.Id,
+                            a.Guid,
+                            CreatedDate = a.CreatedDateTime,
+                            Date = a.CreatedDateTime.HasValue ? a.CreatedDateTime.Value.ToShortDateString() : "",
+                            Activity = a.ConnectionActivityType.Name,
+                            Opportunity = a.ConnectionOpportunity.Name,
+                            OpportunityId = a.ConnectionOpportunityId,
+                            Connector = a.ConnectorPersonAlias != null && a.ConnectorPersonAlias.Person != null ? a.ConnectorPersonAlias.Person.FullName : "",
+                            Note = a.Note,
+                            CanEdit = a.ConnectorPersonAliasId.Equals( CurrentPersonAliasId ) && a.ConnectionActivityType.ConnectionTypeId.HasValue
+                        } )
+                    .OrderByDescending( a => a.CreatedDate )
+                    .ToList();
+                gConnectionRequestActivities.DataBind();
+            }
         }
 
         #endregion
@@ -1092,7 +1099,7 @@ namespace RockWeb.Blocks.Connection
                 lbProfilePage.Visible = false;
             }
 
-            string imgTag = Rock.Model.Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 200, 200 );
+            string imgTag = Rock.Model.Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 200, 200, className: "img-thumbnail" );
             if ( person.PhotoId.HasValue )
             {
                 lPortrait.Text = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, imgTag );
@@ -1111,13 +1118,13 @@ namespace RockWeb.Blocks.Connection
                 
                 string url = LinkedPageUrl( "GroupDetailPage", qryParams );
 
-                lAssignedGroup.Text = !string.IsNullOrWhiteSpace( url ) ?
+                lPlacementGroup.Text = !string.IsNullOrWhiteSpace( url ) ?
                     string.Format( "<a href='{0}'>{1}</a>", url, connectionRequest.AssignedGroup.Name ) :
                     connectionRequest.AssignedGroup.Name;
             }
             else
             {
-                lAssignedGroup.Text = "No assigned group";
+                lPlacementGroup.Text = "No group assigned";
             }
 
             if ( connectionRequest.ConnectorPersonAlias != null )
@@ -1126,7 +1133,7 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                lConnector.Text = "No assigned connector";
+                lConnector.Text = "No connector assigned";
             }
 
             hlState.Visible = true;
@@ -1183,22 +1190,39 @@ namespace RockWeb.Blocks.Connection
 
             tbComments.Text = connectionRequest.Comments.ScrubHtmlAndConvertCrLfToBr();
 
-            ddlAssignedGroup.Items.Clear();
-            ddlAssignedGroup.Items.Add( new ListItem( String.Empty, String.Empty ) );
+            ddlPlacementGroup.Items.Clear();
+            ddlPlacementGroup.Items.Add( new ListItem( String.Empty, String.Empty ) );
 
-            var opportunityGroupIds = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups.Select( o => o.Id ).ToList();
+            var groups = new List<Group>();
 
-            var groups = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups
-                                .Where( g => 
-                                    g.Group.Campus == null ||
-                                    g.Group.CampusId == connectionRequest.CampusId ||
-                                    g.Group.Id == connectionRequest.AssignedGroupId
-                                )
-                                .Select( g => g.Group);
+            if ( connectionRequest.ConnectionOpportunity.UseAllGroupsOfType )
+            {
+                var placementGroupTypeId = connectionRequest.ConnectionOpportunity.GroupTypeId;
+
+                groups = new GroupService( new RockContext() )
+                                .Queryable().AsNoTracking()
+                                .Where( g => g.GroupTypeId == placementGroupTypeId
+                                             && ( g.Campus == null || g.CampusId == connectionRequest.CampusId ) )
+                                .ToList();
+                    
+            }
+            else
+            {
+                var opportunityGroupIds = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups.Select( o => o.Id ).ToList();
+
+                groups = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups
+                                    .Where( g =>
+                                        g.Group.Campus == null ||
+                                        g.Group.CampusId == connectionRequest.CampusId ||
+                                        g.Group.Id == connectionRequest.AssignedGroupId
+                                    )
+                                    .Select( g => g.Group )
+                                    .ToList();
+            }
                 
             foreach ( var g in groups )
             {
-                ddlAssignedGroup.Items.Add( new ListItem( String.Format( "{0} ({1})", g.Name, g.Campus != null ? g.Campus.Name : "No Campus" ), g.Id.ToString().ToUpper() ) );
+                ddlPlacementGroup.Items.Add( new ListItem( String.Format( "{0} ({1})", g.Name, g.Campus != null ? g.Campus.Name : "No Campus" ), g.Id.ToString().ToUpper() ) );
             }
 
             // Get the connectors from the connector groups
@@ -1259,14 +1283,14 @@ namespace RockWeb.Blocks.Connection
             {
                 try
                 {
-                    ddlAssignedGroup.SelectedValue = connectionRequest.AssignedGroupId.ToString();
+                    ddlPlacementGroup.SelectedValue = connectionRequest.AssignedGroupId.ToString();
                 }
                 catch
                 {
 
                 }
             }
-            ddlAssignedGroup.DataBind();
+            ddlPlacementGroup.DataBind();
 
             ddlCampus.Items.Clear();
             foreach ( var campus in CampusCache.All() )
@@ -1530,7 +1554,7 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.ConnectionOpportunity != null &&
                     connectionRequest.ConnectionOpportunity.ConnectionType != null )
                 {
-                    foreach ( var activityType in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionActivityTypes )
+                    foreach ( var activityType in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionActivityTypes.OrderBy( a => a.Name ) )
                     {
                         if ( activityType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         {

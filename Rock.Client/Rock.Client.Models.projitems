@@ -82,6 +82,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionRefund.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionScannedCheck.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Following.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FollowingEvent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FollowingEventSubscription.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FollowingEventType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FollowingSuggested.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FollowingSuggestion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FollowingSuggestionSubscription.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FollowingSuggestionType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Group.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupLocation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupMember.cs" />

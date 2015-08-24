@@ -55,7 +55,15 @@
 
 <script>
   $( '.accounts-showmore' ).on( 'click', function() {
-  event.preventDefault();
+
+  // IE doesn't support event.PreventDefault, so use .returnValue = false instead 
+  if(event.preventDefault) {
+    event.preventDefault();
+  }
+  else {
+    event.returnValue = false;
+  }
+  
   $('.accounts-extended').slideDown();
   $(this).hide();
   });

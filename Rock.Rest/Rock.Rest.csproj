@@ -110,6 +110,7 @@
     <Compile Include="Constraints\ValidControllerNameConstraint.cs" />
     <Compile Include="Controllers\AttendancesController.partial.cs" />
     <Compile Include="Controllers\CampusController.cs" />
+    <Compile Include="Controllers\ConnectionRequestsController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceRequestsController.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceResultsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CampusesController.cs" />
@@ -140,8 +141,13 @@
     <Compile Include="Controllers\CodeGenerated\EventItemOccurrencesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EventItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialGatewaysController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FollowingEventNotificationsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FollowingEventSubscriptionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FollowingEventTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialPaymentDetailsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FollowingSuggestedsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FollowingSuggestionTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMemberRequirementsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMemberWorkflowTriggersController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupRequirementsController.cs" />

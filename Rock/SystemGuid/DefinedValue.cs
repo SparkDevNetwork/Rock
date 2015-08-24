@@ -45,6 +45,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_NAME = "071D6DAA-3063-463A-B8A1-7D9A1BE1BB31";
 
+        /// <summary>
+        /// Power Search Type
+        /// </summary>
+        public const string CHECKIN_SEARCH_TYPE_NAME_AND_PHONE = "93773B0A-6E7F-1AA0-4F1D-9A4D6ACE930F";
+
         #endregion
 
         #region Device Type

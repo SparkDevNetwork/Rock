@@ -25,7 +25,7 @@
                 <div class="row row-eq-height-md">
                     <div class="col-md-3 filter-options">
 
-                        <Rock:GroupTypePicker ID="ddlCheckinType" runat="server" Label="Check-in Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
+                        <Rock:GroupTypePicker ID="ddlAttendanceType" runat="server" Label="Attendance Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
                         <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="false" />
 
                         <div class="actions margin-b-md">
@@ -48,8 +48,8 @@
                             </div>
                         </Rock:RockControlWrapper>
 
-                        <Rock:CampusesPicker ID="cpCampuses" runat="server" CssClass="campuses-picker-vertical" Label="Campuses" 
-                            Help="The campus to display attendance for. Leave unselected to view attendance not associated to any campus." />
+                        <Rock:RockCheckBoxList ID="clbCampuses" runat="server" CssClass="campuses-picker-vertical" Label="Campuses" 
+                            Help="The campuses to display attendance for. Leave blank to not filter by campus." />
                         
                         <Rock:NotificationBox ID="nbGroupsWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one group." Visible="false"/>
                         <h4>Group</h4>
@@ -182,12 +182,14 @@
                                                     <span>Attended at least </span>
                                                     <Rock:NumberBox ID="tbPatternXTimes" runat="server" CssClass="input-width-xs" /><asp:Literal ID="lPatternXFor" runat="server" Text=" times for the selected date range" />
                                                 </div>
-                                                <div class="padding-l-lg">
+                                                <div class="padding-l-lg margin-t-sm">
                                                     <div class="form-inline">
                                                         <Rock:RockCheckBox ID="cbPatternAndMissed" runat="server" />and missed at least                                                           
                                                                     <Rock:NumberBox ID="tbPatternMissedXTimes" runat="server" CssClass="input-width-xs" />&nbsp;<asp:Literal ID="lPatternAndMissedXBetween" runat="server" Text=" weeks between" />
                                                         <Rock:NotificationBox ID="nbMissedDateRangeRequired" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" />
-                                                        <Rock:DateRangePicker ID="drpPatternDateRange" runat="server" />
+                                                        <div class="margin-t-sm">
+                                                            <Rock:DateRangePicker ID="drpPatternDateRange" runat="server" />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </asp:Panel>

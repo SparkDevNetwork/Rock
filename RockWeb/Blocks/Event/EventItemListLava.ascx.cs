@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Event
 
             CalendarEventDates = new List<DateTime>();
 
-            var eventCampusSummaries = new List<EventOccurrenceSummary>();
+            var eventOccurrenceSummaries = new List<EventOccurrenceSummary>();
             foreach ( var occurrenceDates in occurrencesWithDates )
             {
                 var eventItemOccurrence = occurrenceDates.EventItemOccurrence;
@@ -184,9 +184,10 @@ namespace RockWeb.Blocks.Event
 
                     if ( datetime >= dateRange.Start.Value && datetime < dateRange.End.Value )
                     {
-                        eventCampusSummaries.Add( new EventOccurrenceSummary
+                        eventOccurrenceSummaries.Add( new EventOccurrenceSummary
                         {
                             EventItemOccurrence = eventItemOccurrence,
+                            EventItem = eventItemOccurrence.EventItem,
                             Name = eventItemOccurrence.EventItem.Name,
                             DateTime = datetime,
                             Date = datetime.ToShortDateString(),
@@ -200,7 +201,7 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            eventCampusSummaries = eventCampusSummaries
+            eventOccurrenceSummaries = eventOccurrenceSummaries
                 .OrderBy( e => e.DateTime )
                 .ThenBy( e => e.Name )
                 .ToList();
@@ -209,12 +210,12 @@ namespace RockWeb.Blocks.Event
             int? maxItems = GetAttributeValue( "MaxOccurrences" ).AsIntegerOrNull();
             if ( maxItems.HasValue )
             {
-                eventCampusSummaries = eventCampusSummaries.Take( maxItems.Value ).ToList();
+                eventOccurrenceSummaries = eventOccurrenceSummaries.Take( maxItems.Value ).ToList();
             }
 
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "DetailsPage", LinkedPageUrl( "DetailsPage", null ) );
-            mergeFields.Add( "EventCampusSummaries", eventCampusSummaries );
+            mergeFields.Add( "EventOccurrenceSummaries", eventOccurrenceSummaries );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
 
             lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
@@ -239,9 +240,17 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// A class to store event item occurrence data for liquid
         /// </summary>
-        [DotLiquid.LiquidType( "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "Location", "Description", "Summary", "DetailPage" )]
+        [DotLiquid.LiquidType( "EventItem", "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "Location", "Description", "Summary", "DetailPage" )]
         public class EventOccurrenceSummary
         {
+            /// <summary>
+            /// Gets or sets the event item.
+            /// </summary>
+            /// <value>
+            /// The event item.
+            /// </value>
+            public EventItem EventItem { get; set; }
+            
             /// <summary>
             /// Gets or sets the event item occurrence.
             /// </summary>

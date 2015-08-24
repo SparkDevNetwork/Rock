@@ -42,10 +42,17 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                Bitmap bmp = new Bitmap( new MemoryStream( this.FrontImageData ) );
-                MemoryStream pngStream = new MemoryStream();
-                bmp.Save( pngStream, System.Drawing.Imaging.ImageFormat.Png );
-                return pngStream.ToArray();
+                if ( this.FrontImageData != null )
+                {
+                    Bitmap bmp = new Bitmap( new MemoryStream( this.FrontImageData ) );
+                    MemoryStream pngStream = new MemoryStream();
+                    bmp.Save( pngStream, System.Drawing.Imaging.ImageFormat.Png );
+                    return pngStream.ToArray();
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
@@ -67,10 +74,17 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                Bitmap bmp = new Bitmap( new MemoryStream( this.BackImageData ) );
-                MemoryStream pngStream = new MemoryStream();
-                bmp.Save( pngStream, System.Drawing.Imaging.ImageFormat.Png );
-                return pngStream.ToArray();
+                if ( this.BackImageData != null )
+                {
+                    Bitmap bmp = new Bitmap( new MemoryStream( this.BackImageData ) );
+                    MemoryStream pngStream = new MemoryStream();
+                    bmp.Save( pngStream, System.Drawing.Imaging.ImageFormat.Png );
+                    return pngStream.ToArray();
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
@@ -175,6 +189,14 @@ namespace Rock.Apps.CheckScannerUtility
         /// The check number.
         /// </value>
         public string CheckNumber { get; set; }
+
+        /// <summary>
+        /// Any other MICR data that isn't the Routing, AccountNumber or CheckNumber
+        /// </summary>
+        /// <value>
+        /// The other data.
+        /// </value>
+        public string OtherData { get; set; }
 
         /// <summary>
         /// Gets the masked account number.

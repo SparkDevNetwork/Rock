@@ -19,7 +19,7 @@
           <img src="{{opportunity.PhotoUrl}}" class="title-image img-responsive">
       </div>
       <div class="col-md-10">
-        {{opportunity.Description}}
+        {{opportunity.Summary}}
 		</br>
         <a class="btn btn-default" href="{{ DetailPage }}?OpportunityId={{ opportunity.Id }}" role="button">More Info</a>
       </div>      

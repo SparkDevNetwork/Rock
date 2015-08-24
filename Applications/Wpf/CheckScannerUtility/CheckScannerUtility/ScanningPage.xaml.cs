@@ -264,6 +264,7 @@ namespace Rock.Apps.CheckScannerUtility
                 bitmapImageFront.StreamSource = new MemoryStream( scannedDocInfo.FrontImageData );
                 bitmapImageFront.EndInit();
                 imgFront.Source = bitmapImageFront;
+                Rock.Wpf.WpfHelper.FadeIn( imgFront, 100 );
                 lblFront.Visibility = Visibility.Visible;
             }
             else
@@ -279,12 +280,15 @@ namespace Rock.Apps.CheckScannerUtility
                 bitmapImageBack.StreamSource = new MemoryStream( scannedDocInfo.BackImageData );
                 bitmapImageBack.EndInit();
                 imgBack.Source = bitmapImageBack;
+                Rock.Wpf.WpfHelper.FadeIn( imgBack, 100 );
                 lblBack.Visibility = Visibility.Visible;
+                colBackImage.Width = new GridLength( 1, GridUnitType.Star );
             }
             else
             {
                 imgBack.Source = null;
                 lblBack.Visibility = Visibility.Hidden;
+                colBackImage.Width = new GridLength( 0, GridUnitType.Star );
             }
 
             if ( scannedDocInfo.IsCheck )
@@ -293,6 +297,8 @@ namespace Rock.Apps.CheckScannerUtility
                 lblRoutingNumber.Content = scannedDocInfo.RoutingNumber ?? "--";
                 lblAccountNumber.Content = scannedDocInfo.AccountNumber ?? "--";
                 lblCheckNumber.Content = scannedDocInfo.CheckNumber ?? "--";
+                lblOtherData.Content = scannedDocInfo.OtherData;
+                spOtherData.Visibility = !string.IsNullOrWhiteSpace( scannedDocInfo.OtherData ) ? Visibility.Visible : Visibility.Collapsed;
             }
             else
             {
@@ -315,7 +321,6 @@ namespace Rock.Apps.CheckScannerUtility
             _itemsUploaded = 0;
             _itemsSkipped = 0;
             _itemsScanned = 0;
-            _firstNoItemsWarning = true;
             ShowUploadStats();
             StartScanning();
             lblScanItemCountInfo.Visibility = Visibility.Collapsed;
@@ -361,14 +366,14 @@ namespace Rock.Apps.CheckScannerUtility
         /// Shows the scanner status.
         /// </summary>
         /// <param name="xportStates">The xport states.</param>
-        public void ShowScannerStatus( XportStates xportStates, System.Windows.Media.Color statusColor, string statusText )
+        public void ShowScannerStatus( RangerTransportStates xportStates, System.Windows.Media.Color statusColor, string statusText )
         {
             switch ( xportStates )
             {
-                case XportStates.TransportReadyToFeed:
+                case RangerTransportStates.TransportReadyToFeed:
                     break;
 
-                case XportStates.TransportFeeding:
+                case RangerTransportStates.TransportFeeding:
                     break;
             }
 
@@ -385,7 +390,9 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The e.</param>
         public void rangerScanner_TransportFeedingStopped( object sender, AxRANGERLib._DRangerEvents_TransportFeedingStoppedEvent e )
         {
-            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportFeedingStopped", DateTime.Now.ToString( "o" ) ) );
+            RangerFeedingStoppedReasons rangerFeedingStoppedReason = (RangerFeedingStoppedReasons)e.reason;
+            
+            System.Diagnostics.Debug.WriteLine( string.Format( "{0} : rangerScanner_TransportFeedingStopped, reason:", DateTime.Now.ToString( "o" ), rangerFeedingStoppedReason.ConvertToString() ) );
             if ( pnlPromptForUpload.Visibility != Visibility.Visible )
             {
                 btnStart.IsEnabled = true;
@@ -405,13 +412,11 @@ namespace Rock.Apps.CheckScannerUtility
                     lblStartupInfo.Visibility = Visibility.Visible;
                 }
 
-                // show a "No Items" warning if they clicked Start but no items were scanned, and this is the 2nd+ time they tried
-                if ( !_firstNoItemsWarning )
+                // show a "No Items" warning if they clicked Start but it stopped because of MainHopperEmpty
+                if ( rangerFeedingStoppedReason == RangerFeedingStoppedReasons.MainHopperEmpty )
                 {
                     lblNoItemsFound.Visibility = Visibility.Visible;
                 }
-
-                _firstNoItemsWarning = false;
             }
         }
 
@@ -471,11 +476,11 @@ namespace Rock.Apps.CheckScannerUtility
                 scannedDoc.CurrencyTypeValue = batchPage.SelectedCurrencyValue;
                 scannedDoc.SourceTypeValue = batchPage.SelectedSourceTypeValue;
 
-                scannedDoc.FrontImageData = GetImageBytesFromRanger( Sides.TransportFront );
+                scannedDoc.FrontImageData = GetImageBytesFromRanger( RangerSides.TransportFront );
 
                 if ( rockConfig.EnableRearImage )
                 {
-                    scannedDoc.BackImageData = GetImageBytesFromRanger( Sides.TransportRear );
+                    scannedDoc.BackImageData = GetImageBytesFromRanger( RangerSides.TransportRear );
                 }
 
                 if ( scannedDoc.IsCheck )
@@ -488,8 +493,8 @@ namespace Rock.Apps.CheckScannerUtility
                     string checkNumber = string.Empty;
 
                     // there should always be two transit symbols ('d').  The transit number is between them
-                    int transitSymbol1 = remainingMicr.IndexOf( 'd' );
-                    int transitSymbol2 = remainingMicr.LastIndexOf( 'd' );
+                    int transitSymbol1 = remainingMicr.IndexOf( (char)RangerE13BMicrSymbols.E13B_TransitSymbol );
+                    int transitSymbol2 = remainingMicr.LastIndexOf( (char)RangerE13BMicrSymbols.E13B_TransitSymbol );
                     int transitStart = transitSymbol1 + 1;
                     int transitLength = transitSymbol2 - transitSymbol1 - 1;
                     if ( transitLength > 0 )
@@ -498,17 +503,19 @@ namespace Rock.Apps.CheckScannerUtility
                         remainingMicr = remainingMicr.Remove( transitStart - 1, transitLength + 2 );
                     }
 
+                    char[] separatorSymbols = new char[] { (char)RangerE13BMicrSymbols.E13B_TransitSymbol, (char)RangerE13BMicrSymbols.E13B_OnUsSymbol, (char)RangerE13BMicrSymbols.E13B_AmountSymbol };
+                    
                     // the last 'On-Us' symbol ('c') signifies the end of the account number
-                    int lastOnUsPosition = remainingMicr.LastIndexOf( 'c' );
+                    int lastOnUsPosition = remainingMicr.LastIndexOf( (char)RangerE13BMicrSymbols.E13B_OnUsSymbol );
                     if ( lastOnUsPosition > 0 )
                     {
                         int accountNumberDigitPosition = lastOnUsPosition - 1;
 
-                        // read all digits to the left of the last 'c' until you run into another 'c' or 'd'
+                        // read all digits to the left of the last 'OnUs' until you run into another seperator symbol
                         while ( accountNumberDigitPosition >= 0 )
                         {
                             char accountNumberDigit = remainingMicr[accountNumberDigitPosition];
-                            if ( accountNumberDigit == 'c' || accountNumberDigit == 'd' )
+                            if ( separatorSymbols.Contains( accountNumberDigit ) )
                             {
                                 break;
                             }
@@ -525,21 +532,28 @@ namespace Rock.Apps.CheckScannerUtility
                     }
 
                     // any remaining digits that aren't the account number and transit number are probably the check number
-                    string[] remainingMicrParts = remainingMicr.Split( new char[] { 'c', ' ' }, StringSplitOptions.RemoveEmptyEntries );
+                    string[] remainingMicrParts = remainingMicr.Split( new char[] { (char)RangerE13BMicrSymbols.E13B_OnUsSymbol, ' ' }, StringSplitOptions.RemoveEmptyEntries );
+                    string otherData = null;
                     if ( remainingMicrParts.Any() )
                     {
                         checkNumber = remainingMicrParts.Last();
+                        
+                        // throw any remaining data into 'otherData' (a reject symbol could be in the other data)
+                        remainingMicr = remainingMicr.Replace( (char)RangerE13BMicrSymbols.E13B_OnUsSymbol, ' ' );
+                        remainingMicr = remainingMicr.Replace( checkNumber, string.Empty );
+                        otherData = remainingMicr;
                     }
 
                     scannedDoc.RoutingNumber = routingNumber;
                     scannedDoc.AccountNumber = accountNumber;
                     scannedDoc.CheckNumber = checkNumber;
+                    scannedDoc.OtherData = otherData;
 
                     scannedDoc.ScannedCheckMicrData = checkMicr;
 
                     // look for the "can't read" symbol (or completely blank read ) to detect if the check micr couldn't be read
                     // from http://www.sbulletsupport.com/forum/index.php?topic=172.0
-                    if ( checkMicr.Contains('!') || string.IsNullOrWhiteSpace(checkMicr) )
+                    if ( checkMicr.Contains( (char)RangerCommonSymbols.RangerRejectSymbol ) || string.IsNullOrWhiteSpace( checkMicr ) )
                     {
                         scannedDoc.BadMicr = true;
                         scannedDoc.Upload = false;
@@ -713,9 +727,9 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         /// <param name="side">The side.</param>
         /// <returns></returns>
-        private byte[] GetImageBytesFromRanger( Sides side )
+        private byte[] GetImageBytesFromRanger( RangerSides side )
         {
-            ImageColorType colorType = RockConfig.Load().ImageColorType;
+            RangerImageColorTypes colorType = RockConfig.Load().ImageColorType;
 
             int imageByteCount;
             imageByteCount = batchPage.rangerScanner.GetImageByteCount( (int)side, (int)colorType );
@@ -813,9 +827,13 @@ namespace Rock.Apps.CheckScannerUtility
         {
             RockRestClient client = EnsureUploadScanRestClient();
 
-            // upload image of front of doc
-            string frontImageFileName = string.Format( "image1_{0}.png", DateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
-            int frontImageBinaryFileId = client.UploadBinaryFile( frontImageFileName, Rock.Client.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid(), scannedDocInfo.FrontImagePngBytes, false );
+            // upload image of front of doc (if was successfully scanned)
+            int? frontImageBinaryFileId = null;
+            if ( scannedDocInfo.FrontImageData != null )
+            {
+                string frontImageFileName = string.Format( "image1_{0}.png", DateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
+                frontImageBinaryFileId = client.UploadBinaryFile( frontImageFileName, Rock.Client.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid(), scannedDocInfo.FrontImagePngBytes, false );
+            }
 
             // upload image of back of doc (if it exists)
             int? backImageBinaryFileId = null;
@@ -868,12 +886,15 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             // upload FinancialTransactionImage records for front/back
-            FinancialTransactionImage financialTransactionImageFront = new FinancialTransactionImage();
-            financialTransactionImageFront.BinaryFileId = frontImageBinaryFileId;
-            financialTransactionImageFront.TransactionId = uploadedTransactionId.Value;
-            financialTransactionImageFront.Order = 0;
-            financialTransactionImageFront.Guid = Guid.NewGuid();
-            client.PostData<FinancialTransactionImage>( "api/FinancialTransactionImages", financialTransactionImageFront );
+            if ( frontImageBinaryFileId.HasValue )
+            {
+                FinancialTransactionImage financialTransactionImageFront = new FinancialTransactionImage();
+                financialTransactionImageFront.BinaryFileId = frontImageBinaryFileId.Value;
+                financialTransactionImageFront.TransactionId = uploadedTransactionId.Value;
+                financialTransactionImageFront.Order = 0;
+                financialTransactionImageFront.Guid = Guid.NewGuid();
+                client.PostData<FinancialTransactionImage>( "api/FinancialTransactionImages", financialTransactionImageFront );
+            }
 
             if ( backImageBinaryFileId.HasValue )
             {
@@ -943,7 +964,6 @@ namespace Rock.Apps.CheckScannerUtility
         private bool _keepScanning;
         private int _itemsSkipped;
         private int _itemsScanned;
-        private bool _firstNoItemsWarning;
         private int _itemsUploaded;
 
         /// <summary>
@@ -955,9 +975,9 @@ namespace Rock.Apps.CheckScannerUtility
         {
             lblScannerNotReady.Visibility = Visibility.Collapsed;
 
-            XportStates[] xportStatesNotConnected = new XportStates[] { XportStates.TransportShutDown, XportStates.TransportShuttingDown, XportStates.TransportExceptionInProgress };
+            RangerTransportStates[] xportStatesNotConnected = new RangerTransportStates[] { RangerTransportStates.TransportShutDown, RangerTransportStates.TransportShuttingDown, RangerTransportStates.TransportExceptionInProgress };
 
-            var transportState = (XportStates)batchPage.rangerScanner.GetTransportState();
+            var transportState = (RangerTransportStates)batchPage.rangerScanner.GetTransportState();
             if ( xportStatesNotConnected.Contains( transportState ) )
             {
                 batchPage.ConnectToScanner();
@@ -985,9 +1005,6 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         public void StartScanning()
         {
-            _itemsUploaded = 0;
-            _itemsSkipped = 0;
-            _itemsScanned = 0;
             _keepScanning = true;
             ResumeScanning();
         }
@@ -1026,8 +1043,8 @@ namespace Rock.Apps.CheckScannerUtility
             if ( batchPage.rangerScanner != null )
             {
                 // StartFeeding doesn't work if the Scanner isn't in ReadyToFeed state, so assign StartRangerFeedingWhenReady if it isn't ready yet
-                XportStates xportState = (XportStates)batchPage.rangerScanner.GetTransportState();
-                if ( xportState == XportStates.TransportReadyToFeed )
+                RangerTransportStates xportState = (RangerTransportStates)batchPage.rangerScanner.GetTransportState();
+                if ( xportState == RangerTransportStates.TransportReadyToFeed )
                 {
                     batchPage.rangerScanner.StartFeeding( FeedSource.FeedSourceMainHopper, FeedItemCount.FeedOne );
                 }

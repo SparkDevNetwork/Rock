@@ -87,7 +87,19 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof( IEnumerable<Rock.Model.Person> ); }
+            get { return typeof( IEnumerable<KidInfo> ); }
+        }
+
+        /// <summary>
+        /// little class so that we only need to fetch the columns that we need from Person
+        /// </summary>
+        private class KidInfo
+        {
+            public string NickName { get; set; }
+            public string LastName { get; set; }
+            public int? SuffixValueId { get; set; }
+            public Gender Gender { get; set; }
+            public DateTime? BirthDate { get; set; }
         }
 
         /// <summary>
@@ -104,13 +116,13 @@ namespace Rock.Reporting.DataSelect.Person
             bool includeAge = selectionParts.Length > 1 && selectionParts[1].AsBoolean();
             callbackField.OnFormatDataValue += ( sender, e ) =>
             {
-                var personList = e.DataValue as IEnumerable<Rock.Model.Person>;
+                var personList = e.DataValue as IEnumerable<KidInfo>;
                 if ( personList != null )
                 {
                     var formattedList = new List<string>();
                     foreach ( var person in personList )
                     {
-                        var formattedPerson = person.FullName;
+                        var formattedPerson = Rock.Model.Person.FormatFullName( person.NickName, person.LastName, person.SuffixValueId );
                         var formattedGenderAge = string.Empty;
 
                         if ( includeGender && person.Gender != Gender.Unknown )
@@ -126,9 +138,11 @@ namespace Rock.Reporting.DataSelect.Person
                             }
                         }
 
-                        if ( includeAge && person.Age.HasValue )
+                        int? age = Rock.Model.Person.GetAge( person.BirthDate );
+
+                        if ( includeAge && age.HasValue )
                         {
-                            formattedGenderAge += " " + person.Age.Value.ToString();
+                            formattedGenderAge += " " + age.Value.ToString();
                         }
 
                         if ( !string.IsNullOrWhiteSpace( formattedGenderAge ) )
@@ -204,7 +218,14 @@ namespace Rock.Reporting.DataSelect.Person
                     .SelectMany( m => m.Group.Members )
                     .Where( m => m.GroupRole.Guid == childGuid )
                     .OrderBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay )
-                    .Select( m => m.Person ).AsEnumerable() );
+                    .Select( m => new KidInfo 
+                    {
+                        NickName = m.Person.NickName,
+                        LastName = m.Person.LastName,
+                        SuffixValueId = m.Person.SuffixValueId,
+                        Gender = m.Person.Gender,
+                        BirthDate = m.Person.BirthDate
+                    }).AsEnumerable() );
 
             var selectChildrenExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personChildrenQuery, entityIdProperty, "p" );
 

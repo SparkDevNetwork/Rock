@@ -271,8 +271,9 @@ namespace RockWeb.Blocks.Reporting
                     schedule.iCalendarContent = sbSchedule.iCalendarContent;
                 }
 
-                if ( !schedule.HasSchedule() )
+                if ( !schedule.HasSchedule() && scheduleSelectionType == ScheduleSelectionType.Unique )
                 {
+                    // don't save as a unique schedule if the schedule doesn't do anything
                     schedule = null;
                 }
                 else

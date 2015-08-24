@@ -552,7 +552,7 @@ namespace RockWeb.Blocks.Cms
                 bool readOnly = false;
                 nbEditModeMessage.Text = string.Empty;
 
-                if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
+                if ( !editAllowed )
                 {
                     readOnly = true;
                     nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ContentChannel.FriendlyTypeName );
