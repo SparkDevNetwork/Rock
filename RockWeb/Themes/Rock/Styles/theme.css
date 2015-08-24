@@ -5928,9 +5928,13 @@ div.aspNetDisabled {
 */
 /*#region
 // 1. HTML Overrides         */
+@-ms-viewport {
+  width: device-width;
+}
 html {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  -ms-overflow-style: scrollbar;
 }
 main {
   display: block;
