@@ -39,10 +39,12 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [WorkflowAttribute( "Connection Opportunity Attribute", "The attribute that contains the type of connection opportunity to create.", true, "", "", 1, null,
         new string[] { "Rock.Field.Types.ConnectionOpportunityFieldType" } )]
-    [ConnectionStatusField( "Connection Status", "The status of the request to create. If not specified (or if status selected is for the wrong connextion type) the connection type's default status will be used.", false, "", "", 2 )]
-    [WorkflowAttribute( "Campus Attribute", "An optional attribute that contains the campus to use for the request.", false, "", "", 2, null,
+    [WorkflowAttribute( "Connection Status Attribute", "The attribute that contains the connection status to use for the new request.", false, "", "", 2, null,
+        new string[] { "Rock.Field.Types.ConnectionStatusFieldType" } )]
+    [ConnectionStatusField( "Connection Status", "The connection status to use for the new request (when Connection Status Attribute is not specified or invalid). If neither this setting or the Connection Status Attribute setting are set, the default status will be used.", false, "", "", 3 )]
+    [WorkflowAttribute( "Campus Attribute", "An optional attribute that contains the campus to use for the request.", false, "", "", 4, null,
         new string[] { "Rock.Field.Types.CampusFieldType" } )]
-    [WorkflowAttribute( "Connection Request Attribute", "An optional connection request attribute to store the request that is created.", false, "", "", 4, null,
+    [WorkflowAttribute( "Connection Request Attribute", "An optional connection request attribute to store the request that is created.", false, "", "", 5, null,
         new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
 
     public class CreateConnectionRequest : ActionComponent
@@ -81,12 +83,27 @@ namespace Rock.Workflow.Action
 
             // Get connection status
             ConnectionStatus status = null;
-            Guid? connectionStatusGuid = GetAttributeValue( action, "ConnectionStatus" ).AsGuidOrNull();
-            if ( connectionStatusGuid.HasValue )
+            Guid? connectionStatusGuid = null;
+            Guid? connectionStatusAttributeGuid = GetAttributeValue( action, "ConnectionStatusAttribute" ).AsGuidOrNull();
+            if ( connectionStatusAttributeGuid.HasValue )
             {
-                status = opportunity.ConnectionType.ConnectionStatuses
-                    .Where( s => s.Guid.Equals( connectionStatusGuid.Value ))
-                    .FirstOrDefault();
+                connectionStatusGuid = action.GetWorklowAttributeValue( connectionStatusAttributeGuid.Value ).AsGuidOrNull();
+                if ( connectionStatusGuid.HasValue )
+                {
+                    status = opportunity.ConnectionType.ConnectionStatuses
+                        .Where( s => s.Guid.Equals( connectionStatusGuid.Value ) )
+                        .FirstOrDefault();
+                }
+            }
+            if ( status == null )
+            {
+                connectionStatusGuid = GetAttributeValue( action, "ConnectionStatus" ).AsGuidOrNull();
+                if ( connectionStatusGuid.HasValue )
+                {
+                    status = opportunity.ConnectionType.ConnectionStatuses
+                        .Where( s => s.Guid.Equals( connectionStatusGuid.Value ) )
+                        .FirstOrDefault();
+                }
             }
             if ( status == null )
             {

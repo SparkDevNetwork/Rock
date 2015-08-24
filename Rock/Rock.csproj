@@ -143,6 +143,7 @@
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
     <Compile Include="Attribute\ConnectionActivityTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\ConnectionStateFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionStatusFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionOpportunityFieldAttribute.cs" />
     <Compile Include="Attribute\EventItemFieldAttribute.cs" />
@@ -246,11 +247,13 @@
     <Compile Include="Field\Types\ConnectionActivityTypeFieldType.cs" />
     <Compile Include="Field\Types\ConnectionStatusFieldType.cs" />
     <Compile Include="Field\Types\ConnectionOpportunityFieldType.cs" />
+    <Compile Include="Field\Types\ConnectionStateFieldType.cs" />
     <Compile Include="Field\Types\EventCalendarFieldType.cs" />
     <Compile Include="Field\Types\EventItemFieldType.cs" />
     <Compile Include="Field\Types\ConnectionRequestFieldType.cs" />
     <Compile Include="Field\Types\NoteTypesFieldType.cs" />
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
+    <Compile Include="Field\Types\EnumFieldType.cs" />
     <Compile Include="Follow\Event\PersonFirstAttendedGroupType.cs" />
     <Compile Include="Follow\Event\PersonFirstJoinedGroupType.cs" />
     <Compile Include="Follow\Event\PersonBaptized.cs" />
@@ -1086,6 +1089,8 @@
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
     <Compile Include="Workflow\Action\AssignActivityToGroup.cs" />
     <Compile Include="Workflow\Action\AddConnectionRequestActivity.cs" />
+    <Compile Include="Workflow\Action\SetConnectionRequestState.cs" />
+    <Compile Include="Workflow\Action\SetConnectionRequestStatus.cs" />
     <Compile Include="Workflow\Action\CreateConnectionRequest.cs" />
     <Compile Include="Workflow\Action\Delay.cs" />
     <Compile Include="Workflow\Action\DeleteWorkflow.cs" />
