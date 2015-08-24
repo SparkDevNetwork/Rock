@@ -86,6 +86,8 @@ namespace RockWeb.Blocks.Core
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upDetail );
+
+            mdCategoryDetailConfig.Visible = false;
         }
 
         /// <summary>
@@ -527,6 +529,7 @@ namespace RockWeb.Blocks.Core
                 cpExcludeCategoriesDetail.SetValue( null );
             }
 
+            mdCategoryDetailConfig.Visible = true;
             mdCategoryDetailConfig.Show();
         }
 
@@ -555,6 +558,7 @@ namespace RockWeb.Blocks.Core
 
             this.SaveAttributeValues();
 
+            mdCategoryDetailConfig.Visible = false;
             mdCategoryDetailConfig.Hide();
             Block_BlockUpdated( sender, e );
         }
