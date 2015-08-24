@@ -3538,7 +3538,8 @@ fieldset .actions {
 .datepicker table thead th.next {
   text-align: right;
 }
-.datepicker table td.active {
+.datepicker table td.active,
+.datepicker table td.today {
   background-color: #222222;
   color: #d5d5d5;
 }
