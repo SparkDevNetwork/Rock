@@ -29,11 +29,11 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Sends a Background Check Request.
+    /// Creates a new connection request.
     /// </summary>
-    [Description( "Sends a Background Check Request." )]
+    [Description( "Creates a new connection request." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Create Connection Reques" )]
+    [ExportMetadata( "ComponentName", "Create Connection Request" )]
 
     [WorkflowAttribute( "Person Attribute", "The Person attribute that contains the person that connection request should be created for.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
@@ -42,7 +42,7 @@ namespace Rock.Workflow.Action
     [ConnectionStatusField( "Connection Status", "The status of the request to create. If not specified (or if status selected is for the wrong connextion type) the connection type's default status will be used.", false, "", "", 2 )]
     [WorkflowAttribute( "Campus Attribute", "An optional attribute that contains the campus to use for the request.", false, "", "", 2, null,
         new string[] { "Rock.Field.Types.CampusFieldType" } )]
-    [WorkflowAttribute( "Connection Request Attribute", "An optional connection request attribute to store the request that is created.", true, "", "", 4, null,
+    [WorkflowAttribute( "Connection Request Attribute", "An optional connection request attribute to store the request that is created.", false, "", "", 4, null,
         new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
 
     public class CreateConnectionRequest : ActionComponent
@@ -59,12 +59,8 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            PersonAlias personAlias = null;
-            ConnectionOpportunity opportunity = null;
-            ConnectionStatus status = null;
-            int? campusId = null;
-
             // Get the person
+            PersonAlias personAlias = null;
             Guid personAliasGuid = action.GetWorklowAttributeValue(GetAttributeValue( action, "PersonAttribute" ).AsGuid()).AsGuid();
             personAlias = new PersonAliasService( rockContext ).Get( personAliasGuid );
             if ( personAlias == null )
@@ -74,6 +70,7 @@ namespace Rock.Workflow.Action
             }
 
             // Get the opportunity
+            ConnectionOpportunity opportunity = null;
             Guid opportunityTypeGuid = action.GetWorklowAttributeValue( GetAttributeValue( action, "ConnectionOpportunityAttribute" ).AsGuid() ).AsGuid();
             opportunity = new ConnectionOpportunityService( rockContext ).Get( opportunityTypeGuid );
             if ( opportunity == null )
@@ -83,6 +80,7 @@ namespace Rock.Workflow.Action
             }
 
             // Get connection status
+            ConnectionStatus status = null;
             Guid? connectionStatusGuid = GetAttributeValue( action, "ConnectionStatus" ).AsGuidOrNull();
             if ( connectionStatusGuid.HasValue )
             {
@@ -98,6 +96,7 @@ namespace Rock.Workflow.Action
             }
 
             // Get Campus
+            int? campusId = null;
             Guid? campusAttributeGuid = GetAttributeValue( action, "CampusAttribute" ).AsGuidOrNull();
             if ( campusAttributeGuid.HasValue )
             {
@@ -112,14 +111,27 @@ namespace Rock.Workflow.Action
                 }
             }
 
+            var connectionRequestService = new ConnectionRequestService( rockContext );
+
             var connectionRequest = new ConnectionRequest();
             connectionRequest.PersonAliasId = personAlias.Id;
             connectionRequest.ConnectionOpportunityId = opportunity.Id;
             connectionRequest.ConnectionState = ConnectionState.Active;
             connectionRequest.ConnectionStatusId = status.Id;
             connectionRequest.CampusId = campusId;
-            new ConnectionRequestService( rockContext ).Add( connectionRequest );
+            connectionRequestService.Add( connectionRequest );
             rockContext.SaveChanges();
+
+            // If request attribute was specified, requery the request and set the attribute's value
+            Guid? connectionRequestAttributeGuid = GetAttributeValue( action, "ConnectionRequestAttribute" ).AsGuidOrNull();
+            if ( connectionRequestAttributeGuid.HasValue )
+            {
+                connectionRequest = connectionRequestService.Get( connectionRequest.Id );
+                if ( connectionRequest != null )
+                {
+                    SetWorkflowAttributeValue( action, connectionRequestAttributeGuid.Value, connectionRequest.Guid.ToString() );
+                }
+            }
 
             return true;
         }
