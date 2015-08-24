@@ -111,7 +111,6 @@ namespace Rock.Web.UI.Controls
             if ( isEnabled && this.Page != null )
             {
                 PostBackOptions postBackOptions = this.GetPostBackOptions();
-                postBackOptions.RequiresJavaScriptProtocol = false;
                 if ( postBackOptions != null )
                 {
                     postBackEventReference = this.Page.ClientScript.GetPostBackEventReference( postBackOptions, true );
@@ -123,7 +122,8 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "data-loading-text", DataLoadingText );
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Href, "javascript:Rock.controls.bootstrapButton.showLoading(this);" + postBackEventReference );
+            writer.AddAttribute( HtmlTextWriterAttribute.Onclick, "Rock.controls.bootstrapButton.showLoading(this);" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Href, postBackEventReference );
         }
 
     }

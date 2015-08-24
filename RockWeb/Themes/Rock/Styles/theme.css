@@ -2830,7 +2830,7 @@ iframe.email-body {
   Used to manage styles related to reusable components / widgets.
 
   1. Pickers - used to pick complex data types
-  2. Banner - used as the primary heading for a page or large section
+  2. 
   3. Tree - used for tree control
   4. Person List - used to show a list of people
   5. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
@@ -2864,7 +2864,7 @@ iframe.email-body {
   33. Wizard
   34. Checkbox
   35. Follow button
-  36. Number Range Editor
+  36. Range Editors
 
   xx. Misc
 */
@@ -3008,38 +3008,6 @@ iframe.email-body {
   margin-top: inherit;
   margin-right: 0;
 }
-/*.banner
-{
-  color: @banner-text-color;
-  background-color: @banner-bg;
-  border-radius: @banner-border-radius;
-  border: @banner-border-size solid @banner-border-color;
-  font-weight: @banner-font-weight;
-  font-size: @banner-font-size;
-  padding: @banner-padding;
-  margin: 0 0 @spacing-md-px;
-  .clearfix;
-
-  h1 {
-    float: left;
-    margin: 0;
-    font-weight: @banner-font-weight;
-
-    .first-word {
-      font-weight: @banner-firstword-weight;
-    }
-
-    i {
-      margin-right: @spacing-md-px;
-    }
-  }
-
-  .label {
-    float: right;
-    margin-top: @spacing-md-px;
-    margin-left: @spacing-md-px;
-  }
-}*/
 ul.rocktree,
 ul.rocktree ul {
   list-style-type: none;
@@ -3533,6 +3501,9 @@ fieldset .actions {
 }
 .code-editor {
   position: relative;
+}
+.label a {
+  color: #fff;
 }
 .label-campus {
   background-color: #83758f;
@@ -4428,6 +4399,9 @@ ul.list-group-panel .list-group-item:first-child,
   content: "\f005";
 }
 .number-range-editor .form-control-group .form-control {
+  margin-bottom: 6px;
+}
+.date-range-picker .input-group {
   margin-bottom: 6px;
 }
 /*
@@ -5925,9 +5899,13 @@ div.aspNetDisabled {
 */
 /*#region
 // 1. HTML Overrides         */
+@-ms-viewport {
+  width: device-width;
+}
 html {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  -ms-overflow-style: scrollbar;
 }
 main {
   display: block;

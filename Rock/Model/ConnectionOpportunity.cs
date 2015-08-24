@@ -123,7 +123,12 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember]
-        public bool IsActive { get; set; }
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+        private bool _isActive = true;
 
         /// <summary>
         /// Gets or sets the group member role identifier.

@@ -354,6 +354,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     case ContentChannelItemStatus.Approved: hlStatus.LabelType = LabelType.Success; break;
                     case ContentChannelItemStatus.Denied: hlStatus.LabelType = LabelType.Danger; break;
+                    case ContentChannelItemStatus.PendingApproval: hlStatus.LabelType = LabelType.Warning; break;
                     default: hlStatus.LabelType = LabelType.Default; break;
                 }
 
@@ -421,6 +422,7 @@ namespace RockWeb.Blocks.Cms
                     var qryParams = new Dictionary<string, string> { { "EventItemOccurrenceId", occurrence.Id.ToString() } };
                     string url = LinkedPageUrl( "EventOccurrencePage", qryParams );
                     var hlOccurrence = new HighlightLabel();
+                    hlOccurrence.LabelType = LabelType.Info;
                     hlOccurrence.ID = string.Format( "hlOccurrence_{0}", occurrence.Id );
                     hlOccurrence.Text = string.Format( "<a href='{0}'>{1}</a>", url, occurrence.ToString() );
                     phOccurrences.Controls.Add( hlOccurrence );

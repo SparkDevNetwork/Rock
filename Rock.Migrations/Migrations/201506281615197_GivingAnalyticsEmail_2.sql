@@ -236,6 +236,7 @@ BEGIN
 		[p].[Guid],
 		[p].[NickName],
 		[p].[LastName],
+        [p].[Email],
 		[p].[GivingId]
 '		
 
