@@ -96,6 +96,18 @@ namespace Rock.Apps.CheckScannerUtility
             rockConfig.EnableDoubleDocDetection = chkDoubleDocDetection.IsChecked == true;
             rockConfig.EnableSmartScan = chkEnableSmartScan.IsChecked == true;
 
+            if (cboTransactionSourceType.SelectedItem == null)
+            {
+                lblTransactionSourceType.Style = this.FindResource( "labelStyleError" ) as Style;
+                return;
+            }
+            else
+            {
+                lblTransactionSourceType.Style = this.FindResource( "labelStyle" ) as Style;
+            }
+
+            rockConfig.SourceTypeValueGuid = ( cboTransactionSourceType.SelectedItem as DefinedValue ).Guid.ToString();
+
             rockConfig.Save();
 
             // restart the scanner so that options will be reloaded
@@ -176,6 +188,10 @@ namespace Rock.Apps.CheckScannerUtility
                 spRangerScanSettings.Visibility = Visibility.Collapsed;
                 spMagTekScanSettings.Visibility = Visibility.Visible;
             }
+
+            cboTransactionSourceType.DisplayMemberPath = "Value";
+            cboTransactionSourceType.ItemsSource = this.BatchPage.SourceTypeValueListSelectable.OrderBy( a => a.Order ).ThenBy( a => a.Value ).ToList();
+            cboTransactionSourceType.SelectedItem = ( cboTransactionSourceType.ItemsSource as List<DefinedValue> ).FirstOrDefault( a => a.Guid == rockConfig.SourceTypeValueGuid.AsGuid() );
         }
     }
 }
