@@ -470,7 +470,7 @@ namespace RockWeb.Blocks.Finance
 
             var summaryList = accountSummaryQry.ToList();
             var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
-            string currencyFormat = GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0}";
+            string currencyFormat = GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:n}";
             lGrandTotal.Text = string.Format( currencyFormat, grandTotalAmount );
             rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = string.Format( currencyFormat, a.TotalAmount ) } ).ToList();
             rptAccountSummary.DataBind();
