@@ -389,7 +389,7 @@ namespace RockWeb.Blocks.Cms
                     i.ExpireDateTime,
                     i.Priority,
                     Status = DisplayStatus( i.Status ),
-                    Occurrences = i.EventItemOccurrences.Count()
+                    Occurrences = i.EventItemOccurrences.Any()
                 } ).ToList();
                 gItems.DataBind();
             }
