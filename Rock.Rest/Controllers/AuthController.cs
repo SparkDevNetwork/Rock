@@ -99,6 +99,26 @@ namespace Rock.Rest.Controllers
             }
         }
 
+        /// <summary>
+        /// Use this to Login a user and return an AuthCookie which can be used in subsequent REST calls
+        /// </summary>
+        /// <param name="loginParameters">The login parameters.</param>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [HttpPost]
+        [System.Web.Http.Route( "api/Auth/TwitterLogin" )]
+        public void TwitterLogin( [FromBody]Rock.Security.ExternalAuthentication.Twitter.TwitterUser twitterUser )
+        {
+            string userName = Rock.Security.ExternalAuthentication.Twitter.GetTwitterUser( twitterUser );
+            if ( !string.IsNullOrWhiteSpace( userName ) )
+            {
+                Rock.Security.Authorization.SetAuthCookie( userName, false, false );
+            }
+            else
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+        }
+
     }
 
 }
