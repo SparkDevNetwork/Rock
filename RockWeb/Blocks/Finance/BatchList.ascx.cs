@@ -452,7 +452,20 @@ namespace RockWeb.Blocks.Finance
                     ControlAmount = b.ControlAmount,
                     CampusName = b.Campus != null ? b.Campus.Name : "",
                     Status = b.Status,
-                    UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue )
+                    UnMatchedTxns = b.Transactions.Any( t => !t.AuthorizedPersonAliasId.HasValue ),
+                    BatchNote = b.Note,
+                    AccountSummaryList = b.Transactions
+                        .SelectMany( t => t.TransactionDetails )
+                        .GroupBy( d => d.AccountId )
+                        .Select( s => new BatchAccountSummary
+                        {
+                            AccountId = s.Key,
+                            AccountOrder = s.Max( d => d.Account.Order),
+                            AccountName = s.Max( d => d.Account.Name ),
+                            Amount =  s.Sum( d => (decimal?)d.Amount ) ?? 0.0M
+                        } )
+                        .OrderBy( s => s.AccountOrder )
+                        .ToList()
                 } );
 
             gBatchList.SetLinqDataSource( batchRowQry.AsNoTracking() );
@@ -591,33 +604,48 @@ namespace RockWeb.Blocks.Finance
 
         #region Helper Class
 
+        public class BatchAccountSummary
+        {
+            public int AccountId {get; set;}
+            public int AccountOrder { get; set; }
+            public string AccountName { get; set; }
+            public decimal Amount {get; set;}
+            public override string ToString()
+            {
+                return string.Format( "{0}: {1:C2}", AccountName, Amount );
+            }
+        }
+
         public class BatchRow
         {
             public int Id { get; set; }
-
             public DateTime BatchStartDateTime { get; set; }
-
             public string Name { get; set; }
-
             public string AccountingSystemCode { get; set; }
-
             public int TransactionCount { get; set; }
-
             public decimal TransactionAmount { get; set; }
-
             public decimal ControlAmount { get; set; }
-
+            public List<BatchAccountSummary> AccountSummaryList { get; set; }
             public string CampusName { get; set; }
-
             public BatchStatus Status { get; set; }
-
             public bool UnMatchedTxns { get; set; }
+            public string BatchNote { get; set; }
 
             public decimal Variance
             {
                 get
                 {
                     return TransactionAmount - ControlAmount;
+                }
+            }
+
+            public string AccountSummaryText
+            {
+                get 
+                {
+                    var summary = new List<string>();
+                    AccountSummaryList.ForEach( a => summary.Add( a.ToString() ) );
+                    return "<small>" + summary.AsDelimited( "<br/>" ) + "</small>";
                 }
             }
 
@@ -628,6 +656,7 @@ namespace RockWeb.Blocks.Finance
                     return Status.ConvertToString();
                 }
             }
+
 
             public string StatusLabelClass
             {
@@ -662,6 +691,8 @@ namespace RockWeb.Blocks.Finance
                                 break;
                             }
                     }
+
+                    notes.Append( BatchNote );
 
                     return notes.ToString();
                 }
