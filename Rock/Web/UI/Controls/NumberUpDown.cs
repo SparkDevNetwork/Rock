@@ -263,42 +263,6 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        /// <summary>
-        /// Gets or sets the number CSS class.
-        /// </summary>
-        /// <value>
-        /// The number CSS class.
-        /// </value>
-        public string NumberDisplayCssClass
-        {
-            get { return ViewState["NumberCssClass"] as string ?? "form-control input-width-xs"; }
-            set { ViewState["NumberCssClass"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the button CSS class.
-        /// </summary>
-        /// <value>
-        /// The button CSS class.
-        /// </value>
-        public string ButtonCssClass
-        {
-            get { return ViewState["ButtonCssClass"] as string ?? "btn btn-default margin-l-sm"; }
-            set { ViewState["ButtonCssClass"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the icon CSS class.
-        /// </summary>
-        /// <value>
-        /// The icon CSS class.
-        /// </value>
-        public string IconCssClass
-        {
-            get { return ViewState["IconCssClass"] as string ?? string.Empty; }
-            set { ViewState["IconCssClass"] = value; }
-        }
-
         #endregion
 
         #region Constructor
@@ -375,30 +339,30 @@ namespace Rock.Web.UI.Controls
             Value = Value > Maximum ? Maximum : Value;
             Value = Value < Minimum ? Minimum : Value;
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group numberincrement " + CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _hfMin.RenderControl( writer );
             _hfMax.RenderControl( writer );
             _hfNumber.RenderControl( writer );
 
-            _lblNumber.CssClass = "js-number-up-down-lbl " + NumberDisplayCssClass;
-            _lblNumber.RenderControl( writer );
-
-            string disabledMaxCss = Value >= Maximum ? "disabled " : "";
-            writer.AddAttribute( HtmlTextWriterAttribute.Onclick, "Rock.controls.numberUpDown.adjust( this, 1 );" );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-number-up " + disabledMaxCss + ButtonCssClass );
+            string disabledMinCss = Value <= Minimum ? "disabled " : "";
+            writer.AddAttribute( HtmlTextWriterAttribute.Onclick, "Rock.controls.numberUpDown.adjust( this, -1 );" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-number-down numberincrement-down " + disabledMinCss );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus " + IconCssClass );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-minus " );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();
             writer.RenderEndTag();
 
-            string disabledMinCss = Value <= Minimum ? "disabled " : "";
-            writer.AddAttribute( HtmlTextWriterAttribute.Onclick, "Rock.controls.numberUpDown.adjust( this, -1 );" );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-number-down " + disabledMinCss + ButtonCssClass );
+            _lblNumber.CssClass = "js-number-up-down-lbl numberincrement-value ";
+            _lblNumber.RenderControl( writer );
+
+            string disabledMaxCss = Value >= Maximum ? "disabled " : "";
+            writer.AddAttribute( HtmlTextWriterAttribute.Onclick, "Rock.controls.numberUpDown.adjust( this, 1 );" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-number-up numberincrement-up " + disabledMaxCss );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-minus " + IconCssClass );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus " );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();
             writer.RenderEndTag();
