@@ -3018,7 +3018,7 @@ iframe.email-body {
 .numberincrement .numberincrement-up,
 .numberincrement .numberincrement-down {
   background-color: #edeae6;
-  padding: 12px 20px;
+  padding: 6px 12px;
   border: 1px solid #cccccc;
   color: #555555;
   cursor: pointer;
@@ -3035,10 +3035,24 @@ iframe.email-body {
   border-radius: 0 4px 4px 0;
 }
 .numberincrement .numberincrement-value {
-  padding: 12px 18px;
+  padding: 6px 18px;
   border-color: #cccccc;
   border-width: 1px 0;
   border-style: solid;
+}
+.numberincrement.input-sm .numberincrement-up,
+.numberincrement.input-sm .numberincrement-down {
+  padding: 5px 8px;
+}
+.numberincrement.input-sm .numberincrement-value {
+  padding: 5px 12px;
+}
+.numberincrement.input-lg .numberincrement-up,
+.numberincrement.input-lg .numberincrement-down {
+  padding: 12px 20px;
+}
+.numberincrement.input-lg .numberincrement-value {
+  padding: 12px 18px;
 }
 ul.rocktree,
 ul.rocktree ul {
