@@ -1,7 +1,7 @@
 
 
 //
-// CARD PANELS (Bootstrap Extension)
+// CARD PANELS (Used by /events)
 // --------------------------------------------------
 
 // Base
@@ -42,16 +42,33 @@
 // -------------------------
 
 .panel-card-withimg {
-  .panel-body {
-    background-position: center center;
+  .panel-card-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-size: cover;
-    background-repeat: none;
-    &:hover .panel-title {
-      background: rgba(0,0,0,.25);
+    background-position: center center;
+    border-radius: @border-radius-base @border-radius-base 0 0;
+    &:before {
+      background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.8) 100%);
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
     }
   }
+}
+
+.panel-card-withimg.panel-card-hideoverlay {
+  .panel-card-img:before {
+    display: none;
+  }
   .panel-title {
-    .transition(background .3s);
+    .sr-only();
   }
 }
 
@@ -64,15 +81,6 @@
 }
 
 // Color
-
-.panel-card-light {
-  .panel-body {
-    color: @text-color;
-    &:hover .panel-title {
-      background: rgba(255,255,255,.5);
-    }
-  }
-}
 
 .panel-card-primary {
   .panel-body {

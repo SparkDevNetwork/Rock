@@ -1,5 +1,3 @@
-{{ "../Styles/pages/events.css" | AddLinkTagToHead:'rel','stylesheet' }}
-
 
 <h2 class="page-header">July</h2>
 
@@ -7,7 +5,21 @@
 
   <div class="col-sm-12 col-md-8 col-lg-6">
     <div class="panel panel-default panel-card panel-card-light panel-card-withimg">
-      <a class="panel-body" href="#" style="background-image: url('http://ccv.church/Arena/cachedblob.aspx?guid=34cf4480-ac44-488d-abf5-de5ca0f495a8');">
+      <a class="panel-body" href="#">
+        <div class="panel-card-img" style="background-image: url('http://ccv.church/Arena/cachedblob.aspx?guid=34cf4480-ac44-488d-abf5-de5ca0f495a8');"></div>
+        <h3 class="panel-title">Super Event 1</h3>
+      </a>
+      <div class="panel-footer clearfix">
+        <a class="btn btn-default btn-sm pull-right" href="#">More <i class="fa fa-caret-right"></i></a>
+        Mon 7/4/15 6-7pm
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-12 col-md-8 col-lg-6">
+    <div class="panel panel-default panel-card panel-card-light panel-card-withimg panel-card-hideoverlay">
+      <a class="panel-body" href="#">
+        <div class="panel-card-img" style="background-image: url('http://ccv.church/Arena/cachedblob.aspx?guid=34cf4480-ac44-488d-abf5-de5ca0f495a8');"></div>
         <h3 class="panel-title">Super Event 1</h3>
       </a>
       <div class="panel-footer clearfix">

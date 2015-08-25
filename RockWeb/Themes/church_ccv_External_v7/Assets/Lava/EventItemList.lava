@@ -1,70 +1,98 @@
-{{ "../Styles/pages/events.css" | AddLinkTagToHead:'rel','stylesheet' }}
 {% assign firstEventOccurrenceSummary = EventOccurrenceSummaries | First %}
 {% assign firstMonth = firstEventOccurrenceSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'MMMM' %}
 {% assign currentMonth = firstMonth %}
 
 {% assign tier1Classes = "panel panel-card panel-card-half" %}
 {% assign tier2Classes = "panel panel-card panel-card-half panel-card-black" %}
-{% assign tier3Classes = "panel panel-card panel-card-half panel-card-red" %}
+{% assign tier3Classes = "panel panel-card panel-card-half panel-card-primary" %}
 {% assign tier4Classes = "panel panel-default panel-card" %}
 
-{% assign fullSizeClasses = "col-sm-12 col-md-8 col-lg-6" %}
-{% assign halfSizeClasses = "col-sm-6 col-md-4 col-lg-3" %}
+{% assign fullSizeClasses = "masonry-item col-xs-12 col-sm-12 col-md-8 col-lg-6" %}
+{% assign halfSizeClasses = "masonry-item col-xs-12 col-sm-6 col-md-4 col-lg-3" %}
 
 <h2 class="page-header">{{ firstMonth }}</h2>
 
-<div class="row">
+<div class="row masonry">
 
   {% for eventOccurrenceSummary in EventOccurrenceSummaries %}
+    {% if eventOccurrenceSummary.EventItem.IsApproved %}
 
-    {% assign thisMonth = eventOccurrenceSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'MMMM' %}
-    {% comment %} EventCalendarId 1 is public calendar {% endcomment %}
-    {% assign eventCalendarItems = eventOccurrenceSummary.EventItem.EventCalendarItems | Where: 'EventCalendarId', 1 %}
-    {% assign tierLevel = 0 %}
-    {% assign tierLevel = eventCalendarItems[0] | Attribute: 'TierLevel' %}
+      {% comment %} EventCalendarId 1 is public calendar {% endcomment %}
+      {% assign eventCalendarItem = eventOccurrenceSummary.EventItem.EventCalendarItems | Where: 'EventCalendarId', 1 | First %}
 
-    {% case tierLevel %}
-      {% when 1 %}
-        {% assign cardClasses = tier1Classes %}
-        {% assign wrapperClasses = halfSizeClasses %}
-      {% when 2 %}
-        {% assign cardClasses = tier2Classes %}
-        {% assign wrapperClasses = halfSizeClasses %}
-      {% when 3 %}
-        {% assign cardClasses = tier3Classes %}
-        {% assign wrapperClasses = halfSizeClasses %}
-      {% when 4 %}
-        {% assign cardClasses = tier4Classes %}
-        {% assign wrapperClasses = fullSizeClasses %}
-      {% else %}
-        {% assign cardClasses = tier1Classes %}
-        {% assign wrapperClasses = halfSizeClasses %}
-    {% endcase %}
+      {% assign tierLevel = 0 %} {% comment %} Reset {% endcomment %}
+      {% assign tierLevel = eventCalendarItem | Attribute: 'TierLevel' %}
 
-    {% if thisMonth != currentMonth %}
+      {% case tierLevel %}
+        {% when 1 %}
+          {% assign cardClasses = tier1Classes %}
+          {% assign wrapperClasses = halfSizeClasses %}
+        {% when 2 %}
+          {% assign cardClasses = tier2Classes %}
+          {% assign wrapperClasses = halfSizeClasses %}
+        {% when 3 %}
+          {% assign cardClasses = tier3Classes %}
+          {% assign wrapperClasses = halfSizeClasses %}
+        {% when 4 %}
+          {% assign cardClasses = tier4Classes %}
+          {% assign wrapperClasses = fullSizeClasses %}
+        {% else %}
+          {% assign cardClasses = tier1Classes %}
+          {% assign wrapperClasses = halfSizeClasses %}
+      {% endcase %}
+
+      {% assign panelCardImg = "" %}
+      {% if eventOccurrenceSummary.EventItem.Photo and tierLevel == 4 %}
+        {% capture cardClasses %}{{ cardClasses }} panel-card-withimg{% endcapture %}
+        {% capture panelCardImg %}<div class="panel-card-img" style="background-image: url('{{ eventOccurrenceSummary.EventItem.Photo.Url }}');"></div>{% endcapture %}
+      {% endif %}
+
+      {% assign overlayTextColor = "" %} {% comment %} Reset {% endcomment %}
+      {% assign overlayTextColor = eventCalendarItem | Attribute: 'OverlayTextColor' %}
+      {% if overlayTextColor == "dark" %}
+        {% capture cardClasses %}{{ cardClasses }} panel-card-light{% endcapture %}
+      {% endif %}
+
+      {% assign thisMonth = eventOccurrenceSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'MMMM' %}
+
+      {% if thisMonth != currentMonth %}
+  <div class="masonry-sizer {{ halfSizeClasses }}"></div>
 </div>
 <h2 class="page-header">{{ thisMonth }}</h2>
 
-<div class="row">
-    {% endif %}
+<div class="row masonry">
+      {% endif %}
 
-    <div class="{{ wrapperClasses }}">
-      <div class="{{ cardClasses }}" href="#">
-        <a class="panel-body" href="#">
-          <h3 class="panel-title">{{ eventOccurrenceSummary.Name }}</h3>
-        </a>
-        <div class="panel-footer clearfix">
-          {% if DetailsPage != empty %}
-            <a class="btn btn-default btn-sm pull-right" href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}">More <i class="fa fa-caret-right"></i></a>
-          {% endif %}
-          {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'ddd, MMM d / h:mmtt' }}
+      <div class="{{ wrapperClasses }}">
+        <div class="{{ cardClasses }}">
+          <a class="panel-body" href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}">
+            {{ panelCardImg }}
+            <h3 class="panel-title">{{ eventOccurrenceSummary.Name }}</h3>
+          </a>
+          <div class="panel-footer clearfix">
+            {% if DetailsPage != empty %}
+              <a class="btn btn-default btn-sm pull-right" href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}">More <i class="fa fa-caret-right"></i></a>
+            {% endif %}
+            {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'ddd, MMM d / h:mmtt' }}
+          </div>
         </div>
       </div>
-    </div>
 
-    {% assign currentMonth = thisMonth %}
+      {% assign currentMonth = thisMonth %}
 
+    {% endif %}
   {% endfor %}
 
+  <div class="masonry-sizer {{ halfSizeClasses }}"></div>
+
 </div>
+
+<script src="/Themes/church_ccv_External_v7/Scripts/Vendor/masonry.pkgd.min.js"></script>
+<script>
+  $('.masonry').masonry({
+    itemSelector: '.masonry-item',
+    columnWidth: '.masonry-sizer',
+    percentPosition: true
+  })
+</script>
 
