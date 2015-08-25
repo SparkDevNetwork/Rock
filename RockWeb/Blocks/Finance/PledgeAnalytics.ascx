@@ -28,8 +28,8 @@
                             <Rock:NumberRangeEditor ID="nreAmountGiven" runat="server" Label="Amount Given" />
 
                             <Rock:RockRadioButtonList ID="rblInclude" runat="server" Label="Show" >
-                                <asp:ListItem Text="Only Those with pledges" Value="0" Selected="True" />
-                                <asp:ListItem Text="Only Those with gifts" Value="1" />
+                                <asp:ListItem Text="Only those with pledges" Value="0" Selected="True" />
+                                <asp:ListItem Text="Only those with gifts" Value="1" />
                                 <asp:ListItem Text="Those with gifts or pledges" Value="2" />
                             </Rock:RockRadioButtonList>
                         </div>
