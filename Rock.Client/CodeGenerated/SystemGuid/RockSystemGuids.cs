@@ -136,6 +136,7 @@ namespace Rock.Client.SystemGuid
         public const string CHART_STYLE_FLOT = "B45DA8E1-B9A6-46FD-9A2B-E8440D7D6AAC";
         public const string CHART_STYLE_ROCK = "2ABB2EA0-B551-476C-8F6B-478CD08C2227";
         public const string CHECKIN_SEARCH_TYPE_NAME = "071D6DAA-3063-463A-B8A1-7D9A1BE1BB31";
+        public const string CHECKIN_SEARCH_TYPE_NAME_AND_PHONE = "93773B0A-6E7F-1AA0-4F1D-9A4D6ACE930F";
         public const string CHECKIN_SEARCH_TYPE_PHONE_NUMBER = "F3F66040-C50F-4D13-9652-780305FFFE23";
         public const string COMMUNICATION_MEDIUM_EMAIL = "FC51461D-0C31-4C6B-A7C8-B3E8482C1055";
         public const string CURRENCY_TYPE_ACH = "DABEE8FD-AEDF-43E1-8547-4C97FA14D9B6";
@@ -380,6 +381,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class NoteType
     {
+        public const string PERSON_EVENT_REGISTRATION = "BBADA8EF-23FC-4B46-B7A7-0F6D31F8C045";
         public const string PERSON_TIMELINE_NOTE = "66A1B9D7-7EFA-40F3-9415-E54437977D60";
         public const string PRAYER_COMMENT = "0EBABD75-0890-4756-A9EE-62626282BB5D";
         public const string SCHEDULED_TRANSACTION_NOTE = "360CFFE2-7FE3-4B0B-85A7-BFDACC9AF588";
