@@ -112,6 +112,8 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+            mdCategoryTreeConfig.Visible = false;
+
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
 
             // hide all the actions if user doesn't have EDIT to the block
@@ -396,6 +398,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         protected override void ShowSettings()
         {
+            mdCategoryTreeConfig.Visible = true;
             var entityType = EntityTypeCache.Read( this.GetAttributeValue( "EntityType" ).AsGuid() );
             var rootCategory = new CategoryService( new RockContext() ).Get( this.GetAttributeValue( "RootCategory" ).AsGuid() );
             
@@ -459,6 +462,8 @@ namespace RockWeb.Blocks.Core
 
             mdCategoryTreeConfig.Hide();
             Block_BlockUpdated( sender, e );
+
+            mdCategoryTreeConfig.Visible = false;
         }
     }
 }

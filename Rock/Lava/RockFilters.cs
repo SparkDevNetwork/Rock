@@ -28,6 +28,7 @@ using DDay.iCal;
 using DotLiquid;
 using DotLiquid.Util;
 using Humanizer;
+using Humanizer.Localisation;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -689,14 +690,16 @@ namespace Rock.Lava
         /// <summary>
         /// takes a date time and compares it to RockDateTime.Now and returns a human friendly string like 'yesterday' or '2 hours ago'
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="input">The input.</param>
+        /// <param name="compareDate">The compare date.</param>
         /// <returns></returns>
-        public static string HumanizeDateTime( object input )
+        public static string HumanizeDateTime( object input, object compareDate = null )
         {
             if ( input == null )
                 return string.Empty;
 
             DateTime dtInput;
+            DateTime dtCompare;
 
             if ( input is DateTime )
             {
@@ -710,7 +713,12 @@ namespace Rock.Lava
                 }
             }
 
-            return dtInput.Humanize( false, RockDateTime.Now );
+            if ( !DateTime.TryParse( compareDate.ToString(), out dtCompare ) )
+            {
+                dtCompare = RockDateTime.Now;
+            }
+
+            return dtInput.Humanize( false, dtCompare );
 
         }
 
@@ -723,49 +731,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string HumanizeTimeSpan( object sStartDate, object sEndDate, int precision = 1 )
         {
-            DateTime startDate = DateTime.MinValue;
-            DateTime endDate = DateTime.MinValue;
-
-            // convert start date if string
-            if ( sStartDate is String )
-            {
-                if ( (string)sStartDate == "Now" )
-                {
-                    startDate = RockDateTime.Now;
-                }
-                else
-                {
-                    if ( !DateTime.TryParse( (string)sStartDate, out startDate ) )
-                    {
-                        return null;
-                    }
-                }
-            }
-            else if ( sStartDate is DateTime )
-            {
-                startDate = (DateTime)sStartDate;
-            }
-
-            // convert end date if string
-            if ( sEndDate is String )
-            {
-                if ( (string)sEndDate == "Now" )
-                {
-                    endDate = RockDateTime.Now;
-                }
-                else
-                {
-                    if ( !DateTime.TryParse( (string)sEndDate, out endDate ) )
-                    {
-                        return null;
-                    }
-                }
-            }
-            else if ( sEndDate is DateTime )
-            {
-                endDate = (DateTime)sEndDate;
-            }
-
+            DateTime startDate = GetDateFromObject(sStartDate);
+            DateTime endDate = GetDateFromObject(sEndDate);
 
             if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
@@ -779,6 +746,97 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Humanizes the time span.
+        /// </summary>
+        /// <param name="sStartDate">The s start date.</param>
+        /// <param name="sEndDate">The s end date.</param>
+        /// <param name="unit">The minimum unit.</param>
+        /// <param name="direction">The direction.</param>
+        /// <returns></returns>
+        public static string HumanizeTimeSpan( object sStartDate, object sEndDate, string unit, string direction )
+        {
+            DateTime startDate = GetDateFromObject( sStartDate );
+            DateTime endDate = GetDateFromObject( sEndDate );
+
+            TimeUnit minUnitValue = TimeUnit.Day;
+
+            switch(unit)
+            {
+                case "Year":
+                    minUnitValue = TimeUnit.Year;
+                    break;
+                case "Month":
+                    minUnitValue = TimeUnit.Month;
+                    break;
+                case "Week":
+                    minUnitValue = TimeUnit.Week;
+                    break;
+                case "Day":
+                    minUnitValue = TimeUnit.Day;
+                    break;
+                case "Hour":
+                    minUnitValue = TimeUnit.Hour;
+                    break;
+                case "Minute":
+                    minUnitValue = TimeUnit.Minute;
+                    break;
+                case "Second":
+                    minUnitValue = TimeUnit.Second;
+                    break;
+            }
+
+            if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
+            {
+                TimeSpan difference = endDate - startDate;
+                
+                if (direction.ToLower() == "max") {
+                    return difference.Humanize( maxUnit: minUnitValue );
+                } else {
+                    return difference.Humanize( minUnit: minUnitValue );
+                }
+            }
+            else
+            {
+                return "Could not parse one or more of the dates provided into a valid DateTime";
+            }
+        }
+
+        /// <summary>
+        /// Gets the date from object.
+        /// </summary>
+        /// <param name="date">The date.</param>
+        /// <returns></returns>
+        private static DateTime GetDateFromObject( object date )
+        {
+            DateTime oDateTime = DateTime.MinValue;
+            
+            if ( date is String )
+            {
+                if ( (string)date == "Now" )
+                {
+                    return RockDateTime.Now;
+                }
+                else
+                {
+                    if ( DateTime.TryParse( (string)date, out oDateTime ) )
+                    {
+                        return oDateTime;
+                    }
+                    else
+                    {
+                        return DateTime.MinValue;
+                    }
+                }
+            }
+            else if ( date is DateTime )
+            {
+                return (DateTime)date;
+            }
+
+            return DateTime.MinValue;
+        }
+
+        /// <summary>
         /// takes two datetimes and returns the difference in the unit you provide
         /// </summary>
         /// <param name="sStartDate">The s start date.</param>
@@ -787,51 +845,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Int64? DateDiff( object sStartDate, object sEndDate, string unit )
         {
-
-            DateTime startDate = DateTime.MinValue;
-            DateTime endDate = DateTime.MinValue;
-
-            // convert start date if string
-            if ( sStartDate is String )
-            {
-                if ( (string)sStartDate == "Now" )
-                {
-                    startDate = RockDateTime.Now;
-                }
-                else
-                {
-                    if ( !DateTime.TryParse( (string)sStartDate, out startDate ) )
-                    {
-                        return null;
-                    }
-                }
-            }
-            else if ( sStartDate is DateTime )
-            {
-                startDate = (DateTime)sStartDate;
-            }
-
-            // convert end date if string
-            if ( sEndDate is String )
-            {
-                if ( (string)sEndDate == "Now" )
-                {
-                    endDate = RockDateTime.Now;
-                }
-                else
-                {
-                    if ( !DateTime.TryParse( (string)sEndDate, out endDate ) )
-                    {
-                        return null;
-                    }
-                }
-            }
-            else if ( sEndDate is DateTime )
-            {
-                endDate = (DateTime)sEndDate;
-            }
-
-
+            DateTime startDate = GetDateFromObject( sStartDate );
+            DateTime endDate = GetDateFromObject( sEndDate );
 
             if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
@@ -897,6 +912,84 @@ namespace Rock.Lava
             return string.Format( "{0:" + format + "}", input );
         }
 
+        /// <summary>
+        /// Addition - Overriding this to change the logic. The default filter will concat if the type is 
+        /// string. This one does the math if the input can be parsed as a int
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object Plus( object input, object operand )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            decimal iInput = -1;
+            decimal iOperand = -1;
+
+            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            {
+                return iInput + iOperand;
+            }
+            else
+            {
+                return string.Concat( input, operand );
+            }
+        }
+
+        /// <summary>
+        /// Minus - Overriding this to change the logic. This one does the math if the input can be parsed as a int
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object Minus( object input, object operand )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            decimal iInput = -1;
+            decimal iOperand = -1;
+
+            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            {
+                return iInput - iOperand;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Times - Overriding this to change the logic. This one does the math if the input can be parsed as a int
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object Times( object input, object operand )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            decimal iInput = -1;
+            decimal iOperand = -1;
+
+            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            {
+                return iInput * iOperand;
+            }
+            else
+            {
+                return Enumerable.Repeat( (string)input, (int)operand );
+            }
+        }
 
         /// <summary>
         /// Divideds the by.
@@ -925,6 +1018,54 @@ namespace Rock.Lava
                 
             } catch (Exception ex){
                 return ex.Message;
+            }
+        }
+
+        /// <summary>
+        /// Floors the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static object Floor( object input)
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            decimal iInput = -1;
+
+            if ( decimal.TryParse( input.ToString(), out iInput ) )
+            {
+                    return decimal.Floor( iInput );                
+            }
+            else
+            {
+                return "Could not convert input to number to round";
+            }
+        }
+
+        /// <summary>
+        /// Ceilings the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static object Ceiling( object input )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            decimal iInput = -1;
+
+            if ( decimal.TryParse( input.ToString(), out iInput ) )
+            {
+                return decimal.Ceiling( iInput );
+            }
+            else
+            {
+                return "Could not convert input to number to round";
             }
         }
 

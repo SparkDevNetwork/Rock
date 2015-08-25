@@ -60,6 +60,15 @@ namespace Rock.Model
         public string PublicName { get; set; }
 
         /// <summary>
+        /// Gets or sets the summary.
+        /// </summary>
+        /// <value>
+        /// The summary.
+        /// </value>
+        [DataMember]
+        public string Summary { get; set; }
+
+        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>
@@ -114,7 +123,12 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember]
-        public bool IsActive { get; set; }
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+        private bool _isActive = true;
 
         /// <summary>
         /// Gets or sets the group member role identifier.

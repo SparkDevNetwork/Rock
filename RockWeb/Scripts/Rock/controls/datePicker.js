@@ -21,7 +21,8 @@
                     format: dateFormat,
                     autoclose: true,
                     todayBtn: true,
-                    startView: options.startView || 'month'
+                    startView: options.startView || 'month',
+                    todayHighlight: options.todayHighlight || true
                 });
 
                 var $datePickerContainer = $textBox.closest('.js-date-picker-container');

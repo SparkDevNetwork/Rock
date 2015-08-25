@@ -1065,24 +1065,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                 if ( Gateway.UpdateScheduledPayment( scheduledTransaction, paymentInfo, out errorMessage ) )
                 {
-                    if ( paymentInfo.CurrencyTypeValue != null )
-                    {
-                        changeSummary.Append( paymentInfo.CurrencyTypeValue.Value );
-                        scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
-
-                        DefinedValueCache creditCardTypeValue = paymentInfo.CreditCardTypeValue;
-                        if ( creditCardTypeValue != null )
-                        {
-                            changeSummary.AppendFormat( " - {0}", creditCardTypeValue.Value );
-                            scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId = creditCardTypeValue.Id;
-                        }
-                        else
-                        {
-                            scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId = null;
-                        }
-                        changeSummary.AppendFormat( " {0}", paymentInfo.MaskedNumber );
-                        changeSummary.AppendLine();
-                    }
+                    scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, Gateway, rockContext );
 
                     var selectedAccountIds = SelectedAccounts
                         .Where( a => a.Amount > 0 )

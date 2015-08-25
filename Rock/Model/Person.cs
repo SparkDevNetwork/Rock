@@ -289,7 +289,7 @@ namespace Rock.Model
         public int? GivingGroupId { get; set; }
 
         /// <summary>
-        /// Gets the giver identifier.
+        /// Gets the computed giver identifier in the format G{GivingGroupId} if they are part of a GivingGroup, or P{Personid} if they give individually
         /// </summary>
         /// <value>
         /// The giver identifier.
@@ -1923,6 +1923,21 @@ namespace Rock.Model
         public static Person GetSpouse( this Person person, RockContext rockContext = null )
         {
             return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person );
+        }
+
+        /// <summary>
+        /// Gets a Person's spouse with a selector that lets you only fetch the properties that you need
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="person">The <see cref="Rock.Model.Person" /> entity of the Person to retrieve the spouse of.</param>
+        /// <param name="selector">The selector.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.Person" /> entity containing the provided Person's spouse. If the provided Person's spouse is not found, this value will be null.
+        /// </returns>
+        public static TResult GetSpouse<TResult>( this Person person, System.Linq.Expressions.Expression<Func<GroupMember, TResult>> selector, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person, selector );
         }
 
         /// <summary>

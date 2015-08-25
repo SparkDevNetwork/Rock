@@ -46,7 +46,8 @@ namespace RockWeb.Blocks.Event
     [CustomDropdownListField( "Default View Option", "Determines the default view option", "Day,Week,Month", true, "Week", order: 1 )]
     [LinkedPage( "Details Page", "Detail page for events", order: 2 )]
 
-    [BooleanField( "Show Campus Filter", "Determines whether the campus filters are shown", false, order: 3 )]
+    [CustomRadioListField( "Campus Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", order: 3 )]
+    [CustomRadioListField( "Category Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", order: 4 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Filter Categories", "Determines which categories should be displayed in the filter.", false, true, order: 5 )]
     [BooleanField( "Show Date Range Filter", "Determines whether the date range filters are shown", false, order: 6 )]
 
@@ -70,6 +71,11 @@ namespace RockWeb.Blocks.Event
         private int _calendarId = 0;
         private string _calendarName = string.Empty;
         private DayOfWeek _firstDayOfWeek = DayOfWeek.Sunday;
+
+        protected bool CampusPanelOpen { get; set; }
+        protected bool CampusPanelClosed { get; set; }
+        protected bool CategoryPanelOpen { get; set; }
+        protected bool CategoryPanelClosed { get; set; }
 
         #endregion
 
@@ -114,6 +120,11 @@ namespace RockWeb.Blocks.Event
                 _calendarId = eventCalendar.Id;
                 _calendarName = eventCalendar.Name;
             }
+
+            CampusPanelOpen = GetAttributeValue( "CampusFilterDisplayMode" ) == "3";
+            CampusPanelClosed = GetAttributeValue( "CampusFilterDisplayMode" ) == "4";
+            CategoryPanelOpen = !String.IsNullOrWhiteSpace( GetAttributeValue( "FilterCategories" ) ) && GetAttributeValue( "CategoryFilterDisplayMode" ) == "3";
+            CategoryPanelClosed = !String.IsNullOrWhiteSpace( GetAttributeValue( "FilterCategories" ) ) && GetAttributeValue( "CategoryFilterDisplayMode" ) == "4";
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -439,7 +450,7 @@ namespace RockWeb.Blocks.Event
             calEventCalendar.SelectedDates.SelectRange( FilterStartDate.Value, FilterEndDate.Value );
 
             // Setup Campus Filter
-            rcwCampus.Visible = GetAttributeValue( "ShowCampusFilter" ).AsBoolean();
+            rcwCampus.Visible = GetAttributeValue( "CampusFilterDisplayMode" ).AsInteger() > 1;
             cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
             if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
@@ -453,11 +464,11 @@ namespace RockWeb.Blocks.Event
 
             // Setup Category Filter
             var selectedCategoryGuids = GetAttributeValue( "FilterCategories" ).SplitDelimitedValues( true ).AsGuidList();
-            rcwCategory.Visible = selectedCategoryGuids.Any();
+            rcwCategory.Visible = selectedCategoryGuids.Any() && GetAttributeValue( "CategoryFilterDisplayMode" ).AsInteger() > 1;
             var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
             if ( definedType != null )
             {
-                cblCategory.DataSource = definedType.DefinedValues.Where( v => selectedCategoryGuids.Contains( v.Guid ));
+                cblCategory.DataSource = definedType.DefinedValues.Where( v => selectedCategoryGuids.Contains( v.Guid ) );
                 cblCategory.DataBind();
             }
 

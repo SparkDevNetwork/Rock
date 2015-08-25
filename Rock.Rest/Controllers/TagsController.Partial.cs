@@ -85,6 +85,7 @@ namespace Rock.Rest.Controllers
             }
             else
             {
+                // NOTE: This exception is expected when adding a new Tag.  The Javascript responds to the NotFound error by prompting them to create a new tag
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
         }

@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Data.Entity;
 
 using Rock;
 using Rock.Constants;
@@ -1192,15 +1193,32 @@ namespace RockWeb.Blocks.Connection
             ddlPlacementGroup.Items.Clear();
             ddlPlacementGroup.Items.Add( new ListItem( String.Empty, String.Empty ) );
 
-            var opportunityGroupIds = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups.Select( o => o.Id ).ToList();
+            var groups = new List<Group>();
 
-            var groups = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups
-                                .Where( g => 
-                                    g.Group.Campus == null ||
-                                    g.Group.CampusId == connectionRequest.CampusId ||
-                                    g.Group.Id == connectionRequest.AssignedGroupId
-                                )
-                                .Select( g => g.Group);
+            if ( connectionRequest.ConnectionOpportunity.UseAllGroupsOfType )
+            {
+                var placementGroupTypeId = connectionRequest.ConnectionOpportunity.GroupTypeId;
+
+                groups = new GroupService( new RockContext() )
+                                .Queryable().AsNoTracking()
+                                .Where( g => g.GroupTypeId == placementGroupTypeId
+                                             && ( g.Campus == null || g.CampusId == connectionRequest.CampusId ) )
+                                .ToList();
+                    
+            }
+            else
+            {
+                var opportunityGroupIds = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups.Select( o => o.Id ).ToList();
+
+                groups = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups
+                                    .Where( g =>
+                                        g.Group.Campus == null ||
+                                        g.Group.CampusId == connectionRequest.CampusId ||
+                                        g.Group.Id == connectionRequest.AssignedGroupId
+                                    )
+                                    .Select( g => g.Group )
+                                    .ToList();
+            }
                 
             foreach ( var g in groups )
             {

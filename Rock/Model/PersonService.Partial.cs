@@ -1138,6 +1138,20 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's spouse. If the provided Person's spouse is not found, this value will be null.</returns>
         public Person GetSpouse( Person person )
         {
+            return GetSpouse( person, a => a.Person );
+        }
+
+        /// <summary>
+        /// Gets a Person's spouse with a selector that lets you only fetch the properties that you need
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="person">The <see cref="Rock.Model.Person" /> entity of the Person to retrieve the spouse of.</param>
+        /// <param name="selector">The selector.</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.Person" /> entity containing the provided Person's spouse. If the provided Person's spouse is not found, this value will be null.
+        /// </returns>
+        public TResult GetSpouse<TResult>( Person person, System.Linq.Expressions.Expression<Func<GroupMember, TResult>> selector )
+        {
             //// Spouse is determined if all these conditions are met
             //// 1) Adult in the same family as Person (GroupType = Family, GroupRole = Adult, and in same Group)
             //// 2) Opposite Gender as Person
@@ -1149,14 +1163,14 @@ namespace Rock.Model
 
             if ( person.MaritalStatusValueId != marriedDefinedValueId )
             {
-                return null;
+                return default(TResult);
             }
 
             return GetFamilyMembers( person.Id )
                 .Where( m => m.GroupRoleId == adultRoleId )
                 .Where( m => m.Person.Gender != person.Gender )
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
-                .Select( m => m.Person )
+                .Select( selector )
                 .FirstOrDefault();
         }
 
