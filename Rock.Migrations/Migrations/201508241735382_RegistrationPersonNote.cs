@@ -194,6 +194,19 @@ namespace Rock.Migrations
   SET [InternalName] = 'Pledges', [BrowserTitle] = 'Pledges', [PageTitle] = 'Pledges'
   WHERE [Guid] = '1570D2AF-4FE2-4FC7-BED9-F20EBCBE9867'
 " );
+
+            // DT: Update Event Registration note type to be a system note type.
+            Sql( @"
+    DECLARE @PersonEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Person' )
+    UPDATE [NoteType] SET 
+	     [IsSystem] = 1
+	    ,[Guid] = 'BBADA8EF-23FC-4B46-B7A7-0F6D31F8C045'
+    WHERE [EntityTypeId] = @PersonEntityTypeId
+    AND [Name] = 'Event Registration'
+" );
+
+            Sql( MigrationSQL._201508241735382_RegistrationPersonNote );
+
         }
         
         /// <summary>
