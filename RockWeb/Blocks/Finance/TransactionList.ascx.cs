@@ -39,8 +39,9 @@ namespace RockWeb.Blocks.Finance
     [Description( "Builds a list of all financial transactions which can be filtered by date, account, transaction type, etc." )]
 
     [ContextAware]
-    [LinkedPage( "Detail Page" )]
-    [TextField( "Title", "Title to display above the grid. Leave blank to hide.", false )]
+    [LinkedPage( "Detail Page", order:0 )]
+    [TextField( "Title", "Title to display above the grid. Leave blank to hide.", false, order:1 )]
+    [BooleanField( "Show Only Active Accounts on Filter", "If account filter is displayed, only list active accounts", false, "", 2, "ActiveAccountsOnlyFilter")]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler
     {
         #region Fields
@@ -627,10 +628,15 @@ namespace RockWeb.Blocks.Finance
             nreAmount.DelimitedValues = gfTransactions.GetUserPreference( "Amount Range" );
             tbTransactionCode.Text = gfTransactions.GetUserPreference( "Transaction Code" );
 
-
             var accountService = new FinancialAccountService( new RockContext() );
+            var accounts = accountService.Queryable();
+            if ( GetAttributeValue( "ActiveAccountsOnlyFilter" ).AsBoolean() )
+            {
+                accounts = accounts.Where( a => a.IsActive );
+            }
+
             ddlAccount.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( FinancialAccount account in accountService.Queryable() )
+            foreach ( FinancialAccount account in accounts.OrderBy( a => a.Order ) )
             {
                 ListItem li = new ListItem( account.Name, account.Id.ToString() );
                 li.Selected = account.Id.ToString() == gfTransactions.GetUserPreference( "Account" );
