@@ -2340,8 +2340,8 @@ span.field-name {
   font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
   padding: 2px 4px;
   font-size: 90%;
-  color: #515151;
-  background-color: #d9e1e8;
+  color: #245682;
+  background-color: #b9d4ec;
   white-space: nowrap;
   border-radius: 4px;
 }
@@ -2349,8 +2349,8 @@ span.field-value {
   font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
   padding: 2px 4px;
   font-size: 90%;
-  color: #515151;
-  background-color: #d9e1e8;
+  color: #245682;
+  background-color: #b9d4ec;
   white-space: nowrap;
   border-radius: 4px;
 }
@@ -2773,7 +2773,7 @@ iframe.email-body {
   Used to manage styles related to reusable components / widgets.
 
   1. Pickers - used to pick complex data types
-  2. Banner - used as the primary heading for a page or large section
+  2. 
   3. Tree - used for tree control
   4. Person List - used to show a list of people
   5. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
@@ -2807,6 +2807,7 @@ iframe.email-body {
   33. Wizard
   34. Checkbox
   35. Follow button
+  36. Range Editors
 
   xx. Misc
 */
@@ -2950,38 +2951,6 @@ iframe.email-body {
   margin-top: inherit;
   margin-right: 0;
 }
-/*.banner
-{
-  color: @banner-text-color;
-  background-color: @banner-bg;
-  border-radius: @banner-border-radius;
-  border: @banner-border-size solid @banner-border-color;
-  font-weight: @banner-font-weight;
-  font-size: @banner-font-size;
-  padding: @banner-padding;
-  margin: 0 0 @spacing-md-px;
-  .clearfix;
-
-  h1 {
-    float: left;
-    margin: 0;
-    font-weight: @banner-font-weight;
-
-    .first-word {
-      font-weight: @banner-firstword-weight;
-    }
-
-    i {
-      margin-right: @spacing-md-px;
-    }
-  }
-
-  .label {
-    float: right;
-    margin-top: @spacing-md-px;
-    margin-left: @spacing-md-px;
-  }
-}*/
 ul.rocktree,
 ul.rocktree ul {
   list-style-type: none;
@@ -3472,6 +3441,9 @@ fieldset .actions {
 .code-editor {
   position: relative;
 }
+.label a {
+  color: #fff;
+}
 .label-campus {
   background-color: #83758f;
 }
@@ -3505,7 +3477,8 @@ fieldset .actions {
 .datepicker table thead th.next {
   text-align: right;
 }
-.datepicker table td.active {
+.datepicker table td.active,
+.datepicker table td.today {
   background-color: #adca42;
   color: #ffffff;
 }
@@ -4357,6 +4330,12 @@ ul.list-group-panel .list-group-item:first-child,
 }
 .panel-follow-status.following:before {
   content: "\f005";
+}
+.number-range-editor .form-control-group .form-control {
+  margin-bottom: 6px;
+}
+.date-range-picker .input-group {
+  margin-bottom: 6px;
 }
 /*
     Used to manage styles for specific blocks.
