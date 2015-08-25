@@ -231,7 +231,7 @@
     .numberincrement-up,
     .numberincrement-down {
         background-color: @input-group-addon-bg;
-        padding: 12px 20px;
+        padding: 6px 12px;
         border: 1px solid @input-group-addon-border-color;
         color: @input-color;
         cursor: pointer;
@@ -251,12 +251,36 @@
     }
 
     .numberincrement-value {
-        padding: 12px 18px;
+        padding: 6px 18px;
         border-color: @input-group-addon-border-color;
         border-width: 1px 0;
         border-style: solid;
     }
+
+    // adjustments for different sizes    
+    &.input-sm {
+        .numberincrement-up,
+        .numberincrement-down {
+            padding: 5px 8px;
+        }
+
+        .numberincrement-value {
+            padding: 5px 12px;
+        }
+    }
+
+    &.input-lg {
+        .numberincrement-up,
+        .numberincrement-down {
+            padding: 12px 20px;
+        }
+
+        .numberincrement-value {
+            padding: 12px 18px;
+        }
+    }
 }
+
 
 
 // 3. Tree
