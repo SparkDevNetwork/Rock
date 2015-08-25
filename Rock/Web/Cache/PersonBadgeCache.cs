@@ -189,7 +189,6 @@ namespace Rock.Web.Cache
             var personBadgeModel = personBadgeService.Get( id );
             if ( personBadgeModel != null )
             {
-                personBadgeModel.LoadAttributes( rockContext );
                 return new PersonBadgeCache( personBadgeModel );
             }
 

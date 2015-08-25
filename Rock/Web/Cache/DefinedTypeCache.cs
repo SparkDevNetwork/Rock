@@ -253,7 +253,6 @@ namespace Rock.Web.Cache
 
             if ( definedTypeModel != null )
             {
-                definedTypeModel.LoadAttributes( rockContext );
                 return new DefinedTypeCache( definedTypeModel );
             }
 
