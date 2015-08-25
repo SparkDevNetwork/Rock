@@ -5580,6 +5580,11 @@ fieldset[disabled] .btn-authenication.active {
   content: "\f1a0";
   margin-right: 12px;
 }
+.btn-authenication.twitter:before {
+  font-family: 'FontAwesome';
+  content: "\f099";
+  margin-right: 12px;
+}
 .btn-minimal {
   text-decoration: none;
   color: #808080;
