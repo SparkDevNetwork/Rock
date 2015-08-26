@@ -88,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this RegistrationTemplate target, RegistrationTemplate source )
         {
             target.Id = source.Id;
+            target.AddPersonNote = source.AddPersonNote;
             target.AllowMultipleRegistrants = source.AllowMultipleRegistrants;
             target.CategoryId = source.CategoryId;
             target.ConfirmationEmailTemplate = source.ConfirmationEmailTemplate;

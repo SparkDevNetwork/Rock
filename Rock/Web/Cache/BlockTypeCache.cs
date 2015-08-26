@@ -220,7 +220,6 @@ namespace Rock.Web.Cache
             var blockTypeModel = blockTypeService.Get( id );
             if ( blockTypeModel != null )
             {
-                blockTypeModel.LoadAttributes( rockContext );
                 return new BlockTypeCache( blockTypeModel );
             }
 

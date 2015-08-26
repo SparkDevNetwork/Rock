@@ -55,11 +55,13 @@ namespace Rock.Web.Cache
             var attributeModel = model as Rock.Attribute.IHasAttributes;
             if ( attributeModel != null )
             {
-                if ( attributeModel.Attributes != null )
+                if ( attributeModel.Attributes == null )
                 {
-                    this.Attributes = attributeModel.Attributes;
-                    this.AttributeValues = attributeModel.AttributeValues;
+                    attributeModel.LoadAttributes();
                 }
+
+                this.Attributes = attributeModel.Attributes;
+                this.AttributeValues = attributeModel.AttributeValues;
             }
         }
 

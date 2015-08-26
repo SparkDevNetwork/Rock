@@ -27,10 +27,10 @@
 
                             <Rock:NumberRangeEditor ID="nreAmountGiven" runat="server" Label="Amount Given" />
 
-                            <Rock:RockRadioButtonList ID="rblInclude" runat="server" Label="Show" AutoPostBack="True" OnSelectedIndexChanged="rblInclude_SelectedIndexChanged">
-                                <asp:ListItem id="liEveryoneWithPledge" Text="Those with pledges" Value="0" Selected="True" />
-                                <asp:ListItem id="liEveryoneWithAGift" Text="Those with gifts" Value="1" />
-                                <asp:ListItem id="liEveryoneWithAGiftOrPledge" Text="Those with gifts or pledges" Value="2" />
+                            <Rock:RockRadioButtonList ID="rblInclude" runat="server" Label="Show" >
+                                <asp:ListItem Text="Only those with pledges" Value="0" Selected="True" />
+                                <asp:ListItem Text="Only those with gifts" Value="1" />
+                                <asp:ListItem Text="Those with gifts or pledges" Value="2" />
                             </Rock:RockRadioButtonList>
                         </div>
                         <div class="col-md-9">
@@ -51,6 +51,7 @@
                                         <Rock:RockBoundField DataField="Email" HeaderText="Email" SortExpression="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:CurrencyField DataField="PledgeAmount" HeaderText="Pledge Total" SortExpression="PledgeAmount" />
                                         <Rock:CurrencyField DataField="GiftAmount" HeaderText="Total Giving Amount" SortExpression="GiftAmount" />
+                                        <Rock:RockBoundField DataField="PercentComplete" HeaderText="Percent Complete" SortExpression="PercentComplete" DataFormatString="{0:P0}" ItemStyle-HorizontalAlign="Right" />
                                         <Rock:RockBoundField DataField="GiftCount" HeaderText="Giving Count" SortExpression="GiftCount" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
                                     </Columns>
                                 </Rock:Grid>

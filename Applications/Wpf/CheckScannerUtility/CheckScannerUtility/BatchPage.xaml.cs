@@ -183,12 +183,33 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// Gets or sets the source type value list.
+        /// All the possible Transation Source Type, including ones that can't be selected when scanning
         /// </summary>
         /// <value>
         /// The source type value list.
         /// </value>
         public List<DefinedValue> SourceTypeValueList { get; set; }
+
+        /// <summary>
+        /// The Transaction Source Types that can be selected from when scanning
+        /// </summary>
+        /// <value>
+        /// The source type value list selectable.
+        /// </value>
+        public List<DefinedValue> SourceTypeValueListSelectable
+        {
+            get
+            {
+                if ( this.SourceTypeValueList != null )
+                {
+                    return this.SourceTypeValueList.Where( a => a.AttributeValues.ContainsKey( "core.ShowInCheckScanner" ) ? a.AttributeValues["core.ShowInCheckScanner"].Value.AsBoolean() : false ).ToList();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the selected source type value.
@@ -354,8 +375,12 @@ namespace Rock.Apps.CheckScannerUtility
             var currencyTypeDefinedType = client.GetDataByGuid<DefinedType>( "api/DefinedTypes", Rock.Client.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() );
             this.CurrencyValueList = client.GetData<List<DefinedValue>>( "api/DefinedValues", "DefinedTypeId eq " + currencyTypeDefinedType.Id.ToString() );
 
+            //// load all the Transaction Source values and fetch the attributes so that we can filter the selectable ones (core.ShowInCheckScanner=true) 
+            //// when populating the dropdown on the scanning prompt page.
+            //// don't filter them here because we might be viewing transactions that have an unselectable Transaction Source Type
             var sourceTypeDefinedType = client.GetDataByGuid<DefinedType>( "api/DefinedTypes", Rock.Client.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() );
-            this.SourceTypeValueList = client.GetData<List<DefinedValue>>( "api/DefinedValues", "DefinedTypeId eq " + sourceTypeDefinedType.Id.ToString() );
+            var sourceTypeUri = string.Format( "api/DefinedValues?$filter=DefinedTypeId eq {0}&loadAttributes=simple", sourceTypeDefinedType.Id.ToString() );
+            this.SourceTypeValueList = client.GetData<List<DefinedValue>>( sourceTypeUri );
         }
 
         /// <summary>

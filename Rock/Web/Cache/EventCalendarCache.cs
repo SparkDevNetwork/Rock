@@ -167,7 +167,6 @@ namespace Rock.Web.Cache
                 .FirstOrDefault( c => c.Id == id );
             if ( eventCalendarModel != null )
             {
-                eventCalendarModel.LoadAttributes( rockContext );
                 return new EventCalendarCache( eventCalendarModel );
             }
 
