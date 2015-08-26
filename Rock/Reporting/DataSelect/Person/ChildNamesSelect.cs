@@ -91,6 +91,21 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
+        /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field
+        /// To disable sorting for this field, return string.Empty;
+        /// </summary>
+        /// <param name="selection"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The sort expression.
+        /// </value>
+        public override string SortProperties( string selection )
+        {
+            // disable sorting on this column since it is an IEnumerable
+            return string.Empty;
+        }
+
+        /// <summary>
         /// little class so that we only need to fetch the columns that we need from Person
         /// </summary>
         private class KidInfo
@@ -211,8 +226,7 @@ namespace Rock.Reporting.DataSelect.Person
             var familyGroupMembers = new GroupMemberService( context ).Queryable()
                 .Where( m => m.Group.GroupType.Guid == familyGuid );
 
-            // this returns Enumerable of Person for Children per row. The Grid then uses ListDelimiterField to convert the list into Children's Names
-            // sorted from oldest to youngest
+            // this returns Enumerable of KidInfo per row. See this.GetGridField to see how it is processed 
             var personChildrenQuery = new PersonService( context ).Queryable()
                 .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == adultGuid )
                     .SelectMany( m => m.Group.Members )
