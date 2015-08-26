@@ -476,6 +476,7 @@
     <Compile Include="Reporting\DataFilter\Person\NotInGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupFilter.cs" />
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Group\MemberListSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\MemberCountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\ParticipationRateSelect.cs" />
