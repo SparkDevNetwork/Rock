@@ -266,7 +266,6 @@ namespace RockWeb.Blocks.Finance
             if ( person != null )
             {
                 // if a person is specified, get pledges for that person ( and also anybody in their GivingUnit )
-                pledges = pledges.InnerJoinPerson( a => a.PersonAlias.PersonId, rockContext );
                 pledges = pledges.Where( p => p.PersonAlias.Person.GivingId == person.GivingId );
             }
 
@@ -304,7 +303,6 @@ namespace RockWeb.Blocks.Finance
              ***/
 
             // exclude pledges that start after the filter's end date or end before the filter's start date
-            pledges = pledges.Include( a => a.PersonAlias.Person );
             pledges = pledges.Where( p => !( p.StartDate > filterEndDate ) && !( p.EndDate < filterStartDate ) );
 
             gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.AccountId ).ToList();

@@ -32,7 +32,7 @@
         {% assign yearTotal = yearTotal | Plus:summaryRow.TotalAmount %}
         <div class="row">
         <div class="col-xs-5 col-xs-offset-1">
-            {{ summaryRow.Account.Name }}
+            {{ summaryRow.Account }}
         </div>
         <div class="col-xs-6 text-right">
             {{ 'Global' | Attribute:'CurrencySymbol' }}{{ summaryRow.TotalAmount | Format:'#,##0.00' }}
