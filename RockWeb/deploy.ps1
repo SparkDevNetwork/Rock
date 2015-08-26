@@ -19,19 +19,16 @@ If (Test-Path "$webroot\Content"){
 	Remove-Item "$webroot\Content" -Force -Confirm:$False -Recurse
 }
 
-# move content directory back from temp
-Write-Host "Moving Contents folder back from temp directory"
-Move-Item "$rootfolder\temp\Content" "$webroot\"
-
-# move App_Data back from temp
-Move-Item  "$rootfolder\temp\App_Data" "$webroot\" -Force
+# move App_Data directory back from temp
+Write-Host "Moving App_Data folder back from temp directory"
+Move-Item "$rootfolder\temp\App_Data" "$webroot\"
 
 # move custom themes back from temp
-Move-Item "$rootfolder\temp\Ulfberht" "$webroot\Themes\"
+Move-Item "$rootfolder\temp\Ulfberht" "$webroot\Themes"
 
 # move a robots file back from temp if it exists
 If (Test-Path "$rootfolder\temp\robots.txt"){
-	Move-Item "$rootfolder\temp\robots.txt" "$webroot\"
+	Move-Item "$rootfolder\temp\robots.txt" "$webroot"
 }
 
 # copy new connection string file
