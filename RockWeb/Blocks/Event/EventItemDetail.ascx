@@ -36,7 +36,7 @@
 
                 <div id="pnlViewDetails" runat="server">
 
-                        <div class="row">
+                    <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockLiteral ID="lSummary" runat="server" Label="Summary" />
                                 <Rock:RockLiteral ID="lCalendar" runat="server" Label="Calendars" />
@@ -51,7 +51,6 @@
                             </div>
                         </div>
 
-                    </div>
 
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
