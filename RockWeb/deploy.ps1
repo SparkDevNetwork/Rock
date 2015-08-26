@@ -19,15 +19,21 @@ If (Test-Path "$webroot\Content"){
 	Remove-Item "$webroot\Content" -Force -Confirm:$False -Recurse
 }
 
+# move Content directory back from temp
+Write-Host "Moving Contents folder back from temp directory"
+Move-Item "$rootfolder\temp\Content" "$webroot\"
+
 # move App_Data directory back from temp
 Write-Host "Moving App_Data folder back from temp directory"
 Move-Item "$rootfolder\temp\App_Data" "$webroot\"
 
 # move custom themes back from temp
+Write-Host "Moving Themes\Ulfberht folder back from temp directory"
 Move-Item "$rootfolder\temp\Ulfberht" "$webroot\Themes"
 
 # move a robots file back from temp if it exists
 If (Test-Path "$rootfolder\temp\robots.txt"){
+	Write-Host "Moving robots.txt file back from temp directory"
 	Move-Item "$rootfolder\temp\robots.txt" "$webroot"
 }
 
