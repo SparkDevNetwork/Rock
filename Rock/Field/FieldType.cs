@@ -611,10 +611,13 @@ namespace Rock.Field
                     }
 
                     object value = ConvertValueToPropertyType( filterValues[1], type, isNullableType );
-                    if ( value != null )
+                    ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+
+                    bool valueNotNeeded = ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType );
+
+                    if ( value != null || valueNotNeeded)
                     {
-                        ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                        ConstantExpression constantExpression = Expression.Constant( value, type );
+                        ConstantExpression constantExpression = value != null ? Expression.Constant( value, type ) : null;
                         return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                     }
                 }
