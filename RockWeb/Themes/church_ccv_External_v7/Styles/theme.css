@@ -6239,10 +6239,11 @@ h6,
 .mobhead .logo {
   display: block;
   float: left;
-  background: url(../assets/logo.svg) left center;
-  height: 50px;
+  background: url(../assets/logo-icon.svg) no-repeat left center;
+  height: 22px;
   width: 120px;
-  margin-left: -30px;
+  margin-top: 14px;
+  margin-left: 12px;
 }
 .mobhead-title {
   margin-top: 0;
@@ -6284,7 +6285,7 @@ h6,
   color: #eeeeee;
   background: #333;
   border-radius: 0;
-  padding: 12px 15px 13px;
+  padding: 16px 15px 17px;
 }
 .masthead .navbar-toggle.collapsed {
   background: none;
@@ -6301,13 +6302,17 @@ h6,
   display: block;
   float: left;
   background-image: url(../assets/logo.svg);
-  min-height: 50px;
-  min-width: 235px;
-  margin-left: -30px;
+  background-repeat: no-repeat;
+  background-position: left center;
+  margin-left: 15px;
+  height: 60px;
+  width: 203px;
 }
 @media (min-width: 768px) {
   .masthead-brand .logo {
-    margin-left: -15px;
+    margin-left: 30px;
+    height: 50px;
+    width: 244px;
   }
 }
 .navbar-collapse {
@@ -6323,19 +6328,31 @@ h6,
   padding-bottom: 5px;
   text-align: center;
   padding: 15px 0;
+  margin-left: -7.5px;
 }
 @media (min-width: 768px) {
   .masthead-navitems {
+    line-height: 50px;
     text-align: right;
     padding: 0 30px;
   }
 }
+@media (min-width: 992px) {
+  .masthead-navitems {
+    margin-left: -15px;
+  }
+}
 .masthead-navitem {
   display: inline-block;
-  padding: 0 15px;
+  padding: 0 7.5px;
   -webkit-transition: opacity 0.5s;
   transition: opacity 0.5s;
   color: #ccc;
+}
+@media (min-width: 992px) {
+  .masthead-navitem {
+    padding: 0 15px;
+  }
 }
 .masthead-navitem:first-child {
   color: #fff;
@@ -6459,6 +6476,7 @@ h6,
 }
 .masthead-fullmenu {
   background: rgba(255, 255, 255, 0.98);
+  margin-bottom: 15px;
 }
 @media (min-width: 768px) {
   .masthead-fullmenu {

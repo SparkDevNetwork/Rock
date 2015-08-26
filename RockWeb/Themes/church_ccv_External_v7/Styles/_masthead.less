@@ -22,10 +22,11 @@
     .mobhead .logo {
       display: block;
       float: left;
-      background: url(../assets/logo.svg) left center;
-      height: 50px;
+      background: url(../assets/logo-icon.svg) no-repeat left center;
+      height: 22px;
       width: 120px;
-      margin-left: -@grid-gutter-width;
+      margin-top: 14px;
+      margin-left: 12px;
     }
     .mobhead-title {
       margin-top: 0;
@@ -61,7 +62,7 @@
       color: @gray-lighter;
       background: #333;
       border-radius: 0;
-      padding: 12px 15px 13px;
+      padding: 16px 15px 17px;
       &.collapsed {
         background: none;
       }
@@ -74,15 +75,21 @@
       }
     }
 
+      // note: these seemingly random widths are to make the light weight of
+      //       the logo text (of the valley) look good on regular DPI monitors
       .masthead-brand .logo {
         display: block;
         float: left;
         background-image: url(../assets/logo.svg);
-        min-height: 50px;
-        min-width: 235px;
-        margin-left: -@grid-gutter-width;
+        background-repeat: no-repeat;
+        background-position: left center;
+        margin-left: @grid-gutter-width/2;
+        height: 60px;
+        width: 203px; // see above note
         @media @sm {
-          margin-left: -@grid-gutter-width/2;
+          margin-left: @grid-gutter-width;
+          height: 50px;
+          width: 244px; // see above note
         }
       }
 
@@ -103,17 +110,25 @@
           padding-bottom: 5px;
           text-align: center;
           padding: @grid-gutter-width/2 0;
+          margin-left: -@grid-gutter-width/4;
           @media @sm {
+            line-height: 50px;
             text-align: right;
             padding: 0 @grid-gutter-width;
+          }
+          @media @md {
+            margin-left: -@grid-gutter-width/2;
           }
         }
 
           .masthead-navitem {
             display: inline-block;
-            padding: 0 @grid-gutter-width/2;
+            padding: 0 @grid-gutter-width/4;
             .transition(opacity .5s);
             color: #ccc;
+            @media @md {
+              padding: 0 @grid-gutter-width/2;
+            }
 
             &:first-child {
               color: #fff;
@@ -216,7 +231,8 @@
           }
 
         .masthead-fullmenu {
-          background: rgba(255,255,255,.98);;
+          background: rgba(255,255,255,.98);
+          margin-bottom: @grid-gutter-width/2;
           @media @sm {
             padding-top: 5%;
             position: absolute;
