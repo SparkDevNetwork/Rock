@@ -42,12 +42,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
     [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 10 )]
     public partial class LifeGroupList : RockBlock
     {
-        #region Fields
-
-        private int _groupTypesCount = 0;
-
-        #endregion
-
         #region Properties
 
         /// <summary>

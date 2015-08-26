@@ -80,7 +80,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             double[] strongScore = responseSetService.GetStrongScore( personId, groupId );
 
 
-            if ( overallScore == null || overallScore == -1 )
+            if ( overallScore == -1 )
             {
                 lOverallScore.Text = "N/A";
             }
@@ -89,7 +89,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                 lOverallScore.Text = overallScore.ToString( "0.0%" );
             }
 
-            if ( weakScore[0] == -1 || weakScore[0]==1)
+            if ( weakScore[0] == -1 || weakScore[0] == 1 )
             {
                 lWeakScore.Text = "N/A";
             }

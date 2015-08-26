@@ -146,7 +146,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                 ResponseSet recentReport = new ResponseSetService( new AccountabilityContext() ).GetMostRecentReport( CurrentPersonId, groupId );
                 recentReportDate = recentReport.SubmitForDate;
             }
-            catch ( Exception e )
+            catch
             {
                 recentReportDate = reportStartDate;
             }

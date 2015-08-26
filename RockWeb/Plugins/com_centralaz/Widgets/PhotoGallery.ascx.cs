@@ -41,7 +41,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [Category( "com_centralaz > Widgets" )]
     [Description( "Allows a user to select photos to display in a carousel." )]
 
-    [SecurityAction( Authorization.EDIT, "The roles and/or users that can edit the HTML content.")]
+    [SecurityAction( Authorization.EDIT, "The roles and/or users that can edit the HTML content." )]
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
 
     [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/", false, "", "", 2 )]
@@ -77,10 +77,10 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         /// number of milliseconds
         /// </value>
         public int PauseMilliseconds
-        { 
+        {
             get
             {
-                return GetAttributeValue("PauseSeconds").AsInteger() * 1000;
+                return GetAttributeValue( "PauseSeconds" ).AsInteger() * 1000;
             }
             private set { }
         }
@@ -114,7 +114,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         {
             get
             {
-                if ( ! _height.HasValue )
+                if ( !_height.HasValue )
                 {
                     _height = GetAttributeValue( "Height" ).AsInteger();
                 }
@@ -133,7 +133,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         {
             get
             {
-                if ( ! _width.HasValue )
+                if ( !_width.HasValue )
                 {
                     _width = GetAttributeValue( "Width" ).AsInteger();
                 }
@@ -179,7 +179,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             // Tack on the subfolder if given.
             if ( !string.IsNullOrEmpty( subfolder ) )
             {
-                ImageFolderPath = string.Format( "{0}{1}{2}", _virtualBasePath, subfolder.StartsWith("/") ? "" : "/", subfolder);
+                ImageFolderPath = string.Format( "{0}{1}{2}", _virtualBasePath, subfolder.StartsWith( "/" ) ? "" : "/", subfolder );
             }
             else
             {
@@ -217,7 +217,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void HtmlContentDetail_BlockUpdated( object sender, EventArgs e )
-        {            
+        {
             ShowView();
         }
 
@@ -238,7 +238,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         protected void rptPhoto_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            if ( SpecifyingSize  )
+            if ( SpecifyingSize )
             {
                 if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
                 {
@@ -293,7 +293,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                             } );
 
                         }
-                        catch ( Exception ex )
+                        catch
                         {
                         }
                     }
@@ -365,7 +365,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 if ( path.Contains( '\\' ) ) fileName = path.Split( '\\' ).Last();
                 if ( path.Contains( '/' ) ) fileName = path.Split( '/' ).Last();
             }
-            catch ( Exception ex )
+            catch
             {
             }
             return fileName;
@@ -408,9 +408,8 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                     }
                 }
             }
-            catch ( Exception ex )
+            catch
             {
-                //log exception
             }
             return images;
         }

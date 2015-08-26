@@ -807,7 +807,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                             workflow.SetAttributeValue( "GroupLeader", _group.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true ).Person.PrimaryAlias.Guid.ToString() );
                             workflow.SetAttributeValue( "GroupMember", person.PrimaryAlias.Guid.ToString() );
                             List<string> workflowErrors;
-                            if ( workflow.Process( rockContext, groupMember, out workflowErrors ) )
+                            if ( workflowService.Process( workflow, out workflowErrors ) )
                             {
                                 if ( workflow.IsPersisted || workflowType.IsPersisted )
                                 {

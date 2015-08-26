@@ -96,7 +96,7 @@ namespace com.centralaz.Accountability.Model
             foreach ( Question q in questions )
             {
                 double[] score = responseService.ResponsePercentage( PersonId, GroupId, q.Id );
-                if ( score[1] != null && score[1] != 0 )
+                if ( score[1] != 0 )
                 {
                     double scorePercentage = score[0] / score[1];
                     if ( weakScore[0] == -1 || weakScore[0] > scorePercentage )
@@ -127,7 +127,7 @@ namespace com.centralaz.Accountability.Model
             foreach ( Question q in questions )
             {
                 double[] score = responseService.ResponsePercentage( PersonId, GroupId, q.Id );
-                if ( score[1] != null && score[1] != 0 )
+                if ( score[1] != 0 )
                 {
                     double scorePercentage = score[0] / score[1];
                     if ( strongScore[0] == -1 || strongScore[0] < scorePercentage )

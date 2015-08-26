@@ -211,7 +211,7 @@ namespace com.centralaz.GeneralJobs.Jobs
 
                     var workflowService = new Rock.Model.WorkflowService( rockContext );
                     List<string> errorMessages;
-                    if ( workflow.Process( rockContext, out errorMessages ) )
+                    if ( workflowService.Process( workflow, out errorMessages ) )
                     {
                         // If the workflow type is persisted, save the workflow
                         if ( workflow.IsPersisted || workflowType.IsPersisted )
@@ -319,7 +319,7 @@ namespace com.centralaz.GeneralJobs.Jobs
                     }
 
                     errorMessages = new List<string>();
-                    if ( workflow.Process( rockContext, out errorMessages ) )
+                    if ( workflowService.Process( workflow, out errorMessages ) )
                     {
                         if ( workflow.IsPersisted || workflowType.IsPersisted )
                         {
