@@ -713,7 +713,7 @@ namespace Rock.Lava
                 }
             }
 
-            if ( !DateTime.TryParse( compareDate.ToString(), out dtCompare ) )
+            if ( compareDate == null || !DateTime.TryParse( compareDate.ToString(), out dtCompare ) )
             {
                 dtCompare = RockDateTime.Now;
             }
