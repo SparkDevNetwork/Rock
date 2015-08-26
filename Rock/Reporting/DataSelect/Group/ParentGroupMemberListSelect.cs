@@ -30,10 +30,10 @@ namespace Rock.Reporting.DataSelect.Group
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Select a comma-delimited list of members of the group" )]
+    [Description( "Select a comma-delimited list of members of the group's parent group" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Select Group Member List" )]
-    public class MemberListSelect : DataSelectComponent
+    [ExportMetadata( "ComponentName", "Select Parent Group Member List" )]
+    public class ParentGroupMemberListSelect : DataSelectComponent
     {
         #region Properties
 
@@ -76,7 +76,7 @@ namespace Rock.Reporting.DataSelect.Group
         {
             get
             {
-                return "MemberList";
+                return "ParentGroupMemberList";
             }
         }
 
@@ -177,7 +177,7 @@ namespace Rock.Reporting.DataSelect.Group
         {
             get
             {
-                return "Member List";
+                return "Parent Group Member List";
             }
         }
 
@@ -195,7 +195,7 @@ namespace Rock.Reporting.DataSelect.Group
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Member List";
+            return "Parent Group Member List";
         }
 
         /// <summary>
@@ -224,7 +224,7 @@ namespace Rock.Reporting.DataSelect.Group
         {
             var qryGroupService = new GroupService( context ).Queryable();
 
-            var memberListQuery = qryGroupService.Select( p => p.Members
+            var memberListQuery = qryGroupService.Select( p => p.ParentGroup.Members
                 .Select( m => new MemberInfo
                 {
                     NickName = m.Person.NickName,
