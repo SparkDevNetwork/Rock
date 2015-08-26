@@ -3,13 +3,30 @@
     <div class="flexslider">
       <ul class="slides">
 
-        {% for item in Items -%}
-          <li>
-            <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
-              <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=1280&height=720&mode=crop&scale=both" alt="{{ item.Title }}">
-            </a>
-          </li>
-        {% endfor -%}
+        {% for item in Items %}
+          {% assign itemCampusesRaw = item | Attribute: 'Campuses' %}
+          {% assign itemCampuses = itemCampusesRaw | Split: ',' %}
+          {% assign showItem = false %}
+
+          {% if itemCampusesRaw == empty %}
+            {% assign showItem = true %}
+          {% else %}
+            {% for itemCampus in itemCampuses %}
+              {% if itemCampus == ContextObjects.Campus.Name %}
+                {% assign showItem = true %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+
+          {% if showItem %}
+            <li>
+              <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
+                <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=1280&height=720&mode=crop&scale=both" alt="{{ item.Title }}">
+              </a>
+            </li>
+          {% endif %}
+
+        {% endfor %}
 
       </ul>
     </div>
@@ -17,9 +34,26 @@
   <div class="slide-control">
     <ul>
 
-      {% for item in Items -%}
-        <li>{{ item.Title }}</li>
-      {% endfor -%}
+      {% for item in Items %}
+        {% assign itemCampusesRaw = item | Attribute: 'Campuses' %}
+        {% assign itemCampuses = itemCampusesRaw | Split: ',' %}
+        {% assign showItem = false %}
+
+        {% if itemCampusesRaw == empty %}
+          {% assign showItem = true %}
+        {% else %}
+          {% for itemCampus in itemCampuses %}
+            {% if itemCampus == ContextObjects.Campus.Name %}
+              {% assign showItem = true %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        {% if showItem %}
+          <li>{{ item.Title }}</li>
+        {% endif %}
+
+      {% endfor %}
 
     </ul>
     <div class="tipper"></div>

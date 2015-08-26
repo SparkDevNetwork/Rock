@@ -5,18 +5,36 @@
   {% if useContainerSetting == "true" %}<div class="container">{% endif %}
     <div class="row">
       {% for item in Items %}
-      <div class="col-md-3 col-xs-6">
-        <div class="announcement">
-          <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
-            <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=720&height=404&mode=crop&scale=both" alt="{{ item.Title }}">
-            <h5 class="announcement-title">{{ item.Title }}</h5>
-          </a>
-        </div>
-      </div>
-      {% capture breakNow %}{{ forloop.index | Modulo:4 }}{% endcapture %}
-        {% if breakNow == 0 -%}
-        {% endif -%}
-      {% endfor -%}
+
+        {% assign itemCampusesRaw = item | Attribute: 'Campuses' %}
+        {% assign itemCampuses = itemCampusesRaw | Split: ',' %}
+        {% assign showItem = false %}
+
+        {% if itemCampusesRaw == empty %}
+          {% assign showItem = true %}
+        {% else %}
+          {% for itemCampus in itemCampuses %}
+            {% if itemCampus == ContextObjects.Campus.Name %}
+              {% assign showItem = true %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        {% if showItem %}
+          <div class="col-md-3 col-xs-6">
+            <div class="announcement">
+              <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
+                <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=720&height=404&mode=crop&scale=both" alt="{{ item.Title }}">
+                <h5 class="announcement-title">{{ item.Title }}</h5>
+              </a>
+            </div>
+          </div>
+          {% capture breakNow %}{{ forloop.index | Modulo:4 }}{% endcapture %}
+            {% if breakNow == 0 %}
+            {% endif %}
+        {% endif %}
+
+      {% endfor %}
     </div>
   {% if useContainerSetting == "true" %}</div>{% endif %}
 </div>
