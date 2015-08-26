@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Web.UI;
@@ -91,39 +92,36 @@ namespace RockWeb.Blocks.Finance
             var rockContext = new RockContext();
             var transactionIdsQry = new FinancialTransactionService( rockContext ).Queryable();
             var transactionDetailService = new FinancialTransactionDetailService( rockContext );
-            var qry = transactionDetailService.Queryable();
+            var qry = transactionDetailService.Queryable().AsNoTracking()
+                .Where( a => a.Transaction.TransactionDateTime.HasValue );
 
             var targetPerson = this.ContextEntity<Person>();
             if ( targetPerson != null )
             {
-                if ( targetPerson.GivingGroupId.HasValue )
-                {
-                    // gives as part of giving group
-                    var groupMemberQry = new GroupMemberService( rockContext ).GetByGroupId( targetPerson.GivingGroupId.Value );
-                    qry = qry.Where( a => groupMemberQry.Any( b => b.PersonId == a.Transaction.AuthorizedPersonAlias.PersonId ) );
-                }
-                else
-                {
-                    // gives individually
-                    qry = qry.Where( a => a.Transaction.AuthorizedPersonAlias.PersonId == targetPerson.Id );
-                }
+                qry = qry.Where( t => t.Transaction.AuthorizedPersonAlias.Person.GivingId == targetPerson.GivingId );
             }
 
-            var qryTransactionsDetailsByYear = qry
-                .Where( a => a.Transaction.TransactionDateTime.HasValue )
-                .GroupBy( a => SqlFunctions.DatePart( "year", a.Transaction.TransactionDateTime.Value ) );
-
-            var qryAccountSummariesByYear = qryTransactionsDetailsByYear.Select( a => new
+            var yearlyAccountDetails = qry.Select( t => new
             {
-                Year = a.Key,
-                Accounts = a.GroupBy( b => b.Account ).Select( c => new
-                {
-                    Account = c.Key,
-                    TotalAmount = c.Sum( d => d.Amount )
-                } ).OrderBy( e => e.Account.Name )
-            } ).OrderByDescending( a => a.Year );
+                Year = t.Transaction.TransactionDateTime.Value.Year,
+                AccountId = t.Account.Id,
+                AccountName = t.Account.Name,
+                Amount = t.Amount
+            } )
+            .ToList();
 
-            var summaryList = qryAccountSummariesByYear.ToList();
+            var summaryList = yearlyAccountDetails
+                .GroupBy( a => a.Year )
+                .Select( t => new
+                {
+                    Year = t.Key,
+                    Accounts = t.GroupBy( b => b.AccountId ).Select( c => new
+                    {
+                        AccountName = c.Max( d => d.AccountName ),
+                        TotalAmount = c.Sum( d => d.Amount )
+                    } ).OrderBy( e => e.AccountName )
+                } ).OrderByDescending( a => a.Year )
+                .ToList();
 
             var mergeObjects = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
 
@@ -134,7 +132,7 @@ namespace RockWeb.Blocks.Finance
                 foreach ( var a in item.Accounts )
                 {
                     var accountDictionary = new Dictionary<string, object>();
-                    accountDictionary.Add( "Account", a.Account );
+                    accountDictionary.Add( "Account", a.AccountName );
                     accountDictionary.Add( "TotalAmount", a.TotalAmount );
                     accountsList.Add( accountDictionary );
                 }
