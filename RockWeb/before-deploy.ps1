@@ -19,36 +19,37 @@ $ErrorActionPreference = "Stop"
 ### stop-service -servicename w3svc
 
 # stop web site and app pool
-Write-Host "Stopping Website and ApplicationPool"
-Stop-Website -Name "$env:APPLICATION_SITE_NAME"
-Stop-WebAppPool -Name (Get-Website -Name "$env:APPLICATION_SITE_NAME").applicationPool
+$Site = Get-WebSite -Name "$env:APPLICATION_SITE_NAME"
+If ( $Site.State -eq "Started" ) {
+	Write-Host "Stopping Website"
+	Stop-Website -Name "$env:APPLICATION_SITE_NAME"
+}
+If ( (Get-WebAppPoolState -Name $Site.applicationPool).Value -eq "Started" ) ) {
+	Write-Host "Stopping ApplicationPool"
+	Stop-WebAppPool -Name $Site.applicationPool
+}
 
 # wait for 10 seconds before continuing
 Start-Sleep 10
 
-# delete the content directory in temp
-If (Test-Path "$rootfolder\temp\Content"){
-	Remove-Item "$rootfolder\temp\Content" -Force -Confirm:$False -Recurse
+# delete the contents of the temp directory
+If (Test-Path "$rootfolder\temp"){
+	Remove-Item "$rootfolder\temp\*" -Force -Confirm:$False -Recurse
+} Else {
+  New-Item -ItemType Directory -Force -Path "$rootfolder\temp"
 }
 
 # move content folder to temp
 Write-Host "Moving content folder to temp directory"
-Move-Item "$webroot\Content" "$rootfolder\temp"
+Move-Item "$webroot\Content" "$rootfolder\temp\" -Force
 
-# move App_Data Cache to temp
-Move-Item "$webroot\App_Data\Cache" "$rootfolder\temp"
-
-# move App_Data Logs to temp
-Move-Item "$webroot\App_Data\Logs" "$rootfolder\temp"
-
-# move App_Data Packages to temp
-Move-Item "$webroot\App_Data\Packages" "$rootfolder\temp"
-
-# move App_Data Uploads to temp
-Move-Item "$webroot\App_Data\Uploads" "$rootfolder\temp"
+# move App_Data to temp
+Write-Host "Moving App_Data folder to temp directory"
+Move-Item "$webroot\App_Data" "$rootfolder\temp\" -Force
 
 # move custom themes to temp
-Move-Item "$webroot\Themes\Ulfberht" "$rootfolder\temp"
+Write-Host "Moving Themes\Ulfberht folder to temp directory"
+Move-Item "$webroot\Themes\Ulfberht" "$rootfolder\temp\" -Force
 
 # move a robots file if it exists
 If (Test-Path "$webroot\robots.txt"){
