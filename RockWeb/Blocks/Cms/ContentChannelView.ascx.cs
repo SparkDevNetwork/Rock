@@ -458,7 +458,7 @@ $(document).ready(function() {
             mergeFields.Add( "Items", currentPageContent );
             mergeFields.Add( "Campuses", CampusCache.All() );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
-            mergeFields.Add( "ContextObjects", contextObjects );
+            mergeFields.Add( "Context", contextObjects );
 
             globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
