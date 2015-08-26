@@ -48,7 +48,8 @@ namespace RockWeb.Blocks.Event
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING, "", 1 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE, "", 2 )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 3 )]
-    [BooleanField( "Enable Debug", "Display the merge fields that are available for lava ( Success Page ).", false, "", 4 )]
+    [BooleanField( "Display Progress Bar", "Display a progress bar for the registration.", true, "", 4 )]
+    [BooleanField( "Enable Debug", "Display the merge fields that are available for lava ( Success Page ).", false, "", 5 )]
     public partial class RegistrationEntry : RockBlock
     {
         #region Fields
@@ -69,6 +70,9 @@ namespace RockWeb.Blocks.Event
         private const string CURRENT_PANEL_KEY = "CurrentPanel";
         private const string CURRENT_REGISTRANT_INDEX_KEY = "CurrentRegistrantIndex";
         private const string CURRENT_FORM_INDEX_KEY = "CurrentFormIndex";
+
+        // protected variables
+        public double PercentComplete = 0;
 
         #endregion
 
@@ -187,7 +191,7 @@ namespace RockWeb.Blocks.Event
 
                 return 0;
             }
-        }        
+        }
         
         /// <summary>
         /// If the registration template allows multiple registrants per registration, returns the maximum allowed
@@ -236,6 +240,18 @@ namespace RockWeb.Blocks.Event
                 // Default is a minimum of one
                 return 1;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the progress bar steps.
+        /// </summary>
+        /// <value>
+        /// The progress bar steps.
+        /// </value>
+        protected int ProgressBarSteps
+        {
+            get { return ViewState["ProgressBarSteps"] as int? ?? 1; }
+            set { ViewState["ProgressBarSteps"] = value; }
         }
 
         /// <summary>
@@ -507,6 +523,11 @@ namespace RockWeb.Blocks.Event
             // Create registrants based on the number selected
             SetRegistrantState( numHowMany.Value );
 
+            // set the max number of steps in the progress bar
+            this.ProgressBarSteps = numHowMany.Value * FormCount + 2;
+            
+            PercentComplete = ( (double)1 / (double)ProgressBarSteps ) * 100;
+
             ShowRegistrant();
 
             hfTriggerScroll.Value = "true";
@@ -544,6 +565,8 @@ namespace RockWeb.Blocks.Event
                 ShowHowMany();
             }
 
+            PercentComplete = ( ( (double)1 + ( ( CurrentFormIndex + 1 ) * CurrentRegistrantIndex ) ) / (double)ProgressBarSteps ) * 100;
+                 
             hfTriggerScroll.Value = "true";
         }
 
@@ -578,6 +601,8 @@ namespace RockWeb.Blocks.Event
             {
                 ShowHowMany();
             }
+
+            PercentComplete = ( ( (double)1 + ( (CurrentFormIndex + 1) * CurrentRegistrantIndex ) ) / (double)ProgressBarSteps ) * 100;
 
             hfTriggerScroll.Value = "true";
         }
@@ -1730,10 +1755,12 @@ namespace RockWeb.Blocks.Event
                 }
                 lRegistrantTitle.Text = title;
 
-                rblFamilyOptions.Visible = 
+                pnlFamilyOptions.Visible = 
                     CurrentRegistrantIndex > 0 && 
                     RegistrationTemplate != null && 
                     RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask;
+
+                pnlProgressBar.Visible = GetAttributeValue("DisplayProgressBar").AsBoolean();
 
                 SetPanel( 1 );
             }

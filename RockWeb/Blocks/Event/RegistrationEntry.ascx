@@ -24,8 +24,19 @@
 
         <h1><asp:Literal ID="lRegistrantTitle" runat="server" /></h1>
         
+        <asp:Panel ID="pnlProgressBar" runat="server">
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="width: <%=this.PercentComplete%>%;">
+                <span class="sr-only"><%=this.PercentComplete%>% Complete</span>
+                </div>
+            </div>
+        </asp:Panel>
+
         <div class="js-registration-same-family registrationentry-samefamily">
-            <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" DataTextField="Value" DataValueField="Key" />
+            <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well">
+                <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" DataTextField="Value" DataValueField="Key" />
+            </asp:Panel>
+            
         </div>
         
         <asp:PlaceHolder ID="phRegistrantControls" runat="server" />
