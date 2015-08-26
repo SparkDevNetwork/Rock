@@ -5,7 +5,7 @@
 
         <asp:Literal ID="lOutput" runat="server"></asp:Literal>
 
-<%--        <asp:Literal ID="lDebug" Visible="false" runat="server"></asp:Literal>--%>
+        <asp:Literal ID="lDebug" Visible="false" runat="server"></asp:Literal>
 
     </ContentTemplate>
 </asp:UpdatePanel>

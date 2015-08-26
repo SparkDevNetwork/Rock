@@ -36,8 +36,8 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [DisplayName( "Login Status Lava" )]
     [Category( "com_centralaz > Widgets" )]
     [Description( "A lava block for login." )]
-    [LinkedPage( "My Account Page", "The page used to log in" )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the package details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/LoginStatusLava.lava' %}", "", 2 )]
+    [LinkedPage( "My Account Page", "The page used to view an account" )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the package details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/LoginStatusLava.lava' %}", "", 2 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     public partial class LoginStatusLava : RockBlock
     {
@@ -172,12 +172,12 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
-            //// show debug info
-            //if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            //{
-            //    lDebug.Visible = true;
-            //    lDebug.Text = mergeFields.lavaDebugInfo();
-            //}
+            // show debug info
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+            {
+                lDebug.Visible = true;
+                lDebug.Text = mergeFields.lavaDebugInfo();
+            }
         }
 
         #endregion
