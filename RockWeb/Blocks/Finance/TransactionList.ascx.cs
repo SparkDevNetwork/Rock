@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Detail Page", order:0 )]
     [TextField( "Title", "Title to display above the grid. Leave blank to hide.", false, order:1 )]
     [BooleanField( "Show Only Active Accounts on Filter", "If account filter is displayed, only list active accounts", false, "", 2, "ActiveAccountsOnlyFilter")]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transation types to limit the list to (if none are selected all types will be included).", false, true, "", "", 3 )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler
     {
         #region Fields
@@ -723,6 +724,13 @@ namespace RockWeb.Blocks.Finance
             // Qry
             var rockContext = new RockContext();
             var qry = new FinancialTransactionService( rockContext ).Queryable();
+
+            // Transaction Types
+            var txnTypes = GetAttributeValue( "TransactionTypes" ).SplitDelimitedValues().AsGuidList();
+            if ( txnTypes.Any() )
+            {
+                qry = qry.Where( t => txnTypes.Contains( t.TransactionTypeValue.Guid ) );
+            }
 
             // Set up the selection filter
             if ( _batch != null )
