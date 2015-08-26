@@ -311,7 +311,15 @@ namespace Rock.Model
                                 {
                                     foreach ( var customSortProperty in customSortProperties.Split( ',' ) )
                                     {
-                                        bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "sort_{0}_{1}", customSortProperty, reportField.Key ) ), Expression.Property( paramExpression, customSortProperty ) ) );
+                                        var customSortPropertyParts = customSortProperty.Split( '.' );
+                                        MemberInfo memberInfo = dynamicType.GetField( string.Format( "sort_{0}_{1}", customSortProperty, reportField.Key ) );
+                                        Expression memberExpression = null;
+                                        foreach ( var customSortPropertyPart in customSortPropertyParts )
+                                        {
+                                            memberExpression = Expression.Property( memberExpression ?? paramExpression, customSortPropertyPart );
+                                        }
+                                        
+                                        bindings.Add( Expression.Bind( memberInfo, memberExpression ) );
                                     }
                                 }
                             }
