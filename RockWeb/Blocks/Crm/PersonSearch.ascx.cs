@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.Crm
                             }
                             else
                             {
-                                sbPersonDetails.Append( string.Format( string.Format( "<small><br>{0}<br>{1} {2}, {3} {4}</small>", location.Street1, location.Street2, location.City, location.City, location.PostalCode ) ) );
+                                sbPersonDetails.Append( string.Format( string.Format( "<small><br>{0}<br>{1} {2}, {3} {4}</small>", location.Street1, location.Street2, location.City, location.State, location.PostalCode ) ) );
                             }
                         }
                         sbPersonDetails.Append("</div>");

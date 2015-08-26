@@ -21,6 +21,14 @@
     </Style>
 
     <!-- Label style: Bold -->
+    <Style x:Key="labelStyleError"
+           BasedOn="{StaticResource labelStyle}"
+           TargetType="{x:Type Label}">
+        <Setter Property="Label.Foreground"
+                Value="Red"></Setter>
+    </Style>
+
+    <!-- Label style: Bold -->
     <Style x:Key="labelStyleBold"
            BasedOn="{StaticResource labelStyle}"
            TargetType="{x:Type Label}">

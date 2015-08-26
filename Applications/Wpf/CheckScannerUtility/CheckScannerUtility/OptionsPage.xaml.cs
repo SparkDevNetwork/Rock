@@ -142,9 +142,6 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 txtPlurality.Text = rockConfig.Plurality;
             }
-            
-
-            cboTransactionSourceType.SelectedItem = ( cboTransactionSourceType.ItemsSource as List<DefinedValue> ).FirstOrDefault( a => a.Guid == rockConfig.SourceTypeValueGuid.AsGuid() );
         }
 
         /// <summary>
@@ -180,10 +177,6 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             cboMagTekCommPort.ItemsSource = System.IO.Ports.SerialPort.GetPortNames();
-
-            cboTransactionSourceType.Items.Clear();
-            cboTransactionSourceType.DisplayMemberPath = "Value";
-            cboTransactionSourceType.ItemsSource = this.BatchPage.SourceTypeValueList.OrderBy( a => a.Order ).ThenBy( a => a.Value ).ToList();
         }
 
         /// <summary>
@@ -272,8 +265,6 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 rockConfig.MICRImageComPort = short.Parse( comPortName.Replace( "COM", string.Empty ) );
             }
-
-            rockConfig.SourceTypeValueGuid = ( cboTransactionSourceType.SelectedItem as DefinedValue ).Guid.ToString();
 
             rockConfig.Save();
 
