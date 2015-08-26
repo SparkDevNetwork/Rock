@@ -3212,6 +3212,7 @@
     <Content Include="Migrations\201508041124356_RegistrationContact.sql" />
     <Content Include="Migrations\201508010008536_BackgroundCheckExpiringSoon.sql" />
     <Content Include="Migrations\201508111253454_SiteMobilePage.sql" />
+    <Content Include="Migrations\201508241735382_RegistrationPersonNote.sql" />
     <Content Include="Migrations\201508171751190_FollowingEventNotification.sql" />
     <Content Include="Migrations\201508162108504_FollowingEventsSuggestions.sql" />
     <Content Include="Migrations\201508111636214_FinancialPaymentDetails.sql" />

@@ -41,43 +41,48 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <StackPanel Margin="20"
-                        Name="spRangerScanSettings">
-                <Label Style="{StaticResource labelStyleLegend}"
-                       Content="Scan Settings"
-                       HorizontalAlignment="Left" />
+            <StackPanel Name="spSharedScanSettings"
+                        Margin="20">
+                <StackPanel Name="spRangerScanSettings">
+                    <Label Style="{StaticResource labelStyleLegend}"
+                           Content="Scan Settings"
+                           HorizontalAlignment="Left" />
 
-                <RadioButton Name="radDoubleSided"
-                             GroupName="grpSided"
-                             Content="Double-sided"
-                             IsChecked="True"
-                             Margin="8,0,0,0" />
-                <RadioButton Name="radSingleSided"
-                             GroupName="grpSided"
-                             Content="Single-sided"
-                             Margin="8,0,0,0" />
+                    <RadioButton Name="radDoubleSided"
+                                 GroupName="grpSided"
+                                 Content="Double-sided"
+                                 IsChecked="True"
+                                 Margin="8,0,0,0" />
+                    <RadioButton Name="radSingleSided"
+                                 GroupName="grpSided"
+                                 Content="Single-sided"
+                                 Margin="8,0,0,0" />
 
-                <CheckBox Name="chkDoubleDocDetection"
-                          Content="Enable Double Document Detection"
-                          Margin="8,8,0,0"
-                          IsChecked="True" />
-                <CheckBox Name="chkEnableSmartScan"
-                          Content="Enable Smart Scan"
-                          Margin="8,8,0,0"
-                          IsChecked="True" />
+                    <CheckBox Name="chkDoubleDocDetection"
+                              Content="Enable Double Document Detection"
+                              Margin="8,8,0,0"
+                              IsChecked="True" />
+                    <CheckBox Name="chkEnableSmartScan"
+                              Content="Enable Smart Scan"
+                              Margin="8,8,0,0"
+                              IsChecked="True" />
+                </StackPanel>
+                <StackPanel Name="spMagTekScanSettings">
+                    <Label Style="{StaticResource labelStyleLegend}"
+                           Content="Scan Settings"
+                           HorizontalAlignment="Left" />
+
+                    <CheckBox Name="chkPromptToScanRearImage"
+                              Content="Prompt to scan the back side."
+                              Margin="8"
+                              IsChecked="False" />
+                </StackPanel>
+                
+                <Label Name="lblTransactionSourceType"
+                       Style="{StaticResource labelStyle}" Margin="6,4,0,0">Transaction Source Type</Label>
+                <ComboBox Name="cboTransactionSourceType" Margin="8,2,0,0"
+                          Style="{StaticResource textboxStyle}" Background="Red"/>
             </StackPanel>
-            <StackPanel Margin="20"
-                        Name="spMagTekScanSettings">
-                <Label Style="{StaticResource labelStyleLegend}"
-                       Content="Scan Settings"
-                       HorizontalAlignment="Left" />
-
-                <CheckBox Name="chkPromptToScanRearImage"
-                          Content="Prompt to scan the back side."
-                          Margin="8"
-                          IsChecked="False" />
-            </StackPanel>
-
         </StackPanel>
 
         <Grid VerticalAlignment="Bottom"

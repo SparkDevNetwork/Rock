@@ -816,7 +816,6 @@ namespace Rock.Web.Cache
                 .FirstOrDefault( a => a.Id == id );
             if ( pageModel != null )
             {
-                pageModel.LoadAttributes( rockContext );
                 return new PageCache( pageModel );
             }
 

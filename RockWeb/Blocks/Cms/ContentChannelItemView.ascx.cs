@@ -438,7 +438,7 @@ namespace RockWeb.Blocks.Cms
                     i.ExpireDateTime,
                     i.Priority,
                     Status = DisplayStatus( i.Status ),
-                    Occurrences = i.EventItemOccurrences.Count()
+                    Occurrences = i.EventItemOccurrences.Any()
                 } ).ToList();
                 gContentChannelItems.DataBind();
 
@@ -540,17 +540,9 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 // Add Occurences Count column
-                var occurrencesField = new BadgeField();
-                occurrencesField.ImportantMin = int.MaxValue;
-                occurrencesField.WarningMin = int.MaxValue;
-                occurrencesField.SuccessMin = int.MaxValue;
-                occurrencesField.InfoMin = 1;
-                occurrencesField.InfoMax = int.MaxValue;
-                occurrencesField.HideMin = int.MinValue;
-                occurrencesField.HideMax = 0;
+                var occurrencesField = new BoolField();
                 occurrencesField.DataField = "Occurrences";
                 occurrencesField.HeaderText = "Event Occurrences";
-                occurrencesField.HtmlEncode = false;
                 gContentChannelItems.Columns.Add( occurrencesField );
                 
                 bool canEditChannel = channel.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );

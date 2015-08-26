@@ -662,19 +662,17 @@ namespace Rock.Model
                 int lastLat = 0;
                 int lastLng = 0;
 
-                // AsText() returns coordinates as Well-Known-Text format (WKT).  Strip leading and closing text
-                string coordinates = this.GeoFence.AsText().Replace( "POLYGON ((", "" ).Replace( "))", "" );
-                string[] longSpaceLat = coordinates.Split( ',' );
-
-                for ( int i = 0; i < longSpaceLat.Length; i++ )
+                foreach ( var coordinate in this.GeoFence.Coordinates() )
                 {
-                    string[] longLat = longSpaceLat[i].Trim().Split( ' ' );
-                    int lat = (int)Math.Round( double.Parse( longLat[1] ) * 1E5 );
-                    int lng = (int)Math.Round( double.Parse( longLat[0] ) * 1E5 );
-                    encodeDiff( lat - lastLat );
-                    encodeDiff( lng - lastLng );
-                    lastLat = lat;
-                    lastLng = lng;
+                    if ( coordinate.Longitude.HasValue && coordinate.Latitude.HasValue )
+                    {
+                        int lat = (int)Math.Round( coordinate.Latitude.Value * 1E5 );
+                        int lng = (int)Math.Round( coordinate.Longitude.Value * 1E5 );
+                        encodeDiff( lat - lastLat );
+                        encodeDiff( lng - lastLng );
+                        lastLat = lat;
+                        lastLng = lng;
+                    }
                 }
             }
 

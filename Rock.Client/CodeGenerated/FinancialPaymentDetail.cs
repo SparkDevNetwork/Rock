@@ -87,6 +87,9 @@ namespace Rock.Client
     public partial class FinancialPaymentDetail : FinancialPaymentDetailEntity
     {
         /// <summary />
+        public Location BillingLocation { get; set; }
+
+        /// <summary />
         public DefinedValue CreditCardTypeValue { get; set; }
 
         /// <summary />

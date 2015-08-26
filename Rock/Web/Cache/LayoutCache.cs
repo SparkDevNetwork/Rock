@@ -189,7 +189,6 @@ namespace Rock.Web.Cache
             var layoutModel = layoutService.Get( id );
             if ( layoutModel != null )
             {
-                layoutModel.LoadAttributes( rockContext );
                 return new LayoutCache( layoutModel );
             }
 

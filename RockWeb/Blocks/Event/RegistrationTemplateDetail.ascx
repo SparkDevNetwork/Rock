@@ -46,12 +46,19 @@
                                     Help="The group member role that new registrants should be added to group with." />
                                 <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Group Member Status" 
                                     Help="The group member status that new registrants should be added to group with."/>
-                                <Rock:RockCheckBoxList ID="cblNotify" runat="server" Label="Notify" RepeatDirection="Vertical"
-                                    Help="Who should be notified when new people are registered?">
-                                    <asp:ListItem Value="1" Text="Registration Contact" />
-                                    <asp:ListItem Value="2" Text="Group Followers" />
-                                    <asp:ListItem Value="4" Text="Group Leaders" />
-                                </Rock:RockCheckBoxList>
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBoxList ID="cblNotify" runat="server" Label="Notify" RepeatDirection="Vertical"
+                                            Help="Who should be notified when new people are registered?">
+                                            <asp:ListItem Value="1" Text="Registration Contact" />
+                                            <asp:ListItem Value="2" Text="Group Followers" />
+                                            <asp:ListItem Value="4" Text="Group Leaders" />
+                                        </Rock:RockCheckBoxList>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbAddPersonNote" runat="server" Label="Add Person Note" Help="Should a note be added to a person's record whenever they register?" Text="Yes" />
+                                    </div>
+                                </div>
                                 <Rock:RockCheckBox ID="cbLoginRequired" runat="server" Label="Login Required" Text="Yes"
                                     Help="Is user required to be logged in when registering?" />
                             </div>

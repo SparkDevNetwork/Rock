@@ -70,6 +70,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<FinancialPaymentDetail>( Context ).Queryable().Any( a => a.BillingLocationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, FinancialPaymentDetail.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Location>( Context ).Queryable().Any( a => a.ParentLocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} contains one or more child {1}.", Location.FriendlyTypeName, Location.FriendlyTypeName.Pluralize().ToLower() );
