@@ -33,7 +33,7 @@
                             RowItemText="Transaction" OnRowSelected="gTransactions_Edit" AllowSorting="true" >
                             <Columns>
                                 <Rock:SelectField></Rock:SelectField>
-                                <Rock:RockBoundField DataField="AuthorizedPersonAlias.Person.FullName" HeaderText="Person" 
+                                <Rock:RockBoundField DataField="AuthorizedPersonAlias.Person.FullNameReversed" HeaderText="Person" 
                                     SortExpression="AuthorizedPersonAlias.Person.LastName,AuthorizedPersonAlias.Person.NickName" />
                                 <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date / Time" SortExpression="TransactionDateTime" />                
                                 <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" SortExpression="TotalAmount" />

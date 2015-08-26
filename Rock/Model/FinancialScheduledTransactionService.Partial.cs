@@ -43,24 +43,26 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.FinancialTransaction" /> that matches the transaction code, this value will be null if a match is not found.
         /// </returns>
-        public IQueryable<FinancialScheduledTransaction> Get( int? personId, string givingId, bool includeInactive )
+        public IQueryable<FinancialScheduledTransaction> Get( int? personId, int? givingGroupId, bool includeInactive )
         {
             var qry = Queryable()
-                .Include(a => a.ScheduledTransactionDetails)
-                .Include(a => a.FinancialPaymentDetail.CurrencyTypeValue)
-                .Include(a => a.FinancialPaymentDetail.CreditCardTypeValue);
+                .Include( a => a.ScheduledTransactionDetails )
+                .Include( a => a.FinancialPaymentDetail.CurrencyTypeValue )
+                .Include( a => a.FinancialPaymentDetail.CreditCardTypeValue );
 
-            if (!includeInactive)
+            if ( !includeInactive )
             {
                 qry = qry.Where( t => t.IsActive );
             }
 
-            if ( !string.IsNullOrEmpty( givingId ) )
+            if ( givingGroupId.HasValue )
             {
-                qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingId == givingId );
+                //  Person contributes with family
+                qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingGroupId == givingGroupId );
             }
             else if ( personId.HasValue )
             {
+                // Person contributes individually
                 qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == personId );
             }
 
