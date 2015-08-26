@@ -9,6 +9,9 @@
         {% assign itemCampusesRaw = item | Attribute: 'Campuses' %}
         {% assign itemCampuses = itemCampusesRaw | Split: ',' %}
         {% assign showItem = false %}
+        {% assign externalUrl = item | Attribute: 'ExternalLink' %}
+        {% capture internalUrl %}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{% endcapture %}
+        {% assign itemLink = externalUrl | Default: internalUrl %}
 
         {% if itemCampusesRaw == empty %}
           {% assign showItem = true %}
@@ -23,7 +26,7 @@
         {% if showItem %}
           <div class="col-md-3 col-xs-6">
             <div class="announcement">
-              <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
+              <a href="{{ itemLink }}">
                 <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=720&height=404&mode=crop&scale=both" alt="{{ item.Title }}">
                 <h5 class="announcement-title">{{ item.Title }}</h5>
               </a>
