@@ -759,7 +759,6 @@ namespace RockWeb.Blocks.Finance
                 if ( _person != null )
                 {
                     // get the transactions for the person or all the members in the person's giving group (Family)
-                    qry = qry.InnerJoinPerson( a => a.AuthorizedPersonAlias.PersonId, rockContext );
                     qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingId == _person.GivingId );
                 }
 
@@ -865,10 +864,6 @@ namespace RockWeb.Blocks.Finance
                     qry = qry.OrderByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
                 }
             }
-
-
-            // specify the items we don't want lazy loaded
-            qry = qry.Include( a => a.FinancialPaymentDetail ).Include( a => a.AuthorizedPersonAlias.Person ).Include( a => a.ProcessedByPersonAlias );
 
             gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
