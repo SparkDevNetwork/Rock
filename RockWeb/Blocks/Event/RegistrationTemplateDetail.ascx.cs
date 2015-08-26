@@ -620,6 +620,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
             RegistrationTemplate.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
             RegistrationTemplate.Notify = notify;
+            RegistrationTemplate.AddPersonNote = cbAddPersonNote.Checked;
             RegistrationTemplate.LoginRequired = cbLoginRequired.Checked;
             RegistrationTemplate.AllowMultipleRegistrants = cbMultipleRegistrants.Checked;
             RegistrationTemplate.MaxRegistrants = nbMaxRegistrants.Text.AsInteger();
@@ -1842,6 +1843,7 @@ namespace RockWeb.Blocks.Event
                 li.Selected = ( RegistrationTemplate.Notify & notify ) == notify;
             }
 
+            cbAddPersonNote.Checked = RegistrationTemplate.AddPersonNote;
             cbLoginRequired.Checked = RegistrationTemplate.LoginRequired;
             cbMultipleRegistrants.Checked = RegistrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Visible = RegistrationTemplate.AllowMultipleRegistrants;

@@ -274,7 +274,6 @@ namespace Rock.Web.Cache
             var categoryModel = categoryService.Get( id );
             if ( categoryModel != null )
             {
-                categoryModel.LoadAttributes( rockContext );
                 return new CategoryCache( categoryModel );
             }
 

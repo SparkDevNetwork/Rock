@@ -255,7 +255,6 @@ namespace Rock.Web.Cache
                 .FirstOrDefault( c => c.Id == id );
             if ( campusModel != null )
             {
-                campusModel.LoadAttributes( rockContext );
                 return new CampusCache( campusModel );
             }
 

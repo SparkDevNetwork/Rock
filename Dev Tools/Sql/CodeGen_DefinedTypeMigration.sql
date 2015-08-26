@@ -1,3 +1,8 @@
+-- set @definedTypeNameFilter if you need DefinedValue migrations for a specific DefinedType
+declare
+ @definedTypeNameFilter nvarchar(max) = null --'Transaction Source%'
+
+
 select 
     CONCAT('RockMigrationHelper.AddDefinedType("', 
     [c].[Name], '","',
@@ -10,7 +15,7 @@ select
 FROM 
     [DefinedType] [dt]
 	INNER JOIN [Category] [c] ON [c].Id = [dt].CategoryId
-where dt.IsSystem=0
+where (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
 union
 select 
     CONCAT('RockMigrationHelper.AddDefinedTypeAttribute("', 
@@ -32,7 +37,7 @@ where
     e.Name = 'Rock.Model.DefinedValue' 
 and 
     a.EntityTypeQualifierColumn = 'DefinedTypeId'
-and dt.IsSystem=0
+and (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
 union
 select 
     CONCAT('RockMigrationHelper.AddAttributeQualifier("', 
@@ -51,7 +56,7 @@ where
     e.Name = 'Rock.Model.DefinedValue' 
 and 
     a.EntityTypeQualifierColumn = 'DefinedTypeId'
-and dt.IsSystem=0
+and (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
 union
 SELECT 
     CONCAT('RockMigrationHelper.AddDefinedValue("', 
@@ -64,7 +69,7 @@ SELECT
     3 [SortOrder]
   FROM [DefinedValue] [dv]
     join [DefinedType] [dt] on [dv].[DefinedTypeId] = [dt].[Id]
-   where dt.IsSystem = 0
+   where (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
 union
 select 
     CONCAT('RockMigrationHelper.AddDefinedValueAttributeValue("', 
@@ -80,12 +85,13 @@ FROM [AttributeValue] [av]
 where 
     a.EntityTypeQualifierColumn = 'DefinedTypeId'
 and
-    dt.IsSystem=0
+    (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
 order by [SortOrder]
 
 select 
     CONCAT('RockMigrationHelper.DeleteAttribute("', 
-    [a].[Guid], '");'
+    [a].[Guid], '"); // ',
+	a.[Key]
     ) [Down],
     0 [SortOrder]
 FROM [Attribute] [a]
@@ -96,23 +102,25 @@ where
     e.Name = 'Rock.Model.DefinedValue' 
 and 
     a.EntityTypeQualifierColumn = 'DefinedTypeId'
-and dt.IsSystem=0
+and (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
 union
 SELECT 
     CONCAT('RockMigrationHelper.DeleteDefinedValue("', 
-    [dv].[Guid], '");'
+    [dv].[Guid], '"); // ',
+	dv.Value
     ) [Down],
     1 [SortOrder]
   FROM [DefinedValue] [dv]
     join [DefinedType] [dt] on [dv].[DefinedTypeId] = [dt].[Id]
-   where dt.IsSystem = 0
+   where (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
 union
 select 
     CONCAT('RockMigrationHelper.DeleteDefinedType("', 
-    [dt].[Guid], '");'
+    [dt].[Guid], '"); // ',
+	dt.Name
     ) [Down],
     2 [SortOrder]
 FROM 
     [DefinedType] [dt]
-where dt.IsSystem=0
+where (dt.IsSystem=0 or dt.Name like @definedTypeNameFilter)
 order by [SortOrder]

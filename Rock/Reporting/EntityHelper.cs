@@ -132,7 +132,7 @@ namespace Rock.Reporting
                         entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.TEXT.AsGuid() );
                     }
 
-                    // Integer Properties
+                    // Integer Properties (which may be a DefinedValue)
                     else if ( property.PropertyType == typeof( int ) || property.PropertyType == typeof( int? ) )
                     {
                         entityField.FieldType = FieldTypeCache.Read( SystemGuid.FieldType.INTEGER.AsGuid() );

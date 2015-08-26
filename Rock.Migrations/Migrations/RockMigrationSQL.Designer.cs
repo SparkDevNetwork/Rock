@@ -558,8 +558,8 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DECLARE @PersonEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Model.Person&apos; )
-        ///IF @PersonEntityTypeId IS NOT NULL
+        ///   Looks up a localized string similar to DECLARE @PersonAliasEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Model.PersonAlias&apos; )
+        ///IF @PersonAliasEntityTypeId IS NOT NULL
         ///BEGIN
         ///
         ///    DECLARE @EntityTypeId int 
@@ -567,11 +567,37 @@ namespace Rock.Migrations.Migrations {
         ///    DECLARE @EntityId int
         ///
         ///    SET @EntityTypeId = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = &apos;17DFDE21-0C1E-426F-8516-4BBA9ED28385&apos; )
-        ///	INSERT INTO [FollowingEventType] ( [Name], [Description], [EntityTypeId], [FollowedEntityTypeId], [IsActive], [SendOnWeekends], [IsNoticeRequired [rest of string was truncated]&quot;;.
+        ///	INSERT INTO [FollowingEventType] ( [Name], [Description], [EntityTypeId], [FollowedEntityTypeId], [IsActive], [SendOnWeekends], [I [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201508171751190_FollowingEventNotification {
             get {
                 return ResourceManager.GetString("_201508171751190_FollowingEventNotification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- DT: Fix Pledge Analytics Proc
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountPledged decimal(18,2) = NULL
+        ///	, @MinComplete decimal(18,2) = NULL
+        ///	, @MaxComplete decimal(18,2) = NULL
+        ///	, @MinAmountGiven decimal(18,2) = NULL
+        ///	, @MaxAmountGiven  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201508241735382_RegistrationPersonNote {
+            get {
+                return ResourceManager.GetString("_201508241735382_RegistrationPersonNote", resourceCulture);
             }
         }
     }
