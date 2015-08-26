@@ -441,12 +441,24 @@ $(document).ready(function() {
                 }
             }
 
+            // add context to merge fields
+            var contextEntityTypes = RockPage.GetContextEntityTypes();
+
+            var contextObjects = new Dictionary<string, object>();
+            foreach ( var conextEntityType in contextEntityTypes )
+            {
+                var contextObject = RockPage.GetCurrentContext( conextEntityType );
+                contextObjects.Add( conextEntityType.FriendlyName, contextObject );
+            }
+            
+
             var mergeFields = new  Dictionary<string, object>();
             mergeFields.Add( "Pagination", pagination );
             mergeFields.Add( "LinkedPages", linkedPages );
             mergeFields.Add( "Items", currentPageContent );
             mergeFields.Add( "Campuses", CampusCache.All() );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
+            mergeFields.Add( "ContextObjects", contextObjects );
 
             globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
