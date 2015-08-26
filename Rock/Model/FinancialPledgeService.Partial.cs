@@ -71,12 +71,12 @@ namespace Rock.Model
 
             if ( minComplete.HasValue )
             {
-                parameters.Add( "MinComplete", minComplete.Value );
+                parameters.Add( "MinComplete", minComplete.Value / 100 );
             }
 
             if ( maxComplete.HasValue )
             {
-                parameters.Add( "MaxComplete", maxComplete.Value );
+                parameters.Add( "MaxComplete", maxComplete.Value / 100 );
             }
 
             if ( minAmountGiven.HasValue )

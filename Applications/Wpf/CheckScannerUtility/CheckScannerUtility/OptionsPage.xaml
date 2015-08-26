@@ -51,10 +51,7 @@
                        Style="{StaticResource labelStyle}">Scan Image Color Type</Label>
                 <ComboBox Name="cboImageOption"
                           Style="{StaticResource textboxStyle}" />
-                <Label Name="lblTransactionSourceType"
-                       Style="{StaticResource labelStyle}">Transaction Source Type</Label>
-                <ComboBox Name="cboTransactionSourceType"
-                          Style="{StaticResource textboxStyle}" />
+                
 
                 
                 <Label Name="lblAdvancedInfo"

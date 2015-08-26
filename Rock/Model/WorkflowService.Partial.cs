@@ -58,25 +58,37 @@ namespace Rock.Model
 
             bool result = workflow.ProcessActivities( rockContext, entity, out errorMessages );
 
-            if ( workflow.IsPersisted || workflow.WorkflowType.IsPersisted )
+            if ( workflow.Status == "DeleteWorkflowNow")
             {
-                if ( workflow.Id == 0 )
+                if ( workflow.Id > 0 )
                 {
-                    Add( workflow );
-                }
-
-                rockContext.WrapTransaction( () =>
-                {
+                    Delete( workflow );
                     rockContext.SaveChanges();
-                    workflow.SaveAttributeValues( rockContext );
-                    foreach ( var activity in workflow.Activities )
+                }
+                result = true;
+            }
+            else
+            {
+                if ( workflow.IsPersisted || workflow.WorkflowType.IsPersisted )
+                {
+                    if ( workflow.Id == 0 )
                     {
-                        activity.SaveAttributeValues( rockContext );
+                        Add( workflow );
                     }
-                } );
 
-                workflow.IsProcessing = false;
-                rockContext.SaveChanges();
+                    rockContext.WrapTransaction( () =>
+                    {
+                        rockContext.SaveChanges();
+                        workflow.SaveAttributeValues( rockContext );
+                        foreach ( var activity in workflow.Activities )
+                        {
+                            activity.SaveAttributeValues( rockContext );
+                        }
+                    } );
+
+                    workflow.IsProcessing = false;
+                    rockContext.SaveChanges();
+                }
             }
 
             return result;

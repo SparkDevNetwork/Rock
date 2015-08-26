@@ -290,7 +290,6 @@ namespace Rock.Web.Cache
             var blockModel = blockService.Get( id );
             if ( blockModel != null )
             {
-                blockModel.LoadAttributes( rockContext );
                 return new BlockCache( blockModel );
             }
 

@@ -169,14 +169,14 @@ namespace RockWeb.Blocks.Finance
         {
             bool includeInactive = !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Include Inactive" ) );
             int? personId = null;
-            int? givingGroupId = null;
+            string givingId = null;
 
             bool validRequest = false;
 
             if ( TargetPerson != null )
             {
                 personId = TargetPerson.Id;
-                givingGroupId = TargetPerson.GivingGroupId;
+                givingId = TargetPerson.GivingId;
                 validRequest = true;
             }
             else
@@ -191,7 +191,7 @@ namespace RockWeb.Blocks.Finance
             if ( validRequest )
             {
                 gList.DataSource = new FinancialScheduledTransactionService( new RockContext() )
-                    .Get( personId, givingGroupId, includeInactive ).ToList();
+                    .Get( personId, givingId, includeInactive ).ToList();
                 gList.DataBind();
             }
         }

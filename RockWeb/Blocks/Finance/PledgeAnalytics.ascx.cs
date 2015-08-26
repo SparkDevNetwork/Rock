@@ -126,16 +126,6 @@ namespace RockWeb.Blocks.Finance
             BindGrid();
         }
 
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the rblInclude control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void rblInclude_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            ShowHideFilters();
-        }
-
         #endregion
 
         #region Methods
@@ -223,31 +213,6 @@ namespace RockWeb.Blocks.Finance
             if ( !string.IsNullOrWhiteSpace(includeSetting) )
             {
                 rblInclude.SetValue(Int32.Parse(includeSetting));
-            }
-            
-            ShowHideFilters();
-        }
-
-        /// <summary>
-        /// Shows the hide filters.
-        /// </summary>
-        private void ShowHideFilters()
-        {
-            
-
-            int includeOption = 0;
-
-            int.TryParse(rblInclude.SelectedValue, out includeOption);
-
-            if ( includeOption == 0 )
-            {
-                nrePercentComplete.Visible = true;
-                nreAmountGiven.Visible = true;
-            }
-            else
-            {
-                nrePercentComplete.Visible = false;
-                nreAmountGiven.Visible = false;
             }
         }
 

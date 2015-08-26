@@ -303,123 +303,146 @@ namespace RockWeb.Blocks.Reporting
             List<Guid> togglableDataFieldGuids,
             RockContext rockContext )
         {
-            var filteredEntityTypeName = EntityTypeCache.Read( reportEntityType ).Name;
-            if ( filter.ExpressionType == FilterExpressionType.Filter )
+            try
             {
-                var filterControl = new FilterField();
-                filterControl.FilterMode = FilterMode.SimpleFilter;
-
-                bool filterIsVisible = selectedDataFieldGuids.Contains( filter.Guid );
-                bool filterIsConfigurable = configurableDataFieldGuids.Contains( filter.Guid );
-                bool showCheckbox = togglableDataFieldGuids.Contains( filter.Guid ) || !filterIsConfigurable;
-                filterControl.Visible = filterIsVisible;
-                parentControl.Controls.Add( filterControl );
-                filterControl.DataViewFilterGuid = filter.Guid;
-
-                filterControl.HideFilterCriteria = !filterIsConfigurable;
-                filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
-                filterControl.FilteredEntityTypeName = filteredEntityTypeName;
-
-                if ( filter.EntityTypeId.HasValue )
+                var filteredEntityTypeName = EntityTypeCache.Read( reportEntityType ).Name;
+                if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
-                    var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( filter.EntityTypeId.Value, rockContext );
-                    if ( entityTypeCache != null )
+                    var filterControl = new FilterField();
+                    filterControl.FilterMode = FilterMode.SimpleFilter;
+
+                    bool filterIsVisible = selectedDataFieldGuids.Contains( filter.Guid );
+                    bool filterIsConfigurable = configurableDataFieldGuids.Contains( filter.Guid );
+                    bool showCheckbox = togglableDataFieldGuids.Contains( filter.Guid ) || !filterIsConfigurable;
+                    filterControl.Visible = filterIsVisible;
+                    parentControl.Controls.Add( filterControl );
+                    filterControl.DataViewFilterGuid = filter.Guid;
+
+                    filterControl.HideFilterCriteria = !filterIsConfigurable;
+                    filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
+                    filterControl.FilteredEntityTypeName = filteredEntityTypeName;
+
+                    if ( filter.EntityTypeId.HasValue )
                     {
-                        filterControl.FilterEntityTypeName = entityTypeCache.Name;
+                        var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( filter.EntityTypeId.Value, rockContext );
+                        if ( entityTypeCache != null )
+                        {
+                            filterControl.FilterEntityTypeName = entityTypeCache.Name;
+                        }
+                    }
+
+                    filterControl.Expanded = true;
+
+                    filterControl.ShowCheckbox = filterIsVisible && showCheckbox;
+
+                    var reportEntityTypeCache = EntityTypeCache.Read( reportEntityType );
+                    var reportEntityTypeModel = reportEntityTypeCache.GetEntityType();
+
+                    var filterEntityType = EntityTypeCache.Read( filter.EntityTypeId ?? 0 );
+                    var component = Rock.Reporting.DataFilterContainer.GetComponent( filterEntityType.Name );
+                    if ( component != null )
+                    {
+                        string selectionUserPreference = null;
+                        bool? checkedUserPreference = null;
+                        if ( setSelection && filterIsVisible && filterIsConfigurable )
+                        {
+                            selectionUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Selection", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) );
+                        }
+                        else if ( setSelection && filterIsVisible && !filterIsConfigurable )
+                        {
+                            checkedUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Checked", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) ).AsBooleanOrNull();
+                        }
+
+                        if ( checkedUserPreference.HasValue )
+                        {
+                            filterControl.SetCheckBoxChecked( checkedUserPreference.Value );
+                        }
+
+                        if ( filterIsVisible && !filterIsConfigurable )
+                        {
+                            // not configurable so just label it with the selection summary
+                            filterControl.Label = component.FormatSelection( reportEntityTypeModel, filter.Selection );
+                        }
+                        else if ( component is Rock.Reporting.DataFilter.PropertyFilter )
+                        {
+                            // a configurable property filter
+                            var propertyFilter = component as Rock.Reporting.DataFilter.PropertyFilter;
+                            if ( setSelection )
+                            {
+                                var selection = filter.Selection;
+
+                                if ( !string.IsNullOrWhiteSpace( selectionUserPreference ) )
+                                {
+                                    selection = propertyFilter.UpdateSelectionFromUserPreferenceSelection( selection, selectionUserPreference );
+                                }
+
+                                selection = propertyFilter.UpdateSelectionFromPageParameters( selection, this );
+
+                                try
+                                {
+                                    filterControl.SetSelection( selection );
+                                }
+                                catch ( Exception ex )
+                                {
+                                    this.LogException( new Exception( "Exception setting selection for DataViewFilter: " + filter.Guid, ex ) );
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if ( setSelection )
+                            {
+                                var selection = filter.Selection;
+                                if ( !string.IsNullOrWhiteSpace( selectionUserPreference ) )
+                                {
+                                    selection = selectionUserPreference;
+                                }
+
+                                if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters )
+                                {
+                                    selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters ).UpdateSelectionFromPageParameters( selection, this );
+                                }
+
+                                filterControl.SetSelection( selection );
+
+                                try
+                                {
+                                    filterControl.SetSelection( selection );
+                                }
+                                catch ( Exception ex )
+                                {
+                                    this.LogException( new Exception( "Exception setting selection for DataViewFilter: " + filter.Guid, ex ) );
+                                }
+                            }
+
+                            // a configurable data filter
+                            filterControl.Label = component.GetTitle( reportEntityTypeModel );
+                        }
                     }
                 }
-
-                filterControl.Expanded = true;
-                
-                filterControl.ShowCheckbox = filterIsVisible && showCheckbox;
-
-                var reportEntityTypeCache = EntityTypeCache.Read( reportEntityType );
-                var reportEntityTypeModel = reportEntityTypeCache.GetEntityType();
-
-                var filterEntityType = EntityTypeCache.Read( filter.EntityTypeId ?? 0 );
-                var component = Rock.Reporting.DataFilterContainer.GetComponent( filterEntityType.Name );
-                if ( component != null )
+                else
                 {
-                    string selectionUserPreference = null;
-                    bool? checkedUserPreference = null;
-                    if ( setSelection && filterIsVisible && filterIsConfigurable )
+                    var groupControl = new FilterGroup();
+                    parentControl.Controls.Add( groupControl );
+                    groupControl.DataViewFilterGuid = filter.Guid;
+                    groupControl.ID = string.Format( "fg_{0}", groupControl.DataViewFilterGuid.ToString( "N" ) );
+                    groupControl.FilteredEntityTypeName = filteredEntityTypeName;
+                    groupControl.IsDeleteEnabled = false;
+                    groupControl.HidePanelHeader = true;
+                    if ( setSelection )
                     {
-                        selectionUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Selection", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) );
-                    }
-                    else if ( setSelection && filterIsVisible && !filterIsConfigurable )
-                    {
-                        checkedUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Checked", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) ).AsBooleanOrNull();
-                    }
-
-                    if ( checkedUserPreference.HasValue )
-                    {
-                        filterControl.SetCheckBoxChecked( checkedUserPreference.Value );
+                        groupControl.FilterType = filter.ExpressionType;
                     }
 
-                    if ( filterIsVisible && !filterIsConfigurable )
+                    foreach ( var childFilter in filter.ChildFilters )
                     {
-                        // not configurable so just label it with the selection summary
-                        filterControl.Label = component.FormatSelection( reportEntityTypeModel, filter.Selection );
-                    }
-                    else if ( component is Rock.Reporting.DataFilter.PropertyFilter )
-                    {
-                        // a configurable property filter
-                        var propertyFilter = component as Rock.Reporting.DataFilter.PropertyFilter;
-                        if ( setSelection )
-                        {
-                            var selection = filter.Selection;
-
-                            if ( !string.IsNullOrWhiteSpace( selectionUserPreference ) )
-                            {
-                                selection = propertyFilter.UpdateSelectionFromUserPreferenceSelection( selection, selectionUserPreference );
-                            }
-
-                            selection = propertyFilter.UpdateSelectionFromPageParameters( selection, this );
-
-                            filterControl.SetSelection(selection);
-                        }
-                    }
-                    else
-                    {
-                        if ( setSelection )
-                        {
-                            var selection = filter.Selection;
-                            if ( !string.IsNullOrWhiteSpace( selectionUserPreference ) )
-                            {
-                                selection = selectionUserPreference;
-                            }
-
-                            if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters )
-                            {
-                                selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters ).UpdateSelectionFromPageParameters( selection, this );
-                            }
-
-                            filterControl.SetSelection( selection );
-                        }
-
-                        // a configurable data filter
-                        filterControl.Label = component.GetTitle( reportEntityTypeModel );
+                        CreateFilterControl( groupControl, childFilter, reportEntityType, setSelection, selectedDataFieldGuids, configurableDataFieldGuids, togglableDataFieldGuids, rockContext );
                     }
                 }
             }
-            else
+            catch (Exception ex)
             {
-                var groupControl = new FilterGroup();
-                parentControl.Controls.Add( groupControl );
-                groupControl.DataViewFilterGuid = filter.Guid;
-                groupControl.ID = string.Format( "fg_{0}", groupControl.DataViewFilterGuid.ToString( "N" ) );
-                groupControl.FilteredEntityTypeName = filteredEntityTypeName;
-                groupControl.IsDeleteEnabled = false;
-                groupControl.HidePanelHeader = true;
-                if ( setSelection )
-                {
-                    groupControl.FilterType = filter.ExpressionType;
-                }
-
-                foreach ( var childFilter in filter.ChildFilters )
-                {
-                    CreateFilterControl( groupControl, childFilter, reportEntityType, setSelection, selectedDataFieldGuids, configurableDataFieldGuids, togglableDataFieldGuids, rockContext );
-                }
+                this.LogException( new Exception( "Exception creating FilterControl for DataViewFilter: " + filter.Guid, ex ) );
             }
         }
 

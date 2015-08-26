@@ -549,7 +549,6 @@ namespace Rock.Web.Cache
             var siteModel = siteService.Get( id );
             if ( siteModel != null )
             {
-                siteModel.LoadAttributes( rockContext );
                 return new SiteCache( siteModel );
             }
 

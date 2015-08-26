@@ -36,6 +36,7 @@
                                         <span class='<%# (decimal)Eval("Variance") != 0 ? "label label-danger" : "" %>'><%# ((decimal)Eval("Variance")).ToString("C2") %></span>
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
+                                <Rock:RockBoundField DataField="AccountSummaryText" HeaderText="Accounts" HtmlEncode="false" />
                                 <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" SortExpression="Campus.Name" ColumnPriority="Desktop" />
                                 <Rock:RockTemplateField HeaderText="Status" SortExpression="Status" ItemStyle-HorizontalAlign="Center">
                                     <ItemTemplate>
