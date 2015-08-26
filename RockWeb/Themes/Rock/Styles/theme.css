@@ -6096,6 +6096,7 @@ h4,
   }
   .smartsearch input,
   .smartsearch a.dropdown-toggle {
+    height: 45px;
     line-height: 38px;
   }
   .smartsearch i {
