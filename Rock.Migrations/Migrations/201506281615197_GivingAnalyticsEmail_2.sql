@@ -175,7 +175,7 @@ BEGIN
 		[p].[Guid],
 		[p].[NickName],
 		[p].[LastName],
-		[p].[NickName] + '' '' + [p].[LastName] AS [PersonName],
+		LTRIM(ISNULL([p].[NickName],'''') + '' '' + [p].[LastName]) AS [PersonName],
         [p].[Email],
 		[p].[GivingId],
 		CTE4.*
@@ -196,7 +196,7 @@ BEGIN
 		[p].[Guid],
 		[p].[NickName],
 		[p].[LastName],
-		[p].[NickName] + '' '' + [p].[LastName] AS [PersonName],
+		LTRIM(ISNULL([p].[NickName],'''') + '' '' + [p].[LastName]) AS [PersonName],
         [p].[Email],
 		[p].[GivingId],'
 
