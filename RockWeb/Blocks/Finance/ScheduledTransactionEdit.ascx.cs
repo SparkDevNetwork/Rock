@@ -1350,7 +1350,7 @@ achieve our mission.  We are so grateful for your commitment.
                     $(this).parents('div.input-group').removeClass('has-error');
                 }}
             }});
-            $('.total-amount').html('$ ' + totalAmt.toFixed(2));
+            $('.total-amount').html('{4}' + totalAmt.toFixed(2));
             return false;
         }});
 
@@ -1421,7 +1421,14 @@ achieve our mission.  We are so grateful for your commitment.
     }});
 
 ";
-            string script = string.Format( scriptFormat, divCCPaymentInfo.ClientID, divACHPaymentInfo.ClientID, hfPaymentTab.ClientID, oneTimeFrequencyId );
+            string script = string.Format( 
+                scriptFormat, 
+                divCCPaymentInfo.ClientID, // {0}
+                divACHPaymentInfo.ClientID, // {1} 
+                hfPaymentTab.ClientID, // {2} 
+                oneTimeFrequencyId, // {3} 
+                GlobalAttributesCache.Value( "CurrencySymbol") // {4}
+                );
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
         }
 
