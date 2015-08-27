@@ -1787,7 +1787,7 @@ namespace RockWeb.Blocks.Finance
                     $(this).parents('div.input-group').removeClass('has-error');
                 }}
             }});
-            $('.total-amount').html('$ ' + totalAmt.toFixed(2));
+            $('.total-amount').html('{3}' + totalAmt.toFixed(2));
             return false;
         }});
 
@@ -1856,7 +1856,14 @@ namespace RockWeb.Blocks.Finance
     }});
 
 ";
-            string script = string.Format( scriptFormat, divCCPaymentInfo.ClientID, hfPaymentTab.ClientID, oneTimeFrequencyId );
+            string script = string.Format( 
+                scriptFormat,
+                divCCPaymentInfo.ClientID, // {0} 
+                hfPaymentTab.ClientID, // {1}
+                oneTimeFrequencyId,// {2}
+                GlobalAttributesCache.Value( "CurrencySymbol" ) // {3)
+            ); 
+
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
         }
 

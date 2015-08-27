@@ -1919,7 +1919,7 @@ namespace RockWeb.Blocks.Event
         $(this).val(amountPaid.toFixed(2));
 
         var amountRemaining = totalCost - ( previouslyPaid + amountPaid );
-        $('#{4}').text( '$' + amountRemaining.toFixed(2) );
+        $('#{4}').text( '{6}' + amountRemaining.toFixed(2) );
         
     }});
 
@@ -1931,7 +1931,14 @@ namespace RockWeb.Blocks.Event
         $('#{5}').val('')
     }}
 ",
-            nbAmountPaid.ClientID, hfTotalCost.ClientID, hfMinimumDue.ClientID, hfPreviouslyPaid.ClientID, lRemainingDue.ClientID, hfTriggerScroll.ClientID);
+            nbAmountPaid.ClientID, // {0}
+            hfTotalCost.ClientID, // {1}
+            hfMinimumDue.ClientID, // {2}
+            hfPreviouslyPaid.ClientID, // {3}
+            lRemainingDue.ClientID, // {4}
+            hfTriggerScroll.ClientID, // {5}
+            GlobalAttributesCache.Value( "CurrencySymbol" ) // {6}
+            );
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );
         }
