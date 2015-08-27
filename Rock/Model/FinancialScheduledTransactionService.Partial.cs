@@ -350,7 +350,7 @@ namespace Rock.Model
 
                                 transaction.TransactionDetails.Add( transactionDetail );
 
-                                History.EvaluateChange( txnChanges, detail.Account.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
+                                History.EvaluateChange( txnChanges, detail.Account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
                                 History.EvaluateChange( txnChanges, "Summary", string.Empty, transactionDetail.Summary );
 
                                 if ( remainingAmount <= 0.0M )
@@ -379,7 +379,7 @@ namespace Rock.Model
                                     transactionDetail.Summary = "Note: Extra amount was applied to this account.";
                                 }
 
-                                History.EvaluateChange( txnChanges, defaultAccount.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
+                                History.EvaluateChange( txnChanges, defaultAccount.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
                                 History.EvaluateChange( txnChanges, "Summary", string.Empty, transactionDetail.Summary );
                             }
 
@@ -437,7 +437,7 @@ namespace Rock.Model
 
                     if ( initialControlAmounts.ContainsKey( batch.Guid ) )
                     {
-                        History.EvaluateChange( batchChanges, "Control Amount", initialControlAmounts[batch.Guid].ToString( "C2" ), batch.ControlAmount.ToString( "C2" ) );
+                        History.EvaluateChange( batchChanges, "Control Amount", initialControlAmounts[batch.Guid].FormatAsCurrency(), batch.ControlAmount.FormatAsCurrency() );
                     }
                 }
 
@@ -519,7 +519,7 @@ namespace Rock.Model
                         "<li>{0} transaction of {1} was added to the {2} batch.</li>" :
                         "<li>{0} transactions totaling {1} were added to the {2} batch</li>";
 
-                    sb.AppendFormat( summaryformat, items.ToString( "N0" ), sum.ToString( "C2" ), batchName );
+                    sb.AppendFormat( summaryformat, items.ToString( "N0" ), sum.FormatAsCurrency(), batchName );
                 }
             }
 

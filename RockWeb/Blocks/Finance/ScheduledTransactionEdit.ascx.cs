@@ -1093,7 +1093,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                         detail.Amount = account.Amount;
 
-                        changeSummary.AppendFormat( "{0}: {1:C2}", account.Name, account.Amount );
+                        changeSummary.AppendFormat( "{0}: {1}", account.Name, account.Amount.FormatAsCurrency() );
                         changeSummary.AppendLine();
                     }
 
@@ -1316,6 +1316,16 @@ achieve our mission.  We are so grateful for your commitment.
                 nbMessage.NotificationBoxType = type;
                 nbMessage.Visible = true;
             }
+        }
+
+        /// <summary>
+        /// Formats the value as currency (called from markup)
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public string FormatValueAsCurrency( decimal value )
+        {
+            return value.FormatAsCurrency();
         }
 
         /// <summary>

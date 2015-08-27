@@ -1632,7 +1632,7 @@ namespace RockWeb.Blocks.Event
                 transactionDetail.EntityId = registration.Id;
                 transaction.TransactionDetails.Add( transactionDetail );
 
-                History.EvaluateChange( txnChanges, RegistrationInstanceState.Account.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
+                History.EvaluateChange( txnChanges, RegistrationInstanceState.Account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
 
                 var batchService = new FinancialBatchService( rockContext );
 
@@ -1656,7 +1656,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-                History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.ToString( "C2" ), newControlAmount.ToString( "C2" ) );
+                History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
                 batch.ControlAmount = newControlAmount;
 
                 transaction.BatchId = batch.Id;
@@ -2376,7 +2376,7 @@ namespace RockWeb.Blocks.Event
                 var cost = fee.CostValue.AsDecimalOrNull();
                 if ( cost.HasValue && cost.Value != 0.0M )
                 {
-                    label = string.Format( "{0} ({1})", fee.Name, cost.Value.ToString("C2"));
+                    label = string.Format( "{0} ({1})", fee.Name, cost.Value.FormatAsCurrency());
                 }
 
                 if ( fee.AllowMultiple )
@@ -2423,7 +2423,7 @@ namespace RockWeb.Blocks.Event
                     }
                     if ( nameAndValue.Length == 2 )
                     {
-                        options.AddOrIgnore( nameAndValue[0], string.Format( "{0} ({1:C2})", nameAndValue[0], nameAndValue[1].AsDecimal() ) );
+                        options.AddOrIgnore( nameAndValue[0], string.Format( "{0} ({1})", nameAndValue[0], nameAndValue[1].AsDecimal().FormatAsCurrency() ) );
                     }
                 }
 
@@ -2723,7 +2723,7 @@ namespace RockWeb.Blocks.Event
                     }
                     if ( nameAndValue.Length == 2 )
                     {
-                        options.AddOrIgnore( nameAndValue[0], string.Format( "{0} ({1:C2})", nameAndValue[0], nameAndValue[1].AsDecimal() ) );
+                        options.AddOrIgnore( nameAndValue[0], string.Format( "{0} ({1})", nameAndValue[0], nameAndValue[1].AsDecimal().FormatAsCurrency() ) );
                         optionCosts.AddOrIgnore( nameAndValue[0], nameAndValue[1].AsDecimal() );
                     }
                 }
@@ -2864,11 +2864,11 @@ namespace RockWeb.Blocks.Event
                             foreach ( var feeInfo in fee.Value )
                             {
                                 decimal cost = feeInfo.PreviousCost > 0.0m ? feeInfo.PreviousCost : feeInfo.Cost;
-                                string desc = string.Format( "{0}{1} ({2:N0} @ {3:C2})",
+                                string desc = string.Format( "{0}{1} ({2:N0} @ {3})",
                                     templateFee != null ? templateFee.Name : "(Previous Cost)",
                                     string.IsNullOrWhiteSpace( feeInfo.Option ) ? "" : "-" + feeInfo.Option,
                                     feeInfo.Quantity,
-                                    cost );
+                                    cost.FormatAsCurrency() );
 
                                 var costSummary = new RegistrationCostSummaryInfo();
                                 costSummary.Type = RegistrationCostSummaryType.Fee;
@@ -2935,12 +2935,12 @@ namespace RockWeb.Blocks.Event
 
                     // Set the total cost
                     hfTotalCost.Value = RegistrationState.DiscountedCost.ToString( "N2" );
-                    lTotalCost.Text = RegistrationState.DiscountedCost.ToString( "C2" );
+                    lTotalCost.Text = RegistrationState.DiscountedCost.FormatAsCurrency();
 
                     // Check for previous payments
                     lPreviouslyPaid.Visible = RegistrationState.PreviousPaymentTotal != 0.0m;
                     hfPreviouslyPaid.Value = RegistrationState.PreviousPaymentTotal.ToString( "N2" );
-                    lPreviouslyPaid.Text = RegistrationState.PreviousPaymentTotal.ToString( "C2" );
+                    lPreviouslyPaid.Text = RegistrationState.PreviousPaymentTotal.FormatAsCurrency();
                     minPayment = minPayment - RegistrationState.PreviousPaymentTotal;
 
                     // if min payment is less than 0, set it to 0
@@ -2953,7 +2953,7 @@ namespace RockWeb.Blocks.Event
                     // If partial payment is allowed, show the minimum payment due
                     lMinimumDue.Visible = allowPartialPayment;
                     hfMinimumDue.Value = minPayment.ToString( "N2" );
-                    lMinimumDue.Text = minPayment.ToString( "C2" );
+                    lMinimumDue.Text = minPayment.FormatAsCurrency();
 
                     // Make sure payment amount is within minumum due and balance due. If not, set to balance due
                     if ( !RegistrationState.PaymentAmount.HasValue ||
@@ -2968,7 +2968,7 @@ namespace RockWeb.Blocks.Event
 
                     // If a previous payment was made, or partial payment is allowed, show the amount remaining after selected payment amount
                     lRemainingDue.Visible = allowPartialPayment || RegistrationState.PreviousPaymentTotal != 0.0m;
-                    lRemainingDue.Text = ( RegistrationState.DiscountedCost - ( RegistrationState.PreviousPaymentTotal + ( RegistrationState.PaymentAmount ?? 0.0m ) ) ).ToString( "C2" );
+                    lRemainingDue.Text = ( RegistrationState.DiscountedCost - ( RegistrationState.PreviousPaymentTotal + ( RegistrationState.PaymentAmount ?? 0.0m ) ) ).FormatAsCurrency();
 
                     divPaymentInfo.Visible = balanceDue > 0;
 

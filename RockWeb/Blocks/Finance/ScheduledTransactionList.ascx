@@ -23,7 +23,7 @@
                         <Columns>
                             <Rock:RockBoundField DataField="AuthorizedPersonAlias.Person.FullNameReversed" HeaderText="Contributor"
                                 SortExpression="AuthorizedPersonAlias.Person.LastName,AuthorizedPersonAlias.Person.NickName" />
-                            <Rock:RockBoundField DataField="TotalAmount" HeaderText="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" SortExpression="Amount" />
+                            <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" SortExpression="Amount" />
                             <Rock:RockBoundField DataField="TransactionFrequencyValue" HeaderText="Frequency" SortExpression="TransactionFrequencyValue.Value" />
                             <Rock:DateField DataField="CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime" />
                             <Rock:DateField DataField="StartDate" HeaderText="Starting" SortExpression="StartDate" />

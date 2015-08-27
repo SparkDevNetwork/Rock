@@ -111,7 +111,7 @@ namespace Rock.Model
             {
                 if ( DiscountAmount != 0.0m )
                 {
-                    return DiscountAmount.ToString( "C2" );
+                    return DiscountAmount.FormatAsCurrency();
                 }
                 else if ( DiscountPercentage != 0.0m )
                 {

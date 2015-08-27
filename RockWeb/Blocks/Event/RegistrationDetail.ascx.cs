@@ -864,7 +864,7 @@ namespace RockWeb.Blocks.Event
             lDiscountPercent.Text = registration.DiscountPercentage.ToString("P0");
 
             lDiscountAmount.Visible = registration.DiscountAmount > 0.0m;
-            lDiscountAmount.Text = registration.DiscountAmount.ToString( "C2" );
+            lDiscountAmount.Text = registration.DiscountAmount.FormatAsCurrency();
 
             RegistrantsState = new List<RegistrantInfo>();
             registration.Registrants.ToList().ForEach( r => RegistrantsState.Add( new RegistrantInfo( r, rockContext ) ) );
@@ -892,11 +892,11 @@ namespace RockWeb.Blocks.Event
             if ( registration != null && registration.TotalCost > 0.0M )
             {
                 hlCost.Visible = true;
-                hlCost.Text = registration.DiscountedCost.ToString( "C2" );
+                hlCost.Text = registration.DiscountedCost.FormatAsCurrency();
 
                 decimal balanceDue = registration.BalanceDue;
                 hlBalance.Visible = true;
-                hlBalance.Text = balanceDue.ToString( "C2" );
+                hlBalance.Text = balanceDue.FormatAsCurrency();
                 hlBalance.LabelType = balanceDue > 0 ? LabelType.Danger : 
                     balanceDue < 0 ? LabelType.Warning : LabelType.Success;
             }
@@ -1048,7 +1048,7 @@ namespace RockWeb.Blocks.Event
                 transactionDetail.EntityId = registration.Id;
                 transaction.TransactionDetails.Add( transactionDetail );
 
-                History.EvaluateChange( txnChanges, registration.RegistrationInstance.Account.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
+                History.EvaluateChange( txnChanges, registration.RegistrationInstance.Account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
 
                 var batchService = new FinancialBatchService( rockContext );
 
@@ -1072,7 +1072,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-                History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.ToString( "C2" ), newControlAmount.ToString( "C2" ) );
+                History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
                 batch.ControlAmount = newControlAmount;
 
                 transaction.BatchId = batch.Id;
@@ -1144,11 +1144,11 @@ namespace RockWeb.Blocks.Event
                         foreach ( var feeInfo in fee.Value )
                         {
                             decimal cost = feeInfo.PreviousCost > 0.0m ? feeInfo.PreviousCost : feeInfo.Cost;
-                            string desc = string.Format( "{0}{1} ({2:N0} @ {3:C2})",
+                            string desc = string.Format( "{0}{1} ({2:N0} @ {3})",
                                 templateFee != null ? templateFee.Name : "(Previous Cost)",
                                 string.IsNullOrWhiteSpace( feeInfo.Option ) ? "" : "-" + feeInfo.Option,
                                 feeInfo.Quantity,
-                                cost );
+                                cost.FormatAsCurrency() );
 
                             var costSummary = new RegistrationCostSummaryInfo();
                             costSummary.Type = RegistrationCostSummaryType.Fee;
@@ -1207,9 +1207,9 @@ namespace RockWeb.Blocks.Event
 
                 // Set the totals
                 decimal balanceDue = registration.BalanceDue;
-                lTotalCost.Text = registration.DiscountedCost.ToString( "C2" );
-                lPreviouslyPaid.Text = registration.TotalPaid.ToString( "C2" );
-                lRemainingDue.Text = balanceDue.ToString( "C2" );
+                lTotalCost.Text = registration.DiscountedCost.FormatAsCurrency();
+                lPreviouslyPaid.Text = registration.TotalPaid.FormatAsCurrency();
+                lRemainingDue.Text = balanceDue.FormatAsCurrency();
 
                 lbAddPayment.Visible = ( balanceDue > 0.0m &&
                     Registration != null &&
@@ -1268,7 +1268,7 @@ namespace RockWeb.Blocks.Event
                 hlCost.ID = string.Format( "hlCost_{0}", registrant.Id );
                 hlCost.LabelType = LabelType.Info;
                 hlCost.ToolTip = "Cost";
-                hlCost.Text = registrantCost.ToString( "C2" );
+                hlCost.Text = registrantCost.FormatAsCurrency();
                 divLabels.Controls.Add( hlCost );
             }
 
@@ -1305,7 +1305,7 @@ namespace RockWeb.Blocks.Event
                 var rlCost = new RockLiteral();
                 rlCost.ID = string.Format( "rlCost_{0}", registrant.Id );
                 rlCost.Label = "Cost";
-                rlCost.Text = registrant.Cost.ToString( "C2" );
+                rlCost.Text = registrant.Cost.FormatAsCurrency();
                 divFees.Controls.Add( rlCost );
             }
 
@@ -1365,12 +1365,12 @@ namespace RockWeb.Blocks.Event
 
                 if ( feeInfo.Quantity > 1 )
                 {
-                    rlField.Text = string.Format( "({0:N0} @ {1:C2}) {2:C2}",
-                    feeInfo.Quantity, feeInfo.Cost, feeInfo.TotalCost );
+                    rlField.Text = string.Format( "({0:N0} @ {1}) {2}",
+                    feeInfo.Quantity, feeInfo.Cost.FormatAsCurrency(), feeInfo.TotalCost.FormatAsCurrency() );
                 }
                 else
                 {
-                    rlField.Text = feeInfo.TotalCost.ToString( "C2" );
+                    rlField.Text = feeInfo.TotalCost.FormatAsCurrency();
                 }
 
                 return rlField;
