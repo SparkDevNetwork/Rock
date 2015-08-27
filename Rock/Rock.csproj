@@ -1093,6 +1093,7 @@
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
     <Compile Include="Workflow\Action\AssignActivityToGroup.cs" />
     <Compile Include="Workflow\Action\AddConnectionRequestActivity.cs" />
+    <Compile Include="Workflow\Action\TransferConnectionRequest.cs" />
     <Compile Include="Workflow\Action\SetConnectionRequestState.cs" />
     <Compile Include="Workflow\Action\SetConnectionRequestStatus.cs" />
     <Compile Include="Workflow\Action\CreateConnectionRequest.cs" />
