@@ -49,6 +49,8 @@ namespace RockWeb.Blocks.Finance
 
         private RockContext _rockContext = null;
         private Dictionary<int, Dictionary<int, string>> _campusAccounts = null;
+        private Panel pnlTotal;
+        private Literal lTotal;
 
         #endregion
 
@@ -99,6 +101,17 @@ namespace RockWeb.Blocks.Finance
 
             gChartAmount.GridRebind += gChartAmount_GridRebind;
             gGiversGifts.GridRebind += gGiversGifts_GridRebind;
+
+            pnlTotal = new Panel();
+            gGiversGifts.Actions.AddCustomActionControl( pnlTotal );
+            pnlTotal.ID = "pnlTotal";
+            pnlTotal.CssClass = "pull-left";
+
+            pnlTotal.Controls.Add( new LiteralControl( "<strong>Grand Total</strong> " ) );
+
+            lTotal = new Literal();
+            pnlTotal.Controls.Add( lTotal );
+            lTotal.ID = "lTotal";
 
             dvpDataView.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
             _rockContext = new RockContext();
@@ -983,6 +996,26 @@ function(item) {
 
             // Update the changes (deletes) in the datatable
             dtResults.AcceptChanges();
+
+            // Calculate Total
+            if ( viewBy == GiversViewBy.Giver )
+            {
+                pnlTotal.Visible = true;
+                object amountTotalObj = dtResults.Compute( "Sum(TotalAmount)", null );
+                if ( amountTotalObj != null )
+                {
+                    decimal amountTotal = amountTotalObj.ToString().AsDecimal();
+                    lTotal.Text = amountTotal.ToString( "C2" );
+                }
+                else
+                {
+                    lTotal.Text = string.Empty;
+                }
+            }
+            else
+            {
+                pnlTotal.Visible = false;
+            }
 
             // Sort the results
             System.Data.DataView dv = dtResults.DefaultView;
