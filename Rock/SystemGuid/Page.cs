@@ -553,6 +553,30 @@ namespace Rock.SystemGuid
         public const string ENTITY_ATTRIBUTES = "23507C90-3F78-40D4-B847-6FE8941FCD32";
 
         /// <summary>
+        /// Gets the Event Calendar page guid
+        /// ParentPage: Calendars
+        /// </summary>
+        public const string EVENT_CALENDAR = "B54725E1-3640-4419-B580-2AF77DAF6568";
+
+        /// <summary>
+        /// Gets the Event Detail page guid
+        /// ParentPage: Event Calendar
+        /// </summary>
+        public const string EVENT_DETAIL = "7FB33834-F40A-4221-8849-BB8C06903B04";
+
+        /// <summary>
+        /// Gets the Event Details page guid
+        /// ParentPage: Calendar
+        /// </summary>
+        public const string EVENT_DETAILS = "8A477CC6-4A12-4FBE-8037-E666476DD413";
+
+        /// <summary>
+        /// Gets the Event Occurrence page guid
+        /// ParentPage: Event Detail
+        /// </summary>
+        public const string EVENT_OCCURRENCE = "4B0C44EE-28E3-4753-A95B-8C57CD958FD1";
+
+        /// <summary>
         /// Gets the Event Registration page guid
         /// ParentPage: Website
         /// </summary>
@@ -1119,7 +1143,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Gets the Plugin Settings guid
         /// </summary>
-        [Obsolete("Page was removed")]
+        [Obsolete( "Page was removed" )]
         public const string PLUGIN_SETTINGS = "1AFDA740-8119-45B8-AF4D-58856D469BE5";
 
         /// <summary>
