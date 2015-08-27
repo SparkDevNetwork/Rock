@@ -1,4 +1,10 @@
-﻿
+﻿{% comment %} Doing this because 'Default' doesn't want to work with integers {% endcomment %}
+{% unless maxItems %}
+  {% assign maxItems = 6 %}
+{% endunless %}
+
+{% assign itemCount = 0 %}
+{% assign itemCountSlideControl = 0 %}
 
 <div class="announcement-rotator loading">
 
@@ -13,20 +19,23 @@
           {% capture internalUrl %}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{% endcapture %}
           {% assign itemLink = externalUrl | Default: internalUrl %}
 
-          {% if itemCampusesRaw == empty %}
-            {% assign showItem = true %}
-          {% else %}
-            {% for itemCampus in itemCampuses %}
-              {% if itemCampus == ContextObjects.Campus.Name %}
-                {% assign showItem = true %}
-              {% endif %}
-            {% endfor %}
+          {% if itemCount < maxItems %}
+            {% if itemCampusesRaw == empty %}
+              {% assign showItem = true %}
+            {% else %}
+              {% for itemCampus in itemCampuses %}
+                {% if itemCampus == ContextObjects.Campus.Name %}
+                  {% assign showItem = true %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
           {% endif %}
 
           {% if showItem %}
+            {% assign itemCount = itemCount | Plus: 1 %}
             <li>
               <a href="{{ itemLink}}">
-                <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=1280&height=720&mode=crop&scale=both" alt="{{ item.Title }}">
+                <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=1140&height=641&mode=crop&scale=both" alt="{{ item.Title }}">
               </a>
             </li>
           {% endif %}
@@ -44,17 +53,20 @@
         {% assign itemCampuses = itemCampusesRaw | Split: ',' %}
         {% assign showItem = false %}
 
-        {% if itemCampusesRaw == empty %}
-          {% assign showItem = true %}
-        {% else %}
-          {% for itemCampus in itemCampuses %}
-            {% if itemCampus == ContextObjects.Campus.Name %}
-              {% assign showItem = true %}
-            {% endif %}
-          {% endfor %}
+        {% if itemCountSlideControl < maxItems %}
+          {% if itemCampusesRaw == empty %}
+            {% assign showItem = true %}
+          {% else %}
+            {% for itemCampus in itemCampuses %}
+              {% if itemCampus == ContextObjects.Campus.Name %}
+                {% assign showItem = true %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
         {% endif %}
 
         {% if showItem %}
+          {% assign itemCountSlideControl = itemCountSlideControl | Plus: 1 %}
           <li>{{ item.Title }}</li>
         {% endif %}
 

@@ -1,5 +1,11 @@
 ﻿{% capture useGrayBgSetting %}{{ useGrayBg | Default: "true" }}{% endcapture%}
 {% capture useContainerSetting %}{{ useContainer | Default: "true" }}{% endcapture%}
+{% comment %} Doing this because 'Default' doesn't want to work with integers {% endcomment %}
+{% unless maxItems %}
+  {% assign maxItems = 4 %}
+{% endunless %}
+
+{% assign itemCount = 0 %}
 
 <div class="announcement-list{% if useGrayBgSetting == "true" %} announcement-list-gray{% endif %}">
   {% if useContainerSetting == "true" %}<div class="container">{% endif %}
@@ -13,21 +19,24 @@
         {% capture internalUrl %}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{% endcapture %}
         {% assign itemLink = externalUrl | Default: internalUrl %}
 
-        {% if itemCampusesRaw == empty %}
-          {% assign showItem = true %}
-        {% else %}
-          {% for itemCampus in itemCampuses %}
-            {% if itemCampus == ContextObjects.Campus.Name %}
-              {% assign showItem = true %}
-            {% endif %}
-          {% endfor %}
+        {% if itemCount < maxItems %}
+          {% if itemCampusesRaw == empty %}
+            {% assign showItem = true %}
+          {% else %}
+            {% for itemCampus in itemCampuses %}
+              {% if itemCampus == ContextObjects.Campus.Name %}
+                {% assign showItem = true %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
         {% endif %}
 
         {% if showItem %}
+          {% assign itemCount = itemCount | Plus: 1 %}
           <div class="col-md-3 col-xs-6">
             <div class="announcement">
               <a href="{{ itemLink }}">
-                <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=720&height=404&mode=crop&scale=both" alt="{{ item.Title }}">
+                <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=525&height=295&mode=crop&scale=both" alt="{{ item.Title }}">
                 <h5 class="announcement-title">{{ item.Title }}</h5>
               </a>
             </div>
