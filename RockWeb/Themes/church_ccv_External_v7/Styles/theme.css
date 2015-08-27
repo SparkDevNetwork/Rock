@@ -6505,6 +6505,20 @@ h6,
 .masthead-lower:after {
   clear: both;
 }
+.masthead-lowerlink {
+  font-size: .9em;
+  line-height: 40px;
+  font-style: italic;
+  color: #777777;
+  padding: 0 15px;
+  display: inline-block;
+}
+.masthead-lowerlink:hover,
+.masthead-lowerlink:active {
+  text-decoration: none;
+  color: inherit;
+  background-color: #eeeeee;
+}
 .masthead-lower .loginstatus,
 .masthead-lower .contextsetter {
   margin: 0;

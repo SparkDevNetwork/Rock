@@ -255,7 +255,19 @@
     .clearfix();
     background-color: #e9e9e9;
   }
-
+    .masthead-lowerlink {
+      font-size: .9em;
+      line-height: 40px;
+      font-style: italic;
+      color: @gray-light;
+      padding: 0 @grid-gutter-width/2;
+      display: inline-block;
+      &:hover, &:active {
+        text-decoration: none;
+        color: inherit;
+        background-color: @nav-link-hover-bg;
+      }
+    }
     // this crazy nesting is to undo some default Rock styles, in the future we
     // could look into changing the block markup
     .masthead-lower .loginstatus,
