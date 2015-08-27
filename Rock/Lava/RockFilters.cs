@@ -913,6 +913,32 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Formats the specified input as currency using the CurrencySymbol from Global Attributes
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string FormatAsCurrency( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            if (input is string)
+            {
+                // if the input is a string, just append the currency symbol to the front, even if it can't be converted to a number
+                var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
+                return string.Format("{0}{1}", currencySymbol, input);
+            }
+            else
+            {
+                // if the input an integer, decimal, double or anything else that can be parsed as a decimal, format that
+                decimal? inputAsDecimal = input.ToString().AsDecimalOrNull();
+                return inputAsDecimal.FormatAsCurrency();
+            }
+        }
+
+        /// <summary>
         /// Addition - Overriding this to change the logic. The default filter will concat if the type is 
         /// string. This one does the math if the input can be parsed as a int
         /// </summary>

@@ -32,7 +32,7 @@ namespace Rock
         /// <returns></returns>
         public static string FormatAsCurrency( this decimal value )
         {
-            var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol " );
+            var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
             return string.Format( "{0}{1:N}", currencySymbol, value );
         }
 
@@ -69,6 +69,26 @@ namespace Rock
         /// <param name="value">The value.</param>
         /// <returns></returns>
         public static string FormatAsCurrency( this double? value )
+        {
+            return ( (decimal?)value ).FormatAsCurrency();
+        }
+
+        /// <summary>
+        /// Formats as currency using the CurrencySymbol from Global Attributes
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string FormatAsCurrency( this int value )
+        {
+            return ( (decimal)value ).FormatAsCurrency();
+        }
+
+        /// <summary>
+        /// Formats as currency using the CurrencySymbol from Global Attributes
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string FormatAsCurrency( this int? value )
         {
             return ( (decimal?)value ).FormatAsCurrency();
         }
