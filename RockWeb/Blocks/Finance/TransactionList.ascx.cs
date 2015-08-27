@@ -546,7 +546,7 @@ namespace RockWeb.Blocks.Finance
                             }
 
                             var oldBatchChanges = new List<string>();
-                            History.EvaluateChange( oldBatchChanges, "Control Amount", oldBatch.ControlAmount.ToString( "C2" ), oldBatchControlAmount.ToString( "C2" ) );
+                            History.EvaluateChange( oldBatchChanges, "Control Amount", oldBatch.ControlAmount.FormatAsCurrency(), oldBatchControlAmount.FormatAsCurrency() );
                             oldBatch.ControlAmount = oldBatchControlAmount;
 
                             HistoryService.SaveChanges(
@@ -559,7 +559,7 @@ namespace RockWeb.Blocks.Finance
                             );
 
                             var newBatchChanges = new List<string>();
-                            History.EvaluateChange( newBatchChanges, "Control Amount", newBatch.ControlAmount.ToString( "C2" ), newBatchControlAmount.ToString( "C2" ) );
+                            History.EvaluateChange( newBatchChanges, "Control Amount", newBatch.ControlAmount.FormatAsCurrency(), newBatchControlAmount.FormatAsCurrency() );
                             newBatch.ControlAmount = newBatchControlAmount;
 
                             HistoryService.SaveChanges(

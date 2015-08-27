@@ -1525,7 +1525,7 @@ namespace RockWeb.Blocks.Finance
                             transactionDetail.Amount = account.Amount;
                             transactionDetail.AccountId = account.Id;
                             scheduledTransaction.ScheduledTransactionDetails.Add( transactionDetail );
-                            changeSummary.AppendFormat( "{0}: {1:C2}", account.Name, account.Amount );
+                            changeSummary.AppendFormat( "{0}: {1}", account.Name, account.Amount.FormatAsCurrency() );
                             changeSummary.AppendLine();
                         }
 
@@ -1601,7 +1601,7 @@ namespace RockWeb.Blocks.Finance
                             transactionDetail.Amount = account.Amount;
                             transactionDetail.AccountId = account.Id;
                             transaction.TransactionDetails.Add( transactionDetail );
-                            History.EvaluateChange( txnChanges, account.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
+                            History.EvaluateChange( txnChanges, account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
                         }
 
                         var batchService = new FinancialBatchService( rockContext );
@@ -1626,7 +1626,7 @@ namespace RockWeb.Blocks.Finance
                         }
 
                         decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-                        History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.ToString( "C2" ), newControlAmount.ToString( "C2" ) );
+                        History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
                         batch.ControlAmount = newControlAmount;
 
                         transaction.BatchId = batch.Id;
@@ -1893,7 +1893,7 @@ namespace RockWeb.Blocks.Finance
             {
                 get
                 {
-                    return Amount > 0 ? Amount.ToString( "C2" ) : string.Empty;
+                    return Amount > 0 ? Amount.FormatAsCurrency() : string.Empty;
                 }
             }
 

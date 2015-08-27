@@ -1027,7 +1027,7 @@ function(item) {
                 if ( amountTotalObj != null )
                 {
                     decimal amountTotal = amountTotalObj.ToString().AsDecimal();
-                    lTotal.Text = amountTotal.ToString( "C2" );
+                    lTotal.Text = amountTotal.FormatAsCurrency();
                 }
                 else
                 {

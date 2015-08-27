@@ -207,7 +207,7 @@ namespace RockWeb.Blocks.Finance
                 batch.BatchEndDateTime = endDateTime;
 
                 decimal controlAmount = tbControlAmount.Text.AsDecimal(); 
-                History.EvaluateChange( changes, "Control Amount", batch.ControlAmount.ToString("C2"), controlAmount.ToString("C2") );
+                History.EvaluateChange( changes, "Control Amount", batch.ControlAmount.FormatAsCurrency(), controlAmount.FormatAsCurrency() );
                 batch.ControlAmount = controlAmount;
 
                 History.EvaluateChange( changes, "Accounting System Code", batch.AccountingSystemCode, tbAccountingCode.Text );
@@ -389,7 +389,7 @@ namespace RockWeb.Blocks.Finance
                 decimal txnTotal = batch.Transactions.Sum( t => (decimal?)( t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ) ) ?? 0.0M;
                 decimal variance = txnTotal - batch.ControlAmount;
                 string amountFormat = string.Format( "{0} / {1} / " + ( variance == 0.0M ? "{2}" : "<span class='label label-danger'>{2}</span>" ),
-                    txnTotal.ToString( "C2" ), batch.ControlAmount.ToString( "C2" ), variance.ToString( "C2" ) );
+                    txnTotal.FormatAsCurrency(), batch.ControlAmount.FormatAsCurrency(), variance.FormatAsCurrency() );
 
                 lDetails.Text = new DescriptionList()
                     .Add( "Date Range", new DateRange( batch.BatchStartDateTime, batch.BatchEndDateTime ).ToString( "g" ) )
