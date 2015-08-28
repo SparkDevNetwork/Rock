@@ -3853,9 +3853,9 @@ fieldset .actions {
 .imageupload-group .upload-progress {
   position: absolute;
   z-index: 2;
-  left: 50%;
+  left: 35px;
   margin-left: -18px;
-  top: 50%;
+  top: 8px;
   margin-top: -37px;
   opacity: 0.3;
 }
@@ -3967,8 +3967,8 @@ fieldset .actions {
 .fileupload-group .upload-progress {
   position: absolute;
   z-index: 2;
-  left: 115%;
-  top: -20%;
+  left: 35px;
+  top: 8px;
   opacity: 0.3;
 }
 .updateprogress-status {
