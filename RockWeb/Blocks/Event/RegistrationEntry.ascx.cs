@@ -526,7 +526,7 @@ namespace RockWeb.Blocks.Event
             // set the max number of steps in the progress bar
             this.ProgressBarSteps = numHowMany.Value * FormCount + 2;
             
-            PercentComplete = ( (double)1 / (double)ProgressBarSteps ) * 100;
+            PercentComplete = ( (double)2 / (double)ProgressBarSteps ) * 100;
 
             ShowRegistrant();
 
@@ -565,7 +565,7 @@ namespace RockWeb.Blocks.Event
                 ShowHowMany();
             }
 
-            PercentComplete = ( ( (double)1 + ( ( CurrentFormIndex + 1 ) * CurrentRegistrantIndex ) ) / (double)ProgressBarSteps ) * 100;
+            PercentComplete = ( ( (double)2 + ( ( CurrentFormIndex + 1 ) * CurrentRegistrantIndex ) ) / (double)ProgressBarSteps ) * 100;
                  
             hfTriggerScroll.Value = "true";
         }
@@ -602,7 +602,7 @@ namespace RockWeb.Blocks.Event
                 ShowHowMany();
             }
 
-            PercentComplete = ( ( (double)1 + ( (CurrentFormIndex + 1) * CurrentRegistrantIndex ) ) / (double)ProgressBarSteps ) * 100;
+            PercentComplete = ( ( (double)2 + ( (CurrentFormIndex + 1) * CurrentRegistrantIndex ) ) / (double)ProgressBarSteps ) * 100;
 
             hfTriggerScroll.Value = "true";
         }
@@ -627,6 +627,8 @@ namespace RockWeb.Blocks.Event
             {
                 ShowHowMany();
             }
+
+            PercentComplete = ( ( (double)2 + ( ( CurrentFormIndex + 1 ) * CurrentRegistrantIndex ) ) / (double)ProgressBarSteps ) * 100;
 
             hfTriggerScroll.Value = "true";
         }
@@ -1771,6 +1773,8 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ShowSummary()
         {
+            lRegistrationTerm.Text = RegistrationTemplate.RegistrationTerm;
+            
             SetPanel( 2 );
         }
 
