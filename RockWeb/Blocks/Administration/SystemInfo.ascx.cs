@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -64,6 +65,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             lExecLocation.Text = Assembly.GetExecutingAssembly().Location;
+            lLastMigrations.Text = GetLastMigrationData();
 
             lCacheOverview.Text = GetCacheInfo();
             lRoutes.Text = GetRoutesInfo();
@@ -158,6 +160,48 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Queries the MigrationHistory and the PluginMigration tables and returns 
+        /// the name (MigrationId) of the last core migration that was run and a table
+        /// listing the last plugin assembly's migration name and number that was run. 
+        /// </summary>
+        /// <returns>An HTML fragment of the MigrationId of the last core migration and a table of the
+        /// last plugin migrations.</returns>
+        private string GetLastMigrationData()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            var result = DbService.ExecuteScaler( "SELECT TOP 1 [MigrationId] FROM [__MigrationHistory] ORDER BY [MigrationId] DESC ", CommandType.Text, null );
+            if ( result != null )
+            {
+                sb.AppendFormat( "Last Core Migration: {0}", (string)result );
+            }
+
+            var tableResult = DbService.GetDataTable( @"
+    WITH summary AS 
+    (
+        SELECT p.[PluginAssemblyName], p.MigrationName, p.[MigrationNumber], ROW_NUMBER() 
+            OVER( PARTITION BY p.[PluginAssemblyName] ORDER BY p.[MigrationNumber] DESC ) AS section
+        FROM [PluginMigration] p
+    )
+    SELECT s.[PluginAssemblyName], s.MigrationName, s.[MigrationNumber]
+    FROM summary s
+    WHERE s.section = 1", System.Data.CommandType.Text, null );
+
+            if ( tableResult != null )
+            {
+                sb.AppendFormat( "<table class='table table-condensed'>" );
+                sb.Append( "<tr><th>Plugin Assembly</th><th>Migration Name</th><th>Number</th></tr>" );
+                foreach ( DataRow row in tableResult.Rows )
+                {
+                    sb.AppendFormat( "<tr><td>{0}</td><td>{1}</td><td>{2}</td></tr>", row[0].ToString(), row[1].ToString(), row[2].ToString() );
+                }
+                sb.AppendFormat( "</table" );
+            }
+
+            return sb.ToString();
+        }
 
         private string GetCacheInfo()
         {
