@@ -11,7 +11,7 @@ $(document).ready(function() {
 
     function run() {
       $this
-        .append('<a href="https://vimeo.com/'+vimeoId+'">'+img+'</a>')
+        .append('<a class="hover-playicon" href="https://vimeo.com/'+vimeoId+'">'+img+'</a>')
         .children('a').magnificPopup({
           disableOn: 700,
           type: 'iframe',
