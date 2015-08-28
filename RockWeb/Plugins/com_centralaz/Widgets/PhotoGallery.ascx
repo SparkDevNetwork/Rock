@@ -33,33 +33,35 @@
     .dropzone {
         border: 2px dashed rgba(0, 0, 0, 0.3);
     }
-    .dropzone.dz-clickable .dz-message, .dropzone.dz-clickable .dz-message *
-    {
-        font-size: 1.2em;
-    }
-    .dropzone.dz-clickable {
-        background-color: #eee;
-    }
-    .dropzone.dz-drag-hover {
-        border: 2px solid green;
-        background-color: #dff0d8;
-        color: #468847;
-    }
 
-    .dropzone.dz-drag-hover .dz-message span {
-        display: none;
-    }
-    .dropzone.dz-drag-hover .dz-message:after {
-        content: "Bingo. You're free to drop.";
-        font-size: 1.2em;
-    }
+        .dropzone.dz-clickable .dz-message, .dropzone.dz-clickable .dz-message * {
+            font-size: 1.2em;
+        }
 
+        .dropzone.dz-clickable {
+            background-color: #eee;
+        }
+
+        .dropzone.dz-drag-hover {
+            border: 2px solid green;
+            background-color: #dff0d8;
+            color: #468847;
+        }
+
+            .dropzone.dz-drag-hover .dz-message span {
+                display: none;
+            }
+
+            .dropzone.dz-drag-hover .dz-message:after {
+                content: "Bingo. You're free to drop.";
+                font-size: 1.2em;
+            }
 </style>
 <asp:UpdatePanel runat="server" ID="upnlHtmlContent" ChildrenAsTriggers="false" UpdateMode="Conditional">
     <ContentTemplate>
 
         <Rock:NotificationBox ID="nbApprovalRequired" runat="server" NotificationBoxType="Info" Text="Your changes will not be visible until they are reviewed and approved." Visible="false" />
-        <div id="myCarousel" class="carousel slide carousel-fade" data-ride="carousel" data-interval="<%= PauseMilliseconds %>">
+        <div id="myCarousel" runat="server" class="carousel slide carousel-fade" data-ride="carousel" data-interval="<%= PauseMilliseconds %>">
             <!-- Wrapper for slides -->
             <div class="carousel-inner" role="listbox">
                 <asp:Repeater ID="rptPhoto" runat="server" OnItemDataBound="rptPhoto_ItemDataBound">
@@ -71,6 +73,13 @@
                 </asp:Repeater>
             </div>
         </div>
+
+        <asp:ListView runat="server" ID="lvGallery">
+            <ItemTemplate>
+                    <asp:Image ID="imbGalleryItem" runat="server" ImageUrl="<%# Container.DataItem %>" />
+            </ItemTemplate>
+        </asp:ListView>
+
         <%-- Edit Panel --%>
         <asp:Panel ID="pnlEditModel" runat="server" Visible="false">
             <Rock:ModalDialog ID="mdEdit" runat="server" CancelLinkVisible="false" OnSaveClick="lbOk_Click" SaveButtonText="Ok" Title="Edit Html">
@@ -83,15 +92,15 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <asp:ListView runat="server" ID="lvImages" OnItemCommand="lvImages_ItemCommand" OnItemDataBound="lvImages_ItemDataBound">
+                                <asp:ListView runat="server" ID="lvImages" OnItemCommand="lvImages_ItemCommand">
                                     <ItemTemplate>
                                         <div class="col-xs-6 col-md-3">
                                             <div class="well thumbnail">
-                                                <asp:Image ID="imbItem" runat="server" ImageUrl="<%# Container.DataItem %>" class="thumbnail"/>
+                                                <asp:Image ID="imbItem" runat="server" ImageUrl="<%# Container.DataItem %>" class="thumbnail" />
                                                 <asp:LinkButton ID="lbDelete" runat="server" CommandName="Remove" OnClientClick="if (!confirm('Are you sure you want delete?')) return false;"
                                                     CommandArgument="<%# Container.DataItem %>" Text="" CssClass="fa fa-times fa-2x text-danger margin-r-lg" ToolTip="Click to delete this photo." />
                                             </div>
-                                         </div>
+                                        </div>
                                     </ItemTemplate>
                                 </asp:ListView>
                             </div>

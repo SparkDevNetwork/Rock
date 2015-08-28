@@ -47,6 +47,8 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/", false, "", "", 2 )]
     [IntegerField( "Pause Seconds", "The number of seconds to pause on each photo (default 4 seconds).", false, 4 )]
 
+    [CustomRadioListField( "Display Mode", "", "1^Slideshow, 2^Gallery", true, "1")]
+
     [BooleanField( "Set Size", "If set to true, the Height and Width settings will be used in the image tag's style setting. NOTE: Constraining size can cause distortion to responsive images when user resizes browser window.", false, "Sizing", 0 )]
     [IntegerField( "Height", "The height (in px) to constrain the photo.", false, -1, "Sizing", 1 )]
     [IntegerField( "Width", "The width (in px) to constrain the photo.", false, -1, "Sizing", 2 )]
@@ -231,11 +233,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             ShowView();
         }
 
-        protected void lvImages_ItemDataBound( object sender, ListViewItemEventArgs e )
-        {
-
-        }
-
         protected void rptPhoto_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             if ( SpecifyingSize )
@@ -387,8 +384,22 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         {
             var images = GetImageList();
 
-            rptPhoto.DataSource = images;
-            rptPhoto.DataBind();
+            int displayMode = GetAttributeValue( "DisplayMode" ).AsInteger();
+
+            if ( displayMode == 1 )
+            {
+                myCarousel.Visible = true;
+                lvGallery.Visible = false;
+                rptPhoto.DataSource = images;
+                rptPhoto.DataBind();
+            }
+            else
+            {
+                myCarousel.Visible = false;
+                lvGallery.Visible = true;
+                lvGallery.DataSource = images;
+                lvGallery.DataBind();
+            }
 
         }
 
