@@ -49,6 +49,8 @@ namespace RockWeb.Blocks.Finance
 
         private RockContext _rockContext = null;
         private Dictionary<int, Dictionary<int, string>> _campusAccounts = null;
+        private Panel pnlTotal;
+        private Literal lTotal;
 
         #endregion
 
@@ -100,6 +102,17 @@ namespace RockWeb.Blocks.Finance
             gChartAmount.GridRebind += gChartAmount_GridRebind;
             gGiversGifts.GridRebind += gGiversGifts_GridRebind;
 
+            pnlTotal = new Panel();
+            gGiversGifts.Actions.AddCustomActionControl( pnlTotal );
+            pnlTotal.ID = "pnlTotal";
+            pnlTotal.CssClass = "pull-left";
+
+            pnlTotal.Controls.Add( new LiteralControl( "<strong>Grand Total</strong> " ) );
+
+            lTotal = new Literal();
+            pnlTotal.Controls.Add( lTotal );
+            lTotal.ID = "lTotal";
+
             dvpDataView.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
             _rockContext = new RockContext();
         }
@@ -114,6 +127,10 @@ namespace RockWeb.Blocks.Finance
 
             var chartStyleDefinedValueGuid = this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
             lcAmount.Options.SetChartStyle( chartStyleDefinedValueGuid );
+            bcAmount.Options.SetChartStyle( chartStyleDefinedValueGuid );
+            bcAmount.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
+            bcAmount.Options.series.bars.barWidth = 0.6;
+            bcAmount.Options.series.bars.align = "center";
 
             if ( !Page.IsPostBack )
             {
@@ -170,7 +187,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gChartAmount_GridRebind( object sender, EventArgs e )
         {
-            BindChartAmountGrid();
+            BindChartAmountGrid(GetChartData());
         }
 
         /// <summary>
@@ -207,7 +224,7 @@ namespace RockWeb.Blocks.Finance
                 pnlChartAmountGrid.Visible = true;
                 lShowChartAmountGrid.Text = "Hide Data <i class='fa fa-chevron-up'></i>";
                 lShowChartAmountGrid.ToolTip = "Hide Data";
-                BindChartAmountGrid();
+                BindChartAmountGrid(GetChartData());
             }
         }
 
@@ -250,7 +267,7 @@ namespace RockWeb.Blocks.Finance
         protected void btnShowChart_Click( object sender, EventArgs e )
         {
             DisplayShowBy( ShowBy.Chart );
-            BindChartAmountGrid();
+            BindChartAmountGrid(GetChartData());
         }
 
         /// <summary>
@@ -359,6 +376,12 @@ namespace RockWeb.Blocks.Finance
             if ( this.DetailPageGuid.HasValue )
             {
                 lcAmount.ChartClick += lcAmount_ChartClick;
+            }
+
+            bcAmount.ShowTooltip = true;
+            if ( this.DetailPageGuid.HasValue )
+            {
+                bcAmount.ChartClick += lcAmount_ChartClick;
             }
 
             var dataSourceUrl = "~/api/FinancialTransactionDetails/GetChartData";
@@ -474,10 +497,17 @@ function(item) {
             dataSourceUrl += "?" + dataSourceParams.Select( s => string.Format( "{0}={1}", s.Key, s.Value ) ).ToList().AsDelimited( "&" );
 
             lcAmount.DataSourceUrl = this.ResolveUrl( dataSourceUrl );
+            bcAmount.TooltipFormatter = lcAmount.TooltipFormatter;
+            bcAmount.DataSourceUrl = this.ResolveUrl( dataSourceUrl );
+
+            var chartData = GetChartData();
+            var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
+            bcAmount.Visible = singleDateTime;
+            lcAmount.Visible = !singleDateTime;
 
             if ( pnlChartAmountGrid.Visible )
             {
-                BindChartAmountGrid();
+                BindChartAmountGrid(chartData);
             }
 
             if ( pnlDetails.Visible )
@@ -625,10 +655,7 @@ function(item) {
             rblDataViewAction.Visible = dvpDataView.SelectedValueAsInt().HasValue;
         }
 
-        /// <summary>
-        /// Binds the chart attendance grid.
-        /// </summary>
-        private void BindChartAmountGrid()
+        private IEnumerable<Rock.Chart.IChartData> GetChartData()
         {
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
 
@@ -644,8 +671,6 @@ function(item) {
                 accountIds.AddRange( cblAccounts.SelectedValuesAsInt );
             }
 
-            SortProperty sortProperty = gChartAmount.SortProperty;
-
             var chartData = new FinancialTransactionDetailService( _rockContext ).GetChartData(
                 hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week,
                 hfGraphBy.Value.ConvertToEnumOrNull<TransactionGraphBy>() ?? TransactionGraphBy.Total,
@@ -657,6 +682,16 @@ function(item) {
                 sourceIds,
                 accountIds,
                 dvpDataView.SelectedValueAsInt() );
+
+            return chartData;
+        }
+
+        /// <summary>
+        /// Binds the chart attendance grid.
+        /// </summary>
+        private void BindChartAmountGrid( IEnumerable<Rock.Chart.IChartData> chartData )
+        {
+            SortProperty sortProperty = gChartAmount.SortProperty;
 
             if ( sortProperty != null )
             {
@@ -983,6 +1018,26 @@ function(item) {
 
             // Update the changes (deletes) in the datatable
             dtResults.AcceptChanges();
+
+            // Calculate Total
+            if ( viewBy == GiversViewBy.Giver )
+            {
+                pnlTotal.Visible = true;
+                object amountTotalObj = dtResults.Compute( "Sum(TotalAmount)", null );
+                if ( amountTotalObj != null )
+                {
+                    decimal amountTotal = amountTotalObj.ToString().AsDecimal();
+                    lTotal.Text = amountTotal.FormatAsCurrency();
+                }
+                else
+                {
+                    lTotal.Text = string.Empty;
+                }
+            }
+            else
+            {
+                pnlTotal.Visible = false;
+            }
 
             // Sort the results
             System.Data.DataView dv = dtResults.DefaultView;

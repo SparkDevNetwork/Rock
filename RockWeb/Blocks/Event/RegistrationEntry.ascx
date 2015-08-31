@@ -12,7 +12,7 @@
     <asp:Panel ID="pnlHowMany" runat="server" Visible="false" CssClass="registrationentry-intro">
 
         <h1>How many <asp:Literal ID="lRegistrantTerm" runat="server" /> will you be registering?</h1>
-        <Rock:NumberUpDown ID="numHowMany" NumberDisplayCssClass="input-lg form-control input-width-xs" ButtonCssClass="btn btn-lg btn-default margin-l-sm" runat="server" CssClass="text-center" />
+        <Rock:NumberUpDown ID="numHowMany"  runat="server" CssClass="input-lg" />
 
         <div class="actions">
             <Rock:BootstrapButton ID="lbHowManyNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbHowManyNext_Click" />
@@ -24,8 +24,19 @@
 
         <h1><asp:Literal ID="lRegistrantTitle" runat="server" /></h1>
         
+        <asp:Panel ID="pnlProgressBar" runat="server">
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="width: <%=this.PercentComplete%>%;">
+                <span class="sr-only"><%=this.PercentComplete%>% Complete</span>
+                </div>
+            </div>
+        </asp:Panel>
+
         <div class="js-registration-same-family registrationentry-samefamily">
-            <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" DataTextField="Value" DataValueField="Key" />
+            <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well">
+                <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" DataTextField="Value" DataValueField="Key" />
+            </asp:Panel>
+            
         </div>
         
         <asp:PlaceHolder ID="phRegistrantControls" runat="server" />
@@ -44,7 +55,7 @@
 
     <asp:Panel ID="pnlSummaryAndPayment" runat="server" Visible="false" CssClass="registrationentry-summary">
         
-        <h1>Summary</h1>
+        <h1>Review <asp:Literal ID="lRegistrationTerm" runat="server" /></h1>
         
         <div class="well">
             <h4>Your Information</h4>

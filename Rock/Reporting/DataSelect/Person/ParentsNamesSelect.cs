@@ -143,6 +143,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override string SortProperties( string selection )
         {
+            // disable sorting on this column since it is an IEnumerable
             return string.Empty;
         }
 

@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -40,7 +41,9 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Shows the details of the given data view." )]
 
-    [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180 )]
+    [LinkedPage( "Data View Detail Page", "The page to display a data view.", false, order: 0 )]
+    [LinkedPage( "Report Detail Page", "The page to display a report.", false, order: 1 )]
+    [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, order: 3 )]
     public partial class DataViewDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -574,6 +577,57 @@ $(document).ready(function() {
 
             lFilters.Text = descriptionListFilters.Html;
 
+            DescriptionList descriptionListDataviews = new DescriptionList();
+            var dataViewFilterEntityId = EntityTypeCache.Read( typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ) ).Id;
+
+            var rockContext = new RockContext();
+            DataViewService dataViewService = new DataViewService( rockContext );
+
+            var dataViews = dataViewService.Queryable()
+                .Where( d => d.DataViewFilter.ChildFilters
+                    .Any( f => f.Selection == dataView.Id.ToString()
+                        && f.EntityTypeId == dataViewFilterEntityId ) );
+
+            StringBuilder sbDataViews = new StringBuilder();
+            var dataViewDetailPage = GetAttributeValue( "DataViewDetailPage" );
+
+            foreach ( var dataview in dataViews )
+            {
+                if ( !string.IsNullOrWhiteSpace( dataViewDetailPage ) )
+                {
+                    sbDataViews.Append( "<a href=\"" + LinkedPageUrl( "DataViewDetailPage", new Dictionary<string, string>() { { "DataViewId", dataview.Id.ToString() } } ) + "\">" + dataview.Name + "</a><br/>" );
+                }
+                else
+                {
+                    sbDataViews.Append( dataview.Name + "<br/>" );
+                }
+            }
+
+            descriptionListDataviews.Add( "Data Views", sbDataViews );
+            lDataViews.Text = descriptionListDataviews.Html;
+
+            DescriptionList descriptionListReports = new DescriptionList();
+            StringBuilder sbReports = new StringBuilder();
+
+            ReportService reportService = new ReportService( rockContext );
+            var reports = reportService.Queryable().Where( r => r.DataViewId == dataView.Id );
+            var reportDetailPage = GetAttributeValue( "ReportDetailPage" );
+
+            foreach ( var report in reports )
+            {
+                if ( !string.IsNullOrWhiteSpace( reportDetailPage ) )
+                {
+                    sbReports.Append( "<a href=\"" + LinkedPageUrl( "ReportDetailPage", new Dictionary<string, string>() { { "ReportId", report.Id.ToString() } } ) + "\">" + report.Name + "</a><br/>" );
+                }
+                else
+                {
+                    sbReports.Append( report.Name + "<br/>" );
+                }
+            }
+
+            descriptionListReports.Add( "Reports", sbReports );
+            lReports.Text = descriptionListReports.Html;
+
             ShowReport( dataView );
         }
 
@@ -869,54 +923,66 @@ $(document).ready(function() {
         /// <param name="rockContext">The rock context.</param>
         private void CreateFilterControl( Control parentControl, DataViewFilter filter, string filteredEntityTypeName, bool setSelection, RockContext rockContext )
         {
-            if ( filter.ExpressionType == FilterExpressionType.Filter )
+            try
             {
-                var filterControl = new FilterField();
-                parentControl.Controls.Add( filterControl );
-                filterControl.DataViewFilterGuid = filter.Guid;
-                filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
-                filterControl.FilteredEntityTypeName = filteredEntityTypeName;
-                if ( filter.EntityTypeId.HasValue )
+                if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
-                    var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( filter.EntityTypeId.Value, rockContext );
-                    if ( entityTypeCache != null )
+                    var filterControl = new FilterField();
+                    parentControl.Controls.Add( filterControl );
+                    filterControl.DataViewFilterGuid = filter.Guid;
+                    filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
+                    filterControl.FilteredEntityTypeName = filteredEntityTypeName;
+                    if ( filter.EntityTypeId.HasValue )
                     {
-                        filterControl.FilterEntityTypeName = entityTypeCache.Name;
+                        var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( filter.EntityTypeId.Value, rockContext );
+                        if ( entityTypeCache != null )
+                        {
+                            filterControl.FilterEntityTypeName = entityTypeCache.Name;
+                        }
+                    }
+
+                    filterControl.Expanded = filter.Expanded;
+                    if ( setSelection )
+                    {
+                        try 
+                        {
+                            filterControl.SetSelection( filter.Selection );
+                        }
+                        catch ( Exception ex )
+                        {
+                            this.LogException( new Exception("Exception setting selection for DataViewFilter: " + filter.Guid, ex));
+                        }
+                    }
+
+                    filterControl.DeleteClick += filterControl_DeleteClick;
+                }
+                else
+                {
+                    var groupControl = new FilterGroup();
+                    parentControl.Controls.Add( groupControl );
+                    groupControl.DataViewFilterGuid = filter.Guid;
+                    groupControl.ID = string.Format( "fg_{0}", groupControl.DataViewFilterGuid.ToString( "N" ) );
+                    groupControl.FilteredEntityTypeName = filteredEntityTypeName;
+                    groupControl.IsDeleteEnabled = parentControl is FilterGroup;
+                    if ( setSelection )
+                    {
+                        groupControl.FilterType = filter.ExpressionType;
+                    }
+
+                    groupControl.AddFilterClick += groupControl_AddFilterClick;
+                    groupControl.AddGroupClick += groupControl_AddGroupClick;
+                    groupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
+                    foreach ( var childFilter in filter.ChildFilters )
+                    {
+                        CreateFilterControl( groupControl, childFilter, filteredEntityTypeName, setSelection, rockContext );
                     }
                 }
-
-                filterControl.Expanded = filter.Expanded;
-                if ( setSelection )
-                {
-                    filterControl.SetSelection(filter.Selection);
-                }
-
-                filterControl.DeleteClick += filterControl_DeleteClick;
             }
-            else
+            catch ( Exception ex )
             {
-                var groupControl = new FilterGroup();
-                parentControl.Controls.Add( groupControl );
-                groupControl.DataViewFilterGuid = filter.Guid;
-                groupControl.ID = string.Format( "fg_{0}", groupControl.DataViewFilterGuid.ToString( "N" ) );
-                groupControl.FilteredEntityTypeName = filteredEntityTypeName;
-                groupControl.IsDeleteEnabled = parentControl is FilterGroup;
-                if ( setSelection )
-                {
-                    groupControl.FilterType = filter.ExpressionType;
-                }
-
-                groupControl.AddFilterClick += groupControl_AddFilterClick;
-                groupControl.AddGroupClick += groupControl_AddGroupClick;
-                groupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
-                foreach ( var childFilter in filter.ChildFilters )
-                {
-                    CreateFilterControl( groupControl, childFilter, filteredEntityTypeName, setSelection, rockContext );
-                }
+                this.LogException( new Exception( "Exception creating FilterControl for DataViewFilter: " + filter.Guid, ex ) );
             }
         }
-
-
 
         /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlEntityType control.

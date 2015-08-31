@@ -33,9 +33,10 @@
                                 <Rock:CurrencyField DataField="TransactionAmount" HeaderText="Transaction Total" SortExpression="TransactionAmount" ItemStyle-HorizontalAlign="Right" />
                                 <Rock:RockTemplateField HeaderText="Control Variance" ItemStyle-HorizontalAlign="Right">
                                     <ItemTemplate>
-                                        <span class='<%# (decimal)Eval("Variance") != 0 ? "label label-danger" : "" %>'><%# ((decimal)Eval("Variance")).ToString("C2") %></span>
+                                        <span class='<%# (decimal)Eval("Variance") != 0 ? "label label-danger" : "" %>'><%# this.FormatValueAsCurrency((decimal)Eval("Variance")) %></span>
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
+                                <Rock:RockBoundField DataField="AccountSummaryText" HeaderText="Accounts" HtmlEncode="false" />
                                 <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" SortExpression="Campus.Name" ColumnPriority="Desktop" />
                                 <Rock:RockTemplateField HeaderText="Status" SortExpression="Status" ItemStyle-HorizontalAlign="Center">
                                     <ItemTemplate>

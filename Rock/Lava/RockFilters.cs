@@ -701,19 +701,19 @@ namespace Rock.Lava
             DateTime dtInput;
             DateTime dtCompare;
 
-            if ( input is DateTime )
+            if ( input != null && input is DateTime )
             {
                 dtInput = (DateTime)input;
             }
             else
             {
-                if ( !DateTime.TryParse( input.ToString(), out dtInput ) )
+                if ( input == null || !DateTime.TryParse( input.ToString(), out dtInput ) )
                 {
                     return string.Empty;
                 }
             }
 
-            if ( !DateTime.TryParse( compareDate.ToString(), out dtCompare ) )
+            if ( compareDate == null || !DateTime.TryParse( compareDate.ToString(), out dtCompare ) )
             {
                 dtCompare = RockDateTime.Now;
             }
@@ -910,6 +910,32 @@ namespace Rock.Lava
                 return input.ToString();
 
             return string.Format( "{0:" + format + "}", input );
+        }
+
+        /// <summary>
+        /// Formats the specified input as currency using the CurrencySymbol from Global Attributes
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string FormatAsCurrency( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            if (input is string)
+            {
+                // if the input is a string, just append the currency symbol to the front, even if it can't be converted to a number
+                var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
+                return string.Format("{0}{1}", currencySymbol, input);
+            }
+            else
+            {
+                // if the input an integer, decimal, double or anything else that can be parsed as a decimal, format that
+                decimal? inputAsDecimal = input.ToString().AsDecimalOrNull();
+                return inputAsDecimal.FormatAsCurrency();
+            }
         }
 
         /// <summary>

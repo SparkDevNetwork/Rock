@@ -1755,13 +1755,12 @@ tr.row-highlight td {
     1. Group Viewer - styles for the group viewer block.
 
 */
-.group-location-map {
-  float: right;
+.group-location-map img {
+  width: 100%;
+  margin-bottom: 24px;
 }
-@media (max-width: 992px) {
-  .group-location-map {
-    float: left;
-  }
+.description {
+  margin-bottom: 24px;
 }
 section.group-type-attribute-panel label {
   padding-left: 46px;
@@ -2830,7 +2829,7 @@ iframe.email-body {
   Used to manage styles related to reusable components / widgets.
 
   1. Pickers - used to pick complex data types
-  2. 
+  2. Number Increment
   3. Tree - used for tree control
   4. Person List - used to show a list of people
   5. Rollover - Used to hide/show items in the UI has the mouse rolls-over a container.
@@ -3007,6 +3006,52 @@ iframe.email-body {
   float: none;
   margin-top: inherit;
   margin-right: 0;
+}
+.numberincrement {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+.numberincrement .numberincrement-up,
+.numberincrement .numberincrement-down {
+  background-color: #f0f0f0;
+  padding: 6px 12px;
+  border: 1px solid #cccccc;
+  color: #555555;
+  cursor: pointer;
+}
+.numberincrement .numberincrement-up.disabled,
+.numberincrement .numberincrement-down.disabled {
+  color: #888888;
+  cursor: default;
+}
+.numberincrement .numberincrement-down {
+  border-radius: 4px 0 0 4px;
+}
+.numberincrement .numberincrement-up {
+  border-radius: 0 4px 4px 0;
+}
+.numberincrement .numberincrement-value {
+  padding: 6px 18px;
+  border-color: #cccccc;
+  border-width: 1px 0;
+  border-style: solid;
+}
+.numberincrement.input-sm .numberincrement-up,
+.numberincrement.input-sm .numberincrement-down {
+  padding: 5px 8px;
+}
+.numberincrement.input-sm .numberincrement-value {
+  padding: 5px 12px;
+}
+.numberincrement.input-lg .numberincrement-up,
+.numberincrement.input-lg .numberincrement-down {
+  padding: 12px 20px;
+}
+.numberincrement.input-lg .numberincrement-value {
+  padding: 12px 28px;
 }
 ul.rocktree,
 ul.rocktree ul {
@@ -3808,9 +3853,9 @@ fieldset .actions {
 .imageupload-group .upload-progress {
   position: absolute;
   z-index: 2;
-  left: 50%;
+  left: 35px;
   margin-left: -18px;
-  top: 50%;
+  top: 8px;
   margin-top: -37px;
   opacity: 0.3;
 }
@@ -3922,8 +3967,8 @@ fieldset .actions {
 .fileupload-group .upload-progress {
   position: absolute;
   z-index: 2;
-  left: 115%;
-  top: -20%;
+  left: 35px;
+  top: 8px;
   opacity: 0.3;
 }
 .updateprogress-status {

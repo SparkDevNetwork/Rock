@@ -39,8 +39,10 @@ namespace RockWeb.Blocks.Finance
     [Description( "Builds a list of all financial transactions which can be filtered by date, account, transaction type, etc." )]
 
     [ContextAware]
-    [LinkedPage( "Detail Page" )]
-    [TextField( "Title", "Title to display above the grid. Leave blank to hide.", false )]
+    [LinkedPage( "Detail Page", order:0 )]
+    [TextField( "Title", "Title to display above the grid. Leave blank to hide.", false, order:1 )]
+    [BooleanField( "Show Only Active Accounts on Filter", "If account filter is displayed, only list active accounts", false, "", 2, "ActiveAccountsOnlyFilter")]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transation types to limit the list to (if none are selected all types will be included).", false, true, "", "", 3 )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler
     {
         #region Fields
@@ -544,7 +546,7 @@ namespace RockWeb.Blocks.Finance
                             }
 
                             var oldBatchChanges = new List<string>();
-                            History.EvaluateChange( oldBatchChanges, "Control Amount", oldBatch.ControlAmount.ToString( "C2" ), oldBatchControlAmount.ToString( "C2" ) );
+                            History.EvaluateChange( oldBatchChanges, "Control Amount", oldBatch.ControlAmount.FormatAsCurrency(), oldBatchControlAmount.FormatAsCurrency() );
                             oldBatch.ControlAmount = oldBatchControlAmount;
 
                             HistoryService.SaveChanges(
@@ -557,7 +559,7 @@ namespace RockWeb.Blocks.Finance
                             );
 
                             var newBatchChanges = new List<string>();
-                            History.EvaluateChange( newBatchChanges, "Control Amount", newBatch.ControlAmount.ToString( "C2" ), newBatchControlAmount.ToString( "C2" ) );
+                            History.EvaluateChange( newBatchChanges, "Control Amount", newBatch.ControlAmount.FormatAsCurrency(), newBatchControlAmount.FormatAsCurrency() );
                             newBatch.ControlAmount = newBatchControlAmount;
 
                             HistoryService.SaveChanges(
@@ -627,10 +629,15 @@ namespace RockWeb.Blocks.Finance
             nreAmount.DelimitedValues = gfTransactions.GetUserPreference( "Amount Range" );
             tbTransactionCode.Text = gfTransactions.GetUserPreference( "Transaction Code" );
 
-
             var accountService = new FinancialAccountService( new RockContext() );
+            var accounts = accountService.Queryable();
+            if ( GetAttributeValue( "ActiveAccountsOnlyFilter" ).AsBoolean() )
+            {
+                accounts = accounts.Where( a => a.IsActive );
+            }
+
             ddlAccount.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( FinancialAccount account in accountService.Queryable() )
+            foreach ( FinancialAccount account in accounts.OrderBy( a => a.Order ) )
             {
                 ListItem li = new ListItem( account.Name, account.Id.ToString() );
                 li.Selected = account.Id.ToString() == gfTransactions.GetUserPreference( "Account" );
@@ -717,6 +724,13 @@ namespace RockWeb.Blocks.Finance
             // Qry
             var rockContext = new RockContext();
             var qry = new FinancialTransactionService( rockContext ).Queryable();
+
+            // Transaction Types
+            var txnTypes = GetAttributeValue( "TransactionTypes" ).SplitDelimitedValues().AsGuidList();
+            if ( txnTypes.Any() )
+            {
+                qry = qry.Where( t => txnTypes.Contains( t.TransactionTypeValue.Guid ) );
+            }
 
             // Set up the selection filter
             if ( _batch != null )

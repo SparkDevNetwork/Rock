@@ -193,7 +193,6 @@ namespace Rock.Web.Cache
             var definedValueModel = definedValueService.Get( id );
             if ( definedValueModel != null )
             {
-                definedValueModel.LoadAttributes( rockContext );
                 return new DefinedValueCache( definedValueModel );
             }
 

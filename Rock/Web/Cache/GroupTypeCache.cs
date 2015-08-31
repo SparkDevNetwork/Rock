@@ -502,7 +502,6 @@ namespace Rock.Web.Cache
             var groupTypeModel = groupTypeService.Queryable().Include(a => a.Roles).FirstOrDefault(a => a.Id == id );
             if ( groupTypeModel != null )
             {
-                groupTypeModel.LoadAttributes( rockContext );
                 return new GroupTypeCache( groupTypeModel );
             }
 

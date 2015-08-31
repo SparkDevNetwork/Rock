@@ -476,8 +476,12 @@
     <Compile Include="Reporting\DataFilter\Person\NotInGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupFilter.cs" />
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Group\ParentGroupMemberListSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Group\MemberListSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\MemberCountSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Group\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\ParticipationRateSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Group\ParentGroupSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\ParentPhoneNumberSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InGroupGeofenceGroupTypeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\RelatedPeopleSelect.cs" />
@@ -487,6 +491,7 @@
     <Compile Include="Reporting\ReportingHelper.cs" />
     <Compile Include="Reporting\DataSelect\Person\GroupParticipationSelect.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
+    <Compile Include="Utility\ExtensionMethods\CurrencyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
@@ -1089,6 +1094,7 @@
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
     <Compile Include="Workflow\Action\AssignActivityToGroup.cs" />
     <Compile Include="Workflow\Action\AddConnectionRequestActivity.cs" />
+    <Compile Include="Workflow\Action\TransferConnectionRequest.cs" />
     <Compile Include="Workflow\Action\SetConnectionRequestState.cs" />
     <Compile Include="Workflow\Action\SetConnectionRequestStatus.cs" />
     <Compile Include="Workflow\Action\CreateConnectionRequest.cs" />
