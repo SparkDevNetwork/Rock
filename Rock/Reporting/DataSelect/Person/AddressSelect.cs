@@ -134,7 +134,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             string[] values = selection.Split( '|' );
             Guid groupLocationTypeValueGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
-            AddressNamePart addressNamePart = AddressNamePart.Full;
+            RockUdfHelper.AddressNamePart addressNamePart = RockUdfHelper.AddressNamePart.Full;
 
             if ( values.Length >= 1 )
             {
@@ -143,7 +143,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             if ( values.Length >= 2 )
             {
-                addressNamePart = values[1].ConvertToEnumOrNull<AddressNamePart>() ?? AddressNamePart.Full;
+                addressNamePart = values[1].ConvertToEnumOrNull<RockUdfHelper.AddressNamePart>() ?? RockUdfHelper.AddressNamePart.Full;
             }
 
             string addressTypeId = DefinedValueCache.Read( groupLocationTypeValueGuid ).Id.ToString();
@@ -153,22 +153,6 @@ namespace Rock.Reporting.DataSelect.Person
 
             return SelectExpressionExtractor.Extract<Rock.Model.Person>( personLocationQuery, entityIdProperty, "p" );
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private enum AddressNamePart
-        {
-            Full,
-            Street1,
-            Street2,
-            City,
-            Region,
-            PostalCode,
-            Country
-        }
-
-        static Dictionary<string, string> newlabels = new Dictionary<string, string>();
 
         /// <summary>
         /// Creates the child controls.
@@ -191,43 +175,43 @@ namespace Rock.Reporting.DataSelect.Person
 
             RockRadioButtonList addressPartRadioButtonList = new RockRadioButtonList();
             addressPartRadioButtonList.Items.Clear();
-            addressPartRadioButtonList.BindToEnum<AddressNamePart>( false );
+            addressPartRadioButtonList.BindToEnum<RockUdfHelper.AddressNamePart>( false );
 
-            //Localises the radio button list by modifying 
+            // Localises the radio button list by modifying the text Value of radio buttons
+            Dictionary<string, string> newLabels = new Dictionary<string, string>();
             var globalAttributesCache = GlobalAttributesCache.Read();
-            var defaultcountry = ( !string.IsNullOrWhiteSpace(globalAttributesCache.OrganizationCountry) ) ? globalAttributesCache.OrganizationCountry : "US";
-            var countryValue = DefinedTypeCache.Read(new Guid(SystemGuid.DefinedType.LOCATION_COUNTRIES))
+            var defaultCountry = ( !string.IsNullOrWhiteSpace( globalAttributesCache.OrganizationCountry ) ) ? globalAttributesCache.OrganizationCountry : "US";
+            var countryValue = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                     .DefinedValues
-                    .Where(v => v.Value.Equals(defaultcountry, StringComparison.OrdinalIgnoreCase))
+                    .Where( v => v.Value.Equals( defaultCountry, StringComparison.OrdinalIgnoreCase ) )
                     .FirstOrDefault();
+            
             if ( countryValue != null )
             {
-                if (!newlabels.ContainsKey("City"))
+                if ( !newLabels.ContainsKey( "City" ) )
                 {
-                    newlabels.Add("City", countryValue.GetAttributeValue("CityLabel"));
+                    newLabels.Add( "City", countryValue.GetAttributeValue( "CityLabel" ) );
                 }
 
-                if ( !newlabels.ContainsKey("Region") )
+                if ( !newLabels.ContainsKey( "Region" ) )
                 {
-                    newlabels.Add("Region", countryValue.GetAttributeValue("StateLabel"));
+                    newLabels.Add( "Region", countryValue.GetAttributeValue( "StateLabel" ) );
                 }
 
-                if ( !newlabels.ContainsKey("PostalCode") )
+                if ( !newLabels.ContainsKey( "PostalCode" ) )
                 {
-                    newlabels.Add("PostalCode", countryValue.GetAttributeValue("PostalCodeLabel"));
-                }   
+                    newLabels.Add( "PostalCode", countryValue.GetAttributeValue( "PostalCodeLabel" ) );
+                }
             }
 
-            foreach ( KeyValuePair<string, string> pair in newlabels )
+            foreach ( KeyValuePair<string, string> pair in newLabels )
             {
-                string oldvalue = pair.Key.SplitCase();
-                string newvalue = pair.Value.SplitCase();
-                var find = addressPartRadioButtonList.Items.FindByText(oldvalue);
-                int index = addressPartRadioButtonList.Items.IndexOf(find);
-                if ( index != -1 )
-                { 
-                    addressPartRadioButtonList.Items.Remove(find);
-                    addressPartRadioButtonList.Items.Insert(index, newvalue);
+                string oldValue = pair.Key.SplitCase();
+                string newValue = pair.Value.SplitCase();
+                var listItem = addressPartRadioButtonList.Items.FindByText( oldValue );
+                if ( listItem != null )
+                {
+                    listItem.Text = newValue;
                 }
             }
 
