@@ -47,6 +47,8 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "Include Current QueryString", "Flag indicating if current page's QueryString should be used when building url for child pages", false )]
     [BooleanField( "Enable Debug", "Flag indicating that the control should output the page data that will be passed to Liquid for parsing.", false )]
     [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false )]
+    [KeyValueListField( "Include Page List", "List of pages to include in the Lava. Any ~/ will be resolved by Rock. Enable debug for assistance. Example 'Give Now' with '~/page/186' or 'Me' with '~/MyAccount'.", false, "", "Title", "Link" )]
+
     public partial class PageMenu : RockBlock, ISecondaryBlock
     {
         private static readonly string ROOT_PAGE = "RootPage";
@@ -122,14 +124,28 @@ namespace RockWeb.Blocks.Cms
                     queryString = CurrentPageReference.QueryString;
                 }
 
-                // Get list of pages in curren't page's heirarchy
+                // Get list of pages in current page's heirarchy
                 var pageHeirarchy = new List<int>();
                 if ( currentPage != null )
                 {
                     pageHeirarchy = currentPage.GetPageHierarchy().Select( p => p.Id ).ToList();
                 }
 
+                // add context to merge fields
+                var contextEntityTypes = RockPage.GetContextEntityTypes();
+                var contextObjects = new Dictionary<string, object>();
+                foreach ( var conextEntityType in contextEntityTypes )
+                {
+                    var contextObject = RockPage.GetCurrentContext( conextEntityType );
+                    contextObjects.Add( conextEntityType.FriendlyName, contextObject );
+                }
+
                 var pageProperties = new Dictionary<string, object>();
+                pageProperties.Add( "CurrentPerson", CurrentPerson );
+                pageProperties.Add( "Context", contextObjects );
+                pageProperties.Add( "Site", GetSiteProperties( RockPage.Site ) );
+                pageProperties.Add( "IncludePageList", GetIncludePageList() );
+
                 using ( var rockContext = new RockContext() )
                 {
                     pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
@@ -170,10 +186,10 @@ namespace RockWeb.Blocks.Cms
                 errorMessage.Append( "</div>" );
 
                 phContent.Controls.Add( new LiteralControl( errorMessage.ToString()) );
-                
             }
-
         }
+
+        #region Methods
 
         private string CacheKey()
         {
@@ -213,5 +229,51 @@ namespace RockWeb.Blocks.Cms
                 phContent.Visible = visible;
             }
         }
+
+        /// <summary>
+        /// Gets the site *PageId properties.
+        /// </summary>
+        /// <param name="site">The site.</param>
+        /// <returns>A dictionary of various page ids for the site.</returns>
+        private Dictionary<string, object> GetSiteProperties( SiteCache site )
+        {
+            var properties = new Dictionary<string, object>();
+            properties.Add( "DefaultPageId", site.DefaultPageId );
+            properties.Add( "LoginPageId", site.LoginPageId );
+            properties.Add( "PageNotFoundPageId", site.PageNotFoundPageId );
+            properties.Add( "CommunicationPageId", site.CommunicationPageId );
+            properties.Add( "RegistrationPageId ", site.RegistrationPageId );
+            properties.Add( "MobilePageId", site.MobilePageId );
+            return properties;
+        }
+
+        /// <summary>
+        /// Gets the include page list as a dictionary to be included in the Lava.
+        /// </summary>
+        /// <returns>A dictionary of Titles with their Links.</returns>
+        private Dictionary<string, object> GetIncludePageList()
+        {
+            var properties = new Dictionary<string, object>();
+
+            var navPagesString = GetAttributeValue( "IncludePageList" );
+
+            if ( !string.IsNullOrWhiteSpace( navPagesString ) )
+            {
+                navPagesString = navPagesString.TrimEnd( '|' );
+                var navPages = navPagesString.Split( '|' )
+                                .Select( s => s.Split( '^' ) )
+                                .Select( p => new { Title = p[0], Link = p[1] } );
+
+                StringBuilder sbPageMarkup = new StringBuilder();
+                foreach ( var page in navPages )
+                {
+                    properties.Add( page.Title, Page.ResolveUrl( page.Link ) );
+                }
+            }
+            return properties;
+        }
+
+        #endregion
+
     }
 }
