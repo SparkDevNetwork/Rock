@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -55,6 +56,13 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
                     workflowAlertNumber.Value = new WorkflowActivityService( rockContext ).Queryable().AsNoTracking().Where( w => !w.CompletedDateTime.HasValue && w.AssignedPersonAliasId.ToString() == CurrentPersonAliasId.ToString() ).Count().ToString();
                 }
             }
+
+            String workflowTypes = Request.QueryString["WorkflowTypes"];
+
+            if ( workflowTypes == "active" )
+            {
+                filterWorkflowTypes.Value = workflowTypes;
+            }
         }
 
         /// <summary>
@@ -62,7 +70,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
         /// </summary>
         protected void lbListingPage_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "ListingPage" );
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add( "WorkflowTypes", "active" );
+            NavigateToLinkedPage( "ListingPage", queryParams );
         }
     }
 }
