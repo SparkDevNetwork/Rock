@@ -701,13 +701,13 @@ namespace Rock.Lava
             DateTime dtInput;
             DateTime dtCompare;
 
-            if ( input is DateTime )
+            if ( input != null && input is DateTime )
             {
                 dtInput = (DateTime)input;
             }
             else
             {
-                if ( !DateTime.TryParse( input.ToString(), out dtInput ) )
+                if ( input == null || !DateTime.TryParse( input.ToString(), out dtInput ) )
                 {
                     return string.Empty;
                 }
