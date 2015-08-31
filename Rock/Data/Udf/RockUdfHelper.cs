@@ -45,6 +45,20 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// The Enum equivs of what ufnCrm_GetAddress accepts for AddressComponent
+        /// </summary>
+        public enum AddressNamePart
+        {
+            Full = 0,
+            Street1 = 1,
+            Street2 = 2,
+            City = 3,
+            Region = 4,
+            PostalCode = 5,
+            Country = 6
+        }
+
+        /// <summary>
         /// calls database TVF function ufnCrm_GetFamilyTitle.
         /// Usage: string familyTitle = RockUdfHelper.ufnCrm_GetFamilyTitle( rockContext, personId, groupId, commaPersonIds, true );
         /// </summary>
