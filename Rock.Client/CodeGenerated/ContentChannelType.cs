@@ -41,6 +41,9 @@ namespace Rock.Client
         public bool DisablePriority { get; set; }
 
         /// <summary />
+        public bool IncludeTime { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -61,6 +64,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.DateRangeType = source.DateRangeType;
             this.DisablePriority = source.DisablePriority;
+            this.IncludeTime = source.IncludeTime;
             this.IsSystem = source.IsSystem;
             this.Name = source.Name;
             this.Guid = source.Guid;
