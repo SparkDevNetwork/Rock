@@ -153,9 +153,9 @@ REQUIRED VARIABLES
                   <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Pending Baptism"></i>
                 {% endif %}
 
-                {% assign startingPointDate = member.Person | Attribute: 'DateAttendedStartingPoint' %}
-                {% if startingPointDate != '' %}
-                  <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point on {{ startingPointDate }}"></i>
+                {% assign startingPointDates = member.Person | GroupsAttended: '57' | Size %}
+                {% if startingPointDates > 0 %}
+                  <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point"></i>
                 {% endif %}
                 {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
                 {% if pendingStartingPoint != '' %}
@@ -243,9 +243,9 @@ REQUIRED VARIABLES
                   <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Pending Baptism"></i>
                 {% endif %}
 
-                {% assign startingPointDate = member.Person | Attribute: 'DateAttendedStartingPoint' %}
-                {% if startingPointDate != '' %}
-                  <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point on {{ startingPointDate }}"></i>
+                {% assign startingPointDates = member.Person | GroupsAttended: '57' | Size %}
+                {% if startingPointDates > 0 %}
+                  <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point"></i>
                 {% endif %}
                 {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
                 {% if pendingStartingPoint != '' %}
@@ -331,9 +331,9 @@ REQUIRED VARIABLES
                   <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Pending Baptism"></i>
                 {% endif %}
 
-                {% assign startingPointDate = member.Person | Attribute: 'DateAttendedStartingPoint' %}
-                {% if startingPointDate != '' %}
-                  <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point on {{ startingPointDate }}"></i>
+                {% assign startingPointDates = member.Person | GroupsAttended: '57' | Size %}
+                {% if startingPointDates > 0 %}
+                  <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point"></i>
                 {% endif %}
                 {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
                 {% if pendingStartingPoint != '' %}
