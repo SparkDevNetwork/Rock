@@ -65,6 +65,20 @@ namespace Rock.Model
         public ContentChannelDateType DateRangeType { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether time should be included with the single or date range values
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [include time]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IncludeTime
+        {
+            get { return _includeTime; }
+            set { _includeTime = value; }
+        }
+        private bool _includeTime = true;
+        
+        /// <summary>
         /// Gets or sets a value indicating whether [disable priority].
         /// </summary>
         /// <value>
