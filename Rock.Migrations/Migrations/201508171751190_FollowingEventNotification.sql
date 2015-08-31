@@ -315,7 +315,8 @@ SET [ConfirmationEmailTemplate] = '{{ ''Global'' | Attribute:''EmailHeader'' }}
         Discounted Cost: {{ currencySymbol }}{{ Registration.DiscountedCost | Format:''#,##0.00'' }}<br/>
     {% endif %}
     {% for payment in Registration.Payments %}
-        Paid {{ currencySymbol }}{{ payment.Amount | Format:''#,##0.00'' }} on {{ payment.Transaction.TransactionDateTime| Date:''M/d/yyyy'' }} <small>(Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
+        Paid {{ currencySymbol }}{{ payment.Amount | Format:''#,##0.00'' }} on {{ payment.Transaction.TransactionDateTime| Date:''M/d/yyyy'' }} 
+        <small>(Acct #: {{ payment.Transaction.FinancialPaymentDetail.AccountNumberMasked }}, Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
     {% endfor %}
     
     {% assign paymentCount = Registration.Payments | Size %}
