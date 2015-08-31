@@ -16,4 +16,4 @@
    <% } %>
 </asp:LinkButton>
 
-<script type="text/javascript" src="../plugins/cc_newspring/Blocks/WorkflowAlert/loadcss.js"></script>
+<script type="text/javascript" src="/plugins/cc_newspring/Blocks/WorkflowAlert/loadcss.js"></script>
