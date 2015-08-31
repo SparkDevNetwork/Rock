@@ -434,7 +434,7 @@ namespace RockWeb.Blocks.Cms
                 if ( drp.UpperValue.HasValue )
                 {
                     DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-                    itemQry = itemQry.Where( i => i.StartDateTime < upperDate );
+                    itemQry = itemQry.Where( i => i.StartDateTime <= upperDate );
                 }
 
                 var status = gfFilter.GetUserPreference( "Status" ).ConvertToEnumOrNull<ContentChannelItemStatus>();
@@ -610,21 +610,43 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
-                // Add Start column
-                var startField = new DateTimeField();
-                startField.DataField = "StartDateTime";
-                startField.HeaderText = channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
-                startField.SortExpression = "StartDateTime";
-                gContentChannelItems.Columns.Add( startField );
-
-                // Expire column
-                if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                if ( channel.ContentChannelType.IncludeTime )
                 {
-                    var expireField = new DateTimeField();
-                    expireField.DataField = "ExpireDateTime";
-                    expireField.HeaderText = "Expire";
-                    expireField.SortExpression = "ExpireDateTime";
-                    gContentChannelItems.Columns.Add( expireField );
+                    // Add Start column
+                    var startField = new DateTimeField();
+                    startField.DataField = "StartDateTime";
+                    startField.HeaderText = channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
+                    startField.SortExpression = "StartDateTime";
+                    gContentChannelItems.Columns.Add( startField );
+
+                    // Expire column
+                    if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                    {
+                        var expireField = new DateTimeField();
+                        expireField.DataField = "ExpireDateTime";
+                        expireField.HeaderText = "Expire";
+                        expireField.SortExpression = "ExpireDateTime";
+                        gContentChannelItems.Columns.Add( expireField );
+                    }
+                }
+                else
+                {
+                    // Add Start column
+                    var startField = new DateField();
+                    startField.DataField = "StartDateTime";
+                    startField.HeaderText = channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
+                    startField.SortExpression = "StartDateTime";
+                    gContentChannelItems.Columns.Add( startField );
+
+                    // Expire column
+                    if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                    {
+                        var expireField = new DateField();
+                        expireField.DataField = "ExpireDateTime";
+                        expireField.HeaderText = "Expire";
+                        expireField.SortExpression = "ExpireDateTime";
+                        gContentChannelItems.Columns.Add( expireField );
+                    }
                 }
 
                 // Priority column
