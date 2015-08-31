@@ -718,8 +718,57 @@ namespace Rock.Lava
                 dtCompare = RockDateTime.Now;
             }
 
-            return dtInput.Humanize( false, dtCompare );
+            return dtInput.Humanize( true, dtCompare );
 
+        }
+
+        /// <summary>
+        /// Dayses from now.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string DaysFromNow( object input )
+        {
+            DateTime dtInputDate = GetDateFromObject( input ).Date;
+            DateTime dtCompareDate = RockDateTime.Now.Date;
+
+            int daysDiff = ( dtInputDate - dtCompareDate ).Days;
+
+            string response = string.Empty;
+
+            switch ( daysDiff )
+            {
+                case -1:
+                    {
+                        response = "yesterday";
+                        break;
+                    }
+                case 0:
+                    {
+                        response = "today";
+                        break;
+                    }
+                case 1: 
+                    {
+                        response = "tomorrow";
+                        break;
+                    }
+                default: 
+                    {
+                        if ( daysDiff > 0 )
+                        {
+                            response = string.Format( "in {0} days", daysDiff );
+                        }
+                        else
+                        {
+                            response = string.Format( "{0} days ago", daysDiff * -1 );
+                        }
+                        
+                        break;
+                    }
+            }
+
+            return response;
         }
 
         /// <summary>
@@ -729,15 +778,27 @@ namespace Rock.Lava
         /// <param name="sEndDate">The s end date.</param>
         /// <param name="precision">The precision.</param>
         /// <returns></returns>
-        public static string HumanizeTimeSpan( object sStartDate, object sEndDate, int precision = 1 )
+        public static string HumanizeTimeSpan( object sStartDate, object sEndDate, object precision )
         {
+            if ( precision is String )
+            {
+                return HumanizeTimeSpan( sStartDate, sEndDate, precision.ToString(), "min" );
+            }
+
+            int precisionUnit = 1;
+
+            if ( precision is int )
+            {
+                precisionUnit = (int)precision;
+            }
+
             DateTime startDate = GetDateFromObject(sStartDate);
             DateTime endDate = GetDateFromObject(sEndDate);
 
             if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
                 TimeSpan difference = endDate - startDate;
-                return difference.Humanize( precision );
+                return difference.Humanize( precisionUnit );
             }
             else
             {
@@ -753,46 +814,46 @@ namespace Rock.Lava
         /// <param name="unit">The minimum unit.</param>
         /// <param name="direction">The direction.</param>
         /// <returns></returns>
-        public static string HumanizeTimeSpan( object sStartDate, object sEndDate, string unit, string direction )
+        public static string HumanizeTimeSpan( object sStartDate, object sEndDate, string unit = "Day", string direction = "min" )
         {
             DateTime startDate = GetDateFromObject( sStartDate );
             DateTime endDate = GetDateFromObject( sEndDate );
 
-            TimeUnit minUnitValue = TimeUnit.Day;
+            TimeUnit unitValue = TimeUnit.Day;
 
             switch(unit)
             {
                 case "Year":
-                    minUnitValue = TimeUnit.Year;
+                    unitValue = TimeUnit.Year;
                     break;
                 case "Month":
-                    minUnitValue = TimeUnit.Month;
+                    unitValue = TimeUnit.Month;
                     break;
                 case "Week":
-                    minUnitValue = TimeUnit.Week;
+                    unitValue = TimeUnit.Week;
                     break;
                 case "Day":
-                    minUnitValue = TimeUnit.Day;
+                    unitValue = TimeUnit.Day;
                     break;
                 case "Hour":
-                    minUnitValue = TimeUnit.Hour;
+                    unitValue = TimeUnit.Hour;
                     break;
                 case "Minute":
-                    minUnitValue = TimeUnit.Minute;
+                    unitValue = TimeUnit.Minute;
                     break;
                 case "Second":
-                    minUnitValue = TimeUnit.Second;
+                    unitValue = TimeUnit.Second;
                     break;
             }
 
             if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
                 TimeSpan difference = endDate - startDate;
-                
+
                 if (direction.ToLower() == "max") {
-                    return difference.Humanize( maxUnit: minUnitValue );
+                    return difference.Humanize( maxUnit: unitValue );
                 } else {
-                    return difference.Humanize( minUnit: minUnitValue );
+                    return difference.Humanize( minUnit: unitValue );
                 }
             }
             else
