@@ -1,7 +1,11 @@
 ﻿@media print {
 
     @page {
-        margin: .5in;
+        margin: .25in;
+    }
+
+    body {
+        font-size: 12px;
     }
 
     // default sidebar navs on most pages
@@ -31,5 +35,30 @@
     // Remove the footer 
     footer {
         display: none;
+    }
+
+    // style panels
+    .panel .panel-heading .panel-title {
+        font-size: 12px !important;
+    }
+
+    // style the grid
+    .table {
+        overflow: hidden;
+    }
+
+    .table td,
+    .table > thead > tr > th { 
+        font-size: 10px; 
+    }
+        
+    .table .grid-columncommand,
+    .table .grid-select-field { 
+        display: none !important; 
+    }
+        
+    .table > tbody > tr > th, 
+    .table > tbody > tr > td {
+        padding: 4px;
     }
 }

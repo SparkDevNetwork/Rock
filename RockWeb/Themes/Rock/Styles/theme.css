@@ -5872,33 +5872,6 @@ div.aspNetDisabled {
     The accent colors are deprecated and should not be used in new theme development. They will be
     removed in Rock v 6.0.
 */
-@media print {
-  @page {
-    margin: .5in;
-  }
-  .nav-sub {
-    display: none;
-  }
-  #cms-admin-footer {
-    display: none;
-  }
-  a[href]:after {
-    content: '' !important;
-  }
-  #page-wrapper {
-    position: absolute;
-    left: -70px;
-  }
-  #content-wrapper {
-    margin-left: 70px !important;
-  }
-  .breadcrumb {
-    display: none;
-  }
-  footer {
-    display: none;
-  }
-}
 /*#region
 // Fonts                       */
 @font-face {
@@ -6505,3 +6478,51 @@ body.navbar-side-close #content-wrapper {
   font-weight: 700;
 }
 /*#endregion */
+@media print {
+  @page {
+    margin: .25in;
+  }
+  body {
+    font-size: 12px;
+  }
+  .nav-sub {
+    display: none;
+  }
+  #cms-admin-footer {
+    display: none;
+  }
+  a[href]:after {
+    content: '' !important;
+  }
+  #page-wrapper {
+    position: absolute;
+    left: -70px;
+  }
+  #content-wrapper {
+    margin-left: 70px !important;
+  }
+  .breadcrumb {
+    display: none;
+  }
+  footer {
+    display: none;
+  }
+  .panel .panel-heading .panel-title {
+    font-size: 12px !important;
+  }
+  .table {
+    overflow: hidden;
+  }
+  .table td,
+  .table > thead > tr > th {
+    font-size: 10px;
+  }
+  .table .grid-columncommand,
+  .table .grid-select-field {
+    display: none !important;
+  }
+  .table > tbody > tr > th,
+  .table > tbody > tr > td {
+    padding: 4px;
+  }
+}
