@@ -1043,7 +1043,14 @@ function(item) {
             System.Data.DataView dv = dtResults.DefaultView;
             if ( gGiversGifts.SortProperty != null )
             {
-                dv.Sort = string.Format( "[{0}] {1}", gGiversGifts.SortProperty.Property, gGiversGifts.SortProperty.DirectionString );
+                try
+                {
+                    dv.Sort = string.Format( "[{0}] {1}", gGiversGifts.SortProperty.Property, gGiversGifts.SortProperty.DirectionString );
+                }
+                catch
+                {
+                    dv.Sort = "[LastName] ASC, [NickName] ASC";
+                }
             }
             else
             {
