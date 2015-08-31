@@ -42,17 +42,17 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
     [LinkedPage( "Listing Page", "Page used to view all workflows assigned to the current user." )]
     public partial class WorkflowAlert : Rock.Web.UI.RockBlock
     {
-        protected override void OnInit( EventArgs e )
+        protected override void OnLoad( EventArgs e )
         {
             base.OnInit( e );
 
             // Check for current person
-            if ( CurrentPerson != null )
+            if ( CurrentPersonAliasId.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
                     // Search the DB for active workflows assigned to the current user, and return the count
-                    workflowAlertNumber.Value = new WorkflowActivityService( rockContext ).Queryable().AsNoTracking().Where( w => w.CompletedDateTime == null && w.AssignedPersonAliasId == CurrentPersonAliasId ).Count().ToString();
+                    workflowAlertNumber.Value = new WorkflowActivityService( rockContext ).Queryable().AsNoTracking().Where( w => !w.CompletedDateTime.HasValue && w.AssignedPersonAliasId.ToString() == CurrentPersonAliasId.ToString() ).Count().ToString();
                 }
             }
         }
