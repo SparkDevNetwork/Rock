@@ -5,7 +5,7 @@
 // --------------------------------------------------
 
 
-// Rock Override
+// Rock Overrides
 // -------------------------
 
 @alert-success-link-border-bottom: none;
@@ -13,10 +13,33 @@
 @alert-warning-link-border-bottom: none;
 @alert-danger-link-border-bottom:  none;
 
+@theme-1:      @brand-primary;
+@theme-1-text: #fff;
+
+@theme-2:      @gray-darker;
+@theme-2-text: lighten(@gray-darker, 70%);
+
+@theme-3:      lighten(@gray-light, 20%);
+@theme-3-text: darken(@theme-3, 55%);
+
+@theme-4:      lighten(@gray-light, 30%);
+@theme-4-text: darken(@theme-4, 50%);
+
+@theme-5:      lighten(@gray-light, 40%);
+@theme-5-text: darken(@theme-5, 45%);
+
+@theme-6:      lighten(@gray-light, 45%);
+@theme-6-text: darken(@theme-6, 40%);
+
+@theme-7: @brand-info;
+@theme-7-text: #fff;
+
+@theme-8: @gray-light;
+@theme-8-text: #fff;
+
 
 // Bootstrap Overrides
 // -------------------------
-
 
 // Type
 
@@ -34,7 +57,6 @@
 @font-size-h4:            ceil((@headings-font-size-base * 1.25)); // ~18px
 @font-size-h5:            @headings-font-size-base;
 @font-size-h6:            ceil((@headings-font-size-base * 0.85)); // ~12px
-
 
 // Misc
 
@@ -58,7 +80,6 @@
 
 // Brand Colors
 @kids-orange: #FF5000;
-
 
 // XL grid breakpoint
 // note:  this is currently just a breakpoint and does not have supporting
