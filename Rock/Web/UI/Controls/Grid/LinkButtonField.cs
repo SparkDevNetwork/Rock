@@ -50,7 +50,6 @@ namespace Rock.Web.UI.Controls
             LinkButtonFieldTemplate linkButtonFieldTemplate = new LinkButtonFieldTemplate();
             linkButtonFieldTemplate.LinkButtonClick += linkButtonFieldTemplate_LinkButtonClick;
             this.ItemTemplate = linkButtonFieldTemplate;
-            this.HeaderTemplate = new RockTemplateFieldHeaderTemplate();
             this.ParentGrid = control as Grid;
             return base.Initialize( sortingEnabled, control );
         }

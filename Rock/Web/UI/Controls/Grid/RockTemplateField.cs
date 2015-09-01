@@ -52,29 +52,25 @@ namespace Rock.Web.UI.Controls
         }
         private ExcelExportBehavior _excelExportBehavior = ExcelExportBehavior.IncludeIfVisible;
 
-    }
-
-    /// <summary>
-    /// A HeaderTemplate for RockTemplateFields that ensures that the HeaderCell uses the TemplateField's HeaderStyle.CssClass
-    /// </summary>
-    public class RockTemplateFieldHeaderTemplate : ITemplate
-    {
         /// <summary>
-        /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control" /> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
+        /// Adds text or controls to a cell's controls collection.
         /// </summary>
-        /// <param name="container">The <see cref="T:System.Web.UI.Control" /> object to contain the instances of controls from the inline template.</param>
-        public void InstantiateIn( Control container )
+        /// <param name="cell">A <see cref="T:System.Web.UI.WebControls.DataControlFieldCell" /> that contains the text or controls of the <see cref="T:System.Web.UI.WebControls.DataControlField" />.</param>
+        /// <param name="cellType">One of the <see cref="T:System.Web.UI.WebControls.DataControlCellType" /> values.</param>
+        /// <param name="rowState">One of the <see cref="T:System.Web.UI.WebControls.DataControlRowState" /> values, specifying the state of the row that contains the <see cref="T:System.Web.UI.WebControls.DataControlFieldCell" />.</param>
+        /// <param name="rowIndex">The index of the row that the <see cref="T:System.Web.UI.WebControls.DataControlFieldCell" /> is contained in.</param>
+        public override void InitializeCell( DataControlFieldCell cell, DataControlCellType cellType, DataControlRowState rowState, int rowIndex )
         {
-            var cell = container as DataControlFieldCell;
-            if ( cell != null )
+            if ( cellType == DataControlCellType.Header )
             {
-                var templateField = cell.ContainingField as RockTemplateField;
-                if ( templateField != null )
+                if ( !string.IsNullOrEmpty( this.HeaderStyle.CssClass ) )
                 {
-                    // make sure the header cell gets the HeaderStyle.CssClass
-                    cell.AddCssClass( templateField.HeaderStyle.CssClass );
+                    // make sure the header cell sets the CssClass                
+                    cell.AddCssClass( this.HeaderStyle.CssClass );
                 }
             }
+            
+            base.InitializeCell( cell, cellType, rowState, rowIndex );
         }
     }
 }

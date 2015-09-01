@@ -83,7 +83,6 @@ namespace Rock.Web.UI.Controls
         {
             SecurityFieldTemplate editFieldTemplate = new SecurityFieldTemplate(control.Page, EntityTypeId, TitleField);
             this.ItemTemplate = editFieldTemplate;
-            this.HeaderTemplate = new RockTemplateFieldHeaderTemplate();
 
             return base.Initialize( sortingEnabled, control );
         }

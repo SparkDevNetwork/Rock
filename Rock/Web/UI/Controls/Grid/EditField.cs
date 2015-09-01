@@ -115,7 +115,6 @@ namespace Rock.Web.UI.Controls
             EditFieldTemplate editFieldTemplate = new EditFieldTemplate();
             editFieldTemplate.LinkButtonClick += editFieldTemplate_LinkButtonClick;
             this.ItemTemplate = editFieldTemplate;
-            this.HeaderTemplate = new RockTemplateFieldHeaderTemplate();
             ParentGrid = control as Grid;
 
             return base.Initialize( sortingEnabled, control );
