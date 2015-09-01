@@ -244,8 +244,21 @@ $('#{1}').datepicker({{ format: '{2}', todayHighlight: true }}).on('changeDate',
     $('#{1}').data('datepicker').hide();
 }});
 
+// if the guest clicks the addon select all the text in the input
+$('#{3}').find('.input-group-lower .input-group-addon').on('click', function () {{
+    $(this).siblings('.form-control').select();
+}});
+
+// if the guest clicks the addon select all the text in the input
+$('#{3}').find('.input-group-upper .input-group-addon').on('click', function () {{
+    $(this).siblings('.form-control').select();
+}});
+
 ";
-            var script = string.Format( scriptFormat, _tbLowerValue.ClientID, _tbUpperValue.ClientID, dateFormat );
+            string lowerSelector = string.Format( "{0} .input-group-lower.date", this.ClientID );
+            string upperSelector = string.Format( "{0} .input-group-upper.date", this.ClientID );
+
+            var script = string.Format( scriptFormat, lowerSelector, upperSelector, dateFormat, this.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "daterange_picker-" + this.ClientID, script, true );
         }
 
@@ -261,12 +274,12 @@ $('#{1}').datepicker({{ format: '{2}', todayHighlight: true }}).on('changeDate',
 
             _tbLowerValue = new DatePicker();
             _tbLowerValue.ID = this.ID + "_lower";
-            _tbLowerValue.CssClass = "input-width-md";
+            _tbLowerValue.CssClass = "input-width-md date input-group-lower";
             Controls.Add( _tbLowerValue );
 
             _tbUpperValue = new DatePicker();
             _tbUpperValue.ID = this.ID + "_upper";
-            _tbUpperValue.CssClass = "input-width-md";
+            _tbUpperValue.CssClass = "input-width-md date input-group-upper";
             Controls.Add( _tbUpperValue );
         }
 
