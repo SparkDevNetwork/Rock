@@ -24,9 +24,19 @@ namespace Rock.SystemGuid
     public class Attribute
     {
         /// <summary>
-        /// The facebook attribute
+        /// The Facebook link attribute
         /// </summary>
         public const string PERSON_FACEBOOK = "2B8A03D3-B7DC-4DA3-A31E-826D655435D5";
+
+        /// <summary>
+        /// The Twitter link attribute
+        /// </summary>
+        public const string PERSON_TWITTER = "12E9C8A7-03E4-472D-9E20-9EC8F3453B2F";
+
+        /// <summary>
+        /// The Instagram link attribute
+        /// </summary>
+        public const string PERSON_INSTAGRAM = "8796567C-4047-43C1-AF32-2FDBE030BEAC";
 
         /// <summary>
         /// The allergy attribute
