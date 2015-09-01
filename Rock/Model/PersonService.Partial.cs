@@ -1003,6 +1003,38 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Splits a full name into a separate first and last name. If only one name is found it defaults to first name.
+        /// </summary>
+        /// <param name="fullName">The full name</param>
+        public void SplitName( string fullName, out string firstName, out string lastName)
+        {
+            //Uses logic from IQueryable<Person> GetByFullName
+            firstName = string.Empty;
+            lastName = string.Empty;
+
+            if ( fullName.Contains( ',' ) )
+            {
+                // only split by comma if there is a comma present (for example if 'Smith Jones, Sally' is the search, last name would be 'Smith Jones')
+                var nameParts = fullName.Split( ',' );
+                lastName = nameParts.Length >= 1 ? nameParts[0].Trim() : string.Empty;
+                firstName = nameParts.Length >= 2 ? nameParts[1].Trim() : string.Empty;
+            }
+            else if ( fullName.Trim().Contains( ' ' ) )
+            {
+                // if no comma, assume the search is in 'firstname lastname' format (note: 'firstname lastname1 lastname2' isn't supported yet)
+                var names = fullName.Split( ' ' );
+                firstName = names.Length >= 1 ? names[0].Trim() : string.Empty;
+                lastName = names.Length >= 2 ? names[1].Trim() : string.Empty;
+            }
+            else
+            {
+                // no spaces, no commas
+                firstName = fullName.Trim();
+            }
+        }
+
+
+        /// <summary>
         /// Gets the first group location.
         /// </summary>
         /// <param name="personId">The person identifier.</param>

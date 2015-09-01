@@ -555,7 +555,7 @@ namespace RockWeb.Blocks.Event
                 if ( lCost != null )
                 {
                     lCost.Visible = _instanceHasCost || discountedCost > 0.0M;
-                    lCost.Text = discountedCost.ToString( "C2" );
+                    lCost.Text = discountedCost.FormatAsCurrency();
                 }
 
                 var lBalance = e.Row.FindControl( "lBalance" ) as Label;
@@ -563,7 +563,7 @@ namespace RockWeb.Blocks.Event
                 {
                     decimal balanceDue = registration.DiscountedCost - totalPaid;
                     lBalance.Visible = _instanceHasCost || discountedCost > 0.0M;
-                    lBalance.Text = balanceDue.ToString( "C2" );
+                    lBalance.Text = balanceDue.FormatAsCurrency();
                     if ( balanceDue > 0.0m )
                     {
                         lBalance.AddCssClass( "label-danger" );
@@ -944,7 +944,7 @@ namespace RockWeb.Blocks.Event
                             feeDesc.Add( string.Format( "{0}{1} ({2})",
                                 fee.Quantity > 1 ? fee.Quantity.ToString( "N0" ) + " " : "",
                                 fee.Quantity > 1 ? fee.RegistrationTemplateFee.Name.Pluralize() : fee.RegistrationTemplateFee.Name,
-                                fee.Cost.ToString( "C2" ) ) );
+                                fee.Cost.FormatAsCurrency() ) );
                         }
                         lFees.Text = feeDesc.AsDelimited( "<br/>" );
                     }

@@ -211,20 +211,18 @@
 
                     <fieldset id="fieldsetViewDetails" runat="server">
 
-                        <p class="description">
-                            <asp:Literal ID="lGroupDescription" runat="server"></asp:Literal>
-                        </p>
+                        <asp:Literal ID="lGroupDescription" runat="server"></asp:Literal>
 
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <asp:Literal ID="lblMainDetails" runat="server" />
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
-                                    </div>
-                                </div>
+                                <asp:Literal ID="lblMainDetails" runat="server" />
+
+                                <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
+                                
+                            </div>
+                            <div class="col-md-6 location-maps">
+                                <asp:PlaceHolder ID="phMaps" runat="server" />
+
                                 <Rock:RockControlWrapper id="rcwLinkedRegistrations" runat="server" Label="Registrations">
                                     <ul class="list-unstyled">
                                         <asp:Repeater ID="rptLinkedRegistrations" runat="server">
@@ -252,9 +250,6 @@
                                         </asp:Repeater>
                                     </ul>
                                 </Rock:RockControlWrapper>
-                            </div>
-                            <div class="col-md-6 location-maps">
-                                <asp:PlaceHolder ID="phMaps" runat="server" />
                             </div>
                         </div>
 

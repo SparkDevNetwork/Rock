@@ -55,7 +55,7 @@
 
     <asp:Panel ID="pnlSummaryAndPayment" runat="server" Visible="false" CssClass="registrationentry-summary">
         
-        <h1>Summary</h1>
+        <h1>Review <asp:Literal ID="lRegistrationTerm" runat="server" /></h1>
         
         <div class="well">
             <h4>Your Information</h4>

@@ -153,7 +153,14 @@ namespace RockWeb
 
                         if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
                         {
-                            content = content.Where( c => c.ExpireDateTime >= RockDateTime.Now );
+                            if ( channel.ContentChannelType.IncludeTime )
+                            {
+                                content = content.Where( c => c.ExpireDateTime >= RockDateTime.Now );
+                            }
+                            else
+                            {
+                                content = content.Where( c => c.ExpireDateTime > RockDateTime.Today );
+                            }
                         }
 
                         foreach ( var item in content )

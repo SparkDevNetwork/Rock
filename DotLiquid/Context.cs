@@ -181,7 +181,7 @@ namespace DotLiquid
 		/// <returns></returns>
 		private object Resolve(string key)
 		{
-			switch (key)
+			switch (key.ToLower())
 			{
 				case null:
 				case "nil":

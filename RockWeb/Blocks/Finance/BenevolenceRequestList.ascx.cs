@@ -21,11 +21,11 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -56,6 +56,15 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
+        #region
+
+        /// <summary>
+        /// Holds whether or not the person can add, edit, and delete.
+        /// </summary>
+        private bool _canAddEditDelete = false;
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -71,12 +80,15 @@ namespace RockWeb.Blocks.Finance
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+
+            _canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+
             gList.DataKeyNames = new string[] { "Id" };
             gList.RowDataBound += gList_RowDataBound;
             gList.Actions.AddClick += gList_AddClick;
             gList.GridRebind += gList_GridRebind;
-            gList.Actions.ShowAdd = true;
-            gList.IsDeleteEnabled = true;
+            gList.Actions.ShowAdd = _canAddEditDelete;
+            gList.IsDeleteEnabled = _canAddEditDelete;
 
             // in case this is used as a Person Block, set the TargetPerson 
             TargetPerson = ContextEntity<Person>();

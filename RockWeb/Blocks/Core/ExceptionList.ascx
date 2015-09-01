@@ -35,6 +35,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <Rock:LineChart ID="lcExceptions" runat="server" DataSourceUrl="~/api/ExceptionLogs/GetChartData" SeriesNameUrl="" Title="Exception Count" ChartHeight="280px" />
+                        <Rock:BarChart ID="bcExceptions" runat="server" DataSourceUrl="~/api/ExceptionLogs/GetChartData" SeriesNameUrl="" Title="Exception Count" ChartHeight="280px" />
                     </div>
                 </div>
 

@@ -469,7 +469,7 @@ namespace RockWeb.Blocks.Finance
                                 var account = new FinancialAccountService( rockContext ).Get( accountAmount.Key );
                                 if ( account != null )
                                 {
-                                    History.EvaluateChange( txnChanges, account.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
+                                    History.EvaluateChange( txnChanges, account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
                                 }
                             }
 
@@ -495,7 +495,7 @@ namespace RockWeb.Blocks.Finance
                             }
 
                             decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-                            History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.ToString( "C2" ), newControlAmount.ToString( "C2" ) );
+                            History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
                             batch.ControlAmount = newControlAmount;
 
                             transaction.BatchId = batch.Id;

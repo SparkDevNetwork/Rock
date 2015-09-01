@@ -219,6 +219,7 @@ namespace RockWeb.Blocks.Cms
             {
                 contentType.Name = tbName.Text;
                 contentType.DateRangeType = (ContentChannelDateType)int.Parse( ddlDateRangeType.SelectedValue );
+                contentType.IncludeTime = cbIncludeTime.Checked;
                 contentType.DisablePriority = cbDisablePriority.Checked;
 
                 if ( !Page.IsValid || !contentType.IsValid )
@@ -628,6 +629,7 @@ namespace RockWeb.Blocks.Cms
             tbName.Text = contentType.Name;
             ddlDateRangeType.BindToEnum<ContentChannelDateType>();
             ddlDateRangeType.SetValue( (int)contentType.DateRangeType );
+            cbIncludeTime.Checked = contentType.IncludeTime;
             cbDisablePriority.Checked = contentType.DisablePriority;
 
             // load attribute data 

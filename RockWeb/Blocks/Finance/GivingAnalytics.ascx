@@ -94,6 +94,7 @@
                             </div>
 
                             <Rock:LineChart ID="lcAmount" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
+                            <Rock:BarChart ID="bcAmount" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
 
                             <div class="row margin-t-sm">
                                 <div class="col-md-12">
