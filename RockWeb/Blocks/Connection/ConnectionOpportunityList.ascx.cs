@@ -244,6 +244,9 @@ namespace RockWeb.Blocks.Connection
                         int connectionTypeId = connectionOpportunity.ConnectionTypeId;
                         connectionOpportunityService.Delete( connectionOpportunity );
                         rockContext.SaveChanges();
+
+                        ConnectionWorkflowService.FlushCachedTriggers();
+
                     }
                     else
                     {
