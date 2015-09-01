@@ -613,20 +613,21 @@ Rock.controls.imageUploader.initialize({{
     postbackRemovedScript: '{12}',
     maxUploadBytes: {13}
 }});",
-                _fileUpload.ClientID,
-                this.BinaryFileId,
-                this.BinaryFileTypeGuid,
-                _hfBinaryFileId.ClientID,
-                this.ClientID + "-thumbnail",
-                _aRemove.ClientID,
-                postBackScript,
-                this.IsBinaryFile ? "T" : "F",
-                Rock.Security.Encryption.EncryptString( this.RootFolder ),
-                this.SubmitFunctionClientScript,
-                this.DoneFunctionClientScript,
-                this.NoPictureUrl,
-                postBackRemovedScript,
-                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null" );
+                _fileUpload.ClientID, // {0}
+                this.BinaryFileId, // {1}
+                this.BinaryFileTypeGuid, // {2}
+                _hfBinaryFileId.ClientID, // {3}
+                this.ClientID + "-thumbnail", // {4}
+                _aRemove.ClientID, // {5}
+                postBackScript, // {6}
+                this.IsBinaryFile ? "T" : "F", // {7}
+                Rock.Security.Encryption.EncryptString( this.RootFolder ), // {8}
+                this.SubmitFunctionClientScript, // {9}
+                this.DoneFunctionClientScript, // {10}
+                this.NoPictureUrl, // {11}
+                postBackRemovedScript, // {12}
+                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null" // {13} 
+                ); 
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ClientID, script, true );
         }
 

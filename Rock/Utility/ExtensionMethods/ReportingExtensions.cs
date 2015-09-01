@@ -43,24 +43,14 @@ namespace Rock
                 return !value.Contains( compareValue );
             }
 
+            if ( compareType == ComparisonType.StartsWith )
+            {
+                return value.StartsWith( compareValue, StringComparison.OrdinalIgnoreCase );
+            }
+
             if ( compareType == ComparisonType.EndsWith )
             {
                 return value.EndsWith( compareValue, StringComparison.OrdinalIgnoreCase );
-            }
-
-            if ( compareType == ComparisonType.EqualTo )
-            {
-                return value.Equals( compareValue, StringComparison.OrdinalIgnoreCase );
-            }
-
-            if ( compareType == ComparisonType.GreaterThan )
-            {
-                return value.CompareTo( compareValue ) > 0;
-            }
-
-            if ( compareType == ComparisonType.GreaterThanOrEqualTo )
-            {
-                return value.CompareTo( compareValue ) >= 0;
             }
 
             if ( compareType == ComparisonType.IsBlank )
@@ -73,24 +63,62 @@ namespace Rock
                 return !string.IsNullOrWhiteSpace( value );
             }
 
+            // Following compares could be numeric
+            decimal? decimalValue = value.AsDecimalOrNull();
+            decimal? decimalCompareValue = compareValue.AsDecimalOrNull();
+
+            if ( compareType == ComparisonType.EqualTo )
+            {
+                if ( decimalValue.HasValue && decimalCompareValue.HasValue )
+                {
+                    return decimalValue.Value == decimalCompareValue.Value;
+                }
+                return value.Equals( compareValue, StringComparison.OrdinalIgnoreCase );
+            }
+
+            if ( compareType == ComparisonType.GreaterThan )
+            {
+                if ( decimalValue.HasValue && decimalCompareValue.HasValue )
+                {
+                    return decimalValue.Value > decimalCompareValue.Value;
+                }
+                return value.CompareTo( compareValue ) > 0;
+            }
+
+            if ( compareType == ComparisonType.GreaterThanOrEqualTo )
+            {
+                if ( decimalValue.HasValue && decimalCompareValue.HasValue )
+                {
+                    return decimalValue.Value >= decimalCompareValue.Value;
+                }
+                return value.CompareTo( compareValue ) >= 0;
+            }
+
             if ( compareType == ComparisonType.LessThan )
             {
+                if ( decimalValue.HasValue && decimalCompareValue.HasValue )
+                {
+                    return decimalValue.Value < decimalCompareValue.Value;
+                }
                 return value.CompareTo( compareValue ) < 0;
             }
 
             if ( compareType == ComparisonType.LessThanOrEqualTo )
             {
+                if ( decimalValue.HasValue && decimalCompareValue.HasValue )
+                {
+                    return decimalValue.Value >= decimalCompareValue.Value;
+                }
                 return value.CompareTo( compareValue ) <= 0;
             }
 
             if ( compareType == ComparisonType.NotEqualTo )
             {
+                if ( decimalValue.HasValue && decimalCompareValue.HasValue )
+                {
+                    return decimalValue.Value != decimalCompareValue.Value;
+                }
                 return !value.Equals( compareValue, StringComparison.OrdinalIgnoreCase );
-            }
-
-            if ( compareType == ComparisonType.StartsWith )
-            {
-                return value.StartsWith( compareValue, StringComparison.OrdinalIgnoreCase );
             }
 
             return false;

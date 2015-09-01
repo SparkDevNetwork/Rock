@@ -141,7 +141,7 @@
                                 <Rock:TermDescription runat="server" />
                                 <asp:Repeater ID="rptAccountListConfirmation" runat="server">
                                     <ItemTemplate>
-                                        <Rock:TermDescription ID="tdAddress" runat="server" Term='<%# Eval("Name") %>' Description='<%# ((decimal)Eval("Amount")).ToString("C2") %>' />
+                                        <Rock:TermDescription ID="tdAddress" runat="server" Term='<%# Eval("Name") %>' Description='<%# this.FormatValueAsCurrency((decimal)Eval("Amount")) %>' />
                                     </ItemTemplate>
                                 </asp:Repeater>
                                 <Rock:TermDescription ID="tdTotal" runat="server" Term="Total" />

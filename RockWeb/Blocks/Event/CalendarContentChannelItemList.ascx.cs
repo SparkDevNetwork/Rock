@@ -288,21 +288,43 @@ namespace RockWeb.Blocks.Event
                         SortExpression = "Title"
                     } );
 
-                    gItems.Columns.Add( new DateTimeField
-                    {
-                        DataField = "StartDateTime",
-                        HeaderText = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active",
-                        SortExpression = "StartDateTime"
-                    } );
-
-                    if ( contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                    if ( contentChannel.ContentChannelType.IncludeTime )
                     {
                         gItems.Columns.Add( new DateTimeField
                         {
-                            DataField = "ExpireDateTime",
-                            HeaderText = "Expire",
-                            SortExpression = "ExpireDateTime"
+                            DataField = "StartDateTime",
+                            HeaderText = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active",
+                            SortExpression = "StartDateTime"
                         } );
+
+                        if ( contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                        {
+                            gItems.Columns.Add( new DateTimeField
+                            {
+                                DataField = "ExpireDateTime",
+                                HeaderText = "Expire",
+                                SortExpression = "ExpireDateTime"
+                            } );
+                        }
+                    }
+                    else
+                    {
+                        gItems.Columns.Add( new DateField
+                        {
+                            DataField = "StartDateTime",
+                            HeaderText = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active",
+                            SortExpression = "StartDateTime"
+                        } );
+
+                        if ( contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                        {
+                            gItems.Columns.Add( new DateField
+                            {
+                                DataField = "ExpireDateTime",
+                                HeaderText = "Expire",
+                                SortExpression = "ExpireDateTime"
+                            } );
+                        }
                     }
 
                     if ( !contentChannel.ContentChannelType.DisablePriority )

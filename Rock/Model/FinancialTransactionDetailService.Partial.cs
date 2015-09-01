@@ -233,12 +233,6 @@ namespace Rock.Model
                 } ).ToList();
             }
 
-            if ( result.Count == 1 )
-            {
-                var dummyZeroDate = start ?? DateTime.MinValue;
-                result.Insert( 0, new SummaryData { DateTime = dummyZeroDate, DateTimeStamp = dummyZeroDate.ToJavascriptMilliseconds(), SeriesId = result[0].SeriesId, YValue = 0 } );
-            }
-
             return result;
         }
 

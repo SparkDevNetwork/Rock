@@ -1755,13 +1755,12 @@ tr.row-highlight td {
     1. Group Viewer - styles for the group viewer block.
 
 */
-.group-location-map {
-  float: right;
+.group-location-map img {
+  width: 100%;
+  margin-bottom: 24px;
 }
-@media (max-width: 992px) {
-  .group-location-map {
-    float: left;
-  }
+.description {
+  margin-bottom: 24px;
 }
 section.group-type-attribute-panel label {
   padding-left: 46px;
@@ -3052,7 +3051,7 @@ iframe.email-body {
   padding: 12px 20px;
 }
 .numberincrement.input-lg .numberincrement-value {
-  padding: 12px 18px;
+  padding: 12px 28px;
 }
 ul.rocktree,
 ul.rocktree ul {
@@ -3854,9 +3853,9 @@ fieldset .actions {
 .imageupload-group .upload-progress {
   position: absolute;
   z-index: 2;
-  left: 50%;
+  left: 35px;
   margin-left: -18px;
-  top: 50%;
+  top: 8px;
   margin-top: -37px;
   opacity: 0.3;
 }
@@ -3968,8 +3967,8 @@ fieldset .actions {
 .fileupload-group .upload-progress {
   position: absolute;
   z-index: 2;
-  left: 115%;
-  top: -20%;
+  left: 35px;
+  top: 8px;
   opacity: 0.3;
 }
 .updateprogress-status {
@@ -5605,6 +5604,11 @@ fieldset[disabled] .btn-authenication.active {
   content: "\f1a0";
   margin-right: 12px;
 }
+.btn-authenication.twitter:before {
+  font-family: 'FontAwesome';
+  content: "\f099";
+  margin-right: 12px;
+}
 .btn-minimal {
   text-decoration: none;
   color: #b7b7b7;
@@ -5873,33 +5877,6 @@ div.aspNetDisabled {
     The accent colors are deprecated and should not be used in new theme development. They will be
     removed in Rock v 6.0.
 */
-@media print {
-  @page {
-    margin: .5in;
-  }
-  .nav-sub {
-    display: none;
-  }
-  #cms-admin-footer {
-    display: none;
-  }
-  a[href]:after {
-    content: '' !important;
-  }
-  #page-wrapper {
-    position: absolute;
-    left: -70px;
-  }
-  #content-wrapper {
-    margin-left: 70px !important;
-  }
-  .breadcrumb {
-    display: none;
-  }
-  footer {
-    display: none;
-  }
-}
 /*#region
 // Fonts                       */
 @font-face {
@@ -6096,6 +6073,7 @@ h4,
   }
   .smartsearch input,
   .smartsearch a.dropdown-toggle {
+    height: 45px;
     line-height: 38px;
   }
   .smartsearch i {
@@ -6505,3 +6483,51 @@ body.navbar-side-close #content-wrapper {
   font-weight: 700;
 }
 /*#endregion */
+@media print {
+  @page {
+    margin: .25in;
+  }
+  body {
+    font-size: 12px;
+  }
+  .nav-sub {
+    display: none;
+  }
+  #cms-admin-footer {
+    display: none;
+  }
+  a[href]:after {
+    content: '' !important;
+  }
+  #page-wrapper {
+    position: absolute;
+    left: -70px;
+  }
+  #content-wrapper {
+    margin-left: 70px !important;
+  }
+  .breadcrumb {
+    display: none;
+  }
+  footer {
+    display: none;
+  }
+  .panel .panel-heading .panel-title {
+    font-size: 12px !important;
+  }
+  .table {
+    overflow: hidden;
+  }
+  .table td,
+  .table > thead > tr > th {
+    font-size: 10px;
+  }
+  .table .grid-columncommand,
+  .table .grid-select-field {
+    display: none !important;
+  }
+  .table > tbody > tr > th,
+  .table > tbody > tr > td {
+    padding: 4px;
+  }
+}

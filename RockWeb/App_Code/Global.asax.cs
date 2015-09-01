@@ -707,12 +707,14 @@ namespace RockWeb
             int? pageId = ( Context.Items["Rock:PageId"] ?? "" ).ToString().AsIntegerOrNull(); ;
             int? siteId = ( Context.Items["Rock:SiteId"] ?? "" ).ToString().AsIntegerOrNull();;
             PersonAlias personAlias = null;
+            Person person = null;
 
             try
             {
                 var user = UserLoginService.GetCurrentUser();
                 if ( user != null && user.Person != null )
                 {
+                    person = user.Person;
                     personAlias = user.Person.PrimaryAlias;
                 }
             }
@@ -738,7 +740,9 @@ namespace RockWeb
 
                 // setup merge codes for email
                 var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
-                mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + Context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
+                mergeObjects.Add( "ExceptionDetails", string.Format( "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
+                    person != null ? " for " + person.FullName : "", siteName, Context.Request.Url.OriginalString, FormatException( ex, "" ) ) );
+                mergeObjects.Add( "Person", person );
 
                 // get email addresses to send to
                 var globalAttributesCache = GlobalAttributesCache.Read();

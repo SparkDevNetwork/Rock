@@ -495,7 +495,7 @@ namespace Rock.Web.UI.Controls
                     _nbTimeOffset.Enabled = false;
                 }
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group input-width-md" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group input-width-md date" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _date.RenderControl( writer );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-addon" );

@@ -62,9 +62,28 @@ namespace RockWeb.Blocks.Cms
             var contentChannel = new ContentChannelService( new RockContext() ).Get( _channelId.Value );
             if ( contentChannel != null )
             {
-                gItems.Columns[1].HeaderText = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active";
-                gItems.Columns[2].Visible = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
-                gItems.Columns[3].Visible = !contentChannel.ContentChannelType.DisablePriority;
+                string startHeading = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active";
+                bool isRange = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
+
+                gItems.Columns[1].HeaderText = startHeading;
+                gItems.Columns[3].HeaderText = startHeading;
+
+                if ( contentChannel.ContentChannelType.IncludeTime )
+                {
+                    gItems.Columns[1].Visible = true;
+                    gItems.Columns[2].Visible = isRange;
+                    gItems.Columns[3].Visible = false;
+                    gItems.Columns[4].Visible = false;
+                }
+                else
+                {
+                    gItems.Columns[1].Visible = false;
+                    gItems.Columns[2].Visible = false;
+                    gItems.Columns[3].Visible = true;
+                    gItems.Columns[4].Visible = isRange;
+                }
+
+                gItems.Columns[5].Visible = !contentChannel.ContentChannelType.DisablePriority;
                 lContentChannel.Text = contentChannel.Name;
                 _typeId = contentChannel.ContentChannelTypeId;
 
@@ -338,7 +357,7 @@ namespace RockWeb.Blocks.Cms
                 if ( drp.UpperValue.HasValue )
                 {
                     DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-                    contentItems = contentItems.Where( i => i.StartDateTime < upperDate );
+                    contentItems = contentItems.Where( i => i.StartDateTime <= upperDate );
                 }
 
                 var status = gfFilter.GetUserPreference( "Status" ).ConvertToEnumOrNull<ContentChannelItemStatus>();

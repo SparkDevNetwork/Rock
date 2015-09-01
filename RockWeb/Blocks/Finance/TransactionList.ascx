@@ -30,10 +30,10 @@
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
                         <Rock:Grid ID="gTransactions" runat="server" EmptyDataText="No Transactions Found" 
-                            RowItemText="Transaction" OnRowSelected="gTransactions_Edit" AllowSorting="true" >
+                            RowItemText="Transaction" OnRowSelected="gTransactions_Edit" AllowSorting="true" ExportSource="ColumnOutput" >
                             <Columns>
                                 <Rock:SelectField></Rock:SelectField>
-                                <Rock:RockBoundField DataField="AuthorizedPersonAlias.Person.FullName" HeaderText="Person" 
+                                <Rock:RockBoundField DataField="AuthorizedPersonAlias.Person.FullNameReversed" HeaderText="Person" 
                                     SortExpression="AuthorizedPersonAlias.Person.LastName,AuthorizedPersonAlias.Person.NickName" />
                                 <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date / Time" SortExpression="TransactionDateTime" />                
                                 <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" SortExpression="TotalAmount" />
