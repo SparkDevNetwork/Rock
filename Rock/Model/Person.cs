@@ -1987,6 +1987,53 @@ namespace Rock.Model
 
             return qryWithAge.Select( a => a.Person );
         }
+
+        /// <summary>
+        /// Limits the PersonQry to people that have an Grade Offset that is between MinGradeOffset and MaxGradeOffset (inclusive)
+        /// </summary>
+        /// <param name="personQry">The person qry.</param>
+        /// <param name="minGradeOffset">The minimum grade offset.</param>
+        /// <param name="maxGradeOffset">The maximum grade offset.</param>
+        /// <param name="includePeopleWithNoGrade">if set to <c>true</c> [include people with no Grade].</param>
+        /// <returns></returns>
+        public static IQueryable<Person> WhereGradeOffsetRange( this IQueryable<Person> personQry, int? minGradeOffset, int? maxGradeOffset, bool includePeopleWithNoGrade = true )
+        {
+            var transitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime();
+
+            var qryWithGradeOffset = personQry.Select(
+                      p => new
+                      {
+                          Person = p,
+                          GradeOffset = p.GraduationYear != null ? ((RockDateTime.Now < transitionDate.Value) ? p.GraduationYear.Value : (p.GraduationYear.Value - 1) - RockDateTime.Now.Year) : ( int? )null
+                      } );
+            if ( includePeopleWithNoGrade )
+            {
+                if ( minGradeOffset.HasValue )
+                {
+                    qryWithGradeOffset = qryWithGradeOffset.Where( a => !a.GradeOffset.HasValue || a.GradeOffset >= minGradeOffset );
+                }
+
+                if ( maxGradeOffset.HasValue )
+                {
+                    qryWithGradeOffset = qryWithGradeOffset.Where( a => !a.GradeOffset.HasValue || a.GradeOffset <= maxGradeOffset );
+                }
+            }
+            else
+            {
+                if ( minGradeOffset.HasValue )
+                {
+                    qryWithGradeOffset = qryWithGradeOffset.Where( a => a.GradeOffset.HasValue && a.GradeOffset >= minGradeOffset );
+                }
+
+                if ( maxGradeOffset.HasValue )
+                {
+                    qryWithGradeOffset = qryWithGradeOffset.Where( a => a.GradeOffset.HasValue && a.GradeOffset <= maxGradeOffset );
+                }
+            }
+
+            return qryWithGradeOffset.Select( a => a.Person );
+        }
+
     }
 
     #endregion
