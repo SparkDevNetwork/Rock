@@ -882,16 +882,16 @@ dl:not(.dl-horizontal) dd {
   border-color: #6aa3d5;
 }
 .panel-dashboard > .panel-heading {
-  color: #142f46;
-  background-color: #92bce0;
-  border-color: #3071a9;
+  color: #333333;
+  background-color: #eeeeee;
+  border-color: #a2a2a2;
 }
 .panel-dashboard > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #6aa3d5;
 }
 .panel-dashboard > .panel-heading .badge {
-  color: #92bce0;
-  background-color: #142f46;
+  color: #eeeeee;
+  background-color: #333333;
 }
 .panel-dashboard > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #6aa3d5;
@@ -963,11 +963,11 @@ td.wrap-contents {
   display: none;
 }
 .grid-filter {
-  background-color: #92bce0;
+  background-color: #eeeeee;
   border-radius: 4px;
   padding: 6px 12px;
   border-bottom: 1px solid #dddddd;
-  color: #142f46;
+  color: #333333;
 }
 .grid-filter header {
   border-radius: 4px 4px 0 0;
@@ -984,7 +984,7 @@ td.wrap-contents {
   font-weight: 300;
 }
 .grid-filter header i {
-  color: #2a6496;
+  color: #666666;
 }
 .grid-filter header fieldset {
   margin-bottom: 0;
@@ -998,9 +998,9 @@ td.wrap-contents {
   margin-bottom: 12px;
 }
 .grid-filter .picker .picker-label {
-  background-color: #92bce0;
-  color: #142f46;
-  border-color: #6aa3d5;
+  background-color: #eeeeee;
+  color: #333333;
+  border-color: #d5d5d5;
 }
 .grid-filter-entry legend + .control-group {
   margin-top: 0;
@@ -1038,20 +1038,20 @@ td.wrap-contents {
   border-color: #999999;
 }
 .grid-paging {
-  background-color: #92bce0;
-  color: #142f46;
+  background-color: #eeeeee;
+  color: #333333;
 }
 .grid-paging .pagination {
   margin-top: 0;
   margin-bottom: 0;
 }
 .grid-paging .pagination li > a {
-  background-color: #7eb0db;
+  background-color: #e2e2e2;
   color: #333333;
-  border-color: #357ebd;
+  border-color: #afafaf;
 }
 .grid-paging .pagination li.active > a {
-  background-color: #a6c8e6;
+  background-color: #fbfbfb;
 }
 .grid-paging .grid-pager {
   float: right;
@@ -1070,13 +1070,13 @@ td.grid-col-actions {
 }
 .grid-actions {
   text-align: right;
-  background-color: #92bce0;
+  background-color: #eeeeee;
 }
 .grid-actions .btn {
   margin-left: 8px;
-  background-color: #7eb0db;
+  background-color: #e2e2e2;
   color: #333333;
-  border-color: #428bca;
+  border-color: #bbbbbb;
 }
 .table-light {
   background-color: transparent;
@@ -1400,16 +1400,16 @@ tr.row-highlight td {
   border-top-color: #5697d0;
 }
 .panel-note > .panel-heading {
-  color: #142f46;
-  background-color: #92bce0;
-  border-color: #3071a9;
+  color: #333333;
+  background-color: #eeeeee;
+  border-color: #a2a2a2;
 }
 .panel-note > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #6aa3d5;
 }
 .panel-note > .panel-heading .badge {
-  color: #92bce0;
-  background-color: #142f46;
+  color: #eeeeee;
+  background-color: #333333;
 }
 .panel-note > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #6aa3d5;
@@ -1555,16 +1555,16 @@ tr.row-highlight td {
   border-color: #6aa3d5;
 }
 .panel-noteentry > .panel-heading {
-  color: #142f46;
-  background-color: #92bce0;
-  border-color: #3071a9;
+  color: #333333;
+  background-color: #eeeeee;
+  border-color: #a2a2a2;
 }
 .panel-noteentry > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #6aa3d5;
 }
 .panel-noteentry > .panel-heading .badge {
-  color: #92bce0;
-  background-color: #142f46;
+  color: #eeeeee;
+  background-color: #333333;
 }
 .panel-noteentry > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #6aa3d5;
@@ -1704,16 +1704,16 @@ tr.row-highlight td {
   margin-bottom: 30px;
 }
 .panel-group .panel-workflowitem > .panel-heading {
-  color: #142f46;
-  background-color: #92bce0;
-  border-color: #3071a9;
+  color: #333333;
+  background-color: #eeeeee;
+  border-color: #a2a2a2;
 }
 .panel-group .panel-workflowitem > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #6aa3d5;
 }
 .panel-group .panel-workflowitem > .panel-heading .badge {
-  color: #92bce0;
-  background-color: #142f46;
+  color: #eeeeee;
+  background-color: #333333;
 }
 .panel-group .panel-workflowitem > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #6aa3d5;
@@ -5275,7 +5275,7 @@ a.help {
 }
 .panel .panel-heading i.fa-chevron-up,
 .panel .panel-heading i.fa-chevron-down {
-  color: #142f46;
+  color: #333333;
 }
 .panel .panel-heading .panel-title small {
   opacity: .5;
@@ -5303,16 +5303,16 @@ a.help {
   border-color: #6aa3d5;
 }
 .panel-widget > .panel-heading {
-  color: #142f46;
-  background-color: #92bce0;
-  border-color: #3071a9;
+  color: #333333;
+  background-color: #eeeeee;
+  border-color: #a2a2a2;
 }
 .panel-widget > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #6aa3d5;
 }
 .panel-widget > .panel-heading .badge {
-  color: #92bce0;
-  background-color: #142f46;
+  color: #eeeeee;
+  background-color: #333333;
 }
 .panel-widget > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #6aa3d5;
@@ -5330,23 +5330,23 @@ a.help {
   margin-left: 4px;
 }
 .panel-widget .panel-heading small {
-  color: #2a6496;
+  color: #666666;
 }
 .panel-persondetails {
   border-color: #6aa3d5;
   border-top-color: #5697d0;
 }
 .panel-persondetails > .panel-heading {
-  color: #142f46;
-  background-color: #92bce0;
-  border-color: #3071a9;
+  color: #333333;
+  background-color: #eeeeee;
+  border-color: #a2a2a2;
 }
 .panel-persondetails > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #6aa3d5;
 }
 .panel-persondetails > .panel-heading .badge {
-  color: #92bce0;
-  background-color: #142f46;
+  color: #eeeeee;
+  background-color: #333333;
 }
 .panel-persondetails > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #6aa3d5;
@@ -5389,16 +5389,16 @@ a.help {
   border-top-color: #5697d0;
 }
 .panel-block > .panel-heading {
-  color: #142f46;
-  background-color: #92bce0;
-  border-color: #3071a9;
+  color: #333333;
+  background-color: #eeeeee;
+  border-color: #a2a2a2;
 }
 .panel-block > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #6aa3d5;
 }
 .panel-block > .panel-heading .badge {
-  color: #92bce0;
-  background-color: #142f46;
+  color: #eeeeee;
+  background-color: #333333;
 }
 .panel-block > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #6aa3d5;
@@ -5452,11 +5452,11 @@ a.help {
   }
 }
 .panel-analytics .filter-options {
-  background-color: #92bce0;
+  background-color: #eeeeee;
 }
 .panel-analytics .analysis-types {
   padding: 15px 0;
-  background-color: #92bce0;
+  background-color: #eeeeee;
   margin-bottom: 15px;
 }
 .btn.aspNetDisabled {

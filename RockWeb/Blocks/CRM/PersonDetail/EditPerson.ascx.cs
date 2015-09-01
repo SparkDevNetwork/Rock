@@ -446,6 +446,25 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     }
                                 }
                             }
+
+                            // if they used the ImageEditor, and cropped it, the uncropped file is still in BinaryFile. So clean it up
+                            if ( imgPhoto.CropBinaryFileId.HasValue )
+                            {
+                                if ( imgPhoto.CropBinaryFileId != person.PhotoId )
+                                {
+                                    BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                                    var binaryFile = binaryFileService.Get( imgPhoto.CropBinaryFileId.Value );
+                                    if ( binaryFile != null && binaryFile.IsTemporary )
+                                    {
+                                        string errorMessage;
+                                        if ( binaryFileService.CanDelete( binaryFile, out errorMessage ) )
+                                        {
+                                            binaryFileService.Delete( binaryFile );
+                                            rockContext.SaveChanges();
+                                        }
+                                    }
+                                }
+                            }
                         }
 
                         Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );

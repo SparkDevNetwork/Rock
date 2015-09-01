@@ -70,6 +70,7 @@ namespace Rock.Web.UI.Controls
             DeleteFieldTemplate deleteFieldTemplate = new DeleteFieldTemplate();
             deleteFieldTemplate.LinkButtonClick += deleteFieldTemplate_LinkButtonClick;
             this.ItemTemplate = deleteFieldTemplate;
+            this.HeaderTemplate = new RockTemplateFieldHeaderTemplate();
             this.ParentGrid = control as Grid;
             return base.Initialize( sortingEnabled, control );
         }

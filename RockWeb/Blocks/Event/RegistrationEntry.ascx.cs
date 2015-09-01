@@ -1493,7 +1493,7 @@ namespace RockWeb.Blocks.Event
                         }
 
                         // Store the family id for next person 
-                        multipleFamilyGroupIds.Add( familyGuid, familyGroup.Id );
+                        multipleFamilyGroupIds.AddOrIgnore( familyGuid, familyGroup.Id );
                         if ( !singleFamilyId.HasValue )
                         {
                             singleFamilyId = familyGroup.Id;
