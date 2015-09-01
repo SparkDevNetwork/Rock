@@ -100,8 +100,8 @@
                             <div class="grid">
                                 <Rock:Grid ID="gConnectionOpportunityConnectorGroups" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Campus Connector Group" ShowConfirmDeleteDialog="false">
                                     <Columns>
-                                        <Rock:RockBoundField DataField="Group" HeaderText="Group" />
-                                        <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
+                                        <Rock:RockBoundField DataField="GroupName" HeaderText="Group" />
+                                        <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
                                         <Rock:EditField OnClick="gConnectionOpportunityConnectorGroups_Edit" />
                                         <Rock:DeleteField OnClick="gConnectionOpportunityConnectorGroups_Delete" />
                                     </Columns>
