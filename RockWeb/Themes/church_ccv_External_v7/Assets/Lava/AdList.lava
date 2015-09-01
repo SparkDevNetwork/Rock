@@ -1,52 +1,105 @@
-﻿{% capture useGrayBgSetting %}{{ useGrayBg | Default: "true" }}{% endcapture%}
-{% capture useContainerSetting %}{{ useContainer | Default: "true" }}{% endcapture%}
-{% comment %} Doing this because 'Default' doesn't want to work with integers {% endcomment %}
+﻿{% comment %} {% assign useContainer = true %} {% endcomment %}
+{% comment %} {% assign useGrayBg = true %} {% endcomment %}
+{% comment %} {% assign showDivider = false %} {% endcomment %}
+{% comment %} {% assign useTopMargin = true %} {% endcomment %}
+{% comment %} {% assign maxItems = 4 %} {% endcomment %}
+
+{% comment %} {% assign blockStyle = 'contained' %} {% endcomment %}
+
+{% comment %}
+{% include '~~/Assets/Lava/AdList.lava' %}
+{% endcomment %}
+
+
+{% if blockStyle == 'contained' %}
+  {% assign useContainer = false %}
+  {% assign useGrayBg = false %}
+  {% assign showDivider = true %}
+{% endif %}
+
+
+{% comment %} Default values of lava settings{% endcomment %}
+{% unless useContainer or useContainer == false %}
+  {% assign useContainer = true %}
+{% endunless %}
+{% unless useGrayBg or useGrayBg == false %}
+  {% assign useGrayBg = true %}
+{% endunless %}
+{% unless showDivider or showDivider == false %}
+  {% assign showDivider = false %}
+{% endunless %}
+{% unless useTopMargin or useTopMargin == false %}
+  {% assign useTopMargin = true %}
+{% endunless %}
 {% unless maxItems %}
   {% assign maxItems = 4 %}
 {% endunless %}
 
+{% comment %} Init values {% endcomment %}
+{% assign hasVisibleItems = false %}
 {% assign itemCount = 0 %}
 
-<div class="announcement-list{% if useGrayBgSetting == "true" %} announcement-list-gray{% endif %}">
-  {% if useContainerSetting == "true" %}<div class="container">{% endif %}
-    <div class="row">
-      {% for item in Items %}
+{% comment %} Check if there are any visible items at all {% endcomment %}
+{% for item in Items %}
+  {% assign itemCampusesRaw = item | Attribute: 'Campuses' %}
+  {% assign itemCampuses = itemCampusesRaw | Split: ',' %}
+  {% if itemCampusesRaw == empty %}
+    {% assign hasVisibleItems = true %}
+  {% else %}
+    {% for itemCampus in itemCampuses %}
+      {% if itemCampus == ContextObjects.Campus.Name %}
+        {% assign hasVisibleItems = true %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endfor %}
 
-        {% assign itemCampusesRaw = item | Attribute: 'Campuses' %}
-        {% assign itemCampuses = itemCampusesRaw | Split: ',' %}
-        {% assign showItem = false %}
-        {% assign externalUrl = item | Attribute: 'ExternalLink' %}
-        {% capture internalUrl %}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{% endcapture %}
-        {% assign itemLink = externalUrl | Default: internalUrl %}
+{% comment %} Render {% endcomment %}
+{% if hasVisibleItems %}
+  {% if showDivider %}
+    <hr>
+  {% endif %}
+  <div class="announcement-list{% if useGrayBg %} announcement-list-gray{% endif %}{% if useTopMargin %} margin-t-lg{% endif %}">
+    {% if useContainer %}<div class="container">{% endif %}
+      <div class="row">
+        {% for item in Items %}
 
-        {% if itemCount < maxItems %}
-          {% if itemCampusesRaw == empty %}
-            {% assign showItem = true %}
-          {% else %}
-            {% for itemCampus in itemCampuses %}
-              {% if itemCampus == ContextObjects.Campus.Name %}
-                {% assign showItem = true %}
-              {% endif %}
-            {% endfor %}
-          {% endif %}
-        {% endif %}
+          {% assign itemCampusesRaw = item | Attribute: 'Campuses' %}
+          {% assign itemCampuses = itemCampusesRaw | Split: ',' %}
+          {% assign showItem = false %}
+          {% assign externalUrl = item | Attribute: 'ExternalLink' %}
+          {% capture internalUrl %}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{% endcapture %}
+          {% assign itemLink = externalUrl | Default: internalUrl %}
 
-        {% if showItem %}
-          {% assign itemCount = itemCount | Plus: 1 %}
-          <div class="col-md-3 col-xs-6">
-            <div class="announcement">
-              <a href="{{ itemLink }}">
-                <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=525&height=295&mode=crop&scale=both" alt="{{ item.Title }}">
-                <h5 class="announcement-title">{{ item.Title }}</h5>
-              </a>
-            </div>
-          </div>
-          {% capture breakNow %}{{ forloop.index | Modulo:4 }}{% endcapture %}
-            {% if breakNow == 0 %}
+          {% if itemCount < maxItems %}
+            {% if itemCampusesRaw == empty %}
+              {% assign showItem = true %}
+            {% else %}
+              {% for itemCampus in itemCampuses %}
+                {% if itemCampus == ContextObjects.Campus.Name %}
+                  {% assign showItem = true %}
+                {% endif %}
+              {% endfor %}
             {% endif %}
-        {% endif %}
+          {% endif %}
 
-      {% endfor %}
-    </div>
-  {% if useContainerSetting == "true" %}</div>{% endif %}
-</div>
+          {% if showItem %}
+            {% assign itemCount = itemCount | Plus: 1 %}
+            <div class="col-md-3 col-xs-6">
+              <div class="announcement">
+                <a href="{{ itemLink }}">
+                  <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=525&height=295&mode=crop&scale=both" alt="{{ item.Title }}">
+                  <h5 class="announcement-title">{{ item.Title }}</h5>
+                </a>
+              </div>
+            </div>
+            {% capture breakNow %}{{ forloop.index | Modulo:4 }}{% endcapture %}
+              {% if breakNow == 0 %}
+              {% endif %}
+          {% endif %}
+
+        {% endfor %}
+      </div>
+    {% if useContainer %}</div>{% endif %}
+  </div>
+{% endif %}
