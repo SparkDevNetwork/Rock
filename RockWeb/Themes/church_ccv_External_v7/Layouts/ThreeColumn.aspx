@@ -32,11 +32,11 @@
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-md-12">
-                <Rock:Zone Name="Section A" runat="server" />
-            </div>
-        </div>
+    </main>
+
+    <Rock:Zone Name="Section A" runat="server" />
+
+    <div class="container">
 
         <div class="row">
             <div class="col-md-4">
@@ -52,6 +52,6 @@
 
         <!-- End Content Area -->
 
-    </main>
+    </div>
 
 </asp:Content>
