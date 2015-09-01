@@ -469,23 +469,10 @@ namespace RockWeb.Blocks.Connection
                 }
                 else
                 {
-                    connectionOpportunities = qry.ToList().OrderByDescending( a => a.Name ).ToList();
+                    connectionOpportunities = qry.ToList().OrderBy( a => a.Name ).ToList();
                 }
 
-                gConnectionOpportunities.ObjectList = new Dictionary<string, object>();
-                connectionOpportunities.ForEach( m => gConnectionOpportunities.ObjectList.Add( m.Id.ToString(), m ) );
-                gConnectionOpportunities.EntityTypeId = EntityTypeCache.Read( "Rock.Model.ConnectionOpportunity" ).Id;
-
-                gConnectionOpportunities.DataSource = connectionOpportunities.Select( o => new
-                {
-                    o.Id,
-                    o.Guid,
-                    Name = o.Name,
-                    GroupType = o.GroupType.Name,
-                    Active = o.IsActive ? "<span class='label label-success'>Active</span>" : "<span class='label label-campus'>Inactive</span>"
-
-                } ).ToList();
-
+                gConnectionOpportunities.DataSource = connectionOpportunities;
                 gConnectionOpportunities.DataBind();
             }
             else
