@@ -1,3 +1,10 @@
+Rock McKinley 3.5
+
++ Fixed issue with occasional website hang
++ Fixed issue with ordering of accounts (and their amounts) on transaction entry block when accounts are added by user in different order than the default account order (Fixes #1219)
++ SendEmail workflow action now works with attributes of type Group (Fixes #1167).
++ Merging a person with a security role now refreshes that role (Fixes #1137).
+
 Rock McKinley 3.4
 
 + Improved performance of caching.
