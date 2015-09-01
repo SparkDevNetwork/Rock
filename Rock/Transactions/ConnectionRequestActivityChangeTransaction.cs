@@ -29,9 +29,7 @@ namespace Rock.Transactions
     /// </summary>
     public class ConnectionRequestActivityChangeTransaction : ITransaction
     {
-        private EntityState State;
         private Guid? ConnectionRequestActivityGuid;
-        private int? ConnectionTypeId;
         private int? ConnectionOpportunityId;
         private int? ConnectionRequestId;
         private int ConnectionActivityTypeId;
@@ -42,25 +40,14 @@ namespace Rock.Transactions
         /// <param name="entry">The entry.</param>
         public ConnectionRequestActivityChangeTransaction( DbEntityEntry entry )
         {
-            // If entity was a connection request, save the values
+            // If entity was a connection request activity and state was added, save the values
             var connectionRequestActivity = entry.Entity as ConnectionRequestActivity;
             if ( connectionRequestActivity != null )
             {
-                State = entry.State;
-                ConnectionOpportunityId = connectionRequestActivity.ConnectionOpportunityId;
+                ConnectionRequestActivityGuid = connectionRequestActivity.Guid;
                 ConnectionRequestId = connectionRequestActivity.ConnectionRequestId;
+                ConnectionOpportunityId = connectionRequestActivity.ConnectionOpportunityId;
                 ConnectionActivityTypeId = connectionRequestActivity.ConnectionActivityTypeId;
-
-                if ( connectionRequestActivity.ConnectionOpportunity != null )
-                {
-                    ConnectionTypeId = connectionRequestActivity.ConnectionOpportunity.ConnectionTypeId;
-                }
-
-                // If this isn't a deleted connection request, get the connection request guid
-                if ( State != EntityState.Deleted )
-                {
-                    ConnectionRequestActivityGuid = connectionRequestActivity.Guid;
-                }
             }
         }
 
@@ -81,7 +68,7 @@ namespace Rock.Transactions
                     // Get the connectionWorkflows associated to the connection
                     var connectionOpportunityWorkflows = cachedWorkflows
                         .Where( w =>
-                            w.TriggerType != ConnectionWorkflowTriggerType.ActivityAdded &&
+                            w.TriggerType == ConnectionWorkflowTriggerType.ActivityAdded &&
                             w.ConnectionOpportunityId.HasValue &&
                             w.ConnectionOpportunityId.Value == ConnectionOpportunityId.Value )
                         .ToList();
@@ -89,7 +76,7 @@ namespace Rock.Transactions
                     // Get any connectionWorkflows associated to a connection type ( if any are found, will then filter by connection type )
                     var connectionTypeWorkflows = cachedWorkflows
                         .Where( w =>
-                            w.TriggerType != ConnectionWorkflowTriggerType.ActivityAdded &&
+                            w.TriggerType == ConnectionWorkflowTriggerType.ActivityAdded &&
                             w.ConnectionTypeId.HasValue )
                         .ToList();
 
@@ -102,14 +89,11 @@ namespace Rock.Transactions
                             if ( connectionTypeWorkflows.Any() )
                             {
                                 // Get the current txn's connection type id
-                                if ( !ConnectionTypeId.HasValue )
-                                {
-                                    ConnectionTypeId = new ConnectionOpportunityService( rockContext )
-                                        .Queryable().AsNoTracking()
-                                        .Where( o => o.Id == ConnectionOpportunityId.Value )
-                                        .Select( o => o.ConnectionTypeId )
-                                        .FirstOrDefault();
-                                }
+                                var ConnectionTypeId = new ConnectionOpportunityService( rockContext )
+                                    .Queryable().AsNoTracking()
+                                    .Where( o => o.Id == ConnectionOpportunityId.Value )
+                                    .Select( o => o.ConnectionTypeId )
+                                    .FirstOrDefault();
 
                                 // Further filter the connection type connectionWorkflows by the connection type id
                                 connectionTypeWorkflows = connectionTypeWorkflows
@@ -128,13 +112,9 @@ namespace Rock.Transactions
                                 // Loop through connectionWorkflows and lauch appropriate workflow
                                 foreach ( var connectionWorkflow in connectionWorkflows )
                                 {
-                                    if ( connectionWorkflow.TriggerType == ConnectionWorkflowTriggerType.ActivityAdded )
+                                    if ( QualifiersMatch( rockContext, connectionWorkflow, ConnectionActivityTypeId ) )
                                     {
-                                        if ( State == EntityState.Added && QualifiersMatch( rockContext, connectionWorkflow, ConnectionActivityTypeId ) )
-                                        {
-                                            LaunchWorkflow( rockContext, connectionWorkflow, "Activity Added" );
-                                        }
-                                        break;
+                                        LaunchWorkflow( rockContext, connectionWorkflow, "Activity Added" );
                                     }
                                 }
                             }

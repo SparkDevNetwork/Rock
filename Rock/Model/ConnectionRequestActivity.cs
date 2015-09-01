@@ -136,8 +136,11 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
-            var transaction = new Rock.Transactions.ConnectionRequestActivityChangeTransaction( entry );
-            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            if ( entry.State == System.Data.Entity.EntityState.Added )
+            {
+                var transaction = new Rock.Transactions.ConnectionRequestActivityChangeTransaction( entry );
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            }
 
             base.PreSaveChanges( dbContext, entry );
         }
