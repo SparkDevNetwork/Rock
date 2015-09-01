@@ -894,8 +894,8 @@ namespace RockWeb.Blocks.Finance
             foreach ( var account in new FinancialAccountService( rockContext ).Queryable()
                 .Where( f =>
                     f.IsActive &&
-                    f.PublicName != null &&
-                    f.PublicName.Trim() != string.Empty &&
+                    f.IsPublic.HasValue &&
+                    f.IsPublic.Value &&
                     ( f.StartDate == null || f.StartDate <= RockDateTime.Today ) &&
                     ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
                 .OrderBy( f => f.Order ) )
