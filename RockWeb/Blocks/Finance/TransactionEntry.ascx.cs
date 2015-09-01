@@ -927,7 +927,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindAccounts()
         {
-            rptAccountList.DataSource = SelectedAccounts.OrderBy( a => a.Order ).ToList();
+            rptAccountList.DataSource = SelectedAccounts.ToList();
             rptAccountList.DataBind();
 
             btnAddAccount.Visible = AvailableAccounts.Any();
