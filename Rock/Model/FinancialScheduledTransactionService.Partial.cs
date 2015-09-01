@@ -43,24 +43,26 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.FinancialTransaction" /> that matches the transaction code, this value will be null if a match is not found.
         /// </returns>
-        public IQueryable<FinancialScheduledTransaction> Get( int? personId, string givingId, bool includeInactive )
+        public IQueryable<FinancialScheduledTransaction> Get( int? personId, int? givingGroupId, bool includeInactive )
         {
             var qry = Queryable()
-                .Include(a => a.ScheduledTransactionDetails)
-                .Include(a => a.FinancialPaymentDetail.CurrencyTypeValue)
-                .Include(a => a.FinancialPaymentDetail.CreditCardTypeValue);
+                .Include( a => a.ScheduledTransactionDetails )
+                .Include( a => a.FinancialPaymentDetail.CurrencyTypeValue )
+                .Include( a => a.FinancialPaymentDetail.CreditCardTypeValue );
 
-            if (!includeInactive)
+            if ( !includeInactive )
             {
                 qry = qry.Where( t => t.IsActive );
             }
 
-            if ( !string.IsNullOrEmpty( givingId ) )
+            if ( givingGroupId.HasValue )
             {
-                qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingId == givingId );
+                //  Person contributes with family
+                qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingGroupId == givingGroupId );
             }
             else if ( personId.HasValue )
             {
+                // Person contributes individually
                 qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == personId );
             }
 
@@ -348,7 +350,7 @@ namespace Rock.Model
 
                                 transaction.TransactionDetails.Add( transactionDetail );
 
-                                History.EvaluateChange( txnChanges, detail.Account.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
+                                History.EvaluateChange( txnChanges, detail.Account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
                                 History.EvaluateChange( txnChanges, "Summary", string.Empty, transactionDetail.Summary );
 
                                 if ( remainingAmount <= 0.0M )
@@ -377,7 +379,7 @@ namespace Rock.Model
                                     transactionDetail.Summary = "Note: Extra amount was applied to this account.";
                                 }
 
-                                History.EvaluateChange( txnChanges, defaultAccount.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
+                                History.EvaluateChange( txnChanges, defaultAccount.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
                                 History.EvaluateChange( txnChanges, "Summary", string.Empty, transactionDetail.Summary );
                             }
 
@@ -435,7 +437,7 @@ namespace Rock.Model
 
                     if ( initialControlAmounts.ContainsKey( batch.Guid ) )
                     {
-                        History.EvaluateChange( batchChanges, "Control Amount", initialControlAmounts[batch.Guid].ToString( "C2" ), batch.ControlAmount.ToString( "C2" ) );
+                        History.EvaluateChange( batchChanges, "Control Amount", initialControlAmounts[batch.Guid].FormatAsCurrency(), batch.ControlAmount.FormatAsCurrency() );
                     }
                 }
 
@@ -517,7 +519,7 @@ namespace Rock.Model
                         "<li>{0} transaction of {1} was added to the {2} batch.</li>" :
                         "<li>{0} transactions totaling {1} were added to the {2} batch</li>";
 
-                    sb.AppendFormat( summaryformat, items.ToString( "N0" ), sum.ToString( "C2" ), batchName );
+                    sb.AppendFormat( summaryformat, items.ToString( "N0" ), sum.FormatAsCurrency(), batchName );
                 }
             }
 

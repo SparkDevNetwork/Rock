@@ -34,7 +34,7 @@
                                 <Rock:RockTemplateField HeaderText="Accounts">
                                     <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                 </Rock:RockTemplateField>
-                                <Rock:RockBoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
+                                <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                 <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
                             </Columns>
                         </Rock:Grid>

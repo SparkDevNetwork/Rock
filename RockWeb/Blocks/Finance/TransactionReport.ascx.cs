@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.Finance
                 pnlSummary.Visible = true;
                 foreach ( var key in accountTotals.Keys )
                 {
-                    lAccountSummary.Text += String.Format( "<li>{0}: ${1}</li>", key, accountTotals[key] );
+                    lAccountSummary.Text += String.Format( "<li>{0}: {2}{1}</li>", key, accountTotals[key], GlobalAttributesCache.Value( "CurrencySymbol" ) );
                 }
             }
             else
@@ -272,7 +272,7 @@ namespace RockWeb.Blocks.Finance
             var sb = new StringBuilder();
             foreach ( var transactionDetail in txn.TransactionDetails )
             {
-                sb.AppendFormat( "{0} (${1})<br>", transactionDetail.Account, transactionDetail.Amount );
+                sb.AppendFormat( "{0} ({2}{1})<br>", transactionDetail.Account, transactionDetail.Amount, GlobalAttributesCache.Value( "CurrencySymbol" ) );
             }
             return sb.ToString();
         }

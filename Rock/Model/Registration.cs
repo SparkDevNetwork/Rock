@@ -302,17 +302,17 @@ namespace Rock.Model
                 PersonAlias.Person.FullName : 
                 string.Format( "{0} {1}", FirstName, LastName );
             result.AppendFormat( @".
-Registration By: {0} Total Cost/Fees:{1:C2}
-", registrationPerson, DiscountedCost );
+Registration By: {0} Total Cost/Fees:{1}
+", registrationPerson, DiscountedCost.FormatAsCurrency() );
 
             var registrantPersons = new List<string>();
             if ( Registrants != null )
             {
                 foreach( var registrant in Registrants.Where( r => r.PersonAlias != null && r.PersonAlias.Person != null ) )
                 {
-                    registrantPersons.Add( string.Format( "{0} Cost/Fees:{1:C2}", 
+                    registrantPersons.Add( string.Format( "{0} Cost/Fees:{1}", 
                         registrant.PersonAlias.Person.FullName,
-                        registrant.DiscountedCost( DiscountPercentage, DiscountAmount ) ) );
+                        registrant.DiscountedCost( DiscountPercentage, DiscountAmount ).FormatAsCurrency() ) );
                 }
             }
             result.AppendFormat( "Registrants: {0}", registrantPersons.AsDelimited( ", " ) );

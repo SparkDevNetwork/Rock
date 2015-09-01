@@ -26,7 +26,6 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:RockTemplateField runat=server></{0}:RockTemplateField>" )]
     public class RockTemplateField : TemplateField, IPriorityColumn, IRockGridField
     {
-
         /// <summary>
         /// Gets or sets the column priority.
         /// </summary>
@@ -53,5 +52,29 @@ namespace Rock.Web.UI.Controls
         }
         private ExcelExportBehavior _excelExportBehavior = ExcelExportBehavior.IncludeIfVisible;
 
+    }
+
+    /// <summary>
+    /// A HeaderTemplate for RockTemplateFields that ensures that the HeaderCell uses the TemplateField's HeaderStyle.CssClass
+    /// </summary>
+    public class RockTemplateFieldHeaderTemplate : ITemplate
+    {
+        /// <summary>
+        /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control" /> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
+        /// </summary>
+        /// <param name="container">The <see cref="T:System.Web.UI.Control" /> object to contain the instances of controls from the inline template.</param>
+        public void InstantiateIn( Control container )
+        {
+            var cell = container as DataControlFieldCell;
+            if ( cell != null )
+            {
+                var templateField = cell.ContainingField as RockTemplateField;
+                if ( templateField != null )
+                {
+                    // make sure the header cell gets the HeaderStyle.CssClass
+                    cell.AddCssClass( templateField.HeaderStyle.CssClass );
+                }
+            }
+        }
     }
 }

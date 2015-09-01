@@ -82,6 +82,11 @@
              <asp:Literal ID="lExecLocation" runat="server"></asp:Literal>
         </p>
 
+        <p>
+            <strong>Last Migration(s):</strong><br />
+             <asp:Literal ID="lLastMigrations" runat="server"></asp:Literal>
+        </p>
+
         <h4>Cache</h4>
         <div id="cache-details">
             <asp:Literal ID="lCacheOverview" runat="server"></asp:Literal>

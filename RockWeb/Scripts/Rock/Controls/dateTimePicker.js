@@ -14,7 +14,7 @@
                     dateFormat = options.format;
                 }
 
-                var $dp = $('#' + options.id + " .js-datetime-date");
+                var $dp = $('#' + options.id + " .input-group.date");
 
                 // uses https://github.com/eternicode/bootstrap-datepicker
                 $dp.datepicker({
@@ -25,6 +25,11 @@
                     todayHighlight: options.todayHighlight || true
                 });
                 
+                // if the guest clicks the addon select all the text in the input
+                $dp.find('.input-group-addon').on('click', function () {
+                    $(this).siblings('.form-control').select();
+                });
+
                 var $tp = $('#' + options.id + " .js-datetime-time");
                 if ($tp) {
                     var $tpid = $tp.attr('id');

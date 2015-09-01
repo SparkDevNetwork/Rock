@@ -323,7 +323,7 @@ namespace RockWeb.Blocks.Finance
                     {
                         if ( batchId.HasValue )
                         {
-                            History.EvaluateChange( changes, txnDetail.Account != null ? txnDetail.Account.Name : "Unknown", txnDetail.Amount.ToString( "C2" ), string.Empty );
+                            History.EvaluateChange( changes, txnDetail.Account != null ? txnDetail.Account.Name : "Unknown", txnDetail.Amount.FormatAsCurrency(), string.Empty );
                         }
                         txnDetailService.Delete( txnDetail );
                     } );
@@ -357,7 +357,7 @@ namespace RockWeb.Blocks.Finance
                         {
                             if ( string.IsNullOrWhiteSpace(oldAccountName) )
                             {
-                                History.EvaluateChange( changes, newAccountName, string.Empty, newAmount.ToString( "C2" ) );
+                                History.EvaluateChange( changes, newAccountName, string.Empty, newAmount.FormatAsCurrency() );
                             }
                             else
                             {
@@ -365,13 +365,13 @@ namespace RockWeb.Blocks.Finance
                                 {
                                     if ( oldAmount != newAmount )
                                     {
-                                        History.EvaluateChange( changes, oldAccountName, oldAmount.ToString("C2"), newAmount.ToString("C2") );
+                                        History.EvaluateChange( changes, oldAccountName, oldAmount.FormatAsCurrency(), newAmount.FormatAsCurrency() );
                                     }
                                 }
                                 else
                                 {
-                                    History.EvaluateChange( changes, oldAccountName, oldAmount.ToString( "C2" ), string.Empty );
-                                    History.EvaluateChange( changes, newAccountName, string.Empty, newAmount.ToString( "C2" ) );
+                                    History.EvaluateChange( changes, oldAccountName, oldAmount.FormatAsCurrency(), string.Empty );
+                                    History.EvaluateChange( changes, newAccountName, string.Empty, newAmount.FormatAsCurrency() );
                                 }
                             }
                         }

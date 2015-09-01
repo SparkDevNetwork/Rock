@@ -59,7 +59,7 @@
                                 <Rock:Grid ID="gAccounts" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Account" AllowSorting="false">
                                     <Columns>
                                         <Rock:RockBoundField DataField="Name" HeaderText="Account Totals" />
-                                        <Rock:RockBoundField DataField="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:CurrencyField DataField="Amount" ItemStyle-HorizontalAlign="Right" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -67,7 +67,7 @@
                                 <Rock:Grid ID="gCurrencyTypes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="CurrencyType" AllowSorting="false">
                                     <Columns>
                                         <Rock:RockBoundField DataField="Name" HeaderText="Currency Totals" />
-                                        <Rock:RockBoundField DataField="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:CurrencyField DataField="Amount" ItemStyle-HorizontalAlign="Right" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>

@@ -29,7 +29,15 @@
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.ContentChannelType, Rock" PropertyName="Name" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlDateRangeType" runat="server" Label="Date Range Type" />
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <Rock:RockDropDownList ID="ddlDateRangeType" runat="server" Label="Date Range Type" />
+                            </div>
+                            <div class="col-xs-6">
+                                <Rock:RockCheckBox ID="cbIncludeTime" runat="server" Label="Include Time" Text="Yes"
+                                    Help="Should the Date Range include the time of day along with the date?" />
+                            </div>
+                        </div>
                         <Rock:RockCheckBox ID="cbDisablePriority" runat="server" Label="Disable Priority" 
                             Help="Should channels of this type disable the use of priorities?" Text="Yes" />
                     </div>

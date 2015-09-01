@@ -77,11 +77,13 @@
                               Margin="8"
                               IsChecked="False" />
                 </StackPanel>
-                
+
                 <Label Name="lblTransactionSourceType"
-                       Style="{StaticResource labelStyle}" Margin="6,4,0,0">Transaction Source Type</Label>
-                <ComboBox Name="cboTransactionSourceType" Margin="8,2,0,0"
-                          Style="{StaticResource textboxStyle}" Background="Red"/>
+                       Style="{StaticResource labelStyle}"
+                       Margin="6,4,0,0">Transaction Source Type</Label>
+                <ComboBox Name="cboTransactionSourceType"
+                          Margin="8,2,0,0"
+                          Style="{StaticResource textboxStyle}" />
             </StackPanel>
         </StackPanel>
 

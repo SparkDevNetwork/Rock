@@ -2,8 +2,9 @@ select [Code] from (
 select concat('
 /// <summary>
 /// Gets the ', p.InternalName  ,' page guid
+/// ParentPage: ', pp.InternalName, '
 /// </summary>
-public const string ', Replace(Replace(Upper(p.InternalName), ' ', '_'),'-', '_'),'= "', p.[Guid], '";', '') [Code],
+public const string ', Replace(Replace(Replace(Replace(Upper(p.InternalName), ' ', '_'),'-', '_'), ')', ''),'(', ''),'= "', p.[Guid], '";', '') [Code],
 p.InternalName
 from [Page] [p]
 left outer join [Page] pp on p.ParentPageId = pp.id
@@ -19,7 +20,7 @@ select concat('
 /// Gets the ', p.InternalName  ,' page guid
 /// ParentPage: ', pp.InternalName, '
 /// </summary>
-public const string ', Replace(Replace(Upper(p.InternalName + '_' + ISNULL(pp.InternalName, 'ROOT')), ' ', '_'),'-', '_'),'= "', p.[Guid], '";', '') [Code],
+public const string ', Replace(Replace(Replace(Replace(Upper(p.InternalName + '_' + ISNULL(pp.InternalName, 'ROOT')), ' ', '_'),'-', '_'), ')', ''),'(', ''),'= "', p.[Guid], '";', '') [Code],
 p.InternalName
 from [Page] [p]
 left outer join [Page] pp on p.ParentPageId = pp.id

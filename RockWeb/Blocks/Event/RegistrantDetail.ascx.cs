@@ -474,7 +474,7 @@ namespace RockWeb.Blocks.Event
                         var cost = fee.CostValue.AsDecimalOrNull();
                         if ( cost.HasValue && cost.Value != 0.0M )
                         {
-                            label = string.Format( "{0} ({1})", fee.Name, cost.Value.ToString( "C2" ) );
+                            label = string.Format( "{0} ({1})", fee.Name, cost.Value.FormatAsCurrency() );
                         }
 
                         if ( fee.AllowMultiple )
@@ -521,7 +521,7 @@ namespace RockWeb.Blocks.Event
                             }
                             if ( nameAndValue.Length == 2 )
                             {
-                                options.AddOrIgnore( nameAndValue[0], string.Format( "{0} ({1:C2})", nameAndValue[0], nameAndValue[1].AsDecimal() ) );
+                                options.AddOrIgnore( nameAndValue[0], string.Format( "{0} ({1})", nameAndValue[0], nameAndValue[1].AsDecimal().FormatAsCurrency() ) );
                             }
                         }
 
@@ -698,7 +698,7 @@ namespace RockWeb.Blocks.Event
                     }
                     if ( nameAndValue.Length == 2 )
                     {
-                        options.AddOrIgnore( nameAndValue[0], string.Format( "{0} ({1:C2})", nameAndValue[0], nameAndValue[1].AsDecimal() ) );
+                        options.AddOrIgnore( nameAndValue[0], string.Format( "{0} ({1})", nameAndValue[0], nameAndValue[1].AsDecimal().FormatAsCurrency() ) );
                         optionCosts.AddOrIgnore( nameAndValue[0], nameAndValue[1].AsDecimal() );
                     }
                 }

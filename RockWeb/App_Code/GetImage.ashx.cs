@@ -209,8 +209,8 @@ namespace RockWeb
                     // If we got the image from the binaryFileService, it might need to be resized and cached
                     if ( fileContent != null )
                     {
-                        // If more than 1 query string param is passed in, assume resize is needed
-                        if ( context.Request.QueryString.Count > 1 )
+                        // If more than 1 query string param is passed in, or the mime type is TIFF, assume resize is needed
+                        if ( context.Request.QueryString.Count > 1 || binaryFile.MimeType == "image/tiff" )
                         {
                             // if it isn't an SVG file, do a Resize
                             if ( binaryFile.MimeType != "image/svg+xml" )
@@ -241,7 +241,7 @@ namespace RockWeb
                     context.Response.Cache.SetMaxAge( new TimeSpan( 365, 0, 0, 0 ) );
                 }
 
-                context.Response.ContentType = binaryFileMetaData.MimeType;
+                context.Response.ContentType = binaryFileMetaData.MimeType != "image/tiff" ? binaryFileMetaData.MimeType : "image/jpg";
 
                 using ( var responseStream = fileContent )
                 {
@@ -291,7 +291,7 @@ namespace RockWeb
                 string[] mimeParts = mimeType.Split( new char[] { '/' } );
                 if ( mimeParts.Length >= 2 )
                 {
-                    fileName += "." + mimeParts[1].Replace( "jpeg", "jpg" ).Replace( "svg+xml", "svg" );
+                    fileName += "." + mimeParts[1].Replace( "jpeg", "jpg" ).Replace( "svg+xml", "svg" ).Replace( "tiff", "jpg" );
                 }
             }
 
