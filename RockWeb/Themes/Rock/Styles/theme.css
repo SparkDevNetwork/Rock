@@ -5270,8 +5270,7 @@ a.help {
   display: block;
   float: left;
 }
-.panel .panel-heading i.fa-chevron-up,
-.panel .panel-heading i.fa-chevron-down {
+.panel .panel-heading a.btn-link {
   color: #6a6a6a;
 }
 .panel .panel-heading .panel-title small {
