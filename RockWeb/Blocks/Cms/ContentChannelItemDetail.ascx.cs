@@ -166,9 +166,18 @@ namespace RockWeb.Blocks.Cms
                 contentItem.Content = contentItem.ContentChannel.ContentControlType == ContentControlType.HtmlEditor ?
                     htmlContent.Text : ceContent.Text;
                 contentItem.Priority = nbPriority.Text.AsInteger();
-                contentItem.StartDateTime = dtpStart.SelectedDateTime ?? RockDateTime.Now;
-                contentItem.ExpireDateTime = ( contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ) ?
-                    dtpExpire.SelectedDateTime : null;
+                if ( contentItem.ContentChannelType.IncludeTime )
+                {
+                    contentItem.StartDateTime = dtpStart.SelectedDateTime ?? RockDateTime.Now;
+                    contentItem.ExpireDateTime = ( contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ) ?
+                        dtpExpire.SelectedDateTime : null;
+                }
+                else
+                {
+                    contentItem.StartDateTime = dpStart.SelectedDate ?? RockDateTime.Today;
+                    contentItem.ExpireDateTime = ( contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ) ?
+                        dpExpire.SelectedDate : null;
+                }
 
                 int newStatusID = hfStatus.Value.AsIntegerOrNull() ?? contentItem.Status.ConvertToInt();
                 int oldStatusId = contentItem.Status.ConvertToInt();
@@ -403,10 +412,29 @@ namespace RockWeb.Blocks.Cms
                     ceContent.MergeFields.Add( "RockVersion" );
                 }
 
-                dtpStart.SelectedDateTime = contentItem.StartDateTime;
-                dtpStart.Label = contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active";
-                dtpExpire.SelectedDateTime = contentItem.ExpireDateTime;
-                dtpExpire.Visible = contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
+                if ( contentItem.ContentChannelType.IncludeTime )
+                {
+                    dpStart.Visible = false;
+                    dpExpire.Visible = false;
+                    dtpStart.Visible = true;
+                    dtpExpire.Visible = contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
+
+                    dtpStart.SelectedDateTime = contentItem.StartDateTime;
+                    dtpStart.Label = contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active";
+                    dtpExpire.SelectedDateTime = contentItem.ExpireDateTime;
+                }
+                else
+                {
+                    dpStart.Visible = true;
+                    dpExpire.Visible = contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
+                    dtpStart.Visible = false;
+                    dtpExpire.Visible = false;
+
+                    dpStart.SelectedDate = contentItem.StartDateTime.Date;
+                    dpStart.Label = contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active";
+                    dpExpire.SelectedDate = contentItem.ExpireDateTime.HasValue ? contentItem.ExpireDateTime.Value.Date : (DateTime?)null;
+                }
+
                 nbPriority.Text = contentItem.Priority.ToString();
                 nbPriority.Visible = !contentItem.ContentChannelType.DisablePriority;
 

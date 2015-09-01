@@ -1361,7 +1361,10 @@ namespace RockWeb.Blocks.Groups
             hlInactive.Visible = !group.IsActive;
             hlIsPrivate.Visible = !group.IsPublic;
 
-            lGroupDescription.Text = group.Description;
+            if (!string.IsNullOrWhiteSpace(group.Description)) {
+                lGroupDescription.Text = string.Format("<p class='description'>{0}</p>", group.Description);
+            }
+            
 
             DescriptionList descriptionList = new DescriptionList();
 
@@ -1390,12 +1393,9 @@ namespace RockWeb.Blocks.Groups
             group.LoadAttributes();
             var attributes = group.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
 
-            // Display Attribute Values that have the "Display as Grid Column" flag enabled.
             var attributeCategories = Helper.GetAttributeCategories( attributes );
 
-            var excludedAttributes = attributes.Where( x => !x.IsGridColumn ).Select( x => x.Name ).ToList();
-
-            Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes, excludedAttributes, false );
+            Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes, null, false );
 
             var pageParams = new Dictionary<string, string>();
             pageParams.Add( "GroupId", group.Id.ToString() );
@@ -1475,7 +1475,7 @@ namespace RockWeb.Blocks.Groups
                                 string markerPoints = string.Format( "{0},{1}", groupLocation.Location.GeoPoint.Latitude, groupLocation.Location.GeoPoint.Longitude );
                                 string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
                                 mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
-                                mapLink += "&sensor=false&size=350x200&zoom=13&format=png";
+                                mapLink += "&sensor=false&size=450x250&zoom=13&format=png";
                                 var literalcontrol = new Literal()
                                 {
                                     Text = string.Format(

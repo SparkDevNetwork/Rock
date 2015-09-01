@@ -46,6 +46,7 @@
                         <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                         <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
                         <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title" />
+                        <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                     </Rock:GridFilter>               
 
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />

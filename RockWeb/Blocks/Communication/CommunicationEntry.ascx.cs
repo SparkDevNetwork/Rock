@@ -272,7 +272,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbMedium_Click( object sender, EventArgs e )
         {
-            GetMediumData();
+            
             var linkButton = sender as LinkButton;
             if ( linkButton != null )
             {
@@ -280,9 +280,11 @@ namespace RockWeb.Blocks.Communication
                 if ( int.TryParse( linkButton.CommandArgument, out mediumId ) )
                 {
                     MediumEntityTypeId = mediumId;
+                    LoadMediumControl( true );
+                    
                     BindMediums();
 
-                    LoadMediumControl( true );
+                    
                     LoadTemplates();
                 }
             }
@@ -827,6 +829,7 @@ namespace RockWeb.Blocks.Communication
 
                 if ( setData  )
                 {
+                    GetMediumData();
                     mediumControl.MediumData = MediumData;
                 }
                 
@@ -861,9 +864,7 @@ namespace RockWeb.Blocks.Communication
                 var mediumControl = phContent.Controls[0] as MediumControl;
                 if ( mediumControl != null )
                 {
-                    // If using simple mode, the control should be re-initialized from sender since sender fields 
-                    // are not presented for editing and user shouldn't be able to change them
-                    if ( !_fullMode && CurrentPerson != null )
+                    if ( CurrentPerson != null )
                     {
                         mediumControl.InitializeFromSender( CurrentPerson );
                     }

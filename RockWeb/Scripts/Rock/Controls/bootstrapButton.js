@@ -16,8 +16,15 @@
                     }
                 }
 
+                var $btn = $(btn);
+
                 if (Page_IsValid) {
-                    $(btn).button('loading');
+                    setTimeout(function () {
+                        $btn.prop('disabled', true);
+                        $btn.attr('disabled', 'disabled');
+                        $btn.addClass('disabled');
+                        $btn.html($btn.attr('data-loading-text'));
+                    }, 0)
                 }
 
                 return true;
