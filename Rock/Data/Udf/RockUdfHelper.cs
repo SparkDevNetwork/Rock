@@ -49,12 +49,39 @@ namespace Rock.Data
         /// </summary>
         public enum AddressNamePart
         {
+            /// <summary>
+            /// Full Address
+            /// </summary>
             Full = 0,
+
+            /// <summary>
+            /// Street1
+            /// </summary>
             Street1 = 1,
+
+            /// <summary>
+            /// Street2
+            /// </summary>
             Street2 = 2,
+
+            /// <summary>
+            /// City
+            /// </summary>
             City = 3,
+
+            /// <summary>
+            /// Region
+            /// </summary>
             Region = 4,
+
+            /// <summary>
+            /// Postal code
+            /// </summary>
             PostalCode = 5,
+
+            /// <summary>
+            /// Country
+            /// </summary>
             Country = 6
         }
 
