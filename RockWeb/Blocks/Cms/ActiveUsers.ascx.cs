@@ -98,12 +98,8 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                int? pageViewCount = GetAttributeValue( "PageViewCount" ).AsIntegerOrNull();
-                if ( !pageViewCount.HasValue || pageViewCount.Value == 0 )
-                {
-                    pageViewCount = 1;
-                }
-
+                int pageViewCount = GetAttributeValue( "PageViewCount" ).AsIntegerOrNull() ?? 0;
+                
                 StringBuilder sbUsers = new StringBuilder();
 
                 var site = SiteCache.Read( siteId.Value );
@@ -114,7 +110,29 @@ namespace RockWeb.Blocks.Cms
 
                 using ( var rockContext = new RockContext() )
                 {
-                    IQueryable<PageView> pageViewQry = new PageViewService( rockContext ).Queryable( "Page" );
+                    var qryPageViews = new PageViewService( rockContext ).Queryable();
+                    var qryPersonAlias = new PersonAliasService( rockContext ).Queryable();
+                    var pageViewQry = qryPageViews.Join(
+                        qryPersonAlias,
+                        pv => pv.PersonAliasId,
+                        pa => pa.Id,
+                        (pv, pa) =>
+                        new 
+                        {
+                            PersonAliasPersonId = pa.PersonId,
+                            pv.DateTimeViewed,
+                            pv.SiteId,
+                            pv.SessionId,
+                            PagePageTitle = pv.Page.PageTitle
+                        } );
+
+                    var last24Hours = RockDateTime.Now.AddDays(-1);
+
+                    int pageViewTakeCount = pageViewCount;
+                    if ( pageViewTakeCount == 0 )
+                    {
+                        pageViewTakeCount = 1;
+                    }
 
                     // Query to get who is logged in and last visit was to selected site
                     var activeLogins = new UserLoginService( rockContext ).Queryable( "Person" )
@@ -126,13 +144,20 @@ namespace RockWeb.Blocks.Cms
                         {
                             login = l,
                             pageViews = pageViewQry
-                                .Where( v => v.PersonAlias.PersonId == l.PersonId )
+                                .Where( v => v.PersonAliasPersonId == l.PersonId )
+                                .Where( v => v.DateTimeViewed > last24Hours )
                                 .OrderByDescending( v => v.DateTimeViewed )
-                                .Take( pageViewCount.Value )
+                                .Take( pageViewTakeCount )
                         } )
                         .Where( a =>
                             a.pageViews.Any() &&
-                            a.pageViews.FirstOrDefault().SiteId == site.Id );
+                            a.pageViews.FirstOrDefault().SiteId == site.Id )
+                        .Select( a => new
+                        {
+                            a.login,
+                            pageViews = a.pageViews,
+                            LatestSessionId = a.pageViews.FirstOrDefault().SessionId
+                        } );
 
                     if ( CurrentUser != null )
                     {
@@ -142,13 +167,10 @@ namespace RockWeb.Blocks.Cms
                     foreach ( var activeLogin in activeLogins )
                     {
                         var login = activeLogin.login;
-                        var pageViews = activeLogin.pageViews.ToList();
-                        Guid? latestSession = pageViews.FirstOrDefault().SessionId;
 
-                        string pageViewsHtml = activeLogin.pageViews.ToList()
-                                                .Where( v => v.SessionId == latestSession )
-                                                .Select( v => HttpUtility.HtmlEncode( v.Page.PageTitle ) ).ToList().AsDelimited( "<br> " );
+                        Guid? latestSession = activeLogin.LatestSessionId;
 
+                        
                         TimeSpan tsLastActivity = login.LastActivityDateTime.HasValue ? RockDateTime.Now.Subtract( login.LastActivityDateTime.Value ) : TimeSpan.MaxValue;
                         string className = tsLastActivity.Minutes <= 5 ? "recent" : "not-recent";
 
@@ -171,8 +193,16 @@ namespace RockWeb.Blocks.Cms
 <li class='active-user {0}' data-toggle='tooltip' data-placement='top' title='{2}'>
     <i class='fa-li fa fa-circle'></i> {1}
 </li>";
+                            if ( activeLogin.pageViews != null )
+                            {
+                                var pageViews = activeLogin.pageViews.ToList();
+                                string pageViewsHtml = activeLogin.pageViews.ToList()
+                                                    .Where( v => v.SessionId == latestSession )
+                                                    .Select( v => HttpUtility.HtmlEncode( v.PagePageTitle ) ).ToList().AsDelimited( "<br> " );
 
-                            sbUsers.Append( string.Format( format, className, personLink, pageViewsHtml ) );
+
+                                sbUsers.Append( string.Format( format, className, personLink, pageViewsHtml ) );
+                            }
                         }
                         else
                         {
