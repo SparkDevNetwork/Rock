@@ -18,9 +18,9 @@
 		[ufnCrm_GetFamilyTitle] is used by spFinance_ContributionStatementQuery as part of generating Contribution Statements
 	</remarks>
 	<code>
-		SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](2, null, default) -- Single Person
-        SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](null, 44, default) -- Family
-        SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](null, 44, '2,3') -- Family, limited to the specified PersonIds
+		SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](2, null, default, default) -- Single Person
+        SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](null, 44, default, default) -- Family
+        SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](null, 44, '2,3', default, default) -- Family, limited to the specified PersonIds
 	</code>
 </doc>
 */
@@ -116,11 +116,23 @@ BEGIN
                 SET @GroupFirstOrNickNames = SUBSTRING(@GroupFirstOrNickNames, 0, len(@GroupFirstOrNickNames) - 1)
             END
 
-            IF len(@GroupAdultFullNames) > 2
+			IF len(@GroupAdultFullNames) > 2
             BEGIN
                 -- trim the extra ' &' off the end 
                 SET @GroupAdultFullNames = SUBSTRING(@GroupAdultFullNames, 0, len(@GroupAdultFullNames) - 1)
             END
+
+			-- if all the firstnames are blanks, get rid of the '&'
+			IF (LTRIM(RTRIM(@GroupFirstOrNickNames)) = '&')
+			BEGIN
+				SET @GroupFirstOrNickNames = ''
+			END
+
+			-- if all the fullnames are blanks, get rid of the '&'
+			IF (LTRIM(RTRIM(@GroupAdultFullNames)) = '&')
+			BEGIN
+				SET @GroupAdultFullNames = ''
+			END
         END
 
         IF @AdultLastNameCount = 0
@@ -135,6 +147,12 @@ BEGIN
                 -- trim the extra ' &' off the end 
                 SET @GroupNonAdultFullNames = SUBSTRING(@GroupNonAdultFullNames, 0, len(@GroupNonAdultFullNames) - 1)
             END
+
+			-- if all the fullnames are blanks, get rid of the '&'
+			IF (LTRIM(RTRIM(@GroupNonAdultFullNames)) = '&')
+			BEGIN
+				SET @GroupNonAdultFullNames = ''
+			END
         END
 
         IF (@AdultLastNameCount = 1)

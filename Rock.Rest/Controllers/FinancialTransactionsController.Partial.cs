@@ -185,6 +185,13 @@ namespace Rock.Rest.Controllers
                 .Where( a => a.TransactionDateTime >= options.StartDate )
                 .Where( a => a.TransactionDateTime < ( options.EndDate ?? DateTime.MaxValue ) );
 
+            var transactionTypeContribution = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            if ( transactionTypeContribution != null )
+            {
+                int transactionTypeContributionId = transactionTypeContribution.Id;
+                qry = qry.Where( a => a.TransactionTypeValueId == transactionTypeContributionId );
+            }
+
             if ( personId.HasValue )
             {
                 // get transactions for a specific person

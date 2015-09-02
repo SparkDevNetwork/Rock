@@ -282,68 +282,30 @@ namespace Rock.Transactions
 
         private void LaunchWorkflow( RockContext rockContext, ConnectionWorkflow connectionWorkflow, string name )
         {
-            ConnectionRequest connectionRequest = null;
-            if ( ConnectionRequestGuid.HasValue )
-            {
-                connectionRequest = new ConnectionRequestService( rockContext ).Get( ConnectionRequestGuid.Value );
-            }
-
             var workflowTypeService = new WorkflowTypeService( rockContext );
             var workflowType = workflowTypeService.Get( connectionWorkflow.WorkflowTypeId.Value );
             if ( workflowType != null )
             {
-                var workflow = Rock.Model.Workflow.Activate( workflowType, name );
-
-                if ( workflow.AttributeValues != null )
+                ConnectionRequest connectionRequest = null;
+                if ( ConnectionRequestGuid.HasValue )
                 {
-                    if ( workflow.AttributeValues.ContainsKey( "ConnectionOpportunity" ) )
-                    {
-                        var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Get( ConnectionOpportunityId.Value );
-                        if ( connectionOpportunity != null )
-                        {
-                            workflow.AttributeValues["ConnectionOpportunity"].Value = connectionOpportunity.Guid.ToString();
-                        }
-                    }
+                    connectionRequest = new ConnectionRequestService( rockContext ).Get( ConnectionRequestGuid.Value );
 
-                    if ( workflow.AttributeValues.ContainsKey( "ConnectionType" ) )
-                    {
-                        var connectionType = new ConnectionTypeService( rockContext ).Get( ConnectionTypeId.Value );
-                        if ( connectionType != null )
-                        {
-                            workflow.AttributeValues["ConnectionType"].Value = connectionType.Guid.ToString();
-                        }
-                    }
+                    var workflow = Rock.Model.Workflow.Activate( workflowType, name );
 
-                    if ( workflow.AttributeValues.ContainsKey( "ConnectionRequest" ) )
+                    List<string> workflowErrors;
+                    new WorkflowService( rockContext ).Process( workflow, connectionRequest, out workflowErrors );
+                    if ( workflow.Id != 0 )
                     {
-                        if ( connectionRequest != null )
-                        {
-                            workflow.AttributeValues["ConnectionRequest"].Value = connectionRequest.Guid.ToString();
-                        }
+                        ConnectionRequestWorkflow connectionRequestWorkflow = new ConnectionRequestWorkflow();
+                        connectionRequestWorkflow.ConnectionRequestId = connectionRequest.Id;
+                        connectionRequestWorkflow.WorkflowId = workflow.Id;
+                        connectionRequestWorkflow.ConnectionWorkflowId = connectionWorkflow.Id;
+                        connectionRequestWorkflow.TriggerType = connectionWorkflow.TriggerType;
+                        connectionRequestWorkflow.TriggerQualifier = connectionWorkflow.QualifierValue;
+                        new ConnectionRequestWorkflowService( rockContext ).Add( connectionRequestWorkflow );
+                        rockContext.SaveChanges();
                     }
-
-                    if ( workflow.AttributeValues.ContainsKey( "Person" ) )
-                    {
-                        var person = new PersonService( rockContext ).Get( PersonId.Value );
-                        if ( person != null )
-                        {
-                            workflow.AttributeValues["Person"].Value = person.PrimaryAlias.Guid.ToString();
-                        }
-                    }
-                }
-
-                List<string> workflowErrors;
-                new WorkflowService( rockContext ).Process( workflow, connectionRequest, out workflowErrors );
-                if ( workflow.Id != 0 )
-                {
-                    ConnectionRequestWorkflow connectionRequestWorkflow = new ConnectionRequestWorkflow();
-                    connectionRequestWorkflow.ConnectionRequestId = connectionRequest.Id;
-                    connectionRequestWorkflow.WorkflowId = workflow.Id;
-                    connectionRequestWorkflow.ConnectionWorkflowId = connectionWorkflow.Id;
-                    connectionRequestWorkflow.TriggerType = connectionWorkflow.TriggerType;
-                    connectionRequestWorkflow.TriggerQualifier = connectionWorkflow.QualifierValue;
-                    new ConnectionRequestWorkflowService( rockContext ).Add( connectionRequestWorkflow );
-                    rockContext.SaveChanges();
                 }
             }
         }

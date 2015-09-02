@@ -1354,9 +1354,6 @@ tr.row-highlight td {
 .filter-toggle > span {
   float: left;
 }
-.filter-toggle .panel-title {
-  margin-top: 4px;
-}
 .filter-toggle .btn-toggle {
   margin: 0 6px;
 }
@@ -6485,10 +6482,18 @@ body.navbar-side-close #content-wrapper {
 /*#endregion */
 @media print {
   @page {
+    size: 8.5in 11in;
     margin: .25in;
+    
+    /* width height */
+  }
+  html,
+  body {
+    margin: 0;
+    padding: 0;
   }
   body {
-    font-size: 12px;
+    font-size: 10px;
   }
   .nav-sub {
     display: none;
@@ -6520,7 +6525,7 @@ body.navbar-side-close #content-wrapper {
   }
   .table td,
   .table > thead > tr > th {
-    font-size: 10px;
+    font-size: 8px;
   }
   .table .grid-columncommand,
   .table .grid-select-field {
