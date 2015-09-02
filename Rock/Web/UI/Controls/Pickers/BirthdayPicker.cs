@@ -303,21 +303,16 @@ namespace Rock.Web.UI.Controls
 
             // Get date format and separater for current culture
             var dtf = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat;
-            var mdp = dtf.ShortDatePattern;
-
-            // Render the control to match the short date format of the current culture.
-            // Note that the date format string is case-sensitive.
-            List<string> dateParts;
-
-            if (mdp.Contains( "y" ) && mdp.Contains( "M" ) && mdp.Contains( "d" ))
-            {
-                dateParts = dtf.ShortDatePattern.Split( dtf.DateSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries ).ToList();
-            }
-            else
+            string mdp = dtf.ShortDatePattern;
+            var dateParts = dtf.ShortDatePattern.Split( dtf.DateSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries ).ToList();
+            if ( dateParts.Count() != 3 ||
+                !dateParts.Any( s => s.Contains( "M" ) ) || 
+                !dateParts.Any( s => s.Contains( "d" ) ) || 
+                !dateParts.Any( s => s.Contains( "y" ) ) )
             {
                 dateParts = new List<string> { "MM", "dd", "yyyy" };
             }
-            
+
             string separatorHtml = string.Format( " <span class='separator'>{0}</span> ", dtf.DateSeparator );
 
             for ( int i = 0; i < 3; i++ )
