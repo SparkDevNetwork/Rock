@@ -84,6 +84,27 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
+        /// Gets or sets the entity types that have been viewed. If entity type has not been viewed, the control will be initialized to current person
+        /// </summary>
+        /// <value>
+        /// The initialized entity types.
+        /// </value>
+        protected List<int> ViewedEntityTypes
+        {
+            get 
+            { 
+                var viewedEntityTypes = ViewState["ViewedEntityTypes"] as List<int>; 
+                if ( viewedEntityTypes == null )
+                {
+                    viewedEntityTypes = new List<int>();
+                    ViewedEntityTypes = viewedEntityTypes;
+                }
+                return viewedEntityTypes;
+            }
+            set { ViewState["ViewedEntityTypes"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the recipients.
         /// </summary>
         /// <value>
@@ -282,7 +303,8 @@ namespace RockWeb.Blocks.Communication
                     MediumEntityTypeId = mediumId;
                     BindMediums();
 
-                    LoadMediumControl( true );
+                    var control = LoadMediumControl( true );
+                    InitializeControl( control );
                     LoadTemplates();
                 }
             }
@@ -660,10 +682,7 @@ namespace RockWeb.Blocks.Communication
             cbBulk.Checked = communication.IsBulkCommunication;
 
             MediumControl control = LoadMediumControl( true );
-            if ( control != null && CurrentPerson != null )
-            {
-                control.InitializeFromSender( CurrentPerson );
-            }
+            InitializeControl( control );
 
             dtpFutureSend.SelectedDateTime = communication.FutureSendDateTime;
 
@@ -849,6 +868,23 @@ namespace RockWeb.Blocks.Communication
             }
 
            return null;
+        }
+
+        /// <summary>
+        /// Initializes the control with current persons information if this is first time that this medium is being viewed
+        /// </summary>
+        /// <param name="control">The control.</param>
+        private void InitializeControl( MediumControl control )
+        {
+            if ( MediumEntityTypeId.HasValue && !ViewedEntityTypes.Contains( MediumEntityTypeId.Value ) )
+            {
+                if ( control != null && CurrentPerson != null )
+                {
+                    control.InitializeFromSender( CurrentPerson );
+                }
+
+                ViewedEntityTypes.Add( MediumEntityTypeId.Value );
+            }
         }
 
         /// <summary>
