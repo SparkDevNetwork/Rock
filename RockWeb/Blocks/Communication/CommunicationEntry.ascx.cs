@@ -305,7 +305,6 @@ namespace RockWeb.Blocks.Communication
 
                     var control = LoadMediumControl( true );
                     InitializeControl( control );
-                    LoadTemplates();
                 }
             }
         }
