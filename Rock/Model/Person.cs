@@ -252,7 +252,7 @@ namespace Rock.Model
         /// Gets or sets Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> representing the Person's martial status.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the Marital STatus <see cref="Rock.Model.DefinedValue"/> representing the Person's martial status.  This value is nullable.
+        /// A <see cref="System.Int32"/> representing the Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> representing the Person's martial status.  This value is nullable.
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.PERSON_MARITAL_STATUS )]
