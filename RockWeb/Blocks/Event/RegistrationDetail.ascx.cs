@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Group Member Page", "The page for viewing details about a group member", true, "", "", 3 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION, "", 4 )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 5 )]
+    [LinkedPage( "Transaction Detail Page", "The page for viewing details about a payment", true, "", "", 6 )]
     public partial class RegistrationDetail : RockBlock, IDetailBlock
     {
 
@@ -116,6 +117,10 @@ namespace RockWeb.Blocks.Event
             base.OnInit( e );
 
             RegisterClientScript();
+
+            gPayments.DataKeyNames = new string[] { "Id" };
+            gPayments.Actions.ShowAdd = false;
+            gPayments.GridRebind += gPayments_GridRebind; 
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -514,9 +519,22 @@ namespace RockWeb.Blocks.Event
 
         }
 
+        protected void lbViewPaymentDetails_Click( object sender, EventArgs e)
+        {
+            BindPaymentsGrid();
+            pnlCosts.Visible = false;
+            pnlPaymentDetails.Visible = true;
+        }
+
         protected void lbCancelPayment_Click( object sender, EventArgs e )
         {
             pnlPaymentInfo.Visible = false;
+            pnlCosts.Visible = true;
+        }
+
+        protected void lbCancelPaymentDetails_Click( object sender, EventArgs e )
+        {
+            pnlPaymentDetails.Visible = false;
             pnlCosts.Visible = true;
         }
 
@@ -626,6 +644,30 @@ namespace RockWeb.Blocks.Event
         protected void lbAddRegistrant_Click( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "RegistrantPage", "RegistrantId", 0, "RegistrationId", RegistrationId );
+        }
+
+        #endregion
+
+        #region Payment Details Events
+
+        /// <summary>
+        /// Handles the RowSelected event of the gPayments control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gPayments_RowSelected( object sender, RowEventArgs e )
+        {
+            NavigateToLinkedPage( "TransactionDetailPage", "transactionId", e.RowKeyId );
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gPayments control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gPayments_GridRebind( object sender, EventArgs e )
+        {
+            BindPaymentsGrid();
         }
 
         #endregion
@@ -881,6 +923,8 @@ namespace RockWeb.Blocks.Event
             }
 
             lbAddRegistrant.Visible = EditAllowed;
+
+            BindPaymentsGrid();
         }
 
         /// <summary>
@@ -1110,6 +1154,64 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
+        #region Payment Details
+
+        /// <summary>
+        /// Binds the payments grid.
+        /// </summary>
+        private void BindPaymentsGrid()
+        {
+            if ( Registration != null  )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var currencyTypes = new Dictionary<int, string>();
+                    var creditCardTypes = new Dictionary<int, string>();
+
+                    int registrationEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
+
+                    // Get all the transactions related to this registration
+                    var qry = new FinancialTransactionService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( t => t.TransactionDetails
+                            .Any( d =>
+                                d.EntityTypeId.HasValue &&
+                                d.EntityTypeId.Value == registrationEntityTypeId &&
+                                d.EntityId.HasValue &&
+                                d.EntityId.Value == Registration.Id ) );
+
+                    SortProperty sortProperty = gPayments.SortProperty;
+                    if ( sortProperty != null )
+                    {
+                        if ( sortProperty.Property == "TotalAmount" )
+                        {
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                qry = qry.OrderBy( t => t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.00M );
+                            }
+                            else
+                            {
+                                qry = qry.OrderByDescending( t => t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M );
+                            }
+                        }
+                        else
+                        {
+                            qry = qry.Sort( sortProperty );
+                        }
+                    }
+                    else
+                    {
+                        qry = qry.OrderByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
+                    }
+
+                    gPayments.SetLinqDataSource( qry.AsNoTracking() );
+                    gPayments.DataBind();
+                }
+            }
+        }
+
+        #endregion
+
         #region Dynamic Controls
 
         private void BuildFeeTable( Registration registration )
@@ -1221,6 +1323,8 @@ namespace RockWeb.Blocks.Event
             {
                 pnlCosts.Visible = false;
             }
+
+            lbViewPaymentDetails.Visible = Registration.Payments.Any();
         }
 
         private void BuildRegistrationControls( bool setValues )
@@ -1254,7 +1358,7 @@ namespace RockWeb.Blocks.Event
             var h1Heading = new HtmlGenericControl( "h1" );
             h1Heading.AddCssClass( "panel-title" );
             h1Heading.AddCssClass( "pull-left" );
-            h1Heading.InnerText = registrant.PersonName;
+            h1Heading.InnerHtml = "<i class='fa fa-user'></i> " + registrant.PersonName;
             divHeading.Controls.Add( h1Heading );
 
             var divLabels = new HtmlGenericControl( "div" );

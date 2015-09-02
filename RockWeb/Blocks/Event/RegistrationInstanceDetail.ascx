@@ -114,17 +114,18 @@
                     <li id="liRegistrants" runat="server">
                         <asp:LinkButton ID="lbRegistrants" runat="server" Text="Registrants" OnClick="lbTab_Click" />
                     </li>
+                    <li id="liPayments" runat="server" >
+                        <asp:LinkButton ID="lbPayments" runat="server" Text="Payments" OnClick="lbTab_Click" />
+                    </li>
                     <li id="liLinkage" runat="server">
                         <asp:LinkButton ID="lbLinkage" runat="server" Text="Linkages" OnClick="lbTab_Click" />
                     </li>
                 </ul>
 
                 <asp:Panel ID="pnlRegistrations" runat="server" Visible="false" CssClass="panel panel-block">
-
                     <div class="panel-heading">
                         <h1 class="panel-title"><i class="fa fa-user"></i> Registrations</h1>
                     </div>
-
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdRegistrationsGridWarning" runat="server" />
                         <div class="grid grid-panel">
@@ -140,7 +141,7 @@
                                 <Rock:RockTextBox ID="tbRegistrationRegistrantFirstName" runat="server" Label="Registrant First Name" />
                                 <Rock:RockTextBox ID="tbRegistrationRegistrantLastName" runat="server" Label="Registrant Last Name" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gRegistrations" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrations_RowSelected" RowItemText="Registration" CssClass="js-grid-registration" >
+                            <Rock:Grid ID="gRegistrations" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrations_RowSelected" RowItemText="Registration" CssClass="js-grid-registration" ExportSource="ColumnOutput" >
                                 <Columns>
                                     <Rock:RockTemplateField HeaderText="Registered By">
                                         <ItemTemplate>
@@ -169,15 +170,12 @@
                             </Rock:Grid>
                         </div>
                     </div>
-
                 </asp:Panel>
 
                 <asp:Panel ID="pnlRegistrants" runat="server" Visible="false" CssClass="panel panel-block">
-
                     <div class="panel-heading">
                         <h1 class="panel-title"><i class="fa fa-users"></i> Registrants</h1>
                     </div>
-
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdRegistrantsGridWarning" runat="server" />
                         <div class="grid grid-panel">
@@ -187,7 +185,7 @@
                                 <Rock:RockTextBox ID="tbRegistrantLastName" runat="server" Label="Last Name" />
                                 <asp:PlaceHolder ID="phRegistrantFormFieldFilters" runat="server" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gRegistrants" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrants_RowSelected" RowItemText="Registrant" PersonIdField="PersonId">
+                            <Rock:Grid ID="gRegistrants" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrants_RowSelected" RowItemText="Registrant" PersonIdField="PersonId" ExportSource="ColumnOutput">
                                 <Columns>
                                     <Rock:SelectField ItemStyle-Width="48px"/>
                                     <Rock:RockTemplateField HeaderText="Registrant">
@@ -204,22 +202,54 @@
                             </Rock:Grid>
                         </div>
                     </div>
+                </asp:Panel>
 
+                <asp:Panel ID="pnlPayments" runat="server" Visible="false" CssClass="panel panel-block">
+                    <div class="panel-heading">
+                        <h1 class="panel-title"><i class="fa fa-credit-card"></i> Payments</h1>
+                    </div>
+                    <div class="panel-body">
+                        <Rock:ModalAlert ID="mdPaymentsGridWarning" runat="server" />
+                        <div class="grid grid-panel">
+                            <Rock:GridFilter ID="fPayments" runat="server" OnDisplayFilterValue="fPayments_DisplayFilterValue">
+                                <Rock:DateRangePicker ID="drpPaymentDateRange" runat="server" Label="Date Range" />
+                            </Rock:GridFilter>
+                            <Rock:Grid ID="gPayments" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Payment" OnRowSelected="gPayments_RowSelected" ExportSource="ColumnOutput" >
+                                <Columns>
+                                    <Rock:RockBoundField DataField="AuthorizedPersonAlias.Person.FullNameReversed" HeaderText="Person" 
+                                        SortExpression="AuthorizedPersonAlias.Person.LastName,AuthorizedPersonAlias.Person.NickName" />
+                                    <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date / Time" SortExpression="TransactionDateTime" />                
+                                    <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" SortExpression="TotalAmount" />
+                                    <Rock:RockBoundField DataField="FinancialPaymentDetail.CurrencyAndCreditCardType" HeaderText="Payment Method" />
+                                    <Rock:RockBoundField DataField="FinancialPaymentDetail.AccountNumberMasked" HeaderText="Accout" />
+                                    <Rock:RockBoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" ColumnPriority="DesktopSmall" />                
+                                    <Rock:RockTemplateFieldUnselected HeaderText="Registrar">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lRegistrar" runat="server" />
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateFieldUnselected>
+                                    <Rock:RockTemplateField HeaderText="Registrant(s)">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lRegistrants" runat="server" />
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                    </div>
                 </asp:Panel>
 
                 <asp:Panel ID="pnlLinkages" runat="server" Visible="false" CssClass="panel panel-block">
-
                     <div class="panel-heading">
                         <h1 class="panel-title"><i class="fa fa-link"></i> Linkages</h1>
                     </div>
-
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdLinkagesGridWarning" runat="server" />
                         <div class="grid grid-panel">
                             <Rock:GridFilter ID="fLinkages" runat="server" OnDisplayFilterValue="fLinkages_DisplayFilterValue">
                                 <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gLinkages" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gLinkages_RowSelected" RowItemText="Linkage">
+                            <Rock:Grid ID="gLinkages" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gLinkages_RowSelected" RowItemText="Linkage" ExportSource="ColumnOutput">
                                 <Columns>
                                     <Rock:RockTemplateFieldUnselected HeaderText="Calendar Item">
                                         <ItemTemplate>
@@ -240,7 +270,6 @@
                             </Rock:Grid>
                         </div>
                     </div>
-
                 </asp:Panel>
 
             </asp:Panel>
