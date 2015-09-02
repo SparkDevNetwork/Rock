@@ -1,7 +1,54 @@
 -- list of recently modified Auth records for Page, Block and EntityType to help write a Migration
 DECLARE @EntityTypeIdPage INT = 2
 
-SELECT p.[InternalName] [Page]
+SELECT a.ModifiedDateTime
+    ,CONCAT (
+        'RockMigrationHelper.AddSecurityAuthForPage( "'
+        ,p.[Guid]
+        ,'", '
+        ,a.[Order]
+        ,', "'
+        ,a.[Action]
+        ,'", '
+        ,CASE a.AllowOrDeny
+            WHEN 'A'
+                THEN 'true'
+            ELSE 'false'
+            END
+        ,', "'
+        ,g.[Guid]
+        ,'", '
+        ,a.SpecialRole
+        ,', "'
+        ,a.[Guid]
+        ,'" );'
+        ,' // Page:'
+        ,p.InternalName
+        ) [Up]
+    ,CONCAT (
+        'RockMigrationHelper.DeleteSecurityAuth( "'
+        ,a.[Guid]
+        ,'");'
+        ,' // Page:'
+        ,p.InternalName
+        ,' Group: '
+        ,CASE a.SpecialRole
+            WHEN 0
+                THEN CONCAT (
+                        g.[Guid]
+                        ,' ( '
+                        ,g.NAME
+                        ,' ), '
+                        )
+            WHEN 1
+                THEN '<all users>'
+            WHEN 2
+                THEN '<all authenticated users>'
+            WHEN 3
+                THEN '<all un-authenticated users>'
+            END
+        ) [Down]
+    ,p.[InternalName] [Page]
     ,p.[Guid] [Page.Guid]
     ,a.[Order]
     ,a.[Action]
