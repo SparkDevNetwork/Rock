@@ -303,31 +303,40 @@ namespace Rock.Web.UI.Controls
 
             // Get date format and separater for current culture
             var dtf = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat;
-            string mdp = dtf.ShortDatePattern;
-            var dateParts = dtf.ShortDatePattern.Split( dtf.DateSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries ).ToList();
-            if ( dateParts.Count() != 3 ||
-                !dateParts.Contains( "MM" ) || 
-                !dateParts.Contains( "dd" ) || 
-                !dateParts.Contains( "yyyy" ) )
+            var mdp = dtf.ShortDatePattern;
+
+            // Render the control to match the short date format of the current culture.
+            // Note that the date format string is case-sensitive.
+            List<string> dateParts;
+
+            if (mdp.Contains( "y" ) && mdp.Contains( "M" ) && mdp.Contains( "d" ))
+            {
+                dateParts = dtf.ShortDatePattern.Split( dtf.DateSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries ).ToList();
+            }
+            else
             {
                 dateParts = new List<string> { "MM", "dd", "yyyy" };
             }
+            
             string separatorHtml = string.Format( " <span class='separator'>{0}</span> ", dtf.DateSeparator );
 
             for ( int i = 0; i < 3; i++ )
             {
-                switch( dateParts[i])
+                string datePart = dateParts[i].ToStringSafe();
+
+                if (datePart.Contains( "d" ))
                 {
-                    case "MM":
-                        monthDropDownList.RenderControl( writer );
-                        break;
-                    case "dd":
-                        dayDropDownList.RenderControl( writer );
-                        break;
-                    case "yyyy":
-                        yearDropDownList.RenderControl( writer );
-                        break;
+                    dayDropDownList.RenderControl( writer );
                 }
+                else if (datePart.Contains( "M" ))
+                {
+                    monthDropDownList.RenderControl( writer );
+                }
+                else if (datePart.Contains( "y" ))
+                {
+                    yearDropDownList.RenderControl( writer );
+                }
+
                 if ( i < 2)
                 {
                     writer.Write( separatorHtml );
