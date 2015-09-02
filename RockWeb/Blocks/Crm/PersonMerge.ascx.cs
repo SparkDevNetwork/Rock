@@ -114,39 +114,47 @@ namespace RockWeb.Blocks.Crm
 
             nbPeople.Visible = false;
 
-            if ( !Page.IsPostBack )
-            {
-                int? setId = PageParameter( "Set" ).AsIntegerOrNull();
-                if (setId.HasValue)
-                {
-                    var selectedPersonIds = new EntitySetItemService( new RockContext() )
-                        .GetByEntitySetId( setId.Value )
-                        .Select( i => i.EntityId )
-                        .Distinct()
-                        .ToList();
+            bool canEdit = this.IsUserAuthorized( Rock.Security.Authorization.EDIT );
 
-                    // Get the people selected
-                    var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users", true )
-                        .Where( p => selectedPersonIds.Contains( p.Id ) )
-                        .ToList();
+            pnlEdit.Visible = canEdit;
+            pnlView.Visible = !canEdit;
 
-                    // Create the data structure used to build grid
-                    MergeData = new MergeData( people, headingKeys );
-                    BuildColumns();
-                    BindGrid();
-                }
-            }
-            else
+            if ( canEdit )
             {
-                var primaryColIndex = hfSelectedColumn.Value.AsIntegerOrNull();
-                
-                // Save the primary header radio button's selection
-                foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
+                if ( !Page.IsPostBack )
                 {
-                    col.OnDelete += personCol_OnDelete;
-                    if (primaryColIndex.HasValue && primaryColIndex.Value == col.ColumnIndex)
+                    int? setId = PageParameter( "Set" ).AsIntegerOrNull();
+                    if ( setId.HasValue )
                     {
-                        MergeData.PrimaryPersonId = col.PersonId;
+                        var selectedPersonIds = new EntitySetItemService( new RockContext() )
+                            .GetByEntitySetId( setId.Value )
+                            .Select( i => i.EntityId )
+                            .Distinct()
+                            .ToList();
+
+                        // Get the people selected
+                        var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users", true )
+                            .Where( p => selectedPersonIds.Contains( p.Id ) )
+                            .ToList();
+
+                        // Create the data structure used to build grid
+                        MergeData = new MergeData( people, headingKeys );
+                        BuildColumns();
+                        BindGrid();
+                    }
+                }
+                else
+                {
+                    var primaryColIndex = hfSelectedColumn.Value.AsIntegerOrNull();
+
+                    // Save the primary header radio button's selection
+                    foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
+                    {
+                        col.OnDelete += personCol_OnDelete;
+                        if ( primaryColIndex.HasValue && primaryColIndex.Value == col.ColumnIndex )
+                        {
+                            MergeData.PrimaryPersonId = col.PersonId;
+                        }
                     }
                 }
             }
@@ -489,6 +497,27 @@ namespace RockWeb.Blocks.Crm
             NavigateToLinkedPage( "PersonDetailPage", "PersonId", primaryPersonId.Value );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSaveRequestNote control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSaveRequestNote_Click( object sender, EventArgs e )
+        {
+            int? setId = PageParameter( "Set" ).AsIntegerOrNull();
+            if ( setId.HasValue )
+            {
+                var rockContext = new RockContext();
+                var entitySet = new EntitySetService( rockContext ).Get( setId.Value );
+                // TODO: entitySet.Note = tbEntitySetNote.Text;
+                rockContext.SaveChanges();
+
+                nbNoteSavedSuccess.Visible = true;
+                tbEntitySetNote.Visible = false;
+                btnSaveRequestNote.Visible = false;
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -715,7 +744,8 @@ namespace RockWeb.Blocks.Crm
 
         #endregion
 
-    }
+        
+}
 
     #region MergeData Class
 

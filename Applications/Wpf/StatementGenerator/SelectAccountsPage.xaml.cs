@@ -74,9 +74,9 @@ namespace Rock.Apps.StatementGenerator
             _rockRestClient = new RockRestClient( rockConfig.RockBaseUrl );
             _rockRestClient.Login( rockConfig.Username, rockConfig.Password );
 
-            var accounts = _rockRestClient.GetData<List<Rock.Client.FinancialAccount>>( "api/FinancialAccounts", "IsActive eq true" );
+            var accounts = _rockRestClient.GetData<List<Rock.Client.FinancialAccount>>( "api/FinancialAccounts" );
 
-            lstAccounts.ItemsSource = accounts.Select( a => new NameIdIsChecked { Id = a.Id, Name = a.Name, IsChecked = true } );
+            lstAccounts.ItemsSource = accounts.OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new NameIdIsChecked { Id = a.Id, Name = a.Name, IsChecked = true } );
 
             lblWarning.Visibility = Visibility.Hidden;
         }

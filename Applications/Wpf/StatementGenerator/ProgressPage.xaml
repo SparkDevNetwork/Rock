@@ -51,8 +51,9 @@
                            Content="Progress" />
                     <ProgressBar x:Name="pgReportProgress"
                                  Maximum="100"
-                                 Value="67"
-                                 Height="4" />
+                                 Value="0"
+                                 Height="4"
+                                 Visibility="Collapsed"/>
 
                     <Button x:Name="btnSaveAs"
                             HorizontalAlignment="Center"
