@@ -81,6 +81,25 @@ namespace Rock.Model
         [DataMember]
         public int Order { get; set; }
 
+        /// <summary>
+        /// Gets or sets Id of the EntitySet purpose <see cref="Rock.Model.DefinedValue"/> representing the EntitySet's purpose.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the EntitySet purpose <see cref="Rock.Model.DefinedValue"/> representing the EntitySet's purpose.  This value is nullable.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.ENTITY_SET_PURPOSE )]
+        public int? EntitySetPurposeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the note.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the note.
+        /// </value>
+        [DataMember]
+        public string Note { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -119,6 +138,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Model.EntityType EntityType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the EntitySet's purpose
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> representing the EntitySet's purpose.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue EntitySetPurposeValue { get; set; }
 
         #endregion
 
@@ -165,6 +193,7 @@ namespace Rock.Model
         {
             this.HasOptional( s => s.ParentEntitySet ).WithMany( s => s.ChildEntitySets ).HasForeignKey( s => s.ParentEntitySetId).WillCascadeOnDelete( false );
             this.HasOptional( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.EntitySetPurposeValue ).WithMany().HasForeignKey( p => p.EntitySetPurposeValueId ).WillCascadeOnDelete( false );
         }
     }
 
