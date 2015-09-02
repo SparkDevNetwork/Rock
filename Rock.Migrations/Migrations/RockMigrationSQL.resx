@@ -196,4 +196,13 @@
   <data name="_201508241735382_RegistrationPersonNote" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201508241735382_registrationpersonnote.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201509022116398_EntitySetPurpose" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201509022116398_entitysetpurpose.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201509022116398_EntitySetPurpose_spFinance_ContributionStatementQuery" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201509022116398_entitysetpurpose_spfinance_contributionstatementquery.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201509022116398_EntitySetPurpose_ufnCrm_GetFamilyTitle" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201509022116398_entitysetpurpose_ufncrm_getfamilytitle.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

@@ -403,6 +403,10 @@
     <Compile Include="Migrations\201508311621277_ContentChannelIncludeTime.Designer.cs">
       <DependentUpon>201508311621277_ContentChannelIncludeTime.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201509022116398_EntitySetPurpose.cs" />
+    <Compile Include="Migrations\201509022116398_EntitySetPurpose.Designer.cs">
+      <DependentUpon>201509022116398_EntitySetPurpose.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2118,6 +2122,9 @@
     <EmbeddedResource Include="Migrations\201508311621277_ContentChannelIncludeTime.resx">
       <DependentUpon>201508311621277_ContentChannelIncludeTime.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201509022116398_EntitySetPurpose.resx">
+      <DependentUpon>201509022116398_EntitySetPurpose.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
     </EmbeddedResource>
@@ -3223,6 +3230,9 @@
     <Content Include="Migrations\201508171751190_FollowingEventNotification.sql" />
     <Content Include="Migrations\201508162108504_FollowingEventsSuggestions.sql" />
     <Content Include="Migrations\201508111636214_FinancialPaymentDetails.sql" />
+    <Content Include="Migrations\201509022116398_EntitySetPurpose.sql" />
+    <Content Include="Migrations\201509022116398_EntitySetPurpose_spFinance_ContributionStatementQuery.sql" />
+    <Content Include="Migrations\201509022116398_EntitySetPurpose_ufnCrm_GetFamilyTitle.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
