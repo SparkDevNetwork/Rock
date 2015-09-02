@@ -1,82 +1,87 @@
 -- list of recently modified Auth records for Page, Block and EntityType to help write a Migration
+DECLARE @EntityTypeIdPage INT = 2
 
-declare
-@EntityTypeIdPage int = 2
+SELECT p.[InternalName] [Page]
+    ,p.[Guid] [Page.Guid]
+    ,a.[Order]
+    ,a.[Action]
+    ,a.AllowOrDeny
+    ,a.SpecialRole
+    ,CASE a.SpecialRole
+        WHEN 0
+            THEN CONCAT (
+                    g.[Guid]
+                    ,' ( '
+                    ,g.NAME
+                    ,' ), '
+                    )
+        WHEN 1
+            THEN '<all users>'
+        WHEN 2
+            THEN '<all authenticated users>'
+        WHEN 3
+            THEN '<all un-authenticated users>'
+        END [Group]
+    ,a.[Guid] [Auth.Guid]
+FROM Auth a
+LEFT JOIN [Group] g ON a.GroupId = g.Id
+JOIN [Page] p ON a.EntityId = p.Id
+WHERE EntityTypeId = @EntityTypeIdPage
+ORDER BY a.ModifiedDateTime DESC
 
-select 
-    p.[InternalName] [Page],
-	p.[Guid] [Page.Guid],
-    a.[Order],
-    a.[Action],
-    a.AllowOrDeny,
-    a.SpecialRole,
-    case a.SpecialRole when 0 then
-        concat(g.[Guid], ' ( ', g.Name, ' ), ')
-        when 1 then
-            '<all users>'
-            when 2 then
-            '<all authenticated users>'
-            when 3 then
-            '<all un-authenticated users>'
-        end
-         [Group],
-    a.[Guid] [Auth.Guid]
-    
- from Auth a
-left join [Group] g on a.GroupId = g.Id
-join [Page] p on a.EntityId = p.Id
-where EntityTypeId = @EntityTypeIdPage
-order by a.ModifiedDateTime desc
+DECLARE @EntityTypeIdBlock INT = 9
 
-
-declare
-@EntityTypeIdBlock int = 9
-
-select 
-    b.[Name] + char(9) [Block],
-    a.[Order],
-    a.[Action],
-    a.AllowOrDeny,
-    a.SpecialRole,
-    case a.SpecialRole when 0 then
-        concat(g.[Guid], ' ( ', g.Name, ' ), ')
-        when 1 then
-            '<all users>'
-            when 2 then
-            '<all authenticated users>'
-            when 3 then
-            '<all un-authenticated users>'
-        end
-         [Group],
-    a.[Guid] [Auth.Guid]
-    
- from Auth a
-left join [Group] g on a.GroupId = g.Id
-join [Block] b on a.EntityId = b.Id
-where EntityTypeId = @EntityTypeIdBlock
-order by a.ModifiedDateTime desc
+SELECT b.[Name] + CHAR(9) [Block]
+    ,a.[Order]
+    ,a.[Action]
+    ,a.AllowOrDeny
+    ,a.SpecialRole
+    ,CASE a.SpecialRole
+        WHEN 0
+            THEN CONCAT (
+                    g.[Guid]
+                    ,' ( '
+                    ,g.NAME
+                    ,' ), '
+                    )
+        WHEN 1
+            THEN '<all users>'
+        WHEN 2
+            THEN '<all authenticated users>'
+        WHEN 3
+            THEN '<all un-authenticated users>'
+        END [Group]
+    ,a.[Guid] [Auth.Guid]
+FROM Auth a
+LEFT JOIN [Group] g ON a.GroupId = g.Id
+JOIN [Block] b ON a.EntityId = b.Id
+WHERE EntityTypeId = @EntityTypeIdBlock
+ORDER BY a.ModifiedDateTime DESC
 
 -- Entity Security
-select 
-    b.[Name] + char(9) [EntityType],
-    a.[Order],
-    a.[Action],
-    a.AllowOrDeny,
-    a.SpecialRole,
-    case a.SpecialRole when 0 then
-        concat(g.[Guid], ' ( ', g.Name, ' ), ')
-        when 1 then
-            '<all users>'
-            when 2 then
-            '<all authenticated users>'
-            when 3 then
-            '<all un-authenticated users>'
-        end
-         [Group],
-    a.[Guid] [Auth.Guid]
-    
- from Auth a
-left join [Group] g on a.GroupId = g.Id
-join [EntityType] b on a.EntityTypeId = b.Id
-where a.EntityId = 0
-order by isnull(a.ModifiedDateTime, '1900-01-01') desc
+SELECT b.[Name] + CHAR(9) [EntityType]
+    ,a.[Order]
+    ,a.[Action]
+    ,a.AllowOrDeny
+    ,a.SpecialRole
+    ,CASE a.SpecialRole
+        WHEN 0
+            THEN CONCAT (
+                    g.[Guid]
+                    ,' ( '
+                    ,g.NAME
+                    ,' ), '
+                    )
+        WHEN 1
+            THEN '<all users>'
+        WHEN 2
+            THEN '<all authenticated users>'
+        WHEN 3
+            THEN '<all un-authenticated users>'
+        END [Group]
+    ,a.[Guid] [Auth.Guid]
+FROM Auth a
+LEFT JOIN [Group] g ON a.GroupId = g.Id
+JOIN [EntityType] b ON a.EntityTypeId = b.Id
+WHERE a.EntityId = 0
+ORDER BY isnull(a.ModifiedDateTime, '1900-01-01') DESC
