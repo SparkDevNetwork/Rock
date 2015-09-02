@@ -84,6 +84,27 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
+        /// Gets or sets the entity types that have been viewed. If entity type has not been viewed, the control will be initialized to current person
+        /// </summary>
+        /// <value>
+        /// The initialized entity types.
+        /// </value>
+        protected List<int> ViewedEntityTypes
+        {
+            get 
+            { 
+                var viewedEntityTypes = ViewState["ViewedEntityTypes"] as List<int>; 
+                if ( viewedEntityTypes == null )
+                {
+                    viewedEntityTypes = new List<int>();
+                    ViewedEntityTypes = viewedEntityTypes;
+                }
+                return viewedEntityTypes;
+            }
+            set { ViewState["ViewedEntityTypes"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the recipients.
         /// </summary>
         /// <value>
@@ -272,7 +293,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbMedium_Click( object sender, EventArgs e )
         {
-            
+            GetMediumData();
             var linkButton = sender as LinkButton;
             if ( linkButton != null )
             {
@@ -280,11 +301,10 @@ namespace RockWeb.Blocks.Communication
                 if ( int.TryParse( linkButton.CommandArgument, out mediumId ) )
                 {
                     MediumEntityTypeId = mediumId;
-                    LoadMediumControl( true );
-                    
                     BindMediums();
 
-                    
+                    var control = LoadMediumControl( true );
+                    InitializeControl( control );
                     LoadTemplates();
                 }
             }
@@ -662,10 +682,7 @@ namespace RockWeb.Blocks.Communication
             cbBulk.Checked = communication.IsBulkCommunication;
 
             MediumControl control = LoadMediumControl( true );
-            if ( control != null && CurrentPerson != null )
-            {
-                control.InitializeFromSender( CurrentPerson );
-            }
+            InitializeControl( control );
 
             dtpFutureSend.SelectedDateTime = communication.FutureSendDateTime;
 
@@ -829,7 +846,6 @@ namespace RockWeb.Blocks.Communication
 
                 if ( setData  )
                 {
-                    GetMediumData();
                     mediumControl.MediumData = MediumData;
                 }
                 
@@ -855,6 +871,23 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
+        /// Initializes the control with current persons information if this is first time that this medium is being viewed
+        /// </summary>
+        /// <param name="control">The control.</param>
+        private void InitializeControl( MediumControl control )
+        {
+            if ( MediumEntityTypeId.HasValue && !ViewedEntityTypes.Contains( MediumEntityTypeId.Value ) )
+            {
+                if ( control != null && CurrentPerson != null )
+                {
+                    control.InitializeFromSender( CurrentPerson );
+                }
+
+                ViewedEntityTypes.Add( MediumEntityTypeId.Value );
+            }
+        }
+
+        /// <summary>
         /// Gets the medium data.
         /// </summary>
         private void GetMediumData()
@@ -864,7 +897,9 @@ namespace RockWeb.Blocks.Communication
                 var mediumControl = phContent.Controls[0] as MediumControl;
                 if ( mediumControl != null )
                 {
-                    if ( CurrentPerson != null )
+                    // If using simple mode, the control should be re-initialized from sender since sender fields 
+                    // are not presented for editing and user shouldn't be able to change them
+                    if ( !_fullMode && CurrentPerson != null )
                     {
                         mediumControl.InitializeFromSender( CurrentPerson );
                     }

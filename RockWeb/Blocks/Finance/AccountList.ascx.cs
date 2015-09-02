@@ -201,6 +201,7 @@ namespace RockWeb.Blocks.Finance
             rAccountFilter.SaveUserPreference( "Account Name", txtAccountName.Text );
             rAccountFilter.SaveUserPreference( "Campus", ddlCampus.SelectedValue );
             rAccountFilter.SaveUserPreference( "Active", ddlIsActive.SelectedValue );
+            rAccountFilter.SaveUserPreference( "Public", ddlIsPublic.SelectedValue );
             rAccountFilter.SaveUserPreference( "Tax Deductible", ddlIsTaxDeductible.SelectedValue );
             BindGrid();
         }
@@ -230,6 +231,12 @@ namespace RockWeb.Blocks.Finance
             if ( int.TryParse( rAccountFilter.GetUserPreference( "Campus" ), out campusId ) )
             {
                 accountQuery = accountQuery.Where( account => account.Campus.Id == campusId );
+            }
+
+            string publicFilter = rAccountFilter.GetUserPreference( "Public" );
+            if ( !string.IsNullOrWhiteSpace( publicFilter ) )
+            {
+                accountQuery = accountQuery.Where( account => ( account.IsPublic ?? false ) == ( publicFilter == "Yes" ) );
             }
 
             string activeFilter = rAccountFilter.GetUserPreference( "Active" );
@@ -273,6 +280,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             ddlIsActive.SelectedValue = rAccountFilter.GetUserPreference( "Active" );
+            ddlIsPublic.SelectedValue = rAccountFilter.GetUserPreference( "Public" );
             ddlIsTaxDeductible.SelectedValue = rAccountFilter.GetUserPreference( "Tax Deductible" );
         }
 

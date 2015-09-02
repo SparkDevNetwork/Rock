@@ -1189,6 +1189,11 @@ namespace Rock.Web.UI.Controls
                 Page.Response.Redirect( string.Format( PersonMergePageRoute, entitySetId.Value ), false );
                 Context.ApplicationInstance.CompleteRequest();
             }
+            else
+            {
+                // empty entityset ( probably because the list has 0 items)
+                this.ShowModalAlertMessage( "Grid has no " + this.RowItemText.Pluralize(), ModalAlertType.Warning );
+            }
         }
 
         /// <summary>
@@ -1203,6 +1208,11 @@ namespace Rock.Web.UI.Controls
             {
                 Page.Response.Redirect( string.Format( BulkUpdatePageRoute, entitySetId.Value ), false );
                 Context.ApplicationInstance.CompleteRequest();
+            }
+            else
+            {
+                // empty entityset ( probably because the list has 0 items)
+                this.ShowModalAlertMessage( "Grid has no " + this.RowItemText.Pluralize(), ModalAlertType.Warning );
             }
         }
 
@@ -1221,8 +1231,8 @@ namespace Rock.Web.UI.Controls
                 RebindGrid( e, selectAll );
 
                 var recipients = GetPersonData();
-                //if ( recipients.Any() )
-                //{
+                if ( recipients.Any() )
+                {
 
                     // Create communication 
                     var rockContext = new RockContext();
@@ -1275,7 +1285,12 @@ namespace Rock.Web.UI.Controls
 
                     Page.Response.Redirect( url, false );
                     Context.ApplicationInstance.CompleteRequest();
-                //}
+                }
+                else
+                {
+                    // nobody in list or nobody selected
+                    this.ShowModalAlertMessage( "Grid has no " + this.RowItemText.Pluralize(), ModalAlertType.Warning );
+                }
             }
         }
 
@@ -1296,7 +1311,24 @@ namespace Rock.Web.UI.Controls
                 Page.Response.Redirect( string.Format( MergeTemplatePageRoute, entitySetId.Value ), false );
                 Context.ApplicationInstance.CompleteRequest();
             }
+            else
+            {
+                // empty entityset ( probably because the list has 0 items)
+                this.ShowModalAlertMessage( "Grid has no " + this.RowItemText.Pluralize(), ModalAlertType.Warning );
+            }
+        }
 
+        /// <summary>
+        /// Shows the modal alert message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="modalAlertType">Type of the modal alert.</param>
+        public void ShowModalAlertMessage(string message, ModalAlertType modalAlertType)
+        {
+            var modalAlert = new ModalAlert();
+            modalAlert.ID = this.ID + "_mdlGridAlert";
+            this.Controls.Add( modalAlert );
+            modalAlert.Show( message, modalAlertType );
         }
 
         /// <summary>

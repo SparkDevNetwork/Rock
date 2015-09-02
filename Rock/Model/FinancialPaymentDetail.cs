@@ -143,8 +143,34 @@ namespace Rock.Model
         /// The billing location.
         /// </value>
         [DataMember]
-        public virtual Location BillingLocation { get; set; }        
-        
+        public virtual Location BillingLocation { get; set; }
+
+        /// <summary>
+        /// Gets the type of the currency and credit card.
+        /// </summary>
+        /// <value>
+        /// The type of the currency and credit card.
+        /// </value>
+        [NotMapped]
+        public virtual string CurrencyAndCreditCardType
+        {
+            get
+            {
+                var sb = new StringBuilder();
+
+                if ( CurrencyTypeValue != null )
+                {
+                    sb.Append( CurrencyTypeValue.Value );
+                }
+
+                if ( CreditCardTypeValue != null )
+                {
+                    sb.AppendFormat( " - {0}", CreditCardTypeValue.Value );
+                }
+
+                return sb.ToString();
+            }
+        }
         #endregion
 
         #region Public Methods

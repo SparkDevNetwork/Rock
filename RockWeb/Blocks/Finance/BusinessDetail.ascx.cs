@@ -277,6 +277,7 @@ namespace RockWeb.Blocks.Finance
                         workLocation.GroupLocationTypeValueId = workLocationTypeId;
                     }
                     workLocation.Location = newLocation;
+                    workLocation.IsMailingLocation = true;
 
                     History.EvaluateChange( changes, "Address", oldValue, newLocation.ToString() );
                 }

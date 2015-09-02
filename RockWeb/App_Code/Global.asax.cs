@@ -842,6 +842,13 @@ namespace RockWeb
                     //ErrorUtilities.VerifySupported(request.Url.Scheme == Uri.UriSchemeHttps || request.Url.Scheme == Uri.UriSchemeHttp, "Only HTTP and HTTPS are supported protocols.");
                     string scheme = serverVariables["HTTP_X_FORWARDED_PROTO"] ?? request.Url.Scheme;
                     Uri hostAndPort = new Uri( scheme + Uri.SchemeDelimiter + serverVariables["HTTP_HOST"] );
+
+                    // If host is a local port (occurs with Azure hosting), ignore this request
+                    if ( hostAndPort.Host == "127.0.0.1" )
+                    {
+                        return null;
+                    }
+
                     UriBuilder publicRequestUri = new UriBuilder( request.Url );
                     publicRequestUri.Scheme = scheme;
                     publicRequestUri.Host = hostAndPort.Host;
