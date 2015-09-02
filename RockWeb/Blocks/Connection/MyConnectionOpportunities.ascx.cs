@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Connection
                 else
                 {
                     // if 'All Opportunities' is selected, show all the opportunities for the type
-                    rptConnectionOpportunities.DataSource = connectionType.Opportunities;
+                    rptConnectionOpportunities.DataSource = connectionType.Opportunities.OrderBy(c => c.Name);
                 }
                 rptConnectionOpportunities.DataBind();
                 //rptConnectionOpportunities.ItemCommand += rptConnectionOpportunities_ItemCommand;
