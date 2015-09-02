@@ -81,8 +81,9 @@ END
 WHERE ( [IsPublic] IS NULL AND [PublicName] IS NOT NULL AND [PublicName] <> '' )" );
 
             // DT: Update exception subject
-            Sql( @"UPDATE [SystemEmail] SET [Subject] = REPLACE([Subject], 'Rock Exception Notification', 'Rock Exception Notification {% if Person %}[{{Person.FullName}}]{% endif %}') 
-WHERE [Guid] = '75cb0a4a-b1c5-4958-adeb-8621bd231520'" );
+            Sql( @"UPDATE [SystemEmail] SET [Subject] = 'Rock Exception Notification {% if Person %}[{{Person.FullName}}]{% endif %}' 
+WHERE [Guid] = '75cb0a4a-b1c5-4958-adeb-8621bd231520' and [Subject] = 'Rock Exception Notification'
+" );
 
             // MP: Fix FinancialTransactionImage wrong BinaryFileType
             // MP: Fix Business Address not getting set as IsMailingLocation = true
