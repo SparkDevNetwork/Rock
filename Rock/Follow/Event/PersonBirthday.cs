@@ -92,6 +92,11 @@ namespace Rock.Follow.Event
                         if ( ( nextBirthDay.Value.Subtract( processDate ).Days <= leadDays ) &&
                             ( !lastNotified.HasValue || nextBirthDay.Value.Subtract( lastNotified.Value.Date ).Days > leadDays ) )
                         {
+                            // If leaddays is greater than zero, ignore any birthdays for today
+                            if ( leadDays > 0 && nextBirthDay.Value.Date == RockDateTime.Today )
+                            {
+                                return false;
+                            }
                             return true;
                         }
                     }

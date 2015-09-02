@@ -1,11 +1,17 @@
 ﻿@media print {
 
     @page {
-        margin: .25in;
+      size: 8.5in 11in;  /* width height */
+      margin: .25in;
+   }
+
+    html, body {
+        margin: 0;
+        padding: 0;
     }
 
     body {
-        font-size: 12px;
+        font-size: 10px;
     }
 
     // default sidebar navs on most pages
@@ -49,7 +55,7 @@
 
     .table td,
     .table > thead > tr > th { 
-        font-size: 10px; 
+        font-size: 8px; 
     }
         
     .table .grid-columncommand,
