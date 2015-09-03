@@ -76,6 +76,7 @@ namespace Rock.Jobs
                     .Where( e =>
                         e.EntityTypeId.HasValue &&
                         e.IsActive )
+                    .OrderBy( e => e.Order )
                     .ToList();
 
                 // Get the required event types
@@ -119,7 +120,8 @@ namespace Rock.Jobs
                     if ( personEventTypes.Any() )
                     {
                         personSubscriptions.AddOrIgnore( personId, personEventTypes
-                            .OrderBy( e => e.Name )
+                            .OrderBy( e => e.Order )
+                            .ThenBy( e => e.Name )
                             .Select( e => e.Id )
                             .Distinct()
                             .ToList() );
@@ -308,7 +310,7 @@ namespace Rock.Jobs
                                     var recipients = new List<RecipientData>();
                                     var mergeFields = new Dictionary<string, object>();
                                     mergeFields.Add( "Person", person );
-                                    mergeFields.Add( "EventTypes", personEventTypeNotices );
+                                    mergeFields.Add( "EventTypes", personEventTypeNotices.OrderBy( e => e.EventType.Order ).ToList() );
                                     recipients.Add( new RecipientData( person.Email, mergeFields ) );
                                     Email.Send( systemEmailGuid.Value, recipients, appRoot );
                                 }
