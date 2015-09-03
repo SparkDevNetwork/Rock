@@ -1586,7 +1586,7 @@ dl:not(.dl-horizontal) dd {
 }
 .table-striped > tbody > tr:nth-child(odd) > td,
 .table-striped > tbody > tr:nth-child(odd) > th {
-  background-color: #f7f7f7;
+  background-color: #191919;
   color: #eeeeee;
 }
 td.grid-select-cell {
@@ -2265,7 +2265,7 @@ tr.row-highlight td {
   margin: 0 7.5px 0 5px;
 }
 .panel-noteentry .panel-footer {
-  background-color: #f5f5f5;
+  background-color: #3b3b3b;
 }
 .recurrence-pattern-type {
   margin-top: 12px;
@@ -3375,7 +3375,7 @@ iframe.email-body {
 .calendar {
   padding: 0 10px 10px 10px;
   display: inline-block;
-  border: 1px solid #dddddd;
+  border: 1px solid #555555;
   border-radius: 4px;
   width: 100%;
 }
@@ -4968,7 +4968,7 @@ ul.list-group-panel .list-group-item,
 .panel-collapse .list-group-item {
   border-radius: 0;
   border: 0;
-  border-top: 1px solid #dddddd;
+  border-top: 1px solid #555555;
 }
 ul.list-group-panel .list-group-item:first-child,
 .panel-collapse .list-group-item:first-child {
@@ -6465,6 +6465,7 @@ html {
   box-sizing: inherit;
 }
 body {
+  background-color: #212121;
   color: #eeeeee;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -6482,6 +6483,20 @@ h6,
 .h5,
 .h6 {
   text-transform: uppercase;
+}
+h1 small,
+h2 small,
+h3 small,
+h4 small,
+h5 small,
+h6 small,
+.h1 small,
+.h2 small,
+.h3 small,
+.h4 small,
+.h5 small,
+.h6 small {
+  color: #eeeeee;
 }
 img {
   display: block;
@@ -6556,6 +6571,39 @@ fieldset[disabled] .btn-default.active {
     width: 735px;
   }
 }
+.panel {
+  background: #212121;
+}
+.panel-default {
+  border-color: #555555;
+}
+.panel-default > .panel-heading {
+  color: #eeeeee;
+  background-color: #3b3b3b;
+  border-color: #555555;
+}
+.panel-default > .panel-heading + .panel-collapse > .panel-body {
+  border-top-color: #555555;
+}
+.panel-default > .panel-heading .badge {
+  color: #3b3b3b;
+  background-color: #eeeeee;
+}
+.panel-default > .panel-footer + .panel-collapse > .panel-body {
+  border-bottom-color: #555555;
+}
+.list-group-item {
+  background-color: #212121;
+  border: 1px solid #555555;
+}
+a.list-group-item {
+  color: #eeeeee;
+}
+a.list-group-item:hover,
+a.list-group-item:focus {
+  color: #eeeeee;
+  background-color: #3b3b3b;
+}
 hr {
   border-color: #333333;
 }
@@ -6577,4 +6625,8 @@ hr {
 }
 a.text-muted:hover {
   color: inherit;
+}
+.well {
+  background-color: #111111;
+  border: 1px solid #111111;
 }

@@ -25,12 +25,29 @@
 @import "_helpers";
 
 @body-bg: #212121;
+// we set bg color inline on the body tag for the layout to prevent a flash of white on load
 @text-color: @gray-lighter;
 
 @grid-gutter-width: 15px;
 
 @btn-default-bg: @gray;
 @btn-default-color: @gray-lighter;
+
+@panel-bg: @body-bg;
+
+@list-group-bg: @panel-bg;
+@list-group-border: @panel-default-border;
+@list-group-link-color: @gray-lighter;
+
+@list-group-link-hover-color: @list-group-link-color;
+@list-group-hover-bg: @panel-default-heading-bg;
+
+@panel-default-text:          @gray-lighter;
+@panel-default-border:        @gray;
+@panel-default-heading-bg:    lighten(@panel-bg, 10%);
+
+@well-bg:                     #111;
+@well-border:                 @well-bg;
 
 
 // Styles that should be moved later
@@ -44,6 +61,7 @@ html {
 }
 
 body {
+  background-color: @body-bg;
   color: @text-color;
   .text-aa()
 }
@@ -51,6 +69,9 @@ body {
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6 {
   text-transform: uppercase;
+  small {
+    color: @gray-lighter;
+  }
 }
 
 img { .img-responsive(); }
@@ -84,6 +105,27 @@ img { .img-responsive(); }
   }
 }
 
+.panel {
+  background: @panel-bg;
+}
+.panel-default {
+  .panel-variant(@panel-default-border; @panel-default-text; @panel-default-heading-bg; @panel-default-border);
+}
+
+.list-group-item {
+  background-color: @list-group-bg;
+  border: 1px solid @list-group-border;
+}
+
+a.list-group-item {
+  color: @list-group-link-color;
+  &:hover,
+  &:focus {
+    color: @list-group-link-hover-color;
+    background-color: @list-group-hover-bg;
+  }
+}
+
 hr {
   border-color: @gray-dark;
 }
@@ -109,4 +151,9 @@ a.text-muted {
   &:hover {
     color: inherit;
   }
+}
+
+.well {
+  background-color: @well-bg;
+  border: 1px solid @well-border;
 }

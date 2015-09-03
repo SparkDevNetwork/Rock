@@ -7,89 +7,88 @@
 
   {% capture phoneString %}+1{{ campus.PhoneNumber | Remove: '(' | Remove: ')' | Remove: ' ' | Remove: '-' }}{% endcapture %}
 
-  <div class="container">
+  <h3 class="text-center">{{ campus.Name }} Campus</h3>
 
-    <h3 class="text-center">{{ campus.Name }} Campus</h3>
+  <div class="clearfix margin-b-lg">
+    <div class="pull-left">
+      <i class="fa fa-clock-o fa-2x"></i>
+    </div>
+    <div class="pull-left margin-l-md">
+      {% assign times = campus.ServiceTimes | Split: '|' %}
 
-    <div class="clearfix margin-b-lg">
-      <div class="pull-left">
-        <i class="fa fa-clock-o fa-2x"></i>
-      </div>
-      <div class="pull-left margin-l-md">
-        {% assign times = campus.ServiceTimes | Split: '|' %}
-
-        {% for time in times %}
-          {% assign split = time | Split: '^' %}
-          {% if split[0] == 'Saturday' %}
-            {% assign hasSaturday = true %}
-          {% endif %}
-          {% if split[0] == 'Sunday' %}
-            {% assign hasSunday = true %}
-          {% endif %}
-        {% endfor %}
-
-        {% if hasSaturday %}
-          <ul class="list-inline margin-b-none">
-            <li><strong>Saturday</strong></li>
-            {% for time in times %}
-              {% assign split = time | Split: '^' %}
-              {% if split[0] == 'Saturday' %}
-                <li>{{ split[1] | Remove: ' ' }}</li>
-              {% endif %}
-            {% endfor %}
-          </ul>
+      {% for time in times %}
+        {% assign split = time | Split: '^' %}
+        {% if split[0] == 'Saturday' %}
+          {% assign hasSaturday = true %}
         {% endif %}
-
-        {% if hasSunday %}
-          <ul class="list-inline margin-b-none">
-            <li><strong>Sunday</strong></li>
-            {% for time in times %}
-              {% assign split = time | Split: '^' %}
-              {% if split[0] == 'Sunday' %}
-                <li>{{ split[1] | Remove: ' ' }}</li>
-              {% endif %}
-            {% endfor %}
-          </ul>
+        {% if split[0] == 'Sunday' %}
+          {% assign hasSunday = true %}
         {% endif %}
-      </div>
+      {% endfor %}
+
+      {% if hasSaturday %}
+        <ul class="list-inline margin-b-none">
+          <li><strong>Saturday</strong></li>
+          {% for time in times %}
+            {% assign split = time | Split: '^' %}
+            {% if split[0] == 'Saturday' %}
+              <li>{{ split[1] | Remove: ' ' }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if hasSunday %}
+        <ul class="list-inline margin-b-none">
+          <li><strong>Sunday</strong></li>
+          {% for time in times %}
+            {% assign split = time | Split: '^' %}
+            {% if split[0] == 'Sunday' %}
+              <li>{{ split[1] | Remove: ' ' }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      {% endif %}
     </div>
+  </div>
 
-    <div class="row margin-b-lg">
-      <div class="col-xs-6">
-        <a href="http://maps.apple.com/maps?daddr={{ urlString }}" class="btn btn-primary btn-sm btn-block" target="_blank"><i class="fa fa-location-arrow"></i> Get Directions</a>
-      </div>
-      <div class="col-xs-6">
-        <a href="tel:{{ phoneString }}" class="btn btn-default btn-sm btn-block"><i class="fa fa-phone"></i> Call</a>
-      </div>
+  <div class="row margin-b-lg">
+    <div class="col-xs-6">
+      <a href="external:http://maps.apple.com/maps?daddr={{ urlString }}" class="btn btn-primary btn-sm btn-block" target="_blank"><i class="fa fa-location-arrow"></i> Get Directions</a>
     </div>
-
-    <div id="single-campus-map" class="responsive-map" data-campus-id="{{ campus.Id }}" data-map-type="mobile"></div>
-    <p class="small margin-t-lg margin-b-none">
-      <i class="fa fa-map-marker"></i>
-      <a class="text-muted" href="http://maps.apple.com/maps?daddr={{ urlString }}">
-        {{ campus.Location.Street1 }} {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}
-      </a>
-    </p>
-
-
-    <div class="row">
-      <div class="col-sm-6">
-        <hr>
-
-        <h4>Kids</h4>
-        <p>We have excellent programs for kids (infants - 6th grade) during all adult services.</p>
-        <p><a href="/kids" class="btn btn-sm btn-default">Learn More</a></p>
-      </div>
-      <div class="col-sm-6">
-        <hr>
-
-        <h4>Students</h4>
-        <p>Jr High and High School students meet for separate weekend experiences.</p>
-        <p><a href="/students" class="btn btn-sm btn-default">Learn More</a></p>
-      </div>
+    <div class="col-xs-6">
+      <a href="external:tel:{{ phoneString }}" class="btn btn-default btn-sm btn-block"><i class="fa fa-phone"></i> Call</a>
     </div>
+  </div>
+
+  <div id="single-campus-map" class="responsive-map" data-campus-id="{{ campus.Id }}" data-map-type="mobile"></div>
+  <p class="small margin-t-lg margin-b-none text-muted">
+    <i class="fa fa-map-marker"></i>
+    <a class="text-muted" href="external:http://maps.apple.com/maps?daddr={{ urlString }}">
+      {{ campus.Location.Street1 }} {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}
+    </a>
+  </p>
 
 
+  <div class="row">
+    <div class="col-sm-6">
+      <hr>
+
+      <h4>Kids</h4>
+      <p>We have excellent programs for kids (infants - 6th grade) during all adult services.</p>
+      <p><a href="external:http://rock.ccv.church/kids" class="btn btn-sm btn-default">Learn More</a></p>
+    </div>
+    <div class="col-sm-6">
+      <hr>
+
+      <h4>Students</h4>
+      <p>Jr High and High School students meet for separate weekend experiences.</p>
+      <p>
+        <strong>7th-8th Grade</strong> {{ campus | Attribute: 'JrHighTime' }}<br>
+        <strong>9th-12th Grade</strong> {{ campus | Attribute: 'HighSchoolTime' }}
+      </p>
+      <p><a href="external:http://rock.ccv.church/students" class="btn btn-sm btn-default">Learn More</a></p>
+    </div>
   </div>
 
   {% comment %}<hr>

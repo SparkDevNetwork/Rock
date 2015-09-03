@@ -28,7 +28,7 @@
 
 </head>
 
-<body class="rock-blank">
+<body>
     <form id="form1" runat="server">
         <asp:ScriptManager ID="sManager" runat="server" />
 
@@ -48,12 +48,12 @@
             </ProgressTemplate>
         </asp:UpdateProgress>
 
-        <main>
+        <div class="container">
 
             <!-- Start Content Area -->
             <Rock:Zone Name="Main" runat="server" />
 
-        </main>
+        </div>
     </form>
 </body>
 </html>
