@@ -741,6 +741,7 @@ namespace Rock.Web.UI.Controls
 
                         writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-4" );
                         writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                        _cbReminderSent.Visible = _cbReminderSent.Checked;
                         _cbReminderSent.RenderControl( writer );
                         writer.RenderEndTag();  // col-xs-6
 
