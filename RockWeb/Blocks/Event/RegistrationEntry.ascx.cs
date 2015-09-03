@@ -323,6 +323,7 @@ namespace RockWeb.Blocks.Event
 
             // Reset warning/error messages
             nbMain.Visible = false;
+            nbPaymentValidation.Visible = false;
 
             // register navigation event to enable support for the back button
             var sm = ScriptManager.GetCurrent( Page );
@@ -642,15 +643,26 @@ namespace RockWeb.Blocks.Event
         {
             if ( CurrentPanel == 2 )
             {
-                _saveNavigationHistory = true;
-
-                var registrationId = SaveChanges();
-                if ( registrationId.HasValue )
+                List<string> paymentErrors = ValidatePayment();
+                if ( !paymentErrors.Any() )
                 {
-                    ShowSuccess( registrationId.Value );
+                    _saveNavigationHistory = true;
+
+                    var registrationId = SaveChanges();
+                    if ( registrationId.HasValue )
+                    {
+                        ShowSuccess( registrationId.Value );
+                    }
+                    else
+                    {
+                        ShowSummary();
+                    }
                 }
                 else
                 {
+                    nbPaymentValidation.Text = string.Format( "Please Correct the Following<ul><li>{0}</li></ul>", paymentErrors.AsDelimited( "</li><li>" ) );
+                    nbPaymentValidation.Visible = true;
+                    
                     ShowSummary();
                 }
             }
@@ -870,6 +882,57 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #region Save Methods
+
+        private List<string> ValidatePayment()
+        {
+            var validationErrors = new List<string>();
+
+            if ( RegistrationTemplate.MinimumInitialPayment.HasValue )
+            {
+                var minPayment = RegistrationTemplate.MinimumInitialPayment.Value - RegistrationState.PreviousPaymentTotal;
+                if ( RegistrationState.PaymentAmount < minPayment )
+                {
+                    validationErrors.Add( string.Format( "Amount To Pay Today must be at least {0:C2}", minPayment ) );
+                }
+
+                if ( RegistrationState.PaymentAmount > 0.0M )
+                {
+                    if ( txtCardFirstName.Visible && string.IsNullOrWhiteSpace( txtCardFirstName.Text ) )
+                    {
+                        validationErrors.Add( "First Name on Card is required" );
+                    }
+                    if ( txtCardLastName.Visible && string.IsNullOrWhiteSpace( txtCardLastName.Text ) )
+                    {
+                        validationErrors.Add( "Last Name on Card is required" );
+                    }
+                    if ( txtCardName.Visible && string.IsNullOrWhiteSpace( txtCardName.Text ) )
+                    {
+                        validationErrors.Add( "Name on Card is required" );
+                    }
+                    if ( string.IsNullOrWhiteSpace( txtCreditCard.Text ) )
+                    {
+                        validationErrors.Add( "Credit Card # is required" );
+                    }
+                    if ( !mypExpiration.SelectedDate.HasValue )
+                    {
+                        validationErrors.Add( "Credit Card Expiration Date is required" );
+                    }
+                    if ( string.IsNullOrWhiteSpace( txtCVV.Text ) )
+                    {
+                        validationErrors.Add( "Credit Card Security Code is required" );
+                    }
+                    if ( string.IsNullOrWhiteSpace( acBillingAddress.Street1 ) ||
+                        string.IsNullOrWhiteSpace( acBillingAddress.City ) ||
+                        string.IsNullOrWhiteSpace( acBillingAddress.State ) ||
+                        string.IsNullOrWhiteSpace( acBillingAddress.PostalCode ) )
+                    {
+                        validationErrors.Add( "Billing Address is required" );
+                    }
+                }
+            }
+
+            return validationErrors;
+        }
 
         /// <summary>
         /// Saves the changes.
