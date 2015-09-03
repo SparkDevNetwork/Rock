@@ -670,5 +670,25 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201509022116398_EntitySetPurpose_ufnCrm_GetFamilyTitle", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- JE: Update following suggestion email to fix hard coded page id
+        ///-- delete the page route if it exists
+        ///DELETE FROM [PageRoute] WHERE [Guid] = &apos;3F3B0DE8-FDAB-499B-4706-68C36DD4DF84&apos;
+        ///
+        ///-- add route
+        ///DECLARE @SuggestionPageId int = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = &apos;50BAAD66-46AB-4968-AFD6-254C536ACEC8&apos;)
+        ///INSERT INTO [PageRoute]
+        ///	([IsSystem], [PageId], [Route], [Guid])
+        ///VALUES
+        ///	(1, @SuggestionPageId, &apos;FollowingSuggestionList&apos;, &apos;3F3B0DE8-FDAB-499B-4706-68C36DD4DF84&apos;)
+        ///
+        ///-- update the suggesti [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201509032145388_PersonMergeRequests {
+            get {
+                return ResourceManager.GetString("_201509032145388_PersonMergeRequests", resourceCulture);
+            }
+        }
     }
 }
