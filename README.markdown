@@ -20,6 +20,6 @@ Jump over to our [Rock website](http://www.rockrms.com/) to find out more. Keep 
 ## License
 Rock released under the [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0.html).
 
-## Built By
+## Crafted By
 
-A distributed team of developers called the [Spark Development Network](http://www.sparkdevelopmentnetwork.com/).
+A community of developers lead by the [Spark Development Network](http://www.sparkdevelopmentnetwork.com/).
