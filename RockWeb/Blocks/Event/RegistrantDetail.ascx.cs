@@ -150,22 +150,47 @@ namespace RockWeb.Blocks.Event
             if ( RegistrantState != null )
             {
                 RockContext rockContext = new RockContext();
+                var personService = new PersonService( rockContext );
                 var registrantService = new RegistrationRegistrantService( rockContext );
                 var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
+                var registrationTemplateFeeService = new RegistrationTemplateFeeService( rockContext );
                 RegistrationRegistrant registrant = null;
                 if ( RegistrantState.Id > 0 )
                 {
                     registrant = registrantService.Get( RegistrantState.Id );
                 }
 
+                var registrantChanges = new List<string>();
+
                 if ( registrant == null )
                 {
                     registrant = new RegistrationRegistrant();
                     registrant.RegistrationId = RegistrantState.RegistrationId;
                     registrantService.Add( registrant );
+                    registrantChanges.Add( "Created Registrant" );
                 }
 
+                if ( !registrant.PersonAliasId.Equals( ppPerson.PersonAliasId ) )
+                {
+                    string prevPerson = ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null ) ?
+                        registrant.PersonAlias.Person.FullName : string.Empty;
+                    string newPerson = ppPerson.PersonName;
+                    History.EvaluateChange( registrantChanges, "Person", prevPerson, newPerson );
+                }
                 registrant.PersonAliasId = ppPerson.PersonAliasId.Value;
+
+                // Get the name of registrant for history
+                string registrantName = "Unknown";
+                if ( ppPerson.PersonId.HasValue )
+                {
+                    var person = personService.Get(ppPerson.PersonId.Value);
+                    if ( person != null )
+                    {
+                        registrantName = person.FullName;
+                    }
+                }
+
+                History.EvaluateChange( registrantChanges, "Cost", registrant.Cost, cbCost.Text.AsDecimal() );
                 registrant.Cost = cbCost.Text.AsDecimal();
 
                 if ( !Page.IsValid )
@@ -174,7 +199,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // Remove/delete any registrant fees that are no longer in UI with quantity 
-                foreach( var dbFee in registrant.Fees.ToList() )
+                foreach ( var dbFee in registrant.Fees.ToList() )
                 {
                     if ( !RegistrantState.FeeValues.Keys.Contains( dbFee.RegistrationTemplateFeeId ) ||
                         RegistrantState.FeeValues[dbFee.RegistrationTemplateFeeId] != null ||
@@ -183,18 +208,21 @@ namespace RockWeb.Blocks.Event
                                 f.Option == dbFee.Option &&
                                 f.Quantity > 0 ) )
                     {
+                        registrantChanges.Add( string.Format( "Removed '{0}' Fee (Quantity:{1:N0}, Cost:{2:C2}, Option:{3}",
+                            dbFee.RegistrationTemplateFee.Name, dbFee.Quantity, dbFee.Cost, dbFee.Option ) );
+
                         registrant.Fees.Remove( dbFee );
                         registrantFeeService.Delete( dbFee );
                     }
                 }
 
                 // Add/Update any of the fees from UI
-                foreach( var uiFee in RegistrantState.FeeValues.Where( f => f.Value != null ) )
+                foreach ( var uiFee in RegistrantState.FeeValues.Where( f => f.Value != null ) )
                 {
-                    foreach( var uiFeeOption in uiFee.Value )
+                    foreach ( var uiFeeOption in uiFee.Value )
                     {
                         var dbFee = registrant.Fees
-                            .Where( f => 
+                            .Where( f =>
                                 f.RegistrationTemplateFeeId == uiFee.Key &&
                                 f.Option == uiFeeOption.Option )
                             .FirstOrDefault();
@@ -206,7 +234,28 @@ namespace RockWeb.Blocks.Event
                             dbFee.Option = uiFeeOption.Option;
                             registrant.Fees.Add( dbFee );
                         }
+
+                        var templateFee = dbFee.RegistrationTemplateFee;
+                        if ( templateFee == null )
+                        {
+                            templateFee = registrationTemplateFeeService.Get( uiFee.Key );
+                        }
+
+                        string feeName = templateFee != null ? templateFee.Name : "Fee";
+                        if ( !string.IsNullOrWhiteSpace( uiFeeOption.Option ) )
+                        {
+                            feeName = string.Format( "{0} ({1})", feeName, uiFeeOption.Option );
+                        }
+
+                        if ( dbFee.Id <= 0 )
+                        {
+                            registrantChanges.Add( feeName +  " Fee Added" );
+                        }
+
+                        History.EvaluateChange( registrantChanges, feeName + " Quantity", dbFee.Quantity, uiFeeOption.Quantity );
                         dbFee.Quantity = uiFeeOption.Quantity;
+
+                        History.EvaluateChange( registrantChanges, feeName + " Cost", dbFee.Cost, uiFeeOption.Cost );
                         dbFee.Cost = uiFeeOption.Cost;
                     }
                 }
@@ -229,23 +278,51 @@ namespace RockWeb.Blocks.Event
                                 t.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
                                 t.AttributeId.HasValue ) ) )
                     {
-                        // Find the registrant's value
-                        var fieldValue = RegistrantState.FieldValues
-                            .Where( f => f.Key == field.Id )
-                            .Select( f => f.Value )
-                            .FirstOrDefault();
-
-                        if ( fieldValue != null )
+                        var attribute = AttributeCache.Read( field.AttributeId.Value );
+                        if ( attribute != null )
                         {
-                            var attribute = AttributeCache.Read( field.AttributeId.Value );
-                            if ( attribute != null )
+                            string originalValue = registrant.GetAttributeValue( attribute.Key );
+                            var fieldValue = RegistrantState.FieldValues
+                                .Where( f => f.Key == field.Id )
+                                .Select( f => f.Value )
+                                .FirstOrDefault();
+                            string newValue = fieldValue != null ? fieldValue.ToString() : string.Empty;
+
+                            if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                            {
+                                string formattedOriginalValue = string.Empty;
+                                if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                {
+                                    formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
+                                }
+
+                                string formattedNewValue = string.Empty;
+                                if ( !string.IsNullOrWhiteSpace( newValue ) )
+                                {
+                                    formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                }
+
+                                History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
+                            }
+
+                            if ( fieldValue != null )
                             {
                                 registrant.SetAttributeValue( attribute.Key, fieldValue.ToString() );
                             }
                         }
-
-                        registrant.SaveAttributeValues( rockContext );
                     }
+
+                    registrant.SaveAttributeValues( rockContext );
+
+                    HistoryService.SaveChanges(
+                        rockContext,
+                        typeof( Registration ),
+                        Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                        registrant.RegistrationId,
+                        registrantChanges,
+                        "Registrant: " + registrantName,
+                        null, null );
+
                 } );
 
                 NavigateToRegistration();

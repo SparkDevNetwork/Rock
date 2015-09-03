@@ -47,9 +47,10 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Transaction Page", "The page for viewing transaction details", true, "", "", 1 )]
     [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 2 )]
     [LinkedPage( "Group Member Page", "The page for viewing details about a group member", true, "", "", 3 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION, "", 4 )]
-    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 5 )]
-    [LinkedPage( "Transaction Detail Page", "The page for viewing details about a payment", true, "", "", 6 )]
+    [LinkedPage( "Transaction Detail Page", "The page for viewing details about a payment", true, "", "", 4 )]
+    [LinkedPage( "Audit Page", "Page used to display the history of changes to a registration.", true, "", "", 5 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION, "", 6 )]
+    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 7 )]
     public partial class RegistrationDetail : RockBlock, IDetailBlock
     {
 
@@ -224,15 +225,40 @@ namespace RockWeb.Blocks.Event
                         return;
                     }
 
-                    registrationService.Delete( registration );
+                    var changes = new List<string>();
+                    changes.Add( "Deleted registration" );
 
-                    rockContext.SaveChanges();
+                    rockContext.WrapTransaction( () =>
+                    {
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( Registration ),
+                            Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                            registration.Id,
+                            changes );
+
+                        registrationService.Delete( registration );
+
+                        rockContext.SaveChanges();
+                    } );
                 }
 
                 var pageParams = new Dictionary<string, string>();
                 pageParams.Add( "RegistrationInstanceId", RegistrationInstanceId.ToString() );
                 NavigateToParentPage( pageParams );
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbHistory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbHistory_Click( object sender, EventArgs e )
+        {
+            var qryParam = new Dictionary<string, string>();
+            qryParam.Add( "RegistrationId", Registration.Id.ToString() );
+            NavigateToLinkedPage( "AuditPage", qryParam );
         }
 
         /// <summary>
@@ -250,6 +276,7 @@ namespace RockWeb.Blocks.Event
                 var registrationService = new RegistrationService( rockContext );
 
                 bool newRegistration = false;
+                var changes = new List<string>();
 
                 if ( RegistrationId.Value != 0 )
                 {
@@ -261,16 +288,36 @@ namespace RockWeb.Blocks.Event
                     registration = new Registration { RegistrationInstanceId = RegistrationInstanceId ?? 0 };
                     registrationService.Add( registration );
                     newRegistration = true;
+                    changes.Add( "Created Registration" );
                 }
 
                 if ( registration != null && RegistrationInstanceId > 0 )
                 {
+                    if ( !registration.PersonAliasId.Equals( ppPerson.PersonAliasId ) )
+                    {
+                        string prevPerson = ( registration.PersonAlias != null && registration.PersonAlias.Person != null ) ?
+                            registration.PersonAlias.Person.FullName : string.Empty;
+                        string newPerson = ppPerson.PersonName;
+                        History.EvaluateChange( changes, "Registrar", prevPerson, newPerson );
+                    }
                     registration.PersonAliasId = ppPerson.PersonAliasId;
+
+                    History.EvaluateChange( changes, "First Name", registration.FirstName, tbFirstName.Text );
                     registration.FirstName = tbFirstName.Text;
+
+                    History.EvaluateChange( changes, "Last Name", registration.FirstName, tbLastName.Text );
                     registration.LastName = tbLastName.Text;
+
+                    History.EvaluateChange( changes, "Confirmation Email", registration.ConfirmationEmail, ebConfirmationEmail.Text );
                     registration.ConfirmationEmail = ebConfirmationEmail.Text;
+
+                    History.EvaluateChange( changes, "Discount Code", registration.DiscountCode, ddlDiscountCode.SelectedValue );
                     registration.DiscountCode = ddlDiscountCode.SelectedValue;
+
+                    History.EvaluateChange( changes, "Discount Percentage", registration.DiscountPercentage, nbDiscountPercentage.Text.AsDecimal() * 0.01m );
                     registration.DiscountPercentage = nbDiscountPercentage.Text.AsDecimal() * 0.01m;
+
+                    History.EvaluateChange( changes, "Discount Amount", registration.DiscountAmount, cbDiscountAmount.Text.AsDecimal() );
                     registration.DiscountAmount = cbDiscountAmount.Text.AsDecimal();
 
                     if ( !Page.IsValid )
@@ -288,6 +335,13 @@ namespace RockWeb.Blocks.Event
                     rockContext.WrapTransaction( () =>
                     {
                         rockContext.SaveChanges();
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( Registration ),
+                            Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                            registration.Id,
+                            changes
+                        );
                     } );
 
                     if ( newRegistration )
@@ -630,9 +684,22 @@ namespace RockWeb.Blocks.Event
                             return;
                         }
 
-                        registrantService.Delete( registrant );
+                        var changes = new List<string>();
+                        changes.Add( string.Format( "Deleted Registrant: {0}", registrant.PersonAlias.Person.FullName ) );
 
-                        rockContext.SaveChanges();
+                        rockContext.WrapTransaction( () =>
+                        {
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( Registration ),
+                                Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                                registrant.RegistrationId,
+                                changes );
+
+                            registrantService.Delete( registrant );
+
+                            rockContext.SaveChanges();
+                        });
                     }
 
                     // Reload registration
