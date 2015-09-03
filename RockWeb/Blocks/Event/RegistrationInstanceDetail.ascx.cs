@@ -637,8 +637,21 @@ namespace RockWeb.Blocks.Event
                         return;
                     }
 
-                    registrationService.Delete( registration );
-                    rockContext.SaveChanges();
+                    var changes = new List<string>();
+                    changes.Add( "Deleted registration" );
+
+                    rockContext.WrapTransaction( () =>
+                    {
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( Registration ),
+                            Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                            registration.Id,
+                            changes );
+
+                        registrationService.Delete( registration );
+                        rockContext.SaveChanges();
+                    } );
 
                     SetHasPayments( registrationInstanceId, rockContext );
                 }
