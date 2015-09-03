@@ -12,13 +12,14 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
-                    <Rock:Grid ID="rGridEvent" runat="server"  RowItemText="Event" OnRowSelected="rGridEvent_Edit" TooltipField="Description" AllowSorting="true">
+                    <Rock:Grid ID="rGridEvent" runat="server"  RowItemText="Event" OnRowSelected="rGridEvent_Edit" TooltipField="Description" >
                         <Columns>
-                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:TemplateField HeaderText="Type" SortExpression="EntityType.Name">
+                            <Rock:ReorderField />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                            <asp:TemplateField HeaderText="Type" >
                                 <ItemTemplate><%# GetComponentName( Eval( "EntityType") )%></ItemTemplate>
                             </asp:TemplateField>
-                            <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
+                            <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                             <Rock:DeleteField OnClick="rGridEvent_Delete" />
                         </Columns>
                     </Rock:Grid>

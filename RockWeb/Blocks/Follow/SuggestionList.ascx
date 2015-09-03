@@ -12,13 +12,14 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
-                    <Rock:Grid ID="rGridSuggestion" runat="server"  RowItemText="Suggestion" OnRowSelected="rGridSuggestion_Edit" TooltipField="Description" AllowSorting="true">
+                    <Rock:Grid ID="rGridSuggestion" runat="server"  RowItemText="Suggestion" OnRowSelected="rGridSuggestion_Edit" TooltipField="Description" AllowSorting="false">
                         <Columns>
-                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:TemplateField HeaderText="Suggestion Type" SortExpression="EntityType.Name">
+                            <Rock:ReorderField />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                            <asp:TemplateField HeaderText="Suggestion Type">
                                 <ItemTemplate><%# GetComponentName( Eval( "EntityType") )%></ItemTemplate>
                             </asp:TemplateField>
-                            <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
+                            <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                             <Rock:DeleteField OnClick="rGridSuggestion_Delete" />
                         </Columns>
                     </Rock:Grid>
