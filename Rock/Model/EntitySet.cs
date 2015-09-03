@@ -22,6 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -173,7 +174,30 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            if ( !string.IsNullOrWhiteSpace( this.Name ) )
+            {
+                return this.Name;
+            }
+
+            if ( this.EntitySetPurposeValueId != null )
+            {
+                var purpose = DefinedValueCache.Read( this.EntitySetPurposeValueId.Value );
+                if ( purpose != null )
+                {
+                    return purpose.Value;
+                }
+            }
+
+            if ( this.EntityTypeId.HasValue )
+            {
+                var entityType = EntityTypeCache.Read( this.EntityTypeId.Value );
+                if ( entityType != null )
+                {
+                    return string.Format( "{0} Entity Set", entityType.Name );
+                }
+            }
+
+            return base.ToString();
         }
 
         #endregion
@@ -191,7 +215,7 @@ namespace Rock.Model
         /// </summary>
         public EntitySetConfiguration()
         {
-            this.HasOptional( s => s.ParentEntitySet ).WithMany( s => s.ChildEntitySets ).HasForeignKey( s => s.ParentEntitySetId).WillCascadeOnDelete( false );
+            this.HasOptional( s => s.ParentEntitySet ).WithMany( s => s.ChildEntitySets ).HasForeignKey( s => s.ParentEntitySetId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.EntitySetPurposeValue ).WithMany().HasForeignKey( p => p.EntitySetPurposeValueId ).WillCascadeOnDelete( false );
         }

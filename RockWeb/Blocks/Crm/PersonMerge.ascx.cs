@@ -121,40 +121,81 @@ namespace RockWeb.Blocks.Crm
 
             if ( canEdit )
             {
-                if ( !Page.IsPostBack )
+                LoadEditDetails();
+            }
+            else
+            {
+                LoadViewDetails();
+            }
+        }
+
+        /// <summary>
+        /// Loads the view details.
+        /// </summary>
+        private void LoadViewDetails()
+        {
+            if ( !Page.IsPostBack )
+            {
+                int? setId = PageParameter( "Set" ).AsIntegerOrNull();
+                if ( setId.HasValue )
                 {
-                    int? setId = PageParameter( "Set" ).AsIntegerOrNull();
-                    if ( setId.HasValue )
+                    // if the user only has View auth to the page, mark the EntitySet as a Person Merge Request and let them edit the EntitySet note
+                    var rockContext = new RockContext();
+                    var entitySetService = new EntitySetService( rockContext );
+                    var entitySet = entitySetService.Get( setId.Value );
+                    if ( entitySet != null )
                     {
-                        var selectedPersonIds = new EntitySetItemService( new RockContext() )
-                            .GetByEntitySetId( setId.Value )
-                            .Select( i => i.EntityId )
-                            .Distinct()
-                            .ToList();
-
-                        // Get the people selected
-                        var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users", true )
-                            .Where( p => selectedPersonIds.Contains( p.Id ) )
-                            .ToList();
-
-                        // Create the data structure used to build grid
-                        MergeData = new MergeData( people, headingKeys );
-                        BuildColumns();
-                        BindGrid();
+                        tbEntitySetNote.Text = entitySet.Note;
+                        var definedValuePurpose = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid() );
+                        if ( definedValuePurpose != null )
+                        {
+                            entitySet.EntitySetPurposeValueId = definedValuePurpose.Id;
+                            entitySet.ExpireDateTime = null;
+                            rockContext.SaveChanges();
+                        }
                     }
                 }
-                else
-                {
-                    var primaryColIndex = hfSelectedColumn.Value.AsIntegerOrNull();
+            }
+        }
 
-                    // Save the primary header radio button's selection
-                    foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
+        /// <summary>
+        /// Loads the edit details.
+        /// </summary>
+        private void LoadEditDetails()
+        {
+            if ( !Page.IsPostBack )
+            {
+                int? setId = PageParameter( "Set" ).AsIntegerOrNull();
+                if ( setId.HasValue )
+                {
+                    var selectedPersonIds = new EntitySetItemService( new RockContext() )
+                        .GetByEntitySetId( setId.Value )
+                        .Select( i => i.EntityId )
+                        .Distinct()
+                        .ToList();
+
+                    // Get the people selected
+                    var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users", true )
+                        .Where( p => selectedPersonIds.Contains( p.Id ) )
+                        .ToList();
+
+                    // Create the data structure used to build grid
+                    MergeData = new MergeData( people, headingKeys );
+                    BuildColumns();
+                    BindGrid();
+                }
+            }
+            else
+            {
+                var primaryColIndex = hfSelectedColumn.Value.AsIntegerOrNull();
+
+                // Save the primary header radio button's selection
+                foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
+                {
+                    col.OnDelete += personCol_OnDelete;
+                    if ( primaryColIndex.HasValue && primaryColIndex.Value == col.ColumnIndex )
                     {
-                        col.OnDelete += personCol_OnDelete;
-                        if ( primaryColIndex.HasValue && primaryColIndex.Value == col.ColumnIndex )
-                        {
-                            MergeData.PrimaryPersonId = col.PersonId;
-                        }
+                        MergeData.PrimaryPersonId = col.PersonId;
                     }
                 }
             }
@@ -509,7 +550,7 @@ namespace RockWeb.Blocks.Crm
             {
                 var rockContext = new RockContext();
                 var entitySet = new EntitySetService( rockContext ).Get( setId.Value );
-                // TODO: entitySet.Note = tbEntitySetNote.Text;
+                entitySet.Note = tbEntitySetNote.Text;
                 rockContext.SaveChanges();
 
                 nbNoteSavedSuccess.Visible = true;
