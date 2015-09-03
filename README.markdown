@@ -1,7 +1,5 @@
 ![Rock RMS](https://raw.githubusercontent.com/SparkDevNetwork/Rock/develop/Images/github-banner.png)
 
-[Rock RMS](http://rockrms.com/) 
-===============================================================================
 Rock RMS is an open source Relationship Management System (RMS) and Application 
 Framework. While Rock specializes in serving the unique needs of churches it's
 useful in a wide range of service industries.  Rock is an ASP.NET 4.5 C# web application
