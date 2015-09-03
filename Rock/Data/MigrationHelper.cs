@@ -396,7 +396,7 @@ namespace Rock.Data
         #region Layout Methods
 
         /// <summary>
-        /// Adds a new Layout to the given site.
+        /// Adds a new Layout to the given site if it doesn't already exist (by Guid), otherwise it updates it
         /// </summary>
         /// <param name="siteGuid">The site GUID.</param>
         /// <param name="fileName">Name of the file.</param>
@@ -410,16 +410,32 @@ namespace Rock.Data
                 DECLARE @SiteId int
                 SET @SiteId = (SELECT [Id] FROM [Site] WHERE [Guid] = '{0}')
 
-                INSERT INTO [Layout] (
-                    [IsSystem],[SiteId],[FileName],[Name],[Description],[Guid])
-                VALUES(
-                    1,@SiteId,'{1}','{2}','{3}','{4}')
+                DECLARE @LayoutId int = (SELECT TOP 1 [Id] FROM [Layout] WHERE [Guid] = '{4}' )
+                IF @LayoutId IS NULL BEGIN
+
+                    INSERT INTO [Layout] (
+                        [IsSystem],[SiteId],[FileName],[Name],[Description],[Guid])
+                    VALUES(
+                        1,@SiteId,'{1}','{2}','{3}','{4}')
+
+                END
+                ELSE 
+                BEGIN
+                    
+                    UPDATE [Layout] 
+                    SET [Guid]= '{4}', 
+                        [Name] = '{2}', 
+                        [Description] = '{3}',
+                        [IsSystem] = 1
+                    WHERE [Guid] =  '{4}'
+
+                END
 ",
-                    siteGuid,
-                    fileName,
-                    name,
-                    description.Replace( "'", "''" ),
-                    guid
+                    siteGuid, // {0}
+                    fileName, // {1}
+                    name, // {2}
+                    description.Replace( "'", "''" ), // {3}
+                    guid // {4}
                     ) );
         }
 
