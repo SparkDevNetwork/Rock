@@ -942,6 +942,9 @@ namespace RockWeb.Blocks.Reporting
             lReadOnlyTitle.Text = report.Name.FormatAsHtmlTitle();
             lReportDescription.Text = report.Description;
 
+            lAppliesTo.Text = (report.EntityType != null) ? report.EntityType.FriendlyName : "(None)";
+            lDataView.Text = (report.DataView != null) ? report.DataView.Name : "(None)";
+
             BindGrid( report );
         }
 
