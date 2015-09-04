@@ -5184,6 +5184,9 @@ a.help {
 .well > h4 {
   margin-top: 0;
 }
+th[align=center] {
+  text-align: center;
+}
 .form-right {
   text-align: right;
   margin-bottom: 12px;
