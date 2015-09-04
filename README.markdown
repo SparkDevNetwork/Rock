@@ -22,4 +22,4 @@ Rock released under the [Apache 2.0 license](http://www.apache.org/licenses/LICE
 
 ## Crafted By
 
-A community of developers led by the [Spark Development Network](http://www.sparkdevelopmentnetwork.com/).
+A community of developers led by the [Spark Development Network](http://www.sparkdevnetwork.com/).
