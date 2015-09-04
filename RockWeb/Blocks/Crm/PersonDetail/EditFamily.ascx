@@ -143,7 +143,7 @@
 
                 <asp:HiddenField ID="hfActiveTab" runat="server" />
 
-                <ul class="nav nav-pills">
+                <ul class="nav nav-pills margin-b-md">
                     <li id="liNewPerson" runat="server" class="active"><a href='#<%=divNewPerson.ClientID%>' data-toggle="pill">Add New Person</a></li>
                     <li id="liExistingPerson" runat="server"><a href='#<%=divExistingPerson.ClientID%>' data-toggle="pill">Add Existing Person</a></li>
                 </ul>
