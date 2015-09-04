@@ -122,6 +122,9 @@ namespace RockWeb.Blocks.Finance
 
                 foreach ( FinancialScheduledTransaction schedule in schedules )
                 {
+                    string errorMsgs = string.Empty;
+                    transactionService.GetStatus( schedule, out errorMsgs );
+
                     decimal totalAmount = 0;
                     
                     Dictionary<string, object> scheduleSummary = new Dictionary<string, object>();
@@ -179,6 +182,7 @@ namespace RockWeb.Blocks.Finance
                     scheduleSummaries.Add( scheduleSummary );
                 }
 
+                rockContext.SaveChanges();
             }
 
             // added linked pages to mergefields
