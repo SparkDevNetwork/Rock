@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -40,7 +39,8 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Displays the details of the given report." )]
 
-    [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180 )]
+    [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, "", 0 )]
+    [LinkedPage("Data View Page", "The page to edit data views", true, "", "", 1)]
     public partial class ReportDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -306,6 +306,18 @@ namespace RockWeb.Blocks.Reporting
         protected void btnToggleResults_Click( object sender, EventArgs e )
         {
             this.ShowResults = !this.ShowResults;
+        }
+
+        protected void lbDataView_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var reportService = new ReportService( rockContext );
+            var report = reportService.Get( hfReportId.Value.AsInteger() );
+
+            if ( report != null && report.DataViewId.HasValue )
+            {
+                NavigateToLinkedPage( "DataViewPage", "DataViewId", report.DataViewId.Value );
+            }
         }
 
         #region Edit Events
@@ -941,6 +953,16 @@ namespace RockWeb.Blocks.Reporting
             hfReportId.SetValue( report.Id );
             lReadOnlyTitle.Text = report.Name.FormatAsHtmlTitle();
             lReportDescription.Text = report.Description;
+
+            if ( report.DataView != null )
+            {
+                lbDataView.Visible = UserCanEdit;
+                lbDataView.ToolTip = report.DataView.Name;
+            }
+            else
+            {
+                lbDataView.Visible = false;
+            }
 
             BindGrid( report );
         }
