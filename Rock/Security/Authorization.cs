@@ -258,10 +258,10 @@ namespace Rock.Security
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, Rock.Model.Person person )
         {
-            return ItemAuthorized( entity, action, person, null ) ?? entity.IsAllowedByDefault( action );
+            return ItemAuthorized( entity, action, person ) ?? entity.IsAllowedByDefault( action );
         }
 
-        private static bool? ItemAuthorized( ISecured entity, string action, Rock.Model.Person person, List<ISecured> parentHistory )
+        private static bool? ItemAuthorized( ISecured entity, string action, Rock.Model.Person person )
         {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
@@ -271,15 +271,26 @@ namespace Rock.Security
 
             var entityTypeId = entity.TypeId;
 
-            parentHistory = parentHistory ?? new List<ISecured>();
-            if ( parentHistory.Contains( entity ) )
+            // check for infinite recursion
+            var parentHistory = new List<ISecured>();
+            parentHistory.Add( entity );
+            foreach ( var parentAuth in new ISecured[] { entity.ParentAuthority, entity.ParentAuthorityPre } )
             {
-                // infinite recursion situation, so threat as if no rules were found and return NULL
-                return null;
-            }
-            else
-            {
-                parentHistory.Add( entity );
+                var parentAuthEntity = parentAuth;
+                while ( parentAuthEntity != null )
+                {
+                    if ( parentHistory.Contains( parentAuthEntity ) )
+                    {
+                        // infinite recursion situation, so threat as if no rules were found and return NULL
+                        return null;
+                    }
+                    else
+                    {
+                        parentHistory.Add( parentAuthEntity );
+                    }
+
+                    parentAuthEntity = parentAuthEntity.ParentAuthority;
+                }
             }
 
             // If there are entries in the Authorizations object for this entity type and entity instance, evaluate each 
@@ -340,12 +351,12 @@ namespace Rock.Security
 
             if ( entity.ParentAuthorityPre != null )
             {
-                parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, person, parentHistory );
+                parentAuthorized = entity.ParentAuthorityPre.IsAuthorized( action, person );
             }
 
             if ( !parentAuthorized.HasValue && entity.ParentAuthority != null )
             {
-                parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, person, parentHistory );
+                parentAuthorized = entity.ParentAuthority.IsAuthorized( action, person );
             }
 
             return parentAuthorized;
