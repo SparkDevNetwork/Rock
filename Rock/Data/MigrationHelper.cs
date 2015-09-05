@@ -2248,6 +2248,11 @@ INSERT INTO [dbo].[Auth]
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForEntityType( string entityTypeName, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
         {
+            if ( string.IsNullOrWhiteSpace( groupGuid ) )
+            {
+                groupGuid = Guid.Empty.ToString();
+            }
+
             EnsureEntityTypeExists( entityTypeName );
 
             string sql = @"
@@ -2329,6 +2334,11 @@ WHERE [EntityTypeId] = @EntityTypeId
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForPage( string pageGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
         {
+            if ( string.IsNullOrWhiteSpace( groupGuid ) )
+            {
+                groupGuid = Guid.Empty.ToString();
+            }
+            
             string entityTypeName = "Rock.Model.Page";
             EnsureEntityTypeExists( entityTypeName );
 
@@ -2408,6 +2418,11 @@ WHERE [EntityTypeId] = @EntityTypeId
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForBlock( string blockGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
         {
+            if ( string.IsNullOrWhiteSpace( groupGuid ) )
+            {
+                groupGuid = Guid.Empty.ToString();
+            }
+            
             string entityTypeName = "Rock.Model.Block";
             EnsureEntityTypeExists( entityTypeName );
 
@@ -2466,6 +2481,11 @@ END
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForBinaryFileType( string binaryFileTypeGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
         {
+            if ( string.IsNullOrWhiteSpace( groupGuid ) )
+            {
+                groupGuid = Guid.Empty.ToString();
+            }
+            
             string entityTypeName = "Rock.Model.BinaryFileType";
             EnsureEntityTypeExists( entityTypeName );
 
@@ -2544,6 +2564,11 @@ WHERE [EntityTypeId] = @EntityTypeId
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForGroupType( string groupTypeGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
         {
+            if ( string.IsNullOrWhiteSpace( groupGuid ) )
+            {
+                groupGuid = Guid.Empty.ToString();
+            }
+            
             string entityTypeName = "Rock.Model.GroupType";
             EnsureEntityTypeExists( entityTypeName );
 
@@ -2622,6 +2647,11 @@ WHERE [EntityTypeId] = @EntityTypeId
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForAttribute( string attributeGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
         {
+            if ( string.IsNullOrWhiteSpace( groupGuid ) )
+            {
+                groupGuid = Guid.Empty.ToString();
+            }
+            
             string entityTypeName = "Rock.Model.Attribute";
             EnsureEntityTypeExists( entityTypeName );
 
@@ -2700,6 +2730,11 @@ WHERE [EntityTypeId] = @EntityTypeId
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForCategory( string categoryGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
         {
+            if ( string.IsNullOrWhiteSpace( groupGuid ) )
+            {
+                groupGuid = Guid.Empty.ToString();
+            }
+            
             string entityTypeName = "Rock.Model.Category";
             EnsureEntityTypeExists( entityTypeName );
 
@@ -2767,6 +2802,11 @@ END
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForRestController( string restControllerClass, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
         {
+            if ( string.IsNullOrWhiteSpace( groupGuid ) )
+            {
+                groupGuid = Guid.Empty.ToString();
+            }
+            
             string entityTypeName = "Rock.Model.RestController";
             EnsureEntityTypeExists( entityTypeName );
 
@@ -2833,6 +2873,11 @@ END
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForRestAction( string restActionMethod, string restActionPath, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
         {
+            if ( string.IsNullOrWhiteSpace( groupGuid ) )
+            {
+                groupGuid = Guid.Empty.ToString();
+            }
+            
             string entityTypeName = "Rock.Model.RestAction";
             EnsureEntityTypeExists( entityTypeName );
 
