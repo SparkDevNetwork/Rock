@@ -16,11 +16,12 @@
 //
 using System;
 using System.ComponentModel;
-using System.Configuration;
-using System.Data.SqlClient;
+using System.Net;
 using System.Web.UI;
 using Rock;
 using Rock.Data;
+using Rock.Model;
+using Rock.Web;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Examples
@@ -102,6 +103,35 @@ Path: {2}",
         protected void btnStopLogSQL_Click( object sender, EventArgs e )
         {
             DebugHelper.SQLLoggingStop();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnLoadPages control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnLoadPages_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+
+            foreach ( var page in new PageService( rockContext ).Queryable() )
+            {
+                string url = string.Empty;
+                try
+                {
+                    System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                    url = new PageReference( page.Id ).BuildUrl();
+                    WebRequest request = WebRequest.Create( Global.BaseUrl + url );
+                    request.Timeout = 10000;
+                    WebResponse response = request.GetResponse();
+                    stopwatch.Stop();
+                    System.Diagnostics.Debug.WriteLine( string.Format( "[{2}ms] Loaded {0} {1} ", page.InternalName, url, stopwatch.Elapsed.TotalMilliseconds ) );
+                }
+                catch ( Exception ex )
+                {
+                    System.Diagnostics.Debug.WriteLine( string.Format( "Exception Loading {0} {1}, {2}", page.InternalName, url, ex ) );
+                }
+            }
         }
 
         #endregion
