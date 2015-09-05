@@ -89,6 +89,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.BinaryFileId = source.BinaryFileId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.Order = source.Order;
             target.TransactionId = source.TransactionId;
             target.CreatedDateTime = source.CreatedDateTime;

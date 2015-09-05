@@ -108,6 +108,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.Description = source.Description;
             target.DeviceTypeValueId = source.DeviceTypeValueId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IPAddress = source.IPAddress;
             target.LocationId = source.LocationId;
             target.Name = source.Name;

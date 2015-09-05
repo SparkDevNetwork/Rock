@@ -47,6 +47,12 @@ namespace Rock.Client
         public string Footer { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string Header { get; set; }
 
         /// <summary />
@@ -59,7 +65,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source WorkflowActionForm object
@@ -72,6 +78,8 @@ namespace Rock.Client
             this.Actions = source.Actions;
             this.AllowNotes = source.AllowNotes;
             this.Footer = source.Footer;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.Header = source.Header;
             this.IncludeActionsInNotification = source.IncludeActionsInNotification;
             this.NotificationSystemEmailId = source.NotificationSystemEmailId;

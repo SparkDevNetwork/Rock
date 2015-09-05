@@ -92,6 +92,8 @@ namespace Rock.Model
             target.AllowOrDeny = source.AllowOrDeny;
             target.EntityId = source.EntityId;
             target.EntityTypeId = source.EntityTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
             target.Order = source.Order;
             target.PersonAliasId = source.PersonAliasId;

@@ -91,6 +91,8 @@ namespace Rock.Model
             target.CampusId = source.CampusId;
             target.ConnectionOpportunityId = source.ConnectionOpportunityId;
             target.ConnectorGroupId = source.ConnectorGroupId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

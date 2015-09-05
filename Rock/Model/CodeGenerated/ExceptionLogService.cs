@@ -91,6 +91,8 @@ namespace Rock.Model
             target.Cookies = source.Cookies;
             target.Description = source.Description;
             target.ExceptionType = source.ExceptionType;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.Form = source.Form;
             target.HasInnerException = source.HasInnerException;
             target.PageId = source.PageId;

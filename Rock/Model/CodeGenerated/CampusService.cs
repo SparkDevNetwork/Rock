@@ -119,6 +119,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.Description = source.Description;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.IsSystem = source.IsSystem;
             target.LeaderPersonAliasId = source.LeaderPersonAliasId;

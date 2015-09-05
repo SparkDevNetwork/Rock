@@ -38,10 +38,16 @@ namespace Rock.Client
         public Byte[] Content { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source BinaryFileData object
@@ -51,6 +57,8 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.Content = source.Content;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 

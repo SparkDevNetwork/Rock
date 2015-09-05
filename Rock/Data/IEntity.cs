@@ -42,12 +42,28 @@ namespace Rock.Data
         Guid Guid { get; set; }
 
         /// <summary>
-        /// Gets or sets the foreign identifier.
+        /// Gets or sets the int foreign identifier.
         /// </summary>
         /// <value>
-        /// The foreign identifier.
+        /// The int foreign identifier.
         /// </value>
-        string ForeignId { get; set; }
+        int? ForeignId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Guid foreign identifier.
+        /// </summary>
+        /// <value>
+        /// The Guid foreign identifier.
+        /// </value>
+        Guid? ForeignGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the string foreign identifier.
+        /// </summary>
+        /// <value>
+        /// The string foreign identifier.
+        /// </value>
+        string ForeignKey { get; set; }
 
         /// <summary>
         /// Gets the Entity Type ID for this entity.

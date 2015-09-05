@@ -91,6 +91,8 @@ namespace Rock.Model
             target.ColumnHeaderText = source.ColumnHeaderText;
             target.ColumnOrder = source.ColumnOrder;
             target.DataSelectComponentEntityTypeId = source.DataSelectComponentEntityTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.ReportFieldType = source.ReportFieldType;
             target.ReportId = source.ReportId;
             target.Selection = source.Selection;

@@ -89,6 +89,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.EntityId = source.EntityId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.MetricId = source.MetricId;
             target.MetricValueDateTime = source.MetricValueDateTime;
             target.MetricValueType = source.MetricValueType;

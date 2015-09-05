@@ -50,6 +50,12 @@ namespace Rock.Client
         public int? ExitSystemEmailId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public int GroupTypeId { get; set; }
 
         /// <summary />
@@ -89,7 +95,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source Group object
@@ -103,6 +109,8 @@ namespace Rock.Client
             this.CampusId = source.CampusId;
             this.Description = source.Description;
             this.ExitSystemEmailId = source.ExitSystemEmailId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.GroupTypeId = source.GroupTypeId;
             this.IsActive = source.IsActive;
             this.IsPublic = source.IsPublic;

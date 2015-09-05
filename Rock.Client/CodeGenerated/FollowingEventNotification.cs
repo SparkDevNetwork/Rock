@@ -41,13 +41,19 @@ namespace Rock.Client
         public int FollowingEventTypeId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public DateTime LastNotified { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source FollowingEventNotification object
@@ -58,6 +64,8 @@ namespace Rock.Client
             this.Id = source.Id;
             this.EntityId = source.EntityId;
             this.FollowingEventTypeId = source.FollowingEventTypeId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.LastNotified = source.LastNotified;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;

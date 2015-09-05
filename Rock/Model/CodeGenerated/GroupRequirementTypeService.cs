@@ -93,6 +93,8 @@ namespace Rock.Model
             target.DataViewId = source.DataViewId;
             target.Description = source.Description;
             target.ExpireInDays = source.ExpireInDays;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.Name = source.Name;
             target.NegativeLabel = source.NegativeLabel;
             target.PositiveLabel = source.PositiveLabel;

@@ -44,6 +44,12 @@ namespace Rock.Client
         public string Country { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public DateTime? GeocodeAttemptedDateTime { get; set; }
 
         /// <summary />
@@ -110,7 +116,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source Location object
@@ -122,6 +128,8 @@ namespace Rock.Client
             this.AssessorParcelId = source.AssessorParcelId;
             this.City = source.City;
             this.Country = source.Country;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.GeocodeAttemptedDateTime = source.GeocodeAttemptedDateTime;
             this.GeocodeAttemptedResult = source.GeocodeAttemptedResult;
             this.GeocodeAttemptedServiceType = source.GeocodeAttemptedServiceType;

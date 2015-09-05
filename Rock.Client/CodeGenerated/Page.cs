@@ -53,6 +53,12 @@ namespace Rock.Client
         public bool EnableViewState { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string HeaderContent { get; set; }
 
         /// <summary />
@@ -113,7 +119,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source Page object
@@ -128,6 +134,8 @@ namespace Rock.Client
             this.Description = source.Description;
             this.DisplayInNavWhen = source.DisplayInNavWhen;
             this.EnableViewState = source.EnableViewState;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.HeaderContent = source.HeaderContent;
             this.IconCssClass = source.IconCssClass;
             this.IncludeAdminFooter = source.IncludeAdminFooter;

@@ -93,6 +93,8 @@ namespace Rock.Model
             target.ContactPersonAliasId = source.ContactPersonAliasId;
             target.ContactPhone = source.ContactPhone;
             target.EventItemId = source.EventItemId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.Location = source.Location;
             target.Note = source.Note;
             target.ScheduleId = source.ScheduleId;
