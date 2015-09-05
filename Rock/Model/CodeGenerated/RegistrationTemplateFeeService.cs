@@ -98,6 +98,8 @@ namespace Rock.Model
             target.CostValue = source.CostValue;
             target.DiscountApplies = source.DiscountApplies;
             target.FeeType = source.FeeType;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.Name = source.Name;
             target.Order = source.Order;
             target.RegistrationTemplateId = source.RegistrationTemplateId;

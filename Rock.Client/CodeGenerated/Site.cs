@@ -59,6 +59,12 @@ namespace Rock.Client
         public string ExternalUrl { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string GoogleAnalyticsCode { get; set; }
 
         /// <summary />
@@ -98,7 +104,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source Site object
@@ -115,6 +121,8 @@ namespace Rock.Client
             this.EnableMobileRedirect = source.EnableMobileRedirect;
             this.ErrorPage = source.ErrorPage;
             this.ExternalUrl = source.ExternalUrl;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
             this.IsSystem = source.IsSystem;
             this.LoginPageId = source.LoginPageId;

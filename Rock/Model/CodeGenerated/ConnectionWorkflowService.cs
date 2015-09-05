@@ -96,6 +96,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.ConnectionOpportunityId = source.ConnectionOpportunityId;
             target.ConnectionTypeId = source.ConnectionTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.QualifierValue = source.QualifierValue;
             target.TriggerType = source.TriggerType;
             target.WorkflowTypeId = source.WorkflowTypeId;

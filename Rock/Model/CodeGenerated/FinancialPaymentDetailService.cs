@@ -112,6 +112,8 @@ namespace Rock.Model
             target.CurrencyTypeValueId = source.CurrencyTypeValueId;
             target.ExpirationMonthEncrypted = source.ExpirationMonthEncrypted;
             target.ExpirationYearEncrypted = source.ExpirationYearEncrypted;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.NameOnCardEncrypted = source.NameOnCardEncrypted;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

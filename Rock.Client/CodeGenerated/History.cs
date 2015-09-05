@@ -47,6 +47,12 @@ namespace Rock.Client
         public int EntityTypeId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -62,7 +68,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source History object
@@ -75,6 +81,8 @@ namespace Rock.Client
             this.CategoryId = source.CategoryId;
             this.EntityId = source.EntityId;
             this.EntityTypeId = source.EntityTypeId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IsSystem = source.IsSystem;
             this.RelatedEntityId = source.RelatedEntityId;
             this.RelatedEntityTypeId = source.RelatedEntityTypeId;

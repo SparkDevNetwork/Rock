@@ -88,6 +88,8 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupMemberWorkflowTrigger target, GroupMemberWorkflowTrigger source )
         {
             target.Id = source.Id;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
             target.GroupTypeId = source.GroupTypeId;
             target.IsActive = source.IsActive;

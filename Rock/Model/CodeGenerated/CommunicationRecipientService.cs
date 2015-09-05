@@ -90,6 +90,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
             target.CommunicationId = source.CommunicationId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.OpenedClient = source.OpenedClient;
             target.OpenedDateTime = source.OpenedDateTime;
             target.PersonAliasId = source.PersonAliasId;

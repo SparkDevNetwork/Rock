@@ -38,13 +38,19 @@ namespace Rock.Client
         public string Code { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public DateTime IssueDateTime { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source AttendanceCode object
@@ -54,6 +60,8 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.Code = source.Code;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IssueDateTime = source.IssueDateTime;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;

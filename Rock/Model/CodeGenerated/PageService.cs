@@ -138,6 +138,8 @@ namespace Rock.Model
             target.Description = source.Description;
             target.DisplayInNavWhen = source.DisplayInNavWhen;
             target.EnableViewState = source.EnableViewState;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.HeaderContent = source.HeaderContent;
             target.IconCssClass = source.IconCssClass;
             target.IncludeAdminFooter = source.IncludeAdminFooter;

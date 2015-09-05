@@ -88,6 +88,8 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupLocation target, GroupLocation source )
         {
             target.Id = source.Id;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
             target.GroupLocationTypeValueId = source.GroupLocationTypeValueId;
             target.GroupMemberPersonAliasId = source.GroupMemberPersonAliasId;

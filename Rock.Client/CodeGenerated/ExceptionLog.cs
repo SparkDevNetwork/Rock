@@ -44,6 +44,12 @@ namespace Rock.Client
         public string ExceptionType { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string Form { get; set; }
 
         /// <summary />
@@ -80,7 +86,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source ExceptionLog object
@@ -92,6 +98,8 @@ namespace Rock.Client
             this.Cookies = source.Cookies;
             this.Description = source.Description;
             this.ExceptionType = source.ExceptionType;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.Form = source.Form;
             this.HasInnerException = source.HasInnerException;
             this.PageId = source.PageId;

@@ -92,6 +92,8 @@ namespace Rock.Model
             target.DataViewId = source.DataViewId;
             target.Description = source.Description;
             target.EntityTypeId = source.EntityTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
             target.IsCumulative = source.IsCumulative;
             target.IsSystem = source.IsSystem;

@@ -50,6 +50,12 @@ namespace Rock.Client
         public decimal ControlAmount { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string Name { get; set; }
 
         /// <summary />
@@ -62,7 +68,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source FinancialBatch object
@@ -76,6 +82,8 @@ namespace Rock.Client
             this.BatchStartDateTime = source.BatchStartDateTime;
             this.CampusId = source.CampusId;
             this.ControlAmount = source.ControlAmount;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.Name = source.Name;
             this.Note = source.Note;
             this.Status = source.Status;

@@ -41,6 +41,12 @@ namespace Rock.Client
         public DateTime EndDate { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public int? PersonAliasId { get; set; }
 
         /// <summary />
@@ -56,7 +62,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source FinancialPledge object
@@ -67,6 +73,8 @@ namespace Rock.Client
             this.Id = source.Id;
             this.AccountId = source.AccountId;
             this.EndDate = source.EndDate;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.PersonAliasId = source.PersonAliasId;
             this.PledgeFrequencyValueId = source.PledgeFrequencyValueId;
             this.StartDate = source.StartDate;

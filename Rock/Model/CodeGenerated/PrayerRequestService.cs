@@ -98,6 +98,8 @@ namespace Rock.Model
             target.ExpirationDate = source.ExpirationDate;
             target.FirstName = source.FirstName;
             target.FlagCount = source.FlagCount;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
             target.IsActive = source.IsActive;
             target.IsApproved = source.IsApproved;

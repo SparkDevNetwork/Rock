@@ -41,6 +41,12 @@ namespace Rock.Client
         public int DuplicatePersonAliasId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public bool IgnoreUntilScoreChanges { get; set; }
 
         /// <summary />
@@ -62,7 +68,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source PersonDuplicate object
@@ -73,6 +79,8 @@ namespace Rock.Client
             this.Id = source.Id;
             this.Capacity = source.Capacity;
             this.DuplicatePersonAliasId = source.DuplicatePersonAliasId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IgnoreUntilScoreChanges = source.IgnoreUntilScoreChanges;
             this.IsConfirmedAsNotDuplicate = source.IsConfirmedAsNotDuplicate;
             this.PersonAliasId = source.PersonAliasId;

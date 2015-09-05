@@ -99,6 +99,8 @@ namespace Rock.Model
             target.ContentControlType = source.ContentControlType;
             target.Description = source.Description;
             target.EnableRss = source.EnableRss;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
             target.ItemUrl = source.ItemUrl;
             target.Name = source.Name;

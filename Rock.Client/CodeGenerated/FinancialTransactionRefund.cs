@@ -35,6 +35,12 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string RefundReasonSummary { get; set; }
 
         /// <summary />
@@ -44,7 +50,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source FinancialTransactionRefund object
@@ -53,6 +59,8 @@ namespace Rock.Client
         public void CopyPropertiesFrom( FinancialTransactionRefund source )
         {
             this.Id = source.Id;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.RefundReasonSummary = source.RefundReasonSummary;
             this.RefundReasonValueId = source.RefundReasonValueId;
             this.Guid = source.Guid;

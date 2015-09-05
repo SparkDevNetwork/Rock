@@ -92,6 +92,8 @@ namespace Rock.Model
             target.CategoryId = source.CategoryId;
             target.EntityId = source.EntityId;
             target.EntityTypeId = source.EntityTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsSystem = source.IsSystem;
             target.RelatedEntityId = source.RelatedEntityId;
             target.RelatedEntityTypeId = source.RelatedEntityTypeId;

@@ -88,6 +88,8 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this ServiceLog target, ServiceLog source )
         {
             target.Id = source.Id;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.Input = source.Input;
             target.LogDateTime = source.LogDateTime;
             target.Name = source.Name;

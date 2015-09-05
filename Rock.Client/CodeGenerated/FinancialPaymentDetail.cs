@@ -53,13 +53,19 @@ namespace Rock.Client
         public string ExpirationYearEncrypted { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string NameOnCardEncrypted { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source FinancialPaymentDetail object
@@ -74,6 +80,8 @@ namespace Rock.Client
             this.CurrencyTypeValueId = source.CurrencyTypeValueId;
             this.ExpirationMonthEncrypted = source.ExpirationMonthEncrypted;
             this.ExpirationYearEncrypted = source.ExpirationYearEncrypted;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.NameOnCardEncrypted = source.NameOnCardEncrypted;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;

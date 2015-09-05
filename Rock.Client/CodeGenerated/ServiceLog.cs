@@ -35,6 +35,12 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string Input { get; set; }
 
         /// <summary />
@@ -56,7 +62,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source ServiceLog object
@@ -65,6 +71,8 @@ namespace Rock.Client
         public void CopyPropertiesFrom( ServiceLog source )
         {
             this.Id = source.Id;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.Input = source.Input;
             this.LogDateTime = source.LogDateTime;
             this.Name = source.Name;

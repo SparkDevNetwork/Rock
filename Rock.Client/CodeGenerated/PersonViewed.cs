@@ -35,6 +35,12 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string IpAddress { get; set; }
 
         /// <summary />
@@ -53,7 +59,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source PersonViewed object
@@ -62,6 +68,8 @@ namespace Rock.Client
         public void CopyPropertiesFrom( PersonViewed source )
         {
             this.Id = source.Id;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IpAddress = source.IpAddress;
             this.Source = source.Source;
             this.TargetPersonAliasId = source.TargetPersonAliasId;

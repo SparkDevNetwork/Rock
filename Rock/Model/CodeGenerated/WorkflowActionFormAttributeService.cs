@@ -89,6 +89,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AttributeId = source.AttributeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.HideLabel = source.HideLabel;
             target.IsReadOnly = source.IsReadOnly;
             target.IsRequired = source.IsRequired;
