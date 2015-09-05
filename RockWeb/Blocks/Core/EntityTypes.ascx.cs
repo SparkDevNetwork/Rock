@@ -47,6 +47,9 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
+            gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
+            gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;
+
             if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
             {
                 gEntityTypes.DataKeyNames = new string[] { "Id" };
@@ -62,6 +65,36 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Handles the DisplayFilterValue event of the gfSettings control.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        private void gfSettings_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            //
+        }
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the gfSettings control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gfSettings_ApplyFilterClick( object sender, EventArgs e )
+        {
+            gfSettings.SaveUserPreference( "Search", "EntityType or Name contains", tbSearch.Text );
+
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void BindFilter()
+        {
+            tbSearch.Text = gfSettings.GetUserPreference( "Search" );
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -74,6 +107,7 @@ namespace RockWeb.Blocks.Core
                 if ( !Page.IsPostBack )
                 {
                     EntityTypeService.RegisterEntityTypes( Request.MapPath( "~" ) );
+                    BindFilter();
                     BindGrid();
                 }
                 else
@@ -170,7 +204,7 @@ namespace RockWeb.Blocks.Core
             EntityTypeService entityTypeService = new EntityTypeService( rockContext );
             EntityType entityType = entityTypeService.Get( int.Parse( hfEntityTypeId.Value ) );
 
-            if (entityType == null)
+            if ( entityType == null )
             {
                 entityType = new EntityType();
                 entityType.IsEntity = true;
@@ -203,21 +237,24 @@ namespace RockWeb.Blocks.Core
             EntityTypeService entityTypeService = new EntityTypeService( new RockContext() );
             SortProperty sortProperty = gEntityTypes.SortProperty;
 
+            var qry = entityTypeService.Queryable().Where( e => e.IsSecured || e.IsEntity );
+
+            string search = gfSettings.GetUserPreference( "Search" );
+            if ( !string.IsNullOrWhiteSpace( search ) )
+            {
+                qry = qry.Where( h => h.Name.Contains( search ) || h.FriendlyName.Contains( search ) );
+            }
+
             if ( sortProperty != null )
             {
-                gEntityTypes.DataSource = entityTypeService
-                    .Queryable()
-                    .Where( e => e.IsSecured || e.IsEntity )
-                    .Sort( sortProperty ).ToList();
+                qry = qry.Sort( sortProperty );
             }
             else
             {
-                gEntityTypes.DataSource = entityTypeService
-                    .Queryable()
-                    .Where( e => e.IsSecured || e.IsEntity )
-                    .OrderBy( p => p.Name ).ToList();
+                qry = qry.OrderBy( p => p.Name );
             }
 
+            gEntityTypes.DataSource = qry.ToList();
             gEntityTypes.DataBind();
         }
 
