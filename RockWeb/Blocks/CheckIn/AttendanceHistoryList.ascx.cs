@@ -192,6 +192,14 @@ namespace RockWeb.Blocks.Checkin
             rFilter.SaveUserPreference( "Person", ppPerson.SelectedValue.ToString() );
             rFilter.SaveUserPreference( "Group", ddlAttendanceGroup.SelectedValue );
             rFilter.SaveUserPreference( "Schedule", spSchedule.SelectedValue );
+            if ( ddlDidAttend.SelectedValue == "all" )
+            {
+                rFilter.SaveUserPreference( "Did Attend", string.Empty );
+            }
+            else
+            {
+                rFilter.SaveUserPreference( "Did Attend", ddlDidAttend.SelectedValue );
+            }
             BindGrid();
         }
 
@@ -301,6 +309,19 @@ namespace RockWeb.Blocks.Checkin
                 qryAttendance = qryAttendance.Where( h => h.ScheduleId == scheduleId );
             }
 
+            // Filter by DidAttend
+            if ( ddlDidAttend.SelectedIndex > -1 )
+            {
+                if ( ddlDidAttend.SelectedValue == "didattend" )
+                {
+                    qryAttendance = qryAttendance.Where( a => a.DidAttend == true );
+                }
+                else if (ddlDidAttend.SelectedValue == "didnotattend")
+                {
+                    qryAttendance = qryAttendance.Where( a => a.DidAttend == false );
+                }
+            }
+
             var qry = qryAttendance
                 .Select( a => new
                 {
@@ -313,7 +334,8 @@ namespace RockWeb.Blocks.Checkin
                     GroupName = a.Group.Name,
                     GroupTypeId = a.Group.GroupTypeId,
                     StartDateTime = a.StartDateTime,
-                    EndDateTime = a.EndDateTime
+                    EndDateTime = a.EndDateTime,
+                    DidAttend = a.DidAttend
                 } );
 
             SortProperty sortProperty = gHistory.SortProperty;
