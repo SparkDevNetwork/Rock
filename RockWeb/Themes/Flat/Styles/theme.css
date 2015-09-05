@@ -2070,7 +2070,8 @@ table.attribute-grid tr th:nth-child(3) {
   min-height: 64px;
   border-bottom: 1px solid #cfd9db;
   color: #333333;
-  padding: 0;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 .personprofilebar-badge .badge-group {
   margin: 7.5px 0;
