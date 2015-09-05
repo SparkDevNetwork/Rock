@@ -16,6 +16,9 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
+                    <Rock:GridFilter ID="gfSettings" runat="server">
+                        <Rock:RockTextBox ID="tbSearch" runat="server" Label="EntityType or Name Contains" />
+                    </Rock:GridFilter>
                     <Rock:Grid ID="gEntityTypes" runat="server" AllowSorting="true">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Entity Type" SortExpression="Name" />
