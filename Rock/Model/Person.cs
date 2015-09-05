@@ -1374,7 +1374,7 @@ namespace Rock.Model
         /// </returns>
         public override bool IsAuthorized( string action, Person person )
         {
-            if ( person.Guid.Equals( this.Guid ) )
+            if ( person != null && person.Guid.Equals( this.Guid ) )
             {
                 return true;
             }

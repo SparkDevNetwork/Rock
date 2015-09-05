@@ -159,7 +159,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override bool IsAuthorized( string action, Person person )
         {
-            if ( this.OwnerPersonAlias != null && this.OwnerPersonAlias.Person != null && this.OwnerPersonAlias.PersonId == person.Id )
+            if ( this.OwnerPersonAlias != null && this.OwnerPersonAlias.Person != null && person != null && this.OwnerPersonAlias.PersonId == person.Id )
             {
                 // always allow people to delete their own tags
                 return true;
