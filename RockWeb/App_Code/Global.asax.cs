@@ -707,12 +707,14 @@ namespace RockWeb
             int? pageId = ( Context.Items["Rock:PageId"] ?? "" ).ToString().AsIntegerOrNull(); ;
             int? siteId = ( Context.Items["Rock:SiteId"] ?? "" ).ToString().AsIntegerOrNull();;
             PersonAlias personAlias = null;
+            Person person = null;
 
             try
             {
                 var user = UserLoginService.GetCurrentUser();
                 if ( user != null && user.Person != null )
                 {
+                    person = user.Person;
                     personAlias = user.Person.PrimaryAlias;
                 }
             }
@@ -738,7 +740,9 @@ namespace RockWeb
 
                 // setup merge codes for email
                 var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
-                mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + Context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
+                mergeObjects.Add( "ExceptionDetails", string.Format( "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
+                    person != null ? " for " + person.FullName : "", siteName, Context.Request.Url.OriginalString, FormatException( ex, "" ) ) );
+                mergeObjects.Add( "Person", person );
 
                 // get email addresses to send to
                 var globalAttributesCache = GlobalAttributesCache.Read();
@@ -838,6 +842,13 @@ namespace RockWeb
                     //ErrorUtilities.VerifySupported(request.Url.Scheme == Uri.UriSchemeHttps || request.Url.Scheme == Uri.UriSchemeHttp, "Only HTTP and HTTPS are supported protocols.");
                     string scheme = serverVariables["HTTP_X_FORWARDED_PROTO"] ?? request.Url.Scheme;
                     Uri hostAndPort = new Uri( scheme + Uri.SchemeDelimiter + serverVariables["HTTP_HOST"] );
+
+                    // If host is a local port (occurs with Azure hosting), ignore this request
+                    if ( hostAndPort.Host == "127.0.0.1" )
+                    {
+                        return null;
+                    }
+
                     UriBuilder publicRequestUri = new UriBuilder( request.Url );
                     publicRequestUri.Scheme = scheme;
                     publicRequestUri.Host = hostAndPort.Host;

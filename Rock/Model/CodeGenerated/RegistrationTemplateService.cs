@@ -99,6 +99,8 @@ namespace Rock.Model
             target.DiscountCodeTerm = source.DiscountCodeTerm;
             target.FeeTerm = source.FeeTerm;
             target.FinancialGatewayId = source.FinancialGatewayId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupMemberRoleId = source.GroupMemberRoleId;
             target.GroupMemberStatus = source.GroupMemberStatus;
             target.GroupTypeId = source.GroupTypeId;

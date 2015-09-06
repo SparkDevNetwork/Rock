@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.Follow
             rGridSuggestion.DataKeyNames = new string[] { "Id" };
             rGridSuggestion.Actions.ShowAdd = canEdit;
             rGridSuggestion.Actions.AddClick += rGridSuggestion_Add;
+            rGridSuggestion.GridReorder += rGridSuggestion_GridReorder;
             rGridSuggestion.GridRebind += rGridSuggestions_GridRebind;
             rGridSuggestion.IsDeleteEnabled = canEdit;
         }
@@ -129,6 +130,22 @@ namespace RockWeb.Blocks.Follow
         }
 
         /// <summary>
+        /// Handles the GridReorder event of the rGridSuggestion control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        void rGridSuggestion_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            var rockContext = new RockContext();
+            var service = new FollowingSuggestionTypeService( rockContext );
+            var followingSuggestions = service.Queryable().OrderBy( i => i.Order ).ToList();
+            service.Reorder( followingSuggestions, e.OldIndex, e.NewIndex );
+            rockContext.SaveChanges();
+
+            BindGrid();
+        }
+
+        /// <summary>
         /// Handles the GridRebind event of the rGridSuggestion control.
         /// </summary>
         /// <param name="sendder">The source of the event.</param>
@@ -150,17 +167,8 @@ namespace RockWeb.Blocks.Follow
             using ( var rockContext = new RockContext() )
             {
                 var qry = new FollowingSuggestionTypeService( rockContext )
-                    .Queryable( "EntityType" ).AsNoTracking();
-
-                SortProperty sortProperty = rGridSuggestion.SortProperty;
-                if ( sortProperty != null )
-                {
-                    qry = qry.Sort( sortProperty );
-                }
-                else
-                {
-                    qry = qry.OrderBy( g => g.Name );
-                }
+                    .Queryable( "EntityType" ).AsNoTracking()
+                    .OrderBy( s => s.Order );
 
                 rGridSuggestion.DataSource = qry.ToList();
                 rGridSuggestion.DataBind();

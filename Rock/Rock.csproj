@@ -142,7 +142,9 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\ConnectionTypesFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionActivityTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\ConnectionTypeFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionStateFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionStatusFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionOpportunityFieldAttribute.cs" />
@@ -245,6 +247,8 @@
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
     <Compile Include="Field\Types\ConnectionActivityTypeFieldType.cs" />
+    <Compile Include="Field\Types\ConnectionTypesFieldType.cs" />
+    <Compile Include="Field\Types\ConnectionTypeFieldType.cs" />
     <Compile Include="Field\Types\ConnectionStatusFieldType.cs" />
     <Compile Include="Field\Types\ConnectionOpportunityFieldType.cs" />
     <Compile Include="Field\Types\ConnectionStateFieldType.cs" />
@@ -476,6 +480,8 @@
     <Compile Include="Reporting\DataFilter\Person\NotInGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupFilter.cs" />
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Group\ParentGroupMemberListSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Group\MemberListSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\MemberCountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\ParticipationRateSelect.cs" />
@@ -488,7 +494,9 @@
     <Compile Include="Reporting\DataTransform\Person\ChildrenTransform.cs" />
     <Compile Include="Reporting\ReportingHelper.cs" />
     <Compile Include="Reporting\DataSelect\Person\GroupParticipationSelect.cs" />
+    <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
+    <Compile Include="Utility\ExtensionMethods\CurrencyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
@@ -1091,6 +1099,7 @@
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
     <Compile Include="Workflow\Action\AssignActivityToGroup.cs" />
     <Compile Include="Workflow\Action\AddConnectionRequestActivity.cs" />
+    <Compile Include="Workflow\Action\TransferConnectionRequest.cs" />
     <Compile Include="Workflow\Action\SetConnectionRequestState.cs" />
     <Compile Include="Workflow\Action\SetConnectionRequestStatus.cs" />
     <Compile Include="Workflow\Action\CreateConnectionRequest.cs" />

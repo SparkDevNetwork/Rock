@@ -107,12 +107,12 @@ namespace Rock.Follow.Suggestion
                     foreach ( var suggestion in followers
                         .Join( followed, s => s.GroupId, t => t.GroupId, ( s, t ) => new { s, t } )
                         .Where( j => j.s.PersonId != j.t.PersonId )
-
                         .Select( j => new
                         {
                             FollowerPersonId = j.s.PersonId,
                             FollowedPerson = j.t.Person
-                        } ) )
+                        } )
+                        .Distinct() )
                     {
                         int? entityId = suggestion.FollowedPerson.PrimaryAliasId;
                         if ( entityId.HasValue )

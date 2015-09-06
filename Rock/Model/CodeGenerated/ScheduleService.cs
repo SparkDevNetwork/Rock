@@ -112,6 +112,8 @@ namespace Rock.Model
             target.Description = source.Description;
             target.EffectiveEndDate = source.EffectiveEndDate;
             target.EffectiveStartDate = source.EffectiveStartDate;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.iCalendarContent = source.iCalendarContent;
             target.Name = source.Name;
             target.WeeklyDayOfWeek = source.WeeklyDayOfWeek;

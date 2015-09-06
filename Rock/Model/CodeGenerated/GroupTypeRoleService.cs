@@ -109,6 +109,8 @@ namespace Rock.Model
             target.CanEdit = source.CanEdit;
             target.CanView = source.CanView;
             target.Description = source.Description;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupTypeId = source.GroupTypeId;
             target.IsLeader = source.IsLeader;
             target.IsSystem = source.IsSystem;

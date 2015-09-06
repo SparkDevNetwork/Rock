@@ -81,7 +81,7 @@ function (val, axis) {
 
   // show commas 
   // from http://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
-  var formattedValue =  val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  var formattedValue =  roundedVal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
   return formattedValue;
 }".Trim();

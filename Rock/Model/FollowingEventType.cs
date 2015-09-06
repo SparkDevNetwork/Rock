@@ -34,7 +34,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "FollowingEventType" )]
     [DataContract]
-    public partial class FollowingEventType : Model<FollowingEventType>
+    public partial class FollowingEventType : Model<FollowingEventType>, IOrdered
     {
         #region Entity Properties
 
@@ -75,6 +75,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? FollowedEntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [DataMember]
+        public int Order { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.

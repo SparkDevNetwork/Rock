@@ -53,6 +53,12 @@ namespace Rock.Client
         public DateTime? EndDateTime { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public int? GroupId { get; set; }
 
         /// <summary />
@@ -86,7 +92,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source Attendance object
@@ -101,6 +107,8 @@ namespace Rock.Client
             this.DidAttend = source.DidAttend;
             this.DidNotOccur = source.DidNotOccur;
             this.EndDateTime = source.EndDateTime;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
             this.LocationId = source.LocationId;
             this.Note = source.Note;

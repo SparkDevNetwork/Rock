@@ -38,6 +38,12 @@ namespace Rock.Client
         public DateTime? DateTimeAdded { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public int GroupId { get; set; }
 
         /// <summary />
@@ -65,7 +71,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source GroupMember object
@@ -75,6 +81,8 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.DateTimeAdded = source.DateTimeAdded;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
             this.GroupMemberStatus = source.GroupMemberStatus;
             this.GroupRoleId = source.GroupRoleId;

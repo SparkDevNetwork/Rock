@@ -103,6 +103,8 @@ namespace Rock.Model
             target.EmailNote = source.EmailNote;
             target.EmailPreference = source.EmailPreference;
             target.FirstName = source.FirstName;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.Gender = source.Gender;
             target.GivingGroupId = source.GivingGroupId;
             target.GraduationYear = source.GraduationYear;

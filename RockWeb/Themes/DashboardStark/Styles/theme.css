@@ -1354,9 +1354,6 @@ tr.row-highlight td {
 .filter-toggle > span {
   float: left;
 }
-.filter-toggle .panel-title {
-  margin-top: 4px;
-}
 .filter-toggle .btn-toggle {
   margin: 0 6px;
 }
@@ -1755,13 +1752,12 @@ tr.row-highlight td {
     1. Group Viewer - styles for the group viewer block.
 
 */
-.group-location-map {
-  float: right;
+.group-location-map img {
+  width: 100%;
+  margin-bottom: 24px;
 }
-@media (max-width: 992px) {
-  .group-location-map {
-    float: left;
-  }
+.description {
+  margin-bottom: 24px;
 }
 section.group-type-attribute-panel label {
   padding-left: 46px;
@@ -3052,7 +3048,7 @@ iframe.email-body {
   padding: 12px 20px;
 }
 .numberincrement.input-lg .numberincrement-value {
-  padding: 12px 18px;
+  padding: 12px 28px;
 }
 ul.rocktree,
 ul.rocktree ul {
@@ -3854,9 +3850,9 @@ fieldset .actions {
 .imageupload-group .upload-progress {
   position: absolute;
   z-index: 2;
-  left: 50%;
+  left: 35px;
   margin-left: -18px;
-  top: 50%;
+  top: 8px;
   margin-top: -37px;
   opacity: 0.3;
 }
@@ -3968,8 +3964,8 @@ fieldset .actions {
 .fileupload-group .upload-progress {
   position: absolute;
   z-index: 2;
-  left: 115%;
-  top: -20%;
+  left: 35px;
+  top: 8px;
   opacity: 0.3;
 }
 .updateprogress-status {
@@ -5188,6 +5184,9 @@ a.help {
 .well > h4 {
   margin-top: 0;
 }
+th[align=center] {
+  text-align: center;
+}
 .form-right {
   text-align: right;
   margin-bottom: 12px;
@@ -5274,8 +5273,7 @@ a.help {
   display: block;
   float: left;
 }
-.panel .panel-heading i.fa-chevron-up,
-.panel .panel-heading i.fa-chevron-down {
+.panel .panel-heading a.btn-link {
   color: #5697d0;
 }
 .panel .panel-heading .panel-title small {
@@ -5603,6 +5601,11 @@ fieldset[disabled] .btn-authenication.active {
 .btn-authenication.google:before {
   font-family: 'FontAwesome';
   content: "\f1a0";
+  margin-right: 12px;
+}
+.btn-authenication.twitter:before {
+  font-family: 'FontAwesome';
+  content: "\f099";
   margin-right: 12px;
 }
 .btn-minimal {

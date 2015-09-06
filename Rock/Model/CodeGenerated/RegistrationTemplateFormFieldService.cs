@@ -90,6 +90,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AttributeId = source.AttributeId;
             target.FieldSource = source.FieldSource;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsGridField = source.IsGridField;
             target.IsRequired = source.IsRequired;
             target.IsSharedValue = source.IsSharedValue;

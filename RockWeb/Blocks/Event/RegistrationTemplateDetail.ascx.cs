@@ -86,7 +86,8 @@ namespace RockWeb.Blocks.Event
         Discounted Cost: {{ currencySymbol }}{{ Registration.DiscountedCost | Format:'#,##0.00' }}<br/>
     {% endif %}
     {% for payment in Registration.Payments %}
-        Paid {{ currencySymbol }}{{ payment.Amount | Format:'#,##0.00' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }} <small>(Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
+        Paid {{ currencySymbol }}{{ payment.Amount | Format:'#,##0.00' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }} 
+        <small>(Acct #: {{ payment.Transaction.FinancialPaymentDetail.AccountNumberMasked }}, Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
     {% endfor %}
     
     {% assign paymentCount = Registration.Payments | Size %}
@@ -193,7 +194,7 @@ namespace RockWeb.Blocks.Event
     {% endif %}
     {% for payment in Registration.Payments %}
         Paid {{ currencySymbol }}{{ payment.Amount | Format:'#,##0.00' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }} 
-        <small>(Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
+        <small>(Acct #: {{ payment.Transaction.FinancialPaymentDetail.AccountNumberMasked }}, Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
     {% endfor %}
     {% assign paymentCount = Registration.Payments | Size %}
     {% if paymentCount > 1 %}
@@ -1932,10 +1933,10 @@ namespace RockWeb.Blocks.Event
                 lFormsReadonly.Text = "<div>" + None.TextHtml + "</div>";
             }
 
-            lCost.Text = RegistrationTemplate.Cost.ToString( "C2" );
+            lCost.Text = RegistrationTemplate.Cost.FormatAsCurrency();
 
             lMinimumInitialPayment.Visible = RegistrationTemplate.MinimumInitialPayment.HasValue;
-            lMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.ToString( "C2" ) : "";
+            lMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.FormatAsCurrency() : "";
 
             rFees.DataSource = RegistrationTemplate.Fees.OrderBy( f => f.Order ).ToList();
             rFees.DataBind();
@@ -2318,7 +2319,7 @@ namespace RockWeb.Blocks.Event
                         d.Id,
                         d.Code,
                         Discount = d.DiscountAmount > 0 ?
-                            d.DiscountAmount.ToString( "C2" ) :
+                            d.DiscountAmount.FormatAsCurrency() :
                             d.DiscountPercentage.ToString( "P2" )
                     } ).ToList();
                 gDiscounts.DataBind();
@@ -2429,11 +2430,11 @@ namespace RockWeb.Blocks.Event
                 string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
                 if ( nameAndValue.Length == 2 )
                 {
-                    values.Add( string.Format( "{0}-{1:C2}", nameAndValue[0], nameAndValue[1].AsDecimal() ) );
+                    values.Add( string.Format( "{0}-{1}", nameAndValue[0], nameAndValue[1].AsDecimal().FormatAsCurrency() ) );
                 }
                 else
                 {
-                    values.Add( string.Format( "{0:C2}", nameValue.AsDecimal() ) );
+                    values.Add( string.Format( "{0}", nameValue.AsDecimal().FormatAsCurrency() ) );
                 }
             }
 

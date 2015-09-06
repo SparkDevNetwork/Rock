@@ -91,8 +91,11 @@ namespace Rock.Model
             target.Description = source.Description;
             target.EntityNotificationFormatLava = source.EntityNotificationFormatLava;
             target.EntityTypeId = source.EntityTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.Name = source.Name;
+            target.Order = source.Order;
             target.ReasonNote = source.ReasonNote;
             target.ReminderDays = source.ReminderDays;
             target.CreatedDateTime = source.CreatedDateTime;

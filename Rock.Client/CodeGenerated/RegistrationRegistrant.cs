@@ -38,6 +38,12 @@ namespace Rock.Client
         public decimal Cost { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public int? GroupMemberId { get; set; }
 
         /// <summary />
@@ -50,7 +56,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source RegistrationRegistrant object
@@ -60,6 +66,8 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.Cost = source.Cost;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.GroupMemberId = source.GroupMemberId;
             this.PersonAliasId = source.PersonAliasId;
             this.RegistrationId = source.RegistrationId;

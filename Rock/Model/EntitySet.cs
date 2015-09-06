@@ -22,6 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -81,6 +82,25 @@ namespace Rock.Model
         [DataMember]
         public int Order { get; set; }
 
+        /// <summary>
+        /// Gets or sets Id of the EntitySet purpose <see cref="Rock.Model.DefinedValue"/> representing the EntitySet's purpose.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the EntitySet purpose <see cref="Rock.Model.DefinedValue"/> representing the EntitySet's purpose.  This value is nullable.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.ENTITY_SET_PURPOSE )]
+        public int? EntitySetPurposeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the note.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the note.
+        /// </value>
+        [DataMember]
+        public string Note { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -120,6 +140,15 @@ namespace Rock.Model
         [DataMember]
         public virtual Model.EntityType EntityType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the EntitySet's purpose
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> representing the EntitySet's purpose.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue EntitySetPurposeValue { get; set; }
+
         #endregion
 
         #region Constructors
@@ -145,7 +174,30 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            if ( !string.IsNullOrWhiteSpace( this.Name ) )
+            {
+                return this.Name;
+            }
+
+            if ( this.EntitySetPurposeValueId != null )
+            {
+                var purpose = DefinedValueCache.Read( this.EntitySetPurposeValueId.Value );
+                if ( purpose != null )
+                {
+                    return purpose.Value;
+                }
+            }
+
+            if ( this.EntityTypeId.HasValue )
+            {
+                var entityType = EntityTypeCache.Read( this.EntityTypeId.Value );
+                if ( entityType != null )
+                {
+                    return string.Format( "{0} Entity Set", entityType.Name );
+                }
+            }
+
+            return base.ToString();
         }
 
         #endregion
@@ -163,8 +215,9 @@ namespace Rock.Model
         /// </summary>
         public EntitySetConfiguration()
         {
-            this.HasOptional( s => s.ParentEntitySet ).WithMany( s => s.ChildEntitySets ).HasForeignKey( s => s.ParentEntitySetId).WillCascadeOnDelete( false );
+            this.HasOptional( s => s.ParentEntitySet ).WithMany( s => s.ChildEntitySets ).HasForeignKey( s => s.ParentEntitySetId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.EntitySetPurposeValue ).WithMany().HasForeignKey( p => p.EntitySetPurposeValueId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -21,7 +21,7 @@
                                             <asp:HiddenField ID="hfEvent" runat="server" Value='<%# Eval("Id") %>' />
                                             <Rock:RockCheckBox ID="cbEvent" runat="server" Checked='<%# (bool)Eval("Selected") %>'  Enabled='<%# !(bool)Eval("IsNoticeRequired") %>'
                                                 Text='<%# Eval("Name") %>' SelectedIconCssClass="fa fa-check-square-o fa-lg fa-fw" UnSelectedIconCssClass="fa fa-square-o fa-lg fa-fw" />
-                                            <span class="margin-l-md"><small><%# Eval("description") %></small></span>
+                                            <span class="margin-l-lg"><small><%# Eval("description") %></small></span>
                                         </li>
                                     </ItemTemplate>
                                 </asp:Repeater>

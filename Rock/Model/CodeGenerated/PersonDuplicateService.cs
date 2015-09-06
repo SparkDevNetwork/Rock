@@ -90,6 +90,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.Capacity = source.Capacity;
             target.DuplicatePersonAliasId = source.DuplicatePersonAliasId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IgnoreUntilScoreChanges = source.IgnoreUntilScoreChanges;
             target.IsConfirmedAsNotDuplicate = source.IsConfirmedAsNotDuplicate;
             target.PersonAliasId = source.PersonAliasId;

@@ -590,7 +590,7 @@ namespace RockWeb.Blocks.Finance
                 financialTransaction.AuthorizedPersonAliasId = null;
                 foreach ( var detail in financialTransaction.TransactionDetails )
                 {
-                    History.EvaluateChange( changes, detail.Account != null ? detail.Account.Name : "Unknown", detail.Amount.ToString( "C2" ), string.Empty );
+                    History.EvaluateChange( changes, detail.Account != null ? detail.Account.Name : "Unknown", detail.Amount.FormatAsCurrency(), string.Empty );
                     financialTransactionDetailService.Delete( detail );
                 }
 
@@ -665,7 +665,7 @@ namespace RockWeb.Blocks.Finance
                 foreach ( var detail in financialTransaction.TransactionDetails.ToList() )
                 {
                     financialTransactionDetailService.Delete( detail );
-                    History.EvaluateChange( changes, detail.Account != null ? detail.Account.Name : "Unknown", detail.Amount.ToString( "C2" ), string.Empty );
+                    History.EvaluateChange( changes, detail.Account != null ? detail.Account.Name : "Unknown", detail.Amount.FormatAsCurrency(), string.Empty );
                 }
 
                 foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
@@ -680,7 +680,7 @@ namespace RockWeb.Blocks.Finance
                         financialTransactionDetail.Amount = amount.Value;
                         financialTransactionDetailService.Add( financialTransactionDetail );
 
-                        History.EvaluateChange( changes, accountBox.Label, 0.0M.ToString( "C2" ), amount.Value.ToString( "C2" ) );
+                        History.EvaluateChange( changes, accountBox.Label, 0.0M.FormatAsCurrency(), amount.Value.FormatAsCurrency() );
                     }
                 }
 

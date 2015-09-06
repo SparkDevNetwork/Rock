@@ -50,6 +50,12 @@ namespace Rock.Client
         public bool EnableRss { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string IconCssClass { get; set; }
 
         /// <summary />
@@ -71,7 +77,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source ContentChannel object
@@ -85,6 +91,8 @@ namespace Rock.Client
             this.ContentControlType = source.ContentControlType;
             this.Description = source.Description;
             this.EnableRss = source.EnableRss;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
             this.ItemUrl = source.ItemUrl;
             this.Name = source.Name;

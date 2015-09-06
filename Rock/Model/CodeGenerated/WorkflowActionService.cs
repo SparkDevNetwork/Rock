@@ -91,6 +91,8 @@ namespace Rock.Model
             target.ActionTypeId = source.ActionTypeId;
             target.ActivityId = source.ActivityId;
             target.CompletedDateTime = source.CompletedDateTime;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.FormAction = source.FormAction;
             target.LastProcessedDateTime = source.LastProcessedDateTime;
             target.CreatedDateTime = source.CreatedDateTime;

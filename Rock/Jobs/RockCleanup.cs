@@ -82,6 +82,15 @@ namespace Rock.Jobs
 
             try
             {
+                CleanupExpiredEntitySets( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupExpiredEntitySets", ex ) );
+            }
+
+            try
+            {
                 PurgeAuditLog( dataMap );
             }
             catch ( Exception ex )
@@ -134,7 +143,7 @@ namespace Rock.Jobs
             PersonAliasService personAliasService = new PersonAliasService( personRockContext );
             var personAliasServiceQry = personAliasService.Queryable();
             foreach ( var person in personService.Queryable( "Aliases" )
-                .Where( p => !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ))
+                .Where( p => !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ) )
                 .Take( 300 ) )
             {
                 person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
@@ -320,6 +329,47 @@ namespace Rock.Jobs
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Cleans up expired entity sets.
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private void CleanupExpiredEntitySets( JobDataMap dataMap )
+        {
+            var entitySetRockContext = new Rock.Data.RockContext();
+            var currentDateTime = RockDateTime.Now;
+            var entitySetService = new EntitySetService( entitySetRockContext );
+            var qry = entitySetService.Queryable().Where( a => a.ExpireDateTime.HasValue && a.ExpireDateTime < currentDateTime );
+
+            foreach ( var entitySet in qry.ToList() )
+            {
+                string deleteWarning;
+                if ( entitySetService.CanDelete( entitySet, out deleteWarning ) )
+                {
+                    // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
+                    bool keepDeleting = true;
+                    while ( keepDeleting )
+                    {
+                        var dbTransaction = entitySetRockContext.Database.BeginTransaction();
+                        try
+                        {
+                            string sqlCommand = @"DELETE TOP (1000) FROM [EntitySetItem] WHERE [EntitySetId] = @entitySetId";
+
+                            int rowsDeleted = entitySetRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "entitySetId", entitySet.Id ) );
+                            keepDeleting = rowsDeleted > 0;
+                        }
+                        finally
+                        {
+                            dbTransaction.Commit();
+                        }
+                    }
+
+                    entitySetService.Delete( entitySet );
+                    entitySetRockContext.SaveChanges();
+                }
+            }
+
         }
 
         /// <summary>

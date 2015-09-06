@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Connection
 
     [LinkedPage( "Configuration Page", "Page used to modify and create connection opportunities.", true, "", "", 0 )]
     [LinkedPage( "Detail Page", "Page used to view details of an requests.", true, "", "", 1 )]
+    [ConnectionTypesField("Connection Types", "Optional list of connection types to limit the display to (All will be displayed by default).", false, order:2 )]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
 
@@ -204,7 +205,7 @@ namespace RockWeb.Blocks.Connection
                 else
                 {
                     // if 'All Opportunities' is selected, show all the opportunities for the type
-                    rptConnectionOpportunities.DataSource = connectionType.Opportunities;
+                    rptConnectionOpportunities.DataSource = connectionType.Opportunities.OrderBy(c => c.Name);
                 }
                 rptConnectionOpportunities.DataBind();
                 //rptConnectionOpportunities.ItemCommand += rptConnectionOpportunities_ItemCommand;
@@ -381,10 +382,17 @@ namespace RockWeb.Blocks.Connection
             SummaryState = new List<ConnectionTypeSummary>();
 
             var rockContext = new RockContext();
+            var opportunities = new ConnectionOpportunityService( rockContext )
+                .Queryable().AsNoTracking();
 
-            // Loop through every opportunity
-            foreach ( var opportunity in new ConnectionOpportunityService( rockContext )
-                .Queryable().AsNoTracking() )
+            var typeFilter = GetAttributeValue( "ConnectionTypes" ).SplitDelimitedValues().AsGuidList();
+            if ( typeFilter.Any() )
+            {
+                opportunities = opportunities.Where( o => typeFilter.Contains( o.ConnectionType.Guid ) );
+            }
+
+            // Loop through opportunities
+            foreach ( var opportunity in opportunities )
             {
                 // Check to see if person can view the opportunity because of admin rights to this block or admin rights to
                 // the opportunity

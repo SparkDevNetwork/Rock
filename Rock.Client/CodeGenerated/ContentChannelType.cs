@@ -41,6 +41,15 @@ namespace Rock.Client
         public bool DisablePriority { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
+        public bool IncludeTime { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -50,7 +59,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source ContentChannelType object
@@ -61,6 +70,9 @@ namespace Rock.Client
             this.Id = source.Id;
             this.DateRangeType = source.DateRangeType;
             this.DisablePriority = source.DisablePriority;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
+            this.IncludeTime = source.IncludeTime;
             this.IsSystem = source.IsSystem;
             this.Name = source.Name;
             this.Guid = source.Guid;

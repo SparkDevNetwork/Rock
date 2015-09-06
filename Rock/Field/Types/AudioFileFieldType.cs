@@ -67,7 +67,7 @@ namespace Rock.Field.Types
                         string htmlFormat = @"
 <audio
     src='{0}?guid={1}' 
-    class='img img-responsive'
+    class='img img-responsive js-media-audio'
     type='{2}' 
     controls
 >

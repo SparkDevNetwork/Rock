@@ -41,6 +41,12 @@ namespace Rock.Client
         public int? ConnectionTypeId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string QualifierValue { get; set; }
 
         /// <summary />
@@ -53,7 +59,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source ConnectionWorkflow object
@@ -64,6 +70,8 @@ namespace Rock.Client
             this.Id = source.Id;
             this.ConnectionOpportunityId = source.ConnectionOpportunityId;
             this.ConnectionTypeId = source.ConnectionTypeId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.QualifierValue = source.QualifierValue;
             this.TriggerType = source.TriggerType;
             this.WorkflowTypeId = source.WorkflowTypeId;

@@ -89,6 +89,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.EndDate = source.EndDate;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupTypeId = source.GroupTypeId;
             target.StartDate = source.StartDate;
             target.CreatedDateTime = source.CreatedDateTime;

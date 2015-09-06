@@ -449,6 +449,8 @@ namespace RockWeb.Blocks.Connection
                     }
                 } );
 
+                ConnectionWorkflowService.FlushCachedTriggers();
+
                 var qryParams = new Dictionary<string, string>();
                 qryParams["ConnectionTypeId"] = PageParameter( "ConnectionTypeId" );
                 NavigateToParentPage( qryParams );

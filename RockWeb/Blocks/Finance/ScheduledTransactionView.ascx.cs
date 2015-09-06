@@ -148,11 +148,6 @@ namespace RockWeb.Blocks.Finance
 
                     if ( txn != null )
                     {
-                        if ( txn.FinancialGateway != null )
-                        {
-                            txn.FinancialGateway.LoadAttributes( rockContext );
-                        }
-
                         string errorMessage = string.Empty;
                         if ( txnService.GetStatus( txn, out errorMessage ) )
                         {
@@ -281,7 +276,7 @@ namespace RockWeb.Blocks.Finance
                         txn.AuthorizedPersonAlias.Person.GetAnchorTag( rockUrlRoot ) : string.Empty );
 
                 var detailsRight = new DescriptionList()
-                    .Add( "Amount", ( txn.ScheduledTransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ).ToString( "C2" ) )
+                    .Add( "Amount", ( txn.ScheduledTransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ).FormatAsCurrency() )
                     .Add( "Frequency", txn.TransactionFrequencyValue != null ? txn.TransactionFrequencyValue.Value : string.Empty )
                     .Add( "Start Date", txn.StartDate.ToShortDateString() )
                     .Add( "End Date", txn.EndDate.HasValue ? txn.EndDate.Value.ToShortDateString() : string.Empty )

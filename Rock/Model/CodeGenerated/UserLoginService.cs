@@ -92,6 +92,8 @@ namespace Rock.Model
             target.EntityTypeId = source.EntityTypeId;
             target.FailedPasswordAttemptCount = source.FailedPasswordAttemptCount;
             target.FailedPasswordAttemptWindowStartDateTime = source.FailedPasswordAttemptWindowStartDateTime;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsConfirmed = source.IsConfirmed;
             target.IsLockedOut = source.IsLockedOut;
             target.IsOnLine = source.IsOnLine;

@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -40,7 +39,8 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Displays the details of the given report." )]
 
-    [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180 )]
+    [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, "", 0 )]
+    [LinkedPage("Data View Page", "The page to edit data views", true, "", "", 1)]
     public partial class ReportDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -65,6 +65,58 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
+        private const string _ViewStateKeyShowResults = "ShowResults";
+        private string _SettingKeyShowResults = "report-show-results-{blockId}";
+
+        protected bool ShowResults
+        {
+            get
+            {
+                return ViewState[_ViewStateKeyShowResults].ToStringSafe().AsBoolean();
+            }
+
+            set
+            {
+                if ( this.ShowResults != value )
+                {
+                    ViewState[_ViewStateKeyShowResults] = value;
+
+                    SetUserPreference( _SettingKeyShowResults, value.ToString() );
+                }
+
+                pnlResultsGrid.Visible = this.ShowResults;
+
+                if ( this.ShowResults )
+                {
+                    btnToggleResults.Text = "Hide Results <i class='fa fa-chevron-up'></i>";
+                    btnToggleResults.ToolTip = "Hide Results";
+
+                }
+                else
+                {
+                    btnToggleResults.Text = "Show Results <i class='fa fa-chevron-down'></i>";
+                    btnToggleResults.ToolTip = "Show Results";
+                }
+
+                if ( !this.ShowResults )
+                {
+                    return;
+                }
+
+                // Run the Report and show the results.
+                var reportService = new ReportService( new RockContext() );
+
+                var report = reportService.Get( hfReportId.Value.AsInteger() );
+
+                if ( report == null )
+                {
+                    return;
+                }
+
+                BindGrid( report );
+            }
+        }
+
         #endregion
 
         #region Base Control Methods
@@ -76,6 +128,9 @@ namespace RockWeb.Blocks.Reporting
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            // Create unique user setting keys for this block.
+            _SettingKeyShowResults = _SettingKeyShowResults.Replace( "{blockId}", this.BlockId.ToString() );
 
             gReport.GridRebind += gReport_GridRebind;
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Report.FriendlyTypeName );
@@ -101,6 +156,8 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
+                this.ShowResults = GetUserPreference( _SettingKeyShowResults ).AsBoolean(true);
+
                 string itemId = PageParameter( "reportId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
@@ -112,10 +169,10 @@ namespace RockWeb.Blocks.Reporting
                 }
             }
 
-            var rockContext = new RockContext();
-
             if ( pnlEditDetails.Visible )
             {
+                var rockContext = new RockContext();
+
                 foreach ( var field in ReportFieldsDictionary )
                 {
                     AddFieldPanelWidget( field.Guid, field.ReportFieldType, field.FieldSelection, true, rockContext );
@@ -187,6 +244,13 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void BindGrid( Report report )
         {
+            if ( !this.ShowResults )
+            {
+                gReport.DataSource = null;
+
+                return;
+            }
+
             int? databaseTimeoutSeconds = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull();
             string errorMessage;
             ReportingHelper.BindGrid( report, gReport, this.CurrentPerson, databaseTimeoutSeconds, out errorMessage );
@@ -231,6 +295,28 @@ namespace RockWeb.Blocks.Reporting
                 phReportFields.Controls.Remove( panelWidget );
                 var reportFieldInfo = ReportFieldsDictionary.First( a => a.Guid == reportFieldGuid );
                 ReportFieldsDictionary.Remove( reportFieldInfo );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnToggleResults control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnToggleResults_Click( object sender, EventArgs e )
+        {
+            this.ShowResults = !this.ShowResults;
+        }
+
+        protected void lbDataView_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var reportService = new ReportService( rockContext );
+            var report = reportService.Get( hfReportId.Value.AsInteger() );
+
+            if ( report != null && report.DataViewId.HasValue )
+            {
+                NavigateToLinkedPage( "DataViewPage", "DataViewId", report.DataViewId.Value );
             }
         }
 
@@ -755,7 +841,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
                     {
-                        var dataSelectComponent = GetDataSelectComponent(rockContext, reportField.DataSelectComponentEntityTypeId.GetValueOrDefault(0));
+                        var dataSelectComponent = GetDataSelectComponent( rockContext, reportField.DataSelectComponentEntityTypeId.GetValueOrDefault( 0 ) );
                         if ( dataSelectComponent != null )
                         {
                             if ( !dataSelectComponent.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
@@ -787,18 +873,18 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="rockContext"></param>
         /// <param name="dataSelectComponentId"></param>
         /// <returns>A DataSelectComponent or null if the component cannot be created.</returns>
-        private DataSelectComponent GetDataSelectComponent(RockContext rockContext, int dataSelectComponentId)
+        private DataSelectComponent GetDataSelectComponent( RockContext rockContext, int dataSelectComponentId )
         {
             // Get the Type for the Data Select Component used in this column.
             // If the column refers to a Type that does not exist, ignore and continue.
             var componentType = EntityTypeCache.Read( dataSelectComponentId, rockContext ).GetEntityType();
 
-            if (componentType == null)
+            if ( componentType == null )
                 return null;
 
             string dataSelectComponentTypeName = componentType.FullName;
 
-            return DataSelectContainer.GetComponent(dataSelectComponentTypeName);
+            return DataSelectContainer.GetComponent( dataSelectComponentTypeName );
         }
 
         /// <summary>
@@ -867,6 +953,16 @@ namespace RockWeb.Blocks.Reporting
             hfReportId.SetValue( report.Id );
             lReadOnlyTitle.Text = report.Name.FormatAsHtmlTitle();
             lReportDescription.Text = report.Description;
+
+            if ( report.DataView != null )
+            {
+                lbDataView.Visible = UserCanEdit;
+                lbDataView.ToolTip = report.DataView.Name;
+            }
+            else
+            {
+                lbDataView.Visible = false;
+            }
 
             BindGrid( report );
         }
@@ -1060,7 +1156,7 @@ namespace RockWeb.Blocks.Reporting
                     break;
 
                 case ReportFieldType.DataSelectComponent:
-                    dataSelectComponent = this.GetDataSelectComponent(rockContext, fieldSelection.AsInteger());
+                    dataSelectComponent = this.GetDataSelectComponent( rockContext, fieldSelection.AsInteger() );
 
                     if ( dataSelectComponent != null )
                     {

@@ -99,6 +99,8 @@ namespace Rock.Model
             target.CriteriaComparisonType = source.CriteriaComparisonType;
             target.CriteriaValue = source.CriteriaValue;
             target.EntityTypeId = source.EntityTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsActionCompletedOnSuccess = source.IsActionCompletedOnSuccess;
             target.IsActivityCompletedOnSuccess = source.IsActivityCompletedOnSuccess;
             target.Name = source.Name;

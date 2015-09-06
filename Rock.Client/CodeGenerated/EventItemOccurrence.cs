@@ -50,6 +50,12 @@ namespace Rock.Client
         public int EventItemId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string Location { get; set; }
 
         /// <summary />
@@ -62,7 +68,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source EventItemOccurrence object
@@ -76,6 +82,8 @@ namespace Rock.Client
             this.ContactPersonAliasId = source.ContactPersonAliasId;
             this.ContactPhone = source.ContactPhone;
             this.EventItemId = source.EventItemId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.Location = source.Location;
             this.Note = source.Note;
             this.ScheduleId = source.ScheduleId;

@@ -123,6 +123,11 @@ a.help {
 // 4. Bootstrap Overrides
 //--------------------------------
 
+// grid controls in asp.net center content using align=center but bootstrap overrides this 
+th[align=center] {
+    text-align: center;
+}
+
 .form-right {
   .clearfix();
   text-align: right;
@@ -220,11 +225,11 @@ a.help {
 .panel {
 
       .panel-heading {
-            i.fa-chevron-up,
-            i.fa-chevron-down {
+
+            a.btn-link {
                 color: @panel-heading-text-color;
-            }  
-          
+            }
+
             .panel-title {
                 small {
                 opacity: .5;
@@ -443,7 +448,15 @@ a.help {
     content: @fa-var-google;
     margin-right: 12px;
   }
+
+    &.twitter:before {
+    font-family: 'FontAwesome';
+    content: @fa-var-twitter;
+    margin-right: 12px;
+  }
 }
+
+
 
 .btn-minimal {
   text-decoration: none;

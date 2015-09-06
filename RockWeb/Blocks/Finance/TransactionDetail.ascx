@@ -57,7 +57,7 @@
                                             <Rock:RockTemplateField HeaderText="Accounts">
                                                 <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                             </Rock:RockTemplateField>
-                                            <Rock:RockBoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
+                                            <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                             <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
                                             <Rock:DeleteField OnClick="gAccountsEdit_DeleteClick" />
                                         </Columns>
@@ -81,7 +81,7 @@
                             <h4>Images</h4>
                             <asp:DataList ID="dlImages" runat="server" RepeatDirection="Horizontal" RepeatColumns="2" OnItemDataBound="dlImages_ItemDataBound">
                                 <ItemTemplate>
-                                    <Rock:ImageUploader ID="imgupImage" runat="server" OnImageRemoved="imgupImage_ImageRemoved" OnImageUploaded="imgupImage_ImageUploaded" />
+                                    <Rock:ImageUploader ID="imgupImage" runat="server" OnImageRemoved="imgupImage_ImageRemoved" BinaryFileTypeGuid="6D18A9C4-34AB-444A-B95B-C644019465AC" OnImageUploaded="imgupImage_ImageUploaded" />
                                 </ItemTemplate>
                             </asp:DataList>
                             <Rock:RockLiteral ID="lScheduledTransaction" runat="server" Label="Scheduled Transaction" Visible="false" />
@@ -111,7 +111,7 @@
                                     <Rock:RockTemplateField HeaderText="Accounts">
                                         <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                     </Rock:RockTemplateField>
-                                    <Rock:RockBoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
+                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                     <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
                                 </Columns>
                             </Rock:Grid>

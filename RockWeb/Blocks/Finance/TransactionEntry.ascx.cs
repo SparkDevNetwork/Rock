@@ -890,12 +890,12 @@ namespace RockWeb.Blocks.Finance
             SelectedAccounts = new List<AccountItem>();
             AvailableAccounts = new List<AccountItem>();
 
-            // Enumerate through all active accounts that have a public name
+            // Enumerate through all active accounts that are public
             foreach ( var account in new FinancialAccountService( rockContext ).Queryable()
                 .Where( f =>
                     f.IsActive &&
-                    f.PublicName != null &&
-                    f.PublicName.Trim() != string.Empty &&
+                    f.IsPublic.HasValue &&
+                    f.IsPublic.Value &&
                     ( f.StartDate == null || f.StartDate <= RockDateTime.Today ) &&
                     ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
                 .OrderBy( f => f.Order ) )
@@ -927,7 +927,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindAccounts()
         {
-            rptAccountList.DataSource = SelectedAccounts.OrderBy( a => a.Order ).ToList();
+            rptAccountList.DataSource = SelectedAccounts.ToList();
             rptAccountList.DataBind();
 
             btnAddAccount.Visible = AvailableAccounts.Any();
@@ -1525,7 +1525,7 @@ namespace RockWeb.Blocks.Finance
                             transactionDetail.Amount = account.Amount;
                             transactionDetail.AccountId = account.Id;
                             scheduledTransaction.ScheduledTransactionDetails.Add( transactionDetail );
-                            changeSummary.AppendFormat( "{0}: {1:C2}", account.Name, account.Amount );
+                            changeSummary.AppendFormat( "{0}: {1}", account.Name, account.Amount.FormatAsCurrency() );
                             changeSummary.AppendLine();
                         }
 
@@ -1601,7 +1601,7 @@ namespace RockWeb.Blocks.Finance
                             transactionDetail.Amount = account.Amount;
                             transactionDetail.AccountId = account.Id;
                             transaction.TransactionDetails.Add( transactionDetail );
-                            History.EvaluateChange( txnChanges, account.Name, 0.0M.ToString( "C2" ), transactionDetail.Amount.ToString( "C2" ) );
+                            History.EvaluateChange( txnChanges, account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
                         }
 
                         var batchService = new FinancialBatchService( rockContext );
@@ -1626,7 +1626,7 @@ namespace RockWeb.Blocks.Finance
                         }
 
                         decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-                        History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.ToString( "C2" ), newControlAmount.ToString( "C2" ) );
+                        History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
                         batch.ControlAmount = newControlAmount;
 
                         transaction.BatchId = batch.Id;
@@ -1787,7 +1787,7 @@ namespace RockWeb.Blocks.Finance
                     $(this).parents('div.input-group').removeClass('has-error');
                 }}
             }});
-            $('.total-amount').html('$ ' + totalAmt.toFixed(2));
+            $('.total-amount').html('{3}' + totalAmt.toFixed(2));
             return false;
         }});
 
@@ -1856,7 +1856,14 @@ namespace RockWeb.Blocks.Finance
     }});
 
 ";
-            string script = string.Format( scriptFormat, divCCPaymentInfo.ClientID, hfPaymentTab.ClientID, oneTimeFrequencyId );
+            string script = string.Format( 
+                scriptFormat,
+                divCCPaymentInfo.ClientID, // {0} 
+                hfPaymentTab.ClientID, // {1}
+                oneTimeFrequencyId,// {2}
+                GlobalAttributesCache.Value( "CurrencySymbol" ) // {3)
+            ); 
+
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
         }
 
@@ -1886,7 +1893,7 @@ namespace RockWeb.Blocks.Finance
             {
                 get
                 {
-                    return Amount > 0 ? Amount.ToString( "C2" ) : string.Empty;
+                    return Amount > 0 ? Amount.FormatAsCurrency() : string.Empty;
                 }
             }
 

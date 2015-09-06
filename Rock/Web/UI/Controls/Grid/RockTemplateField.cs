@@ -26,7 +26,6 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:RockTemplateField runat=server></{0}:RockTemplateField>" )]
     public class RockTemplateField : TemplateField, IPriorityColumn, IRockGridField
     {
-
         /// <summary>
         /// Gets or sets the column priority.
         /// </summary>
@@ -53,5 +52,25 @@ namespace Rock.Web.UI.Controls
         }
         private ExcelExportBehavior _excelExportBehavior = ExcelExportBehavior.IncludeIfVisible;
 
+        /// <summary>
+        /// Adds text or controls to a cell's controls collection.
+        /// </summary>
+        /// <param name="cell">A <see cref="T:System.Web.UI.WebControls.DataControlFieldCell" /> that contains the text or controls of the <see cref="T:System.Web.UI.WebControls.DataControlField" />.</param>
+        /// <param name="cellType">One of the <see cref="T:System.Web.UI.WebControls.DataControlCellType" /> values.</param>
+        /// <param name="rowState">One of the <see cref="T:System.Web.UI.WebControls.DataControlRowState" /> values, specifying the state of the row that contains the <see cref="T:System.Web.UI.WebControls.DataControlFieldCell" />.</param>
+        /// <param name="rowIndex">The index of the row that the <see cref="T:System.Web.UI.WebControls.DataControlFieldCell" /> is contained in.</param>
+        public override void InitializeCell( DataControlFieldCell cell, DataControlCellType cellType, DataControlRowState rowState, int rowIndex )
+        {
+            if ( cellType == DataControlCellType.Header )
+            {
+                if ( !string.IsNullOrEmpty( this.HeaderStyle.CssClass ) )
+                {
+                    // make sure the header cell sets the CssClass                
+                    cell.AddCssClass( this.HeaderStyle.CssClass );
+                }
+            }
+            
+            base.InitializeCell( cell, cellType, rowState, rowIndex );
+        }
     }
 }

@@ -47,6 +47,12 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public bool? IsActive { get; set; }
 
         /// <summary />
@@ -83,7 +89,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source ServiceJob object
@@ -96,6 +102,8 @@ namespace Rock.Client
             this.Class = source.Class;
             this.CronExpression = source.CronExpression;
             this.Description = source.Description;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
             this.IsSystem = source.IsSystem;
             this.LastRunDateTime = source.LastRunDateTime;

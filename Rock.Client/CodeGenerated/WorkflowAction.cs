@@ -44,6 +44,12 @@ namespace Rock.Client
         public DateTime? CompletedDateTime { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string FormAction { get; set; }
 
         /// <summary />
@@ -53,7 +59,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source WorkflowAction object
@@ -65,6 +71,8 @@ namespace Rock.Client
             this.ActionTypeId = source.ActionTypeId;
             this.ActivityId = source.ActivityId;
             this.CompletedDateTime = source.CompletedDateTime;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.FormAction = source.FormAction;
             this.LastProcessedDateTime = source.LastProcessedDateTime;
             this.Guid = source.Guid;

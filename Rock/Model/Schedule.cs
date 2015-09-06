@@ -384,15 +384,18 @@ namespace Rock.Model
             DDay.iCal.Event calEvent = GetCalenderEvent();
             if ( calEvent != null )
             {
-                var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, endDateTime );
-                foreach ( var startDateTime in occurrences
-                    .Where( a => 
-                        a.Period != null && 
-                        a.Period.StartTime != null )
-                    .Select( a => a.Period.StartTime.Value ) )
+                if ( this.HasSchedule() )
                 {
-                    // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
-                    result.Add( DateTime.SpecifyKind( startDateTime, DateTimeKind.Local ) );
+                    var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, endDateTime );
+                    foreach ( var startDateTime in occurrences
+                        .Where( a =>
+                            a.Period != null &&
+                            a.Period.StartTime != null )
+                        .Select( a => a.Period.StartTime.Value ) )
+                    {
+                        // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
+                        result.Add( DateTime.SpecifyKind( startDateTime, DateTimeKind.Local ) );
+                    }
                 }
             }
 

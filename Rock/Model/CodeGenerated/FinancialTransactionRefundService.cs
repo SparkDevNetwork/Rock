@@ -88,6 +88,8 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this FinancialTransactionRefund target, FinancialTransactionRefund source )
         {
             target.Id = source.Id;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.RefundReasonSummary = source.RefundReasonSummary;
             target.RefundReasonValueId = source.RefundReasonValueId;
             target.CreatedDateTime = source.CreatedDateTime;

@@ -41,6 +41,12 @@ namespace Rock.Client
         public int BenevolenceRequestId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string ResultSummary { get; set; }
 
         /// <summary />
@@ -50,7 +56,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source BenevolenceResult object
@@ -61,6 +67,8 @@ namespace Rock.Client
             this.Id = source.Id;
             this.Amount = source.Amount;
             this.BenevolenceRequestId = source.BenevolenceRequestId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.ResultSummary = source.ResultSummary;
             this.ResultTypeValueId = source.ResultTypeValueId;
             this.Guid = source.Guid;

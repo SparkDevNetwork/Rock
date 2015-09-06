@@ -94,6 +94,8 @@ namespace Rock.Model
             target.ContentChannelId = source.ContentChannelId;
             target.ContentChannelTypeId = source.ContentChannelTypeId;
             target.ExpireDateTime = source.ExpireDateTime;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.Permalink = source.Permalink;
             target.Priority = source.Priority;
             target.StartDateTime = source.StartDateTime;

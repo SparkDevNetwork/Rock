@@ -69,6 +69,7 @@ namespace Rock.Field.Types
                         string htmlFormat = @"
 <video 
     src='{0}?guid={1}'
+    class='js-media-video'
     type='{2}'
     controls='controls'
     style='width:100%;height:100%;'

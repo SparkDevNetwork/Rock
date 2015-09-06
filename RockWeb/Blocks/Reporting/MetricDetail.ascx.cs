@@ -716,8 +716,27 @@ The SQL can include Lava merge fields:";
 
             if (metric.Schedule != null)
             {
-                hlScheduleFriendlyText.LabelType = metric.Schedule.HasSchedule() ? LabelType.Info : LabelType.Danger;
-                hlScheduleFriendlyText.Text = "<i class='fa fa-clock-o'></i> " + metric.Schedule.FriendlyScheduleText;
+                string iconClass;
+                if (metric.Schedule.HasSchedule())
+                {
+                    if (metric.Schedule.HasScheduleWarning()                        )
+                    {
+                        hlScheduleFriendlyText.LabelType = LabelType.Warning;
+                        iconClass = "fa fa-exclamation-triangle";
+                    }
+                    else
+                    {
+                        hlScheduleFriendlyText.LabelType = LabelType.Info;
+                        iconClass = "fa fa-clock-o";
+                    }
+                }
+                else
+                {
+                    hlScheduleFriendlyText.LabelType = LabelType.Danger;
+                    iconClass = "fa fa-exclamation-triangle";
+                }
+
+                hlScheduleFriendlyText.Text = "<i class='" + iconClass + "'></i> " + metric.Schedule.FriendlyScheduleText;
             }
             else
             {

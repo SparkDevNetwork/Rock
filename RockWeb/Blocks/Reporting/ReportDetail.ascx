@@ -87,30 +87,42 @@
 
                             <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                            <div class="row">
-                                <asp:Literal ID="lblMainDetails" runat="server" />
-                            </div>
-
                             <div class="actions">
                                 <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                                 <asp:LinkButton ID="btnCopy" runat="server" Text="Copy" CssClass="btn btn-link" OnClick="btnCopy_Click" />
                                 <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
-                                <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security pull-right" />
+                                <div class="pull-right">
+                                    <asp:LinkButton ID="lbDataView" runat="server" Text="Data View" CssClass="btn btn-link" OnClick="lbDataView_Click" />
+                                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security pull-right" />
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="panel panel-block">
-                        <div class="panel-heading">
-                            <h1 class="panel-title"><i class="fa fa-table"></i> Report Data</h1>
-                        </div>
-                        <div class="panel-body">
-                            <div class="grid grid-panel"><Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" /></div>
-                        </div>
-                    </div>
 
-            </div>
+                        <div class="panel-heading">
+                            <div class="row margin-t-sm">
+                                <div class="col-md-6">
+                                    <h1 class="panel-title"><i class="fa fa-table"></i> Report Data</h1>
+                                </div>
+                                <div class="col-md-6 pull-right">
+                                    <div class="pull-right">
+                                        <asp:LinkButton ID="btnToggleResults" runat="server" CssClass="btn btn-default btn-xs margin-b-sm" OnClick="btnToggleResults_Click" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                      
+                        <asp:Panel ID="pnlResultsGrid" runat="server">
+                            <div class="panel-body">
+                                <div class="grid grid-panel">
+                                    <div class="grid">
+                                        <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
+                                    </div>
+                                </div>
+                            </div>
+                        </asp:Panel>
+                    </div>
+                 </div>
 
         </asp:Panel>
         <script>
