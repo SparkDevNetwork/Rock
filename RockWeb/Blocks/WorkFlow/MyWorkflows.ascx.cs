@@ -103,13 +103,49 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( !Page.IsPostBack )
             {
-                tglDisplay.Checked = GetUserPreference( DISPLAY_TOGGLE_SETTING ).AsBoolean();
-                tglRole.Checked = GetUserPreference( ROLE_TOGGLE_SETTING ).AsBoolean();
-                
-                StatusFilter = tglDisplay.Checked;
-                RoleFilter = tglRole.Checked;
+                /// <summary>
+                /// Allows you to set query strings to activate filters on My Workflows block
+                /// </summary>
+                /// <returns>
+                /// Returns the filter values based on query string
+                /// </returns>
+                /// 
+                /// Role Filter
+                /// ---------------------
+                /// Initiated By Me = true
+                /// Assigned To Me =  false
+                ///
+                /// Status Filter
+                /// -------------------
+                /// Active Types = true
+                /// All Types = false
 
-                GetData();
+                bool? queryStatusFilter = Request.QueryString["StatusFilter"].AsBoolean();
+                bool? queryRoleFilter = Request.QueryString["RoleFilter"].AsBoolean();
+
+                /// If query string values exist then set them
+                if ( queryStatusFilter.HasValue || queryRoleFilter.HasValue )
+                {
+
+                    tglDisplay.Checked = queryStatusFilter.GetValueOrDefault();
+                    tglRole.Checked = queryRoleFilter.GetValueOrDefault();
+
+                    StatusFilter = tglDisplay.Checked;
+                    RoleFilter = tglRole.Checked;
+
+                    GetData();
+
+                }
+                else
+                {
+                    tglDisplay.Checked = GetUserPreference( DISPLAY_TOGGLE_SETTING ).AsBoolean();
+                    tglRole.Checked = GetUserPreference( ROLE_TOGGLE_SETTING ).AsBoolean();
+
+                    StatusFilter = tglDisplay.Checked;
+                    RoleFilter = tglRole.Checked;
+
+                    GetData();
+                }
             }
         }
 
