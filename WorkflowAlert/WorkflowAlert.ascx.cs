@@ -43,9 +43,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
     [LinkedPage( "Listing Page", "Page used to view all workflows assigned to the current user." )]
     public partial class WorkflowAlert : Rock.Web.UI.RockBlock
     {
-        protected override void OnPreRender( EventArgs e )
+        protected override void OnInit( EventArgs e )
         {
-            base.OnPreRender( e );
+            base.OnInit( e );
 
             // Check for current person
             if ( CurrentPersonAliasId.HasValue )
@@ -91,13 +91,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
                     //    .ToString();
                 }
             }
-
-            String workflowTypes = Request.QueryString["WorkflowTypes"];
-
-            if ( workflowTypes == "active" )
-            {
-                filterWorkflowTypes.Value = workflowTypes;
-            }
         }
 
         /// <summary>
@@ -106,7 +99,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
         protected void lbListingPage_Click( object sender, EventArgs e )
         {
             var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "WorkflowTypes", "active" );
+            queryParams.Add( "RoleFilter", "false" );
+            queryParams.Add( "StatusFilter", "true" );
+
             NavigateToLinkedPage( "ListingPage", queryParams );
         }
     }
