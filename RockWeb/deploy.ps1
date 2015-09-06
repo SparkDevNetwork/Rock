@@ -54,6 +54,7 @@ Start-Website -Name "$env:APPLICATION_SITE_NAME"
 New-Item "$webroot\App_Data\Run.Migration" -type file -force
 
 # set acl on migration flag file so the app has permissions to delete it
+Write-Host "Setting read-write on the Run.Migration file"
 $acl = Get-ACL "$webroot\App_Data\Run.Migration"
 $accessRule= New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone","FullControl","Allow")
 $acl.AddAccessRule($accessRule)
