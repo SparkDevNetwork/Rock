@@ -96,29 +96,26 @@ namespace RockWeb.Blocks.WorkFlow
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        /// <remarks>
+        /// Allows you to set query strings to activate filters on My Workflows block
+        /// Will returns the filter values based on query string
+        ///
+        /// Role Filter
+        /// ---------------------
+        /// Initiated By Me = true
+        /// Assigned To Me =  false
+        ///
+        /// Status Filter
+        /// -------------------
+        /// Active Types = true
+        /// All Types = false
+        /// </remarks>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
             if ( !Page.IsPostBack )
             {
-                /// <summary>
-                /// Allows you to set query strings to activate filters on My Workflows block
-                /// </summary>
-                /// <returns>
-                /// Returns the filter values based on query string
-                /// </returns>
-                ///
-                /// Role Filter
-                /// ---------------------
-                /// Initiated By Me = true
-                /// Assigned To Me =  false
-                ///
-                /// Status Filter
-                /// -------------------
-                /// Active Types = true
-                /// All Types = false
-
                 bool? queryStatusFilter = Request.QueryString["StatusFilter"].AsBoolean();
                 bool? queryRoleFilter = Request.QueryString["RoleFilter"].AsBoolean();
 
@@ -127,22 +124,17 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     tglDisplay.Checked = queryStatusFilter.GetValueOrDefault();
                     tglRole.Checked = queryRoleFilter.GetValueOrDefault();
-
-                    StatusFilter = tglDisplay.Checked;
-                    RoleFilter = tglRole.Checked;
-
-                    GetData();
                 }
                 else
                 {
                     tglDisplay.Checked = GetUserPreference( DISPLAY_TOGGLE_SETTING ).AsBoolean();
                     tglRole.Checked = GetUserPreference( ROLE_TOGGLE_SETTING ).AsBoolean();
-
-                    StatusFilter = tglDisplay.Checked;
-                    RoleFilter = tglRole.Checked;
-
-                    GetData();
                 }
+
+                StatusFilter = tglDisplay.Checked;
+                RoleFilter = tglRole.Checked;
+
+                GetData();
             }
         }
 
