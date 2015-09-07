@@ -90,6 +90,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.BlockTypeId = source.BlockTypeId;
             target.CssClass = source.CssClass;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsSystem = source.IsSystem;
             target.LayoutId = source.LayoutId;
             target.Name = source.Name;

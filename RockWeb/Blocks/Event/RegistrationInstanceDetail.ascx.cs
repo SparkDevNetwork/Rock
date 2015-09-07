@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
@@ -48,11 +49,13 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Calendar Item Page", "The page to view calendar item details", true, "", "", 3)]
     [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 4)]
     [LinkedPage( "Content Item Page", "The page for viewing details about a content channel item", true, "", "", 5 )]
+    [LinkedPage( "Transaction Detail Page", "The page for viewing details about a payment", true, "", "", 6 )]
     public partial class RegistrationInstanceDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Fields
 
         private List<FinancialTransactionDetail> RegistrationPayments;
+        private List<Registration> PaymentRegistrations;
         private bool _instanceHasCost = false;
 
         #endregion
@@ -132,6 +135,12 @@ namespace RockWeb.Blocks.Event
             gRegistrants.RowDataBound += gRegistrants_RowDataBound;
             gRegistrants.GridRebind += gRegistrants_GridRebind;
 
+            fPayments.ApplyFilterClick += fPayments_ApplyFilterClick;
+            gPayments.DataKeyNames = new string[] { "Id" };
+            gPayments.Actions.ShowAdd = false;
+            gPayments.RowDataBound += gPayments_RowDataBound;
+            gPayments.GridRebind += gPayments_GridRebind; 
+            
             fLinkages.ApplyFilterClick += fLinkages_ApplyFilterClick;
             gLinkages.DataKeyNames = new string[] { "Id" };
             gLinkages.Actions.ShowAdd = true;
@@ -204,6 +213,9 @@ namespace RockWeb.Blocks.Event
                             ActiveTab = "lbRegistrants";
                             break;
                         case 3:
+                            ActiveTab = "lbPayments";
+                            break;
+                        case 4:
                             ActiveTab = "lbLinkage";
                             break;
                     }
@@ -625,8 +637,21 @@ namespace RockWeb.Blocks.Event
                         return;
                     }
 
-                    registrationService.Delete( registration );
-                    rockContext.SaveChanges();
+                    var changes = new List<string>();
+                    changes.Add( "Deleted registration" );
+
+                    rockContext.WrapTransaction( () =>
+                    {
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( Registration ),
+                            Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                            registration.Id,
+                            changes );
+
+                        registrationService.Delete( registration );
+                        rockContext.SaveChanges();
+                    } );
 
                     SetHasPayments( registrationInstanceId, rockContext );
                 }
@@ -1016,6 +1041,107 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
+        #region Payment Tab Events
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the fPayments control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void fPayments_ApplyFilterClick( object sender, EventArgs e )
+        {
+            fPayments.SaveUserPreference( "Date Range", drpPaymentDateRange.DelimitedValues );
+
+            BindPaymentsGrid();
+        }
+
+        /// <summary>
+        /// Fs the payments_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void fPayments_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+
+            switch ( e.Key )
+            {
+                case "Date Range":
+                    {
+                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                        break;
+                    }
+                default:
+                    {
+                        e.Value = string.Empty;
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Handles the RowSelected event of the gPayments control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gPayments_RowSelected( object sender, RowEventArgs e )
+        {
+            NavigateToLinkedPage( "TransactionDetailPage", "transactionId", e.RowKeyId );
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gPayments control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gPayments_GridRebind( object sender, EventArgs e )
+        {
+            BindPaymentsGrid();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gPayments control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        void gPayments_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            var transaction = e.Row.DataItem as FinancialTransaction;
+            var lRegistrar = e.Row.FindControl("lRegistrar") as Literal;
+            var lRegistrants = e.Row.FindControl("lRegistrants") as Literal;
+
+            if ( transaction != null && lRegistrar != null && lRegistrants != null )
+            {
+                var registrars = new List<string>();
+                var registrants = new List<string>();
+
+                var registrationIds = transaction.TransactionDetails.Select( d => d.EntityId).ToList();
+                foreach( var registration in PaymentRegistrations
+                    .Where( r => registrationIds.Contains( r.Id ) ) )
+                {
+                    if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
+                    {
+                        var qryParams = new Dictionary<string, string>();
+                        qryParams.Add( "RegistrationId", registration.Id.ToString() );
+                        string url = LinkedPageUrl( "RegistrationPage", qryParams );
+                        registrars.Add( string.Format( "<a href='{0}'>{1}</a>", url, registration.PersonAlias.Person.FullName ) );
+
+                        foreach( var registrant in registration.Registrants )
+                        {
+                            if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
+                            {
+                                registrants.Add( registrant.PersonAlias.Person.FullName );
+                            }
+                        }
+                    }
+                }
+
+                lRegistrar.Text = registrars.AsDelimited( "<br/>" );
+                lRegistrants.Text = registrants.AsDelimited( "<br/>" );
+            }
+        }
+
+        #endregion
+
         #region Linkage Tab Events
 
         /// <summary>
@@ -1379,6 +1505,9 @@ namespace RockWeb.Blocks.Event
             liRegistrants.RemoveCssClass( "active" );
             pnlRegistrants.Visible = false;
 
+            liPayments.RemoveCssClass( "active" );
+            pnlPayments.Visible = false;
+
             liLinkage.RemoveCssClass( "active" );
             pnlLinkages.Visible = false;
 
@@ -1389,6 +1518,14 @@ namespace RockWeb.Blocks.Event
                         liRegistrants.AddCssClass( "active" );
                         pnlRegistrants.Visible = true;
                         BindRegistrantsGrid();
+                        break;
+                    }
+
+                case "lbPayments":
+                    {
+                        liPayments.AddCssClass( "active" );
+                        pnlPayments.Visible = true;
+                        BindPaymentsGrid();
                         break;
                     }
 
@@ -2356,6 +2493,99 @@ namespace RockWeb.Blocks.Event
             var deleteField = new DeleteField();
             gRegistrants.Columns.Add( deleteField );
             deleteField.Click += gRegistrants_Delete;
+        }
+
+        #endregion
+
+        #region Payments Tab
+
+        /// <summary>
+        /// Binds the payments filter.
+        /// </summary>
+        private void BindPaymentsFilter()
+        {
+            drpPaymentDateRange.DelimitedValues = fPayments.GetUserPreference( "Date Range" );
+        }
+
+        /// <summary>
+        /// Binds the payments grid.
+        /// </summary>
+        private void BindPaymentsGrid()
+        {
+            int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
+            if ( instanceId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var currencyTypes = new Dictionary<int, string>();
+                    var creditCardTypes = new Dictionary<int, string>();
+
+                    // If configured for a registration and registration is null, return
+                    int registrationEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
+
+                    // Get all the registrations for this instance
+                    PaymentRegistrations = new RegistrationService( rockContext )
+                        .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person" ).AsNoTracking()
+                        .Where( r => r.RegistrationInstanceId == instanceId.Value )
+                        .ToList();
+
+                    // Get the Registration Ids
+                    var registrationIds = PaymentRegistrations
+                        .Select( r => r.Id )
+                        .ToList();
+
+                    // Get all the transactions relate to these registrations
+                    var qry = new FinancialTransactionService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( t => t.TransactionDetails
+                            .Any( d =>
+                                d.EntityTypeId.HasValue &&
+                                d.EntityTypeId.Value == registrationEntityTypeId &&
+                                d.EntityId.HasValue &&
+                                registrationIds.Contains( d.EntityId.Value ) ) );
+
+                    // Date Range
+                    var drp = new DateRangePicker();
+                    drp.DelimitedValues = fPayments.GetUserPreference( "Date Range" );
+                    if ( drp.LowerValue.HasValue )
+                    {
+                        qry = qry.Where( t => t.TransactionDateTime >= drp.LowerValue.Value );
+                    }
+
+                    if ( drp.UpperValue.HasValue )
+                    {
+                        DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                        qry = qry.Where( t => t.TransactionDateTime < upperDate );
+                    }
+
+                    SortProperty sortProperty = gPayments.SortProperty;
+                    if ( sortProperty != null )
+                    {
+                        if ( sortProperty.Property == "TotalAmount" )
+                        {
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                qry = qry.OrderBy( t => t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.00M );
+                            }
+                            else
+                            {
+                                qry = qry.OrderByDescending( t => t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M );
+                            }
+                        }
+                        else
+                        {
+                            qry = qry.Sort( sortProperty );
+                        }
+                    }
+                    else
+                    {
+                        qry = qry.OrderByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
+                    }
+
+                    gPayments.SetLinqDataSource( qry.AsNoTracking() );
+                    gPayments.DataBind();
+                }
+            }
         }
 
         #endregion

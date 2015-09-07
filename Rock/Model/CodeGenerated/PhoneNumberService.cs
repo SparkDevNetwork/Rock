@@ -91,6 +91,8 @@ namespace Rock.Model
             target.CountryCode = source.CountryCode;
             target.Description = source.Description;
             target.Extension = source.Extension;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsMessagingEnabled = source.IsMessagingEnabled;
             target.IsSystem = source.IsSystem;
             target.IsUnlisted = source.IsUnlisted;

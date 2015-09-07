@@ -50,6 +50,12 @@ namespace Rock.Client
         public int EntityTypeId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public bool IsActionCompletedOnSuccess { get; set; }
 
         /// <summary />
@@ -68,7 +74,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source WorkflowActionType object
@@ -82,6 +88,8 @@ namespace Rock.Client
             this.CriteriaComparisonType = source.CriteriaComparisonType;
             this.CriteriaValue = source.CriteriaValue;
             this.EntityTypeId = source.EntityTypeId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IsActionCompletedOnSuccess = source.IsActionCompletedOnSuccess;
             this.IsActivityCompletedOnSuccess = source.IsActivityCompletedOnSuccess;
             this.Name = source.Name;

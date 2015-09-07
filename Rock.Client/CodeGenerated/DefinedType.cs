@@ -44,6 +44,12 @@ namespace Rock.Client
         public int? FieldTypeId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string HelpText { get; set; }
 
         /// <summary />
@@ -59,7 +65,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source DefinedType object
@@ -71,6 +77,8 @@ namespace Rock.Client
             this.CategoryId = source.CategoryId;
             this.Description = source.Description;
             this.FieldTypeId = source.FieldTypeId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.HelpText = source.HelpText;
             this.IsSystem = source.IsSystem;
             this.Name = source.Name;

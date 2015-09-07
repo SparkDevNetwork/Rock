@@ -59,13 +59,19 @@ namespace Rock.Client
         public DateTime? FollowupDate { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public int PersonAliasId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source ConnectionRequest object
@@ -82,6 +88,8 @@ namespace Rock.Client
             this.ConnectionStatusId = source.ConnectionStatusId;
             this.ConnectorPersonAliasId = source.ConnectorPersonAliasId;
             this.FollowupDate = source.FollowupDate;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.PersonAliasId = source.PersonAliasId;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;

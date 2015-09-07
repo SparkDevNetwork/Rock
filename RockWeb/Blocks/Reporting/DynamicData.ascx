@@ -53,8 +53,19 @@
                                     <Rock:RockTextBox ID="tbParams" runat="server" Label="Parameters" TextMode="MultiLine" Rows="1" CssClass="input-xlarge"
                                         Help="The parameters that the stored procedure expects in the format of 'param1=value;param2=value'.  Any parameter with the same name as a page parameter (i.e. querystring,
                                             form, or page route) will have it's value replaced with the page's current value.  A parameter with the name of 'CurrentPersonId' will have it's value replaced with the currently logged in person's id." />
-                                    <Rock:RockCheckBox ID="cbPersonReport" runat="server" Text="Person Report"
-                                        Help="Does this query return a list of people? If it does, then additional options will be available from the result grid.  (i.e. Communicate, etc).  Note: A column named 'Id' that contains the person's Id is required for a person report." />
+                                    <div class="js-grid-options-container">
+                                        <Rock:RockCheckBox ID="cbPersonReport" runat="server" Text="Person Report" CssClass="js-checkbox-person-report"
+                                            Help="Does this query return a list of people? If it does, then additional options will be available from the result grid.  (i.e. Communicate, etc).  Note: A column named 'Id' that contains the person's Id is required for a person report." />
+                                        <Rock:RockControlWrapper ID="rcwGridOptions" runat="server" Label="Show Grid Actions">
+                                            <div class="margin-l-md">
+                                                <Rock:RockCheckBox ID="cbShowCommunicate" runat="server" ContainerCssClass="js-checkbox-person-grid-action" Text="Communicate" />
+                                                <Rock:RockCheckBox ID="cbShowMergePerson" runat="server" ContainerCssClass="js-checkbox-person-grid-action" Text="Merge Person" />
+                                                <Rock:RockCheckBox ID="cbShowBulkUpdate" runat="server" ContainerCssClass="js-checkbox-person-grid-action" Text="Bulk Update" />
+                                                <Rock:RockCheckBox ID="cbShowExcelExport" runat="server" Text="Excel Export" />
+                                                <Rock:RockCheckBox ID="cbShowMergeTemplate" runat="server" Text="Merge Template " />
+                                            </div>
+                                        </Rock:RockControlWrapper>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockTextBox ID="tbUrlMask" runat="server" Label="Selection Url" CssClass="input-large"
@@ -74,10 +85,32 @@
                                         Help="Optional Lava for setting the page title. If nothing is provided then the page's title will be used. Example '{{rows[0].FullName}}' or if the query returns multiple result sets '{{table1.rows[0].FullName}}'." />
                                 </div>
                             </div>
+
                         </ContentTemplate>
                     </asp:UpdatePanel>
+
                 </Content>
             </Rock:ModalDialog>
         </asp:Panel>
+        <script type="text/javascript">
+            function enablePersonGridActions($personGridCheckbox) {
+                $personGridCheckbox.each(function (index, element) {
+                    if ($(element).is(':checked')) {
+                        $('.js-checkbox-person-grid-action').removeAttr('disabled');
+                    }
+                    else {
+                        $('.js-checkbox-person-grid-action').attr('disabled', true);
+                    }
+                })
+            };
+
+            Sys.Application.add_load(function () {
+                enablePersonGridActions($('.js-checkbox-person-report'));
+
+                $('.js-checkbox-person-report').change(function () {
+                    enablePersonGridActions($(this));
+                })
+            });
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>

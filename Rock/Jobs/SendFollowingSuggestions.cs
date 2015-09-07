@@ -322,7 +322,7 @@ namespace Rock.Jobs
                                 var recipients = new List<RecipientData>();
                                 var mergeFields = new Dictionary<string, object>();
                                 mergeFields.Add( "Person", person );
-                                mergeFields.Add( "Suggestions", personSuggestionNotices );
+                                mergeFields.Add( "Suggestions", personSuggestionNotices.OrderBy( s => s.SuggestionType.Order ).ToList() );
                                 recipients.Add( new RecipientData( person.Email, mergeFields ) );
                                 Email.Send( systemEmailGuid.Value, recipients, appRoot );
                             }

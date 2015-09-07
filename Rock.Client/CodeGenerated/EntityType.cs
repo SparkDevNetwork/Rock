@@ -38,6 +38,12 @@ namespace Rock.Client
         public string AssemblyName { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string FriendlyName { get; set; }
 
         /// <summary />
@@ -62,7 +68,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source EntityType object
@@ -72,6 +78,8 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AssemblyName = source.AssemblyName;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.FriendlyName = source.FriendlyName;
             this.IsCommon = source.IsCommon;
             this.IsEntity = source.IsEntity;

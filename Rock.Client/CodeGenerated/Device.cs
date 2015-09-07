@@ -41,6 +41,12 @@ namespace Rock.Client
         public int DeviceTypeValueId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string IPAddress { get; set; }
 
         /// <summary />
@@ -62,7 +68,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source Device object
@@ -73,6 +79,8 @@ namespace Rock.Client
             this.Id = source.Id;
             this.Description = source.Description;
             this.DeviceTypeValueId = source.DeviceTypeValueId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IPAddress = source.IPAddress;
             this.LocationId = source.LocationId;
             this.Name = source.Name;

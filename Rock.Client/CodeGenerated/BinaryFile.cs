@@ -47,6 +47,12 @@ namespace Rock.Client
         public string FileName { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -65,7 +71,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source BinaryFile object
@@ -78,6 +84,8 @@ namespace Rock.Client
             this.ContentLastModified = source.ContentLastModified;
             this.Description = source.Description;
             this.FileName = source.FileName;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IsSystem = source.IsSystem;
             this.IsTemporary = source.IsTemporary;
             this.MimeType = source.MimeType;

@@ -41,6 +41,12 @@ namespace Rock.Client
         public Rock.Client.Enums.RegistrationFieldSource FieldSource { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public bool IsGridField { get; set; }
 
         /// <summary />
@@ -71,7 +77,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source RegistrationTemplateFormField object
@@ -82,6 +88,8 @@ namespace Rock.Client
             this.Id = source.Id;
             this.AttributeId = source.AttributeId;
             this.FieldSource = source.FieldSource;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IsGridField = source.IsGridField;
             this.IsRequired = source.IsRequired;
             this.IsSharedValue = source.IsSharedValue;

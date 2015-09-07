@@ -38,6 +38,12 @@ namespace Rock.Client
         public string AdditionalMergeFieldsJson { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public DateTime? FutureSendDateTime { get; set; }
 
         /// <summary />
@@ -71,7 +77,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source Communication object
@@ -81,6 +87,8 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AdditionalMergeFieldsJson = source.AdditionalMergeFieldsJson;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.FutureSendDateTime = source.FutureSendDateTime;
             this.IsBulkCommunication = source.IsBulkCommunication;
             this.MediumDataJson = source.MediumDataJson;

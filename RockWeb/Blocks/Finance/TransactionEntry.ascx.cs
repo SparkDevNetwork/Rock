@@ -890,7 +890,7 @@ namespace RockWeb.Blocks.Finance
             SelectedAccounts = new List<AccountItem>();
             AvailableAccounts = new List<AccountItem>();
 
-            // Enumerate through all active accounts that have a public name
+            // Enumerate through all active accounts that are public
             foreach ( var account in new FinancialAccountService( rockContext ).Queryable()
                 .Where( f =>
                     f.IsActive &&

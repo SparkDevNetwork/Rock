@@ -96,6 +96,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.ConnectionTypeId = source.ConnectionTypeId;
             target.Description = source.Description;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.IsCritical = source.IsCritical;
             target.IsDefault = source.IsDefault;

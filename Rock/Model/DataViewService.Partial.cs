@@ -152,6 +152,8 @@ namespace Rock.Model
             newItem.Id = 0;
             newItem.Guid = Guid.NewGuid();
             newItem.ForeignId = null;
+            newItem.ForeignGuid = null;
+            newItem.ForeignKey = null;
 
             newItem.DataViewFilterId = 0;
 
@@ -172,6 +174,8 @@ namespace Rock.Model
             filter.Id = 0;
             filter.Guid = Guid.NewGuid();
             filter.ForeignId = null;
+            filter.ForeignGuid = null;
+            filter.ForeignKey = null;
 
             // Recursively reset any contained filters.
             foreach ( var childFilter in filter.ChildFilters )

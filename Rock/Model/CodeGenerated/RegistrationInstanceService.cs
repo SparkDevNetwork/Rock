@@ -98,6 +98,8 @@ namespace Rock.Model
             target.ContactPhone = source.ContactPhone;
             target.Details = source.Details;
             target.EndDateTime = source.EndDateTime;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.MaxAttendees = source.MaxAttendees;
             target.Name = source.Name;

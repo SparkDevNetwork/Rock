@@ -131,6 +131,8 @@ namespace RockWeb.Blocks.Prayer
                     dtbLastName.Text = CurrentPerson.LastName;
                     dtbEmail.Text = CurrentPerson.Email;
                 }
+
+                dtbRequest.Text = PageParameter( "Request" );
             }
         }
 

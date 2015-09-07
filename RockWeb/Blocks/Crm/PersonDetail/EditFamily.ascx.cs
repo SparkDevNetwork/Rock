@@ -170,6 +170,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rblNewPersonGender.Items.Clear();
             rblNewPersonGender.Items.Add( new ListItem( Gender.Male.ConvertToString(), Gender.Male.ConvertToInt().ToString() ) );
             rblNewPersonGender.Items.Add( new ListItem( Gender.Female.ConvertToString(), Gender.Female.ConvertToInt().ToString() ) );
+            rblNewPersonGender.Items.Add( new ListItem( Gender.Unknown.ConvertToString(), Gender.Unknown.ConvertToInt().ToString() ) );
 
             btnSave.Visible = _canEdit;
 

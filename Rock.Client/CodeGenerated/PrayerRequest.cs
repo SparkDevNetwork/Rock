@@ -65,6 +65,12 @@ namespace Rock.Client
         public int? FlagCount { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public int? GroupId { get; set; }
 
         /// <summary />
@@ -95,7 +101,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source PrayerRequest object
@@ -114,6 +120,8 @@ namespace Rock.Client
             this.ExpirationDate = source.ExpirationDate;
             this.FirstName = source.FirstName;
             this.FlagCount = source.FlagCount;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
             this.IsActive = source.IsActive;
             this.IsApproved = source.IsApproved;

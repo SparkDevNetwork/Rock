@@ -672,13 +672,13 @@ namespace RockWeb.Blocks.Event
 
                 // Save the calendar items to the grid's objectlist
                 gEventCalendarItems.ObjectList = new Dictionary<string, object>();
-                calendarItemsWithDates.ForEach( i => gEventCalendarItems.ObjectList.Add( i.EventCalendarItem.Id.ToString(), i.EventCalendarItem ) );
+                calendarItemsWithDates.ForEach( i => gEventCalendarItems.ObjectList.Add( i.EventCalendarItem.EventItem.Id.ToString(), i.EventCalendarItem ) );
                 gEventCalendarItems.EntityTypeId = EntityTypeCache.Read( "Rock.Model.EventCalendarItem" ).Id;
 
                 gEventCalendarItems.DataSource = calendarItemsWithDates.Select( i => new
                 {
-                    i.EventCalendarItem.EventItem.Id,
-                    i.EventCalendarItem.EventItem.Guid,
+                    Id = i.EventCalendarItem.EventItem.Id,
+                    Guid = i.EventCalendarItem.EventItem.Guid,
                     Date = i.NextStartDateTime.HasValue ? i.NextStartDateTime.Value.ToShortDateString() : "N/A",
                     Name = i.EventCalendarItem.EventItem.Name,
                     Occurrences = campusIds.Any() ? 

@@ -50,6 +50,12 @@ namespace Rock.Client
         public string FirstName { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string GovernmentId { get; set; }
 
         /// <summary />
@@ -83,7 +89,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source BenevolenceRequest object
@@ -97,6 +103,8 @@ namespace Rock.Client
             this.ConnectionStatusValueId = source.ConnectionStatusValueId;
             this.Email = source.Email;
             this.FirstName = source.FirstName;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.GovernmentId = source.GovernmentId;
             this.HomePhoneNumber = source.HomePhoneNumber;
             this.LastName = source.LastName;

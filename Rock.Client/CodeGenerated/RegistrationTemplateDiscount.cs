@@ -44,6 +44,12 @@ namespace Rock.Client
         public decimal DiscountPercentage { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public int Order { get; set; }
 
         /// <summary />
@@ -53,7 +59,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source RegistrationTemplateDiscount object
@@ -65,6 +71,8 @@ namespace Rock.Client
             this.Code = source.Code;
             this.DiscountAmount = source.DiscountAmount;
             this.DiscountPercentage = source.DiscountPercentage;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.Order = source.Order;
             this.RegistrationTemplateId = source.RegistrationTemplateId;
             this.Guid = source.Guid;

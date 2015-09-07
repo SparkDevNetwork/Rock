@@ -88,6 +88,8 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this RegistrationTemplateForm target, RegistrationTemplateForm source )
         {
             target.Id = source.Id;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.Name = source.Name;
             target.Order = source.Order;
             target.RegistrationTemplateId = source.RegistrationTemplateId;

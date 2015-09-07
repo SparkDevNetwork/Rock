@@ -6,6 +6,7 @@
     <asp:HiddenField ID="hfTriggerScroll" runat="server" Value="" />
 
     <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+    <Rock:NotificationBox ID="nbPaymentValidation" runat="server" NotificationBoxType="Danger" Visible="false" />
 
     <Rock:NotificationBox ID="nbMain" runat="server" Visible="false"></Rock:NotificationBox>
 
@@ -154,30 +155,28 @@
             <div id="divPaymentInfo" runat="server" class="well">
 
                 <h4>Payment Information</h4>
-
-                <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false" Required="true"></Rock:RockTextBox>
-                <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false" Required="true"></Rock:RockTextBox>
-                <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false" Required="true"></Rock:RockTextBox>
-                <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="credit-card" Required="true" />
-
-                <ul class="card-logos list-unstyled">
-                    <li class="card-visa"></li>
-                    <li class="card-mastercard"></li>
-                    <li class="card-amex"></li>
-                    <li class="card-discover"></li>
-                </ul>
-                                        
-                <div class="row">
-                    <div class="col-sm-6">
-                        <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" Required="true" />
+                <Rock:RockRadioButtonList ID="rblSavedCC" runat="server" Label=" " CssClass="radio-list" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
+                <div id="divNewCard" runat="server" class="radio-content">
+                    <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="credit-card" />
+                    <ul class="card-logos list-unstyled">
+                        <li class="card-visa"></li>
+                        <li class="card-mastercard"></li>
+                        <li class="card-amex"></li>
+                        <li class="card-discover"></li>
+                    </ul>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
+                        </div>
+                        <div class="col-sm-6">
+                            <Rock:NumberBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" />
+                        </div>
                     </div>
-                    <div class="col-sm-6">
-                        <Rock:NumberBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" Required="true"/>
-                    </div>
+                    <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" ShowAddressLine2="false" />
                 </div>
-
-                <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" ShowAddressLine2="false" 
-                    Required="true" RequiredErrorMessage="Billing Address is required" />
 
             </div>
 
@@ -195,6 +194,42 @@
         <h1><asp:Literal ID="lSuccessTitle" runat="server" /></h1>
         <asp:Literal ID="lSuccess" runat="server" />
         <asp:Literal ID="lSuccessDebug" runat="server" Visible="false" />
+
+        <asp:Panel ID="pnlSaveAccount" runat="server" Visible="false">
+            <div class="well">
+                <legend>Make Payments Even Easier</legend>
+                <fieldset>
+                    <Rock:RockCheckBox ID="cbSaveAccount" runat="server" Text="Save account information for future transactions" CssClass="toggle-input" />
+                    <div id="divSaveAccount" runat="server" class="toggle-content">
+                        <Rock:RockTextBox ID="txtSaveAccount" runat="server" Label="Name for this account" CssClass="input-large"></Rock:RockTextBox>
+
+                        <asp:PlaceHolder ID="phCreateLogin" runat="server" Visible="false">
+
+                            <div class="control-group">
+                                <div class="controls">
+                                    <div class="alert alert-info">
+                                        <b>Note:</b> For security purposes you will need to login to use your saved account information.  To create
+	    			                a login account please provide a user name and password below. You will be sent an email with the account 
+	    			                information above as a reminder.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <Rock:RockTextBox ID="txtUserName" runat="server" Label="Username" CssClass="input-medium" />
+                            <Rock:RockTextBox ID="txtPassword" runat="server" Label="Password" CssClass="input-medium" TextMode="Password" />
+                            <Rock:RockTextBox ID="txtPasswordConfirm" runat="server" Label="Confirm Password" CssClass="input-medium" TextMode="Password" />
+
+                        </asp:PlaceHolder>
+
+                        <Rock:NotificationBox ID="nbSaveAccount" runat="server" Visible="false" NotificationBoxType="Danger"></Rock:NotificationBox>
+
+                        <div id="divSaveActions" runat="server" class="actions">
+                            <asp:LinkButton ID="lbSaveAccount" runat="server" Text="Save Account" CssClass="btn btn-primary" OnClick="lbSaveAccount_Click" />
+                        </div>
+                    </div>
+                </fieldset>                    
+            </div>
+        </asp:Panel>
 
     </asp:Panel>
 

@@ -90,6 +90,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AuditId = source.AuditId;
             target.CurrentValue = source.CurrentValue;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.OriginalValue = source.OriginalValue;
             target.Property = source.Property;
             target.Guid = source.Guid;

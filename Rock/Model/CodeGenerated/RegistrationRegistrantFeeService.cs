@@ -89,6 +89,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.Cost = source.Cost;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.Option = source.Option;
             target.Quantity = source.Quantity;
             target.RegistrationRegistrantId = source.RegistrationRegistrantId;

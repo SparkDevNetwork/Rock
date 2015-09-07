@@ -96,6 +96,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.EntityTypeId = source.EntityTypeId;
             target.ExpressionType = source.ExpressionType;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.ParentId = source.ParentId;
             target.Selection = source.Selection;
             target.CreatedDateTime = source.CreatedDateTime;
