@@ -95,6 +95,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.ConnectionTypeId = source.ConnectionTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.Name = source.Name;
             target.CreatedDateTime = source.CreatedDateTime;

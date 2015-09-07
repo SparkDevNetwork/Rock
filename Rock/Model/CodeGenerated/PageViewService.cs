@@ -90,6 +90,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.ClientType = source.ClientType;
             target.DateTimeViewed = source.DateTimeViewed;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IpAddress = source.IpAddress;
             target.PageId = source.PageId;
             target.PageTitle = source.PageTitle;

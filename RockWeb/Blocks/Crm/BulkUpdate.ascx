@@ -133,6 +133,7 @@
 
                     <Rock:PanelWidget ID="pwNote" runat="server" Title="Add note" TitleIconCssClass="fa fa-file-text-o" Expanded="false">
                         <div class="panel-noteentry">
+                            <Rock:RockDropDownList ID="ddlNoteType" runat="server" Label="Note Type" />
                             <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="3" />
                             <div class="settings clearfix">
                                 <div class="options pull-left">

@@ -36,7 +36,7 @@ namespace Rock.Model
         public IQueryable<IEntity> GetEntityQuery( int entitySetId )
         {
             var entitySet = this.Get( entitySetId );
-            if (!entitySet.EntityTypeId.HasValue)
+            if ( !entitySet.EntityTypeId.HasValue )
             {
                 // the EntitySet Items are not IEntity items
                 return null;
@@ -76,5 +76,56 @@ namespace Rock.Model
 
             return null;
         }
+
+        /// <summary>
+        /// Gets the entity items with the Entity when the Type is known at design time
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public IQueryable<EntityQueryResult<T>> GetEntityItems<T>() where T : Rock.Data.Entity<T>, new()
+        {
+            var rockContext = this.Context as RockContext;
+            var entitySetItemsService = new EntitySetItemService( rockContext );
+            var entityItemQry = entitySetItemsService.Queryable();
+
+            var entityQry = new Service<T>( this.Context as RockContext ).Queryable();
+
+            var joinQry = entityItemQry.Join( entityQry, k => k.EntityId, i => i.Id, ( setItem, item ) => new
+            {
+                Item = item,
+                EntitySetId = setItem.EntitySetId,
+                ItemOrder = setItem.Order
+            } ).OrderBy( a => a.ItemOrder ).ThenBy( a => a.Item.Id );
+
+            return joinQry.Select( a => new EntityQueryResult<T>
+            {
+                EntitySetId = a.EntitySetId,
+                Item = a.Item
+            } );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public class EntityQueryResult<T>
+        {
+            /// <summary>
+            /// Gets or sets the entity set identifier.
+            /// </summary>
+            /// <value>
+            /// The entity set identifier.
+            /// </value>
+            public int EntitySetId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the item.
+            /// </summary>
+            /// <value>
+            /// The item.
+            /// </value>
+            public T Item { get; set; }
+        }
+
     }
 }

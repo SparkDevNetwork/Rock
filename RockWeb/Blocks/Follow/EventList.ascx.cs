@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.Follow
             rGridEvent.DataKeyNames = new string[] { "Id" };
             rGridEvent.Actions.ShowAdd = canEdit;
             rGridEvent.Actions.AddClick += rGridEvent_Add;
+            rGridEvent.GridReorder += rGridEvent_GridReorder;
             rGridEvent.GridRebind += rGridEvents_GridRebind;
             rGridEvent.IsDeleteEnabled = canEdit;
         }
@@ -129,6 +130,22 @@ namespace RockWeb.Blocks.Follow
         }
 
         /// <summary>
+        /// Handles the GridReorder event of the rGridEvent control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        void rGridEvent_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            var rockContext = new RockContext();
+            var service = new FollowingEventTypeService( rockContext );
+            var followingEvents = service.Queryable().OrderBy( i => i.Order ).ToList();
+            service.Reorder( followingEvents, e.OldIndex, e.NewIndex );
+            rockContext.SaveChanges();
+
+            BindGrid();
+        }
+
+        /// <summary>
         /// Handles the GridRebind event of the rGridEvent control.
         /// </summary>
         /// <param name="sendder">The source of the event.</param>
@@ -150,17 +167,8 @@ namespace RockWeb.Blocks.Follow
             using ( var rockContext = new RockContext() )
             {
                 var qry = new FollowingEventTypeService( rockContext )
-                    .Queryable( "EntityType" ).AsNoTracking();
-
-                SortProperty sortProperty = rGridEvent.SortProperty;
-                if ( sortProperty != null )
-                {
-                    qry = qry.Sort( sortProperty );
-                }
-                else
-                {
-                    qry = qry.OrderBy( g => g.Name );
-                }
+                    .Queryable( "EntityType" ).AsNoTracking()
+                    .OrderBy( e => e.Order );
 
                 rGridEvent.DataSource = qry.ToList();
                 rGridEvent.DataBind();

@@ -93,6 +93,8 @@ namespace Rock.Model
             target.DiscountCode = source.DiscountCode;
             target.DiscountPercentage = source.DiscountPercentage;
             target.FirstName = source.FirstName;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
             target.LastName = source.LastName;
             target.PersonAliasId = source.PersonAliasId;

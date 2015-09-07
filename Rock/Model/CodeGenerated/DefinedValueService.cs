@@ -88,6 +88,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<EntitySet>( Context ).Queryable().Any( a => a.EntitySetPurposeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, EntitySet.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<EventItemAudience>( Context ).Queryable().Any( a => a.DefinedValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, EventItemAudience.FriendlyTypeName );
@@ -258,6 +264,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.DefinedTypeId = source.DefinedTypeId;
             target.Description = source.Description;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsSystem = source.IsSystem;
             target.Order = source.Order;
             target.Value = source.Value;

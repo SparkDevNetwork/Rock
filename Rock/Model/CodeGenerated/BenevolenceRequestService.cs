@@ -93,6 +93,8 @@ namespace Rock.Model
             target.ConnectionStatusValueId = source.ConnectionStatusValueId;
             target.Email = source.Email;
             target.FirstName = source.FirstName;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GovernmentId = source.GovernmentId;
             target.HomePhoneNumber = source.HomePhoneNumber;
             target.LastName = source.LastName;

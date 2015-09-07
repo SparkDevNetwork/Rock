@@ -47,6 +47,12 @@ namespace Rock.Client
         public Rock.Client.Enums.RegistrationFeeType FeeType { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string Name { get; set; }
 
         /// <summary />
@@ -59,7 +65,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source RegistrationTemplateFee object
@@ -72,6 +78,8 @@ namespace Rock.Client
             this.CostValue = source.CostValue;
             this.DiscountApplies = source.DiscountApplies;
             this.FeeType = source.FeeType;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.Name = source.Name;
             this.Order = source.Order;
             this.RegistrationTemplateId = source.RegistrationTemplateId;

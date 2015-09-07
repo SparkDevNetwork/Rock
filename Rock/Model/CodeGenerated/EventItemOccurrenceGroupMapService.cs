@@ -89,6 +89,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.EventItemOccurrenceId = source.EventItemOccurrenceId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
             target.PublicName = source.PublicName;
             target.RegistrationInstanceId = source.RegistrationInstanceId;

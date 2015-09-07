@@ -59,6 +59,12 @@ namespace Rock.Client
         public DateTime? EndDateTime { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public bool IsActive { get; set; }
 
         /// <summary />
@@ -83,7 +89,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source RegistrationInstance object
@@ -100,6 +106,8 @@ namespace Rock.Client
             this.ContactPhone = source.ContactPhone;
             this.Details = source.Details;
             this.EndDateTime = source.EndDateTime;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
             this.MaxAttendees = source.MaxAttendees;
             this.Name = source.Name;

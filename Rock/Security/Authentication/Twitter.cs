@@ -50,8 +50,19 @@ namespace Rock.Security.ExternalAuthentication
 
     public class Twitter : AuthenticationComponent
     {
+        /// <summary>
+        /// The _oauth token
+        /// </summary>
         private string _oauthToken = null;
+        
+        /// <summary>
+        /// The _oauth token secret
+        /// </summary>
         private string _oauthTokenSecret = null;
+        
+        /// <summary>
+        /// The _return URL
+        /// </summary>
         private string _returnUrl = null;
 
         /// <summary>
@@ -113,6 +124,10 @@ namespace Rock.Security.ExternalAuthentication
 
         }
 
+        /// <summary>
+        /// Gets the request token.
+        /// </summary>
+        /// <param name="redirectUri">The redirect URI.</param>
         public void RequestToken( string redirectUri )
         {
             // Obtain request token
@@ -187,6 +202,11 @@ namespace Rock.Security.ExternalAuthentication
             return !string.IsNullOrWhiteSpace( username );
         }
 
+        /// <summary>
+        /// Gets the redirect URL.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
         private string GetRedirectUrl( HttpRequest request )
         {
             Uri uri = new Uri( request.Url.ToString() );
@@ -260,7 +280,7 @@ namespace Rock.Security.ExternalAuthentication
         /// <summary>
         /// Gets the name of the Twitter user.
         /// </summary>
-        /// <param name="googleUser">The Twitter user.</param>
+        /// <param name="twitterUser">The Twitter user.</param>
         /// <param name="accessToken">The access token.</param>
         /// <returns></returns>
         public static string GetTwitterUser( dynamic twitterUser, string accessToken = "" )
@@ -407,104 +427,563 @@ namespace Rock.Security.ExternalAuthentication
         public class TwitterUser
         {
 
+            /// <summary>
+            /// 
+            /// </summary>
             public class Coordinates
             {
+                /// <summary>
+                /// Gets or sets the coordinates.
+                /// </summary>
+                /// <value>
+                /// The coordinates.
+                /// </value>
                 public List<double> coordinates { get; set; }
+                /// <summary>
+                /// Gets or sets the type.
+                /// </summary>
+                /// <value>
+                /// The type.
+                /// </value>
                 public string type { get; set; }
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
             public class Geo
             {
+                /// <summary>
+                /// Gets or sets the coordinates.
+                /// </summary>
+                /// <value>
+                /// The coordinates.
+                /// </value>
                 public List<double> coordinates { get; set; }
+                /// <summary>
+                /// Gets or sets the type.
+                /// </summary>
+                /// <value>
+                /// The type.
+                /// </value>
                 public string type { get; set; }
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
             public class Attributes
             {
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
             public class BoundingBox
             {
+                /// <summary>
+                /// Gets or sets the coordinates.
+                /// </summary>
+                /// <value>
+                /// The coordinates.
+                /// </value>
                 public List<List<List<double>>> coordinates { get; set; }
+                /// <summary>
+                /// Gets or sets the type.
+                /// </summary>
+                /// <value>
+                /// The type.
+                /// </value>
                 public string type { get; set; }
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
             public class Place
             {
+                /// <summary>
+                /// Gets or sets the attributes.
+                /// </summary>
+                /// <value>
+                /// The attributes.
+                /// </value>
                 public Attributes attributes { get; set; }
+                /// <summary>
+                /// Gets or sets the bounding_box.
+                /// </summary>
+                /// <value>
+                /// The bounding_box.
+                /// </value>
                 public BoundingBox bounding_box { get; set; }
+                /// <summary>
+                /// Gets or sets the country.
+                /// </summary>
+                /// <value>
+                /// The country.
+                /// </value>
                 public string country { get; set; }
+                /// <summary>
+                /// Gets or sets the country_code.
+                /// </summary>
+                /// <value>
+                /// The country_code.
+                /// </value>
                 public string country_code { get; set; }
+                /// <summary>
+                /// Gets or sets the full_name.
+                /// </summary>
+                /// <value>
+                /// The full_name.
+                /// </value>
                 public string full_name { get; set; }
+                /// <summary>
+                /// Gets or sets the identifier.
+                /// </summary>
+                /// <value>
+                /// The identifier.
+                /// </value>
                 public string id { get; set; }
+                /// <summary>
+                /// Gets or sets the name.
+                /// </summary>
+                /// <value>
+                /// The name.
+                /// </value>
                 public string name { get; set; }
+                /// <summary>
+                /// Gets or sets the place_type.
+                /// </summary>
+                /// <value>
+                /// The place_type.
+                /// </value>
                 public string place_type { get; set; }
+                /// <summary>
+                /// Gets or sets the URL.
+                /// </summary>
+                /// <value>
+                /// The URL.
+                /// </value>
                 public string url { get; set; }
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
             public class Status
             {
+                /// <summary>
+                /// Gets or sets the contributors.
+                /// </summary>
+                /// <value>
+                /// The contributors.
+                /// </value>
                 public object contributors { get; set; }
+                /// <summary>
+                /// Gets or sets the coordinates.
+                /// </summary>
+                /// <value>
+                /// The coordinates.
+                /// </value>
                 public Coordinates coordinates { get; set; }
+                /// <summary>
+                /// Gets or sets the created_at.
+                /// </summary>
+                /// <value>
+                /// The created_at.
+                /// </value>
                 public string created_at { get; set; }
+                /// <summary>
+                /// Gets or sets a value indicating whether this <see cref="Status"/> is favorited.
+                /// </summary>
+                /// <value>
+                ///   <c>true</c> if favorited; otherwise, <c>false</c>.
+                /// </value>
                 public bool favorited { get; set; }
+                /// <summary>
+                /// Gets or sets the geo.
+                /// </summary>
+                /// <value>
+                /// The geo.
+                /// </value>
                 public Geo geo { get; set; }
+                /// <summary>
+                /// Gets or sets the identifier.
+                /// </summary>
+                /// <value>
+                /// The identifier.
+                /// </value>
                 public long id { get; set; }
+                /// <summary>
+                /// Gets or sets the id_str.
+                /// </summary>
+                /// <value>
+                /// The id_str.
+                /// </value>
                 public string id_str { get; set; }
+                /// <summary>
+                /// Gets or sets the in_reply_to_screen_name.
+                /// </summary>
+                /// <value>
+                /// The in_reply_to_screen_name.
+                /// </value>
                 public string in_reply_to_screen_name { get; set; }
+                /// <summary>
+                /// Gets or sets the in_reply_to_status_id.
+                /// </summary>
+                /// <value>
+                /// The in_reply_to_status_id.
+                /// </value>
                 public long in_reply_to_status_id { get; set; }
+                /// <summary>
+                /// Gets or sets the in_reply_to_status_id_str.
+                /// </summary>
+                /// <value>
+                /// The in_reply_to_status_id_str.
+                /// </value>
                 public string in_reply_to_status_id_str { get; set; }
+                /// <summary>
+                /// Gets or sets the in_reply_to_user_id.
+                /// </summary>
+                /// <value>
+                /// The in_reply_to_user_id.
+                /// </value>
                 public int in_reply_to_user_id { get; set; }
+                /// <summary>
+                /// Gets or sets the in_reply_to_user_id_str.
+                /// </summary>
+                /// <value>
+                /// The in_reply_to_user_id_str.
+                /// </value>
                 public string in_reply_to_user_id_str { get; set; }
+                /// <summary>
+                /// Gets or sets the place.
+                /// </summary>
+                /// <value>
+                /// The place.
+                /// </value>
                 public Place place { get; set; }
+                /// <summary>
+                /// Gets or sets the retweet_count.
+                /// </summary>
+                /// <value>
+                /// The retweet_count.
+                /// </value>
                 public int retweet_count { get; set; }
+                /// <summary>
+                /// Gets or sets a value indicating whether this <see cref="Status"/> is retweeted.
+                /// </summary>
+                /// <value>
+                ///   <c>true</c> if retweeted; otherwise, <c>false</c>.
+                /// </value>
                 public bool retweeted { get; set; }
+                /// <summary>
+                /// Gets or sets the source.
+                /// </summary>
+                /// <value>
+                /// The source.
+                /// </value>
                 public string source { get; set; }
+                /// <summary>
+                /// Gets or sets the text.
+                /// </summary>
+                /// <value>
+                /// The text.
+                /// </value>
                 public string text { get; set; }
+                /// <summary>
+                /// Gets or sets a value indicating whether this <see cref="Status"/> is truncated.
+                /// </summary>
+                /// <value>
+                ///   <c>true</c> if truncated; otherwise, <c>false</c>.
+                /// </value>
                 public bool truncated { get; set; }
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
             public class RootObject
             {
+                /// <summary>
+                /// Gets or sets a value indicating whether this <see cref="RootObject"/> is contributors_enabled.
+                /// </summary>
+                /// <value>
+                ///   <c>true</c> if contributors_enabled; otherwise, <c>false</c>.
+                /// </value>
                 public bool contributors_enabled { get; set; }
+                /// <summary>
+                /// Gets or sets the created_at.
+                /// </summary>
+                /// <value>
+                /// The created_at.
+                /// </value>
                 public string created_at { get; set; }
+                /// <summary>
+                /// Gets or sets a value indicating whether this <see cref="RootObject"/> is default_profile.
+                /// </summary>
+                /// <value>
+                ///   <c>true</c> if default_profile; otherwise, <c>false</c>.
+                /// </value>
                 public bool default_profile { get; set; }
+                /// <summary>
+                /// Gets or sets a value indicating whether this <see cref="RootObject"/> is default_profile_image.
+                /// </summary>
+                /// <value>
+                ///   <c>true</c> if default_profile_image; otherwise, <c>false</c>.
+                /// </value>
                 public bool default_profile_image { get; set; }
+                /// <summary>
+                /// Gets or sets the description.
+                /// </summary>
+                /// <value>
+                /// The description.
+                /// </value>
                 public string description { get; set; }
+                /// <summary>
+                /// Gets or sets the email.
+                /// </summary>
+                /// <value>
+                /// The email.
+                /// </value>
                 public string email { get; set; }
+                /// <summary>
+                /// Gets or sets the favourites_count.
+                /// </summary>
+                /// <value>
+                /// The favourites_count.
+                /// </value>
                 public int favourites_count { get; set; }
+                /// <summary>
+                /// Gets or sets the follow_request_sent.
+                /// </summary>
+                /// <value>
+                /// The follow_request_sent.
+                /// </value>
                 public object follow_request_sent { get; set; }
+                /// <summary>
+                /// Gets or sets the followers_count.
+                /// </summary>
+                /// <value>
+                /// The followers_count.
+                /// </value>
                 public int followers_count { get; set; }
+                /// <summary>
+                /// Gets or sets the following.
+                /// </summary>
+                /// <value>
+                /// The following.
+                /// </value>
                 public object following { get; set; }
+                /// <summary>
+                /// Gets or sets the friends_count.
+                /// </summary>
+                /// <value>
+                /// The friends_count.
+                /// </value>
                 public int friends_count { get; set; }
+                /// <summary>
+                /// Gets or sets a value indicating whether this <see cref="RootObject"/> is geo_enabled.
+                /// </summary>
+                /// <value>
+                ///   <c>true</c> if geo_enabled; otherwise, <c>false</c>.
+                /// </value>
                 public bool geo_enabled { get; set; }
+                /// <summary>
+                /// Gets or sets the identifier.
+                /// </summary>
+                /// <value>
+                /// The identifier.
+                /// </value>
                 public int id { get; set; }
+                /// <summary>
+                /// Gets or sets the id_str.
+                /// </summary>
+                /// <value>
+                /// The id_str.
+                /// </value>
                 public string id_str { get; set; }
+                /// <summary>
+                /// Gets or sets a value indicating whether this <see cref="RootObject"/> is is_translator.
+                /// </summary>
+                /// <value>
+                ///   <c>true</c> if is_translator; otherwise, <c>false</c>.
+                /// </value>
                 public bool is_translator { get; set; }
+                /// <summary>
+                /// Gets or sets the language.
+                /// </summary>
+                /// <value>
+                /// The language.
+                /// </value>
                 public string lang { get; set; }
+                /// <summary>
+                /// Gets or sets the listed_count.
+                /// </summary>
+                /// <value>
+                /// The listed_count.
+                /// </value>
                 public int listed_count { get; set; }
+                /// <summary>
+                /// Gets or sets the location.
+                /// </summary>
+                /// <value>
+                /// The location.
+                /// </value>
                 public string location { get; set; }
+                /// <summary>
+                /// Gets or sets the name.
+                /// </summary>
+                /// <value>
+                /// The name.
+                /// </value>
                 public string name { get; set; }
+                /// <summary>
+                /// Gets or sets the notifications.
+                /// </summary>
+                /// <value>
+                /// The notifications.
+                /// </value>
                 public object notifications { get; set; }
+                /// <summary>
+                /// Gets or sets the profile_background_color.
+                /// </summary>
+                /// <value>
+                /// The profile_background_color.
+                /// </value>
                 public string profile_background_color { get; set; }
+                /// <summary>
+                /// Gets or sets the profile_background_image_url.
+                /// </summary>
+                /// <value>
+                /// The profile_background_image_url.
+                /// </value>
                 public string profile_background_image_url { get; set; }
+                /// <summary>
+                /// Gets or sets the profile_background_image_url_https.
+                /// </summary>
+                /// <value>
+                /// The profile_background_image_url_https.
+                /// </value>
                 public string profile_background_image_url_https { get; set; }
+                /// <summary>
+                /// Gets or sets a value indicating whether this <see cref="RootObject"/> is profile_background_tile.
+                /// </summary>
+                /// <value>
+                ///   <c>true</c> if profile_background_tile; otherwise, <c>false</c>.
+                /// </value>
                 public bool profile_background_tile { get; set; }
+                /// <summary>
+                /// Gets or sets the profile_image_url.
+                /// </summary>
+                /// <value>
+                /// The profile_image_url.
+                /// </value>
                 public string profile_image_url { get; set; }
+                /// <summary>
+                /// Gets or sets the profile_image_url_https.
+                /// </summary>
+                /// <value>
+                /// The profile_image_url_https.
+                /// </value>
                 public string profile_image_url_https { get; set; }
+                /// <summary>
+                /// Gets or sets the profile_link_color.
+                /// </summary>
+                /// <value>
+                /// The profile_link_color.
+                /// </value>
                 public string profile_link_color { get; set; }
+                /// <summary>
+                /// Gets or sets the profile_sidebar_border_color.
+                /// </summary>
+                /// <value>
+                /// The profile_sidebar_border_color.
+                /// </value>
                 public string profile_sidebar_border_color { get; set; }
+                /// <summary>
+                /// Gets or sets the profile_sidebar_fill_color.
+                /// </summary>
+                /// <value>
+                /// The profile_sidebar_fill_color.
+                /// </value>
                 public string profile_sidebar_fill_color { get; set; }
+                /// <summary>
+                /// Gets or sets the profile_text_color.
+                /// </summary>
+                /// <value>
+                /// The profile_text_color.
+                /// </value>
                 public string profile_text_color { get; set; }
+                /// <summary>
+                /// Gets or sets a value indicating whether this <see cref="RootObject"/> is profile_use_background_image.
+                /// </summary>
+                /// <value>
+                /// <c>true</c> if profile_use_background_image; otherwise, <c>false</c>.
+                /// </value>
                 public bool profile_use_background_image { get; set; }
+                /// <summary>
+                /// Gets or sets a value indicating whether this <see cref="RootObject"/> is protected.
+                /// </summary>
+                /// <value>
+                ///   <c>true</c> if protected; otherwise, <c>false</c>.
+                /// </value>
                 public bool @protected { get; set; }
+                /// <summary>
+                /// Gets or sets the screen_name.
+                /// </summary>
+                /// <value>
+                /// The screen_name.
+                /// </value>
                 public string screen_name { get; set; }
+                /// <summary>
+                /// Gets or sets a value indicating whether this <see cref="RootObject"/> is show_all_inline_media.
+                /// </summary>
+                /// <value>
+                ///   <c>true</c> if show_all_inline_media; otherwise, <c>false</c>.
+                /// </value>
                 public bool show_all_inline_media { get; set; }
+                /// <summary>
+                /// Gets or sets the status.
+                /// </summary>
+                /// <value>
+                /// The status.
+                /// </value>
                 public Status status { get; set; }
+                /// <summary>
+                /// Gets or sets the statuses_count.
+                /// </summary>
+                /// <value>
+                /// The statuses_count.
+                /// </value>
                 public int statuses_count { get; set; }
+                /// <summary>
+                /// Gets or sets the time_zone.
+                /// </summary>
+                /// <value>
+                /// The time_zone.
+                /// </value>
                 public string time_zone { get; set; }
+                /// <summary>
+                /// Gets or sets the URL.
+                /// </summary>
+                /// <value>
+                /// The URL.
+                /// </value>
                 public object url { get; set; }
+                /// <summary>
+                /// Gets or sets the utc_offset.
+                /// </summary>
+                /// <value>
+                /// The utc_offset.
+                /// </value>
                 public int utc_offset { get; set; }
+                /// <summary>
+                /// Gets or sets a value indicating whether this <see cref="RootObject"/> is verified.
+                /// </summary>
+                /// <value>
+                ///   <c>true</c> if verified; otherwise, <c>false</c>.
+                /// </value>
                 public bool verified { get; set; }
             }
         }

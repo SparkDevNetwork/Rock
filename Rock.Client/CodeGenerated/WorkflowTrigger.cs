@@ -47,6 +47,12 @@ namespace Rock.Client
         public string EntityTypeQualifierValuePrevious { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public bool? IsActive { get; set; }
 
         /// <summary />
@@ -65,7 +71,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source WorkflowTrigger object
@@ -78,6 +84,8 @@ namespace Rock.Client
             this.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             this.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
             this.EntityTypeQualifierValuePrevious = source.EntityTypeQualifierValuePrevious;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
             this.IsSystem = source.IsSystem;
             this.WorkflowName = source.WorkflowName;

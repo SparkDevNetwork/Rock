@@ -251,6 +251,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AssemblyName = source.AssemblyName;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.FriendlyName = source.FriendlyName;
             target.IsCommon = source.IsCommon;
             target.IsEntity = source.IsEntity;

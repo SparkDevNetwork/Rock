@@ -33,7 +33,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "FollowingSuggestionType" )]
     [DataContract]
-    public partial class FollowingSuggestionType : Model<FollowingSuggestionType>
+    public partial class FollowingSuggestionType : Model<FollowingSuggestionType>, IOrdered
     {
         #region Entity Properties
 
@@ -85,6 +85,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? EntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [DataMember]
+        public int Order { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.

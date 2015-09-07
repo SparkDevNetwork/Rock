@@ -135,6 +135,8 @@ namespace Rock.Model
             target.CampusId = source.CampusId;
             target.Description = source.Description;
             target.ExitSystemEmailId = source.ExitSystemEmailId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupTypeId = source.GroupTypeId;
             target.IsActive = source.IsActive;
             target.IsPublic = source.IsPublic;

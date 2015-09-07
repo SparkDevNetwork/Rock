@@ -87,16 +87,15 @@
 
                             <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                            <div class="row">
-                                <asp:Literal ID="lblMainDetails" runat="server" />
-                            </div>
-
                             <div class="actions">
                                 <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                                 <asp:LinkButton ID="btnCopy" runat="server" Text="Copy" CssClass="btn btn-link" OnClick="btnCopy_Click" />
                                 <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
-                                <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security pull-right" />
+                                <div class="pull-right">
+                                    <asp:LinkButton ID="lbDataView" runat="server" Text="Data View" CssClass="btn btn-link" OnClick="lbDataView_Click" />
+                                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security pull-right" />
+                                </div>
                             </div>
                         </div>
 

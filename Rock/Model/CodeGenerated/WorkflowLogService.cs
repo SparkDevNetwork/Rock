@@ -88,6 +88,8 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this WorkflowLog target, WorkflowLog source )
         {
             target.Id = source.Id;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.LogDateTime = source.LogDateTime;
             target.LogText = source.LogText;
             target.WorkflowId = source.WorkflowId;

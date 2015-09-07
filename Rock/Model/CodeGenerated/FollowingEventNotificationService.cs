@@ -90,6 +90,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.EntityId = source.EntityId;
             target.FollowingEventTypeId = source.FollowingEventTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.LastNotified = source.LastNotified;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

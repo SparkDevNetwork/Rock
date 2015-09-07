@@ -89,6 +89,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.EventTypeId = source.EventTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.PersonAliasId = source.PersonAliasId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

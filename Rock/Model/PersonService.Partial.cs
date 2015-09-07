@@ -1006,7 +1006,9 @@ namespace Rock.Model
         /// Splits a full name into a separate first and last name. If only one name is found it defaults to first name.
         /// </summary>
         /// <param name="fullName">The full name</param>
-        public void SplitName( string fullName, out string firstName, out string lastName)
+        /// <param name="firstName">The first name.</param>
+        /// <param name="lastName">The last name.</param>
+        public void SplitName( string fullName, out string firstName, out string lastName )
         {
             //Uses logic from IQueryable<Person> GetByFullName
             firstName = string.Empty;

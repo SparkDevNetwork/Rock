@@ -94,6 +94,8 @@ namespace Rock.Model
             target.DidAttend = source.DidAttend;
             target.DidNotOccur = source.DidNotOccur;
             target.EndDateTime = source.EndDateTime;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
             target.LocationId = source.LocationId;
             target.Note = source.Note;

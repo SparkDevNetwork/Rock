@@ -96,6 +96,8 @@ namespace Rock.Model
             target.EnableMobileRedirect = source.EnableMobileRedirect;
             target.ErrorPage = source.ErrorPage;
             target.ExternalUrl = source.ExternalUrl;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
             target.IsSystem = source.IsSystem;
             target.LoginPageId = source.LoginPageId;

@@ -344,26 +344,30 @@ namespace Rock.Jobs
 
             foreach ( var entitySet in qry.ToList() )
             {
-                // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
-                bool keepDeleting = true;
-                while ( keepDeleting )
+                string deleteWarning;
+                if ( entitySetService.CanDelete( entitySet, out deleteWarning ) )
                 {
-                    var dbTransaction = entitySetRockContext.Database.BeginTransaction();
-                    try
+                    // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
+                    bool keepDeleting = true;
+                    while ( keepDeleting )
                     {
-                        string sqlCommand = @"DELETE TOP (1000) FROM [EntitySetItem] WHERE [EntitySetId] = @entitySetId";
+                        var dbTransaction = entitySetRockContext.Database.BeginTransaction();
+                        try
+                        {
+                            string sqlCommand = @"DELETE TOP (1000) FROM [EntitySetItem] WHERE [EntitySetId] = @entitySetId";
 
-                        int rowsDeleted = entitySetRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "entitySetId", entitySet.Id ) );
-                        keepDeleting = rowsDeleted > 0;
+                            int rowsDeleted = entitySetRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "entitySetId", entitySet.Id ) );
+                            keepDeleting = rowsDeleted > 0;
+                        }
+                        finally
+                        {
+                            dbTransaction.Commit();
+                        }
                     }
-                    finally
-                    {
-                        dbTransaction.Commit();
-                    }
+
+                    entitySetService.Delete( entitySet );
+                    entitySetRockContext.SaveChanges();
                 }
-
-                entitySetService.Delete( entitySet );
-                entitySetRockContext.SaveChanges();
             }
 
         }

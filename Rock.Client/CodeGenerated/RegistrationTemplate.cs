@@ -68,6 +68,12 @@ namespace Rock.Client
         public int? FinancialGatewayId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public int? GroupMemberRoleId { get; set; }
 
         /// <summary />
@@ -128,7 +134,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source RegistrationTemplate object
@@ -148,6 +154,8 @@ namespace Rock.Client
             this.DiscountCodeTerm = source.DiscountCodeTerm;
             this.FeeTerm = source.FeeTerm;
             this.FinancialGatewayId = source.FinancialGatewayId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.GroupMemberRoleId = source.GroupMemberRoleId;
             this.GroupMemberStatus = source.GroupMemberStatus;
             this.GroupTypeId = source.GroupTypeId;

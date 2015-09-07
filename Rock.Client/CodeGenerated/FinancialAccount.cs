@@ -47,6 +47,12 @@ namespace Rock.Client
         public DateTime? EndDate { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string GlCode { get; set; }
 
         /// <summary />
@@ -86,7 +92,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source FinancialAccount object
@@ -99,6 +105,8 @@ namespace Rock.Client
             this.CampusId = source.CampusId;
             this.Description = source.Description;
             this.EndDate = source.EndDate;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.GlCode = source.GlCode;
             this.ImageBinaryFileId = source.ImageBinaryFileId;
             this.IsActive = source.IsActive;

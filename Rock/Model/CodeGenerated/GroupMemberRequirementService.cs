@@ -88,6 +88,8 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupMemberRequirement target, GroupMemberRequirement source )
         {
             target.Id = source.Id;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupMemberId = source.GroupMemberId;
             target.GroupRequirementId = source.GroupRequirementId;
             target.LastRequirementCheckDateTime = source.LastRequirementCheckDateTime;

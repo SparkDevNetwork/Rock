@@ -44,6 +44,12 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public int? GroupTypeId { get; set; }
 
         /// <summary />
@@ -71,7 +77,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source GroupTypeRole object
@@ -83,6 +89,8 @@ namespace Rock.Client
             this.CanEdit = source.CanEdit;
             this.CanView = source.CanView;
             this.Description = source.Description;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.GroupTypeId = source.GroupTypeId;
             this.IsLeader = source.IsLeader;
             this.IsSystem = source.IsSystem;

@@ -172,7 +172,7 @@
                             <Rock:TermDescription runat="server" />
                             <asp:Repeater ID="rptAccountListConfirmation" runat="server">
                                 <ItemTemplate>
-                                    <Rock:TermDescription ID="tdAmount" runat="server" Term='<%# Eval("Name") %>' Description='<%# Eval("AmountFormatted") %>' />
+                                    <Rock:TermDescription ID="tdAmount" runat="server" Term='<%# Eval("PublicName") %>' Description='<%# Eval("AmountFormatted") %>' />
                                 </ItemTemplate>
                             </asp:Repeater>
                             <Rock:TermDescription ID="tdTotalConfirm" runat="server" Term="Total" />
@@ -212,7 +212,7 @@
                     <Rock:TermDescription runat="server" />
                     <asp:Repeater ID="rptAccountListReceipt" runat="server">
 	                    <ItemTemplate>
-		                    <Rock:TermDescription ID="tdAccountAmountReceipt" runat="server" Term='<%# Eval("Name") %>' Description='<%# Eval("AmountFormatted") %>' />
+		                    <Rock:TermDescription ID="tdAccountAmountReceipt" runat="server" Term='<%# Eval("PublicName") %>' Description='<%# Eval("AmountFormatted") %>' />
 	                    </ItemTemplate>
                     </asp:Repeater>
                     <Rock:TermDescription ID="tdTotalReceipt" runat="server" Term="Total" />

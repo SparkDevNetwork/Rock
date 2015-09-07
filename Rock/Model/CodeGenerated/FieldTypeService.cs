@@ -115,6 +115,8 @@ namespace Rock.Model
             target.Assembly = source.Assembly;
             target.Class = source.Class;
             target.Description = source.Description;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
             target.CreatedDateTime = source.CreatedDateTime;

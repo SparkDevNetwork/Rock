@@ -47,6 +47,12 @@ namespace Rock.Client
         public string DetailsUrl { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public bool IsActive { get; set; }
 
         /// <summary />
@@ -65,7 +71,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source EventItem object
@@ -78,6 +84,8 @@ namespace Rock.Client
             this.ApprovedOnDateTime = source.ApprovedOnDateTime;
             this.Description = source.Description;
             this.DetailsUrl = source.DetailsUrl;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
             this.IsApproved = source.IsApproved;
             this.Name = source.Name;
