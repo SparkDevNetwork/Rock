@@ -21,16 +21,14 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Newtonsoft.Json;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using Rock.Security;
 
 namespace RockWeb.Blocks.WorkFlow
 {
@@ -40,7 +38,6 @@ namespace RockWeb.Blocks.WorkFlow
     [DisplayName( "My Workflows" )]
     [Category( "WorkFlow" )]
     [Description( "Block to display the workflow types that user is authorized to view, and the activities that are currently assigned to the user." )]
-
     [LinkedPage( "Entry Page", "Page used to enter form information for a workflow." )]
     [LinkedPage( "Detail Page", "Page used to view status of a workflow." )]
     public partial class MyWorkflows : Rock.Web.UI.RockBlock
@@ -55,7 +52,9 @@ namespace RockWeb.Blocks.WorkFlow
         #region Properties
 
         protected bool? StatusFilter { get; set; }
+
         protected bool? RoleFilter { get; set; }
+
         protected int? SelectedWorkflowTypeId { get; set; }
 
         #endregion
@@ -109,7 +108,7 @@ namespace RockWeb.Blocks.WorkFlow
                 /// <returns>
                 /// Returns the filter values based on query string
                 /// </returns>
-                /// 
+                ///
                 /// Role Filter
                 /// ---------------------
                 /// Initiated By Me = true
@@ -126,7 +125,6 @@ namespace RockWeb.Blocks.WorkFlow
                 /// If query string values exist then set them
                 if ( queryStatusFilter.HasValue || queryRoleFilter.HasValue )
                 {
-
                     tglDisplay.Checked = queryStatusFilter.GetValueOrDefault();
                     tglRole.Checked = queryRoleFilter.GetValueOrDefault();
 
@@ -134,7 +132,6 @@ namespace RockWeb.Blocks.WorkFlow
                     RoleFilter = tglRole.Checked;
 
                     GetData();
-
                 }
                 else
                 {
@@ -201,7 +198,7 @@ namespace RockWeb.Blocks.WorkFlow
         protected void rptWorkflowTypes_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             int? workflowTypeId = e.CommandArgument.ToString().AsIntegerOrNull();
-            if (workflowTypeId.HasValue)
+            if ( workflowTypeId.HasValue )
             {
                 SelectedWorkflowTypeId = workflowTypeId.Value;
             }
@@ -214,7 +211,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        void rptWorkflowTypes_ItemCreated( object sender, RepeaterItemEventArgs e )
+        protected void rptWorkflowTypes_ItemCreated( object sender, RepeaterItemEventArgs e )
         {
             var lbWorkflowType = e.Item.FindControl( "lbWorkflowType" ) as LinkButton;
             if ( lbWorkflowType != null )
@@ -246,7 +243,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
         }
-        
+
         /// <summary>
         /// Handles the GridRebind event of the gWorkflows control.
         /// </summary>
@@ -296,13 +293,12 @@ namespace RockWeb.Blocks.WorkFlow
                         !w.CompletedDateTime.HasValue &&
                         w.InitiatorPersonAlias.PersonId == personId )
                     .ToList();
-                   
+
                 workflowTypeIds.ForEach( id =>
                     workflowTypeCounts.Add( id, workflows.Where( w => w.WorkflowTypeId == id ).Count() ) );
             }
             else
             {
-
                 // Get all the active forms for any of the authorized activities
                 var activeForms = new WorkflowActionService( rockContext ).Queryable( "ActionType.ActivityType.WorkflowType, Activity.Workflow" )
                     .Where( a =>
@@ -366,7 +362,7 @@ namespace RockWeb.Blocks.WorkFlow
             if ( SelectedWorkflowTypeId.HasValue )
             {
                 selectedWorkflowType = allWorkflowTypes
-                    .Where( w =>  w.Id == SelectedWorkflowTypeId.Value )
+                    .Where( w => w.Id == SelectedWorkflowTypeId.Value )
                     .FirstOrDefault();
 
                 AddAttributeColumns( selectedWorkflowType );
@@ -384,7 +380,6 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 gWorkflows.Visible = false;
             }
-
         }
 
         private List<int> AuthorizedActivityTypes( List<WorkflowType> allWorkflowTypes )
@@ -408,7 +403,7 @@ namespace RockWeb.Blocks.WorkFlow
             return authorizedActivityTypes;
         }
 
-        protected void AddAttributeColumns( WorkflowType workflowType)
+        protected void AddAttributeColumns( WorkflowType workflowType )
         {
             // Remove attribute columns
             foreach ( var column in gWorkflows.Columns.OfType<AttributeField>().ToList() )
@@ -452,7 +447,5 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         #endregion
-
     }
-
 }
