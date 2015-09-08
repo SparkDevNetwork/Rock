@@ -62,6 +62,7 @@ namespace Rock.Model
             {
                 if ( workflow.Id > 0 )
                 {
+                    rockContext.SaveChanges();
                     Delete( workflow );
                     rockContext.SaveChanges();
                 }
