@@ -432,7 +432,7 @@ namespace RockWeb.Blocks.Reporting
             string urlMask = GetAttributeValue( "UrlMask" );
             if ( !string.IsNullOrWhiteSpace( urlMask ) )
             {
-                Regex pattern = new Regex( @"\{.+\}" );
+                Regex pattern = new Regex( @"\{[\w\s]+\}" );
                 var matches = pattern.Matches( urlMask );
                 if ( matches.Count > 0 )
                 {
