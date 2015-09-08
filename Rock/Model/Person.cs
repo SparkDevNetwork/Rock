@@ -344,7 +344,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the email address is active, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool? IsEmailActive { get; set; }
+        public bool IsEmailActive { get; set; }
 
         /// <summary>
         /// Gets or sets a note about the Person's email address.
@@ -1239,7 +1239,7 @@ namespace Rock.Model
         {
             if ( !string.IsNullOrWhiteSpace( Email ) )
             {
-                if ( !IsEmailActive.HasValue || IsEmailActive.Value )
+                if ( IsEmailActive )
                 {
                     rockUrlRoot.EnsureTrailingBackslash();
 

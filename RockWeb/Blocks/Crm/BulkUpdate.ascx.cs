@@ -688,7 +688,7 @@ namespace RockWeb.Blocks.Crm
 
                 int? newCampusId = cpCampus.SelectedCampusId;
 
-                bool? newEmailActive = null;
+                bool newEmailActive = true;
                 if ( !string.IsNullOrWhiteSpace( ddlIsEmailActive.SelectedValue ) )
                 {
                     newEmailActive = ddlIsEmailActive.SelectedValue == "Active";
@@ -769,7 +769,7 @@ namespace RockWeb.Blocks.Crm
 
                     if ( SelectedFields.Contains( ddlIsEmailActive.ClientID ) )
                     {
-                        History.EvaluateChange( changes, "Email Is Active", person.IsEmailActive ?? true, newEmailActive.Value );
+                        History.EvaluateChange( changes, "Email Is Active", person.IsEmailActive, newEmailActive );
                         person.IsEmailActive = newEmailActive;
                     }
 

@@ -371,7 +371,7 @@ namespace RockWeb.Blocks.Crm
                     primaryPerson.AnniversaryDate = GetNewDateTimeValue( "AnniversaryDate", changes );
                     primaryPerson.GraduationYear = GetNewIntValue( "GraduationYear", changes );
                     primaryPerson.Email = GetNewStringValue( "Email", changes );
-                    primaryPerson.IsEmailActive = GetNewBoolValue( "EmailActive", changes );
+                    primaryPerson.IsEmailActive = GetNewBoolValue( "EmailActive", changes ) ?? true;
                     primaryPerson.EmailNote = GetNewStringValue( "EmailNote", changes );
                     primaryPerson.EmailPreference = (EmailPreference)GetNewEnumValue( "EmailPreference", typeof( EmailPreference ), changes );
                     primaryPerson.SystemNote = GetNewStringValue( "InactiveReasonNote", changes );
