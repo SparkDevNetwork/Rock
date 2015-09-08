@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -73,12 +74,22 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// Holds the Person Image binary file type.
         /// </summary>
-        private static BinaryFileType _binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+        private static BinaryFileType _personImageBinaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
 
         /// <summary>
-        /// The Binary file type settings
+        /// Holds the Person Image binary file type.
         /// </summary>
-        private string _binaryFileTypeSettings = string.Empty;
+        private static BinaryFileType _checkImageBinaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid() );
+
+        /// <summary>
+        /// The Person image binary file type settings
+        /// </summary>
+        private string _personImageBinaryFileTypeSettings = string.Empty;
+
+        /// <summary>
+        /// The check image binary file type settings
+        /// </summary>
+        private string _checkImageBinaryFileTypeSettings = string.Empty;
 
         /// <summary>
         /// The id for the "child" role of a family.
@@ -98,10 +109,10 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// The storage type to use for the people photos.
         /// </summary>
-        private static EntityType _storageEntityType = _binaryFileType.StorageEntityType;
+        private static EntityType _storageEntityType = _personImageBinaryFileType.StorageEntityType;
 
         /// <summary>
-        /// The Autnentication Database entity type.
+        /// The Authentication Database entity type.
         /// </summary>
         private static int _authenticationDatabaseEntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id;
 
@@ -170,6 +181,16 @@ namespace RockWeb.Blocks.Examples
         /// and values from the family section of the XML.
         /// </summary>
         private Dictionary<Guid, bool> _personWithAttributes = new Dictionary<Guid, bool>();
+
+        /// <summary>
+        /// Holds the dictionary contribution FinancialBatches for each week/datetime.
+        /// </summary>
+        private Dictionary<DateTime, FinancialBatch> _contributionBatches = new Dictionary<DateTime, FinancialBatch>();
+
+        /// <summary>
+        /// The contribution transaction type id
+        /// </summary>
+        private static int _transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
         /// <summary>
         /// Magic kiosk Id used for attendance data.
@@ -766,15 +787,15 @@ namespace RockWeb.Blocks.Examples
 
             // Persist the storage type's settings specific to the photo binary file type
             var settings = new Dictionary<string, string>();
-            if ( _binaryFileType.Attributes == null )
+            if ( _personImageBinaryFileType.Attributes == null )
             {
-                _binaryFileType.LoadAttributes();
+                _personImageBinaryFileType.LoadAttributes();
             }
-            foreach ( var attributeValue in _binaryFileType.AttributeValues )
+            foreach ( var attributeValue in _personImageBinaryFileType.AttributeValues )
             {
                 settings.Add( attributeValue.Key, attributeValue.Value.Value );
             }
-            _binaryFileTypeSettings = settings.ToJson();
+            _personImageBinaryFileTypeSettings = settings.ToJson();
 
             bool fabricateAttendance = GetAttributeValue( "FabricateAttendance" ).AsBoolean();
             GroupService groupService = new GroupService( rockContext );
@@ -783,7 +804,7 @@ namespace RockWeb.Blocks.Examples
             List<Group> allGroups = new List<Group>();
             var attendanceData = new Dictionary<Guid, List<Attendance>>();
 
-            // Next create the family along with its members.
+            // Next create the family along with its members and related data
             foreach ( var elemFamily in elemFamilies.Elements( "family" ) )
             {
                 Guid guid = elemFamily.Attribute( "guid" ).Value.Trim().AsGuid();
@@ -888,6 +909,35 @@ namespace RockWeb.Blocks.Examples
             _stopwatch.Stop();
             AppendFormat( "{0:00}:{1:00}.{2:00} added attendance records<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
             _stopwatch.Start();
+
+            // Now re-process the family section looking for any giving data.
+            // We do this last because we need the personAliases that were just added.
+            // Persist the storage type's settings specific to the contribution binary file type
+            settings = new Dictionary<string, string>();
+            if ( _checkImageBinaryFileType.Attributes == null )
+            {
+                _checkImageBinaryFileType.LoadAttributes();
+            }
+            foreach ( var attributeValue in _checkImageBinaryFileType.AttributeValues )
+            {
+                settings.Add( attributeValue.Key, attributeValue.Value.Value );
+            }
+            _checkImageBinaryFileTypeSettings = settings.ToJson();
+
+            foreach ( var elemFamily in elemFamilies.Elements( "family" ) )
+            {
+                // add the families giving data
+                AddFamilyGiving( elemFamily.Element( "giving" ), elemFamily.Attribute( "name" ).Value, rockContext );
+            }
+
+            // Now add the batches to the service to be persisted
+            var financialBatchService = new FinancialBatchService( rockContext );
+            foreach ( var financialBatch in _contributionBatches )
+            {
+                financialBatchService.Add( financialBatch.Value );
+            }
+            rockContext.ChangeTracker.DetectChanges();
+            rockContext.SaveChanges( disablePrePostProcessing: true );
         }
 
         /// <summary>
@@ -1192,6 +1242,23 @@ namespace RockWeb.Blocks.Examples
             AuthService authService = new AuthService( rockContext );
             CommunicationService communicationService = new CommunicationService( rockContext );
             CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
+            FinancialBatchService financialBatchService = new FinancialBatchService( rockContext );
+            FinancialTransactionService financialTransactionService = new FinancialTransactionService( rockContext );
+
+            // delete the batch data
+            List<int> imageIds = new List<int>();
+            foreach ( var batch in financialBatchService.Queryable().Where( b => b.Name.StartsWith( "SampleData" ) ) )
+            {
+                imageIds.AddRange( batch.Transactions.SelectMany( t => t.Images ).Select( i => i.BinaryFileId ).ToList() );
+                financialTransactionService.DeleteRange( batch.Transactions );
+                financialBatchService.Delete( batch );
+            }
+
+            // delete all transaction images
+            foreach ( var image in binaryFileService.GetByIds( imageIds ) )
+            {
+                binaryFileService.Delete( image );
+            }
 
             foreach ( var elemFamily in families.Elements( "family" ) )
             {
@@ -1277,8 +1344,6 @@ namespace RockWeb.Blocks.Examples
                             personAliasService.Delete( alias );
                         }
 
-                        //foreach ( var relationship in person.Gro)
-
                         // Save these changes so the CanDelete passes the check...
                         //rockContext.ChangeTracker.DetectChanges();
                         rockContext.SaveChanges( disablePrePostProcessing: true );
@@ -1294,6 +1359,7 @@ namespace RockWeb.Blocks.Examples
                             throw new Exception( string.Format( "Trying to delete {0}, but: {1}", person.FullName, errorMessage ) );
                         }
                     }
+
                     //rockContext.ChangeTracker.DetectChanges();
                     rockContext.SaveChanges( disablePrePostProcessing: true );
 
@@ -1385,6 +1451,212 @@ namespace RockWeb.Blocks.Examples
                 {
                     DeleteGroupAndMemberData( group, rockContext );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Adds the family giving records.
+        /// <param name="elemGiving">The giving element.</param>
+        /// </summary>
+        /// <param name="elemGiving">The giving element.</param>
+        /// <param name="familyName">The family name.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void AddFamilyGiving( XElement elemGiving, string familyName, RockContext rockContext )
+        {
+            // return from here if there's not a startGiving date, account amount details or a person Guid.
+            if ( elemGiving == null || elemGiving.Attribute( "startGiving" ) == null || elemGiving.Attribute( "accountAmount" ) == null || elemGiving.Attribute( "personGuid" ) == null )
+            {
+                return;
+            }
+
+            // get some variables we'll need to create the giving records
+            DateTime startingDate = DateTime.Parse( elemGiving.Attribute( "startGiving" ).Value.Trim(), new CultureInfo( "en-US" ) );
+            DateTime endDate = RockDateTime.Now;
+
+            if ( elemGiving.Attribute( "endingGivingWeeksAgo" ) != null )
+            {
+                int endingWeeksAgo = 0;
+                int.TryParse( elemGiving.Attribute( "endingGivingWeeksAgo" ).Value.Trim(), out endingWeeksAgo );
+                endDate = RockDateTime.Now.AddDays( -7 * endingWeeksAgo );
+            }
+
+            int percentGive = 100;
+            if ( elemGiving.Attribute( "percentGive" ) != null )
+            {
+                int.TryParse( elemGiving.Attribute( "percentGive" ).Value.Trim(), out percentGive );
+            }
+
+            int growRatePercent = 0;
+            if ( elemGiving.Attribute( "growRatePercent" ) != null )
+            {
+                int.TryParse( elemGiving.Attribute( "growRatePercent" ).Value.Trim(), out growRatePercent );
+            }
+
+            int growFrequencyWeeks = 0;
+            if ( elemGiving.Attribute( "growFrequencyWeeks" ) != null )
+            {
+                int.TryParse( elemGiving.Attribute( "growFrequencyWeeks" ).Value.Trim(), out growFrequencyWeeks );
+            }
+
+            int specialGiftPercent = 0;
+            if ( elemGiving.Attribute( "specialGiftPercent" ) != null )
+            {
+                int.TryParse( elemGiving.Attribute( "specialGiftPercent" ).Value.Trim(), out specialGiftPercent );
+            }
+
+            Frequency frequency;
+            if ( elemGiving.Attribute( "frequency" ) != null )
+            {
+                Enum.TryParse( elemGiving.Attribute( "frequency" ).Value.Trim(), out frequency ); 
+            }
+            else
+            {
+                frequency = Frequency.weekly;
+            }
+
+            Guid personGuid = elemGiving.Attribute( "personGuid" ).Value.Trim().AsGuid();
+
+            // Build a dictionary of FinancialAccount Ids and the amount to give to that account.
+            Dictionary<int, decimal> accountAmountDict = new Dictionary<int, decimal>();
+            FinancialAccountService financialAccountService = new FinancialAccountService( rockContext );
+            var allAccountAmount = elemGiving.Attribute( "accountAmount" ).Value.Trim().Split(',');
+            foreach ( var item in allAccountAmount )
+            {
+                var accountAmount = item.Split(':');
+                decimal amount;
+                if ( ! Decimal.TryParse( accountAmount[1], out amount ) )
+                {
+                    continue; // skip if not a valid decimal
+                }
+
+                var accountName = accountAmount[0].ToLower();
+                var financialAccount = financialAccountService.Queryable().AsNoTracking().Where( a => a.Name.ToLower() == accountName ).FirstOrDefault();
+                if ( financialAccount != null )
+                {
+                    accountAmountDict.Add(financialAccount.Id, amount );
+                }
+                else
+                {
+                    financialAccount = financialAccountService.Queryable().AsNoTracking().First();
+                }
+            }
+
+            // Build a circular linked list of photos to use for the fake contribution check images
+            var circularImageList = new LinkedList<string>();
+            if ( elemGiving.Attribute( "imageUrls" ) != null )
+            {
+                var allImageUrls = elemGiving.Attribute( "imageUrls" ).Value.Trim().Split( ',' );
+                foreach ( var item in allImageUrls )
+                {
+                    circularImageList.AddLast( item );
+                }
+            }
+
+            // Now create the giving data for this recipe set
+            CreateGiving( personGuid, startingDate, endDate, frequency, percentGive, growRatePercent, growFrequencyWeeks, specialGiftPercent, accountAmountDict, circularImageList, rockContext );
+            AppendFormat( "{0:00}:{1:00}.{2:00} added giving data {3}<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10, familyName );
+        }
+
+        /// <summary>
+        /// Creates the giving records for the given parameters.
+        /// </summary>
+        /// <param name="personGuid">The person unique identifier.</param>
+        /// <param name="startingDate">The starting date.</param>
+        /// <param name="endDate">The end date.</param>
+        /// <param name="frequency">The frequency (onetime, weekly, monthly).</param>
+        /// <param name="percentGive">The percent give.</param>
+        /// <param name="growRatePercent">The grow rate percent.</param>
+        /// <param name="growFrequencyWeeks">The grow frequency weeks.</param>
+        /// <param name="specialGiftPercent">The special gift percent.</param>
+        /// <param name="accountAmountDict">The account amount dictionary.</param>
+        /// <param name="circularImageList">A circular linked list of imageUrls to use for the fake contribution checks.</param>
+        /// <param name="rockContexe">A rock context.</param>
+        private void CreateGiving( Guid personGuid, DateTime startingDate, DateTime endDate, Frequency frequency, int percentGive, int growRatePercent, int growFrequencyWeeks, int specialGiftPercent, Dictionary<int, decimal> accountAmountDict, LinkedList<string> circularImageList, RockContext rockContext )
+        {
+            int weekNumber = 0;
+            DateTime monthly = startingDate;
+
+            var imageUrlNode = circularImageList.First ?? null;
+            // foreach weekend or monthly between the starting and ending date...
+            for ( DateTime date = startingDate; date <= endDate; date = frequency == Frequency.weekly ? date.AddDays( 7 ) : frequency == Frequency.monthly ? date.AddMonths( 1 ) : endDate.AddDays(1) )
+            {
+                weekNumber = (int)(date - startingDate).TotalDays / 7;
+
+                // increase by growRatePercent every growFrequencyWeeks
+                if ( growFrequencyWeeks != 0 && growRatePercent != 0 && weekNumber !=0 && weekNumber % growFrequencyWeeks == 0 )
+                {
+                    var copy = accountAmountDict.ToDictionary( entry => entry.Key, entry => entry.Value );
+                    foreach ( var item in accountAmountDict )
+                    {
+                        decimal amount = Math.Round( ( item.Value * 0.01M ) + item.Value, 0 );
+                        copy[item.Key] = amount;
+                    }
+                    accountAmountDict = copy;
+                }
+
+                // randomized skip/missed weeks
+                int summerFactor = ( 7 <= date.Month && date.Month <= 9 ) ? summerPercentFactor : 0;
+                if ( _random.Next( 0, 100 ) > percentGive - summerFactor )
+                {
+                    continue; // skip this week
+                }
+
+                FinancialBatch batch;
+                if ( _contributionBatches.ContainsKey( date ) )
+                {
+                    batch = _contributionBatches[date];
+                }
+                else
+                {
+                    batch = new FinancialBatch { 
+                        Id = 0, 
+                        Guid = Guid.NewGuid(),
+                        BatchStartDateTime = date,
+                        BatchEndDateTime = date,
+                        Status = BatchStatus.Closed,
+                        ControlAmount = 0,
+                        Name = string.Format( "SampleData{0}", date.ToJavascriptMilliseconds() ),
+                        CreatedByPersonAliasId = CurrentPerson.PrimaryAliasId };
+                    _contributionBatches.Add( date, batch );
+                }
+
+                // Set up the new transaction
+                FinancialTransaction financialTransaction = new FinancialTransaction
+                {
+                    TransactionTypeValueId = _transactionTypeContributionId,
+                    Guid = Guid.NewGuid(),
+                    TransactionDateTime = date,
+                    AuthorizedPersonAliasId = _peopleAliasDictionary[personGuid]
+                };
+
+                // Add a transaction detail record for each account they're donating to
+                foreach ( var item in accountAmountDict )
+                {
+                    FinancialTransactionDetail transactionDetail = new FinancialTransactionDetail {
+                        AccountId = item.Key,
+                        Amount = item.Value,
+                        Guid = Guid.NewGuid(),
+                        IsNonCash = false,
+                    };
+
+                    financialTransaction.TransactionDetails.Add( transactionDetail );
+                }
+
+                // Add the image to the transaction (if any)
+                if ( imageUrlNode != null )
+                {
+                    FinancialTransactionImage transactionImage = new FinancialTransactionImage
+                    {
+                        BinaryFile = SaveImage( imageUrlNode.Value, _checkImageBinaryFileType, _checkImageBinaryFileTypeSettings, rockContext ),
+                        Guid = Guid.NewGuid(),
+                    };
+                    financialTransaction.Images.Add( transactionImage );
+                    imageUrlNode = imageUrlNode.Next ?? imageUrlNode.List.First;
+                }
+
+                // Update the batch with the new control amount
+                batch.ControlAmount += financialTransaction.TotalAmount;
+                batch.Transactions.Add( financialTransaction );
             }
         }
 
@@ -1657,7 +1929,7 @@ namespace RockWeb.Blocks.Examples
 
                     if ( personElem.Attribute( "photoUrl" ) != null )
                     {
-                        person.Photo = SavePhoto( personElem.Attribute( "photoUrl" ).Value.Trim(), rockContext );
+                        person.Photo = SaveImage( personElem.Attribute( "photoUrl" ).Value.Trim(), _personImageBinaryFileType, _personImageBinaryFileTypeSettings, rockContext );
                     }
 
                     if ( personElem.Attribute( "recordType" ) != null && personElem.Attribute( "recordType" ).Value.Trim() == "person" )
@@ -1911,18 +2183,18 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         /// <param name="photoUrl">a URL to a photo (jpg, png, bmp, tiff).</param>
         /// <returns>Id of the binaryFile</returns>
-        private BinaryFile SavePhoto( string photoUrl, RockContext context )
+        private BinaryFile SaveImage( string imageUrl, BinaryFileType binaryFileType, string binaryFileTypeSettings, RockContext context )
         {
             // always create a new BinaryFile record of IsTemporary when a file is uploaded
             BinaryFile binaryFile = new BinaryFile();
             binaryFile.IsTemporary = true;
-            binaryFile.BinaryFileTypeId = _binaryFileType.Id;
-            binaryFile.FileName = Path.GetFileName( photoUrl );
+            binaryFile.BinaryFileTypeId = binaryFileType.Id;
+            binaryFile.FileName = Path.GetFileName( imageUrl );
 
             var webClient = new WebClient();
             try
             {
-                binaryFile.ContentStream = new MemoryStream( webClient.DownloadData( photoUrl ) );
+                binaryFile.ContentStream = new MemoryStream( webClient.DownloadData( imageUrl ) );
 
                 if ( webClient.ResponseHeaders != null )
                 {
@@ -1930,7 +2202,7 @@ namespace RockWeb.Blocks.Examples
                 }
                 else
                 {
-                    switch ( Path.GetExtension( photoUrl ) )
+                    switch ( Path.GetExtension( imageUrl ) )
                     {
                         case ".jpg":
                         case ".jpeg":
@@ -1953,14 +2225,14 @@ namespace RockWeb.Blocks.Examples
                             binaryFile.MimeType = "image/svg+xml";
                             break;
                         default:
-                            throw new NotSupportedException( string.Format( "unknown MimeType for {0}", photoUrl ) );
+                            throw new NotSupportedException( string.Format( "unknown MimeType for {0}", imageUrl ) );
                     }
                 }
 
                 // Because prepost processing is disabled for this rockcontext, need to
                 // manually have the storage provider save the contents of the binary file
-                binaryFile.SetStorageEntityTypeId( _storageEntityType.Id );
-                binaryFile.StorageEntitySettings = _binaryFileTypeSettings;
+                binaryFile.SetStorageEntityTypeId( binaryFileType.StorageEntityTypeId );
+                binaryFile.StorageEntitySettings = binaryFileTypeSettings;
                 if ( binaryFile.StorageProvider != null )
                 {
                     binaryFile.StorageProvider.SaveContent( binaryFile );
@@ -2150,7 +2422,8 @@ namespace RockWeb.Blocks.Examples
 
         #endregion
 
-        #region Helper Class
+        #region Helper Classes
+
         protected class ClassGroupLocation
         {
             public string Name { get; set; }
@@ -2162,6 +2435,13 @@ namespace RockWeb.Blocks.Examples
             public double MinAge { get; set; }
 
             public double MaxAge { get; set; }
+        }
+
+        protected enum Frequency
+        {
+            onetime = 0,
+            weekly = 1,
+            monthly = 2
         }
         #endregion
     }
