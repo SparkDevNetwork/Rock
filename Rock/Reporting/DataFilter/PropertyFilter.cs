@@ -162,11 +162,26 @@ namespace Rock.Reporting.DataFilter
 
             // add Empty option first
             ddlEntityField.Items.Add( new ListItem() );
+            var rockBlock = filterControl.RockBlock();
 
             this.entityFields = EntityHelper.GetEntityFields( entityType );
             foreach ( var entityField in this.entityFields )
             {
-                ddlEntityField.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
+                bool isAuthorized = true;
+                if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue)
+                {
+                    var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
+                    if ( attribute != null && rockBlock != null )
+                    {
+                        // only show the Attribute field in the drop down if they have VIEW Auth to it
+                        isAuthorized = attribute.IsAuthorized( Rock.Security.Authorization.VIEW, rockBlock.CurrentPerson );
+                    }
+                }
+
+                if ( isAuthorized )
+                {
+                    ddlEntityField.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
+                }
             }
             
             ddlEntityField.AutoPostBack = true;

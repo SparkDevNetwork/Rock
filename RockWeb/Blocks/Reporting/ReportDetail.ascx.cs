@@ -662,6 +662,7 @@ namespace RockWeb.Blocks.Reporting
                 // Add Fields for the EntityType
                 foreach ( var entityField in entityFields.OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.Title ) )
                 {
+                    bool isAuthorizedForField = true;
                     var listItem = new ListItem();
                     listItem.Text = entityField.Title;
                     if ( entityField.FieldKind == FieldKind.Property )
@@ -670,6 +671,16 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else if ( entityField.FieldKind == FieldKind.Attribute )
                     {
+                        if ( entityField.AttributeGuid.HasValue )
+                        {
+                            var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
+                            if (attribute != null )
+                            {
+                                // only show the Attribute field in the drop down if they have VIEW Auth to it
+                                isAuthorizedForField = attribute.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson );
+                            }
+                        }
+
                         listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Attribute, entityField.AttributeGuid.Value.ToString( "n" ) );
                     }
 
@@ -691,7 +702,10 @@ namespace RockWeb.Blocks.Reporting
                         }
                     }
 
-                    listItems.Add( listItem );
+                    if ( isAuthorizedForField )
+                    {
+                        listItems.Add( listItem );
+                    }
                 }
 
                 // Add DataSelect MEF Components that apply to this EntityType
@@ -1187,7 +1201,18 @@ namespace RockWeb.Blocks.Reporting
             RockDropDownList ddlFields = panelWidget.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.ID == panelWidget.ID + "_ddlFields" );
             if ( reportField.ReportFieldType == ReportFieldType.Attribute )
             {
-                ddlFields.SelectedValue = string.Format( "{0}|{1}", reportField.ReportFieldType, reportField.Selection );
+               var selectedValue = string.Format( "{0}|{1}", reportField.ReportFieldType, reportField.Selection );
+               if ( ddlFields.Items.OfType<ListItem>().Any( a => a.Value == selectedValue ) )
+               {
+                   ddlFields.SelectedValue = selectedValue;
+               }
+               else
+               {
+                   // if this EntityField is not available for the current person, but this reportField already has it configured, let them keep it
+                   var attribute = AttributeCache.Read( fieldSelection.AsGuid(), rockContext );
+                   ddlFields.Items.Add( new ListItem( attribute.Name, selectedValue ) );
+                   ddlFields.SelectedValue = selectedValue;
+               }
             }
             else if ( reportField.ReportFieldType == ReportFieldType.Property )
             {

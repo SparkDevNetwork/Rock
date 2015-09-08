@@ -316,7 +316,7 @@ namespace Rock.Reporting
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the kind of the field.
+        /// Gets or sets whether this field is a Property or an Attribute
         /// </summary>
         /// <value>
         /// The kind of the field.
