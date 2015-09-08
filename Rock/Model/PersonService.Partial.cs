@@ -1377,7 +1377,7 @@ namespace Rock.Model
                 History.EvaluateChange( demographicChanges, "Birth Date", null, person.BirthDate );
                 History.EvaluateChange( demographicChanges, "Graduation Year", null, person.GraduationYear );
                 History.EvaluateChange( demographicChanges, "Connection Status", string.Empty, DefinedValueCache.GetName( person.ConnectionStatusValueId ) );
-                History.EvaluateChange( demographicChanges, "Email Active", true.ToString(), ( person.IsEmailActive ?? true ).ToString() );
+                History.EvaluateChange( demographicChanges, "Email Active", true.ToString(), person.IsEmailActive.ToString() );
                 History.EvaluateChange( demographicChanges, "Record Type", string.Empty, DefinedValueCache.GetName( person.RecordTypeValueId.Value ) );
                 if ( person.GivingGroupId.HasValue )
                 {
