@@ -35,3 +35,8 @@ $(function() {
     fixedContentPos: false
   })
 })
+
+// Setup fitvids
+$(function() {
+  $('body').fitVids();
+})
