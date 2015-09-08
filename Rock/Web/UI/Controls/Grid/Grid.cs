@@ -1452,12 +1452,23 @@ namespace Rock.Web.UI.Controls
                             }
                         }
 
-                        string value = exportValue != null ? exportValue.ToString() : fieldCell.Text;
-                        value = value.ConvertBrToCrLf();
-                        worksheet.Cells[rowCounter, columnCounter].Value = value;
-                        if ( value.Contains( Environment.NewLine ) )
+                        if ( exportValue != null &&
+                            ( exportValue is decimal || exportValue is decimal? ||
+                            exportValue is int || exportValue is int? ||
+                            exportValue is double || exportValue is double? ||
+                            exportValue is DateTime || exportValue is DateTime? ) )
                         {
-                            worksheet.Cells[rowCounter, columnCounter].Style.WrapText = true;
+                            worksheet.Cells[rowCounter, columnCounter].Value = exportValue;
+                        }
+                        else
+                        {
+                            string value = exportValue != null ? exportValue.ToString() : fieldCell.Text;
+                            value = value.ConvertBrToCrLf().Replace( "&nbsp;", " " );
+                            worksheet.Cells[rowCounter, columnCounter].Value = value;
+                            if ( value.Contains( Environment.NewLine ) )
+                            {
+                                worksheet.Cells[rowCounter, columnCounter].Style.WrapText = true;
+                            }
                         }
 
                         if ( col.Value is CurrencyField )
