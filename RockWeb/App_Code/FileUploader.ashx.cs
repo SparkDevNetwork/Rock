@@ -22,6 +22,7 @@ using System.Security.Principal;
 using System.ServiceModel.Web;
 using System.Web;
 using System.Web.SessionState;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -60,7 +61,7 @@ namespace RockWeb
                     authToken = context.Request.Params["apikey"];
                 }
 
-                if (!string.IsNullOrWhiteSpace(authToken))
+                if ( !string.IsNullOrWhiteSpace( authToken ) )
                 {
                     var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
                     var userLogin = userLoginService.Queryable().Where( u => u.ApiKey == authToken ).FirstOrDefault();
@@ -170,6 +171,7 @@ namespace RockWeb
                 {
                     fileContent.Seek( 0, SeekOrigin.Begin );
                 }
+
                 fileContent.CopyTo( writeStream );
             }
 
