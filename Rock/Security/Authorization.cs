@@ -279,7 +279,7 @@ namespace Rock.Security
                 var parentAuthEntity = parentAuth;
                 while ( parentAuthEntity != null )
                 {
-                    if ( parentHistory.Contains( parentAuthEntity ) )
+                    if ( parentHistory.Any( a => a.TypeId  == parentAuthEntity.TypeId && a.Id == parentAuthEntity.Id ) )
                     {
                         // infinite recursion situation, so threat as if no rules were found and return NULL
                         return null;
