@@ -67,15 +67,15 @@ namespace RockWeb.Plugins.church_ccv.Finance
                 {
                     var service = new FinancialPersonBankAccountService( rockContext );
                     var items = service.Queryable()
-                        .Where( a => a.ForeignId != null &&
-                            a.ForeignId.StartsWith( "T" ) &&
+                        .Where( a => a.ForeignKey != null &&
+                            a.ForeignKey.StartsWith( "T" ) &&
                             a.AccountNumberSecured != null &&
                             a.AccountNumberSecured == "" )
                         .ToList();
 
                     foreach ( var item in items )
                     {
-                        var parts = item.ForeignId.Substring(1).Split('A');
+                        var parts = item.ForeignKey.Substring(1).Split('A');
                         if ( parts.Length >= 2 && 
                             !string.IsNullOrWhiteSpace( parts[0] ) &&
                             !string.IsNullOrWhiteSpace( parts[1] ) )
