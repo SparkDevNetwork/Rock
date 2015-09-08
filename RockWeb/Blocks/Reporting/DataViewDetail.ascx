@@ -77,21 +77,28 @@
 
                     </fieldset>
                 </div>
+
             </div>
 
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-table"></i> Results</h1>
-                </div>
-                <div class="panel-body">
-                    
-                    <Rock:NotificationBox ID="nbGridError" runat="server" NotificationBoxType="Warning" />
-                    <div class="grid grid-panel">
-                        <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h1 class="panel-title"><i class="fa fa-table"></i> Results</h1>
+                        </div>
+                        <div class="col-md-6 text-right">
+                                <asp:LinkButton ID="btnToggleResults" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnToggleResults_Click" />
+                        </div>
                     </div>
-
                 </div>
-
+                <asp:Panel ID="pnlResultsGrid" runat="server">
+                    <div class="panel-body">
+                        <Rock:NotificationBox ID="nbGridError" runat="server" NotificationBoxType="Warning" />
+                        <div class="grid grid-panel">
+                            <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
+                        </div>
+                    </div>
+                </asp:Panel>
             </div>
 
             <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview (top 15 rows )" ValidationGroup="Preview">

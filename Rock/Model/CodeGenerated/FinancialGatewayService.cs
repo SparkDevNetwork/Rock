@@ -114,6 +114,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.Description = source.Description;
             target.EntityTypeId = source.EntityTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.Name = source.Name;
             target.CreatedDateTime = source.CreatedDateTime;

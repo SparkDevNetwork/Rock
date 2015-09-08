@@ -90,6 +90,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AccountId = source.AccountId;
             target.EndDate = source.EndDate;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.PersonAliasId = source.PersonAliasId;
             target.PledgeFrequencyValueId = source.PledgeFrequencyValueId;
             target.StartDate = source.StartDate;

@@ -27,6 +27,11 @@ namespace Rock.SystemGuid
         #region History Categories
 
         /// <summary>
+        /// History changes for an event registration
+        /// </summary>
+        public const string HISTORY_EVENT_REGISTRATION = "813DF1A5-ADBD-481C-AC1D-884F0FA7AE77";
+
+        /// <summary>
         /// History changes for person
         /// </summary>
         public const string HISTORY_PERSON = "6F09163D-7DDD-4E1E-8D18-D7CAA04451A7";

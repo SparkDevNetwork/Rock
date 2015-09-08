@@ -177,7 +177,16 @@ namespace Rock.Reporting.DataFilter
                 if ( entityField != null )
                 {
                     string selectedProperty = entityField.Name;
-                    ddlProperty.SelectedValue = selectedProperty;
+                    if ( ddlProperty.Items.OfType<ListItem>().Any( a => a.Value == selectedProperty ) )
+                    {
+                        ddlProperty.SelectedValue = selectedProperty;
+                    }
+                    else
+                    {
+                        // if this EntityField is not available for the current person, but this dataview filter already has it configured, let them keep it
+                        ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
+                        ddlProperty.SelectedValue = selectedProperty;
+                    }
 
                     var control = controls.ToList().FirstOrDefault( c => c.ID.EndsWith( entityField.Name ) );
                     if ( control != null )

@@ -362,7 +362,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
                     person.Email = tbEmail.Text.Trim();
 
-                    History.EvaluateChange( changes, "Email Active", person.IsEmailActive ?? true, cbIsEmailActive.Checked );
+                    History.EvaluateChange( changes, "Email Active", person.IsEmailActive, cbIsEmailActive.Checked );
                     person.IsEmailActive = cbIsEmailActive.Checked;
 
                     var newEmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
@@ -533,7 +533,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlMaritalStatus.SelectedValue = Person.MaritalStatusValueId.HasValue ? Person.MaritalStatusValueId.Value.ToString() : string.Empty;
             ddlConnectionStatus.SelectedValue = Person.ConnectionStatusValueId.HasValue ? Person.ConnectionStatusValueId.Value.ToString() : string.Empty;
             tbEmail.Text = Person.Email;
-            cbIsEmailActive.Checked = Person.IsEmailActive ?? true;
+            cbIsEmailActive.Checked = Person.IsEmailActive;
             rblEmailPreference.SelectedValue = Person.EmailPreference.ConvertToString( false );
 
             ddlRecordStatus.SelectedValue = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValueId.Value.ToString() : string.Empty;

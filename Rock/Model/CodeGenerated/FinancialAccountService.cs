@@ -122,6 +122,8 @@ namespace Rock.Model
             target.CampusId = source.CampusId;
             target.Description = source.Description;
             target.EndDate = source.EndDate;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GlCode = source.GlCode;
             target.ImageBinaryFileId = source.ImageBinaryFileId;
             target.IsActive = source.IsActive;

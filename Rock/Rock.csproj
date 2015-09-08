@@ -142,7 +142,9 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\ConnectionTypesFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionActivityTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\ConnectionTypeFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionStateFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionStatusFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionOpportunityFieldAttribute.cs" />
@@ -245,6 +247,8 @@
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
     <Compile Include="Field\Types\ConnectionActivityTypeFieldType.cs" />
+    <Compile Include="Field\Types\ConnectionTypesFieldType.cs" />
+    <Compile Include="Field\Types\ConnectionTypeFieldType.cs" />
     <Compile Include="Field\Types\ConnectionStatusFieldType.cs" />
     <Compile Include="Field\Types\ConnectionOpportunityFieldType.cs" />
     <Compile Include="Field\Types\ConnectionStateFieldType.cs" />
@@ -490,6 +494,7 @@
     <Compile Include="Reporting\DataTransform\Person\ChildrenTransform.cs" />
     <Compile Include="Reporting\ReportingHelper.cs" />
     <Compile Include="Reporting\DataSelect\Person\GroupParticipationSelect.cs" />
+    <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\CurrencyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />

@@ -1354,9 +1354,6 @@ tr.row-highlight td {
 .filter-toggle > span {
   float: left;
 }
-.filter-toggle .panel-title {
-  margin-top: 4px;
-}
 .filter-toggle .btn-toggle {
   margin: 0 6px;
 }
@@ -5187,6 +5184,9 @@ a.help {
 .well > h4 {
   margin-top: 0;
 }
+th[align=center] {
+  text-align: center;
+}
 .form-right {
   text-align: right;
   margin-bottom: 12px;
@@ -5273,8 +5273,7 @@ a.help {
   display: block;
   float: left;
 }
-.panel .panel-heading i.fa-chevron-up,
-.panel .panel-heading i.fa-chevron-down {
+.panel .panel-heading a.btn-link {
   color: #5697d0;
 }
 .panel .panel-heading .panel-title small {
@@ -5602,6 +5601,11 @@ fieldset[disabled] .btn-authenication.active {
 .btn-authenication.google:before {
   font-family: 'FontAwesome';
   content: "\f1a0";
+  margin-right: 12px;
+}
+.btn-authenication.twitter:before {
+  font-family: 'FontAwesome';
+  content: "\f099";
   margin-right: 12px;
 }
 .btn-minimal {

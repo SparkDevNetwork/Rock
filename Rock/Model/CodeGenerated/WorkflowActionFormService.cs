@@ -98,6 +98,8 @@ namespace Rock.Model
             target.Actions = source.Actions;
             target.AllowNotes = source.AllowNotes;
             target.Footer = source.Footer;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.Header = source.Header;
             target.IncludeActionsInNotification = source.IncludeActionsInNotification;
             target.NotificationSystemEmailId = source.NotificationSystemEmailId;

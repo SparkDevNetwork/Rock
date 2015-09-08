@@ -114,10 +114,69 @@ namespace RockWeb.Blocks.Crm
 
             nbPeople.Visible = false;
 
+            bool canEdit = this.IsUserAuthorized( Rock.Security.Authorization.EDIT );
+
+            pnlEdit.Visible = canEdit;
+            pnlView.Visible = !canEdit;
+
+            if ( canEdit )
+            {
+                LoadEditDetails();
+            }
+            else
+            {
+                LoadViewDetails();
+            }
+        }
+
+        /// <summary>
+        /// Loads the view details.
+        /// </summary>
+        private void LoadViewDetails()
+        {
             if ( !Page.IsPostBack )
             {
                 int? setId = PageParameter( "Set" ).AsIntegerOrNull();
-                if (setId.HasValue)
+                if ( setId.HasValue )
+                {
+                    // if the user only has View auth to the page, mark the EntitySet as a Person Merge Request and let them edit the EntitySet note
+                    var rockContext = new RockContext();
+                    var entitySetService = new EntitySetService( rockContext );
+                    var entitySet = entitySetService.Get( setId.Value );
+                    if ( entitySet != null )
+                    {
+                        tbEntitySetNote.Text = entitySet.Note;
+                        var definedValuePurpose = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid() );
+                        if ( definedValuePurpose != null )
+                        {
+                            if ( entitySet.EntitySetPurposeValueId != definedValuePurpose.Id && entitySet.ExpireDateTime != null )
+                            {
+                                nbMergeRequestAlreadySubmitted.Visible = false;
+                                nbMergeRequestSuccess.Visible = true;
+                                entitySet.EntitySetPurposeValueId = definedValuePurpose.Id;
+                                entitySet.ExpireDateTime = null;
+                                rockContext.SaveChanges();
+                            }
+                            else
+                            {
+                                nbMergeRequestAlreadySubmitted.Visible = true;
+                                nbMergeRequestSuccess.Visible = false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Loads the edit details.
+        /// </summary>
+        private void LoadEditDetails()
+        {
+            if ( !Page.IsPostBack )
+            {
+                int? setId = PageParameter( "Set" ).AsIntegerOrNull();
+                if ( setId.HasValue )
                 {
                     var selectedPersonIds = new EntitySetItemService( new RockContext() )
                         .GetByEntitySetId( setId.Value )
@@ -132,6 +191,7 @@ namespace RockWeb.Blocks.Crm
 
                     // Create the data structure used to build grid
                     MergeData = new MergeData( people, headingKeys );
+                    MergeData.EntitySetId = setId.Value;
                     BuildColumns();
                     BindGrid();
                 }
@@ -139,12 +199,12 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 var primaryColIndex = hfSelectedColumn.Value.AsIntegerOrNull();
-                
+
                 // Save the primary header radio button's selection
                 foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
                 {
                     col.OnDelete += personCol_OnDelete;
-                    if (primaryColIndex.HasValue && primaryColIndex.Value == col.ColumnIndex)
+                    if ( primaryColIndex.HasValue && primaryColIndex.Value == col.ColumnIndex )
                     {
                         MergeData.PrimaryPersonId = col.PersonId;
                     }
@@ -255,7 +315,7 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            bool reconfirmRequired = ( MergeData.People.Select( p => p.Email ).Distinct().Count() > 1 && MergeData.People.Where( p => p.HasLogins ).Any() ); 
+            bool reconfirmRequired = ( MergeData.People.Select( p => p.Email ).Distinct().Count() > 1 && MergeData.People.Where( p => p.HasLogins ).Any() );
 
             GetValuesSelection();
 
@@ -311,7 +371,7 @@ namespace RockWeb.Blocks.Crm
                     primaryPerson.AnniversaryDate = GetNewDateTimeValue( "AnniversaryDate", changes );
                     primaryPerson.GraduationYear = GetNewIntValue( "GraduationYear", changes );
                     primaryPerson.Email = GetNewStringValue( "Email", changes );
-                    primaryPerson.IsEmailActive = GetNewBoolValue( "EmailActive", changes );
+                    primaryPerson.IsEmailActive = GetNewBoolValue( "EmailActive", changes ) ?? true;
                     primaryPerson.EmailNote = GetNewStringValue( "EmailNote", changes );
                     primaryPerson.EmailPreference = (EmailPreference)GetNewEnumValue( "EmailPreference", typeof( EmailPreference ), changes );
                     primaryPerson.SystemNote = GetNewStringValue( "InactiveReasonNote", changes );
@@ -474,6 +534,17 @@ namespace RockWeb.Blocks.Crm
                             }
                         }
                     }
+
+                    // now that the Merge is complete, the EntitySet can be marked to be deleted by the RockCleanup job
+                    var entitySetService = new EntitySetService( rockContext );
+                    var entitySet = entitySetService.Get( MergeData.EntitySetId );
+                    if ( entitySet != null )
+                    {
+                        entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes(-1);
+                        entitySet.EntitySetPurposeValueId = null;
+                        rockContext.SaveChanges();
+                    }
+
                 }
             } );
 
@@ -489,6 +560,27 @@ namespace RockWeb.Blocks.Crm
             NavigateToLinkedPage( "PersonDetailPage", "PersonId", primaryPersonId.Value );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSaveRequestNote control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSaveRequestNote_Click( object sender, EventArgs e )
+        {
+            int? setId = PageParameter( "Set" ).AsIntegerOrNull();
+            if ( setId.HasValue )
+            {
+                var rockContext = new RockContext();
+                var entitySet = new EntitySetService( rockContext ).Get( setId.Value );
+                entitySet.Note = tbEntitySetNote.Text;
+                rockContext.SaveChanges();
+
+                nbNoteSavedSuccess.Visible = true;
+                tbEntitySetNote.Visible = false;
+                btnSaveRequestNote.Visible = false;
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -501,7 +593,7 @@ namespace RockWeb.Blocks.Crm
             gValues.Columns.Clear();
 
             if ( MergeData != null && MergeData.People != null && MergeData.People.Any() )
-            {                
+            {
                 var keyCol = new BoundField();
                 keyCol.DataField = "Key";
                 keyCol.Visible = false;
@@ -592,14 +684,14 @@ namespace RockWeb.Blocks.Crm
             if ( MergeData != null && MergeData.People != null && MergeData.People.Any() )
             {
                 // If the people have different email addresses and any logins, display security alert box
-                nbSecurityNotice.Visible = 
-                    ( MergeData.People.Select( p => p.Email ).Where( e => e != null && e != "").Distinct().Count() > 1 && 
-                    MergeData.People.Where( p => p.HasLogins ).Any() ) ;
+                nbSecurityNotice.Visible =
+                    ( MergeData.People.Select( p => p.Email ).Where( e => e != null && e != "" ).Distinct().Count() > 1 &&
+                    MergeData.People.Where( p => p.HasLogins ).Any() );
 
                 foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
                 {
                     col.IsPrimaryPerson = col.PersonId == MergeData.PrimaryPersonId;
-                    if (col.IsPrimaryPerson)
+                    if ( col.IsPrimaryPerson )
                     {
                         hfSelectedColumn.Value = col.ColumnIndex.ToString();
                     }
@@ -622,9 +714,9 @@ namespace RockWeb.Blocks.Crm
                 int personId = int.Parse( column.DataTextField.Substring( 9 ) );
 
                 // Set the correct person's value as selected
-                foreach( var property in MergeData.Properties.Where( p => column.SelectedKeys.Contains( p.Key ) ))
+                foreach ( var property in MergeData.Properties.Where( p => column.SelectedKeys.Contains( p.Key ) ) )
                 {
-                    foreach( var personValue in property.Values)
+                    foreach ( var personValue in property.Values )
                     {
                         personValue.Selected = personValue.PersonId == personId;
                     }
@@ -656,15 +748,15 @@ namespace RockWeb.Blocks.Crm
         private bool? GetNewBoolValue( string key, List<string> changes )
         {
             var ppValue = GetNewValue( key, changes );
-            if (ppValue != null)
+            if ( ppValue != null )
             {
                 bool newValue = false;
-                if (bool.TryParse(ppValue.Value, out newValue))
+                if ( bool.TryParse( ppValue.Value, out newValue ) )
                 {
                     return newValue;
                 }
             }
-            
+
             return null;
         }
 
@@ -685,8 +777,8 @@ namespace RockWeb.Blocks.Crm
 
         private Enum GetNewEnumValue( string key, Type enumType, List<string> changes )
         {
-            var ppValue = GetNewValue(key, changes);
-            if (ppValue != null)
+            var ppValue = GetNewValue( key, changes );
+            if ( ppValue != null )
             {
                 return (Enum)Enum.Parse( enumType, ppValue.Value );
             }
@@ -694,7 +786,7 @@ namespace RockWeb.Blocks.Crm
             return null;
         }
 
-        private PersonPropertyValue GetNewValue(string key, List<string> changes)
+        private PersonPropertyValue GetNewValue( string key, List<string> changes )
         {
             var property = MergeData.GetProperty( key );
             var primaryPersonValue = property.Values.Where( v => v.PersonId == MergeData.PrimaryPersonId ).FirstOrDefault();
@@ -703,7 +795,7 @@ namespace RockWeb.Blocks.Crm
             string oldValue = primaryPersonValue != null ? primaryPersonValue.Value : string.Empty;
             string newValue = selectedPersonValue != null ? selectedPersonValue.Value : string.Empty;
 
-            if (oldValue != newValue)
+            if ( oldValue != newValue )
             {
                 string oldFormattedValue = primaryPersonValue != null ? primaryPersonValue.FormattedValue : string.Empty;
                 string newFormattedValue = selectedPersonValue != null ? selectedPersonValue.FormattedValue : string.Empty;
@@ -714,6 +806,7 @@ namespace RockWeb.Blocks.Crm
         }
 
         #endregion
+
 
     }
 
@@ -727,6 +820,14 @@ namespace RockWeb.Blocks.Crm
     {
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the entity set identifier.
+        /// </summary>
+        /// <value>
+        /// The entity set identifier.
+        /// </value>
+        public int EntitySetId { get; set; }
 
         /// <summary>
         /// Gets or sets the people.
@@ -881,7 +982,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         /// <param name="personProperty">The person property.</param>
         /// <returns></returns>
-        public PersonPropertyValue GetSelectedValue(PersonProperty personProperty)
+        public PersonPropertyValue GetSelectedValue( PersonProperty personProperty )
         {
             if ( personProperty != null )
             {
@@ -1046,15 +1147,15 @@ namespace RockWeb.Blocks.Crm
 
         private void AddProperty( string key, int personId, Enum value, bool selected = false )
         {
-            AddProperty( key, key.SplitCase(), personId, value.ConvertToString(false), value.ConvertToString(), selected );
+            AddProperty( key, key.SplitCase(), personId, value.ConvertToString( false ), value.ConvertToString(), selected );
         }
 
-        public PersonProperty GetProperty( string key, bool createIfNotFound = false, string label = "")
+        public PersonProperty GetProperty( string key, bool createIfNotFound = false, string label = "" )
         {
             var property = Properties.Where( p => p.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
             if ( property == null && createIfNotFound )
             {
-                if (label == string.Empty)
+                if ( label == string.Empty )
                 {
                     label = key.SplitCase();
                 }

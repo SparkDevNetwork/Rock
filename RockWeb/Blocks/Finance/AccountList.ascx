@@ -15,6 +15,11 @@
                     <Rock:GridFilter ID="rAccountFilter" runat="server" >
                         <Rock:RockTextBox ID="txtAccountName" runat="server" Label="Name" />
                         <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" Visible="false" />
+                        <Rock:RockDropDownList ID="ddlIsPublic" runat="server" Label="Public">
+                            <asp:ListItem Text="" Value="" />
+                            <asp:ListItem Text="Yes" Value="Yes" />
+                            <asp:ListItem Text="No" Value="No" />
+                        </Rock:RockDropDownList>
                         <Rock:RockDropDownList ID="ddlIsActive" runat="server" Label="Active">
                             <asp:ListItem Text="" Value="" />
                             <asp:ListItem Text="Yes" Value="Yes" />
@@ -34,8 +39,9 @@
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="PublicName" HeaderText="Public Name" SortExpression="PublicName" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus" Visible="false" />
-                            <Rock:BoolField DataField="IsTaxDeductible" HeaderText="Tax Deductible" SortExpression="IsTaxDeductible" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
+                            <Rock:BoolField DataField="IsPublic" HeaderText="Public" SortExpression="IsPublic" />
+                            <Rock:BoolField DataField="IsTaxDeductible" HeaderText="Tax Deductible" SortExpression="IsTaxDeductible" />
                             <Rock:RockBoundField DataField="StartDate" HeaderText="Starts On" SortExpression="StartDate" DataFormatString="{0:d}" />
                             <Rock:RockBoundField DataField="EndDate" HeaderText="Ends On" SortExpression="EndDate" DataFormatString="{0:d}" />
                             <Rock:DeleteField OnClick="rGridAccount_Delete" />

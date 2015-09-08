@@ -1354,9 +1354,6 @@ tr.row-highlight td {
 .filter-toggle > span {
   float: left;
 }
-.filter-toggle .panel-title {
-  margin-top: 4px;
-}
 .filter-toggle .btn-toggle {
   margin: 0 6px;
 }
@@ -2071,7 +2068,8 @@ table.attribute-grid tr th:nth-child(3) {
   min-height: 64px;
   border-bottom: 1px solid #cec5b9;
   color: #817b72;
-  padding: 0;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 .personprofilebar-badge .badge-group {
   margin: 7.5px 0;
@@ -5187,6 +5185,9 @@ a.help {
 .well > h4 {
   margin-top: 0;
 }
+th[align=center] {
+  text-align: center;
+}
 .form-right {
   text-align: right;
   margin-bottom: 12px;
@@ -5273,8 +5274,7 @@ a.help {
   display: block;
   float: left;
 }
-.panel .panel-heading i.fa-chevron-up,
-.panel .panel-heading i.fa-chevron-down {
+.panel .panel-heading a.btn-link {
   color: #6a6a6a;
 }
 .panel .panel-heading .panel-title small {
@@ -5602,6 +5602,11 @@ fieldset[disabled] .btn-authenication.active {
 .btn-authenication.google:before {
   font-family: 'FontAwesome';
   content: "\f1a0";
+  margin-right: 12px;
+}
+.btn-authenication.twitter:before {
+  font-family: 'FontAwesome';
+  content: "\f099";
   margin-right: 12px;
 }
 .btn-minimal {
@@ -6480,10 +6485,18 @@ body.navbar-side-close #content-wrapper {
 /*#endregion */
 @media print {
   @page {
+    size: 8.5in 11in;
     margin: .25in;
+    
+    /* width height */
+  }
+  html,
+  body {
+    margin: 0;
+    padding: 0;
   }
   body {
-    font-size: 12px;
+    font-size: 10px;
   }
   .nav-sub {
     display: none;
@@ -6515,7 +6528,7 @@ body.navbar-side-close #content-wrapper {
   }
   .table td,
   .table > thead > tr > th {
-    font-size: 10px;
+    font-size: 8px;
   }
   .table .grid-columncommand,
   .table .grid-select-field {

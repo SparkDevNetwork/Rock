@@ -90,6 +90,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.FinancialGatewayId = source.FinancialGatewayId;
             target.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
             target.Name = source.Name;
             target.PersonAliasId = source.PersonAliasId;

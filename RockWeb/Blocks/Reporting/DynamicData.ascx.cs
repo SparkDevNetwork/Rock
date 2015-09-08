@@ -53,12 +53,19 @@ namespace RockWeb.Blocks.Reporting
     [TextField( "Columns", "The columns to hide or show", false, "", "CustomSetting" )]
     [CodeEditorField( "Formatted Output", "Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }}<br/> {% endfor %}",
         CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
-    [BooleanField( "Person Report", "Is this report a list of people.?", false, "CustomSetting" )]
+    [BooleanField( "Person Report", "Is this report a list of people?", false, "CustomSetting" )]
+
+    [BooleanField( "Show Communicate", "Show Communicate button in grid footer?", true, "CustomSetting" )]
+    [BooleanField( "Show Merge Person", "Show Merge Person button in grid footer?", true, "CustomSetting" )]
+    [BooleanField( "Show Bulk Update", "Show Bulk Update button in grid footer?", true, "CustomSetting" )]
+    [BooleanField( "Show Excel Export", "Show Export to Excel button in grid footer?", true, "CustomSetting" )]
+    [BooleanField( "Show Merge Template", "Show Export to Merge Template button in grid footer?", true, "CustomSetting" )]
+
     [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false, "", "CustomSetting" )]
     [CodeEditorField( "Page Title Lava", "Optional Lava for setting the page title. If nothing is provided then the page's title will be used.",
         CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
 
-    [BooleanField("Paneled Grid", "Add the 'grid-panel' class to the grid to allow it to fit nicely in a block.", false, "Advanced")]
+    [BooleanField( "Paneled Grid", "Add the 'grid-panel' class to the grid to allow it to fit nicely in a block.", false, "Advanced" )]
     public partial class DynamicData : RockBlockCustomSettings
     {
         #region Fields
@@ -150,6 +157,13 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( "FormattedOutput", ceFormattedOutput.Text );
             SetAttributeValue( "PageTitleLava", cePageTitleLava.Text );
             SetAttributeValue( "PersonReport", cbPersonReport.Checked.ToString() );
+
+            SetAttributeValue( "ShowCommunicate", ( cbPersonReport.Checked && cbShowCommunicate.Checked ).ToString() );
+            SetAttributeValue( "ShowMergePerson", ( cbPersonReport.Checked && cbShowMergePerson.Checked ).ToString() );
+            SetAttributeValue( "ShowBulkUpdate", ( cbPersonReport.Checked && cbShowBulkUpdate.Checked ).ToString() );
+            SetAttributeValue( "ShowExcelExport", cbShowExcelExport.Checked.ToString() );
+            SetAttributeValue( "ShowMergeTemplate", cbShowMergeTemplate.Checked.ToString() );
+
             SetAttributeValue( "MergeFields", tbMergeFields.Text );
             SaveAttributeValues();
 
@@ -266,6 +280,13 @@ namespace RockWeb.Blocks.Reporting
             ceFormattedOutput.Text = GetAttributeValue( "FormattedOutput" );
             cePageTitleLava.Text = GetAttributeValue( "PageTitleLava" );
             cbPersonReport.Checked = GetAttributeValue( "PersonReport" ).AsBoolean();
+
+            cbShowCommunicate.Checked = GetAttributeValue( "ShowCommunicate" ).AsBoolean();
+            cbShowMergePerson.Checked = GetAttributeValue( "ShowMergePerson" ).AsBoolean();
+            cbShowBulkUpdate.Checked = GetAttributeValue( "ShowBulkUpdate" ).AsBoolean();
+            cbShowExcelExport.Checked = GetAttributeValue( "ShowExcelExport" ).AsBoolean();
+            cbShowMergeTemplate.Checked = GetAttributeValue( "ShowMergeTemplate" ).AsBoolean();
+
             tbMergeFields.Text = GetAttributeValue( "MergeFields" );
         }
 
@@ -363,6 +384,11 @@ namespace RockWeb.Blocks.Reporting
                             grid.ID = string.Format( "dynamic_data_{0}", tableId++ );
                             grid.AllowSorting = true;
                             grid.EmptyDataText = "No Results";
+                            grid.Actions.ShowCommunicate = GetAttributeValue( "ShowCommunicate" ).AsBoolean();
+                            grid.Actions.ShowMergePerson = GetAttributeValue( "ShowMergePerson" ).AsBoolean();
+                            grid.Actions.ShowBulkUpdate = GetAttributeValue( "ShowBulkUpdate" ).AsBoolean();
+                            grid.Actions.ShowExcelExport = GetAttributeValue( "ShowExcelExport" ).AsBoolean();
+                            grid.Actions.ShowMergeTemplate = GetAttributeValue( "ShowMergeTemplate" ).AsBoolean();
 
                             grid.GridRebind += gReport_GridRebind;
                             grid.RowSelected += gReport_RowSelected;
@@ -406,7 +432,7 @@ namespace RockWeb.Blocks.Reporting
             string urlMask = GetAttributeValue( "UrlMask" );
             if ( !string.IsNullOrWhiteSpace( urlMask ) )
             {
-                Regex pattern = new Regex( @"\{.+\}" );
+                Regex pattern = new Regex( @"\{[\w\s]+\}" );
                 var matches = pattern.Matches( urlMask );
                 if ( matches.Count > 0 )
                 {

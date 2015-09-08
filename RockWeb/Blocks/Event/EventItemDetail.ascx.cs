@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Event
         public bool _canEdit = false;
         public bool _canApprove = false;
 
-        public List<EventItemAudience> AudiencesState { get; set; }
+        public List<int> AudiencesState { get; set; }
         public List<EventCalendarItem> ItemsState { get; set; }
 
         #endregion Properties
@@ -66,18 +66,9 @@ namespace RockWeb.Blocks.Event
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
+            AudiencesState = ViewState["AudiencesState"] as List<int> ?? new List<int>();
 
-            string json = ViewState["AudiencesState"] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
-            {
-                AudiencesState = new List<EventItemAudience>();
-            }
-            else
-            {
-                AudiencesState = JsonConvert.DeserializeObject<List<EventItemAudience>>( json );
-            }
-
-            json = ViewState["ItemsState"] as string;
+            string json = ViewState["ItemsState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
                 ItemsState = new List<EventCalendarItem>();
@@ -184,7 +175,7 @@ namespace RockWeb.Blocks.Event
                 ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
             };
 
-            ViewState["AudiencesState"] = JsonConvert.SerializeObject( AudiencesState, Formatting.None, jsonSetting );
+            ViewState["AudiencesState"] = AudiencesState;
             ViewState["ItemsState"] = JsonConvert.SerializeObject( ItemsState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
@@ -350,23 +341,22 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // Remove any audiences that were removed in the UI
-                var uiAudiences = AudiencesState.Select( r => r.Guid ).ToList();
-                foreach ( var eventItemAudience in eventItem.EventItemAudiences.Where( r => !uiAudiences.Contains( r.Guid ) ).ToList() )
+                foreach ( var eventItemAudience in eventItem.EventItemAudiences.Where( r => !AudiencesState.Contains( r.DefinedValueId ) ).ToList() )
                 {
                     eventItem.EventItemAudiences.Remove( eventItemAudience );
                     eventItemAudienceService.Delete( eventItemAudience );
                 }
 
                 // Add or Update audiences from the UI
-                foreach ( var eventItemAudienceState in AudiencesState )
+                foreach ( int audienceId in AudiencesState )
                 {
-                    EventItemAudience eventItemAudience = eventItem.EventItemAudiences.Where( a => a.Guid == eventItemAudienceState.Guid ).FirstOrDefault();
+                    EventItemAudience eventItemAudience = eventItem.EventItemAudiences.Where( a => a.DefinedValueId == audienceId ).FirstOrDefault();
                     if ( eventItemAudience == null )
                     {
                         eventItemAudience = new EventItemAudience();
+                        eventItemAudience.DefinedValueId = audienceId;
                         eventItem.EventItemAudiences.Add( eventItemAudience );
                     }
-                    eventItemAudience.CopyPropertiesFrom( eventItemAudienceState );
                 }
 
                 // remove any calendar items that removed in the UI
@@ -501,9 +491,8 @@ namespace RockWeb.Blocks.Event
             var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
             if ( definedType != null )
             {
-                var selectedIds = AudiencesState.Select( a => a.DefinedValueId ).ToList();
                 ddlAudience.DataSource = definedType.DefinedValues
-                    .Where( v => !selectedIds.Contains( v.Id ) )
+                    .Where( v => !AudiencesState.Contains( v.Id ) )
                     .ToList();
                 ddlAudience.DataBind();
             }
@@ -519,10 +508,10 @@ namespace RockWeb.Blocks.Event
         protected void gAudiences_Delete( object sender, RowEventArgs e )
         {
             Guid guid = (Guid)e.RowKeyValue;
-            var audience = AudiencesState.FirstOrDefault( a => a.DefinedValue.Guid.Equals( guid ) );
+            var audience = DefinedValueCache.Read( guid );
             if ( audience != null )
             {
-                AudiencesState.Remove( audience );
+                AudiencesState.Remove( audience.Id );
             }
             BindAudienceGrid();
         }
@@ -537,8 +526,7 @@ namespace RockWeb.Blocks.Event
             int? definedValueId = ddlAudience.SelectedValueAsInt();
             if ( definedValueId.HasValue )
             {
-                EventItemAudience eventItemAudience = new EventItemAudience { DefinedValueId = definedValueId.Value };
-                AudiencesState.Add( eventItemAudience );
+                AudiencesState.Add( definedValueId.Value );
             }
 
             BindAudienceGrid();
@@ -688,7 +676,7 @@ namespace RockWeb.Blocks.Event
                 cblAdditionalCalendars.SetValues( eventItem.EventCalendarItems.Select( c => c.EventCalendarId ).ToList() );
             }
 
-            AudiencesState = eventItem.EventItemAudiences.ToList();
+            AudiencesState = eventItem.EventItemAudiences.Select( a => a.DefinedValueId ).ToList();
             ItemsState = eventItem.EventCalendarItems.ToList();
 
             ShowItemAttributes();
@@ -852,7 +840,7 @@ namespace RockWeb.Blocks.Event
         private void BindAudienceGrid()
         {
             var values = new List<DefinedValueCache>();
-            AudiencesState.ForEach( a => values.Add( DefinedValueCache.Read( a.DefinedValueId ) ) );
+            AudiencesState.ForEach( a => values.Add( DefinedValueCache.Read( a ) ) );
 
             gAudiences.DataSource = values
                 .OrderBy( v => v.Order )

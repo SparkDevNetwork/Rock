@@ -1003,6 +1003,40 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Splits a full name into a separate first and last name. If only one name is found it defaults to first name.
+        /// </summary>
+        /// <param name="fullName">The full name</param>
+        /// <param name="firstName">The first name.</param>
+        /// <param name="lastName">The last name.</param>
+        public void SplitName( string fullName, out string firstName, out string lastName )
+        {
+            //Uses logic from IQueryable<Person> GetByFullName
+            firstName = string.Empty;
+            lastName = string.Empty;
+
+            if ( fullName.Contains( ',' ) )
+            {
+                // only split by comma if there is a comma present (for example if 'Smith Jones, Sally' is the search, last name would be 'Smith Jones')
+                var nameParts = fullName.Split( ',' );
+                lastName = nameParts.Length >= 1 ? nameParts[0].Trim() : string.Empty;
+                firstName = nameParts.Length >= 2 ? nameParts[1].Trim() : string.Empty;
+            }
+            else if ( fullName.Trim().Contains( ' ' ) )
+            {
+                // if no comma, assume the search is in 'firstname lastname' format (note: 'firstname lastname1 lastname2' isn't supported yet)
+                var names = fullName.Split( ' ' );
+                firstName = names.Length >= 1 ? names[0].Trim() : string.Empty;
+                lastName = names.Length >= 2 ? names[1].Trim() : string.Empty;
+            }
+            else
+            {
+                // no spaces, no commas
+                firstName = fullName.Trim();
+            }
+        }
+
+
+        /// <summary>
         /// Gets the first group location.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
@@ -1343,7 +1377,7 @@ namespace Rock.Model
                 History.EvaluateChange( demographicChanges, "Birth Date", null, person.BirthDate );
                 History.EvaluateChange( demographicChanges, "Graduation Year", null, person.GraduationYear );
                 History.EvaluateChange( demographicChanges, "Connection Status", string.Empty, DefinedValueCache.GetName( person.ConnectionStatusValueId ) );
-                History.EvaluateChange( demographicChanges, "Email Active", true.ToString(), ( person.IsEmailActive ?? true ).ToString() );
+                History.EvaluateChange( demographicChanges, "Email Active", true.ToString(), person.IsEmailActive.ToString() );
                 History.EvaluateChange( demographicChanges, "Record Type", string.Empty, DefinedValueCache.GetName( person.RecordTypeValueId.Value ) );
                 if ( person.GivingGroupId.HasValue )
                 {

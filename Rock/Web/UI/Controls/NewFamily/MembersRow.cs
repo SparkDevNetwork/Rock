@@ -470,7 +470,7 @@ namespace Rock.Web.UI.Controls
             _rblGender.Items.Add( new ListItem( "F", "Female" ) );
             if ( !RequireGender )
             {
-                _rblGender.Items.Add( new ListItem( "Unknown", "" ) );
+                _rblGender.Items.Add( new ListItem( "?", "" ) );
             }
 
             _rblGender.SelectedValue = selectedValue;

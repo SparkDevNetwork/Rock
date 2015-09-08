@@ -306,28 +306,32 @@ namespace Rock.Web.UI.Controls
             string mdp = dtf.ShortDatePattern;
             var dateParts = dtf.ShortDatePattern.Split( dtf.DateSeparator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries ).ToList();
             if ( dateParts.Count() != 3 ||
-                !dateParts.Contains( "MM" ) || 
-                !dateParts.Contains( "dd" ) || 
-                !dateParts.Contains( "yyyy" ) )
+                !dateParts.Any( s => s.Contains( "M" ) ) || 
+                !dateParts.Any( s => s.Contains( "d" ) ) || 
+                !dateParts.Any( s => s.Contains( "y" ) ) )
             {
                 dateParts = new List<string> { "MM", "dd", "yyyy" };
             }
+
             string separatorHtml = string.Format( " <span class='separator'>{0}</span> ", dtf.DateSeparator );
 
             for ( int i = 0; i < 3; i++ )
             {
-                switch( dateParts[i])
+                string datePart = dateParts[i].ToStringSafe();
+
+                if (datePart.Contains( "d" ))
                 {
-                    case "MM":
-                        monthDropDownList.RenderControl( writer );
-                        break;
-                    case "dd":
-                        dayDropDownList.RenderControl( writer );
-                        break;
-                    case "yyyy":
-                        yearDropDownList.RenderControl( writer );
-                        break;
+                    dayDropDownList.RenderControl( writer );
                 }
+                else if (datePart.Contains( "M" ))
+                {
+                    monthDropDownList.RenderControl( writer );
+                }
+                else if (datePart.Contains( "y" ))
+                {
+                    yearDropDownList.RenderControl( writer );
+                }
+
                 if ( i < 2)
                 {
                     writer.Write( separatorHtml );

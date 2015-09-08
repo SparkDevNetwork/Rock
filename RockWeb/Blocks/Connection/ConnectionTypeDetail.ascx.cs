@@ -260,6 +260,8 @@ namespace RockWeb.Blocks.Connection
 
                     connectionTypeService.Delete( connectionType );
                     rockContext.SaveChanges();
+
+                    ConnectionWorkflowService.FlushCachedTriggers();
                 }
             }
 
@@ -425,6 +427,9 @@ namespace RockWeb.Blocks.Connection
                             }
                         }
                     } );
+
+                    ConnectionWorkflowService.FlushCachedTriggers();
+
                     var qryParams = new Dictionary<string, string>();
                     qryParams["ConnectionTypeId"] = connectionType.Id.ToString();
 

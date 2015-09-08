@@ -98,6 +98,8 @@ namespace Rock.Model
             target.ConnectionStatusId = source.ConnectionStatusId;
             target.ConnectorPersonAliasId = source.ConnectorPersonAliasId;
             target.FollowupDate = source.FollowupDate;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.PersonAliasId = source.PersonAliasId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

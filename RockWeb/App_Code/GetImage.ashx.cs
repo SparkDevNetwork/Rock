@@ -210,6 +210,7 @@ namespace RockWeb
                     if ( fileContent != null )
                     {
                         // If more than 1 query string param is passed in, or the mime type is TIFF, assume resize is needed
+                        // Note: we force "image/tiff" to get resized so that it gets converted into a jpg (browsers don't like tiffs)
                         if ( context.Request.QueryString.Count > 1 || binaryFile.MimeType == "image/tiff" )
                         {
                             // if it isn't an SVG file, do a Resize
@@ -345,10 +346,19 @@ namespace RockWeb
         /// <returns></returns>
         private Stream GetResized( NameValueCollection queryString, Stream fileContent )
         {
-            ResizeSettings settings = new ResizeSettings( queryString );
-            MemoryStream resizedStream = new MemoryStream();
-            ImageBuilder.Current.Build( fileContent, resizedStream, settings );
-            return resizedStream;
+            try
+            {
+                ResizeSettings settings = new ResizeSettings( queryString );
+                MemoryStream resizedStream = new MemoryStream();
+
+                ImageBuilder.Current.Build( fileContent, resizedStream, settings );
+                return resizedStream;
+            }
+            catch
+            {
+                // if resize failed, just return original content
+                return fileContent;
+            }
         }
 
         /// <summary>

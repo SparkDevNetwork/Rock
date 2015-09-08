@@ -92,6 +92,8 @@ namespace Rock.Model
             target.Amount = source.Amount;
             target.EntityId = source.EntityId;
             target.EntityTypeId = source.EntityTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.ScheduledTransactionId = source.ScheduledTransactionId;
             target.Summary = source.Summary;
             target.CreatedDateTime = source.CreatedDateTime;

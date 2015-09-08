@@ -107,8 +107,9 @@ namespace RockWeb
             catch ( Rock.Web.FileUploadException fex )
             {
                 ExceptionLogService.LogException( fex, context );
+                context.Response.TrySkipIisCustomErrors = true;
                 context.Response.StatusCode = (int)fex.StatusCode;
-                context.Response.Write( "error: " + fex.Detail );
+                context.Response.Write( fex.Detail );
             }
             catch ( Exception ex )
             {

@@ -228,6 +228,20 @@ namespace Rock.Model
         /// <param name="propertyName">Name of the property.</param>
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, decimal? oldValue, decimal? newValue )
+        {
+            EvaluateChange( historyMessages, propertyName,
+                oldValue.HasValue ? oldValue.Value.ToString() : string.Empty,
+                newValue.HasValue ? newValue.Value.ToString() : string.Empty );
+        }
+
+        /// <summary>
+        /// Evaluates the change.
+        /// </summary>
+        /// <param name="historyMessages">The history messages.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="oldValue">The old value.</param>
+        /// <param name="newValue">The new value.</param>
         /// <param name="includeTime">if set to <c>true</c> [include time].</param>
         public static void EvaluateChange( List<string> historyMessages, string propertyName, DateTime? oldValue, DateTime? newValue, bool includeTime = false )
         {
