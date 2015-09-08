@@ -181,7 +181,7 @@
 
                             <Rock:NotificationBox ID="nbGiversError" runat="server" NotificationBoxType="Danger" Dismissable="true" Visible="false" />
 
-                            <Rock:Grid ID="gGiversGifts" runat="server" AllowSorting="true" RowItemText="Attendee" ExportSource="ColumnOutput" ExportFilename="GivingAnalytics" />
+                            <Rock:Grid ID="gGiversGifts" runat="server" AllowSorting="true" RowItemText="Person" ExportSource="ColumnOutput" ExportFilename="GivingAnalytics" />
 
                         </asp:Panel>
                     </div>
