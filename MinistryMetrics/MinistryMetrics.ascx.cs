@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.UI;
 using Newtonsoft.Json;
+using System.Web.UI.WebControls;
 // using RestSharp;
 using Rock;
 using Rock.Attribute;
@@ -191,10 +192,27 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.MinistryMetrics
 
             #region Global Variables
 
-            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( this.GetAttributeValue( "SlidingDateRange" ) ?? string.Empty );
+            // var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( this.GetAttributeValue( "SlidingDateRange" ) ?? string.Empty );
 
             var metricType = GetAttributeValue( "MetricType" );
             var metricModifier = GetAttributeValue( "Modifier" );
+
+            // Output variables direct to the ascx
+            // metricBlockId.Value = BlockName.Replace( " ", "" ).ToString();
+            String metricTitle = BlockName;
+            // metricDisplay.Value = GetAttributeValue( "MetricDisplayType" );
+            metricWidth.Value = GetAttributeValue( "NumberofColumns" );
+
+            String currentMetricValue = string.Empty;
+
+            // var metricCustomDates = GetAttributeValue( "CustomDates" );
+
+            // var churchMetricSource = GetMetricIds( "MetricSource" );
+            // var churchMetricPeriod = GetAttributeValue( "MetricPeriod" );
+
+            // MetricCompareLastYear = GetAttributeValue( "CompareAgainstLastYear" ).ToString();
+
+            // var newMetric = new MetricService( new RockContext() ).GetByIds( churchMetricSource ).FirstOrDefault();
 
             #endregion Global Variables
 
