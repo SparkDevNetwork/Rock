@@ -162,7 +162,23 @@ namespace RockWeb.Blocks.Finance
 
                 if ( gList.SortProperty != null )
                 {
-                    dv.Sort = string.Format( "[{0}] {1}", gList.SortProperty.Property, gList.SortProperty.DirectionString );
+                    try
+                    {
+                        var sortProperties = new List<string>();
+                        foreach ( string prop in gList.SortProperty.Property.SplitDelimitedValues( false ) )
+                        {
+                            sortProperties.Add( string.Format( "[{0}] {1}", prop, gList.SortProperty.DirectionString ) );
+                        }
+                        dv.Sort = sortProperties.AsDelimited( ", " );
+                    }
+                    catch
+                    {
+                        dv.Sort = "[LastName] ASC, [NickName] ASC";
+                    }
+                }
+                else
+                {
+                    dv.Sort = "[LastName] ASC, [NickName] ASC";
                 }
 
                 gList.DataSource = dv;
