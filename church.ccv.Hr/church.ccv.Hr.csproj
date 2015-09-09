@@ -92,6 +92,7 @@
     <Compile Include="Migrations\004_AddEarnedHolidayHours.cs" />
     <Compile Include="Migrations\006_AddForeignIdIndex.cs" />
     <Compile Include="Migrations\005_RenameDomain.cs" />
+    <Compile Include="Migrations\007_ForeignKeys.cs" />
     <Compile Include="Model\CodeGenerated\TimeCardDayService.cs" />
     <Compile Include="Model\CodeGenerated\TimeCardHistoryService.cs" />
     <Compile Include="Model\CodeGenerated\TimeCardPayPeriodService.cs" />
