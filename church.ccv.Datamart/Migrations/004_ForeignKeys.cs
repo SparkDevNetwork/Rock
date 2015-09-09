@@ -17,9 +17,6 @@ namespace church.ccv.Datamart.Migrations
         public override void Up()
         {
             Sql( @"
-    DROP INDEX [IX_ForeignId] ON [dbo].[_church_ccv_Datamart_ERA]
-" );
-            Sql( @"
     EXEC sp_rename  
         @objname = N'[dbo].[_church_ccv_Datamart_ERA].ForeignId',
         @newname = 'ForeignKey',
@@ -40,9 +37,6 @@ namespace church.ccv.Datamart.Migrations
     CREATE INDEX [IX_ForeignGuid] ON [dbo].[_church_ccv_Datamart_ERA] (ForeignGuid)
 " );
 
-            Sql( @"
-    DROP INDEX [IX_ForeignId] ON [dbo].[_church_ccv_Datamart_EraLoss]
-" );
             Sql( @"
     EXEC sp_rename  
         @objname = N'[dbo].[_church_ccv_Datamart_EraLoss].ForeignId',
@@ -65,9 +59,6 @@ namespace church.ccv.Datamart.Migrations
 " );
 
             Sql( @"
-    DROP INDEX [IX_ForeignId] ON [dbo].[_church_ccv_Datamart_Family]
-" );
-            Sql( @"
     EXEC sp_rename  
         @objname = N'[dbo].[_church_ccv_Datamart_Family].ForeignId',
         @newname = 'ForeignKey',
@@ -88,9 +79,6 @@ namespace church.ccv.Datamart.Migrations
     CREATE INDEX [IX_ForeignGuid] ON [dbo].[_church_ccv_Datamart_Family] (ForeignGuid)
 " );
 
-            Sql( @"
-    DROP INDEX [IX_ForeignId] ON [dbo].[_church_ccv_Datamart_NearestGroup]
-" );
             Sql( @"
     EXEC sp_rename  
         @objname = N'[dbo].[_church_ccv_Datamart_NearestGroup].ForeignId',
@@ -113,9 +101,6 @@ namespace church.ccv.Datamart.Migrations
 " );
 
             Sql( @"
-    DROP INDEX [IX_ForeignId] ON [dbo].[_church_ccv_Datamart_Neighborhood]
-" );
-            Sql( @"
     EXEC sp_rename  
         @objname = N'[dbo].[_church_ccv_Datamart_Neighborhood].ForeignId',
         @newname = 'ForeignKey',
@@ -136,9 +121,6 @@ namespace church.ccv.Datamart.Migrations
     CREATE INDEX [IX_ForeignGuid] ON [dbo].[_church_ccv_Datamart_Neighborhood] (ForeignGuid)
 " );
 
-            Sql( @"
-    DROP INDEX [IX_ForeignId] ON [dbo].[_church_ccv_Datamart_Person]
-" );
             Sql( @"
     EXEC sp_rename  
         @objname = N'[dbo].[_church_ccv_Datamart_Person].ForeignId',
