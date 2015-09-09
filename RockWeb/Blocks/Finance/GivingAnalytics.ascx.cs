@@ -746,7 +746,7 @@ function(item) {
                 {
                     DataField = "PersonName",
                     HeaderText = "Person",
-                    SortExpression = "PersonName"
+                    SortExpression = "LastName,NickName"
                 } );
 
             // add a column for email (but is only included on excel export)
@@ -1045,7 +1045,12 @@ function(item) {
             {
                 try
                 {
-                    dv.Sort = string.Format( "[{0}] {1}", gGiversGifts.SortProperty.Property, gGiversGifts.SortProperty.DirectionString );
+                    var sortProperties = new List<string>();
+                    foreach( string prop in gGiversGifts.SortProperty.Property.SplitDelimitedValues(false))
+                    {
+                        sortProperties.Add( string.Format( "[{0}] {1}", prop, gGiversGifts.SortProperty.DirectionString ) );
+                    }
+                    dv.Sort = sortProperties.AsDelimited( ", " );
                 }
                 catch
                 {

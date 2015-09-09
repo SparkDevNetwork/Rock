@@ -45,9 +45,7 @@
                                 <Rock:Grid ID="gList" runat="server" AllowSorting="true" PersonIdField="Id" ExportSource="ColumnOutput" ExportFilename="PledgeAnalytics">
                                     <Columns>
                                         <Rock:SelectField />
-                                        <Rock:RockTemplateField  HeaderText="Person" SortExpression="LastName,NickName">
-                                            <ItemTemplate><%# Eval("NickName") %> <%# Eval("LastName") %></ItemTemplate>
-                                        </Rock:RockTemplateField>
+                                        <Rock:RockBoundField DataField="PersonName" HeaderText="Person" SortExpression="LastName,NickName" />
                                         <Rock:RockBoundField DataField="Email" HeaderText="Email" SortExpression="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:CurrencyField DataField="PledgeAmount" HeaderText="Pledge Total" SortExpression="PledgeAmount" />
                                         <Rock:CurrencyField DataField="GiftAmount" HeaderText="Total Giving Amount" SortExpression="GiftAmount" />
