@@ -704,25 +704,45 @@ namespace Rock.Web.Cache
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        AllEntityAttributes = new AttributeService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .GroupBy( a => new
-                            {
-                                a.EntityTypeId,
-                                a.EntityTypeQualifierColumn,
-                                a.EntityTypeQualifierValue
-                            } )
-                            .Select( a => new EntityAttributes()
-                            {
-                                EntityTypeId = a.Key.EntityTypeId,
-                                EntityTypeQualifierColumn = a.Key.EntityTypeQualifierColumn,
-                                EntityTypeQualifierValue = a.Key.EntityTypeQualifierValue,
-                                AttributeIds = a.Select( v => v.Id ).ToList()
-                            } )
-                            .ToList();
+                        AllEntityAttributes = QryEntityAttributes( rockContext );
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Loads the entity attributes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        public static void LoadEntityAttributes( RockContext rockContext )
+        {
+            lock ( _lock )
+            {
+                if ( AllEntityAttributes == null )
+                {
+                    AllEntityAttributes = QryEntityAttributes( rockContext );
+                }
+            }
+        }
+
+        private static List<EntityAttributes> QryEntityAttributes( RockContext rockContext )
+        {
+            return new AttributeService( rockContext )
+                .Queryable().AsNoTracking()
+                .GroupBy( a => new
+                {
+                    a.EntityTypeId,
+                    a.EntityTypeQualifierColumn,
+                    a.EntityTypeQualifierValue
+                } )
+                .Select( a => new EntityAttributes()
+                {
+                    EntityTypeId = a.Key.EntityTypeId,
+                    EntityTypeQualifierColumn = a.Key.EntityTypeQualifierColumn,
+                    EntityTypeQualifierValue = a.Key.EntityTypeQualifierValue,
+                    AttributeIds = a.Select( v => v.Id ).ToList()
+                } )
+                .ToList();
         }
 
         /// <summary>
