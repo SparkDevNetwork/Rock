@@ -59,7 +59,7 @@
   {% if showDivider %}
     <hr>
   {% endif %}
-  <div class="announcement-list{% if useGrayBg %} announcement-list-gray{% endif %}{% if useTopMargin %} margin-t-lg{% endif %}">
+  <div class="hoverthumb-list{% if useGrayBg %} hoverthumb-list-gray{% endif %}{% if useTopMargin %} margin-t-lg{% endif %}">
     {% if useContainer %}<div class="container">{% endif %}
       <div class="row">
         {% for item in Items %}
@@ -86,10 +86,10 @@
           {% if showItem %}
             {% assign itemCount = itemCount | Plus: 1 %}
             <div class="col-md-3 col-xs-6">
-              <div class="announcement">
+              <div class="hoverthumb">
                 <a href="{{ itemLink }}">
                   <img src="/GetImage.ashx?guid={{ item | Attribute:'Image','RawValue' }}&width=525&height=295&mode=crop&scale=both" alt="{{ item.Title }}">
-                  <h5 class="announcement-title">{{ item.Title }}</h5>
+                  <h5 class="hoverthumb-bar">{{ item.Title }}</h5>
                 </a>
               </div>
             </div>

@@ -1,0 +1,16 @@
+<div class="row">
+  {% for occurrence in EventItemOccurrences %}
+    {% capture itemLink %}{{ RegistrationPage }}?EventOccurrenceId={{ occurrence.Id }}{% endcapture %}
+    <div class="col-sm-6 col-md-4">
+      <div class="hoverthumb">
+        <a href="{{ itemLink }}">
+          <img src="{{ occurrence.EventItem.Photo.Url }}&width=525&height=295&mode=crop&scale=both">
+          <div class="hoverthumb-overlay">
+            <h3 class="hoverthumb-overlaytitle">{{ occurrence.EventItem.Name | Remove: " Mission Trip"}}</h3>
+            <div class="hoverthumb-overlaytitle-sub">{{ occurrence.Schedule.EffectiveStartDate | Date: 'MMM d' }} - {{ occurrence.Schedule.EffectiveEndDate | Date: 'MMM d' }}</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  {% endfor %}
+</div>
