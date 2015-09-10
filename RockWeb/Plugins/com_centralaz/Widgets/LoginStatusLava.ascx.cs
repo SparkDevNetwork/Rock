@@ -37,7 +37,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [Category( "com_centralaz > Widgets" )]
     [Description( "A lava block for login." )]
     [LinkedPage( "My Account Page", "The page used to view an account" )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the package details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/LoginStatusLava.lava' %}", "", 2 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the login status.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/LoginStatusLava.lava' %}", "", 2 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     public partial class LoginStatusLava : RockBlock
     {
