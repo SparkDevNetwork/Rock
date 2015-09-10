@@ -350,7 +350,7 @@ namespace RockWeb.Blocks.Groups
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gGroupMembers_GridRebind( object sender, EventArgs e )
         {
-            BindGroupMembersGrid();
+            BindGroupMembersGrid( !gGroupMembers.AllowPaging );
         }
 
         #endregion
@@ -687,7 +687,7 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Binds the group members grid.
         /// </summary>
-        protected void BindGroupMembersGrid()
+        protected void BindGroupMembersGrid( bool selectAll = false )
         {
             if ( _group != null )
             {
@@ -813,6 +813,15 @@ namespace RockWeb.Blocks.Groups
                     var homePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
                     var cellPhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
 
+                    // If exporting to Excel, the selectAll option will be true, and home location should be calculated
+                    var homeLocations = new Dictionary<int, Location>();
+                    if ( selectAll )
+                    {
+                        foreach ( var m in groupMembersList )
+                        {
+                            homeLocations.Add( m.Id, m.Person.GetHomeLocation( rockContext ) );
+                        }
+                    }
 
                     gGroupMembers.DataSource = groupMembersList
                         .ToList().Select( m => new
@@ -838,12 +847,17 @@ namespace RockWeb.Blocks.Groups
                                 .Where( p => p.NumberTypeValueId.HasValue && p.NumberTypeValueId.Value == cellPhoneType.Id )
                                 .Select( p => p.NumberFormatted )
                                 .FirstOrDefault() : string.Empty,
+                        HomeAddress = homeLocations.ContainsKey( m.Id ) && homeLocations[m.Id] != null ?
+                            homeLocations[m.Id].FormattedAddress : string.Empty,
+                        Latitude = homeLocations.ContainsKey( m.Id ) && homeLocations[m.Id] != null ?
+                            homeLocations[m.Id].Latitude : (double?)null,
+                        Longitude = homeLocations.ContainsKey( m.Id ) && homeLocations[m.Id] != null ?
+                            homeLocations[m.Id].Longitude : (double?)null,
                         GroupRole = m.GroupRole.Name,
                         m.GroupMemberStatus,
                         RecordStatusValueId = m.Person.RecordStatusValueId,
                         IsDeceased = m.Person.IsDeceased
                     } ).ToList();
-
                     gGroupMembers.DataBind();
                 }
                 else
