@@ -42,7 +42,8 @@
                                 </div>
                             </div>
                             <div class="grid grid-panel">
-                                <Rock:Grid ID="gList" runat="server" AllowSorting="true" PersonIdField="Id" ExportSource="ColumnOutput" ExportFilename="PledgeAnalytics">
+                                <Rock:Grid ID="gList" runat="server" AllowSorting="true" PersonIdField="Id" OnRowSelected="gList_RowSelected"
+                                    ExportSource="ColumnOutput" ExportFilename="PledgeAnalytics">
                                     <Columns>
                                         <Rock:SelectField />
                                         <Rock:RockBoundField DataField="PersonName" HeaderText="Person" SortExpression="LastName,NickName" />
