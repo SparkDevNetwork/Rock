@@ -423,6 +423,10 @@
     <Compile Include="Migrations\201509081615443_PersonIsEmailActive.Designer.cs">
       <DependentUpon>201509081615443_PersonIsEmailActive.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201509100552294_ExternalGivingPageCleanup.cs" />
+    <Compile Include="Migrations\201509100552294_ExternalGivingPageCleanup.Designer.cs">
+      <DependentUpon>201509100552294_ExternalGivingPageCleanup.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2152,6 +2156,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201509081615443_PersonIsEmailActive.resx">
       <DependentUpon>201509081615443_PersonIsEmailActive.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201509100552294_ExternalGivingPageCleanup.resx">
+      <DependentUpon>201509100552294_ExternalGivingPageCleanup.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
