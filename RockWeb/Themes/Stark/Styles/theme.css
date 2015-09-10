@@ -5966,6 +5966,9 @@ main {
 a:hover i.fs {
   text-decoration: none;
 }
+.page-icon {
+  display: none;
+}
 header .page-menu,
 header .login-status {
   float: right;
