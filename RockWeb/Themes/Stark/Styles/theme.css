@@ -1012,14 +1012,14 @@ td.wrap-contents {
   margin-bottom: 12px;
 }
 .table > thead > tr > th {
-  background-color: transparent;
+  background-color: #428bca;
   font-size: 14px;
-  color: #333333;
+  color: #ffffff;
   font-weight: 600;
   border-color: #dddddd;
 }
 .table > thead > tr > th > a:not(.btn) {
-  color: #333333;
+  color: #ffffff;
   display: block;
 }
 .table > thead > tr > th.ascending a::before {
