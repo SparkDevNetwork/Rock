@@ -22,10 +22,11 @@
     .panel-title {
       font-size: @font-size-h3;
       position: absolute;
-      bottom: 0;
       left: 0;
       right: 0;
-      padding: @grid-gutter-width/2;
+      top: 0;
+      overflow: hidden;
+      margin: @grid-gutter-width/2;
       line-height: @grid-gutter-width;
     }
   .panel-footer {
@@ -60,6 +61,10 @@
       right: 0;
       bottom: 0;
     }
+  }
+  .panel-title {
+    top: auto;
+    bottom: 0;
   }
 }
 

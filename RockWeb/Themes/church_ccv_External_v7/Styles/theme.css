@@ -7222,10 +7222,11 @@ h6,
 .panel-card .panel-title {
   font-size: 31px;
   position: absolute;
-  bottom: 0;
   left: 0;
   right: 0;
-  padding: 15px;
+  top: 0;
+  overflow: hidden;
+  margin: 15px;
   line-height: 30px;
 }
 .panel-card .panel-footer {
@@ -7253,6 +7254,10 @@ h6,
   top: 0;
   left: 0;
   right: 0;
+  bottom: 0;
+}
+.panel-card-withimg .panel-title {
+  top: auto;
   bottom: 0;
 }
 .panel-card-withimg.panel-card-hideoverlay .panel-card-img:before {
