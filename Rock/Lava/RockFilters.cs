@@ -1718,6 +1718,31 @@ namespace Rock.Lava
 
         #region Misc Filters
 
+
+        /// <summary>
+        /// Redirects the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string PageRedirect( string input )
+        {            
+            // check for no redirect in query string
+            string redirectValue = HttpContext.Current.Request.QueryString["Redirect"];
+
+            if ( redirectValue != null && redirectValue == "false" )
+            {
+                return string.Format("<p class='alert alert-warning'>Without the redirect query string parameter you would be redirected to: <a href='{0}'>{0}</a>.</p>", input);
+            }
+            
+            if ( input != null )
+            {
+                HttpContext.Current.Response.Redirect( input, true );
+            }
+            
+            return string.Empty;
+        }
+
+
         /// <summary>
         /// creates a postback javascript function
         /// </summary>
