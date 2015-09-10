@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Event
             _canApprove = UserCanAdministrate;
 
             // Load the other calendars user is authorized to view 
-            cblAdditionalCalendars.Items.Clear();
+            cblCalendars.Items.Clear();
             using ( var rockContext = new RockContext() )
             {
                 foreach ( var calendar in new EventCalendarService( rockContext )
@@ -120,17 +120,14 @@ namespace RockWeb.Blocks.Event
                             calendar.IsAuthorized( Authorization.APPROVE, CurrentPerson ) ||
                             calendar.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
                     }
-                    else
+
+                    if ( calendar.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                     {
-                        if ( calendar.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
-                        {
-                            cblAdditionalCalendars.Items.Add( new ListItem( calendar.Name, calendar.Id.ToString() ) );
-                        }
+                        cblCalendars.Items.Add( new ListItem( calendar.Name, calendar.Id.ToString() ) );
                     }
                 }
             }
-            cblAdditionalCalendars.SelectedIndexChanged += cblAdditionalCalendars_SelectedIndexChanged;
-            cblAdditionalCalendars.Visible = cblAdditionalCalendars.Items.Count > 0;
+            cblCalendars.SelectedIndexChanged += cblCalendars_SelectedIndexChanged;
 
             RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
             RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
@@ -145,6 +142,8 @@ namespace RockWeb.Blocks.Event
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbValidation.Visible = false;
 
             if ( !Page.IsPostBack )
             {
@@ -295,6 +294,8 @@ namespace RockWeb.Blocks.Event
 
             using ( var rockContext = new RockContext() )
             {
+                var validationMessages = new List<string>();
+
                 var eventItemService = new EventItemService( rockContext );
                 var eventCalendarItemService = new EventCalendarItemService( rockContext );
                 var eventItemAudienceService = new EventItemAudienceService( rockContext );
@@ -360,8 +361,8 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // remove any calendar items that removed in the UI
-                var calendarIds = new List<int> { _calendarId };
-                calendarIds.AddRange( cblAdditionalCalendars.SelectedValuesAsInt );
+                var calendarIds = new List<int>();
+                calendarIds.AddRange( cblCalendars.SelectedValuesAsInt );
                 var uiCalendarGuids = ItemsState.Where( i => calendarIds.Contains( i.EventCalendarId ) ).Select( a => a.Guid );
                 foreach ( var eventCalendarItem in eventItem.EventCalendarItems.Where( a => !uiCalendarGuids.Contains( a.Guid ) ).ToList() )
                 {
@@ -381,6 +382,11 @@ namespace RockWeb.Blocks.Event
                     eventCalendarItem.CopyPropertiesFrom( calendar );
                 }
 
+                if ( !eventItem.EventCalendarItems.Any() )
+                {
+                    validationMessages.Add( "At least one calendar is required." );
+                }
+
                 if ( !Page.IsValid )
                 {
                     return;
@@ -389,6 +395,13 @@ namespace RockWeb.Blocks.Event
                 if ( !eventItem.IsValid )
                 {
                     // Controls will render the error messages
+                    return;
+                }
+
+                if ( validationMessages.Any() )
+                {
+                    nbValidation.Text = "Please Correct the Following<ul><li>" + validationMessages.AsDelimited( "</li><li>" ) + "</li></ul>";
+                    nbValidation.Visible = true;
                     return;
                 }
 
@@ -547,11 +560,11 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the cblAdditionalCalendars control.
+        /// Handles the SelectedIndexChanged event of the cblCalendars control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void cblAdditionalCalendars_SelectedIndexChanged( object sender, EventArgs e )
+        protected void cblCalendars_SelectedIndexChanged( object sender, EventArgs e )
         {
             ShowItemAttributes();
         }
@@ -673,7 +686,7 @@ namespace RockWeb.Blocks.Event
 
             if ( eventItem.EventCalendarItems != null )
             {
-                cblAdditionalCalendars.SetValues( eventItem.EventCalendarItems.Select( c => c.EventCalendarId ).ToList() );
+                cblCalendars.SetValues( eventItem.EventCalendarItems.Select( c => c.EventCalendarId ).ToList() );
             }
 
             AudiencesState = eventItem.EventItemAudiences.Select( a => a.DefinedValueId ).ToList();
@@ -802,7 +815,7 @@ namespace RockWeb.Blocks.Event
         private void ShowItemAttributes()
         {
             var eventCalendarList = new List<int> { _calendarId };
-            eventCalendarList.AddRange( cblAdditionalCalendars.SelectedValuesAsInt );
+            eventCalendarList.AddRange( cblCalendars.SelectedValuesAsInt );
 
             wpAttributes.Visible = false;
             phAttributes.Controls.Clear();
