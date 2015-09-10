@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -40,7 +39,8 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Displays the details of the given report." )]
 
-    [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180 )]
+    [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, "", 0 )]
+    [LinkedPage("Data View Page", "The page to edit data views", true, "", "", 1)]
     public partial class ReportDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -306,6 +306,18 @@ namespace RockWeb.Blocks.Reporting
         protected void btnToggleResults_Click( object sender, EventArgs e )
         {
             this.ShowResults = !this.ShowResults;
+        }
+
+        protected void lbDataView_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var reportService = new ReportService( rockContext );
+            var report = reportService.Get( hfReportId.Value.AsInteger() );
+
+            if ( report != null && report.DataViewId.HasValue )
+            {
+                NavigateToLinkedPage( "DataViewPage", "DataViewId", report.DataViewId.Value );
+            }
         }
 
         #region Edit Events
@@ -650,6 +662,7 @@ namespace RockWeb.Blocks.Reporting
                 // Add Fields for the EntityType
                 foreach ( var entityField in entityFields.OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.Title ) )
                 {
+                    bool isAuthorizedForField = true;
                     var listItem = new ListItem();
                     listItem.Text = entityField.Title;
                     if ( entityField.FieldKind == FieldKind.Property )
@@ -658,6 +671,16 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else if ( entityField.FieldKind == FieldKind.Attribute )
                     {
+                        if ( entityField.AttributeGuid.HasValue )
+                        {
+                            var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
+                            if (attribute != null )
+                            {
+                                // only show the Attribute field in the drop down if they have VIEW Auth to it
+                                isAuthorizedForField = attribute.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson );
+                            }
+                        }
+
                         listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Attribute, entityField.AttributeGuid.Value.ToString( "n" ) );
                     }
 
@@ -679,7 +702,10 @@ namespace RockWeb.Blocks.Reporting
                         }
                     }
 
-                    listItems.Add( listItem );
+                    if ( isAuthorizedForField )
+                    {
+                        listItems.Add( listItem );
+                    }
                 }
 
                 // Add DataSelect MEF Components that apply to this EntityType
@@ -942,6 +968,16 @@ namespace RockWeb.Blocks.Reporting
             lReadOnlyTitle.Text = report.Name.FormatAsHtmlTitle();
             lReportDescription.Text = report.Description;
 
+            if ( report.DataView != null )
+            {
+                lbDataView.Visible = UserCanEdit;
+                lbDataView.ToolTip = report.DataView.Name;
+            }
+            else
+            {
+                lbDataView.Visible = false;
+            }
+
             BindGrid( report );
         }
 
@@ -1165,7 +1201,18 @@ namespace RockWeb.Blocks.Reporting
             RockDropDownList ddlFields = panelWidget.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.ID == panelWidget.ID + "_ddlFields" );
             if ( reportField.ReportFieldType == ReportFieldType.Attribute )
             {
-                ddlFields.SelectedValue = string.Format( "{0}|{1}", reportField.ReportFieldType, reportField.Selection );
+               var selectedValue = string.Format( "{0}|{1}", reportField.ReportFieldType, reportField.Selection );
+               if ( ddlFields.Items.OfType<ListItem>().Any( a => a.Value == selectedValue ) )
+               {
+                   ddlFields.SelectedValue = selectedValue;
+               }
+               else
+               {
+                   // if this EntityField is not available for the current person, but this reportField already has it configured, let them keep it
+                   var attribute = AttributeCache.Read( fieldSelection.AsGuid(), rockContext );
+                   ddlFields.Items.Add( new ListItem( attribute.Name, selectedValue ) );
+                   ddlFields.SelectedValue = selectedValue;
+               }
             }
             else if ( reportField.ReportFieldType == ReportFieldType.Property )
             {

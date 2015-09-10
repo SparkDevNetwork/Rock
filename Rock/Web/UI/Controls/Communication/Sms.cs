@@ -86,6 +86,7 @@ namespace Rock.Web.UI.Controls.Communication
             ddlFrom.Label = "From";
             ddlFrom.Help = "The number to originate message from (configured under Admin Tools > General Settings > Defined Types > SMS From Values).";
             ddlFrom.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), false, true );
+            ddlFrom.Required = true;
             Controls.Add( ddlFrom );
 
             rcwMessage = new RockControlWrapper();
@@ -107,6 +108,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbMessage.ID = string.Format( "tbTextMessage_{0}", this.ID );
             tbMessage.TextMode = TextBoxMode.MultiLine;
             tbMessage.Rows = 3;
+            tbMessage.Required = true;
             rcwMessage.Controls.Add( tbMessage );
         }
 

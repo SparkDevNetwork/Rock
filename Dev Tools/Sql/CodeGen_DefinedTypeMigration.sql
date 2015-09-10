@@ -1,6 +1,6 @@
 -- set @definedTypeNameFilter if you need DefinedValue migrations for a specific DefinedType
 declare
- @definedTypeNameFilter nvarchar(max) = null --'Transaction Source%'
+ @definedTypeNameFilter nvarchar(max) = '%%' --'Transaction Source%'
 
 
 select 

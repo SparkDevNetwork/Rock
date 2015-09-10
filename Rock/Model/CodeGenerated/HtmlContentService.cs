@@ -94,6 +94,8 @@ namespace Rock.Model
             target.Content = source.Content;
             target.EntityValue = source.EntityValue;
             target.ExpireDateTime = source.ExpireDateTime;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsApproved = source.IsApproved;
             target.StartDateTime = source.StartDateTime;
             target.Version = source.Version;

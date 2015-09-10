@@ -134,6 +134,8 @@ namespace Rock.Model
             target.ContentLastModified = source.ContentLastModified;
             target.Description = source.Description;
             target.FileName = source.FileName;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsSystem = source.IsSystem;
             target.IsTemporary = source.IsTemporary;
             target.MimeType = source.MimeType;

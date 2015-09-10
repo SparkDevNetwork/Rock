@@ -121,6 +121,8 @@ namespace Rock.Model
             target.AssessorParcelId = source.AssessorParcelId;
             target.City = source.City;
             target.Country = source.Country;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GeocodeAttemptedDateTime = source.GeocodeAttemptedDateTime;
             target.GeocodeAttemptedResult = source.GeocodeAttemptedResult;
             target.GeocodeAttemptedServiceType = source.GeocodeAttemptedServiceType;

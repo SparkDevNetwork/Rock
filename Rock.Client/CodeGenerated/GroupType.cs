@@ -56,6 +56,12 @@ namespace Rock.Client
         public bool? EnableLocationSchedules { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string GroupMemberTerm { get; set; }
 
         /// <summary />
@@ -101,7 +107,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source GroupType object
@@ -117,6 +123,8 @@ namespace Rock.Client
             this.DefaultGroupRoleId = source.DefaultGroupRoleId;
             this.Description = source.Description;
             this.EnableLocationSchedules = source.EnableLocationSchedules;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.GroupMemberTerm = source.GroupMemberTerm;
             this.GroupTerm = source.GroupTerm;
             this.GroupTypePurposeValueId = source.GroupTypePurposeValueId;

@@ -62,7 +62,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EventCalendar"/> that this EventCalendarItem is a member of.
         /// </value>
-        [DataMember]
+        [LavaInclude]
         public virtual EventCalendar EventCalendar { get; set; }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EventItem"/> that this EventCalendarItem is a member of.
         /// </value>
-        [DataMember]
+        [LavaInclude]
         public virtual EventItem EventItem { get; set; }
 
         #endregion

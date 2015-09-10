@@ -41,10 +41,16 @@ namespace Rock.Client
         public int EventCalendarId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source EventCalendarContentChannel object
@@ -55,6 +61,8 @@ namespace Rock.Client
             this.Id = source.Id;
             this.ContentChannelId = source.ContentChannelId;
             this.EventCalendarId = source.EventCalendarId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 

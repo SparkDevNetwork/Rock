@@ -41,6 +41,12 @@ namespace Rock.Client
         public int ControllerId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string Method { get; set; }
 
         /// <summary />
@@ -50,7 +56,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source RestAction object
@@ -61,6 +67,8 @@ namespace Rock.Client
             this.Id = source.Id;
             this.ApiId = source.ApiId;
             this.ControllerId = source.ControllerId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.Method = source.Method;
             this.Path = source.Path;
             this.Guid = source.Guid;

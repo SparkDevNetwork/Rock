@@ -148,11 +148,6 @@ namespace RockWeb.Blocks.Finance
 
                     if ( txn != null )
                     {
-                        if ( txn.FinancialGateway != null )
-                        {
-                            txn.FinancialGateway.LoadAttributes( rockContext );
-                        }
-
                         string errorMessage = string.Empty;
                         if ( txnService.GetStatus( txn, out errorMessage ) )
                         {

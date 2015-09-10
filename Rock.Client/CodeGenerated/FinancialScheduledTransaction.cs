@@ -50,6 +50,12 @@ namespace Rock.Client
         public int? FinancialPaymentDetailId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string GatewayScheduleId { get; set; }
 
         /// <summary />
@@ -80,7 +86,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source FinancialScheduledTransaction object
@@ -94,6 +100,8 @@ namespace Rock.Client
             this.EndDate = source.EndDate;
             this.FinancialGatewayId = source.FinancialGatewayId;
             this.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.GatewayScheduleId = source.GatewayScheduleId;
             this.IsActive = source.IsActive;
             this.LastRemindedDate = source.LastRemindedDate;

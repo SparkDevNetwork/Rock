@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.Finance
                             t.TransactionDetails.Any( d => selectedAccountIds.Contains( d.AccountId ) ) && 
                             t.AuthorizedPersonAlias != null &&
                             t.AuthorizedPersonAlias.Person != null &&
-                            t.AuthorizedPersonAlias.Person.GivingGroupId == CurrentPerson.GivingGroupId );
+                            t.AuthorizedPersonAlias.Person.GivingId == CurrentPerson.GivingId );
 
             if (drpFilterDates.LowerValue.HasValue) {
                 qry = qry.Where(t => t.TransactionDateTime.Value >= drpFilterDates.LowerValue.Value);

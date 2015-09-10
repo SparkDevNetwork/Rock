@@ -47,6 +47,12 @@ namespace Rock.Client
         public DateTime? FailedPasswordAttemptWindowStartDateTime { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public bool? IsConfirmed { get; set; }
 
         /// <summary />
@@ -86,7 +92,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source UserLoginWithPlainTextPassword object
@@ -99,6 +105,8 @@ namespace Rock.Client
             this.EntityTypeId = source.EntityTypeId;
             this.FailedPasswordAttemptCount = source.FailedPasswordAttemptCount;
             this.FailedPasswordAttemptWindowStartDateTime = source.FailedPasswordAttemptWindowStartDateTime;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IsConfirmed = source.IsConfirmed;
             this.IsLockedOut = source.IsLockedOut;
             this.IsOnLine = source.IsOnLine;

@@ -89,6 +89,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.Description = source.Description;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.MediumDataJson = source.MediumDataJson;
             target.MediumEntityTypeId = source.MediumEntityTypeId;
             target.Name = source.Name;

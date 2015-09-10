@@ -123,6 +123,8 @@ namespace Rock.Model
             target.DefaultGroupRoleId = source.DefaultGroupRoleId;
             target.Description = source.Description;
             target.EnableLocationSchedules = source.EnableLocationSchedules;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupMemberTerm = source.GroupMemberTerm;
             target.GroupTerm = source.GroupTerm;
             target.GroupTypePurposeValueId = source.GroupTypePurposeValueId;

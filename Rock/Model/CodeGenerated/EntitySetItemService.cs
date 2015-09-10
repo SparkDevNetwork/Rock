@@ -91,6 +91,8 @@ namespace Rock.Model
             target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
             target.EntityId = source.EntityId;
             target.EntitySetId = source.EntitySetId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.Order = source.Order;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

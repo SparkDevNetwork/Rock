@@ -47,10 +47,16 @@ namespace Rock.Client
         public int CommunicationRecipientId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source CommunicationRecipientActivity object
@@ -63,6 +69,8 @@ namespace Rock.Client
             this.ActivityDetail = source.ActivityDetail;
             this.ActivityType = source.ActivityType;
             this.CommunicationRecipientId = source.CommunicationRecipientId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 

@@ -89,6 +89,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.Entity = source.Entity;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IdParameter = source.IdParameter;
             target.IsSystem = source.IsSystem;
             target.PageId = source.PageId;

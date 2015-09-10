@@ -92,6 +92,8 @@ namespace Rock.Model
             target.ActivityDetail = source.ActivityDetail;
             target.ActivityType = source.ActivityType;
             target.CommunicationRecipientId = source.CommunicationRecipientId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

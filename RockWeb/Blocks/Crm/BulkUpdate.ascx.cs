@@ -80,6 +80,18 @@ namespace RockWeb.Blocks.Crm
 
             ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker( ypGraduation ), true );
 
+            ddlNoteType.Items.Clear();
+            var personEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+            var noteTypes = NoteTypeCache.GetByEntity( personEntityTypeId, string.Empty, string.Empty, true );
+            foreach ( var noteType in noteTypes )
+            {
+                if ( noteType.UserSelectable && noteType.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) )
+                {
+                    ddlNoteType.Items.Add( new ListItem( noteType.Name, noteType.Id.ToString() ) );
+                }
+            }
+            pwNote.Visible = ddlNoteType.Items.Count > 0;
+
             string script = @"
     $('a.remove-all-individuals').click(function( e ){
         e.preventDefault();
@@ -545,10 +557,11 @@ namespace RockWeb.Blocks.Crm
 
                 #region Note
 
-                if ( !string.IsNullOrWhiteSpace( tbNote.Text ) && CurrentPerson != null )
+                if ( !string.IsNullOrWhiteSpace( tbNote.Text ) && CurrentPerson != null && ddlNoteType.SelectedItem != null )
                 {
-                    changes.Add( string.Format( "Add a <span class='field-name'>{0}Note{1}</span> of <p><span class='field-value'>{2}</span></p>.",
-                        ( cbIsPrivate.Checked ? "Private " : "" ), ( cbIsAlert.Checked ? " (Alert)" : "" ), tbNote.Text.ConvertCrLfToHtmlBr() ) );
+                    string noteTypeName = ddlNoteType.SelectedItem.Text;
+                    changes.Add( string.Format( "Add a <span class='field-name'>{0}{1}{2}</span> of <p><span class='field-value'>{3}</span></p>.",
+                        ( cbIsPrivate.Checked ? "Private " : "" ), noteTypeName, ( cbIsAlert.Checked ? " (Alert)" : "" ), tbNote.Text.ConvertCrLfToHtmlBr() ) );
                 }
 
                 #endregion
@@ -675,7 +688,7 @@ namespace RockWeb.Blocks.Crm
 
                 int? newCampusId = cpCampus.SelectedCampusId;
 
-                bool? newEmailActive = null;
+                bool newEmailActive = true;
                 if ( !string.IsNullOrWhiteSpace( ddlIsEmailActive.SelectedValue ) )
                 {
                     newEmailActive = ddlIsEmailActive.SelectedValue == "Active";
@@ -756,7 +769,7 @@ namespace RockWeb.Blocks.Crm
 
                     if ( SelectedFields.Contains( ddlIsEmailActive.ClientID ) )
                     {
-                        History.EvaluateChange( changes, "Email Is Active", person.IsEmailActive ?? true, newEmailActive.Value );
+                        History.EvaluateChange( changes, "Email Is Active", person.IsEmailActive, newEmailActive );
                         person.IsEmailActive = newEmailActive;
                     }
 
@@ -997,7 +1010,7 @@ namespace RockWeb.Blocks.Crm
                     bool isAlert = cbIsAlert.Checked;
                     bool isPrivate = cbIsPrivate.Checked;
 
-                    var noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE.AsGuid() );
+                    var noteType = NoteTypeCache.Read( ddlNoteType.SelectedValueAsId() ?? 0 );
                     if ( noteType != null )
                     {
                         var notes = new List<Note>();

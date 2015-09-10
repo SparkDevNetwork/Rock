@@ -53,6 +53,12 @@ namespace Rock.Client
         public DateTime? EffectiveStartDate { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string iCalendarContent { get; set; }
 
         /// <summary />
@@ -68,7 +74,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source Schedule object
@@ -83,6 +89,8 @@ namespace Rock.Client
             this.Description = source.Description;
             this.EffectiveEndDate = source.EffectiveEndDate;
             this.EffectiveStartDate = source.EffectiveStartDate;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.iCalendarContent = source.iCalendarContent;
             this.Name = source.Name;
             this.WeeklyDayOfWeek = source.WeeklyDayOfWeek;

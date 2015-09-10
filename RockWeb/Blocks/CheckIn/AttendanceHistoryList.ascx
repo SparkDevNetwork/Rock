@@ -17,6 +17,11 @@
                         <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
                         <Rock:RockDropDownList ID="ddlAttendanceGroup" runat="server" Label="Group" />
                         <Rock:SchedulePicker ID="spSchedule" runat="server" Label="Schedule" />
+                        <Rock:RockDropDownList ID="ddlDidAttend" runat="server" Label="Attended">
+                            <asp:ListItem Text="[All]" Value="all"></asp:ListItem>
+                            <asp:ListItem Text="Did Attend" Value="didattend"></asp:ListItem>
+                            <asp:ListItem Text="Did Not Attend" Value="didnotattend"></asp:ListItem>
+                        </Rock:RockDropDownList>
                     </Rock:GridFilter>
                     <Rock:Grid ID="gHistory" runat="server" DisplayType="Full" AllowSorting="true" EmptyDataText="No Attendance Found" OnRowDataBound="gHistory_RowDataBound" >
                         <Columns>
@@ -27,6 +32,7 @@
                             <Rock:RockLiteralField HeaderText="Group" ID="lGroupName" SortExpression="GroupName" />
                             <Rock:DateTimeField DataField="StartDateTime" HeaderText="Start Date Time" SortExpression="StartDateTime" />
                             <Rock:DateTimeField DataField="EndDateTime" HeaderText="End Date Time" SortExpression="EndDateTime" />
+                            <Rock:BoolField DataField="DidAttend" HeaderText="Attended" SortExpression="DidAttend" />
                         </Columns>
                     </Rock:Grid>
                 </div>

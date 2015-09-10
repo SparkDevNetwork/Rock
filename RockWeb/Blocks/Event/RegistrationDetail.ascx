@@ -118,7 +118,7 @@
                                 <asp:Panel ID="pnlCosts" runat="server" Visible="false" CssClass="well">
 
                                     <div class="fee-table">
-                                        <h4>Payment Summary</h4>
+                                        <h4>Cost Summary</h4>
                                         <div class="registrationentry-summary">
                                             <asp:Repeater ID="rptFeeSummary" runat="server">
                                                 <HeaderTemplate>
@@ -167,13 +167,14 @@
 
                                     <div class="row">
                                         <div class="col-md-12">
+                                            <asp:LinkButton ID="lbViewPaymentDetails" runat="server" CssClass="btn btn-link" Text="Payments" OnClick="lbViewPaymentDetails_Click" CausesValidation="false"></asp:LinkButton>
                                             <asp:LinkButton ID="lbAddPayment" runat="server" CssClass="btn btn-primary btn-xs pull-right" Text="Add Payment" OnClick="lbAddPayment_Click" CausesValidation="false"></asp:LinkButton>
                                         </div>
                                     </div>
 
                                 </asp:Panel>
 
-                                <asp:Panel id="pnlPaymentInfo" runat="server" Visible="false" class="well">
+                                <asp:Panel id="pnlPaymentInfo" runat="server" Visible="false" CssClass="well">
 
                                     <h4>Payment Information</h4>
 
@@ -211,6 +212,28 @@
 
                                 </asp:Panel>
 
+                                <asp:Panel ID="pnlPaymentDetails" runat="server" Visible="false" CssClass="well">
+
+                                    <h4>Payments</h4>
+
+                                    <Rock:Grid ID="gPayments" runat="server" DisplayType="Light" AllowSorting="false" RowItemText="Payment" OnRowSelected="gPayments_RowSelected" ExportSource="ColumnOutput" >
+                                        <Columns>
+                                            <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date / Time" SortExpression="TransactionDateTime" />                
+                                            <Rock:RockBoundField DataField="AuthorizedPersonAlias.Person.FullNameReversed" HeaderText="Person" 
+                                                SortExpression="AuthorizedPersonAlias.Person.LastName,AuthorizedPersonAlias.Person.NickName" />
+                                            <Rock:RockBoundField DataField="FinancialPaymentDetail.CurrencyAndCreditCardType" HeaderText="Payment Method" />
+                                            <Rock:RockBoundField DataField="FinancialPaymentDetail.AccountNumberMasked" HeaderText="Accout" />
+                                            <Rock:RockBoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" ColumnPriority="DesktopSmall" />                
+                                            <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" SortExpression="TotalAmount" />
+                                        </Columns>
+                                    </Rock:Grid>
+
+                                    <div class="actions">
+                                        <asp:LinkButton ID="lbCancelPaymentDetails" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancelPaymentDetails_Click" CausesValidation="false" />
+                                    </div>
+
+                                </asp:Panel>
+
                             </div>
                         </div>
 
@@ -219,6 +242,7 @@
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <Rock:HiddenFieldWithClass ID="hfHasPayments" runat="server" CssClass="js-has-payments" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-registration" OnClick="btnDelete_Click" CausesValidation="false" />
+                            <asp:LinkButton ID="lbHistory" runat="server" CssClass="btn btn-default pull-right" CausesValidation="false" OnClick="lbHistory_Click"><i class="fa fa-file-text-o"></i> Audit Log</asp:LinkButton>
                         </div>
 
                     </div>

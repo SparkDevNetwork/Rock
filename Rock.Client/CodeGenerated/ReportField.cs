@@ -44,6 +44,12 @@ namespace Rock.Client
         public int? DataSelectComponentEntityTypeId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.ReportFieldType ReportFieldType { get; set; }
 
         /// <summary />
@@ -65,7 +71,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source ReportField object
@@ -77,6 +83,8 @@ namespace Rock.Client
             this.ColumnHeaderText = source.ColumnHeaderText;
             this.ColumnOrder = source.ColumnOrder;
             this.DataSelectComponentEntityTypeId = source.DataSelectComponentEntityTypeId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.ReportFieldType = source.ReportFieldType;
             this.ReportId = source.ReportId;
             this.Selection = source.Selection;

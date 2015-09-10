@@ -90,6 +90,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AttributeId = source.AttributeId;
             target.EntityId = source.EntityId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsSystem = source.IsSystem;
             target.Value = source.Value;
             target.CreatedDateTime = source.CreatedDateTime;

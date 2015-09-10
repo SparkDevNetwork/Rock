@@ -40,37 +40,45 @@ namespace RockWeb
         /// <returns></returns>
         public override Stream GetFileContentStream( HttpContext context, HttpPostedFile uploadedFile )
         {
-            if ( uploadedFile.ContentType == "image/svg+xml" )
+            if ( uploadedFile.ContentType == "image/svg+xml" || uploadedFile.ContentType == "image/tiff" )
             {
                 return base.GetFileContentStream( context, uploadedFile );
             }
             else
             {
-                Bitmap bmp = new Bitmap( uploadedFile.InputStream );
-
-                // Check to see if we should flip the image.
-                var exif = new EXIFextractor( ref bmp, "\n" );
-                if ( exif["Orientation"] != null )
+                try
                 {
-                    RotateFlipType flip = OrientationToFlipType( exif["Orientation"].ToString() );
-
-                    // don't flip if orientation is correct
-                    if ( flip != RotateFlipType.RotateNoneFlipNone )
+                    Bitmap bmp = new Bitmap( uploadedFile.InputStream );
+                    
+                    // Check to see if we should flip the image.
+                    var exif = new EXIFextractor( ref bmp, "\n" );
+                    if ( exif["Orientation"] != null )
                     {
-                        bmp.RotateFlip( flip );
-                        exif.setTag( 0x112, "1" ); // reset orientation tag
+                        RotateFlipType flip = OrientationToFlipType( exif["Orientation"].ToString() );
+
+                        // don't flip if orientation is correct
+                        if ( flip != RotateFlipType.RotateNoneFlipNone )
+                        {
+                            bmp.RotateFlip( flip );
+                            exif.setTag( 0x112, "1" ); // reset orientation tag
+                        }
                     }
-                }
 
-                if ( context.Request.QueryString["enableResize"] != null )
+                    if ( context.Request.QueryString["enableResize"] != null )
+                    {
+                        Bitmap resizedBmp = RoughResize( bmp, 1024, 768 );
+                        bmp = resizedBmp;
+                    }
+
+                    var stream = new MemoryStream();
+                    bmp.Save( stream, ContentTypeToImageFormat( uploadedFile.ContentType ) );
+                    return stream;
+                }
+                catch
                 {
-                    Bitmap resizedBmp = RoughResize( bmp, 1024, 768 );
-                    bmp = resizedBmp;
+                    // if it couldn't be converted to a bitmap or if the exif or resize thing failed, just return the original stream
+                    return base.GetFileContentStream( context, uploadedFile ); 
                 }
-
-                var stream = new MemoryStream();
-                bmp.Save( stream, ContentTypeToImageFormat( uploadedFile.ContentType ) );
-                return stream;
             }
         }
 

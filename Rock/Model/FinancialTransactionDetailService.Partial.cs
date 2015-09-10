@@ -40,11 +40,15 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<FinancialTransactionDetail> GetGifts()
         {
+            Guid contributionTxnGuid = Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid();
+
             return Queryable().AsNoTracking()
                 .Where( t =>
                     t.Account != null &&
                     t.Account.IsTaxDeductible &&
                     t.Transaction != null &&
+                    t.Transaction.TransactionTypeValue != null &&
+                    t.Transaction.TransactionTypeValue.Guid.Equals( contributionTxnGuid ) &&
                     t.Transaction.TransactionDateTime.HasValue &&
                     t.Transaction.AuthorizedPersonAlias != null &&
                     t.Transaction.AuthorizedPersonAlias.Person != null );

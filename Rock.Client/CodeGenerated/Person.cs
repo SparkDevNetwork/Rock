@@ -62,6 +62,12 @@ namespace Rock.Client
         public string FirstName { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.Gender Gender { get; set; }
 
         /// <summary />
@@ -133,7 +139,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source Person object
@@ -151,6 +157,8 @@ namespace Rock.Client
             this.EmailNote = source.EmailNote;
             this.EmailPreference = source.EmailPreference;
             this.FirstName = source.FirstName;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.Gender = source.Gender;
             this.GivingGroupId = source.GivingGroupId;
             this.GradeOffset = source.GradeOffset;

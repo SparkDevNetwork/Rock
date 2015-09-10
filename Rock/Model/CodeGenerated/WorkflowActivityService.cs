@@ -100,6 +100,8 @@ namespace Rock.Model
             target.AssignedGroupId = source.AssignedGroupId;
             target.AssignedPersonAliasId = source.AssignedPersonAliasId;
             target.CompletedDateTime = source.CompletedDateTime;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.LastProcessedDateTime = source.LastProcessedDateTime;
             target.WorkflowId = source.WorkflowId;
             target.CreatedDateTime = source.CreatedDateTime;

@@ -44,6 +44,12 @@ namespace Rock.Client
         public string Extension { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public bool IsMessagingEnabled { get; set; }
 
         /// <summary />
@@ -68,7 +74,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source PhoneNumber object
@@ -80,6 +86,8 @@ namespace Rock.Client
             this.CountryCode = source.CountryCode;
             this.Description = source.Description;
             this.Extension = source.Extension;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IsMessagingEnabled = source.IsMessagingEnabled;
             this.IsSystem = source.IsSystem;
             this.IsUnlisted = source.IsUnlisted;

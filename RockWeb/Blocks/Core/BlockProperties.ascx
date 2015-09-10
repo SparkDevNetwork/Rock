@@ -20,7 +20,7 @@
                     </asp:Repeater>
                 </ul>
 
-                <div class="tabContent" >
+                <div class="margin-t-md" >
 
                     <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 

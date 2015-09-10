@@ -101,6 +101,8 @@ namespace Rock.Model
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
             target.FieldTypeId = source.FieldTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
             target.IsGridColumn = source.IsGridColumn;
             target.IsMultiValue = source.IsMultiValue;
