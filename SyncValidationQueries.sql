@@ -30,3 +30,12 @@ WHERE Id IN (
 	FROM rockrms.dbo.FinancialTransactionImage
 )
 AND BinaryFileTypeId != @binaryFileTypeContributionId 
+
+-- Make sure giving group is correct (should not return any)
+select distinct p.person_id, f.family_id, f.foreign_key, rp.givinggroupid
+from core_person p 
+inner join rockrms.dbo.person rp on rp.id = p.foreign_key
+inner join core_family_member fm on fm.person_id = p.person_id
+inner join core_family f on f.family_id = fm.family_id
+where p.giving_unit_id like 'F%'
+and rp.givinggroupid <> f.foreign_key
