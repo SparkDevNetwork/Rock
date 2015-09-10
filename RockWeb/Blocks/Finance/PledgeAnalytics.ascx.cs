@@ -64,6 +64,7 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
             gList.DataKeyNames = new string[] { "Id" };
             gList.GridRebind += gList_GridRebind;
 
@@ -124,6 +125,15 @@ namespace RockWeb.Blocks.Finance
         {
             SaveSettingsToUserPreferences();
             BindGrid();
+        }
+
+
+        protected void gList_RowSelected( object sender, RowEventArgs e )
+        {
+            int personId = e.RowKeyId;
+            Response.Redirect( string.Format( "~/Person/{0}/Contributions", personId ), false );
+            Context.ApplicationInstance.CompleteRequest();
+            return;
         }
 
         #endregion
@@ -234,6 +244,6 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
-        
+
 }
 }

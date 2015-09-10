@@ -100,6 +100,9 @@ namespace RockWeb.Blocks.Finance
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             gChartAmount.GridRebind += gChartAmount_GridRebind;
+
+            gGiversGifts.DataKeyNames = new string[] { "GivingLeaderId" };
+            gGiversGifts.PersonIdField = "GivingLeaderId";
             gGiversGifts.GridRebind += gGiversGifts_GridRebind;
 
             pnlTotal = new Panel();
@@ -297,6 +300,15 @@ namespace RockWeb.Blocks.Finance
             HideShowDataViewResultOption();
         }
 
+
+        protected void gGiversGifts_RowSelected( object sender, RowEventArgs e )
+        {
+            int personId = e.RowKeyId;
+            Response.Redirect( string.Format( "~/Person/{0}/Contributions", personId ), false );
+            Context.ApplicationInstance.CompleteRequest();
+            return;
+        }
+
         #endregion
 
         #region Methods
@@ -310,9 +322,22 @@ namespace RockWeb.Blocks.Finance
                 {
                     _campusAccounts = new Dictionary<int, Dictionary<int, string>>();
 
+                    Guid contributionGuid = Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid();
+                    var contributionAccountIds = new FinancialTransactionDetailService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( d => 
+                            d.Transaction != null &&
+                            d.Transaction.TransactionTypeValue != null &&
+                            d.Transaction.TransactionTypeValue.Guid.Equals( contributionGuid ) )
+                        .Select( d => d.AccountId )
+                        .Distinct()
+                        .ToList();
+
                     foreach ( var campusAccounts in new FinancialAccountService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( a => a.IsActive )
+                        .Where( a => 
+                            a.IsActive &&
+                            contributionAccountIds.Contains( a.Id ) )
                         .GroupBy( a => a.CampusId ?? 0 )
                         .Select( c => new
                         {
