@@ -83,5 +83,15 @@ namespace Rock.Web.UI.Controls
 
             return base.FormatDataValue( dataValue, encode );
         }
+
+        /// <summary>
+        /// Gets the value that should be exported to Excel
+        /// </summary>
+        /// <param name="row">The row.</param>
+        /// <returns></returns>
+        public override object GetExportValue( GridViewRow row )
+        {
+            return base.GetExportValue( row ) ?? string.Empty;
+        }
     }
 }
