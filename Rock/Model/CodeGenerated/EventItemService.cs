@@ -92,6 +92,8 @@ namespace Rock.Model
             target.ApprovedOnDateTime = source.ApprovedOnDateTime;
             target.Description = source.Description;
             target.DetailsUrl = source.DetailsUrl;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.IsApproved = source.IsApproved;
             target.Name = source.Name;

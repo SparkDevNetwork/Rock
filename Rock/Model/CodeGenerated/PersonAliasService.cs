@@ -1824,6 +1824,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AliasPersonGuid = source.AliasPersonGuid;
             target.AliasPersonId = source.AliasPersonId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.Name = source.Name;
             target.PersonId = source.PersonId;
             target.Guid = source.Guid;

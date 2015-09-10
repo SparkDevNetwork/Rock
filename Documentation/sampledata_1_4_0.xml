@@ -90,13 +90,21 @@
           </attributes>
         </person>
       </members>
+      
+      <giving startGiving="1/6/2013" frequency="monthly" endingGivingWeeksAgo="0" 
+        percentGive="90" accountAmount="General Fund:175,Building Fund:125" growRatePercent="3"
+        growFrequencyWeeks="52" specialGiftPercent="50" 
+        personGuid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"
+        imageUrls="http://storage.rockrms.com/sampledata/check-images/decker-01.png,http://storage.rockrms.com/sampledata/check-images/decker-02.png,http://storage.rockrms.com/sampledata/check-images/decker-03.png,http://storage.rockrms.com/sampledata/check-images/decker-04.png,http://storage.rockrms.com/sampledata/check-images/decker-05.png,http://storage.rockrms.com/sampledata/check-images/decker-06.png">
+      </giving>
+      
     </family>
 
-    <!-- The Jones family started attending the church in October, 2012 and had a very low attendance rate (about 40%).
+    <!-- The Jones family started attending the church in October, 2012 and had a very low attendance rate (about 20%).
     Unfortunately in August, 2013 Ben and Sarah divorced and now both have joint custody of their son, Brian.  Sarah
     went on to marry Jim Simmons. -->
     <family name="Jones Family" guid="3BE313A1-51B1-4B03-B396-CEB9C3D9B919" campus="main campus"
-            startingAttendance="10/15/2012" endingAttendance="08/15/2013" percentAttendance="40"
+            startingAttendance="10/15/2012" endingAttendance="08/15/2013" percentAttendance="20"
             percentAttendedRegularService="50" attendingScheduleId="3" attendingAltScheduleId="4">
       <addresses>
         <address type="home" street1="10601 N 32nd Dr" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5822525" long="-112.1283722" />
@@ -208,6 +216,13 @@
          photoUrl="http://storage.rockrms.com/sampledata/person-images/lowe_tricia.jpg"
          homePhone="" mobilePhone="" workPhone=""/>
       </members>
+      
+      <giving startGiving="1/5/2014" frequency="weekly" endingGivingWeeksAgo="0" 
+        percentGive="60" accountAmount="General Fund:45" growRatePercent="0"
+        growFrequencyWeeks="22" specialGiftPercent="50" 
+        personGuid="20A2C167-D16E-43B3-A5B0-80CE912589AF">
+      </giving>
+      
     </family>
 
     <!-- Alisha Marble, who is the Rock administrator at the church, is married to Bill. They are in 
@@ -246,6 +261,13 @@
 
       </members>
 
+      <giving startGiving="1/5/2014" frequency="weekly" endingGivingWeeksAgo="0" 
+        percentGive="85" accountAmount="General Fund:100,Mission Fund:50" growRatePercent="5"
+        growFrequencyWeeks="52" specialGiftPercent="50" 
+        personGuid="1EA811BB-3118-42D1-B020-32A82BC8081A"
+        imageUrls="http://storage.rockrms.com/sampledata/check-images/marble-01.png,http://storage.rockrms.com/sampledata/check-images/marble-02.png,http://storage.rockrms.com/sampledata/check-images/marble-03.png,http://storage.rockrms.com/sampledata/check-images/marble-04.png,http://storage.rockrms.com/sampledata/check-images/marble-05.png">
+      </giving>
+      
     </family>
 
     <!-- Tom and Thomas Miller are actually the same person (duplicate) that needs

@@ -41,6 +41,12 @@ namespace Rock.Client
         public DateTime? DateTimeViewed { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string IpAddress { get; set; }
 
         /// <summary />
@@ -68,7 +74,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source PageView object
@@ -79,6 +85,8 @@ namespace Rock.Client
             this.Id = source.Id;
             this.ClientType = source.ClientType;
             this.DateTimeViewed = source.DateTimeViewed;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IpAddress = source.IpAddress;
             this.PageId = source.PageId;
             this.PageTitle = source.PageTitle;

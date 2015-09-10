@@ -118,6 +118,8 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this PageRoute target, PageRoute source )
         {
             target.Id = source.Id;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsSystem = source.IsSystem;
             target.PageId = source.PageId;
             target.Route = source.Route;

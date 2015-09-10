@@ -64,6 +64,7 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
             gList.DataKeyNames = new string[] { "Id" };
             gList.GridRebind += gList_GridRebind;
 
@@ -126,6 +127,15 @@ namespace RockWeb.Blocks.Finance
             BindGrid();
         }
 
+
+        protected void gList_RowSelected( object sender, RowEventArgs e )
+        {
+            int personId = e.RowKeyId;
+            Response.Redirect( string.Format( "~/Person/{0}/Contributions", personId ), false );
+            Context.ApplicationInstance.CompleteRequest();
+            return;
+        }
+
         #endregion
 
         #region Methods
@@ -162,7 +172,23 @@ namespace RockWeb.Blocks.Finance
 
                 if ( gList.SortProperty != null )
                 {
-                    dv.Sort = string.Format( "[{0}] {1}", gList.SortProperty.Property, gList.SortProperty.DirectionString );
+                    try
+                    {
+                        var sortProperties = new List<string>();
+                        foreach ( string prop in gList.SortProperty.Property.SplitDelimitedValues( false ) )
+                        {
+                            sortProperties.Add( string.Format( "[{0}] {1}", prop, gList.SortProperty.DirectionString ) );
+                        }
+                        dv.Sort = sortProperties.AsDelimited( ", " );
+                    }
+                    catch
+                    {
+                        dv.Sort = "[LastName] ASC, [NickName] ASC";
+                    }
+                }
+                else
+                {
+                    dv.Sort = "[LastName] ASC, [NickName] ASC";
                 }
 
                 gList.DataSource = dv;
@@ -218,6 +244,6 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
-        
+
 }
 }

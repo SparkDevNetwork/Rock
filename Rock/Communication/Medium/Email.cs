@@ -242,7 +242,7 @@ You can view an online version of this email here:
                     .ToList() )
                 {
                     var person = recipient.PersonAlias.Person;
-                    if ( !(person.IsEmailActive ?? true))
+                    if ( !person.IsEmailActive)
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
                         recipient.StatusNote = "Email is not active!";

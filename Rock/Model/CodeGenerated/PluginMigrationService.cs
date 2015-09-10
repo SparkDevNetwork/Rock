@@ -88,6 +88,8 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this PluginMigration target, PluginMigration source )
         {
             target.Id = source.Id;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.MigrationName = source.MigrationName;
             target.MigrationNumber = source.MigrationNumber;
             target.PluginAssemblyName = source.PluginAssemblyName;

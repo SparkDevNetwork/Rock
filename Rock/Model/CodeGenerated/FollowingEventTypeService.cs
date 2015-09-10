@@ -92,10 +92,13 @@ namespace Rock.Model
             target.EntityNotificationFormatLava = source.EntityNotificationFormatLava;
             target.EntityTypeId = source.EntityTypeId;
             target.FollowedEntityTypeId = source.FollowedEntityTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.IsNoticeRequired = source.IsNoticeRequired;
             target.LastCheckDateTime = source.LastCheckDateTime;
             target.Name = source.Name;
+            target.Order = source.Order;
             target.SendOnWeekends = source.SendOnWeekends;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

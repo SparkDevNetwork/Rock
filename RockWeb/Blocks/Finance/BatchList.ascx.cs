@@ -488,8 +488,9 @@ namespace RockWeb.Blocks.Finance
             var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.Account ).Select( a => new
             {
                 a.Key.Name,
+                a.Key.Order,
                 TotalAmount = (decimal?)a.Sum( d => d.Amount )
-            } ).OrderBy( a => a.Name );
+            } ).OrderBy( a => a.Order );
 
             var summaryList = accountSummaryQry.ToList();
             var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;

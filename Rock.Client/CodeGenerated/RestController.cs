@@ -38,13 +38,19 @@ namespace Rock.Client
         public string ClassName { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string Name { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source RestController object
@@ -54,6 +60,8 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.ClassName = source.ClassName;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.Name = source.Name;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;

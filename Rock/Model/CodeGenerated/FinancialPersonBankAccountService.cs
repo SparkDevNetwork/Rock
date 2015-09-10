@@ -90,6 +90,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AccountNumberMasked = source.AccountNumberMasked;
             target.AccountNumberSecured = source.AccountNumberSecured;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.PersonAliasId = source.PersonAliasId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

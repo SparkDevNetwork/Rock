@@ -71,6 +71,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Entity Set Purpose
+
+        /// <summary>
+        /// Entity Set for the purpose of doing a Person Merge request
+        /// </summary>
+        public const string ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST = "214EB26F-5493-4540-B2EF-F0887C8FBB9E";
+
+        #endregion
+
         #region Financial Currency Type
 
         /// <summary>

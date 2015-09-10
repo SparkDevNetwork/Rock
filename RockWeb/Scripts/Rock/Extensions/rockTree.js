@@ -303,7 +303,7 @@
 				        $li.attr('data-' + includeAttrs[i], node[includeAttrs[i]]);
 				    }
 
-				    $li.append('<span class="rocktree-name"> ' + node.name + '</span>');
+				    $li.append('<span class="rocktree-name" title="' + node.name + '"> ' + node.name + '</span>');
 				    
 				    for (var i = 0; i < self.selectedNodes.length; i++) {
 				        if (self.selectedNodes[i].id == node.id) {

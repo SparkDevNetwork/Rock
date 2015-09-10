@@ -53,6 +53,12 @@ namespace Rock.Client
         public DateTime? ExpireDateTime { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public bool IsApproved { get; set; }
 
         /// <summary />
@@ -65,7 +71,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source HtmlContent object
@@ -80,6 +86,8 @@ namespace Rock.Client
             this.Content = source.Content;
             this.EntityValue = source.EntityValue;
             this.ExpireDateTime = source.ExpireDateTime;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.IsApproved = source.IsApproved;
             this.StartDateTime = source.StartDateTime;
             this.Version = source.Version;

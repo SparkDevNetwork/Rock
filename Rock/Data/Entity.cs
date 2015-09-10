@@ -76,7 +76,31 @@ namespace Rock.Data
         private Guid _guid = Guid.NewGuid();
 
         /// <summary>
-        /// Gets or sets an optional foreign identifier.  This can be used for importing or syncing data to a foreign system
+        /// Gets or sets an optional int foreign identifier.  This can be used for importing or syncing data to a foreign system
+        /// </summary>
+        /// <value>
+        /// The foreign identifier.
+        /// </value>
+        [Index]
+        [DataMember]
+        [LavaIgnore]
+        [HideFromReporting]
+        public int? ForeignId { get; set; }
+
+        /// <summary>
+        /// Gets or sets an optional Guid foreign identifier.  This can be used for importing or syncing data to a foreign system
+        /// </summary>
+        /// <value>
+        /// The foreign identifier.
+        /// </value>
+        [Index]
+        [DataMember]
+        [LavaIgnore]
+        [HideFromReporting]
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets an optional string foreign identifier.  This can be used for importing or syncing data to a foreign system
         /// </summary>
         /// <value>
         /// The foreign identifier.
@@ -86,7 +110,7 @@ namespace Rock.Data
         [DataMember]
         [LavaIgnore]
         [HideFromReporting]
-        public string ForeignId { get; set; }
+        public string ForeignKey { get; set; }
 
         #endregion
 

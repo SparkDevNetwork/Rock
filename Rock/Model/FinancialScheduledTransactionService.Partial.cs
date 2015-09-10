@@ -228,6 +228,8 @@ namespace Rock.Model
             var allTxnChanges = new Dictionary<Guid, List<string>>();
             var txnPersonNames = new Dictionary<Guid, string>();
 
+            var gatewayComponent = gateway.GetGatewayComponent();
+
             using ( var rockContext = new RockContext() )
             {
                 var accountService = new FinancialAccountService( rockContext );
@@ -409,6 +411,13 @@ namespace Rock.Model
                             batchSummary[batch.Guid].Add( payment );
 
                             totalAdded++;
+
+                            // Update the status of the scheduled transaction
+                            if ( gatewayComponent != null )
+                            {
+                                string statusMsgs = string.Empty;
+                                gatewayComponent.GetScheduledPaymentStatus( scheduledTransaction, out statusMsgs );
+                            }
                         }
                         else
                         {

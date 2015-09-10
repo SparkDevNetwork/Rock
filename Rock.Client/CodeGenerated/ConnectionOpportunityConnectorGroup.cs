@@ -44,10 +44,16 @@ namespace Rock.Client
         public int ConnectorGroupId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source ConnectionOpportunityConnectorGroup object
@@ -59,6 +65,8 @@ namespace Rock.Client
             this.CampusId = source.CampusId;
             this.ConnectionOpportunityId = source.ConnectionOpportunityId;
             this.ConnectorGroupId = source.ConnectorGroupId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 

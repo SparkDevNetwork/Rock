@@ -48,6 +48,8 @@ namespace Rock.Model
             newReport.Id = 0;
             newReport.Guid = Guid.NewGuid();
             newReport.ForeignId = null;
+            newReport.ForeignGuid = null;
+            newReport.ForeignKey = null;
 
             // Reset the Report Field properties.
             foreach ( var field in newReport.ReportFields )
@@ -55,6 +57,8 @@ namespace Rock.Model
                 field.Id = 0;
                 field.Guid = Guid.NewGuid();
                 field.ForeignId = null;
+                field.ForeignGuid = null;
+                field.ForeignKey = null;
 
                 field.ReportId = 0;
             }

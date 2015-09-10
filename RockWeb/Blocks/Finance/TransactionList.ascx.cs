@@ -173,6 +173,7 @@ namespace RockWeb.Blocks.Finance
                     _registration = contextEntity as Registration;
                     gfTransactions.Visible = false;
                 }
+
             }
 
             if ( !Page.IsPostBack )
@@ -881,6 +882,34 @@ namespace RockWeb.Blocks.Finance
 
             gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
+
+            if ( _batch == null &&
+                _scheduledTxn == null &&
+                _registration == null &&
+                _person == null )
+            {
+                pnlSummary.Visible = true;
+
+                // No context - show account summary
+                var qryTransactionDetails = qry.SelectMany( a => a.TransactionDetails );
+                var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.Account ).Select( a => new
+                {
+                    a.Key.Name,
+                    a.Key.Order,
+                    TotalAmount = (decimal?)a.Sum( d => d.Amount )
+                } ).OrderBy( a => a.Order );
+
+                var summaryList = accountSummaryQry.ToList();
+                var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
+                string currencyFormat = GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:n}";
+                lGrandTotal.Text = string.Format( currencyFormat, grandTotalAmount );
+                rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = string.Format( currencyFormat, a.TotalAmount ) } ).ToList();
+                rptAccountSummary.DataBind();
+            }
+            else
+            {
+                pnlSummary.Visible = false;
+            }
         }
 
         /// <summary>

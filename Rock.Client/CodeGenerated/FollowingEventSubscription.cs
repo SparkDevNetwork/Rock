@@ -38,13 +38,19 @@ namespace Rock.Client
         public int EventTypeId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public int PersonAliasId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source FollowingEventSubscription object
@@ -54,6 +60,8 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.EventTypeId = source.EventTypeId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.PersonAliasId = source.PersonAliasId;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;

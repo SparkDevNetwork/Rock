@@ -91,6 +91,8 @@ namespace Rock.Model
             target.CategoryId = source.CategoryId;
             target.Description = source.Description;
             target.FieldTypeId = source.FieldTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.HelpText = source.HelpText;
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;

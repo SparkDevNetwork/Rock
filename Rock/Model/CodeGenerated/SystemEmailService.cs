@@ -110,6 +110,8 @@ namespace Rock.Model
             target.Body = source.Body;
             target.CategoryId = source.CategoryId;
             target.Cc = source.Cc;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.From = source.From;
             target.FromName = source.FromName;
             target.IsSystem = source.IsSystem;

@@ -95,6 +95,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.Code = source.Code;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IssueDateTime = source.IssueDateTime;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;

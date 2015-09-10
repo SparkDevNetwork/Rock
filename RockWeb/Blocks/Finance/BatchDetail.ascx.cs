@@ -485,8 +485,8 @@ namespace RockWeb.Blocks.Finance
             hlStatus.Text = batch.Status.ConvertToString();
             switch ( batch.Status )
             {
-                case BatchStatus.Pending: hlStatus.LabelType = LabelType.Warning; break;
-                case BatchStatus.Open: hlStatus.LabelType = LabelType.Info; break;
+                case BatchStatus.Pending: hlStatus.LabelType = LabelType.Danger; break;
+                case BatchStatus.Open: hlStatus.LabelType = LabelType.Warning; break;
                 case BatchStatus.Closed: hlStatus.LabelType = LabelType.Default; break;
             }
 
@@ -500,6 +500,8 @@ namespace RockWeb.Blocks.Finance
                 hlCampus.Visible = false;
             }
 
+            hlBatchId.Text = string.Format("Id: {0}", batch.Id.ToString());
+            hlBatchId.Visible = (batch.Id != 0);
         }
 
         /// <summary>

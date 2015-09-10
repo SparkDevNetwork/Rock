@@ -53,6 +53,12 @@ namespace Rock.Client
         public DateTime? ExpireDateTime { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string Permalink { get; set; }
 
         /// <summary />
@@ -71,7 +77,7 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source ContentChannelItem object
@@ -86,6 +92,8 @@ namespace Rock.Client
             this.ContentChannelId = source.ContentChannelId;
             this.ContentChannelTypeId = source.ContentChannelTypeId;
             this.ExpireDateTime = source.ExpireDateTime;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
             this.Permalink = source.Permalink;
             this.Priority = source.Priority;
             this.StartDateTime = source.StartDateTime;
