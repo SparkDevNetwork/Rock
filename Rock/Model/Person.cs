@@ -344,6 +344,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the email address is active, otherwise <c>false</c>.
         /// </value>
         [DataMember]
+        [Newtonsoft.Json.JsonConverter(typeof(Rock.Utility.NotNullJsonConverter<bool>), true)]
         public bool IsEmailActive { get; set; }
 
         /// <summary>
