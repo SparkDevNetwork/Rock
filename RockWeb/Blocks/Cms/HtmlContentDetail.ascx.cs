@@ -626,6 +626,8 @@ namespace RockWeb.Blocks.Cms
                             }
 
                             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                            mergeFields.Add( "CurrentPersonCanEdit", IsUserAuthorized( Authorization.EDIT ) );
+                            mergeFields.Add( "CurrentPersonCanAdministrate", IsUserAuthorized( Authorization.ADMINISTRATE ) );
 
                             html = content.Content.ResolveMergeFields( mergeFields );
 

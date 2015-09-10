@@ -110,6 +110,7 @@ namespace RockWeb.Blocks.Finance
             gfSettings.SaveUserPreference( "Amount", nreAmount.DelimitedValues );
             gfSettings.SaveUserPreference( "Frequency", ddlFrequency.SelectedValue != All.Id.ToString() ? ddlFrequency.SelectedValue : string.Empty );
             gfSettings.SaveUserPreference( "Created", drpDates.DelimitedValues );
+            gfSettings.SaveUserPreference( "Account", ddlAccount.SelectedValue != All.Id.ToString() ? ddlAccount.SelectedValue : string.Empty );
             gfSettings.SaveUserPreference( "Include Inactive", cbIncludeInactive.Checked ? "Yes" : string.Empty );
             BindGrid();
         }
@@ -142,6 +143,21 @@ namespace RockWeb.Blocks.Finance
 
                 case "Created":
                     e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                    break;
+
+                case "Account":
+
+                    int accountId = 0;
+                    if ( int.TryParse( e.Value, out accountId ) )
+                    {
+                        var service = new FinancialAccountService( new RockContext() );
+                        var account = service.Get( accountId );
+                        if ( account != null )
+                        {
+                            e.Value = account.Name;
+                        }
+                    }
+
                     break;
 
                 case "Include Inactive":
@@ -207,6 +223,20 @@ namespace RockWeb.Blocks.Finance
             }
 
             drpDates.DelimitedValues = gfSettings.GetUserPreference( "Created" );
+
+            var accountService = new FinancialAccountService( new RockContext() );
+            var accounts = accountService
+                .Queryable().AsNoTracking()
+                .Where( a => a.IsActive );
+
+            ddlAccount.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            foreach ( FinancialAccount account in accounts.OrderBy( a => a.Order ) )
+            {
+                ListItem li = new ListItem( account.Name, account.Id.ToString() );
+                li.Selected = account.Id.ToString() == gfSettings.GetUserPreference( "Account" );
+                ddlAccount.Items.Add( li );
+            }
+
             cbIncludeInactive.Checked = !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Include Inactive" ) );
         }
 
@@ -274,6 +304,13 @@ namespace RockWeb.Blocks.Finance
                 {
                     DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
                     qry = qry.Where( t => t.CreatedDateTime < upperDate );
+                }
+
+                // Account Id
+                int accountId = int.MinValue;
+                if ( int.TryParse( gfSettings.GetUserPreference( "Account" ), out accountId ) )
+                {
+                    qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => d.AccountId == accountId ) );
                 }
 
                 // Active only (no filter)

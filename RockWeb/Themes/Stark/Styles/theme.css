@@ -1012,14 +1012,14 @@ td.wrap-contents {
   margin-bottom: 12px;
 }
 .table > thead > tr > th {
-  background-color: transparent;
+  background-color: #428bca;
   font-size: 14px;
-  color: #333333;
+  color: #ffffff;
   font-weight: 600;
   border-color: #dddddd;
 }
 .table > thead > tr > th > a:not(.btn) {
-  color: #333333;
+  color: #ffffff;
   display: block;
 }
 .table > thead > tr > th.ascending a::before {
@@ -3572,6 +3572,53 @@ fieldset .actions {
 .datepicker {
   padding: 10px;
 }
+.datepicker.datepicker-dropdown:before {
+  content: '';
+  display: inline-block;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid #ccc;
+  border-top: 0;
+  border-bottom-color: rgba(0, 0, 0, 0.2);
+  position: absolute;
+}
+.datepicker.datepicker-dropdown:after {
+  content: '';
+  display: inline-block;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid #fff;
+  border-top: 0;
+  position: absolute;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-left:before {
+  left: 6px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-left:after {
+  left: 7px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-right:before {
+  right: 6px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-right:after {
+  right: 7px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-top:before {
+  top: -7px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-top:after {
+  top: -6px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-bottom:before {
+  bottom: -7px;
+  border-bottom: 0;
+  border-top: 7px solid #999;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-bottom:after {
+  bottom: -6px;
+  border-bottom: 0;
+  border-top: 6px solid #fff;
+}
 .datepicker table {
   background-color: transparent;
 }
@@ -5918,6 +5965,9 @@ main {
 }
 a:hover i.fs {
   text-decoration: none;
+}
+.page-icon {
+  display: none;
 }
 header .page-menu,
 header .login-status {

@@ -123,6 +123,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EventItem"/> that this EventItemOccurrence is a member of.
         /// </value>
+        [LavaInclude]
         public virtual EventItem EventItem { get; set; }
 
         /// <summary>
