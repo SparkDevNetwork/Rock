@@ -496,6 +496,7 @@
     <Compile Include="Reporting\DataSelect\Person\GroupParticipationSelect.cs" />
     <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
+    <Compile Include="Utility\NotNullJsonConverter.cs" />
     <Compile Include="Utility\ExtensionMethods\CurrencyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
