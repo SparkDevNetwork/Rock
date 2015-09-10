@@ -132,7 +132,10 @@ namespace RockWeb.Blocks.Event
                     var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
                     var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
-                    qry = qry.Where( e => e.CampusId == contextCampus.Id );
+                    if ( contextCampus != null )
+                    {
+                        qry = qry.Where( e => e.CampusId == contextCampus.Id );
+                    }
                 }
                 else
                 {
@@ -150,13 +153,12 @@ namespace RockWeb.Blocks.Event
                 var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "DateRange" ) );
                 if ( dateRange.Start != null && dateRange.End != null )
                 {
-                    foreach ( var occurrence in itemOccurrences )
-                    {
-                        if ( occurrence.GetStartTimes( dateRange.Start.Value, dateRange.End.Value ).Count() == 0 )
-                        {
-                            itemOccurrences.Remove( occurrence );
-                        }
-                    }
+                    itemOccurrences.RemoveAll( o => o.GetStartTimes( dateRange.Start.Value, dateRange.End.Value ).Count() == 0 );
+                }
+                else
+                {
+                    // default show all future
+                    itemOccurrences.RemoveAll( o => o.GetStartTimes( RockDateTime.Now, DateTime.MaxValue ).Count() == 0 );
                 }
 
                 // limit results
@@ -178,7 +180,15 @@ namespace RockWeb.Blocks.Event
                 if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
                     lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo();
+                    lDebug.Text = @"<div class='alert alert-info'>Due to the size of the lava members the debug info for this block has been supressed. Below are high-level details of
+                                    the merge objects available.
+                                    <ul>
+                                        <li>EventItemOccurrences - A list of EventItemOccurrences. View the EvenItemOccurrence model for these properties.</li>
+                                        <li>EventItem - The EventItem that was selected. View the EvenItem model for these properties.</li>
+                                        <li>RegistrationPage  - String that contains the relative path to the registration page.</li>
+                                        <li>Global Attribute  - Access to the Global Attributes.</li>
+                                    </ul>
+                                    </div>";
                 }
                 else
                 {

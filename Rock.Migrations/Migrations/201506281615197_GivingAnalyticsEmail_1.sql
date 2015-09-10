@@ -117,7 +117,7 @@ BEGIN
 		[p].[Guid],
 		[p].[NickName],
 		[p].[LastName],
-		[p].[NickName] + '' '' + [p].[LastName] AS [PersonName],
+		LTRIM(ISNULL([p].[LastName],'''') + ISNULL('', '' + [p].[NickName],'''')) AS [PersonName],
         [p].[Email],
 		[p].[GivingId],
 		CTE2.*

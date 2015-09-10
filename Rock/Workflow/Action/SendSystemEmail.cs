@@ -91,7 +91,7 @@ namespace Rock.Workflow.Action
                                         {
                                             action.AddLogEntry( "Email was not sent: Recipient does not have an email address", true );
                                         }
-                                        else if ( !( person.IsEmailActive ?? true ) )
+                                        else if ( !( person.IsEmailActive ) )
                                         {
                                             action.AddLogEntry( "Email was not sent: Recipient email is not active", true );
                                         }
@@ -118,7 +118,7 @@ namespace Rock.Workflow.Action
                                             .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                                             .Select( m => m.Person ) )
                                         {
-                                            if ( ( person.IsEmailActive ?? true ) &&
+                                            if ( person.IsEmailActive &&
                                                 person.EmailPreference != EmailPreference.DoNotEmail &&
                                                 !string.IsNullOrWhiteSpace( person.Email ) )
                                             {

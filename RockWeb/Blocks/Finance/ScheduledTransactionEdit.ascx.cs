@@ -540,9 +540,11 @@ achieve our mission.  We are so grateful for your commitment.
                         var service = new FinancialScheduledTransactionService( rockContext );
                         var scheduledTransaction = service
                             .Queryable( "AuthorizedPersonAlias.Person,ScheduledTransactionDetails,FinancialGateway,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
-                            .Where( t =>
-                                t.Id == txnId &&
-                                ( t.AuthorizedPersonAlias.PersonId == targetPerson.Id || t.AuthorizedPersonAlias.Person.GivingGroupId == targetPerson.GivingGroupId ) )
+                            .Where( t => 
+                                t.Id == txnId && 
+                                t.AuthorizedPersonAlias != null &&
+                                t.AuthorizedPersonAlias.Person != null &&
+                                t.AuthorizedPersonAlias.Person.GivingId == targetPerson.GivingId )
                             .FirstOrDefault();
 
                         if ( scheduledTransaction != null )
