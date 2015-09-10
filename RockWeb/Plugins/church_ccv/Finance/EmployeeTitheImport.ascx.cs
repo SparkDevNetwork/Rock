@@ -385,7 +385,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
                         if ( financialAccountAmountInfoList != null )
                         {
                             var employeeAccountAmount = financialAccountAmountInfoList.FirstOrDefault( a => a.FinancialAccount == campusAccountMapping.FinancialAccount );
-                            if ( employeeAccountAmount != null )
+                            if ( employeeAccountAmount != null && employeeAccountAmount.Amount.HasValue && employeeAccountAmount.Amount != 0)
                             {
                                 args.FormattedValue = employeeAccountAmount.Amount.FormatAsCurrency();
                             }
@@ -561,6 +561,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
             financialBatch.Name = tbBatchNameFormat.Text.ResolveMergeFields( GlobalAttributesCache.GetMergeFields( this.CurrentPerson ) );
             financialBatch.BatchStartDateTime = currentDateTime.Date;
             financialBatch.ControlAmount = lGrandTotal.Text.AsDecimal();
+            financialBatch.Status = BatchStatus.Open;
 
             financialBatchService.Add( financialBatch );
             financialBatch.Transactions = new List<FinancialTransaction>();
