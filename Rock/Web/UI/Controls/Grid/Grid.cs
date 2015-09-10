@@ -1532,11 +1532,11 @@ namespace Rock.Web.UI.Controls
 
                     // get all properties of the objects in the grid
                     IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
-                    IList<PropertyInfo> props = new List<PropertyInfo>();
 
                     // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
                     // The fields are exported in the same order as they appear in the Grid.
                     var orderedProps = new SortedDictionary<int, PropertyInfo>();
+                    var hiddenProps = new List<PropertyInfo>();
 
                     foreach ( PropertyInfo prop in allprops )
                     {
@@ -1549,17 +1549,20 @@ namespace Rock.Web.UI.Controls
 
                         // Find a matching field in the Grid and add it to the list of exported properties.
                         var gridField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
-                        if ( gridField == null )
+                        if ( gridField != null )
                         {
-                            continue;
+                            int fieldIndex = gridDataFields.IndexOf( gridField );
+                            orderedProps.Add( fieldIndex, prop );
+                        }
+                        else
+                        {
+                            hiddenProps.Add( prop );
                         }
 
-                        int fieldIndex = gridDataFields.IndexOf( gridField );
-
-                        orderedProps.Add( fieldIndex, prop );
                     }
 
-                    props = orderedProps.Values.ToList();
+                    var props = orderedProps.Values.ToList();
+                    props.AddRange( hiddenProps );
 
                     // print column headings
                     foreach ( PropertyInfo prop in props )

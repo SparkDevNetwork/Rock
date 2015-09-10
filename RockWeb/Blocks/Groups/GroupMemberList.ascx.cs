@@ -118,6 +118,7 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.GridRebind += gGroupMembers_GridRebind;
                     gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
                     gGroupMembers.ExportFilename = _group.Name;
+                    gGroupMembers.ExportSource = ExcelExportSource.DataSource;
 
                     // make sure they have Auth to edit the block OR edit to the Group
                     bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
@@ -809,7 +810,12 @@ namespace RockWeb.Blocks.Groups
                     groupMembersList.ForEach( m => gGroupMembers.ObjectList.Add( m.Id.ToString(), m ) );
                     gGroupMembers.EntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
 
-                    gGroupMembers.DataSource = groupMembersList.Select( m => new
+                    var homePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                    var cellPhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+
+
+                    gGroupMembers.DataSource = groupMembersList
+                        .ToList().Select( m => new
                     {
                         m.Id,
                         m.Guid,
@@ -821,6 +827,17 @@ namespace RockWeb.Blocks.Groups
                             + ( !string.IsNullOrEmpty( m.Note )
                             ? " <i class='fa fa-file-text-o text-info'></i>"
                             : string.Empty ),
+                        Email = m.Person.Email,
+                        HomePhone = homePhoneType != null ?
+                            m.Person.PhoneNumbers
+                                .Where( p => p.NumberTypeValueId.HasValue && p.NumberTypeValueId.Value == homePhoneType.Id )
+                                .Select( p => p.NumberFormatted )
+                                .FirstOrDefault() : string.Empty,
+                        CellPhone = cellPhoneType != null ?
+                            m.Person.PhoneNumbers
+                                .Where( p => p.NumberTypeValueId.HasValue && p.NumberTypeValueId.Value == cellPhoneType.Id )
+                                .Select( p => p.NumberFormatted )
+                                .FirstOrDefault() : string.Empty,
                         GroupRole = m.GroupRole.Name,
                         m.GroupMemberStatus,
                         RecordStatusValueId = m.Person.RecordStatusValueId,
