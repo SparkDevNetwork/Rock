@@ -9605,9 +9605,6 @@ tr.row-highlight td {
 .filter-toggle > span {
   float: left;
 }
-.filter-toggle .panel-title {
-  margin-top: 4px;
-}
 .filter-toggle .btn-toggle {
   margin: 0 6px;
 }
@@ -10338,7 +10335,8 @@ table.attribute-grid tr th:nth-child(3) {
   min-height: 64px;
   border-bottom: 1px solid #b9d4ec;
   color: #357ebd;
-  padding: 0;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 .personprofilebar-badge .badge-group {
   margin: 7.5px 0;
@@ -11864,6 +11862,53 @@ fieldset .actions {
 }
 .datepicker {
   padding: 10px;
+}
+.datepicker.datepicker-dropdown:before {
+  content: '';
+  display: inline-block;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid #ccc;
+  border-top: 0;
+  border-bottom-color: rgba(0, 0, 0, 0.2);
+  position: absolute;
+}
+.datepicker.datepicker-dropdown:after {
+  content: '';
+  display: inline-block;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid #fff;
+  border-top: 0;
+  position: absolute;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-left:before {
+  left: 6px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-left:after {
+  left: 7px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-right:before {
+  right: 6px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-right:after {
+  right: 7px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-top:before {
+  top: -7px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-top:after {
+  top: -6px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-bottom:before {
+  bottom: -7px;
+  border-bottom: 0;
+  border-top: 7px solid #999;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-bottom:after {
+  bottom: -6px;
+  border-bottom: 0;
+  border-top: 6px solid #fff;
 }
 .datepicker table {
   background-color: transparent;
@@ -13494,6 +13539,9 @@ a.help {
 .well > h4 {
   margin-top: 0;
 }
+th[align=center] {
+  text-align: center;
+}
 .form-right {
   text-align: right;
   margin-bottom: 12px;
@@ -13604,8 +13652,7 @@ a.help {
   display: block;
   float: left;
 }
-.panel .panel-heading i.fa-chevron-up,
-.panel .panel-heading i.fa-chevron-down {
+.panel .panel-heading a.btn-link {
   color: #5697d0;
 }
 .panel .panel-heading .panel-title small {
@@ -13949,6 +13996,11 @@ fieldset[disabled] .btn-authenication.active {
 .btn-authenication.google:before {
   font-family: 'FontAwesome';
   content: "\f1a0";
+  margin-right: 12px;
+}
+.btn-authenication.twitter:before {
+  font-family: 'FontAwesome';
+  content: "\f099";
   margin-right: 12px;
 }
 .btn-minimal {
