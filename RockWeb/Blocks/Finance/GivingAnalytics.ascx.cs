@@ -101,8 +101,8 @@ namespace RockWeb.Blocks.Finance
 
             gChartAmount.GridRebind += gChartAmount_GridRebind;
 
-            gGiversGifts.DataKeyNames = new string[] { "GivingLeaderId" };
-            gGiversGifts.PersonIdField = "GivingLeaderId";
+            gGiversGifts.DataKeyNames = new string[] { "Id" };
+            gGiversGifts.PersonIdField = "Id";
             gGiversGifts.GridRebind += gGiversGifts_GridRebind;
 
             pnlTotal = new Panel();
@@ -917,7 +917,7 @@ function(item) {
             // The stored procedure returns two tables. First is a list of all matching transaction summary 
             // information and the second table is each giving leader's first-ever gift date to a tax-deductible account
             DataSet ds = FinancialTransactionDetailService.GetGivingAnalytics( start, end, minAmount, maxAmount, 
-                accountIds, currencyTypeIds, sourceTypeIds, dataViewId, viewBy );
+                accountIds, currencyTypeIds, sourceTypeIds,  dataViewId, viewBy );
 
             // Get the results table
             DataTable dtResults = ds.Tables[0];
