@@ -88,7 +88,7 @@ namespace Rock.Client
         public bool IsDeceased { get; set; }
 
         /// <summary />
-        public bool? IsEmailActive { get; set; }
+        public bool IsEmailActive { get; set; }
 
         /// <summary />
         public bool IsSystem { get; set; }
