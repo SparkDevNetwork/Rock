@@ -345,7 +345,13 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Newtonsoft.Json.JsonConverter(typeof(Rock.Utility.NotNullJsonConverter<bool>), true)]
-        public bool IsEmailActive { get; set; }
+        [DefaultValue(true)]
+        public bool IsEmailActive
+        {
+            get { return _isEmailActive; }
+            set { _isEmailActive = value; }
+        }
+        private bool _isEmailActive = true;
 
         /// <summary>
         /// Gets or sets a note about the Person's email address.
