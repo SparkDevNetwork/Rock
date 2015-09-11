@@ -978,6 +978,7 @@ order by [parentTable], [columnName]
             foreach ( var keyVal in entityProperties )
             {
                 var propertyRockClientIncludeAttribute = keyVal.Value.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
+                var defaultValueAttribute = keyVal.Value.GetCustomAttribute<System.ComponentModel.DefaultValueAttribute>();
                 string propertyComments = null;
 
                 if ( propertyRockClientIncludeAttribute != null )
@@ -995,7 +996,40 @@ order by [parentTable], [columnName]
                 {
                     sb.AppendLine( "        /// <summary />" );
                 }
-                sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key );
+
+                if ( defaultValueAttribute != null )
+                {
+                    sb.AppendFormat( "        public {0} {1}" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key );
+                    sb.AppendLine( "        {" );
+                    sb.AppendFormat( "            get {{ return _{0}; }}" + Environment.NewLine, keyVal.Key );
+                    sb.AppendFormat( "            set {{ _{0} = value; }}" + Environment.NewLine, keyVal.Key );
+                    sb.AppendLine( "        }" );
+                    if ( defaultValueAttribute.Value is string )
+                    {
+                        sb.AppendFormat( "        private {0} _{1} = \"{2}\";" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key, defaultValueAttribute.Value );
+                    }
+                    else if ( defaultValueAttribute.Value is bool )
+                    {
+                        sb.AppendFormat( "        private {0} _{1} = {2};" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key, (bool)defaultValueAttribute.Value ? "true" : "false" );
+                    }
+                    else
+                    {
+                        sb.AppendFormat( "        private {0} _{1} = {2};" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key, defaultValueAttribute.Value );
+                    }
+                    /*
+                     public bool IsEmailActive
+        {
+            get { return _isEmailActive; }
+            set { _isEmailActive = value; }
+        }
+        private bool _isEmailActive = true;
+                     
+                     */
+                }
+                else
+                {
+                    sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key );
+                }
                 sb.AppendLine( "" );
             }
 
