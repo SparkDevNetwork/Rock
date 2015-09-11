@@ -59,132 +59,143 @@
                             </div>
                         </div>
 
-                        <asp:Panel ID="pnlChart" runat="server">
+                        <asp:Panel ID="pnlUpdateMessage" runat="server" Visible="true" >
+                            <Rock:NotificationBox ID="nbUpdateMessage" runat="server" NotificationBoxType="Info" Heading="Confirm Settings"
+                                text="<p>Confirm your settings and select the Update button to display your results.</p>" />
+                        </asp:Panel>
 
-                            <div class="clearfix">
-                                <div class="pull-left">
-                                    <Rock:RockControlWrapper ID="rcwGroupBy" runat="server" Label="Group By">
-                                        <div class="controls">
-                                            <div class="js-group-by">
-                                                <Rock:HiddenFieldWithClass ID="hfGroupBy" CssClass="js-hidden-selected" runat="server" />
-                                                <div class="btn-group">
-                                                    <asp:LinkButton ID="btnGroupByWeek" runat="server" CssClass="btn btn-xs btn-default active" Text="Week" data-val="0" OnClick="btnGroupBy_Click" />
-                                                    <asp:LinkButton ID="btnGroupByMonth" runat="server" CssClass="btn btn-xs btn-default" Text="Month" data-val="1" OnClick="btnGroupBy_Click" />
-                                                    <asp:LinkButton ID="btnGroupByYear" runat="server" CssClass="btn btn-xs btn-default" Text="Year" data-val="2" OnClick="btnGroupBy_Click" />
+                        <asp:Panel ID="pnlResults" runat="server" Visible="false">
+
+                            <asp:Panel ID="pnlChart" runat="server" >
+
+                                <div class="clearfix">
+
+                                    <div class="pull-left">
+                                        <Rock:RockControlWrapper ID="rcwGroupBy" runat="server" Label="Group By">
+                                            <div class="controls">
+                                                <div class="js-group-by">
+                                                    <Rock:HiddenFieldWithClass ID="hfGroupBy" CssClass="js-hidden-selected" runat="server" />
+                                                    <div class="btn-group">
+                                                        <asp:LinkButton ID="btnGroupByWeek" runat="server" CssClass="btn btn-xs btn-default active" Text="Week" data-val="0" OnClick="btnGroupBy_Click" />
+                                                        <asp:LinkButton ID="btnGroupByMonth" runat="server" CssClass="btn btn-xs btn-default" Text="Month" data-val="1" OnClick="btnGroupBy_Click" />
+                                                        <asp:LinkButton ID="btnGroupByYear" runat="server" CssClass="btn btn-xs btn-default" Text="Year" data-val="2" OnClick="btnGroupBy_Click" />
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </Rock:RockControlWrapper>
-                                </div>
+                                        </Rock:RockControlWrapper>
+                                    </div>
                                 
-                                <div class="pull-right">
-                                    <Rock:RockControlWrapper ID="rcwGraphBy" runat="server" Label="Graph By">
-                                        <div class="controls">
-                                            <div class="js-graph-by">
-                                                <Rock:HiddenFieldWithClass ID="hfGraphBy" CssClass="js-hidden-selected" runat="server" />
-                                                <div class="btn-group">
-                                                    <asp:LinkButton ID="btnGraphByTotal" runat="server" CssClass="btn btn-xs btn-default active" Text="Total" data-val="0" OnClick="btnGraphBy_Click" />
-                                                    <asp:LinkButton ID="btnGraphByAccount" runat="server" CssClass="btn btn-xs btn-default" Text="Account" data-val="1" OnClick="btnGraphBy_Click" />
-                                                    <asp:LinkButton ID="btnGraphByCampus" runat="server" CssClass="btn btn-xs btn-default" Text="Campus" data-val="2" OnClick="btnGraphBy_Click" />
+                                    <div class="pull-right">
+                                        <Rock:RockControlWrapper ID="rcwGraphBy" runat="server" Label="Graph By">
+                                            <div class="controls">
+                                                <div class="js-graph-by">
+                                                    <Rock:HiddenFieldWithClass ID="hfGraphBy" CssClass="js-hidden-selected" runat="server" />
+                                                    <div class="btn-group">
+                                                        <asp:LinkButton ID="btnGraphByTotal" runat="server" CssClass="btn btn-xs btn-default active" Text="Total" data-val="0" OnClick="btnGraphBy_Click" />
+                                                        <asp:LinkButton ID="btnGraphByAccount" runat="server" CssClass="btn btn-xs btn-default" Text="Account" data-val="1" OnClick="btnGraphBy_Click" />
+                                                        <asp:LinkButton ID="btnGraphByCampus" runat="server" CssClass="btn btn-xs btn-default" Text="Campus" data-val="2" OnClick="btnGraphBy_Click" />
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </Rock:RockControlWrapper>
-                                </div>
-                            </div>
-
-                            <Rock:LineChart ID="lcAmount" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
-                            <Rock:BarChart ID="bcAmount" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
-
-                            <div class="row margin-t-sm">
-                                <div class="col-md-12">
-                                    <div class="pull-right">
-                                        <asp:LinkButton ID="lShowChartAmountGrid" runat="server" CssClass="btn btn-default btn-xs margin-b-sm" Text="Show Data <i class='fa fa-chevron-down'></i>" ToolTip="Show Data" OnClick="lShowChartAmountGrid_Click" />
+                                        </Rock:RockControlWrapper>
                                     </div>
                                 </div>
-                            </div>
 
-                            <asp:Panel ID="pnlChartAmountGrid" runat="server" Visible="false">
-                                <div class="grid">
-                                    <Rock:Grid ID="gChartAmount" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesId" RowItemText="Amount Summary">
-                                        <Columns>
-                                            <Rock:DateField DataField="DateTime" HeaderText="Date" SortExpression="DateTimeStamp" />
-                                            <Rock:RockBoundField DataField="SeriesId" HeaderText="Series" SortExpression="SeriesId" />
-                                            <Rock:CurrencyField DataField="YValue" HeaderText="Amount" SortExpression="YValue" />
-                                        </Columns>
-                                    </Rock:Grid>
+                                <Rock:LineChart ID="lcAmount" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
+                                <Rock:BarChart ID="bcAmount" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
+
+                                <div class="row margin-t-sm">
+                                    <div class="col-md-12">
+                                        <div class="pull-right">
+                                            <asp:LinkButton ID="lShowChartAmountGrid" runat="server" CssClass="btn btn-default btn-xs margin-b-sm" Text="Show Data <i class='fa fa-chevron-down'></i>" ToolTip="Show Data" OnClick="lShowChartAmountGrid_Click" />
+                                        </div>
+                                    </div>
                                 </div>
+
+                                <asp:Panel ID="pnlChartAmountGrid" runat="server" Visible="false">
+                                    <div class="grid">
+                                        <Rock:Grid ID="gChartAmount" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesId" RowItemText="Amount Summary">
+                                            <Columns>
+                                                <Rock:DateField DataField="DateTime" HeaderText="Date" SortExpression="DateTimeStamp" />
+                                                <Rock:RockBoundField DataField="SeriesId" HeaderText="Series" SortExpression="SeriesId" />
+                                                <Rock:CurrencyField DataField="YValue" HeaderText="Amount" SortExpression="YValue" />
+                                            </Columns>
+                                        </Rock:Grid>
+                                    </div>
+                                </asp:Panel>
+
                             </asp:Panel>
 
-                        </asp:Panel>
+                            <asp:Panel ID="pnlDetails" runat="server">
+                                <div class="panel">
+                                    <div class="grid-filter">
 
-                        <asp:Panel ID="pnlDetails" runat="server">
-                            <div class="panel">
-                                <div class="grid-filter">
-
-                                    <div class="controls pull-right margin-t-sm">
-                                        <div class="js-view-by">
-                                            <Rock:HiddenFieldWithClass ID="hfViewBy" CssClass="js-hidden-selected" runat="server" />
-                                            <div class="btn-group">
-                                                <asp:HyperLink ID="btnViewGivers" runat="server" CssClass="btn btn-default btn-sm active" data-val="0">
-                                                    Giver
-                                                </asp:HyperLink>
-                                                <asp:HyperLink ID="btnViewAdults" runat="server" CssClass="btn btn-default btn-sm" data-val="1">
-                                                    Adults
-                                                </asp:HyperLink>
-                                                <asp:HyperLink ID="btnViewChildren" runat="server" CssClass="btn btn-default btn-sm" data-val="2">
-                                                    Children
-                                                </asp:HyperLink>
-                                                <asp:HyperLink ID="btnViewFamily" runat="server" CssClass="btn btn-default btn-sm" data-val="3">
-                                                    Family
-                                                </asp:HyperLink>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <Rock:RockControlWrapper ID="rcwGiversFilter" runat="server" Label="Filter" CssClass="rock-radio-button-list">
-                                        <p>
-                                            <Rock:RockRadioButton ID="radAllGivers" runat="server" GroupName="grpFilterBy" Text="All Givers" CssClass="js-givers-all" />
-                                        </p>
-                                        <p>
-                                            <Rock:RockRadioButton ID="radFirstTime" runat="server" GroupName="grpFilterBy" Text="First Time Givers" CssClass="js-givers-by-first-time" />
-                                        </p>
-                                        <p>
-                                            <Rock:RockRadioButton ID="radByPattern" runat="server" GroupName="grpFilterBy" Text="Pattern" CssClass="js-givers-by-pattern" />
-                                        </p>
-                                        <asp:Panel ID="pnlByPatternOptions" runat="server" CssClass="js-givers-by-pattern-options padding-l-lg">
-                                            <div class="form-inline">
-                                                <span>Gave at least </span>
-                                                <Rock:NumberBox ID="tbPatternXTimes" runat="server" CssClass="input-width-xs" /><span> times in the selected date range </span>
-                                            </div>
-                                            <div class="padding-l-lg">
-                                                <div class="form-inline">
-                                                    <Rock:RockCheckBox ID="cbPatternAndMissed" runat="server" />and did not give between
-                                                    <Rock:NotificationBox ID="nbMissedDateRangeRequired" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" />
-                                                    <Rock:DateRangePicker ID="drpPatternDateRange" runat="server" />
+                                        <div class="controls pull-right margin-t-sm">
+                                            <div class="js-view-by">
+                                                <Rock:HiddenFieldWithClass ID="hfViewBy" CssClass="js-hidden-selected" runat="server" />
+                                                <div class="btn-group">
+                                                    <asp:HyperLink ID="btnViewGivers" runat="server" CssClass="btn btn-default btn-sm active" data-val="0">
+                                                        Giver
+                                                    </asp:HyperLink>
+                                                    <asp:HyperLink ID="btnViewAdults" runat="server" CssClass="btn btn-default btn-sm" data-val="1">
+                                                        Adults
+                                                    </asp:HyperLink>
+                                                    <asp:HyperLink ID="btnViewChildren" runat="server" CssClass="btn btn-default btn-sm" data-val="2">
+                                                        Children
+                                                    </asp:HyperLink>
+                                                    <asp:HyperLink ID="btnViewFamily" runat="server" CssClass="btn btn-default btn-sm" data-val="3">
+                                                        Family
+                                                    </asp:HyperLink>
                                                 </div>
                                             </div>
-                                        </asp:Panel>
-                                    </Rock:RockControlWrapper>
+                                        </div>
 
-                                    <Rock:RockRadioButtonList ID="rblDataViewAction" runat="server" Label="Dataview Results" RepeatDirection="Vertical" Visible="false">
-                                        <asp:ListItem Text="Only show people from dataview that have giving data" Value="Limit" />
-                                        <asp:ListItem Text="Include all people from dataview" Value="All" />
-                                    </Rock:RockRadioButtonList>
+                                        <Rock:RockControlWrapper ID="rcwGiversFilter" runat="server" Label="Filter" CssClass="rock-radio-button-list">
+                                            <p>
+                                                <Rock:RockRadioButton ID="radAllGivers" runat="server" GroupName="grpFilterBy" Text="All Givers" CssClass="js-givers-all" />
+                                            </p>
+                                            <p>
+                                                <Rock:RockRadioButton ID="radFirstTime" runat="server" GroupName="grpFilterBy" Text="First Time Givers" CssClass="js-givers-by-first-time" />
+                                            </p>
+                                            <p>
+                                                <Rock:RockRadioButton ID="radByPattern" runat="server" GroupName="grpFilterBy" Text="Pattern" CssClass="js-givers-by-pattern" />
+                                            </p>
+                                            <asp:Panel ID="pnlByPatternOptions" runat="server" CssClass="js-givers-by-pattern-options padding-l-lg">
+                                                <div class="form-inline">
+                                                    <span>Gave at least </span>
+                                                    <Rock:NumberBox ID="tbPatternXTimes" runat="server" CssClass="input-width-xs" /><span> times in the selected date range </span>
+                                                </div>
+                                                <div class="padding-l-lg">
+                                                    <div class="form-inline">
+                                                        <Rock:RockCheckBox ID="cbPatternAndMissed" runat="server" />and did not give between
+                                                        <Rock:NotificationBox ID="nbMissedDateRangeRequired" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" />
+                                                        <Rock:DateRangePicker ID="drpPatternDateRange" runat="server" />
+                                                    </div>
+                                                </div>
+                                            </asp:Panel>
+                                        </Rock:RockControlWrapper>
 
-                                    <div class="actions margin-b-md">
-                                        <asp:LinkButton ID="btnApplyGiversFilter" runat="server" Visible="false" CssClass="btn btn-primary" Text="Apply" ToolTip="Update the Givers grid" OnClick="btnApplyGiversFilter_Click" />
+                                        <Rock:RockRadioButtonList ID="rblDataViewAction" runat="server" Label="Dataview Results" RepeatDirection="Vertical" Visible="false">
+                                            <asp:ListItem Text="Only show people from dataview that have giving data" Value="Limit" />
+                                            <asp:ListItem Text="Include all people from dataview" Value="All" />
+                                        </Rock:RockRadioButtonList>
+
+                                        <div class="actions margin-b-md">
+                                            <asp:LinkButton ID="btnApplyGiversFilter" runat="server" Visible="false" CssClass="btn btn-primary" Text="Apply" ToolTip="Update the Givers grid" OnClick="btnApplyGiversFilter_Click" />
+                                        </div>
+
                                     </div>
-
                                 </div>
-                            </div>
 
-                            <Rock:NotificationBox ID="nbGiversError" runat="server" NotificationBoxType="Danger" Dismissable="true" Visible="false" />
+                                <Rock:NotificationBox ID="nbGiversError" runat="server" NotificationBoxType="Danger" Dismissable="true" Visible="false" />
 
-                            <Rock:Grid ID="gGiversGifts" runat="server" AllowSorting="true" RowItemText="Person" OnRowSelected="gGiversGifts_RowSelected"
-                                ExportSource="ColumnOutput" ExportFilename="GivingAnalytics" />
+                                <Rock:Grid ID="gGiversGifts" runat="server" AllowSorting="true" RowItemText="Person" OnRowSelected="gGiversGifts_RowSelected"
+                                    ExportSource="ColumnOutput" ExportFilename="GivingAnalytics" />
 
-                        </asp:Panel>
+                            </asp:Panel>
+
+                        <</asp:Panel>
+
                     </div>
                 </div>
             </div>

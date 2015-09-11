@@ -140,7 +140,6 @@ namespace RockWeb.Blocks.Finance
                 BuildDynamicControls();
                 LoadDropDowns();
                 LoadSettingsFromUserPreferences();
-                LoadChartAndGrids();
             }
         }
 
@@ -395,6 +394,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         public void LoadChartAndGrids()
         {
+            pnlUpdateMessage.Visible = false;
+            pnlResults.Visible = true;
+
             lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now );
             
             lcAmount.ShowTooltip = true;
