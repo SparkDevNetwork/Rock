@@ -46,7 +46,7 @@
                             </div>
 
                             <asp:Panel ID="pnlUpdateMessage" runat="server" Visible="true">
-                                <Rock:NotificationBox ID="nbUpdateMessage" runat="server" NotificationBoxType="Info" Heading="Confirm Settings"
+                                <Rock:NotificationBox ID="nbUpdateMessage" runat="server" NotificationBoxType="Default" CssClass="text-center padding-all-lg" Heading="Confirm Settings"
                                     Text="<p>Confirm your settings and select the Update button to display your results.</p>" />
                             </asp:Panel>
 

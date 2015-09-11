@@ -5232,6 +5232,17 @@ a.help {
 .well > h4 {
   margin-top: 0;
 }
+.alert-default {
+  background-color: #edeae6;
+  border-color: #d8d1c8;
+  color: #6a6a6a;
+}
+.alert-default hr {
+  border-top-color: #cdc5ba;
+}
+.alert-default .alert-link {
+  color: #515151;
+}
 th[align=center] {
   text-align: center;
 }
