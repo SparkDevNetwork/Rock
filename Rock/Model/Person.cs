@@ -1136,7 +1136,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [DataMember]
-        [RockClientInclude( "The Grade Offset of the person, which is the number of years until their graduation date" )]
+        [RockClientInclude( "The Grade Offset of the person, which is the number of years until their graduation date. See GradeFormatted to see their current Grade." )]
         public virtual int? GradeOffset
         {
             get
