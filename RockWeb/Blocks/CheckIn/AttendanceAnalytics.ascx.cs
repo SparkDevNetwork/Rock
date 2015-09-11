@@ -123,8 +123,6 @@ namespace RockWeb.Blocks.CheckIn
                 try
                 {
                     LoadSettingsFromUserPreferences();
-                    LoadChartAndGrids();
-
                 }
                 catch ( Exception exception )
                 {
@@ -259,6 +257,9 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         public void LoadChartAndGrids()
         {
+            pnlUpdateMessage.Visible = false;
+            pnlResults.Visible = true;
+
             lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now );
 
             lcAttendance.ShowTooltip = true;
