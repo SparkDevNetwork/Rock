@@ -33,7 +33,7 @@
                         </div>
 
                         <Rock:NotificationBox ID="nbDateRangeWarning" runat="server" NotificationBoxType="Warning" Text="Date Range is required" Visible="false" Dismissable="true" />
-                        <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" />
+                        <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
 
                         <Rock:RockControlWrapper ID="rcwGroupBy" runat="server" Label="Group By">
                             <div class="controls">
