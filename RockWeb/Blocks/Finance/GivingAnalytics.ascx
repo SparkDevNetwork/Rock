@@ -194,7 +194,7 @@
 
                             </asp:Panel>
 
-                        <</asp:Panel>
+                        </asp:Panel>
 
                     </div>
                 </div>
