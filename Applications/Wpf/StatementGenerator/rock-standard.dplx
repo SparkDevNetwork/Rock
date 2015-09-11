@@ -6,22 +6,17 @@
 		</query>
 		<template id="Template1"/>
 		<header id="ReportHeader"/>
-		<detail id="PersonDetail" height="683" autoSplit="true">
-			<subReport id="InnerReport" width="501" y="230" x="1">
+		<detail id="PersonDetail" autoSplit="true" height="430">
+			<subReport id="InnerReport" width="501" x="1.5" y="231">
 				<query id="InnerQuery">
 					<eventDriven connectionString=""></eventDriven>
 				</query>
-				<header id="TranListHeader" height="45.5">
-					<label text="Date" font="HelveticaBold" id="lblDate" height="14" y="30" fontSize="10" x="12" width="65.1"/>
-					<label font="HelveticaBold" width="72" height="14" fontSize="10" text="Type" id="lblCurrencyTypeValueName" x="57" y="30"/>
-					<label font="HelveticaBold" height="14" fontSize="10" id="lblAccounts" text="Account(s)" x="284.5" width="213.5" y="30"/>
-					<label font="HelveticaBold" id="lblAmount" text="Amount" height="14" align="right" fontSize="10" width="99.1" x="171" y="30"/>
-					<line id="HeaderLine" x2="498" x1="0" y1="46" y2="46"/>
-					<rectangle fillColor="lightGrey" id="rectTopTotal" x="0" width="501" y="-2" height="26"/>
-					<recordArea x="12" width="288" height="18" font="HelveticaBold" y="6" id="raTopTotalText" fontSize="10">
-						<text>Total Cash Gifts This Period</text>
-					</recordArea>
-					<recordBox x="390" y="6" height="18" width="108" id="rbTopTotalAmount" font="HelveticaBold" align="right" fontSize="10" field="Sum(Amount, InnerReport, InnerQuery)" dataFormat="$#,##0.00"/>
+				<header id="TranListHeader" height="20">
+					<label text="Date" font="HelveticaBold" id="lblDate" height="14" fontSize="10" width="65.1" y="3.5" x="12"/>
+					<label font="HelveticaBold" width="72" height="14" fontSize="10" text="Type" id="lblCurrencyTypeValueName" y="3" x="57"/>
+					<label font="HelveticaBold" height="14" fontSize="10" id="lblAccounts" text="Account(s)" y="2.5" width="207.5" x="284.5"/>
+					<label font="HelveticaBold" id="lblAmount" height="14" align="right" fontSize="10" width="99.1" text="Total Amount" y="2.5" x="171"/>
+					<line id="HeaderLine" y1="19" x2="499.5" y2="19" x1="0"/>
 				</header>
 				<detail autoSplit="true" id="TranListDetail" height="15">
 					<recordBox height="14" field="TransactionDateTime" id="rbTransactionDateTime" fontSize="9" dataFormat="M/dd/yyyy" align="right" x="0" y="2" width="50"/>
@@ -73,10 +68,10 @@
 			<recordArea width="246" id="raCustomArea1" x="258" y="84" height="120" fontSize="11">
 				<text>#CustomMessage1#</text>
 			</recordArea>
-			<recordArea x="0" width="510" height="60" id="raCustomArea2" fontSize="10" y="360">
+			<recordArea width="510" id="raCustomArea2" fontSize="10" y="334.5" height="66.1" x="1">
 				<text>#CustomMessage2#</text>
 			</recordArea>
-			<subReport id="AccountSummaryReport" width="282" x="0" y="330">
+			<subReport id="AccountSummaryReport" width="282" x="2" y="304.5">
 				<query id="AccountSummaryQuery">
 					<eventDriven connectionString=""></eventDriven>
 				</query>
@@ -89,8 +84,13 @@
 				</detail>
 				<footer id="AccountSummaryFooter"/>
 			</subReport>
-			<label width="100" text="Total" font="HelveticaBold" height="18" fontSize="10" x="6" y="300" id="lblBottomTotal"/>
-			<recordBox height="14" field="Sum(Amount, InnerReport, InnerQuery)" fontSize="10" font="HelveticaBold" align="right" width="264" id="rbBottomTotal" y="300" x="234" dataFormat="$#,##0.00"/>
+			<label width="100" text="Total" font="HelveticaBold" height="18" fontSize="10" id="lblBottomTotal" x="8" y="274.5"/>
+			<recordBox height="14" field="Sum(Amount, InnerReport, InnerQuery)" fontSize="10" font="HelveticaBold" align="right" width="264" id="rbBottomTotal" dataFormat="$#,##0.00" x="236" y="274.5"/>
+			<rectangle fillColor="lightGrey" width="501" height="26" x="1" y="203.5" id="rectHeader"/>
+			<recordBox height="18" width="108" font="HelveticaBold" align="right" fontSize="10" field="Sum(Amount, InnerReport, InnerQuery)" dataFormat="$#,##0.00" x="392" y="211" id="rbSumAmount"/>
+			<recordArea x="12" width="288" height="18" font="HelveticaBold" fontSize="10" y="211.5" id="raTotalCashGifts">
+				<text>Total Cash Gifts This Period</text>
+			</recordArea>
 		</detail>
 		<footer id="ReportFooter"/>
 	</report>
