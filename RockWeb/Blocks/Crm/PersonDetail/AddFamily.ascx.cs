@@ -496,7 +496,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     LinkButton lbRemoveMember = new LinkButton();
                     lbRemoveMember.ID = string.Format( "lbRemoveMember_{0}", familyMemberGuidString );
-                    lbRemoveMember.AddCssClass( "btn btn-danger" );
+                    lbRemoveMember.AddCssClass( "btn btn-danger btn-xs" );
                     lbRemoveMember.Text = "Remove";
                     lbRemoveMember.Click += lbRemoveMember_Click;
                     newPersonCol.Controls.Add( lbRemoveMember );
@@ -505,6 +505,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     dupPersonCol.AddCssClass( "col-md-6" );
                     dupPersonCol.ID = string.Format( "dupPersonCol_{0}", familyMemberGuidString );
                     dupRow.Controls.Add( dupPersonCol );
+
+                    var duplicateHeader = new HtmlGenericControl( "h4" );
+                    duplicateHeader.InnerText = "Possible Duplicate Records";
+                    dupPersonCol.Controls.Add( duplicateHeader );
 
                     foreach( var duplicate in Duplicates[familyMember.Person.Guid] )
                     {
@@ -571,20 +575,30 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 recordTypeValueGuid = DefinedValueCache.Read( person.RecordTypeValueId.Value, rockContext ).Guid;
             }
 
-            string personName = person.FullName;
+            string personName = string.Format("{0} <small>(New Record)</small>", person.FullName);
             if ( person.Id > 0 )
             {
                 string personUrl = ResolveRockUrl( string.Format( "~/person/{0}", person.Id ) );
                 personName = string.Format( "<a href='{0}' target='_blank'>{1}</a>", personUrl, person.FullName );
             }
-            personInfoHtml.AppendFormat( "<h4>{0}</h4>", personName );
 
-            if ( person.PhotoId.HasValue )
+            personInfoHtml.Append( "<div class='row margin-b-lg'>" );
+
+            // add photo if it's not the new record
+            if ( person.Id > 0 )
             {
-                personInfoHtml.AppendFormat(
-                    "<img class='float-left' src='{0}'>",
-                    Person.GetPhotoUrl( person.PhotoId.Value, person.Age, person.Gender, recordTypeValueGuid, 65, 65 ) );
+                personInfoHtml.Append( "<div class='col-md-2'>" );
+                if ( person.PhotoId.HasValue )
+                {
+                    personInfoHtml.AppendFormat(
+                        "<img src='{0}'>",
+                        Person.GetPhotoUrl( person.PhotoId.Value, person.Age, person.Gender, recordTypeValueGuid, 65, 65 ) );
+                }
+                personInfoHtml.Append( "</div>" );
             }
+
+            personInfoHtml.Append( "<div class='col-md-10'>" );
+            personInfoHtml.AppendFormat( "<h4 class='margin-t-none'>{0}</h4>", personName );
 
             if ( GroupTypeRole != null )
             { 
@@ -629,9 +643,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 personInfoHtml.Append( emailAndPhoneHtml );
             }
 
+            personInfoHtml.Append( "</div>" );
+            personInfoHtml.Append( "</div>" );
+
             var dupPersonPnl = new Panel();
             dupPersonPnl.ID = string.Format( "dupPersonPnl_{0}_{1}", familyMemberGuidString, person.Id );
             dupPersonPnl.Controls.Add( new LiteralControl( personInfoHtml.ToString() ) );
+
             return dupPersonPnl;
         }
 
