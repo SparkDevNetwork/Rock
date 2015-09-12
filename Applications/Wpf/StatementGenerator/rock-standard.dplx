@@ -7,7 +7,7 @@
 		<template id="Template1"/>
 		<header id="ReportHeader"/>
 		<detail id="PersonDetail" autoSplit="true" height="430">
-			<subReport id="InnerReport" width="501" x="1.5" y="241.5">
+			<subReport id="InnerReport" width="501" x="1.5" y="251.5">
 				<query id="InnerQuery">
 					<eventDriven connectionString=""></eventDriven>
 				</query>
@@ -68,10 +68,10 @@
 			<recordArea width="246" id="raCustomArea1" x="258" y="84" height="120" fontSize="11">
 				<text>#CustomMessage1#</text>
 			</recordArea>
-			<recordArea width="510" id="raCustomArea2" fontSize="10" height="66.1" x="1" y="345">
+			<recordArea width="510" id="raCustomArea2" fontSize="10" x="1" height="56.6" y="355">
 				<text>#CustomMessage2#</text>
 			</recordArea>
-			<subReport id="AccountSummaryReport" width="282" x="2" y="315">
+			<subReport id="AccountSummaryReport" width="282" x="2" y="325">
 				<query id="AccountSummaryQuery">
 					<eventDriven connectionString=""></eventDriven>
 				</query>
@@ -84,11 +84,11 @@
 				</detail>
 				<footer id="AccountSummaryFooter"/>
 			</subReport>
-			<label width="100" text="Total" font="HelveticaBold" height="18" fontSize="10" id="lblBottomTotal" x="8" y="285"/>
-			<recordBox height="14" field="Sum(Amount, InnerReport, InnerQuery)" fontSize="10" font="HelveticaBold" align="right" width="264" id="rbBottomTotal" dataFormat="$#,##0.00" x="236" y="285"/>
-			<rectangle fillColor="lightGrey" width="501" height="26" id="rectHeader" y="209" x="0.5"/>
-			<recordBox height="18" width="108" font="HelveticaBold" align="right" fontSize="10" field="Sum(Amount, InnerReport, InnerQuery)" dataFormat="$#,##0.00" id="rbSumAmount" y="216.5" x="392"/>
-			<recordArea width="288" height="18" font="HelveticaBold" fontSize="10" id="raTotalCashGifts" y="217" x="12">
+			<label width="100" text="Total" font="HelveticaBold" height="18" fontSize="10" id="lblBottomTotal" x="8" y="295"/>
+			<recordBox height="14" field="Sum(Amount, InnerReport, InnerQuery)" fontSize="10" font="HelveticaBold" align="right" width="264" id="rbBottomTotal" dataFormat="$#,##0.00" x="236" y="295"/>
+			<rectangle fillColor="lightGrey" width="501" height="26" id="rectHeader" x="0.5" y="209"/>
+			<recordBox height="18" width="108" font="HelveticaBold" align="right" fontSize="10" field="Sum(Amount, InnerReport, InnerQuery)" dataFormat="$#,##0.00" id="rbSumAmount" x="392" y="216.5"/>
+			<recordArea width="288" height="18" font="HelveticaBold" fontSize="10" id="raTotalCashGifts" x="12" y="217">
 				<text>Total Cash Gifts This Period</text>
 			</recordArea>
 		</detail>
