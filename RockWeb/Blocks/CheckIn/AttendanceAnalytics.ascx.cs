@@ -119,6 +119,8 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( !Page.IsPostBack )
             {
+                lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now );
+                
                 LoadDropDowns();
                 try
                 {
@@ -259,8 +261,6 @@ namespace RockWeb.Blocks.CheckIn
         {
             pnlUpdateMessage.Visible = false;
             pnlResults.Visible = true;
-
-            lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now );
 
             lcAttendance.ShowTooltip = true;
             if ( this.DetailPageGuid.HasValue )

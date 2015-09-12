@@ -140,6 +140,8 @@ namespace RockWeb.Blocks.Finance
                 BuildDynamicControls();
                 LoadDropDowns();
                 LoadSettingsFromUserPreferences();
+
+                lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now );
             }
         }
 
@@ -396,8 +398,6 @@ namespace RockWeb.Blocks.Finance
         {
             pnlUpdateMessage.Visible = false;
             pnlResults.Visible = true;
-
-            lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now );
             
             lcAmount.ShowTooltip = true;
             if ( this.DetailPageGuid.HasValue )

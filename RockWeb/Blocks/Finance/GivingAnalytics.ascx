@@ -10,14 +10,13 @@
                 <div class="panel-labels">
                     <a href="#" onclick="$('.js-slidingdaterange-help').toggle()">
                         <i class='fa fa-question-circle'></i>
-                        Date Range Help
                     </a>
                 </div>
 
             </div>
 
             <div class="panel-info">
-                <div class="alert alert-info js-slidingdaterange-help" style="display: none">
+                <div class="alert alert-info js-slidingdaterange-help margin-b-none" style="display: none">
                     <asp:Literal ID="lSlidingDateRangeHelp" runat="server" />
                 </div>
             </div>
