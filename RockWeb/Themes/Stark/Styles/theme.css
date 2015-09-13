@@ -909,6 +909,7 @@ dl:not(.dl-horizontal) dd {
     8. Column Types
     9. Row Types
     10. Responsive Columns
+    11. Components
 */
 .table > tbody > tr > td {
   color: #333333;
@@ -1230,6 +1231,13 @@ tr.row-highlight td {
   .table-responsive td[data-priority="6"] {
     display: table-cell;
   }
+}
+.alert.alert-grid {
+  margin-top: -15px;
+  margin-right: -15px;
+  margin-left: -15px;
+  border-radius: 0;
+  margin-bottom: 15px;
 }
 /*
     Used to manage styles for specific blocks.
