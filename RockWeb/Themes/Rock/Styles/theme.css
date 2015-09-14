@@ -5512,11 +5512,6 @@ th[align=center] {
 .panel-analytics .panel-body .grid.grid-panel {
   margin-bottom: 0;
 }
-@media (min-width: 992px) {
-  .panel-analytics .panel-body .row {
-    margin-left: -16px;
-  }
-}
 .panel-analytics .filter-options {
   background-color: #edeae6;
 }
