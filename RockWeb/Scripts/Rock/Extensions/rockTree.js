@@ -308,7 +308,7 @@
 				    tmp.innerHTML = node.name;
 				    var nodeText = tmp.textContent || tmp.innerText || "";
 
-				    $li.append('<span class="rocktree-name" title="' + nodeText + '"> ' + node.name + '</span>');
+				    $li.append('<span class="rocktree-name" title="' + nodeText.trim() + '"> ' + node.name + '</span>');
 				    
 				    for (var i = 0; i < self.selectedNodes.length; i++) {
 				        if (self.selectedNodes[i].id == node.id) {
