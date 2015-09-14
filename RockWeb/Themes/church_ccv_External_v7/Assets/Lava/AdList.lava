@@ -18,7 +18,7 @@
 {% endif %}
 
 
-{% comment %} Default values of lava settings{% endcomment %}
+{% comment %} Default values of lava settings {% endcomment %}
 {% unless useContainer or useContainer == false %}
   {% assign useContainer = true %}
 {% endunless %}

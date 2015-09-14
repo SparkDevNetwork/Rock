@@ -1,12 +1,33 @@
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">{{ ListTitle }}</h3>
+{% comment %}
+
+{% assign emptyMessage = "There are currently no events scheduled" %}
+
+{% capture emptyMessage %}There are currently no events scheduled for the {{ Context.Campus.Name }} Campus{% endcapture %}
+
+{% capture defaultPanelTitle %}{{ ListTitle }} <small style="display: inline-block">{{ EventItemOccurrences[0].Campus.Name }} Campus</small>{% endcapture %}
+
+{% endcomment %}
+
+{% capture defaultPanelTitle %}{{ ListTitle }} <small style="display: inline-block">{{ EventItemOccurrences[0].Campus.Name }} Campus</small>{% endcapture %}
+
+{% if EventItemOccurrences != empty %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">{{ panelTitle | Default: defaultPanelTitle }}</h3>
+    </div>
+    <div class="list-group">
+      {% for occurrence in EventItemOccurrences %}
+        {% comment %}<a class="list-group-item" href="{{ RegistrationPage }}?RegistrationInstanceId={{ occurrence.Linkages | Select: 'RegistrationInstanceId' }}">{% endcomment %}
+        <a class="list-group-item" href="{{ RegistrationPage }}?EventOccurrenceId={{ occurrence.Id }}">
+          {{ occurrence.EventItem.Name }} <small class="text-muted">{{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'dddd, MMM d / h:mmtt'  }}</small>
+        </a>
+      {% endfor %}
+    </div>
   </div>
-  <div class="list-group">
-    {% for occurrence in EventItemOccurrences %}
-      <a class="list-group-item" href="{{ RegistrationPage }}?RegistrationInstanceId={{ occurrence.Linkages | Select: 'RegistrationInstanceId' }}">
-         {{ occurrence.EventItem.Name }} {{ occurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'dddd, MMM d / h:mmtt'  }} <span class="text-muted">{{ occurrence.Campus.Name }}</span>
-      </a>
-    {% endfor %}
+{% else %}
+  <div class="panel panel-default">
+    <div class="panel-body">
+      {{ emptyMessage | Default: "There are currently no events scheduled" }}
+    </div>
   </div>
-</div>
+{% endif %}
