@@ -591,7 +591,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( person.PhotoId.HasValue )
                 {
                     personInfoHtml.AppendFormat(
-                        "<img src='{0}'>",
+                        "<img src='{0}' class='img-thumbnail'>",
                         Person.GetPhotoUrl( person.PhotoId.Value, person.Age, person.Gender, recordTypeValueGuid, 65, 65 ) );
                 }
                 personInfoHtml.Append( "</div>" );
