@@ -76,7 +76,7 @@
 
       <h4>Kids</h4>
       <p>We have excellent programs for kids (infants - 6th grade) during all adult services.</p>
-      <p><a href="external:http://rock.ccv.church/kids" class="btn btn-sm btn-default">Learn More</a></p>
+      <p><a href="external:http://ccv.church/kids" class="btn btn-sm btn-default">Learn More</a></p>
     </div>
     <div class="col-sm-6">
       <hr>
@@ -87,7 +87,7 @@
         <strong>7th-8th Grade</strong> {{ campus | Attribute: 'JrHighTime' }}<br>
         <strong>9th-12th Grade</strong> {{ campus | Attribute: 'HighSchoolTime' }}
       </p>
-      <p><a href="external:http://rock.ccv.church/students" class="btn btn-sm btn-default">Learn More</a></p>
+      <p><a href="external:http://ccv.church/students" class="btn btn-sm btn-default">Learn More</a></p>
     </div>
   </div>
 
