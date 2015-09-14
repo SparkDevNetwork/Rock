@@ -1740,8 +1740,8 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Formats the export value.
         /// </summary>
+        /// <param name="range">The range.</param>
         /// <param name="exportValue">The export value.</param>
-        /// <returns></returns>
         private void SetExcelValue( ExcelRange range, object exportValue )
         {
             if ( exportValue != null &&
