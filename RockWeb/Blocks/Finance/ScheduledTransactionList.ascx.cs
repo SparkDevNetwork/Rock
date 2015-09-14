@@ -364,6 +364,28 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Gets the accounts.
+        /// </summary>
+        /// <param name="dataItem">The data item.</param>
+        /// <returns></returns>
+        protected string GetAccounts( object dataItem )
+        {
+            var txn = dataItem as FinancialScheduledTransaction;
+            if ( txn != null )
+            {
+                var summary  = txn.ScheduledTransactionDetails
+                    .OrderBy( d => d.Account.Order )
+                    .Select( d => string.Format( "{0}: {1}", d.Account.Name, d.Amount.FormatAsCurrency() ) )
+                    .ToList();
+                if ( summary.Any() )
+                {
+                    return "<small>" + summary.AsDelimited( "<br/>" ) + "</small>";
+                }
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Shows the detail form.
         /// </summary>
         /// <param name="id">The id.</param>
