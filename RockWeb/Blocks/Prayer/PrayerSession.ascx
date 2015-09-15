@@ -54,18 +54,20 @@
                         </div>
 
 
-                    <div class="actions margin-b-md">
+                    <div class="actions margin-t-lg margin-b-md">
                         <asp:LinkButton ID="lbNext" TabIndex="1" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" CssClass="btn btn-primary pull-right" OnClick="lbNext_Click" />
                         <asp:LinkButton ID="lbFlag" runat="server" Text="<i class='fa fa-flag'></i> Flag" CssClass="btn btn-warning" ToolTip="Flag as inappropriate so that an administrator can review the content." CausesValidation="false" OnClick="lbFlag_Click" />
                         <asp:LinkButton ID="lbStop" runat="server" Text="End Session" CssClass="btn btn-link" CausesValidation="false" OnClick="lbStop_Click" />
                     </div>
 
                     <!-- Comments -->
-                    <h4>Comments</h4>
-                    <Rock:NoteContainer ID="notesComments" runat="server" Term="Comment" ShowHeading="false"
-                         DisplayType="Full" UsePersonIcon="true" ShowAlertCheckBox="false" 
-                        ShowPrivateCheckBox="false" ShowSecurityButton="false" 
-                        AllowAnonymousEntry="false" AddAlwaysVisible="true" SortDirection="Ascending" />
+                    <asp:Panel ID="pnlPrayerComments" runat="server">
+                        <h4>Comments</h4>
+                        <Rock:NoteContainer ID="notesComments" runat="server" Term="Comment" ShowHeading="false"
+                             DisplayType="Full" UsePersonIcon="true" ShowAlertCheckBox="false" 
+                            ShowPrivateCheckBox="false" ShowSecurityButton="false" 
+                            AllowAnonymousEntry="false" AddAlwaysVisible="true" SortDirection="Ascending" />
+                    </asp:Panel>
 
                 </div>
             </div>

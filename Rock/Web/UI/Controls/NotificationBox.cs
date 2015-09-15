@@ -190,6 +190,11 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Display a success box
         /// </summary>
-        Success
+        Success,
+
+        /// <summary>
+        /// The default
+        /// </summary>
+        Default
     }
 }

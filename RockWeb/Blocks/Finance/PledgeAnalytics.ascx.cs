@@ -86,7 +86,6 @@ namespace RockWeb.Blocks.Finance
             if ( !Page.IsPostBack )
             {
                 LoadSettingsFromUserPreferences();
-                BindGrid();
             }
         }
 
@@ -145,6 +144,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
+            pnlUpdateMessage.Visible = false;
+            pnlResults.Visible = true;
+
             int? accountId = apAccount.SelectedValue.AsIntegerOrNull();
             if ( accountId.HasValue )
             {

@@ -29,13 +29,29 @@ namespace Rock.Web.UI.Controls
     {
 
         /// <summary>
+        /// Gets or sets a value indicating whether [display active only].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display active only]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayActiveOnly
+        {
+            get { return ViewState["DisplayActiveOnly"] as bool? ?? false; }
+            set 
+            {
+                ViewState["DisplayActiveOnly"] = value;  
+                this.ItemRestUrlExtraParams = "/" + value.ToString();
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit(EventArgs e)
         {
             base.OnInit(e);
-
+            this.ItemRestUrlExtraParams = "/" + DisplayActiveOnly.ToString();
             this.IconCssClass = "fa fa-building-o";
         }
         

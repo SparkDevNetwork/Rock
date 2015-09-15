@@ -232,7 +232,7 @@ namespace RockWeb.Blocks.Utility
             bool dataExpanded = hfSelectedFolder.Value.StartsWith( relativeFolderPath );
             bool selected = hfSelectedFolder.Value == relativeFolderPath;
 
-            sb.AppendFormat( "<li data-expanded='{2}' data-id='{0}'><span class='{3}'><i class=\"fa fa-folder\"></i> {1}</span> \n", HttpUtility.HtmlEncode( relativeFolderPath ), directoryInfo.Name, dataExpanded.ToTrueFalse().ToLower(), selected ? "selected" : string.Empty );
+            sb.AppendFormat( "<li data-expanded='{2}' data-id='{0}'><span class='{3}'> {1}</span> \n", HttpUtility.HtmlEncode( relativeFolderPath ), directoryInfo.Name, dataExpanded.ToTrueFalse().ToLower(), selected ? "selected" : string.Empty );
 
             try
             {

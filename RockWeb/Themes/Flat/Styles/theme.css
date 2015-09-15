@@ -1,3 +1,5 @@
+@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
 /*
 
   Rock's Core CSS
@@ -19,8 +21,6 @@
   A better method for styling can be seen below with .jcrop-light
   (Add a class to the holder and style elements for that extended class)
 */
-@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
 .jcrop-holder {
   direction: ltr;
   text-align: left;
@@ -911,6 +911,7 @@ dl:not(.dl-horizontal) dd {
     8. Column Types
     9. Row Types
     10. Responsive Columns
+    11. Components
 */
 .table > tbody > tr > td {
   color: #6a6a6a;
@@ -1232,6 +1233,13 @@ tr.row-highlight td {
   .table-responsive td[data-priority="6"] {
     display: table-cell;
   }
+}
+.alert.alert-grid {
+  margin-top: -15px;
+  margin-right: -15px;
+  margin-left: -15px;
+  border-radius: 0;
+  margin-bottom: 15px;
 }
 /*
     Used to manage styles for specific blocks.
@@ -5234,6 +5242,17 @@ a.help {
 .well > h4 {
   margin-top: 0;
 }
+.alert-default {
+  background-color: #efefef;
+  border-color: #d6d6d6;
+  color: #6a6a6a;
+}
+.alert-default hr {
+  border-top-color: #c9c9c9;
+}
+.alert-default .alert-link {
+  color: #515151;
+}
 th[align=center] {
   text-align: center;
 }
@@ -5494,11 +5513,6 @@ th[align=center] {
 }
 .panel-analytics .panel-body .grid.grid-panel {
   margin-bottom: 0;
-}
-@media (min-width: 992px) {
-  .panel-analytics .panel-body .row {
-    margin-left: -16px;
-  }
 }
 .panel-analytics .filter-options {
   background-color: #ecf0f1;
