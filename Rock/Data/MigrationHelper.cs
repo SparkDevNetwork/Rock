@@ -4172,27 +4172,32 @@ END
                 DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{3}')
                 DECLARE @FormId int = (SELECT [Id] FROM [WorkflowActionForm] WHERE [Guid] = '{6}')
 
-                IF EXISTS ( SELECT [Id] FROM [WorkflowActionType] WHERE [Guid] =  '{10}' )
+                IF @ActivityTypeId IS NOT NULL AND @EntityTypeId IS NOT NULL
                 BEGIN
-                    UPDATE [WorkflowActionType] SET
-                        [ActivityTypeId] = @ActivityTypeId,
-                        [Name] = '{1}',
-                        [Order] = {2},
-                        [EntityTypeId] = @EntityTypeId,
-                        [IsActionCompletedOnSuccess] = {4},
-                        [IsActivityCompletedOnSuccess] = {5},
-                        [WorkflowFormId] = @FormId,
-                        [CriteriaAttributeGuid] = {7},
-                        [CriteriaComparisonType] = {8},
-                        [CriteriaValue] = '{9}'
-                    WHERE [Guid] = '{10}'
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO [WorkflowActionType] (
-                        [ActivityTypeId], [Name], [Order], [EntityTypeId], [IsActionCompletedOnSuccess], [IsActivityCompletedOnSuccess],
-                        [WorkflowFormId], [CriteriaAttributeGuid], [CriteriaComparisonType], [CriteriaValue], [Guid] )
-                    VALUES( @ActivityTypeId, '{1}', {2}, @EntityTypeId, {4}, {5}, @FormId, {7}, {8}, '{9}', '{10}' )
+
+                    IF EXISTS ( SELECT [Id] FROM [WorkflowActionType] WHERE [Guid] =  '{10}' )
+                    BEGIN
+                        UPDATE [WorkflowActionType] SET
+                            [ActivityTypeId] = @ActivityTypeId,
+                            [Name] = '{1}',
+                            [Order] = {2},
+                            [EntityTypeId] = @EntityTypeId,
+                            [IsActionCompletedOnSuccess] = {4},
+                            [IsActivityCompletedOnSuccess] = {5},
+                            [WorkflowFormId] = @FormId,
+                            [CriteriaAttributeGuid] = {7},
+                            [CriteriaComparisonType] = {8},
+                            [CriteriaValue] = '{9}'
+                        WHERE [Guid] = '{10}'
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [WorkflowActionType] (
+                            [ActivityTypeId], [Name], [Order], [EntityTypeId], [IsActionCompletedOnSuccess], [IsActivityCompletedOnSuccess],
+                            [WorkflowFormId], [CriteriaAttributeGuid], [CriteriaComparisonType], [CriteriaValue], [Guid] )
+                        VALUES( @ActivityTypeId, '{1}', {2}, @EntityTypeId, {4}, {5}, @FormId, {7}, {8}, '{9}', '{10}' )
+                    END
+
                 END
 ",
                     activityTypeGuid,
