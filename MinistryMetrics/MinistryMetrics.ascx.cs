@@ -23,8 +23,9 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.UI;
-using Newtonsoft.Json;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
+
 // using RestSharp;
 using Rock;
 using Rock.Attribute;
@@ -41,7 +42,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.MinistryMetrics
     /// <summary>
     /// Ministry Metrics Block
     /// </summary>
-    /// 
+    ///
     [DisplayName( "Ministry Metrics" )]
     [Category( "NewSpring" )]
     [Description( "Custom church metrics block using the Chart.js library" )]
@@ -109,10 +110,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.MinistryMetrics
     //        ",
     //        Order = 3
     //    )]
-
     public partial class MinistryMetrics : Rock.Web.UI.RockBlock
     {
-
         #region Fields
 
         /// <summary>
@@ -152,7 +151,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.MinistryMetrics
         //{
         //    get
         //    {
-
         //        var savedValue = ViewState[string.Format( "MetricCompareLastYear_{0}", BlockId )] as string;
 
         //        if ( savedValue != null )
@@ -167,8 +165,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.MinistryMetrics
         //        ViewState[string.Format( "MetricCompareLastYear_{0}", BlockId )] = value;
         //    }
         //}
-
-
 
         #endregion Fields
 
@@ -220,21 +216,18 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.MinistryMetrics
 
             if ( MetricTypeValue.HasValue )
             {
-                var definedvalue = new DefinedValueService( new RockContext() ).Get( new Guid( GetAttributeValue( "MetricType" ) ) );
-
                 // Define rockContext to speed things up
                 var rockContext = new RockContext();
 
+                var definedValue = new DefinedValueService( rockContext ).Get( new Guid( GetAttributeValue( "MetricType" ) ) );
+
                 // Load the attributes
-                definedvalue.LoadAttributes( rockContext );
+                definedValue.LoadAttributes( rockContext );
 
                 // Get the SQLStatement Attribute
-                var definedValueAttributes = definedvalue.AttributeValues.ToList();
-
-                if ( definedValueAttributes[0].Key == "SQLStatement" )
+                if ( definedValue.AttributeValues.Any( a => a.Key == "SQLStatement" ) )
                 {
-
-                    sqlStatement = definedValueAttributes[0].Value.ToString();
+                    sqlStatement = definedValue.AttributeValues["SQLStatement"].Value;
                 }
 
                 metricTitle.Value = BlockName.ToString();
@@ -244,7 +237,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.MinistryMetrics
             #endregion Global Variables
 
             #region SQL Statement Processing
-
 
             if ( sqlStatement != "" )
             {
@@ -261,11 +253,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.MinistryMetrics
             }
 
             #endregion SQL Statement Processing
-
         }
 
         #endregion Control Methods
-
     }
-
 }
