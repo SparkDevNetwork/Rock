@@ -9,11 +9,26 @@
           <h2 class="underline">{{ childPage.Title }}</h2>
           <ul class="brandlist">
             {% for gchildPage in childPage.Pages %}
-              {% if gchildPage.Title != "Sub" %}
+              {% assign showgchildPage = true %}
+              {% if gchildPage.Title == "Sub" %}
+                {% assign showgchildPage = false %}
+              {% endif %}
+              {% if Context.Campus.Id != 1 and gchildPage.Title == "Young Adults" %}
+                {% assign showgchildPage = false %}
+              {% endif %}
+
+              {% if showgchildPage %}
                 <li class="brandlist-item"><a href="{{ gchildPage.Url }}">{{ gchildPage.Title }}</a></li>
               {% else %}
                 {% for ggchildPage in gchildPage.Pages %}
-                <li class="brandlist-item brandlist-item-sub"><a href="{{ ggchildPage.Url }}">{{ ggchildPage.Title }}</a></li>
+                  {% assign showggchildPage = true %}
+                  {% if Context.Campus.Id != 1 and ggchildPage.Title == "Senior Adults" %}
+                    {% assign showggchildPage = false %}
+                  {% endif %}
+
+                  {% if showggchildPage %}
+                    <li class="brandlist-item brandlist-item-sub"><a href="{{ ggchildPage.Url }}">{{ ggchildPage.Title }}</a></li>
+                  {% endif %}
                 {% endfor %}
               {% endif %}
             {% endfor %}
