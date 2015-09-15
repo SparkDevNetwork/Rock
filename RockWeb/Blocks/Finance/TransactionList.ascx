@@ -20,7 +20,7 @@
                             <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
                             <Rock:NumberRangeEditor ID="nreAmount" runat="server" Label="Amount Range" NumberType="Double" />
                             <Rock:RockTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"></Rock:RockTextBox>
-                            <Rock:RockDropDownList ID="ddlAccount" runat="server" Label="Account" />
+                            <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" />
                             <Rock:RockDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" />
                             <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" />
                             <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
