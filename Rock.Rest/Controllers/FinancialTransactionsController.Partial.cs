@@ -181,9 +181,12 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/FinancialTransactions/GetContributionTransactions/{groupId}/{personId}" )]
         public DataSet GetContributionTransactions( int groupId, int? personId, [FromBody]ContributionStatementOptions options )
         {
-            var qry = Get()
-                .Where( a => a.TransactionDateTime >= options.StartDate )
-                .Where( a => a.TransactionDateTime < ( options.EndDate ?? DateTime.MaxValue ) );
+            var qry = Get().Where( a => a.TransactionDateTime >= options.StartDate );
+
+            if ( options.EndDate.HasValue )
+            {
+                qry = qry.Where( a => a.TransactionDateTime < options.EndDate.Value );
+            }
 
             var transactionTypeContribution = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
             if ( transactionTypeContribution != null )

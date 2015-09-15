@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Core
 
     [ContextAware]
     [TextField( "Heading", "The text to display as the heading.  If left blank, the Note Type name will be used.", false, "", "", 1 )]
-    [TextField( "Heading Icon CSS Class", "The css class name to use for the heading icon. ", false, "fa fa-calendar", "", 2, "HeadingIcon" )]
+    [TextField( "Heading Icon CSS Class", "The css class name to use for the heading icon. ", false, "fa fa-sticky-note-o", "", 2, "HeadingIcon" )]
     [TextField( "Note Term", "The term to use for note (i.e. 'Note', 'Comment').", false, "Note", "", 3 )]
     [CustomDropdownListField( "Display Type", "The format to use for displaying notes.", "Full,Light", true, "Full", "", 4 )]
     [BooleanField( "Use Person Icon", "", false, "", 5 )]

@@ -1,5 +1,7 @@
+{% comment %}{% include '~~/Assets/Lava/EventItemList.lava' %}{% endcomment %}
+
 {% assign firstEventOccurrenceSummary = EventOccurrenceSummaries | First %}
-{% assign firstMonth = firstEventOccurrenceSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'MMMM' %}
+{% assign firstMonth = firstEventOccurrenceSummary.DateTime | Date: 'MMMM' %}
 {% assign currentMonth = firstMonth %}
 
 {% assign tier1Classes = "panel panel-card panel-card-half" %}
@@ -53,7 +55,7 @@
         {% capture cardClasses %}{{ cardClasses }} panel-card-light{% endcapture %}
       {% endif %}
 
-      {% assign thisMonth = eventOccurrenceSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'MMMM' %}
+      {% assign thisMonth = eventOccurrenceSummary.DateTime | Date: 'MMMM' %}
 
       {% if thisMonth != currentMonth %}
   <div class="masonry-sizer {{ halfSizeClasses }}"></div>
@@ -65,7 +67,7 @@
 
       <div class="{{ wrapperClasses }}">
         <div class="{{ cardClasses }}">
-          <a class="panel-body" href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}">
+          <a class="panel-body" href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}" title="{{ eventOccurrenceSummary.Name }}">
             {{ panelCardImg }}
             <h3 class="panel-title">{{ eventOccurrenceSummary.Name }}</h3>
           </a>
@@ -73,7 +75,7 @@
             {% if DetailsPage != empty %}
               <a class="btn btn-default btn-sm pull-right" href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}">More <i class="fa fa-caret-right"></i></a>
             {% endif %}
-            {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'ddd, MMM d / h:mmtt' }}
+            {{ eventOccurrenceSummary.DateTime | Date: 'ddd, MMM d / h:mmtt' }}
           </div>
         </div>
       </div>
@@ -86,9 +88,13 @@
   <div class="masonry-sizer {{ halfSizeClasses }}"></div>
 
 </div>
-
+{% comment %} TODO: package these together {% endcomment %}
+<script src="/Themes/church_ccv_External_v7/Scripts/Vendor/clamp.min.js"></script>
 <script src="/Themes/church_ccv_External_v7/Scripts/Vendor/masonry.pkgd.min.js"></script>
 <script>
+  $('.panel-title').each(function(){
+    $clamp(this, {clamp: 2})
+  })
   $('.masonry').masonry({
     itemSelector: '.masonry-item',
     columnWidth: '.masonry-sizer',

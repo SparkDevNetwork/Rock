@@ -9,6 +9,8 @@
                 <h1 class="panel-title"><i class="fa fa-cloud-upload"></i>&nbsp;Employee Tithe Import</h1>
             </div>
             <div class="panel-body">
+                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+
                 <%-- Start Panel --%>
                 <asp:Panel ID="pnlStart" runat="server">
                     <Rock:FileUploader ID="fuImport" runat="server" Label="Import File" OnFileUploaded="fuImport_FileUploaded" />
@@ -29,7 +31,6 @@
                         </Columns>
                     </Rock:Grid>
 
-
                     <h4>Currency Type</h4>
                     <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" />
 
@@ -43,14 +44,15 @@
                 <%-- Import Preview Panel --%>
                 <asp:Panel ID="pnlImportPreview" runat="server" Visible="false">
                     <div class="pull-right">
-                        <asp:Literal ID="lUnmatchedRecords" runat="server" Text="" /></div>
+                        <asp:Literal ID="lUnmatchedRecords" runat="server" Text="" />
+                    </div>
                     <h4>Preview</h4>
-                    <Rock:Grid ID="gImportPreview" runat="server" AllowPaging="false">
+                    <Rock:Grid ID="gImportPreview" runat="server" AllowPaging="false" AllowSorting="true" ExportSource="ColumnOutput">
                         <Columns>
-                            <Rock:RockBoundField DataField="EmployeeId" HeaderText="Employee Id" />
-                            <Rock:RockBoundField DataField="ImportPersonName" HeaderText="Import Name" />
-                            <Rock:PersonField DataField="RockPerson" HeaderText="Rock Name" NullDisplayText="<span class='badge badge-danger'>NOT FOUND</span>" />
-                            <Rock:DateField DataField="PayDate" HeaderText="Date" />
+                            <Rock:RockBoundField DataField="EmployeeId" HeaderText="Employee Id" SortExpression="EmployeeId" ItemStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="ImportPersonName" HeaderText="Import Name" SortExpression="ImportPersonName" />
+                            <Rock:PersonField DataField="RockPerson" HeaderText="Rock Name" SortExpression="RockPerson" NullDisplayText="<span class='badge badge-danger'>Not Found</span>" />
+                            <Rock:DateField DataField="PayDate" HeaderText="Date" SortExpression="PayDate" />
                         </Columns>
                     </Rock:Grid>
 
@@ -80,6 +82,9 @@
                         </div>
                     </div>
 
+                    <Rock:NotificationBox ID="nbImportWarning" runat="server" NotificationBoxType="Warning" Title="Warning" Text="Unmatched Records must be matched before importing. Ensure that the unmatched people have the correct Payroll Employee Id." Visible="false" />
+
+                    <Rock:RockTextBox ID="tbBatchNameFormat" runat="server" Required="true" Label="Batch Name <span class='tip tip-lava'></span>" />
                     <div class="actions pull-right">
                         <asp:LinkButton ID="btnImport" runat="server" AccessKey="i" Text="Import" CssClass="btn btn-primary" OnClick="btnImport_Click" />
                     </div>
@@ -88,6 +93,7 @@
 
                 <%-- Done Panel --%>
                 <asp:Panel ID="pnlDone" runat="server" Visible="false">
+                    <asp:HiddenField ID="hfBatchId" runat="server" />
                     <Rock:NotificationBox ID="nbSuccess" runat="server" Title="Success" Text="n records imported" />
                     <div class="actions pull-right">
                         <asp:LinkButton ID="btnViewBatch" runat="server" AccessKey="v" Text="View Batch" CssClass="btn btn-primary" OnClick="btnViewBatch_Click" />

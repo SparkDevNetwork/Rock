@@ -19,7 +19,12 @@ body {
   position: relative; // required by full menu overlay
 }
 
-img { .img-responsive(); }
+img {
+  // .img-responsive without setting as block
+  width: 100% \9;
+  max-width: 100%;
+  height: auto;
+}
 // Fix Google Map infowindow close mark being affected by img-responsive
 .gm-style img { max-width: none; }
 
