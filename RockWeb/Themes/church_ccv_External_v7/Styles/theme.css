@@ -7533,3 +7533,22 @@ a.thumbnail {
 .hover-playicon > img {
   width: 100%;
 }
+legend {
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin-bottom: 20px;
+  font-size: 21px;
+  line-height: inherit;
+  color: #333333;
+  border: 0;
+  border-bottom: 2px solid #e5e5e5;
+  font-weight: inherit;
+}
+.form-group .checkbox:last-child {
+  margin-bottom: 0;
+}
+.form-horizontal .form-group .checkbox label {
+  float: none;
+  padding-right: 0;
+}

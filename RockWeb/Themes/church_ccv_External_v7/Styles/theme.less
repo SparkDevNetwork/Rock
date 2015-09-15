@@ -51,6 +51,32 @@
 
 
 
+// Rock Hacks (should probably be changed in core)
+// -------------------------
+
+legend {
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin-bottom: @line-height-computed;
+  font-size: (@font-size-base * 1.5);
+  line-height: inherit;
+  color: @legend-color;
+  border: 0;
+  border-bottom: 2px solid @legend-border-color;
+  font-weight: inherit;
+}
+
+.form-group .checkbox:last-child {
+  margin-bottom: 0;
+}
+
+.form-horizontal .form-group .checkbox label {
+  float: none;
+  padding-right: 0;
+}
+
+
 // DEV - delete this later
 // .theme-1 {
 //   padding: 1em;
