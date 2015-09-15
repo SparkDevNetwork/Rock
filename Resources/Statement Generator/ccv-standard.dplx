@@ -15,13 +15,12 @@
 					<label text="Date" font="HelveticaBold" id="lblDate" height="14" fontSize="10" width="65.1" y="3.5" x="12"/>
 					<label font="HelveticaBold" width="72" height="14" fontSize="10" text="Type" id="lblCurrencyTypeValueName" y="3" x="57"/>
 					<label font="HelveticaBold" height="14" fontSize="10" id="lblAccounts" text="Account(s)" y="2.5" width="207.5" x="284.5"/>
-					<label font="HelveticaBold" id="lblAmount" height="14" align="right" fontSize="10" width="99.1" text="Total Amount" y="2.5" x="171"/>
+					<label font="HelveticaBold" height="14" align="right" fontSize="10" width="99.1" id="lblAccountAmount" text="Amount" x="395.5" y="2.5"/>
 					<line id="HeaderLine" y1="19" x2="499.5" y2="19" x1="0"/>
 				</header>
 				<detail autoSplit="true" id="TranListDetail" height="15">
 					<recordBox height="14" field="TransactionDateTime" id="rbTransactionDateTime" fontSize="9" dataFormat="M/dd/yyyy" align="right" x="0" y="2" width="50"/>
 					<recordBox dataFormat="" height="14" fontSize="9" field="CurrencyTypeValueName" id="rbCurrencyTypeValueName" x="56.5" width="114" y="2"/>
-					<recordBox height="14" width="100" field="Amount" align="right" fontSize="9" dataFormat="$#,##0.00" id="rbAmount" x="172" y="2"/>
 					<subReport id="TransactionDetailReport" x="285" width="257.1" y="2">
 						<query id="qryTransactionDetails">
 							<eventDriven connectionString=""></eventDriven>
