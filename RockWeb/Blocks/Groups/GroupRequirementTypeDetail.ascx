@@ -64,11 +64,11 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="js-dataview-mode-div">
-                                <Rock:DataViewPicker ID="dpDataView" runat="server" Label="Dataview" Help="The dataview that will return a list of people that meet the criteria." />
+                                <Rock:DataViewPicker ID="dpDataView" runat="server" Label="Meets Dataview" Help="The dataview that will return a list of people that meet the criteria." />
                                 <Rock:DataViewPicker ID="dpWarningDataView" runat="server" Label="Warning Dataview" Help="Optional dataview that will return a list of people that should be marked as in a warning status." />
                             </div>
                             <div class="js-sql-mode-div">
-                                <Rock:CodeEditor ID="ceSqlExpression" runat="server" Label="SQL Expression" Help="A SQL expression that returns a list of Person Ids that meet the criteria." EditorMode="Sql" />
+                                <Rock:CodeEditor ID="ceSqlExpression" runat="server" Label="Meets SQL Expression" Help="A SQL expression that returns a list of Person Ids that meet the criteria." EditorMode="Sql" />
                                 <Rock:CodeEditor ID="ceWarningSqlExpression" runat="server" Label="Warning SQL Expression" Help="Optional SQL expression that returns a list of Person Ids that should be marked as in a warning status." EditorMode="Sql" />
                             </div>
                             <div class="js-manual-mode-div">
