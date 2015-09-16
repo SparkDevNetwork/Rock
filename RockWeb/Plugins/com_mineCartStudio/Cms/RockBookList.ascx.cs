@@ -78,7 +78,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.Cms
 
         #region Fields
 
-        private string _rockServer = "http://localhost:57822";
+        private string _rockServer = "http://www.rockrms.com";
 
         #endregion
 
