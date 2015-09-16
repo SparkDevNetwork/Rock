@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Prayer
 
     [IntegerField( "Expires After (Days)", "Default number of days until the request will expire.", false, 14, "", 0, "ExpireDays" )]
     [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "", 1, "DefaultCategory" )]
+    [BooleanField("Set Current Person To Requester", "Will set the current person as the requester. This is useful in self-entry situiations.", false, order: 2)]
     public partial class PrayerRequestDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -129,6 +130,27 @@ namespace RockWeb.Blocks.Prayer
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             NavigateToParentPage();
+        }
+
+        protected void ppRequestor_SelectPerson( object sender, EventArgs e )
+        {
+            if ( ppRequestor.PersonId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var requester = new PersonService( rockContext )
+                        .Queryable()
+                        .Where( p => p.Id == ppRequestor.PersonId.Value )
+                        .Select( p => new
+                        {
+                            FirstName = p.NickName,
+                            LastName = p.LastName
+                        } ).FirstOrDefault();
+
+                    dtbFirstName.Text = requester.FirstName;
+                    dtbLastName.Text = requester.LastName;
+                }
+            }
         }
 
         #endregion
@@ -227,7 +249,7 @@ namespace RockWeb.Blocks.Prayer
             else
             {
                 lActionTitle.Text = ActionTitle.Add( PrayerRequest.FriendlyTypeName ).FormatAsHtmlTitle();
-                if ( CurrentPersonAlias != null && CurrentPerson != null )
+                if ( CurrentPersonAlias != null && CurrentPerson != null && GetAttributeValue("SetCurrentPersonToRequester").AsBoolean())
                 {
                     prayerRequest.RequestedByPersonAlias = CurrentPersonAlias;
                     prayerRequest.FirstName = CurrentPerson.NickName;
@@ -475,5 +497,6 @@ namespace RockWeb.Blocks.Prayer
         }
 
         #endregion
+        
     }
 }
