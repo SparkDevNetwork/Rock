@@ -36,7 +36,7 @@ using System.Reflection;
 namespace RockWeb.Blocks.Core
 {
     /// <summary>
-    /// Takes a defined type and returns all defined values and merges them with a liquid template
+    /// Takes a entity type and displays a person's following items for that entity using a Lava template.
     /// </summary>
     [DisplayName( "Following By Entity" )]
     [Category( "Core" )]
