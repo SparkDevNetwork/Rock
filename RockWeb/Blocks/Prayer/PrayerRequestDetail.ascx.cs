@@ -40,6 +40,10 @@ namespace RockWeb.Blocks.Prayer
     public partial class PrayerRequestDetail : RockBlock, IDetailBlock
     {
         #region Properties
+
+        protected string PendingCss = "btn-default";
+        protected string ApprovedCss = "btn-default";
+
         #endregion
 
         #region Base Control Methods
@@ -51,6 +55,29 @@ namespace RockWeb.Blocks.Prayer
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            string script = string.Format( @"
+    $('#{0} .btn-toggle').click(function (e) {{
+
+        e.stopImmediatePropagation();
+
+        $(this).find('.btn').removeClass('active');
+        $(e.target).addClass('active');
+
+        $(this).find('a').each(function() {{
+            if ($(this).hasClass('active')) {{
+                $('#{1}').val($(this).attr('data-status'));
+                $(this).removeClass('btn-default');
+                $(this).addClass( $(this).attr('data-active-css') );
+            }} else {{
+                $(this).removeClass( $(this).attr('data-active-css') );
+                $(this).addClass('btn-default');
+            }}
+        }});
+
+    }});
+", pnlStatus.ClientID, hfApprovedStatus.ClientID );
+            ScriptManager.RegisterStartupScript( pnlStatus, pnlStatus.GetType(), "status-script-" + this.BlockId.ToString(), script, true );
         }
 
         /// <summary>
@@ -182,17 +209,6 @@ namespace RockWeb.Blocks.Prayer
             ShowStatus( prayerRequest, this.CurrentPerson, hlblFlaggedMessageRO );
             ShowPrayerCount( prayerRequest );
 
-            if ( !prayerRequest.IsApproved.HasValue )
-            {
-                hlblStatus.Visible = true;
-                hlblStatus.Text = "Pending Approval";
-            }
-            else if ( prayerRequest.IsApproved.HasValue && ( !prayerRequest.IsApproved ?? false ) )
-            {
-                hlblStatus.Visible = true;
-                hlblStatus.Text = "Unapproved";
-            }
-
             hlblUrgent.Visible = prayerRequest.IsUrgent ?? false;
         }
 
@@ -300,21 +316,46 @@ namespace RockWeb.Blocks.Prayer
                 lFlagged.Text = string.Format( "flagged {0} times", flagCount );
             }
 
-            cbApproved.Enabled = IsUserAuthorized( "Approve" );
-            cbApproved.Checked = prayerRequest.IsApproved ?? false;
+            ShowApproval( prayerRequest );
+        }
 
-            if ( person != null && 
-                (prayerRequest.IsApproved ?? false ) && 
-                prayerRequest.ApprovedByPersonAlias != null &&
-                prayerRequest.ApprovedByPersonAlias.Person != null )
+        /// <summary>
+        /// Shows the approval.
+        /// </summary>
+        /// <param name="prayerRequest">The prayer request.</param>
+        private void ShowApproval( PrayerRequest prayerRequest )
+        {
+            if ( prayerRequest != null )
             {
-                lblApprovedByPerson.Visible = true;
-                lblApprovedByPerson.Text = string.Format( "approved by {0}", prayerRequest.ApprovedByPersonAlias.Person.FullName );
+                pnlStatus.Visible = true;
+                PendingCss = prayerRequest.IsApproved == false ? "btn-warning active" : "btn-default";
+                ApprovedCss = prayerRequest.IsApproved == true ? "btn-success active" : "btn-default";
+                hfApprovedStatus.Value = prayerRequest.IsApproved.ToString();
             }
             else
             {
-                lblApprovedByPerson.Visible = false;
+                hfApprovedStatus.Value = true.ToString();
+                pnlStatus.Visible = false;
+                divStatus.Visible = false;
             }
+
+            hlStatus.Text = ( prayerRequest.IsApproved ?? false ) ? "Approved" : "Pending";
+
+            hlStatus.LabelType = ( prayerRequest.IsApproved ?? false ) ? LabelType.Success : LabelType.Warning;
+
+            var statusDetail = new System.Text.StringBuilder();
+            if ( prayerRequest.ApprovedByPersonAlias != null && prayerRequest.ApprovedByPersonAlias.Person != null )
+            {
+                statusDetail.AppendFormat( "by {0} ", prayerRequest.ApprovedByPersonAlias.Person.FullName );
+            }
+
+            if ( prayerRequest.ApprovedOnDateTime.HasValue )
+            {
+                statusDetail.AppendFormat( "on {0} at {1}", prayerRequest.ApprovedOnDateTime.Value.ToShortDateString(),
+                    prayerRequest.ApprovedOnDateTime.Value.ToShortTimeString() );
+            }
+
+            hlStatus.ToolTip = statusDetail.ToString();
         }
 
         /// <summary>
@@ -346,7 +387,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             // If changing from NOT-approved to approved, record who and when
-            if ( !( prayerRequest.IsApproved ?? false ) && cbApproved.Checked )
+            if ( !( prayerRequest.IsApproved ?? false ) && hfApprovedStatus.Value.AsBoolean() )
             {
                 prayerRequest.ApprovedByPersonAliasId = CurrentPersonAliasId;
                 prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
@@ -355,7 +396,7 @@ namespace RockWeb.Blocks.Prayer
                 if ( prayerRequest.FlagCount.HasValue && prayerRequest.FlagCount > 0 )
                 {
                     prayerRequest.FlagCount = 0;
-                } 
+                }
             }
 
             // If no expiration date was manually set, then use the default setting.
@@ -381,7 +422,7 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.CategoryId = categoryId;
 
             // Now record all the bits...
-            prayerRequest.IsApproved = cbApproved.Checked;
+            prayerRequest.IsApproved = hfApprovedStatus.Value.AsBoolean();
             prayerRequest.IsActive = cbIsActive.Checked;
             prayerRequest.IsUrgent = cbIsUrgent.Checked;
             prayerRequest.AllowComments = cbAllowComments.Checked;
@@ -409,7 +450,7 @@ namespace RockWeb.Blocks.Prayer
 
         #endregion
 
-        #region Possible Extension Method 
+        #region Possible Extension Method
 
         /// <summary>
         /// Scrubs any html from the string but converts carriage returns into html &lt;br/&gt; suitable for web display.
