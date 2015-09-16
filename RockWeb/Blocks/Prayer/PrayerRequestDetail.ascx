@@ -10,6 +10,7 @@
                         <asp:Literal ID="lActionTitle" runat="server" /></h1>
 
                     <div class="panel-labels">
+                        <Rock:HighlightLabel ID="hlCategory" Text="Category..." LabelType="Type" runat="server" />
                         <Rock:HighlightLabel ID="hlStatus" runat="server" />
                     </div>
                 </div>
