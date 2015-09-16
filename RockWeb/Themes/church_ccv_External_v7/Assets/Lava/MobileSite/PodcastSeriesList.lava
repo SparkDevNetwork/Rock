@@ -1,0 +1,86 @@
+{% comment %}
+
+
+REQUIRED VARIABLES
+==================
+
+{% assign seriesListPage = "/page/516" %}
+{% assign seriesDetailPage = "/page/546" %}
+{% assign messageDetailPage = "/page/547" %}
+
+
+{% endcomment %}
+
+<h3 class="sermonTitle">{{ table1.rows.first.SeriesTitle }}</h3>
+<img class="seriesArt" src="http://ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId1 }}&amp;width=720&amp;height=720" alt="{{ table1.rows.first.SeriesTitle }}">
+<p>
+  {{ table1.rows.first.MessageDescription }}
+</p>
+
+<h4 class="messageListHeader">Watch Messages In This Series:</h4>
+
+<ol class="messageList js-reverselist">
+{% for r in table1.rows %}
+  <li><a href="{{ messageDetailPage }}?MessageId={{ r.MessageId }}">{{ r.MessageTitle }}</a></li>
+{% endfor %}
+</ol>
+
+<p>&nbsp;</p>
+
+{% assign currentPage = table1.rows.first.CurrentPage %}
+{% assign lastPage = table2.rows.first.Column1 %}
+
+{% assign minusOne = table1.rows.first.CurrentPage | Minus: 1 %}
+{% assign minusTwo = table1.rows.first.CurrentPage | Minus: 2 %}
+{% assign plusOne  = table1.rows.first.CurrentPage | Plus: 1  %}
+{% assign plusTwo  = table1.rows.first.CurrentPage | Plus: 2  %}
+
+<nav class="text-center">
+  <ul class="pagination">
+
+    {% if currentPage == 1  %}
+      <li class="disabled">
+        <span>
+          <span aria-hidden="true">&laquo;</span>
+        </span>
+      </li>
+    {% else %}
+      <li><a href="?PageNum={{ minusOne }}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+    {% endif %}
+
+    {% if currentPage > 2 %}
+      <li><a href="?PageNum={{ minusTwo }}">{{ minusTwo }}</a></li>
+    {% endif %}
+    {% if currentPage > 1 %}
+      <li><a href="?PageNum={{ minusOne }}">{{ minusOne }}</a></li>
+    {% endif %}
+
+    <li class="active">
+      <span>{{ currentPage }} <span class="sr-only">(current)</span></span>
+    </li>
+
+    {% if currentPage == lastPage %}
+      <li class="disabled">
+        <span>
+          <span aria-hidden="true">&raquo;</span>
+        </span>
+      </li>
+
+    {% elsif plusOne <= lastPage %}
+      <li><a href="?PageNum={{ plusOne }}">{{ plusOne }}</a></li>
+      {% if plusTwo <= lastPage %}
+      <li><a href="?PageNum={{ plusTwo }}">{{ plusTwo }}</a></li>
+      {% endif %}
+
+      <li><a href="?PageNum={{ plusOne }}" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+    {% endif %}
+
+  </ul>
+</nav>
+
+<script>
+  $('.js-reverselist').each(function(){
+    var $list = $(this);
+    $list.append($list.children('li').get().reverse());
+  });
+</script>

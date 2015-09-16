@@ -1,0 +1,97 @@
+{% comment %}
+
+
+REQUIRED VARIABLES
+==================
+
+{% assign seriesListPage = "/page/516" %}
+{% assign seriesDetailPage = "/page/546" %}
+{% assign messageDetailPage = "/page/547" %}
+{% assign fullServicePage = "/page/552" %}
+{% assign fullService = false %}
+
+
+PAGE TITLE LAVA
+===============
+
+{{ table1.rows.first.Title }} - {{ table1.rows.first.SeriesTitle }}
+
+{{ table1.rows.first.Title }} - {{ table1.rows.first.SeriesTitle }} (Full Service)
+
+
+{% endcomment %}
+
+
+{% comment %}
+
+@todo add real link for series detail page
+@todo open graph meta tags
+
+{% endcomment %}
+
+
+
+
+{{ "/Themes/church_ccv_External_v7/Styles/pages/watch.css" | AddLinkTagToHead:'rel','stylesheet' }}
+
+<h2 class="messageTitle">{{ table1.rows.first.Title }}</h2>
+
+<div class="embed-responsive embed-responsive-16by9" style="margin-bottom: 10px;">
+  {% if fullService %}
+    <iframe src="{{ table1.rows.first.VideoFullService }}" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+  {% else %}
+    <iframe src="{{ table1.rows.first.VideoMessageOnly }}" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+  {% endif %}
+</div>
+<div class="row">
+  <div class="col-md-8">
+    <ul class="list-inline watch-msgmeta">
+      <li><strong>{{ table1.rows.first.MessageAuthor }}</strong></li>
+      <li><time datetime="{{ table1.rows.first.PublishDate | Date: 'MMM d, yyyy' }}" title="{{ table1.rows.first.PublishDate | Date: 'MMM d, yyyy' }}" data-toggle="tooltip" data-placement="right">{{ table1.rows.first.PublishDate | HumanizeDateTime }}</time></li>
+    </ul>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8">
+    <p>{{ table1.rows.first.Description }}</p>
+    <div class="btn-group btn-group-justified" style="margin-top: 15px;">
+      {% if fullService %}
+        <a class="btn btn-default btn-sm" href="{{ messageDetailPage }}?MessageId={{ table1.rows.first.MessageId }}">Message Only</a>
+        <a class="btn btn-default btn-sm active" href="{{ fullServicePage }}?MessageId={{ table1.rows.first.MessageId }}">Full Service</a>
+      {% else %}
+        <a class="btn btn-default btn-sm active" href="{{ messageDetailPage }}?MessageId={{ table1.rows.first.MessageId }}">Message Only</a>
+        <a class="btn btn-default btn-sm" href="{{ fullServicePage }}?MessageId={{ table1.rows.first.MessageId }}">Full Service</a>
+      {% endif %}
+    </div>
+    <h3 class="messageListHeader">Other Messages in this Series</h3>
+    <ol class="messageList">
+      {% for row in table2.rows %}
+        {% assign publishesInDays = 'Now' | DateDiff: row.PublishDate, 'd' %}
+        {% if publishesInDays <= 0 %}
+          <li><a href="{{ messageDetailPage }}?MessageId={{ row.MessageId }}">{{ row.Title }}</a></li>
+        {% endif %}
+      {% endfor %}
+    </ol>
+    <p>&nbsp;</p>
+  </div>
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="panel-title">Related Downloads</div>
+      </div>
+      <div class="list-group">
+        <a href="{{ table1.rows.first.VideoDownload }}" class="list-group-item"><i class="fa fa-fw fa-film"></i> Download Video</a>
+        <a href="{{ table1.rows.first.Audio }}" class="list-group-item"><i class="fa fa-fw fa-headphones"></i> Download Audio</a>
+        <a href="{{ table1.rows.first.SermonNotes }}" class="list-group-item"><i class="fa fa-fw fa-file-text-o"></i> Download Sermon Notes</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/Themes/church_ccv_External_v7/Scripts/Vendor/jquery.fitvids.js"></script>
+
+<script>
+  $(document).ready(function(){
+    $('body').fitVids();
+  });
+</script>

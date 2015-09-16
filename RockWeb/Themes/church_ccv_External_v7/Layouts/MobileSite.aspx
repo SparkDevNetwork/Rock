@@ -16,8 +16,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
     <!-- Included CSS Files -->
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/mobilesite-theme.css", true) %>"/>
+    <!-- <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/> -->
+    <!-- <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/mobilesite-theme.css", true) %>"/> -->
+
+    <link rel="stylesheet" href="/m/styles/main.css">
 
     <!-- Icons -->
     <link rel="shortcut icon" href="<%# ResolveRockUrl("~~/Assets/Icons/favicon.ico", true) %>">
@@ -48,12 +50,22 @@
             </ProgressTemplate>
         </asp:UpdateProgress>
 
-        <div class="container">
+        <header class="Masthead">
+            <a class="BackButton" onclick="window.history.back()"></a>
+            <a class="CCVLogo" href="/m"></a>
+        </header>
 
+        <article class="Wrapper">
             <!-- Start Content Area -->
             <Rock:Zone Name="Main" runat="server" />
+        </article>
 
+        <div class="Footer">
+            <p class="Copyright">Copyright 2015 Christ’s Church of the Valley. All Rights Reserved.</p>
+            <p class="ViewFullLink">
+            <a href="http://ccv.church/" class="ccvonline-link">ccv.church full web site</a></p>
         </div>
+
     </form>
 </body>
 </html>
