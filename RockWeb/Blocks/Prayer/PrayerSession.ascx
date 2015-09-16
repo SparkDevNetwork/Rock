@@ -8,7 +8,8 @@
             <asp:Literal ID="lWelcomeInstructions" runat="server"></asp:Literal>
             <p>Select one or more categories to begin your prayer session:</p>
             <Rock:NotificationBox id="nbSelectCategories" runat="server" NotificationBoxType="Danger" Visible="false" Heading="I'm Sorry...">Please select at least one prayer category.</Rock:NotificationBox>
-            <Rock:RockCheckBoxList ID="cblCategories" runat="server" RepeatColumns="2"></Rock:RockCheckBoxList>
+            <Rock:RockCheckBox ID="cbSelectAll" CssClass="js-select-all" runat="server" Text="Select All"/>
+            <Rock:RockCheckBoxList ID="cblCategories" CssClass="js-category-items" runat="server" RepeatColumns="2"></Rock:RockCheckBoxList>
             <asp:LinkButton ID="lbStart" runat="server" Text="Start" CssClass="btn btn-primary" OnClick="lbStart_Click" />
         </asp:Panel>
 
@@ -98,5 +99,10 @@
     }
     $(document).ready(function () { FadePanelIn(); });
     Sys.WebForms.PageRequestManager.getInstance().add_endRequest(FadePanelIn);
+
+    $('.js-select-all').click(function () {
+        var selectAllChecked = $('.js-select-all').prop('checked');
+        $('.js-category-items input').prop('checked', selectAllChecked)
+    });
 
 </script>
