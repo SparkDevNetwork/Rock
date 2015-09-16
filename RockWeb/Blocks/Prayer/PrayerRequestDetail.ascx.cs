@@ -42,8 +42,43 @@ namespace RockWeb.Blocks.Prayer
     {
         #region Properties
 
-        protected string PendingCss = "btn-default";
-        protected string ApprovedCss = "btn-default";
+        /// <summary>
+        /// Gets the pending CSS.
+        /// </summary>
+        /// <value>
+        /// The pending CSS.
+        /// </value>
+        protected string PendingCss
+        {
+            get
+            {
+                return ( ViewState["PendingCss"] as string ) ?? "btn-default";
+            }
+
+            private set
+            {
+                ViewState["PendingCss"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the approved CSS.
+        /// </summary>
+        /// <value>
+        /// The approved CSS.
+        /// </value>
+        protected string ApprovedCss
+        {
+            get
+            {
+                return ( ViewState["ApprovedCss"] as string ) ?? "btn-default";
+            }
+
+            private set
+            {
+                ViewState["ApprovedCss"] = value;
+            }
+        }
 
         #endregion
 
@@ -190,6 +225,8 @@ namespace RockWeb.Blocks.Prayer
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( PrayerRequest.FriendlyTypeName );
             }
 
+            hlCategory.Text = prayerRequest.Category != null ? prayerRequest.Category.Name : string.Empty;
+
             if ( readOnly )
             {
                 lbEdit.Visible = false;
@@ -226,7 +263,7 @@ namespace RockWeb.Blocks.Prayer
             descriptionList.Add( "Request", prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr() );
             descriptionList.Add( "Answer", prayerRequest.Answer.ScrubHtmlAndConvertCrLfToBr() );
             lMainDetails.Text = descriptionList.Html;
-            hlCategory.Text = prayerRequest.Category != null ? prayerRequest.Category.Name : string.Empty;
+
 
             ShowStatus( prayerRequest, this.CurrentPerson, hlblFlaggedMessageRO );
             ShowPrayerCount( prayerRequest );
@@ -497,6 +534,6 @@ namespace RockWeb.Blocks.Prayer
         }
 
         #endregion
-        
+
     }
 }
