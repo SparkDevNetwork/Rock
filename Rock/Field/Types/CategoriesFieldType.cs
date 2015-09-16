@@ -28,7 +28,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Stored as comma-delimited list of Category.Guids
     /// </summary>
     public class CategoriesFieldType : CategoryFieldType
     {
