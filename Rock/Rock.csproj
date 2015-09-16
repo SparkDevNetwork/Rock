@@ -234,6 +234,8 @@
     <Compile Include="Chart\IChartData.cs" />
     <Compile Include="Data\FieldTypeAttribute.cs" />
     <Compile Include="Data\IgnoreLiquid.cs" />
+    <Compile Include="Data\Interception\QueryHintDbCommandInterceptor.cs" />
+    <Compile Include="Data\Interception\QueryHintScope.cs" />
     <Compile Include="Data\IRockEntity.cs" />
     <Compile Include="Data\RockClientIncludeAttribute.cs" />
     <Compile Include="Data\LavaIncludeAttribute.cs" />
