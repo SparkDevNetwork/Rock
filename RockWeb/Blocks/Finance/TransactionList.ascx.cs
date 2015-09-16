@@ -817,15 +817,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     if ( accountIds.Any() )
                     {
-                        if ( accountIds.Count == 1 )
-                        {
-                            int singleAccountId = accountIds[0];
-                            qry = qry.Where( t => t.TransactionDetails.Any( d => d.AccountId == singleAccountId ) );
-                        }
-                        else
-                        {
-                            qry = qry.Where( t => t.TransactionDetails.Any( d => accountIds.Contains( d.AccountId ) ) );
-                        }
+                        qry = qry.Where( t => t.TransactionDetails.Any( d => accountIds.Contains( d.AccountId ) || (d.Account.ParentAccountId.HasValue && accountIds.Contains(d.Account.ParentAccountId.Value) ) ) );
                     }
                 }
 
