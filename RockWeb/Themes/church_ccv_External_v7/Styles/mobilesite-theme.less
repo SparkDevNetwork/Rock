@@ -1,0 +1,159 @@
+
+// Vendor Imports
+// -------------------------
+
+@import "../../../Styles/Bootstrap/variables.less";
+
+@import "../../../Styles/Bootstrap/grid.less";
+
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_rock-variables.less";
+
+@import "../../../Styles/FontAwesome/animated.less";
+
+
+// Custom Imports
+// -------------------------
+
+@import "_din";
+.din-light();
+.din-regular();
+.din-bold();
+
+@import "_variables";
+@import "_mixins";
+@import "_helpers";
+
+@body-bg: #212121;
+// we set bg color inline on the body tag for the layout to prevent a flash of white on load
+@text-color: @gray-lighter;
+
+@grid-gutter-width: 15px;
+
+@btn-default-bg: @gray;
+@btn-default-color: @gray-lighter;
+
+@panel-bg: @body-bg;
+
+@list-group-bg: @panel-bg;
+@list-group-border: @panel-default-border;
+@list-group-link-color: @gray-lighter;
+
+@list-group-link-hover-color: @list-group-link-color;
+@list-group-hover-bg: @panel-default-heading-bg;
+
+@panel-default-text:          @gray-lighter;
+@panel-default-border:        @gray;
+@panel-default-heading-bg:    lighten(@panel-bg, 10%);
+
+@well-bg:                     #111;
+@well-border:                 @well-bg;
+
+
+// Styles that should be moved later
+// -------------------------
+
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  background-color: @body-bg;
+  color: @text-color;
+  .text-aa()
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  text-transform: uppercase;
+  small {
+    color: @gray-lighter;
+  }
+}
+
+img { .img-responsive(); }
+// Fix Google Map infowindow close mark being affected by img-responsive
+.gm-style img { max-width: none; }
+
+
+.btn-default {
+  .button-variant(@btn-default-color; @btn-default-bg; @btn-default-bg);
+}
+
+.container-fixed(@gutter: @grid-gutter-width) {
+  margin-right: auto;
+  margin-left: auto;
+  padding-left:  (@gutter);
+  padding-right: (@gutter);
+  &:extend(.clearfix all);
+}
+
+.container {
+  .container-fixed();
+
+  @media (min-width: @screen-sm-min) {
+    width: @container-sm;
+  }
+  @media (min-width: @screen-md-min) {
+    width: @container-sm;
+  }
+  @media (min-width: @screen-lg-min) {
+    width: @container-sm;
+  }
+}
+
+.panel {
+  background: @panel-bg;
+}
+.panel-default {
+  .panel-variant(@panel-default-border; @panel-default-text; @panel-default-heading-bg; @panel-default-border);
+}
+
+.list-group-item {
+  background-color: @list-group-bg;
+  border: 1px solid @list-group-border;
+}
+
+a.list-group-item {
+  color: @list-group-link-color;
+  &:hover,
+  &:focus {
+    color: @list-group-link-hover-color;
+    background-color: @list-group-hover-bg;
+  }
+}
+
+hr {
+  border-color: @gray-dark;
+}
+
+.responsive-map {
+  min-height: 150px;
+  @media @sm {
+    min-height: 45vh;
+  }
+}
+
+.list-inline {
+  margin-left: -4px;
+
+  > li {
+    display: inline-block;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+}
+
+a.text-muted {
+  &:hover {
+    color: inherit;
+  }
+}
+
+.well {
+  background-color: @well-bg;
+  border: 1px solid @well-border;
+}
