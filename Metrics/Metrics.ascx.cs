@@ -119,8 +119,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         {
             base.OnInit( e );
 
-            throw new Exception();
-
             #region Campus Context
 
             var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
