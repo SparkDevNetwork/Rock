@@ -43,6 +43,9 @@ PAGE TITLE LAVA
 
 <div class="container container-md">
   <p class="lead">{{ table1.rows.first.Description }}</p>
+  <div>
+    {{ table1.rows.first.ExtraDetails }}
+  </div>
   <h3 class="page-header">Messages in this Series</h3>
   <ol class="watch-msglist">
     {% for row in table2.rows %}
