@@ -168,17 +168,13 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.MinistryMetrics
 
         #endregion Fields
 
-        #region Control Methods
-
         // <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnInit( e );
-
-            #region Drop Down Context
+            base.OnLoad( e );
 
             //var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
 
@@ -204,57 +200,46 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.MinistryMetrics
             // Use the GUID to get the entry
             // var things = newMetric.MetricValues.W;
 
-            #endregion Drop Down Context
-
-            #region Global Variables
-
-            // Get the defined value
-
-            var MetricTypeValue = GetAttributeValue( "MetricType" ).AsBooleanOrNull();
-
-            string sqlStatement = string.Empty;
-
-            if ( MetricTypeValue.HasValue )
+            if ( !Page.IsPostBack )
             {
-                // Define rockContext to speed things up
-                var rockContext = new RockContext();
+                var MetricTypeValue = GetAttributeValue( "MetricType" ).AsBooleanOrNull();
 
-                var definedValue = new DefinedValueService( rockContext ).Get( new Guid( GetAttributeValue( "MetricType" ) ) );
+                string sqlStatement = string.Empty;
 
-                // Load the attributes
-                definedValue.LoadAttributes( rockContext );
-
-                // Get the SQLStatement Attribute
-                if ( definedValue.AttributeValues.Any( a => a.Key == "SQLStatement" ) )
+                if ( MetricTypeValue.HasValue )
                 {
-                    sqlStatement = definedValue.AttributeValues["SQLStatement"].Value;
+                    // Define rockContext to speed things up
+                    var rockContext = new RockContext();
+
+                    var definedValue = new DefinedValueService( rockContext ).Get( new Guid( GetAttributeValue( "MetricType" ) ) );
+
+                    // Load the attributes
+                    definedValue.LoadAttributes( rockContext );
+
+                    // Get the SQLStatement Attribute
+                    if ( definedValue.AttributeValues.Any( a => a.Key == "SQLStatement" ) )
+                    {
+                        sqlStatement = definedValue.AttributeValues["SQLStatement"].Value;
+                    }
+
+                    metricTitle.Value = BlockName.ToString();
+                    metricWidth.Value = GetAttributeValue( "NumberofColumns" );
                 }
 
-                metricTitle.Value = BlockName.ToString();
-                metricWidth.Value = GetAttributeValue( "NumberofColumns" );
-            }
-
-            #endregion Global Variables
-
-            #region SQL Statement Processing
-
-            if ( sqlStatement != "" )
-            {
-                var sqlResult = DbService.ExecuteCommand( sqlStatement );
-
-                if ( sqlResult <= 0 )
+                if ( sqlStatement != "" )
                 {
-                    currentMetricValue.Value = "0";
-                }
-                else
-                {
-                    currentMetricValue.Value = sqlResult.ToString();
+                    var sqlResult = DbService.ExecuteCommand( sqlStatement );
+
+                    if ( sqlResult <= 0 )
+                    {
+                        currentMetricValue.Value = "0";
+                    }
+                    else
+                    {
+                        currentMetricValue.Value = sqlResult.ToString();
+                    }
                 }
             }
-
-            #endregion SQL Statement Processing
         }
-
-        #endregion Control Methods
     }
 }
