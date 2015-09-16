@@ -39,7 +39,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_centralaz.Widgets
 {
-    [DisplayName( "OpenSearchServer Search" )]
+    [DisplayName( "Search Result List" )]
     [Category( "com_centralaz > Widgets" )]
     [Description( "A lava block for searching the external website using OpenSearchServer." )]
     [TextField( "IP Address", "The IP address of the server running OpenSearchServer", true, "10.200.4.113:9090", order: 1 )]
@@ -91,6 +91,11 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             LoadContent( PageParameter( "SearchTerm" ) );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnButton control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnButton_Click( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
@@ -102,6 +107,10 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         #region Internal Methods
 
+        /// <summary>
+        /// Loads the content.
+        /// </summary>
+        /// <param name="query">The query.</param>
         public void LoadContent( string query )
         {
             var mergeFields = new Dictionary<string, object>();
@@ -125,6 +134,11 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             }
         }
 
+        /// <summary>
+        /// Gets the results.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns></returns>
         public dynamic GetResults( string query )
         {
             dynamic data = new ExpandoObject();
