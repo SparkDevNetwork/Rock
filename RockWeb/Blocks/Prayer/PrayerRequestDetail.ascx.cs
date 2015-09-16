@@ -17,8 +17,8 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Prayer
 
     [IntegerField( "Expires After (Days)", "Default number of days until the request will expire.", false, 14, "", 0, "ExpireDays" )]
     [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "", 1, "DefaultCategory" )]
-    [BooleanField("Set Current Person To Requester", "Will set the current person as the requester. This is useful in self-entry situiations.", false, order: 2)]
+    [BooleanField( "Set Current Person To Requester", "Will set the current person as the requester. This is useful in self-entry situiations.", false, order: 2 )]
     public partial class PrayerRequestDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Prayer
         {
             base.OnInit( e );
 
-            string script = string.Format( @"
+            string scriptFormat = @"
     $('#{0} .btn-toggle').click(function (e) {{
 
         e.stopImmediatePropagation();
@@ -112,7 +112,9 @@ namespace RockWeb.Blocks.Prayer
         }});
 
     }});
-", pnlStatus.ClientID, hfApprovedStatus.ClientID );
+";
+
+            string script = string.Format( scriptFormat, pnlStatus.ClientID, hfApprovedStatus.ClientID );
             ScriptManager.RegisterStartupScript( pnlStatus, pnlStatus.GetType(), "status-script-" + this.BlockId.ToString(), script, true );
         }
 
@@ -167,6 +169,11 @@ namespace RockWeb.Blocks.Prayer
             NavigateToParentPage();
         }
 
+        /// <summary>
+        /// Handles the SelectPerson event of the ppRequestor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ppRequestor_SelectPerson( object sender, EventArgs e )
         {
             if ( ppRequestor.PersonId.HasValue )
@@ -259,11 +266,11 @@ namespace RockWeb.Blocks.Prayer
             {
                 descriptionList.Add( "Requested By", prayerRequest.RequestedByPersonAlias.Person.FullName );
             }
+
             descriptionList.Add( "Name", prayerRequest.FullName );
             descriptionList.Add( "Request", prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr() );
             descriptionList.Add( "Answer", prayerRequest.Answer.ScrubHtmlAndConvertCrLfToBr() );
             lMainDetails.Text = descriptionList.Html;
-
 
             ShowStatus( prayerRequest, this.CurrentPerson, hlblFlaggedMessageRO );
             ShowPrayerCount( prayerRequest );
@@ -286,7 +293,7 @@ namespace RockWeb.Blocks.Prayer
             else
             {
                 lActionTitle.Text = ActionTitle.Add( PrayerRequest.FriendlyTypeName ).FormatAsHtmlTitle();
-                if ( CurrentPersonAlias != null && CurrentPerson != null && GetAttributeValue("SetCurrentPersonToRequester").AsBoolean())
+                if ( CurrentPersonAlias != null && CurrentPerson != null && GetAttributeValue( "SetCurrentPersonToRequester" ).AsBoolean() )
                 {
                     prayerRequest.RequestedByPersonAlias = CurrentPersonAlias;
                     prayerRequest.FirstName = CurrentPerson.NickName;
@@ -410,7 +417,9 @@ namespace RockWeb.Blocks.Prayer
 
             if ( prayerRequest.ApprovedOnDateTime.HasValue )
             {
-                statusDetail.AppendFormat( "on {0} at {1}", prayerRequest.ApprovedOnDateTime.Value.ToShortDateString(),
+                statusDetail.AppendFormat(
+                    "on {0} at {1}",
+                    prayerRequest.ApprovedOnDateTime.Value.ToShortDateString(),
                     prayerRequest.ApprovedOnDateTime.Value.ToShortTimeString() );
             }
 
@@ -534,6 +543,5 @@ namespace RockWeb.Blocks.Prayer
         }
 
         #endregion
-
     }
 }
