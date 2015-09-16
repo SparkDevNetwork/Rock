@@ -50,6 +50,11 @@ namespace RockWeb.Blocks.Communication
 
     public partial class CommunicationDetail : RockBlock
     {
+        #region Fields
+
+        private bool _editingApproved = false;
+
+        #endregion
 
         #region Properties
 
@@ -109,6 +114,9 @@ namespace RockWeb.Blocks.Communication
     aOpened.ClientID, sOpened.ClientID );
 
             ScriptManager.RegisterStartupScript( pnlDetails, pnlDetails.GetType(), "recipient-toggle-" + this.BlockId.ToString(), script, true );
+
+            _editingApproved = PageParameter( "Edit" ).AsBoolean() && IsUserAuthorized( "Approve" );
+
         }
 
         /// <summary>
@@ -121,8 +129,38 @@ namespace RockWeb.Blocks.Communication
 
             if ( !Page.IsPostBack )
             {
-                CommunicationId = PageParameter( "CommunicationId" ).AsIntegerOrNull();
-                ShowDetail();
+                // Check if CommunicationDetail has already loaded existing communication
+                var communication = RockPage.GetSharedItem( "Communication" ) as Rock.Model.Communication;
+                if ( communication == null )
+                {
+                    CommunicationId = PageParameter( "CommunicationId" ).AsIntegerOrNull();
+                    if ( CommunicationId.HasValue )
+                    {
+                        communication = new CommunicationService( new RockContext() )
+                            .Queryable( "CreatedByPersonAlias.Person" )
+                            .Where( c => c.Id == CommunicationId.Value )
+                            .FirstOrDefault();
+                    }
+                }
+                else
+                {
+                    CommunicationId = communication.Id;
+                }
+
+                // If not valid for this block, hide contents and return
+                if ( communication == null ||
+                    communication.Status == CommunicationStatus.Transient ||
+                    communication.Status == CommunicationStatus.Draft ||
+                    communication.Status == CommunicationStatus.Denied ||
+                    ( communication.Status == CommunicationStatus.PendingApproval && _editingApproved ) )
+                {
+                    // If viewing a new, transient or draft communication, hide this block and use NewCommunication block
+                    this.Visible = false;
+                }
+                else
+                {
+                    ShowDetail( communication );
+                }
             }
         }
 
@@ -199,6 +237,23 @@ namespace RockWeb.Blocks.Communication
         void gActivity_GridRebind( object sender, EventArgs e )
         {
             BindActivity();
+        }
+
+        protected void btnEdit_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var service = new CommunicationService( rockContext );
+            var communication = service.Get( CommunicationId.Value );
+            if ( communication != null &&
+                communication.Status == CommunicationStatus.PendingApproval &&
+                IsUserAuthorized( "Approve" ) )
+            {
+                // Redirect back to same page without the edit param
+                var pageRef = CurrentPageReference;
+                pageRef.Parameters.Add( "edit", "true" );
+                Response.Redirect( pageRef.BuildUrl() );
+                Context.ApplicationInstance.CompleteRequest();
+            }
         }
 
         /// <summary>
@@ -397,27 +452,8 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        private void ShowDetail()
+        private void ShowDetail( Rock.Model.Communication communication )
         {
-            Rock.Model.Communication communication = null;
-
-            if (CommunicationId.HasValue)
-            {
-                communication = new CommunicationService(new RockContext())
-                    .Queryable( "CreatedByPersonAlias.Person" )
-                    .Where( c => c.Id == CommunicationId.Value)
-                    .FirstOrDefault();
-            }
-
-            // If not valid for this block, hide contents and return
-            if ( communication == null ||
-                communication.Status == CommunicationStatus.Transient ||
-                communication.Status == CommunicationStatus.Draft )
-            {
-                // If viewing a new, transient or draft communication, hide this block and use NewCommunication block
-                this.Visible = false;
-                return;
-            }
 
             ShowStatus( communication );
             lTitle.Text = ( communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
@@ -609,6 +645,7 @@ namespace RockWeb.Blocks.Communication
             // Set default visibility
             btnApprove.Visible = false;
             btnDeny.Visible = false;
+            btnEdit.Visible = false;
             btnCancel.Visible = false;
             btnCopy.Visible = false;
 
@@ -629,6 +666,7 @@ namespace RockWeb.Blocks.Communication
                             {
                                 btnApprove.Visible = true;
                                 btnDeny.Visible = true;
+                                btnEdit.Visible = true;
                             }
                             btnCancel.Visible = true;
                             break;
