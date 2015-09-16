@@ -176,6 +176,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.MinistryMetrics
         {
             base.OnLoad( e );
 
+            // Show the warning if metric source is selected
+            ministryMetricWarning.Visible = !GetAttributeValue( "MetricType" ).Any();
+
             //var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
 
             //var campus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
@@ -228,16 +231,15 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.MinistryMetrics
 
                 if ( sqlStatement != "" )
                 {
-                    var sqlResult = DbService.ExecuteCommand( sqlStatement );
+                    try
+                    {
+                        currentMetricValue.Value = DbService.ExecuteScaler( sqlStatement ).ToString();
+                    }
+                    catch
+                    {
+                        currentMetricValue.Value = "Error";
+                    }
 
-                    if ( sqlResult <= 0 )
-                    {
-                        currentMetricValue.Value = "0";
-                    }
-                    else
-                    {
-                        currentMetricValue.Value = sqlResult.ToString();
-                    }
                 }
             }
         }

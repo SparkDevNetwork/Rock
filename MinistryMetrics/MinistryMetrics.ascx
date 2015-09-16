@@ -5,6 +5,8 @@
     <asp:UpdatePanel ID="pnlContent" runat="server">
         <ContentTemplate>
             
+            <% if ( !ministryMetricWarning.Visible ) {%>
+
             <asp:HiddenField ID="metricWidth" runat="server" />
             <asp:HiddenField ID="metricTitle" runat="server" />
             <asp:HiddenField ID="currentMetricValue" runat="server" />
@@ -13,7 +15,6 @@
                 <div class="panel-heading clearfix">
                     <h1 class="panel-title pull-left">
                         <%= metricTitle.Value %>
-                        
                     </h1>
                 </div>
                 <div class="panel-body">
@@ -23,7 +24,9 @@
                 </div>
             </div>
 
-            <Rock:NotificationBox ID="churchMetricWarning" runat="server" NotificationBoxType="Warning"
+            <% } %>
+
+            <Rock:NotificationBox ID="ministryMetricWarning" runat="server" NotificationBoxType="Warning"
                 Text="Please select a metric in the block settings." />
         </ContentTemplate>
     </asp:UpdatePanel>
