@@ -674,6 +674,7 @@ namespace RockWeb.Blocks.Communication
             else
             {
                 communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
+                communication.SenderPersonAliasId = CurrentPersonAliasId;
                 lTitle.Text = "New Communication".FormatAsHtmlTitle();
 
                 int? personId = PageParameter( "Person" ).AsIntegerOrNull();
