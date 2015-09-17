@@ -96,6 +96,14 @@ namespace Rock.Follow.Suggestion
                         followers = followers.Where( m => m.GroupRole.Guid.Equals( followerRoleGuid.Value ) );
                     }
 
+                    var followerGroupIds = followers
+                        .Select( f => new
+                        {
+                            f.PersonId,
+                            f.GroupId
+                        } )
+                        .ToList();
+
                     var followed = groupMemberService.Queryable();
 
                     Guid? followedRoleGuid = GetAttributeValue( followingSuggestionType, "FollowedGroupType" ).AsGuidOrNull();
@@ -104,20 +112,27 @@ namespace Rock.Follow.Suggestion
                         followed = followed.Where( m => m.GroupRole.Guid.Equals( followedRoleGuid.Value ) );
                     }
 
-                    foreach ( var suggestion in followers
-                        .Join( followed, s => s.GroupId, t => t.GroupId, ( s, t ) => new { s, t } )
-                        .Where( j => j.s.PersonId != j.t.PersonId )
-                        .Select( j => new
-                        {
-                            FollowerPersonId = j.s.PersonId,
-                            FollowedPerson = j.t.Person
-                        } )
-                        .Distinct() )
+                    foreach ( int personId in followerGroupIds.Select( f => f.PersonId ).Distinct() )
                     {
-                        int? entityId = suggestion.FollowedPerson.PrimaryAliasId;
-                        if ( entityId.HasValue )
+                        var groupIds = followerGroupIds
+                            .Where( f => f.PersonId == personId )
+                            .Select( f => f.GroupId )
+                            .Distinct()
+                            .ToList();
+
+                        foreach ( var followedPerson in followed
+                            .Where( f => 
+                                f.PersonId != personId &&
+                                groupIds.Contains( f.GroupId ) )
+                            .Select( f => f.Person )
+                            .Distinct()
+                            .ToList() )
                         {
-                            suggestions.Add( new PersonEntitySuggestion( suggestion.FollowerPersonId, entityId.Value ) );
+                            int? entityId = followedPerson.PrimaryAliasId;
+                            if ( entityId.HasValue )
+                            {
+                                suggestions.Add( new PersonEntitySuggestion( personId, entityId.Value ) );
+                            }
                         }
                     }
                 }
