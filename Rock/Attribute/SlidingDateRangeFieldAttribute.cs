@@ -15,6 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Attribute
 {
@@ -25,6 +28,11 @@ namespace Rock.Attribute
     public class SlidingDateRangeFieldAttribute : FieldAttribute
     {
         /// <summary>
+        /// Enabled SlidingDateRangeTypes
+        /// </summary>
+        protected const string ENABLED_SLIDING_DATE_RANGE_TYPES = "enabledSlidingDateRangeTypes";
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SlidingDateRangeFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -34,9 +42,13 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public SlidingDateRangeFieldAttribute( string name, string description = "", bool required = true, string defaultValue = ",", string category = "", int order = 0, string key = null )
+        public SlidingDateRangeFieldAttribute( string name, string description = "", bool required = true, string defaultValue = ",", string category = "", int order = 0, string key = null, string enabledSlidingDateRangeTypes = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SlidingDateRangeFieldType ).FullName )
         {
+            if ( enabledSlidingDateRangeTypes != null )
+            {
+                FieldConfigurationValues.Add( ENABLED_SLIDING_DATE_RANGE_TYPES, new Field.ConfigurationValue( enabledSlidingDateRangeTypes ) );
+            }
         }
     }
 }
