@@ -25,7 +25,7 @@
                 <div class="row row-eq-height-md">
                     <div class="col-md-3 filter-options">
 
-                        <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" />
+                        <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"/>
                         <Rock:NumberRangeEditor ID="nreAmount" runat="server" NumberType="Currency" Label="Total Amount" />
                         <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" AutoPostBack="true" OnSelectedIndexChanged="dvpDataView_SelectedIndexChanged" />
                         <Rock:RockCheckBoxList ID="cblCurrencyTypes" runat="server" Label="Currency Types" RepeatDirection="Vertical" />
