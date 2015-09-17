@@ -23,7 +23,7 @@
                     <h1 class="panel-title pull-left"><%= metricTitle.Value %></h1>
                 </div>
                 <div class="panel-body">
-                    <h1 <% if ( previousMetricValue.Value == "" || previousMetricValue.Value == "0" ) { %> class="flush" <% } %>><%= currentMetricValue.Value %><% if ( metricClass.Value != "" )
+                    <h1><%= currentMetricValue.Value %><% if ( metricClass.Value != "" )
                                                                   { %> <i class="fa fa-fw <%= metricClass.Value %> pull-right"></i><% } %></h1>
 
                     <% if ( previousMetricValue.Value != "" && previousMetricValue.Value != "0" ) { %>
