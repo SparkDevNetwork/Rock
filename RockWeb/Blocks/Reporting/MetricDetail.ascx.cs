@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Reporting
 
     [BooleanField( "Show Chart", DefaultValue = "true" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
-    [SlidingDateRangeField( "Chart Date Range", Key = "SlidingDateRange", DefaultValue = "-1||||" )]
+    [SlidingDateRangeField( "Chart Date Range", key: "SlidingDateRange", defaultValue: "-1||||", enabledSlidingDateRangeTypes:"Last,Previous,Current,DateRange")]
     [BooleanField( "Combine Chart Series" )]
     public partial class MetricDetail : RockBlock, IDetailBlock
     {
