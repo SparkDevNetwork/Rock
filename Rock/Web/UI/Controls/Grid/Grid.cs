@@ -1410,15 +1410,18 @@ namespace Rock.Web.UI.Controls
                 }
 
                 var dataItems = this.DataSourceAsList;
-                var gridViewRow = this.Rows.OfType<GridViewRow>().FirstOrDefault();
-                if ( gridViewRow == null )
+                var gridViewRows = this.Rows.OfType<GridViewRow>().ToList();
+                if ( gridViewRows.Count  != dataItems.Count )
                 {
                     return;
                 }
 
                 var selectedKeys = SelectedKeys.ToList();
-                foreach ( var dataItem in dataItems )
+                for ( int i = 0; i < dataItems.Count; i++ )
                 {
+                    var dataItem = dataItems[i];
+                    var gridViewRow = gridViewRows[i];
+
                     if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
                     {
                         var dataKeyValue = dataItem.GetPropertyValue( this.DataKeyNames[0] );
