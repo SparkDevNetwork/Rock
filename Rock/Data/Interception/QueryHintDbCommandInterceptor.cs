@@ -89,7 +89,7 @@ namespace Rock.Data
     public enum QueryHintType
     {
         /// <summary>
-        /// Use this to force SQL Server to recalculate the Query Plan for a Query. Can be handy in rare situations where SQL Server often uses a cached plan that isn't optimal for the query.
+        /// Use this to force SQL Server to recalculate the Query Plan for a Query. Can be handy in rare situations where SQL Server uses a cached plan that isn't optimal for the query.
         /// </summary>
         RECOMPILE,
 
