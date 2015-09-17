@@ -25,7 +25,7 @@
                             <Rock:RockBoundField DataField="AuthorizedPersonAlias.Person.FullNameReversed" HeaderText="Contributor"
                                 SortExpression="AuthorizedPersonAlias.Person.LastName,AuthorizedPersonAlias.Person.NickName" />
                             <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" SortExpression="Amount" />
-                            <Rock:RockTemplateField HeaderText="Accounts" ExcelExportBehavior="NeverInclude" >
+                            <Rock:RockTemplateField HeaderText="Accounts" >
                                 <ItemTemplate><%# GetAccounts( Container.DataItem ) %></ItemTemplate>
                             </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="TransactionFrequencyValue" HeaderText="Frequency" SortExpression="TransactionFrequencyValue.Value" />

@@ -379,7 +379,15 @@ namespace RockWeb.Blocks.Finance
                     .ToList();
                 if ( summary.Any() )
                 {
-                    return "<small>" + summary.AsDelimited( "<br/>" ) + "</small>";
+                    if ( gList.AllowPaging )
+                    {
+                        return "<small>" + summary.AsDelimited( "<br/>" ) + "</small>";
+                    }
+                    else
+                    {
+                        // Allow paging is turned off when exporting to excel. In this case, do not add the html
+                        return summary.AsDelimited( Environment.NewLine );
+                    }
                 }
             }
             return string.Empty;
