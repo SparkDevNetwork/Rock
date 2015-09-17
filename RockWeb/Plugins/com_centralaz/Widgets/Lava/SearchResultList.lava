@@ -18,6 +18,8 @@
 	  </div>
 	</a>
 {% endfor %}
-{% else %}
-A search cannot be performed at this time.
+{% assign size = Results.documents | Size %}
+{% if size == 0 %}
+<h3>No Results</h3>
+{% endif %}
 {% endif %}
