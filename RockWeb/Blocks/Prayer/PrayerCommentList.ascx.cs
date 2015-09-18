@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -39,20 +40,6 @@ namespace RockWeb.Blocks.Prayer
     public partial class PrayerCommentsList : Rock.Web.UI.RockBlock
     {
         #region Fields
-        /// <summary>
-        /// The prayer comment key parameter seen in the QueryString
-        /// </summary>
-        private static readonly string _prayerCommentKeyParameter = "noteId";
-
-        /// <summary>
-        /// The prayer request key parameter seen in the QueryString
-        /// </summary>
-        private static readonly string _prayerRequestKeyParameter = "prayerRequestId";
-
-        /// <summary>
-        /// Holds whether or not the person can add, edit, and delete.
-        /// </summary>
-        private bool _canAddEditDelete = false;
 
         /// <summary>
         /// Holds whether or not the person can approve.
@@ -78,12 +65,12 @@ namespace RockWeb.Blocks.Prayer
             BindFilter();
 
             // Block Security and special attributes (RockPage takes care of View)
-            _canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+            var canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             _canApprove = IsUserAuthorized( "Approve" );
 
             // grid stuff...
             gPrayerComments.Actions.ShowAdd = false;
-            gPrayerComments.IsDeleteEnabled = _canAddEditDelete;
+            gPrayerComments.IsDeleteEnabled = canAddEditDelete;
 
             gPrayerComments.DataKeyNames = new string[] { "id", "entityid" };
             gPrayerComments.GridRebind += gPrayerComments_GridRebind;
@@ -102,6 +89,7 @@ namespace RockWeb.Blocks.Prayer
 
             base.OnLoad( e );
         }
+
         #endregion
 
         #region Events
@@ -114,7 +102,7 @@ namespace RockWeb.Blocks.Prayer
         protected void gPrayerComments_Edit( object sender, RowEventArgs e )
         {
             // NOTE: DataKeys for Grid has two fields "id,entityId"
-            NavigateToLinkedPage( "DetailPage", _prayerCommentKeyParameter, (int)e.RowKeyValues["id"], _prayerRequestKeyParameter, (int)e.RowKeyValues["entityid"] );
+            NavigateToLinkedPage( "DetailPage", "noteId", (int)e.RowKeyValues["id"], "prayerRequestId", (int)e.RowKeyValues["entityid"] );
         }
 
         /// <summary>
@@ -130,6 +118,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 var rockContext = new RockContext();
                 NoteService noteService = new NoteService( rockContext );
+
                 // NOTE: DataKeys for Grid has two fields "id,entityId"
                 Note prayerComment = noteService.Get( (int)e.RowKeyValues["id"] );
 
@@ -281,9 +270,6 @@ namespace RockWeb.Blocks.Prayer
 
             var noteTypeService = new NoteTypeService( rockContext );
             var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
-
-            // TODO log exception if noteType is null
-
             var noteService = new NoteService( rockContext );
             var prayerComments = noteService.GetByNoteTypeId( noteType.Id );
 
@@ -317,7 +303,6 @@ namespace RockWeb.Blocks.Prayer
                     .Select( a => a.Id );
 
                 prayerComments = prayerComments.Where( a => a.EntityId.HasValue && prayerRequestQry.Contains( a.EntityId.Value ) );
-
             }
 
             // Filter by Date Range
@@ -379,7 +364,6 @@ namespace RockWeb.Blocks.Prayer
         public static class FilterSetting
         {
             public static readonly string DateRange = "Date Range";
-            public static readonly string ApprovalStatus = "Approval Status";
             public static readonly string PrayerCategory = "Prayer Category";
         }
     }
