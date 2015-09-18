@@ -462,6 +462,9 @@
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataComponentSettingsHelper.cs" />
     <Compile Include="Reporting\DataFilter\BaseAccountFilter.cs" />
+    <Compile Include="Reporting\DataFilter\ContentChannelItem\ContentChannelItemAttributesFilter.cs" />
+    <Compile Include="Reporting\DataFilter\ContentChannelItem\ContentChannel.cs" />
+    <Compile Include="Reporting\DataFilter\ContentChannelItem\ContentChannelType.cs" />
     <Compile Include="Reporting\DataFilter\FinancialPledge\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialTransactionDetail\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialTransaction\TotalAmountFilter.cs" />

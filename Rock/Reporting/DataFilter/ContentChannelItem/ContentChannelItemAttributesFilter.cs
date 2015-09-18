@@ -20,25 +20,23 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Reporting.DataFilter.Group
+namespace Rock.Reporting.DataFilter.ContentChannelItem
 {
     /// <summary>
-    /// Filter group on any of its attribute values
+    /// Filter Content Channel Items based on any of its attribute values
     /// </summary>
-    [Description( "Filter group on its attribute values" )]
+    [Description( "Filter Content Channel Items based on any of its attribute values" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Group Attributes Filter" )]
-    public class GroupAttributesFilter : EntityFieldFilter
+    [ExportMetadata( "ComponentName", "Content Channel Item Attributes Filter" )]
+    public class ContentChannelItemAttributesFilter : EntityFieldFilter
     {
         #region Properties
 
@@ -50,7 +48,7 @@ namespace Rock.Reporting.DataFilter.Group
         /// </value>
         public override string AppliesToEntityType
         {
-            get { return typeof( Rock.Model.Group ).FullName; }
+            get { return typeof( Rock.Model.ContentChannelItem ).FullName; }
         }
 
         /// <summary>
@@ -75,7 +73,7 @@ namespace Rock.Reporting.DataFilter.Group
         /// <returns></returns>
         public override string GetTitle( Type entityType )
         {
-            return "Group Attribute Values";
+            return "Content Channel Item Attribute Values";
         }
 
         /// <summary>
@@ -89,7 +87,7 @@ namespace Rock.Reporting.DataFilter.Group
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return "GroupPropertySelection( $content )";
+            return "ContentChannelItemPropertySelection( $content )";
         }
 
         /// <summary>
@@ -100,23 +98,22 @@ namespace Rock.Reporting.DataFilter.Group
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
-            string result = "Group Property";
+            string result = "Content Channel Item Property";
 
-            // First value is group type, second value is attribute, remaining values are the field type's filter values
+            // First value is content channel type, second value is attribute, remaining values are the field type's filter values
             var values = JsonConvert.DeserializeObject<List<string>>( selection );
             if ( values.Count >= 2 )
             {
-                var groupType = GroupTypeCache.Read( values[0].AsGuid() );
-                if ( groupType != null )
+                var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( values[0].AsGuid() );
+                if ( contentChannelType != null )
                 {
-                    var entityFields = GetGroupAttributes( groupType.Id );
+                    var entityFields = GetContentChannelItemAttributes( contentChannelType.Id );
                     var entityField = entityFields.FirstOrDefault( f => f.Name == values[1] );
                     if ( entityField != null )
                     {
                         result = entityField.FormattedFilterDescription( values.Skip( 2 ).ToList() );
                     }
                 }
-
             }
 
             return result;
@@ -137,46 +134,53 @@ namespace Rock.Reporting.DataFilter.Group
             containerControl.CssClass = "js-container-control";
             filterControl.Controls.Add( containerControl );
 
-            GroupTypePicker groupTypePicker = new GroupTypePicker();
-            groupTypePicker.ID = filterControl.ID + "_groupTypePicker";
-            groupTypePicker.Label = "Group Type";
-            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-            groupTypePicker.SelectedIndexChanged += groupTypePicker_SelectedIndexChanged;
-            groupTypePicker.AutoPostBack = true;
-            groupTypePicker.Visible = filterMode == FilterMode.AdvancedFilter;
-            containerControl.Controls.Add( groupTypePicker );
+            RockDropDownList contentChannelTypePicker = new RockDropDownList();
+            contentChannelTypePicker.ID = filterControl.ID + "_contentChannelTypePicker";
+            contentChannelTypePicker.Label = "Content Channel Type";
 
-            // set the GroupTypePicker selected value now so we can create the other controls the depending on know the groupTypeid
-            int? groupTypeId = filterControl.Page.Request.Params[groupTypePicker.UniqueID].AsIntegerOrNull();
-            groupTypePicker.SelectedGroupTypeId = groupTypeId;
-            groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
+            contentChannelTypePicker.Items.Clear();
+            var contentChannelTypeList = new ContentChannelTypeService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
+            foreach ( var contentChannelType in contentChannelTypeList )
+            {
+                contentChannelTypePicker.Items.Add( new ListItem( contentChannelType.Name, contentChannelType.Id.ToString() ) );
+            }
+
+            contentChannelTypePicker.SelectedIndexChanged += contentChannelTypePicker_SelectedIndexChanged;
+            contentChannelTypePicker.AutoPostBack = true;
+            contentChannelTypePicker.Visible = filterMode == FilterMode.AdvancedFilter;
+            containerControl.Controls.Add( contentChannelTypePicker );
+
+            // set the contentChannelTypePicker selected value now so we can create the other controls that depend on knowing the contentChannelTypeId
+            int? contentChannelTypeId = filterControl.Page.Request.Params[contentChannelTypePicker.UniqueID].AsIntegerOrNull();
+            contentChannelTypePicker.SelectedValue = contentChannelTypeId.ToString();
+            contentChannelTypePicker_SelectedIndexChanged( contentChannelTypePicker, new EventArgs() );
 
             return new Control[] { containerControl };
         }
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the groupTypePicker control.
+        /// Handles the SelectedIndexChanged event of the contentChannelTypePicker control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        public void groupTypePicker_SelectedIndexChanged( object sender, EventArgs e )
+        public void contentChannelTypePicker_SelectedIndexChanged( object sender, EventArgs e )
         {
-            GroupTypePicker groupTypePicker = sender as GroupTypePicker;
-            DynamicControlsPanel containerControl = groupTypePicker.Parent as DynamicControlsPanel;
+            RockDropDownList contentChannelTypePicker = sender as RockDropDownList;
+            DynamicControlsPanel containerControl = contentChannelTypePicker.Parent as DynamicControlsPanel;
             FilterField filterControl = containerControl.FirstParentControlOfType<FilterField>();
 
             containerControl.Controls.Clear();
-            containerControl.Controls.Add( groupTypePicker );
+            containerControl.Controls.Add( contentChannelTypePicker );
 
             // Create the field selection dropdown
             var ddlProperty = new RockDropDownList();
-            ddlProperty.ID = string.Format( "{0}_{1}_ddlProperty", containerControl.ID, groupTypePicker.SelectedGroupTypeId );
+            ddlProperty.ID = string.Format( "{0}_{1}_ddlProperty", containerControl.ID, contentChannelTypePicker.SelectedValue.AsInteger() );
             containerControl.Controls.Add( ddlProperty );
 
             // add Empty option first
             ddlProperty.Items.Add( new ListItem() );
 
-            this.entityFields = GetGroupAttributes( groupTypePicker.SelectedGroupTypeId );
+            this.entityFields = GetContentChannelItemAttributes( contentChannelTypePicker.SelectedValue.AsIntegerOrNull() );
             foreach ( var entityField in this.entityFields )
             {
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.Name );
@@ -246,11 +250,11 @@ namespace Rock.Reporting.DataFilter.Group
                 var containerControl = controls[0] as DynamicControlsPanel;
                 if ( containerControl.Controls.Count >= 2 )
                 {
-                    GroupTypePicker groupTypePicker = containerControl.Controls[0] as GroupTypePicker;
-                    groupTypePicker.RenderControl( writer );
+                    RockDropDownList contentChannelTypePicker = containerControl.Controls[0] as RockDropDownList;
+                    contentChannelTypePicker.RenderControl( writer );
 
                     DropDownList ddlEntityField = containerControl.Controls[1] as DropDownList;
-                    var entityFields = GetGroupAttributes( groupTypePicker.SelectedGroupTypeId );
+                    var entityFields = GetContentChannelItemAttributes( contentChannelTypePicker.SelectedValue.AsIntegerOrNull() );
 
                     var panelControls = new List<Control>();
                     panelControls.AddRange( containerControl.Controls.OfType<Control>() );
@@ -277,21 +281,20 @@ namespace Rock.Reporting.DataFilter.Group
                 if ( containerControl.Controls.Count >= 1 )
                 {
                     // note: since this datafilter creates additional controls outside of CreateChildControls(), we'll use our _controlsToRender instead of the controls parameter
-                    GroupTypePicker groupTypePicker = containerControl.Controls[0] as GroupTypePicker;
-                    Guid groupTypeGuid = Guid.Empty;
-                    var groupType = GroupTypeCache.Read( groupTypePicker.SelectedGroupTypeId ?? 0 );
-                    if ( groupType != null )
+                    RockDropDownList contentChannelTypePicker = containerControl.Controls[0] as RockDropDownList;
+                    var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( contentChannelTypePicker.SelectedValue.AsInteger() );
+                    if ( contentChannelType != null )
                     {
                         if ( containerControl.Controls.Count == 1 )
                         {
-                            groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
+                            contentChannelTypePicker_SelectedIndexChanged( contentChannelTypePicker, new EventArgs() );
                         }
 
                         if ( containerControl.Controls.Count > 1 )
                         {
                             DropDownList ddlProperty = containerControl.Controls[1] as DropDownList;
 
-                            var entityFields = GetGroupAttributes( groupType.Id );
+                            var entityFields = GetContentChannelItemAttributes( contentChannelType.Id );
                             var entityField = entityFields.FirstOrDefault( f => f.Name == ddlProperty.SelectedValue );
                             if ( entityField != null )
                             {
@@ -301,7 +304,7 @@ namespace Rock.Reporting.DataFilter.Group
                                 var control = panelControls.FirstOrDefault( c => c.ID.EndsWith( entityField.Name ) );
                                 if ( control != null )
                                 {
-                                    values.Add( groupType.Guid.ToString() );
+                                    values.Add( contentChannelType.Guid.ToString() );
                                     values.Add( ddlProperty.SelectedValue );
                                     entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig, filterMode ).ForEach( v => values.Add( v ) );
                                 }
@@ -327,21 +330,21 @@ namespace Rock.Reporting.DataFilter.Group
                 var values = JsonConvert.DeserializeObject<List<string>>( selection );
                 if ( controls.Length > 0 && values.Count > 0 )
                 {
-                    var groupType = GroupTypeCache.Read( values[0].AsGuid() );
-                    if ( groupType != null )
+                    var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( values[0].AsGuid() );
+                    if ( contentChannelType != null )
                     {
                         var containerControl = controls[0] as DynamicControlsPanel;
                         if ( containerControl.Controls.Count > 0 )
                         {
-                            GroupTypePicker groupTypePicker = containerControl.Controls[0] as GroupTypePicker;
-                            groupTypePicker.SelectedGroupTypeId = groupType.Id;
-                            groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
+                            RockDropDownList contentChannelTypePicker = containerControl.Controls[0] as RockDropDownList;
+                            contentChannelTypePicker.SelectedValue = contentChannelType.Id.ToString();
+                            contentChannelTypePicker_SelectedIndexChanged( contentChannelTypePicker, new EventArgs() );
                         }
 
                         if ( containerControl.Controls.Count > 1 && values.Count > 1 )
                         {
                             DropDownList ddlProperty = containerControl.Controls[1] as DropDownList;
-                            var entityFields = GetGroupAttributes( groupType.Id );
+                            var entityFields = GetContentChannelItemAttributes( contentChannelType.Id );
 
                             var panelControls = new List<Control>();
                             panelControls.AddRange( containerControl.Controls.OfType<Control>() );
@@ -368,12 +371,12 @@ namespace Rock.Reporting.DataFilter.Group
 
                 if ( values.Count >= 3 )
                 {
-                    var groupType = GroupTypeCache.Read( values[0].AsGuid() );
-                    if ( groupType != null )
+                    var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( values[0].AsGuid() );
+                    if ( contentChannelType != null )
                     {
                         string selectedProperty = values[1];
 
-                        var entityFields = GetGroupAttributes( groupType.Id );
+                        var entityFields = GetContentChannelItemAttributes( contentChannelType.Id );
                         var entityField = entityFields.FirstOrDefault( f => f.Name == selectedProperty );
                         if ( entityField != null )
                         {
@@ -393,19 +396,19 @@ namespace Rock.Reporting.DataFilter.Group
         /// <summary>
         /// Gets the properties and attributes for the entity
         /// </summary>
-        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="contentChannelTypeId">The content channel type identifier.</param>
         /// <returns></returns>
-        private List<EntityField> GetGroupAttributes( int? groupTypeId )
+        private List<EntityField> GetContentChannelItemAttributes( int? contentChannelTypeId )
         {
             List<EntityField> entityAttributeFields = new List<EntityField>();
 
-            if ( groupTypeId.HasValue )
+            if ( contentChannelTypeId.HasValue )
             {
-                var fakeGroup = new Rock.Model.Group { GroupTypeId = groupTypeId.Value };
-                Rock.Attribute.Helper.LoadAttributes( fakeGroup );
-                foreach ( var attribute in fakeGroup.Attributes.Select( a => a.Value ) )
+                var fakeContentChannelItem = new Rock.Model.ContentChannelItem { ContentChannelTypeId = contentChannelTypeId.Value };
+                Rock.Attribute.Helper.LoadAttributes( fakeContentChannelItem );
+                foreach ( var attribute in fakeContentChannelItem.Attributes.Select( a => a.Value ) )
                 {
-                    EntityHelper.AddEntityFieldForAttribute( entityAttributeFields, attribute );
+                    EntityHelper.AddEntityFieldForAttribute( entityAttributeFields, attribute, true );
                 }
             }
 
