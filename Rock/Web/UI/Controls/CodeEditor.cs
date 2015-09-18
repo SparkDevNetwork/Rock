@@ -553,6 +553,10 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         Liquid = 3,
         /// <summary>
+        /// The lava
+        /// </summary>
+        Lava = 3,
+        /// <summary>
         /// java script
         /// </summary>
         JavaScript = 4,
