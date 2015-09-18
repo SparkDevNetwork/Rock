@@ -44,7 +44,7 @@ namespace Rock.Web.UI
     {
         #region Private Variables
 
-        private PlaceHolder phLoadTime;
+        private PlaceHolder phLoadStats;
         private ScriptManager _scriptManager;
         private PageCache _pageCache = null;
 
@@ -918,8 +918,8 @@ namespace Rock.Web.UI
                         adminFooter.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         this.Form.Controls.Add( adminFooter );
 
-                        phLoadTime = new PlaceHolder();
-                        adminFooter.Controls.Add( phLoadTime );
+                        phLoadStats = new PlaceHolder();
+                        adminFooter.Controls.Add( phLoadStats );
 
                         HtmlGenericControl buttonBar = new HtmlGenericControl( "div" );
                         adminFooter.Controls.Add( buttonBar );
@@ -1115,10 +1115,17 @@ namespace Rock.Web.UI
         {
             base.OnSaveStateComplete( e );
 
-            if ( phLoadTime != null )
+            if ( phLoadStats != null )
             {
                 TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
-                phLoadTime.Controls.Add( new LiteralControl( string.Format( "<span>{0}: {1:N2}s </span>", "Page Load Time", tsDuration.TotalSeconds ) ) );
+
+                int cacheHits = Context.Items.Contains( "Cache_Hits" ) ? (int)Context.Items["Cache_Hits"] : 0;
+                int cacheMisses = Context.Items.Contains( "Cache_Misses" ) ? (int)Context.Items["Cache_Misses"] : 0;
+                int cacheRequests = cacheHits + cacheMisses;
+                double hitPercent = cacheRequests > 0 ? ( (double)cacheHits / (double)cacheRequests ) : 0D;
+                
+                phLoadStats.Controls.Add( new LiteralControl( string.Format(
+                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span>", tsDuration.TotalSeconds, hitPercent ) ) );
             }
         }
 
