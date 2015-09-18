@@ -58,9 +58,11 @@ namespace RockWeb.Blocks.Prayer
     </div>
 </div>",
        "", 2, "LavaTemplate" )]
-    [BooleanField( "Enable Debug", "Show merge data to help you see what's available to you.", order: 3 )]
-    [IntegerField( "Max Results", "The maximum number of results to display.", true, order: 4 )]
-    [CustomDropdownListField( "Sort by", "", "0^Entered Date Descending,1^Entered Date Ascending,2^Text", false, "0", order: 5 )]
+    
+    [IntegerField( "Max Results", "The maximum number of results to display.", false, 100, order: 3 )]
+    [CustomDropdownListField( "Sort by", "", "0^Entered Date Descending,1^Entered Date Ascending,2^Text", false, "0", order: 4 )]
+    [CustomDropdownListField("Approval Status", "Which statuses to display.", "1^Approved,2^Unapproved,3^All", true, "1", order: 5)]
+    [BooleanField( "Enable Debug", "Show merge data to help you see what's available to you.", order: 6 )]
     public partial class PrayerRequestListLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -132,6 +134,27 @@ namespace RockWeb.Blocks.Prayer
             {
                 qryPrayerRequests = qryPrayerRequests.Where( a => a.CategoryId.HasValue && ( categoryGuids.Contains( a.Category.Guid ) || ( a.Category.ParentCategoryId.HasValue && categoryGuids.Contains( a.Category.ParentCategory.Guid ) ) ) );
             }
+
+            // filter by status
+            int? statusFilterType = GetAttributeValue( "ApprovalStatus" ).AsIntegerOrNull();
+
+            if ( statusFilterType.HasValue )
+            {
+                switch ( statusFilterType.Value )
+                {
+                    case 1: 
+                        {
+                            qryPrayerRequests = qryPrayerRequests.Where( a => a.IsApproved == true );
+                            break;
+                        }
+                    case 2:
+                        {
+                            qryPrayerRequests = qryPrayerRequests.Where( a => a.IsApproved == false );
+                            break;
+                        }
+                }
+            }
+
 
             int sortBy = GetAttributeValue( "Sortby" ).AsInteger();
             switch ( sortBy )
