@@ -1259,8 +1259,16 @@ tr.row-highlight td {
   float: right;
   margin-top: 4px;
 }
+.codeeditor-header {
+  position: absolute;
+  top: -4px;
+  right: 0;
+}
 .codeeditor-header .picker-mergefield {
   float: right;
+}
+.codeeditor-header .picker .picker-label {
+  padding: 2px 6px;
 }
 .my-account {
   margin-bottom: 15px;
