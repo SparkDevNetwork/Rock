@@ -213,7 +213,8 @@ namespace Rock.Model
                     CreatedByPersonAliasId = personAliasId,
                     ModifiedByPersonAliasId = personAliasId,
                     CreatedDateTime = RockDateTime.Now,
-                    ModifiedDateTime = RockDateTime.Now
+                    ModifiedDateTime = RockDateTime.Now,
+                    ModifiedAuditValuesAlreadyUpdated = true
                 };
 
             try

@@ -74,7 +74,7 @@ namespace Rock.Client
         public int? GivingGroupId { get; set; }
 
         /// <summary>
-        /// The Grade Offset of the person, which is the number of years until their graduation date
+        /// The Grade Offset of the person, which is the number of years until their graduation date. See GradeFormatted to see their current Grade.
         /// </summary>
         public int? GradeOffset { get; set; }
 
@@ -106,6 +106,11 @@ namespace Rock.Client
 
         /// <summary />
         public string MiddleName { get; set; }
+
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
         public string NickName { get; set; }
@@ -175,6 +180,7 @@ namespace Rock.Client
             this.LastName = source.LastName;
             this.MaritalStatusValueId = source.MaritalStatusValueId;
             this.MiddleName = source.MiddleName;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NickName = source.NickName;
             this.PhotoId = source.PhotoId;
             this.RecordStatusReasonValueId = source.RecordStatusReasonValueId;

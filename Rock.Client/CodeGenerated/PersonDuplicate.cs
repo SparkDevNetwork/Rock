@@ -52,6 +52,11 @@ namespace Rock.Client
         /// <summary />
         public bool IsConfirmedAsNotDuplicate { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public int PersonAliasId { get; set; }
 
@@ -83,6 +88,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.IgnoreUntilScoreChanges = source.IgnoreUntilScoreChanges;
             this.IsConfirmedAsNotDuplicate = source.IsConfirmedAsNotDuplicate;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.PersonAliasId = source.PersonAliasId;
             this.Score = source.Score;
             this.ScoreDetail = source.ScoreDetail;
