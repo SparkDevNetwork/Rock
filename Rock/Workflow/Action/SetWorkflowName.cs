@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-
+using System.ComponentModel.DataAnnotations;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -63,7 +63,9 @@ namespace Rock.Workflow.Action
 
             if ( !string.IsNullOrWhiteSpace( nameValue ) )
             {
-                action.Activity.Workflow.Name = nameValue;
+                var nameMaxLength = action.Activity.Workflow.GetAttributeFrom<MaxLengthAttribute>( "Name" ).Length;
+
+                action.Activity.Workflow.Name = nameValue.Truncate( nameMaxLength );
                 action.AddLogEntry( string.Format( "Set Workflow Name to '{0}'", nameValue ) );
             }
 
