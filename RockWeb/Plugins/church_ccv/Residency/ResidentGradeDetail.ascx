@@ -41,11 +41,11 @@
                                 <asp:Literal ID="lblAssessmentText" runat="server" />
                             </div>
                             <div class="panel-body">
-                                <div class="col-md-1">
+                                <div class="col-md-2">
                                     <Rock:RockDropDownList ID="ddlPointOfAssessmentRating" runat="server" Label="Rating" />
                                     <Rock:RockCheckBox ID="ckPointOfAssessmentPassFail" runat="server" Text="Passed"  />
                                 </div>
-                                <div class="col-md-11">
+                                <div class="col-md-10">
                                     <Rock:RockTextBox ID="tbRatingNotesPOA" runat="server" TextMode="MultiLine" Rows="4" Label="Instructor Notes" />
                                 </div>
                             </div>
