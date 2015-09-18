@@ -135,6 +135,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Twilio.3.6.25\lib\3.5\Twilio.Api.dll</HintPath>
     </Reference>
+    <Reference Include="UAParser">
+      <HintPath>..\packages\UAParser.1.2.0.0\lib\net35-Client\UAParser.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -349,6 +352,8 @@
     <Compile Include="Model\CodeGenerated\FollowingSuggestedService.cs" />
     <Compile Include="Model\CodeGenerated\FollowingSuggestionTypeService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPaymentDetailService.cs" />
+    <Compile Include="Model\CodeGenerated\PageViewSessionService.cs" />
+    <Compile Include="Model\CodeGenerated\PageViewUserAgentService.cs" />
     <Compile Include="Model\CommunicationService.Partial.cs" />
     <Compile Include="Model\ConnectionOpportunityCampus.cs" />
     <Compile Include="Model\ConnectionRequest.cs" />
@@ -435,6 +440,8 @@
     <Compile Include="Model\GroupScheduleExclusion.cs" />
     <Compile Include="Model\GroupMemberWorkflowTrigger.Partial.cs" />
     <Compile Include="Model\MergeTemplate.cs" />
+    <Compile Include="Model\PageViewSession.cs" />
+    <Compile Include="Model\PageViewUserAgent.cs" />
     <Compile Include="Model\RegistrationRegistrant.cs" />
     <Compile Include="Model\Registration.cs" />
     <Compile Include="Model\RegistrationRegistrantFee.cs" />

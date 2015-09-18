@@ -27,15 +27,12 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for PageView that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for PageViewSession that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PageViewEntity
+    public partial class PageViewSessionEntity
     {
         /// <summary />
         public int Id { get; set; }
-
-        /// <summary />
-        public DateTime? DateTimeViewed { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -44,22 +41,13 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public int? PageId { get; set; }
+        public string IpAddress { get; set; }
 
         /// <summary />
-        public string PageTitle { get; set; }
+        public int PageViewUserAgentId { get; set; }
 
         /// <summary />
-        public int PageViewSessionId { get; set; }
-
-        /// <summary />
-        public int? PersonAliasId { get; set; }
-
-        /// <summary />
-        public int? SiteId { get; set; }
-
-        /// <summary />
-        public string Url { get; set; }
+        public Guid? SessionId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -68,21 +56,17 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source PageView object
+        /// Copies the base properties from a source PageViewSession object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( PageView source )
+        public void CopyPropertiesFrom( PageViewSession source )
         {
             this.Id = source.Id;
-            this.DateTimeViewed = source.DateTimeViewed;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.PageId = source.PageId;
-            this.PageTitle = source.PageTitle;
-            this.PageViewSessionId = source.PageViewSessionId;
-            this.PersonAliasId = source.PersonAliasId;
-            this.SiteId = source.SiteId;
-            this.Url = source.Url;
+            this.IpAddress = source.IpAddress;
+            this.PageViewUserAgentId = source.PageViewUserAgentId;
+            this.SessionId = source.SessionId;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 
@@ -90,12 +74,9 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for PageView that includes all the fields that are available for GETs. Use this for GETs (use PageViewEntity for POST/PUTs)
+    /// Client model for PageViewSession that includes all the fields that are available for GETs. Use this for GETs (use PageViewSessionEntity for POST/PUTs)
     /// </summary>
-    public partial class PageView : PageViewEntity
+    public partial class PageViewSession : PageViewSessionEntity
     {
-        /// <summary />
-        public PersonAlias PersonAlias { get; set; }
-
     }
 }
