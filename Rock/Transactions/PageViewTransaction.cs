@@ -19,6 +19,10 @@ using System.IO;
 using Rock.Model;
 using System.Text.RegularExpressions;
 using Rock.Data;
+using System.Web;
+using System.Collections;
+using System.Web.Configuration;
+using System.Collections.Specialized;
 
 namespace Rock.Transactions
 {
@@ -114,15 +118,18 @@ namespace Rock.Transactions
                 pvService.Add( pageView );
 
                 pageView.PageId = this.PageId;
-                pageView.SiteId = this.SiteId;
-                pageView.SessionId = new Guid( this.SessionId );
+                //pageView.SiteId = this.SiteId;
+                //pageView.SessionId = new Guid( this.SessionId );
                 pageView.Url = this.Url;
-                pageView.UserAgent = this.UserAgent;
+                //pageView.UserAgent = this.UserAgent;
                 pageView.DateTimeViewed = this.DateViewed;
-                pageView.IpAddress = this.IPAddress;
+                //pageView.IpAddress = this.IPAddress;
                 pageView.PersonAliasId = this.PersonAliasId;
                 pageView.PageTitle = this.PageTitle;
-
+                /*
+                Parser uaParser = Parser.GetDefault();
+                ClientInfo client = uaParser.Parse( session.UserAgent );
+                
                 string u = this.UserAgent;
                 if ( string.IsNullOrWhiteSpace( u ) )
                 {
@@ -171,7 +178,16 @@ namespace Rock.Transactions
                     {
                         pageView.ClientType = "Desktop";
                     }
+
+                    var browserCapabilities = new HttpBrowserCapabilities { Capabilities = new Hashtable { { string.Empty, u } } };
+
+                    var capabilitiesFactory = new BrowserCapabilitiesFactory();
+
+                    capabilitiesFactory.ConfigureBrowserCapabilities( new NameValueCollection(), browserCapabilities );
+
+                    var platform = browserCapabilities.Platform;
                 }
+                 * */
 
                 rockContext.SaveChanges();
             }
