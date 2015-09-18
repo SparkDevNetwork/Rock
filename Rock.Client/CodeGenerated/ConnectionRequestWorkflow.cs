@@ -46,6 +46,11 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public string TriggerQualifier { get; set; }
 
@@ -72,6 +77,7 @@ namespace Rock.Client
             this.ConnectionWorkflowId = source.ConnectionWorkflowId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.TriggerQualifier = source.TriggerQualifier;
             this.TriggerType = source.TriggerType;
             this.WorkflowId = source.WorkflowId;

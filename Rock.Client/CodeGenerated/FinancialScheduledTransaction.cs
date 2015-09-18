@@ -67,6 +67,11 @@ namespace Rock.Client
         /// <summary />
         public DateTime? LastStatusUpdateDateTime { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public DateTime? NextPaymentDate { get; set; }
 
@@ -106,6 +111,7 @@ namespace Rock.Client
             this.IsActive = source.IsActive;
             this.LastRemindedDate = source.LastRemindedDate;
             this.LastStatusUpdateDateTime = source.LastStatusUpdateDateTime;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NextPaymentDate = source.NextPaymentDate;
             this.NumberOfPayments = source.NumberOfPayments;
             this.StartDate = source.StartDate;

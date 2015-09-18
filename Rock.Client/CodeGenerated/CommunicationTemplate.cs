@@ -49,6 +49,11 @@ namespace Rock.Client
         /// <summary />
         public int? MediumEntityTypeId { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public string Name { get; set; }
 
@@ -76,6 +81,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.MediumDataJson = source.MediumDataJson;
             this.MediumEntityTypeId = source.MediumEntityTypeId;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.SenderPersonAliasId = source.SenderPersonAliasId;
             this.Subject = source.Subject;

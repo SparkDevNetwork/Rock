@@ -55,6 +55,11 @@ namespace Rock.Client
         /// <summary />
         public bool? HasInnerException { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public int? PageId { get; set; }
 
@@ -102,6 +107,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.Form = source.Form;
             this.HasInnerException = source.HasInnerException;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.PageId = source.PageId;
             this.PageUrl = source.PageUrl;
             this.ParentId = source.ParentId;

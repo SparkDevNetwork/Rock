@@ -88,6 +88,11 @@ namespace Rock.Client
         /// <summary />
         public bool MenuDisplayIcon { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public int Order { get; set; }
 
@@ -146,6 +151,7 @@ namespace Rock.Client
             this.MenuDisplayChildPages = source.MenuDisplayChildPages;
             this.MenuDisplayDescription = source.MenuDisplayDescription;
             this.MenuDisplayIcon = source.MenuDisplayIcon;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Order = source.Order;
             this.OutputCacheDuration = source.OutputCacheDuration;
             this.PageDisplayBreadCrumb = source.PageDisplayBreadCrumb;
