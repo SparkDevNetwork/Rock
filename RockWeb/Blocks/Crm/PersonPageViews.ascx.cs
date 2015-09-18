@@ -133,7 +133,7 @@ namespace RockWeb.Blocks.Crm
 
         protected void rptSessions_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            /*if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
                 var session = e.Item.DataItem as WebSession;
                 if ( session != null )
@@ -156,8 +156,8 @@ namespace RockWeb.Blocks.Crm
                             break;
                     }
                     var lUserAgent = e.Item.FindControl( "lUserAgent" ) as Literal;
-                    Parser uaParser = Parser.GetDefault();
-                    ClientInfo client = uaParser.Parse( session.UserAgent );
+                    //Parser uaParser = Parser.GetDefault();
+                    //ClientInfo client = uaParser.Parse( session.UserAgent );
 
                     lClientIcon.Text = String.Format( "<div class='pageviewsession-client pull-right'><div class='pull-left'><small>{0}<br>{1}</small></div><i class='fa {2} fa-2x pull-right'></i></div>", 
                                             client.UserAgent, 
@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Crm
                         lSessionDuration.Text = String.Format( "{0}m", duration.Minutes );
                     }
                 }
-            }
+            }*/
         }
 
         protected void btnFilter_Click( object sender, EventArgs e )
@@ -202,7 +202,7 @@ namespace RockWeb.Blocks.Crm
 
         void ShowList() 
         {
-            var rockContext = new RockContext();
+            /*var rockContext = new RockContext();
 
             int sessionCount = Int32.Parse( GetAttributeValue( "SessionCount" ) );
 
@@ -236,18 +236,18 @@ namespace RockWeb.Blocks.Crm
                     sessionInfo = sessionInfo.Where( p => p.SiteId == siteId );
                 }
 
-                var pageviewInfo = sessionInfo.GroupBy( s => new { s.SessionId, s.SiteId, SiteName = s.Site.Name, s.ClientType, s.IpAddress, s.UserAgent } )
+                var pageviewInfo = sessionInfo.GroupBy( s => new { s.PageViewSession, s.SiteId, SiteName = s.Site.Name } )
                                 .Select( s => new WebSession
                                 {
-                                    SessionId = s.Key.SessionId,
+                                    //SessionId = s.Key.PageViewSession.,
                                     StartDateTime = s.Min( x => x.DateTimeViewed ),
                                     EndDateTime = s.Max( x => x.DateTimeViewed ),
                                     SiteId = s.Key.SiteId,
                                     Site = s.Key.SiteName,
-                                    ClientType = s.Key.ClientType,
-                                    IpAddress = s.Key.IpAddress,
-                                    UserAgent = s.Key.UserAgent,
-                                    PageViews = pageViews.Where( p => p.SessionId == s.Key.SessionId && p.SiteId == s.Key.SiteId).ToList()
+                                    //ClientType = s.Key.ClientType,
+                                    //IpAddress = s.Key.IpAddress,
+                                    //UserAgent = s.Key.UserAgent,
+                                    PageViews = pageViews.Where( p => p.PageViewSessionId == s.Key.PageViewSessionId && p.SiteId == s.Key.SiteId ).ToList()
                                 } );
 
                 pageviewInfo = pageviewInfo.OrderByDescending( p => p.StartDateTime )
@@ -315,7 +315,7 @@ namespace RockWeb.Blocks.Crm
             {
                 lMessages.Text = "<div class='alert alert-warning'>No person provided to show results for.</div>";
             }
-            
+            */
             
         }
 
@@ -323,14 +323,15 @@ namespace RockWeb.Blocks.Crm
 
         public class WebSession
         {
-            public Guid? SessionId { get; set; }
+            //public Guid? SessionId { get; set; }
             public DateTime? StartDateTime { get; set; }
             public DateTime? EndDateTime { get; set; }
             public int? SiteId { get; set; }
             public string Site { get; set; }
-            public string ClientType { get; set; }
-            public string IpAddress { get; set; }
-            public string UserAgent { get; set; }
+            
+            //public string ClientType { get; set; }
+            //public string IpAddress { get; set; }
+            //public string UserAgent { get; set; }
             public ICollection<PageView> PageViews { get; set; }
         }
 }

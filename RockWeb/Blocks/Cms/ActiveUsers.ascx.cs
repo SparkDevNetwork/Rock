@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Cms
                             PersonAliasPersonId = pa.PersonId,
                             pv.DateTimeViewed,
                             pv.SiteId,
-                            pv.SessionId,
+                            pv.PageViewSessionId,
                             PagePageTitle = pv.Page.PageTitle
                         } );
 
@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.Cms
                         {
                             a.login,
                             pageViews = a.pageViews,
-                            LatestSessionId = a.pageViews.FirstOrDefault().SessionId
+                            LatestPageViewSessionId = a.pageViews.FirstOrDefault().PageViewSessionId
                         } );
 
                     if ( CurrentUser != null )
@@ -168,7 +168,8 @@ namespace RockWeb.Blocks.Cms
                     {
                         var login = activeLogin.login;
 
-                        Guid? latestSession = activeLogin.LatestSessionId;
+                        //Guid? latestSession = activeLogin.LatestSessionId;
+                        var latestPageViewSessionId = activeLogin.LatestPageViewSessionId;
 
                         
                         TimeSpan tsLastActivity = login.LastActivityDateTime.HasValue ? RockDateTime.Now.Subtract( login.LastActivityDateTime.Value ) : TimeSpan.MaxValue;
@@ -197,7 +198,7 @@ namespace RockWeb.Blocks.Cms
                             {
                                 var pageViews = activeLogin.pageViews.ToList();
                                 string pageViewsHtml = activeLogin.pageViews.ToList()
-                                                    .Where( v => v.SessionId == latestSession )
+                                                    .Where( v => v.PageViewSessionId == latestPageViewSessionId )
                                                     .Select( v => HttpUtility.HtmlEncode( v.PagePageTitle ) ).ToList().AsDelimited( "<br> " );
 
 
