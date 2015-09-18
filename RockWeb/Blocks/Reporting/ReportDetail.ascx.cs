@@ -664,14 +664,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     bool isAuthorizedForField = true;
                     var listItem = new ListItem();
-                    if ( !string.IsNullOrEmpty( entityField.TitleQualifier ) )
-                    {
-                        listItem.Text = string.Format( "{0} ({1})", entityField.Title, entityField.TitleQualifier );
-                    }
-                    else
-                    {
-                        listItem.Text = entityField.Title;
-                    }
+                    listItem.Text = entityField.Title;
 
                     if ( entityField.FieldKind == FieldKind.Property )
                     {
