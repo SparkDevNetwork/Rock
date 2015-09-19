@@ -616,6 +616,10 @@ namespace RockWeb
 
             PageRouteService pageRouteService = new PageRouteService( rockContext );
 
+            //Add ingore rule for asp.net ScriptManager files. 
+            routes.Ignore("{resource}.axd/{*pathInfo}");
+
+
             // find each page that has defined a custom routes.
             foreach ( PageRoute pageRoute in pageRouteService.Queryable() )
             {
