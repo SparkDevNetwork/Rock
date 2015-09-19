@@ -28,11 +28,11 @@
   }
 }
 
-    .gridlist-header {
-      text-transform: uppercase;
-      font-weight: @headings-font-weight;
-      // float: left;
-    }
+  .gridlist-header {
+    text-transform: uppercase;
+    font-weight: @headings-font-weight;
+    // float: left;
+  }
 
 
 
@@ -110,3 +110,13 @@
       border-right: 1px solid @gray-dark;
     }
   }
+
+.gridlist-equalheight {
+  @media @sm {
+    display: flex;
+    flex-wrap: wrap;
+    > li {
+      width: 50%;
+    }
+  }
+}

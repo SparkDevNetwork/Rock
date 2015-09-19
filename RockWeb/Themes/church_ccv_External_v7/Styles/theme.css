@@ -7112,6 +7112,20 @@ h6,
 .gridlist-inverse > li:nth-child(odd) {
   border-right: 1px solid #333333;
 }
+@media (min-width: 768px) {
+  .gridlist-equalheight {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+        -ms-flex-wrap: wrap;
+            flex-wrap: wrap;
+  }
+  .gridlist-equalheight > li {
+    width: 50%;
+  }
+}
 .hoverthumb-list {
   padding-top: 30px;
 }
