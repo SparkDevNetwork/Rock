@@ -310,8 +310,7 @@ namespace RockWeb
             }
 
             Context.Items.Add( "Request_Start_Time", RockDateTime.Now );
-            Context.Items.Add( "Cache_Hits", 0 );
-            Context.Items.Add( "Cache_Misses", 0 );
+            Context.Items.Add( "Cache_Hits", new Dictionary<string, bool>() );
         }
 
         /// <summary>

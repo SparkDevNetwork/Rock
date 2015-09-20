@@ -1118,12 +1118,19 @@ namespace Rock.Web.UI
             if ( phLoadStats != null )
             {
                 TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
+                double hitPercent = 0D;
 
-                int cacheHits = Context.Items.Contains( "Cache_Hits" ) ? (int)Context.Items["Cache_Hits"] : 0;
-                int cacheMisses = Context.Items.Contains( "Cache_Misses" ) ? (int)Context.Items["Cache_Misses"] : 0;
-                int cacheRequests = cacheHits + cacheMisses;
-                double hitPercent = cacheRequests > 0 ? ( (double)cacheHits / (double)cacheRequests ) : 0D;
-                
+                if ( Context.Items.Contains( "Cache_Hits" ) )
+                {
+                    var cacheHits = Context.Items["Cache_Hits"] as System.Collections.Generic.Dictionary<string, bool>;
+                    if ( cacheHits != null )
+                    {
+                        int hits = cacheHits.Where( c => c.Value ).Count();
+                        int total = cacheHits.Count();
+                        hitPercent = total > 0 ? ( (double)hits / (double)total ) : 0D;
+                    }
+                }
+
                 phLoadStats.Controls.Add( new LiteralControl( string.Format(
                     "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span>", tsDuration.TotalSeconds, hitPercent ) ) );
             }
