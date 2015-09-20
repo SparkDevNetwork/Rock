@@ -133,24 +133,15 @@ namespace Rock.Web.Cache
         /// Updates the cache hit miss.
         /// </summary>
         /// <param name="hit">if set to <c>true</c> [hit].</param>
-        private void UpdateCacheHitMiss( bool hit )
+        private void UpdateCacheHitMiss( string key, bool hit )
         {
             var httpContext = System.Web.HttpContext.Current;
-            if ( httpContext != null )
+            if ( httpContext != null && httpContext.Items.Contains( "Cache_Hits" ) )
             {
-                if ( hit )
+                var cacheHits = httpContext.Items["Cache_Hits"] as System.Collections.Generic.Dictionary<string, bool>;
+                if ( cacheHits != null )
                 {
-                    if ( httpContext.Items.Contains( "Cache_Hits" ) )
-                    {
-                        httpContext.Items["Cache_Hits"] = ( (int)httpContext.Items["Cache_Hits"] ) + 1;
-                    }
-                }
-                else
-                {
-                    if ( httpContext.Items.Contains( "Cache_Misses" ) )
-                    {
-                        httpContext.Items["Cache_Misses"] = ( (int)httpContext.Items["Cache_Misses"] ) + 1;
-                    }
+                    cacheHits.AddOrIgnore( key, hit );
                 }
             }
         }
@@ -166,7 +157,7 @@ namespace Rock.Web.Cache
             get
             {
                 object obj = base[key];
-                UpdateCacheHitMiss( obj != null );
+                UpdateCacheHitMiss( key, obj != null );
                 return obj;
             }
             set
@@ -187,7 +178,7 @@ namespace Rock.Web.Cache
         /// </returns>
         public override object AddOrGetExisting( string key, object value, CacheItemPolicy policy, string regionName = null )
         {
-            UpdateCacheHitMiss( Contains( key ) );
+            UpdateCacheHitMiss( key, Contains( key ) );
             return base.AddOrGetExisting( key, value, policy, regionName );
         }
 
@@ -203,7 +194,7 @@ namespace Rock.Web.Cache
         /// </returns>
         public override object AddOrGetExisting( string key, object value, DateTimeOffset absoluteExpiration, string regionName = null )
         {
-            UpdateCacheHitMiss( Contains( key ) );
+            UpdateCacheHitMiss( key, Contains( key ) );
             return base.AddOrGetExisting( key, value, absoluteExpiration, regionName );
         }
 
@@ -218,7 +209,7 @@ namespace Rock.Web.Cache
         public override object Get( string key, string regionName = null )
         {
             object obj = base.Get( key, regionName );
-            UpdateCacheHitMiss( obj != null );
+            UpdateCacheHitMiss( key, obj != null );
             return obj;
         }
 
