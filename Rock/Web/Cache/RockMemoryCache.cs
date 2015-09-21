@@ -132,6 +132,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Updates the cache hit miss.
         /// </summary>
+        /// <param name="key">The key.</param>
         /// <param name="hit">if set to <c>true</c> [hit].</param>
         private void UpdateCacheHitMiss( string key, bool hit )
         {
