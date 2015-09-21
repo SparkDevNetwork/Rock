@@ -176,6 +176,12 @@
                     selectedText = $('#' + controlId + ' .js-self-person-name').val();
 
                 setSelectedPerson(selectedValue, selectedText);
+
+                // fire the postBack of the btnSelect if there is one
+                var postBackUrl = $('#' + controlId + '_btnSelect').prop('href');
+                if (postBackUrl) {
+                    window.location = postBackUrl;
+                }
             });
         };
 

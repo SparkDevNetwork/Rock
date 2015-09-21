@@ -17,8 +17,8 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -37,9 +37,49 @@ namespace RockWeb.Blocks.Prayer
 
     [IntegerField( "Expires After (Days)", "Default number of days until the request will expire.", false, 14, "", 0, "ExpireDays" )]
     [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "", 1, "DefaultCategory" )]
+    [BooleanField( "Set Current Person To Requester", "Will set the current person as the requester. This is useful in self-entry situiations.", false, order: 2 )]
     public partial class PrayerRequestDetail : RockBlock, IDetailBlock
     {
         #region Properties
+
+        /// <summary>
+        /// Gets the pending CSS.
+        /// </summary>
+        /// <value>
+        /// The pending CSS.
+        /// </value>
+        protected string PendingCss
+        {
+            get
+            {
+                return ( ViewState["PendingCss"] as string ) ?? "btn-default";
+            }
+
+            private set
+            {
+                ViewState["PendingCss"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the approved CSS.
+        /// </summary>
+        /// <value>
+        /// The approved CSS.
+        /// </value>
+        protected string ApprovedCss
+        {
+            get
+            {
+                return ( ViewState["ApprovedCss"] as string ) ?? "btn-default";
+            }
+
+            private set
+            {
+                ViewState["ApprovedCss"] = value;
+            }
+        }
+
         #endregion
 
         #region Base Control Methods
@@ -51,6 +91,31 @@ namespace RockWeb.Blocks.Prayer
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            string scriptFormat = @"
+    $('#{0} .btn-toggle').click(function (e) {{
+
+        e.stopImmediatePropagation();
+
+        $(this).find('.btn').removeClass('active');
+        $(e.target).addClass('active');
+
+        $(this).find('a').each(function() {{
+            if ($(this).hasClass('active')) {{
+                $('#{1}').val($(this).attr('data-status'));
+                $(this).removeClass('btn-default');
+                $(this).addClass( $(this).attr('data-active-css') );
+            }} else {{
+                $(this).removeClass( $(this).attr('data-active-css') );
+                $(this).addClass('btn-default');
+            }}
+        }});
+
+    }});
+";
+
+            string script = string.Format( scriptFormat, pnlStatus.ClientID, hfApprovedStatus.ClientID );
+            ScriptManager.RegisterStartupScript( pnlStatus, pnlStatus.GetType(), "status-script-" + this.BlockId.ToString(), script, true );
         }
 
         /// <summary>
@@ -104,6 +169,32 @@ namespace RockWeb.Blocks.Prayer
             NavigateToParentPage();
         }
 
+        /// <summary>
+        /// Handles the SelectPerson event of the ppRequestor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ppRequestor_SelectPerson( object sender, EventArgs e )
+        {
+            if ( ppRequestor.PersonId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var requester = new PersonService( rockContext )
+                        .Queryable()
+                        .Where( p => p.Id == ppRequestor.PersonId.Value )
+                        .Select( p => new
+                        {
+                            FirstName = p.NickName,
+                            LastName = p.LastName
+                        } ).FirstOrDefault();
+
+                    dtbFirstName.Text = requester.FirstName;
+                    dtbLastName.Text = requester.LastName;
+                }
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -141,6 +232,8 @@ namespace RockWeb.Blocks.Prayer
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( PrayerRequest.FriendlyTypeName );
             }
 
+            hlCategory.Text = prayerRequest.Category != null ? prayerRequest.Category.Name : string.Empty;
+
             if ( readOnly )
             {
                 lbEdit.Visible = false;
@@ -173,25 +266,14 @@ namespace RockWeb.Blocks.Prayer
             {
                 descriptionList.Add( "Requested By", prayerRequest.RequestedByPersonAlias.Person.FullName );
             }
+
             descriptionList.Add( "Name", prayerRequest.FullName );
-            descriptionList.Add( "Category", prayerRequest.Category != null ? prayerRequest.Category.Name : string.Empty );
             descriptionList.Add( "Request", prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr() );
             descriptionList.Add( "Answer", prayerRequest.Answer.ScrubHtmlAndConvertCrLfToBr() );
             lMainDetails.Text = descriptionList.Html;
 
             ShowStatus( prayerRequest, this.CurrentPerson, hlblFlaggedMessageRO );
             ShowPrayerCount( prayerRequest );
-
-            if ( !prayerRequest.IsApproved.HasValue )
-            {
-                hlblStatus.Visible = true;
-                hlblStatus.Text = "Pending Approval";
-            }
-            else if ( prayerRequest.IsApproved.HasValue && ( !prayerRequest.IsApproved ?? false ) )
-            {
-                hlblStatus.Visible = true;
-                hlblStatus.Text = "Unapproved";
-            }
 
             hlblUrgent.Visible = prayerRequest.IsUrgent ?? false;
         }
@@ -211,7 +293,7 @@ namespace RockWeb.Blocks.Prayer
             else
             {
                 lActionTitle.Text = ActionTitle.Add( PrayerRequest.FriendlyTypeName ).FormatAsHtmlTitle();
-                if ( CurrentPersonAlias != null && CurrentPerson != null )
+                if ( CurrentPersonAlias != null && CurrentPerson != null && GetAttributeValue( "SetCurrentPersonToRequester" ).AsBoolean() )
                 {
                     prayerRequest.RequestedByPersonAlias = CurrentPersonAlias;
                     prayerRequest.FirstName = CurrentPerson.NickName;
@@ -300,21 +382,48 @@ namespace RockWeb.Blocks.Prayer
                 lFlagged.Text = string.Format( "flagged {0} times", flagCount );
             }
 
-            cbApproved.Enabled = IsUserAuthorized( "Approve" );
-            cbApproved.Checked = prayerRequest.IsApproved ?? false;
+            ShowApproval( prayerRequest );
+        }
 
-            if ( person != null && 
-                (prayerRequest.IsApproved ?? false ) && 
-                prayerRequest.ApprovedByPersonAlias != null &&
-                prayerRequest.ApprovedByPersonAlias.Person != null )
+        /// <summary>
+        /// Shows the approval.
+        /// </summary>
+        /// <param name="prayerRequest">The prayer request.</param>
+        private void ShowApproval( PrayerRequest prayerRequest )
+        {
+            if ( prayerRequest != null )
             {
-                lblApprovedByPerson.Visible = true;
-                lblApprovedByPerson.Text = string.Format( "approved by {0}", prayerRequest.ApprovedByPersonAlias.Person.FullName );
+                pnlStatus.Visible = true;
+                PendingCss = prayerRequest.IsApproved == false ? "btn-warning active" : "btn-default";
+                ApprovedCss = prayerRequest.IsApproved == true ? "btn-success active" : "btn-default";
+                hfApprovedStatus.Value = prayerRequest.IsApproved.ToString();
             }
             else
             {
-                lblApprovedByPerson.Visible = false;
+                hfApprovedStatus.Value = true.ToString();
+                pnlStatus.Visible = false;
+                divStatus.Visible = false;
             }
+
+            hlStatus.Text = ( prayerRequest.IsApproved ?? false ) ? "Approved" : "Pending";
+
+            hlStatus.LabelType = ( prayerRequest.IsApproved ?? false ) ? LabelType.Success : LabelType.Warning;
+
+            var statusDetail = new System.Text.StringBuilder();
+            if ( prayerRequest.ApprovedByPersonAlias != null && prayerRequest.ApprovedByPersonAlias.Person != null )
+            {
+                statusDetail.AppendFormat( "by {0} ", prayerRequest.ApprovedByPersonAlias.Person.FullName );
+            }
+
+            if ( prayerRequest.ApprovedOnDateTime.HasValue )
+            {
+                statusDetail.AppendFormat(
+                    "on {0} at {1}",
+                    prayerRequest.ApprovedOnDateTime.Value.ToShortDateString(),
+                    prayerRequest.ApprovedOnDateTime.Value.ToShortTimeString() );
+            }
+
+            hlStatus.ToolTip = statusDetail.ToString();
         }
 
         /// <summary>
@@ -346,7 +455,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             // If changing from NOT-approved to approved, record who and when
-            if ( !( prayerRequest.IsApproved ?? false ) && cbApproved.Checked )
+            if ( !( prayerRequest.IsApproved ?? false ) && hfApprovedStatus.Value.AsBoolean() )
             {
                 prayerRequest.ApprovedByPersonAliasId = CurrentPersonAliasId;
                 prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
@@ -355,7 +464,7 @@ namespace RockWeb.Blocks.Prayer
                 if ( prayerRequest.FlagCount.HasValue && prayerRequest.FlagCount > 0 )
                 {
                     prayerRequest.FlagCount = 0;
-                } 
+                }
             }
 
             // If no expiration date was manually set, then use the default setting.
@@ -381,7 +490,7 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.CategoryId = categoryId;
 
             // Now record all the bits...
-            prayerRequest.IsApproved = cbApproved.Checked;
+            prayerRequest.IsApproved = hfApprovedStatus.Value.AsBoolean();
             prayerRequest.IsActive = cbIsActive.Checked;
             prayerRequest.IsUrgent = cbIsUrgent.Checked;
             prayerRequest.AllowComments = cbAllowComments.Checked;
@@ -409,7 +518,7 @@ namespace RockWeb.Blocks.Prayer
 
         #endregion
 
-        #region Possible Extension Method 
+        #region Possible Extension Method
 
         /// <summary>
         /// Scrubs any html from the string but converts carriage returns into html &lt;br/&gt; suitable for web display.

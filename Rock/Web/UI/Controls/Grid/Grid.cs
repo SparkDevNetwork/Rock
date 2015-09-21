@@ -1410,15 +1410,18 @@ namespace Rock.Web.UI.Controls
                 }
 
                 var dataItems = this.DataSourceAsList;
-                var gridViewRow = this.Rows.OfType<GridViewRow>().FirstOrDefault();
-                if ( gridViewRow == null )
+                var gridViewRows = this.Rows.OfType<GridViewRow>().ToList();
+                if ( gridViewRows.Count  != dataItems.Count )
                 {
                     return;
                 }
 
                 var selectedKeys = SelectedKeys.ToList();
-                foreach ( var dataItem in dataItems )
+                for ( int i = 0; i < dataItems.Count; i++ )
                 {
+                    var dataItem = dataItems[i];
+                    var gridViewRow = gridViewRows[i];
+
                     if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
                     {
                         var dataKeyValue = dataItem.GetPropertyValue( this.DataKeyNames[0] );
@@ -2431,6 +2434,49 @@ namespace Rock.Web.UI.Controls
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Determines whether this instance [can view target page] the specified route.
+        /// </summary>
+        /// <param name="route">The route.</param>
+        /// <returns></returns>
+        public bool CanViewTargetPage( string route )
+        {
+            try
+            {
+                // cast the page as a Rock Page
+                var rockPage = Page as RockPage;
+                if ( rockPage != null )
+                {
+                    // If the route contains a parameter
+                    if ( route.Contains( "{0}" ) )
+                    {
+                        // replace it with a fake param
+                        route = string.Format( route, 1 );
+                    }
+
+                    // Get a uri
+                    Uri uri = new Uri( rockPage.ResolveRockUrlIncludeRoot( route ) );
+                    if ( uri != null )
+                    {
+                        // Find a page ref based on the uri
+                        var pageRef = new Rock.Web.PageReference( uri, Page.Request.ApplicationPath );
+                        if ( pageRef.IsValid )
+                        {
+                            // if a valid pageref was found, check the security of the page
+                            var page = PageCache.Read( pageRef.PageId );
+                            if ( page != null )
+                            {
+                                return page.IsAuthorized( Rock.Security.Authorization.VIEW, rockPage.CurrentPerson );
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            return false;
         }
 
         #endregion

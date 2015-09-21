@@ -208,7 +208,7 @@ namespace Rock.Field
         Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType );
 
         /// <summary>
-        /// Geta a filter expression for an attribute value.
+        /// Gets a filter expression for an attribute value.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="filterValues">The filter values.</param>

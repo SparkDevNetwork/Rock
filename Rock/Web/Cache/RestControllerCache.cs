@@ -120,7 +120,7 @@ namespace Rock.Web.Cache
                 this.Name = RestController.Name;
                 this.ClassName = RestController.ClassName;
 
-                SetCache( RestController.ClassName, new Lazy<int>( () => AsLazy( model.Id ) ), new CacheItemPolicy() );
+                SetCache( RestController.ClassName, model.Id, new CacheItemPolicy() );
             }
         }
 

@@ -44,7 +44,7 @@ namespace Rock.Web.UI
     {
         #region Private Variables
 
-        private PlaceHolder phLoadTime;
+        private PlaceHolder phLoadStats;
         private ScriptManager _scriptManager;
         private PageCache _pageCache = null;
 
@@ -918,8 +918,8 @@ namespace Rock.Web.UI
                         adminFooter.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         this.Form.Controls.Add( adminFooter );
 
-                        phLoadTime = new PlaceHolder();
-                        adminFooter.Controls.Add( phLoadTime );
+                        phLoadStats = new PlaceHolder();
+                        adminFooter.Controls.Add( phLoadStats );
 
                         HtmlGenericControl buttonBar = new HtmlGenericControl( "div" );
                         adminFooter.Controls.Add( buttonBar );
@@ -1115,10 +1115,24 @@ namespace Rock.Web.UI
         {
             base.OnSaveStateComplete( e );
 
-            if ( phLoadTime != null )
+            if ( phLoadStats != null )
             {
                 TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
-                phLoadTime.Controls.Add( new LiteralControl( string.Format( "<span>{0}: {1:N2}s </span>", "Page Load Time", tsDuration.TotalSeconds ) ) );
+                double hitPercent = 0D;
+
+                if ( Context.Items.Contains( "Cache_Hits" ) )
+                {
+                    var cacheHits = Context.Items["Cache_Hits"] as System.Collections.Generic.Dictionary<string, bool>;
+                    if ( cacheHits != null )
+                    {
+                        int hits = cacheHits.Where( c => c.Value ).Count();
+                        int total = cacheHits.Count();
+                        hitPercent = total > 0 ? ( (double)hits / (double)total ) : 0D;
+                    }
+                }
+
+                phLoadStats.Controls.Add( new LiteralControl( string.Format(
+                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span>", tsDuration.TotalSeconds, hitPercent ) ) );
             }
         }
 

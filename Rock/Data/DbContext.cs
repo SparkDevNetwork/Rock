@@ -253,10 +253,13 @@ namespace Rock.Data
                                 model.Guid = Guid.NewGuid();
                             }
 
-                            model.ModifiedDateTime = RockDateTime.Now;
-                            model.ModifiedByPersonAliasId = personAliasId;
+                            if ( !model.ModifiedAuditValuesAlreadyUpdated )
+                            {
+                                model.ModifiedDateTime = RockDateTime.Now;
+                                model.ModifiedByPersonAliasId = personAliasId;
+                            }
                         }
-                        else if ( entry.State == EntityState.Modified )
+                        else if ( entry.State == EntityState.Modified && !model.ModifiedAuditValuesAlreadyUpdated )
                         {
                             model.ModifiedDateTime = RockDateTime.Now;
                             model.ModifiedByPersonAliasId = personAliasId;

@@ -16,8 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Net.Mime;
@@ -25,6 +23,7 @@ using System.Text.RegularExpressions;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Communication.Transport
@@ -40,12 +39,12 @@ namespace Rock.Communication.Transport
         /// <value>
         /// The server.
         /// </value>
-        public virtual string Server 
-        { 
-            get 
+        public virtual string Server
+        {
+            get
             {
                 return GetAttributeValue( "Server" );
-            } 
+            }
         }
 
         /// <summary>
@@ -54,12 +53,12 @@ namespace Rock.Communication.Transport
         /// <value>
         /// The port.
         /// </value>
-        public virtual int Port 
-        { 
-            get 
+        public virtual int Port
+        {
+            get
             {
                 return GetAttributeValue( "Port" ).AsIntegerOrNull() ?? 25;
-            } 
+            }
         }
 
         /// <summary>
@@ -68,12 +67,12 @@ namespace Rock.Communication.Transport
         /// <value>
         ///   <c>true</c> if [use SSL]; otherwise, <c>false</c>.
         /// </value>
-        public virtual bool UseSSL 
+        public virtual bool UseSSL
         {
-            get 
+            get
             {
-                return GetAttributeValue( "UseSSL" ).AsBooleanOrNull() ?? false; 
-            } 
+                return GetAttributeValue( "UseSSL" ).AsBooleanOrNull() ?? false;
+            }
         }
 
         /// <summary>
@@ -82,12 +81,12 @@ namespace Rock.Communication.Transport
         /// <value>
         /// The username.
         /// </value>
-        public virtual string Username 
-        { 
-            get 
+        public virtual string Username
+        {
+            get
             {
                 return GetAttributeValue( "Username" );
-            } 
+            }
         }
 
         /// <summary>
@@ -96,12 +95,12 @@ namespace Rock.Communication.Transport
         /// <value>
         /// The password.
         /// </value>
-        public virtual string Password 
-        { 
-            get 
+        public virtual string Password
+        {
+            get
             {
                 return GetAttributeValue( "Password" );
-            } 
+            }
         }
 
         /// <summary>
@@ -111,7 +110,7 @@ namespace Rock.Communication.Transport
         /// The status note.
         /// </value>
         public virtual string StatusNote { get { return string.Empty; } }
-            
+
         /// <summary>
         /// Sends the specified communication.
         /// </summary>
@@ -341,7 +340,7 @@ namespace Rock.Communication.Transport
             var globalAttributes = GlobalAttributesCache.Read();
 
             string from = template.From;
-            if (string.IsNullOrWhiteSpace(from))
+            if ( string.IsNullOrWhiteSpace( from ) )
             {
                 from = globalAttributes.GetValue( "OrganizationEmail" );
             }
@@ -360,7 +359,7 @@ namespace Rock.Communication.Transport
                 fromName = fromName.ResolveMergeFields( globalConfigValues );
 
                 MailMessage message = new MailMessage();
-                if (string.IsNullOrWhiteSpace(fromName))
+                if ( string.IsNullOrWhiteSpace( fromName ) )
                 {
                     message.From = new MailAddress( from );
                 }
@@ -392,78 +391,58 @@ namespace Rock.Communication.Transport
 
                 using ( var smtpClient = GetSmtpClient() )
                 {
-                    using ( var rockContext = new RockContext() )
+                    foreach ( var recipientData in recipients )
                     {
-                        int? senderPersonAliasId = null;
-                        if ( createCommunicationHistory )
+                        foreach ( var g in globalConfigValues )
                         {
-                            var sender = new PersonService( rockContext )
-                                .Queryable().AsNoTracking()
-                                .Where( p => p.Email == from )
-                                .FirstOrDefault();
-                            senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
-                        }
-
-                        var communicationService = new CommunicationService( rockContext );
-
-                        foreach ( var recipientData in recipients )
-                        {
-                            foreach ( var g in globalConfigValues )
+                            if ( recipientData.MergeFields.ContainsKey( g.Key ) )
                             {
-                                if ( recipientData.MergeFields.ContainsKey( g.Key ) )
-                                {
-                                    recipientData.MergeFields[g.Key] = g.Value;
-                                }
-                            }
-
-                            // Add the recipients from the template
-                            List<string> sendTo = SplitRecipient( template.To );
-
-                            // Add the recipient from merge data ( if it's not null and not already added )
-                            if ( !string.IsNullOrWhiteSpace( recipientData.To ) && !sendTo.Contains( recipientData.To, StringComparer.OrdinalIgnoreCase ) )
-                            {
-                                sendTo.Add( recipientData.To );
-                            }
-
-                            foreach ( string to in sendTo )
-                            {
-                                message.To.Clear();
-                                message.To.Add( to );
-
-                                string subject = template.Subject.ResolveMergeFields( recipientData.MergeFields );
-                                string body = Regex.Replace( template.Body.ResolveMergeFields( recipientData.MergeFields ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
-
-                                if ( !string.IsNullOrWhiteSpace( themeRoot ) )
-                                {
-                                    subject = subject.Replace( "~~/", themeRoot );
-                                    body = body.Replace( "~~/", themeRoot );
-                                }
-
-                                if ( !string.IsNullOrWhiteSpace( appRoot ) )
-                                {
-                                    subject = subject.Replace( "~/", appRoot );
-                                    body = body.Replace( "~/", appRoot );
-                                    body = body.Replace( @" src=""/", @" src=""" + appRoot );
-                                    body = body.Replace( @" href=""/", @" href=""" + appRoot );
-                                }
-
-                                message.Subject = subject;
-                                message.Body = body;
-
-                                smtpClient.Send( message );
-
-                                if ( createCommunicationHistory )
-                                {
-                                    communicationService.CreateEmailCommunication(
-                                        new List<string> { to }, fromName, from, from, subject, body, string.Empty, false,
-                                        CommunicationRecipientStatus.Delivered, senderPersonAliasId );
-                                }
+                                recipientData.MergeFields[g.Key] = g.Value;
                             }
                         }
 
-                        if ( createCommunicationHistory )
+                        // Add the recipients from the template
+                        List<string> sendTo = SplitRecipient( template.To );
+
+                        // Add the recipient from merge data ( if it's not null and not already added )
+                        if ( !string.IsNullOrWhiteSpace( recipientData.To ) && !sendTo.Contains( recipientData.To, StringComparer.OrdinalIgnoreCase ) )
                         {
-                            rockContext.SaveChanges();
+                            sendTo.Add( recipientData.To );
+                        }
+
+                        foreach ( string to in sendTo )
+                        {
+                            message.To.Clear();
+                            message.To.Add( to );
+
+                            string subject = template.Subject.ResolveMergeFields( recipientData.MergeFields );
+                            string body = Regex.Replace( template.Body.ResolveMergeFields( recipientData.MergeFields ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+
+                            if ( !string.IsNullOrWhiteSpace( themeRoot ) )
+                            {
+                                subject = subject.Replace( "~~/", themeRoot );
+                                body = body.Replace( "~~/", themeRoot );
+                            }
+
+                            if ( !string.IsNullOrWhiteSpace( appRoot ) )
+                            {
+                                subject = subject.Replace( "~/", appRoot );
+                                body = body.Replace( "~/", appRoot );
+                                body = body.Replace( @" src=""/", @" src=""" + appRoot );
+                                body = body.Replace( @" href=""/", @" href=""" + appRoot );
+                            }
+
+                            message.Subject = subject;
+                            message.Body = body;
+
+                            smtpClient.Send( message );
+
+                            if ( createCommunicationHistory )
+                            {
+                                var transaction = new SaveCommunicationTransaction(
+                                    to, fromName, from, subject, body );
+                                RockQueue.TransactionQueue.Enqueue( transaction );
+                            }
                         }
                     }
                 }
@@ -560,30 +539,15 @@ namespace Rock.Communication.Transport
 
                     if ( createCommunicationHistory )
                     {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            int? senderPersonAliasId = null;
-                            if ( createCommunicationHistory )
-                            {
-                                var sender = new PersonService( rockContext )
-                                    .Queryable().AsNoTracking()
-                                    .Where( p => p.Email == from )
-                                    .FirstOrDefault();
-                                senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
-                            }
-
-                            new CommunicationService( rockContext ).CreateEmailCommunication(
-                                recipients, fromName, from, from, subject, body, string.Empty, false,
-                                CommunicationRecipientStatus.Delivered, senderPersonAliasId );
-
-                            rockContext.SaveChanges();
-                        }
+                        var transaction = new SaveCommunicationTransaction(
+                            recipients, fromName, from, subject, body );
+                        RockQueue.TransactionQueue.Enqueue( transaction );
                     }
 
                 }
             }
 
-            catch (Exception ex)
+            catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, null );
             }
@@ -599,9 +563,9 @@ namespace Rock.Communication.Transport
         /// <param name="body">The body.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        public override void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null)
+        public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null )
         {
-            Send(recipients, from, string.Empty, subject, body, appRoot, themeRoot, null);
+            Send( recipients, from, string.Empty, subject, body, appRoot, themeRoot, null );
         }
 
         /// <summary>
@@ -648,7 +612,7 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">Attachments.</param>
         /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
-        public void Send(List<string> recipients, string from, string fromName, string subject, string body, string appRoot, string themeRoot, List<Attachment> attachments, bool createCommunicationHistory )
+        public void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot, string themeRoot, List<Attachment> attachments, bool createCommunicationHistory )
         {
             try
             {
@@ -682,7 +646,7 @@ namespace Rock.Communication.Transport
                     }
 
                     MailMessage message = new MailMessage();
-                    
+
                     // set from 
                     if ( !string.IsNullOrWhiteSpace( fromName ) )
                     {
@@ -706,14 +670,14 @@ namespace Rock.Communication.Transport
                     // strip out any unsubscribe links since we don't know the person
                     msgBody = Regex.Replace( msgBody, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
 
-                    message.Body = msgBody;       
-                    
+                    message.Body = msgBody;
+
                     // add attachments
                     if ( attachments != null )
                     {
                         foreach ( var attachment in attachments )
                         {
-                            message.Attachments.Add(attachment);
+                            message.Attachments.Add( attachment );
                         }
                     }
 
@@ -724,24 +688,9 @@ namespace Rock.Communication.Transport
 
                     if ( createCommunicationHistory )
                     {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            int? senderPersonAliasId = null;
-                            if ( createCommunicationHistory )
-                            {
-                                var sender = new PersonService( rockContext )
-                                    .Queryable().AsNoTracking()
-                                    .Where( p => p.Email == from )
-                                    .FirstOrDefault();
-                                senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
-                            }
-
-                            new CommunicationService( rockContext ).CreateEmailCommunication(
-                                recipients, fromName, from, from, subject, body, string.Empty, false,
-                                CommunicationRecipientStatus.Delivered, senderPersonAliasId );
-
-                            rockContext.SaveChanges();
-                        }
+                        var transaction = new SaveCommunicationTransaction(
+                            recipients, fromName, from, subject, body );
+                        RockQueue.TransactionQueue.Enqueue( transaction );
                     }
                 }
             }
@@ -759,7 +708,7 @@ namespace Rock.Communication.Transport
         public virtual void AddAdditionalHeaders( MailMessage message, CommunicationRecipient recipient )
         {
         }
-        
+
         /// <summary>
         /// Creates an SmtpClient using this Server, Port and SSL settings.
         /// </summary>

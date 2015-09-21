@@ -555,6 +555,8 @@ namespace RockWeb.Blocks.Connection
                         groupStateObj.GroupId = group.Id;
                         groupStateObj.GroupName = group.Name;
                         groupStateObj.GroupTypeId = group.GroupTypeId;
+                        groupStateObj.CampusId = group.CampusId;
+                        groupStateObj.CampusName = group.Campus != null ? group.Campus.Name : string.Empty;
                         GroupsState.Add( groupStateObj );
                     }
 
@@ -1423,6 +1425,8 @@ namespace RockWeb.Blocks.Connection
                     GroupId = opportunityGroup.Group.Id;
                     GroupName = opportunityGroup.Group.Name;
                     GroupTypeId = opportunityGroup.Group.GroupTypeId;
+                    CampusId = opportunityGroup.Group.CampusId;
+                    CampusName = opportunityGroup.Group.Campus != null ? opportunityGroup.Group.Campus.Name : string.Empty;
                 }
             }
 

@@ -119,7 +119,7 @@ namespace RockWeb
                             // default Initializer is CreateDatabaseIfNotExists, so set it to NULL so that nothing happens if there isn't a database yet
                             Database.SetInitializer<Rock.Data.RockContext>( null );
                             new AttributeService( rockContext ).Get( 0 );
-                            System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                            System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase {2}/{1} - {0} ms", stopwatch.Elapsed.TotalMilliseconds, rockContext.Database.Connection.Database, rockContext.Database.Connection.DataSource ) );
                         }
                         catch
                         {
@@ -310,6 +310,7 @@ namespace RockWeb
             }
 
             Context.Items.Add( "Request_Start_Time", RockDateTime.Now );
+            Context.Items.Add( "Cache_Hits", new Dictionary<string, bool>() );
         }
 
         /// <summary>
@@ -613,6 +614,10 @@ namespace RockWeb
             routes.Clear();
 
             PageRouteService pageRouteService = new PageRouteService( rockContext );
+
+            //Add ingore rule for asp.net ScriptManager files. 
+            routes.Ignore("{resource}.axd/{*pathInfo}");
+
 
             // find each page that has defined a custom routes.
             foreach ( PageRoute pageRoute in pageRouteService.Queryable() )

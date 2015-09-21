@@ -286,15 +286,16 @@ namespace RockWeb.Blocks.Finance
 
                 case "Account":
 
-                    int accountId = 0;
-                    if ( int.TryParse( e.Value, out accountId ) )
+                    var accountIds = e.Value.SplitDelimitedValues().AsIntegerList().Where(a => a > 0 ).ToList();
+                    if ( accountIds.Any())
                     {
                         var service = new FinancialAccountService( new RockContext() );
-                        var account = service.Get( accountId );
-                        if ( account != null )
-                        {
-                            e.Value = account.Name;
-                        }
+                        var accountNames = service.GetByIds( accountIds ).OrderBy( a => a.Order ).OrderBy( a => a.Name ).Select( a => a.Name ).ToList().AsDelimited( ", ", " or " );
+                        e.Value = accountNames;
+                    }
+                    else
+                    {
+                        e.Value = string.Empty;
                     }
 
                     break;
@@ -328,7 +329,7 @@ namespace RockWeb.Blocks.Finance
             gfTransactions.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
             gfTransactions.SaveUserPreference( "Amount Range", nreAmount.DelimitedValues );
             gfTransactions.SaveUserPreference( "Transaction Code", tbTransactionCode.Text );
-            gfTransactions.SaveUserPreference( "Account", ddlAccount.SelectedValue != All.Id.ToString() ? ddlAccount.SelectedValue : string.Empty );
+            gfTransactions.SaveUserPreference( "Account", apAccount.SelectedValue != All.Id.ToString() ? apAccount.SelectedValue : string.Empty );
             gfTransactions.SaveUserPreference( "Transaction Type", ddlTransactionType.SelectedValue != All.Id.ToString() ? ddlTransactionType.SelectedValue : string.Empty );
             gfTransactions.SaveUserPreference( "Currency Type", ddlCurrencyType.SelectedValue != All.Id.ToString() ? ddlCurrencyType.SelectedValue : string.Empty );
             gfTransactions.SaveUserPreference( "Credit Card Type", ddlCreditCardType.SelectedValue != All.Id.ToString() ? ddlCreditCardType.SelectedValue : string.Empty );
@@ -630,20 +631,20 @@ namespace RockWeb.Blocks.Finance
             nreAmount.DelimitedValues = gfTransactions.GetUserPreference( "Amount Range" );
             tbTransactionCode.Text = gfTransactions.GetUserPreference( "Transaction Code" );
 
-            var accountService = new FinancialAccountService( new RockContext() );
-            var accounts = accountService.Queryable();
-            if ( GetAttributeValue( "ActiveAccountsOnlyFilter" ).AsBoolean() )
-            {
-                accounts = accounts.Where( a => a.IsActive );
-            }
+            apAccount.DisplayActiveOnly = GetAttributeValue( "ActiveAccountsOnlyFilter" ).AsBoolean();
 
-            ddlAccount.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( FinancialAccount account in accounts.OrderBy( a => a.Order ) )
+            var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
+            if ( accountIds.Any() )
             {
-                ListItem li = new ListItem( account.Name, account.Id.ToString() );
-                li.Selected = account.Id.ToString() == gfTransactions.GetUserPreference( "Account" );
-                ddlAccount.Items.Add( li );
+                var service = new FinancialAccountService( new RockContext() );
+                var accounts = service.GetByIds( accountIds ).OrderBy( a => a.Order ).OrderBy( a => a.Name ).ToList();
+                apAccount.SetValues(accounts);
             }
+            else
+            {
+                apAccount.SetValue( 0 );
+            }
+            
 
             BindDefinedTypeDropdown( ddlTransactionType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE ), "Transaction Type" );
             BindDefinedTypeDropdown( ddlCurrencyType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE ), "Currency Type" );
@@ -812,10 +813,12 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // Account Id
-                int accountId = int.MinValue;
-                if ( int.TryParse( gfTransactions.GetUserPreference( "Account" ), out accountId ) )
+                var accountIds = (gfTransactions.GetUserPreference( "Account" ) ?? "").SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
                 {
-                    qry = qry.Where( t => t.TransactionDetails.Any( d => d.AccountId == accountId ) );
+                    if ( accountIds.Any() )
+                    {
+                        qry = qry.Where( t => t.TransactionDetails.Any( d => accountIds.Contains( d.AccountId ) || (d.Account.ParentAccountId.HasValue && accountIds.Contains(d.Account.ParentAccountId.Value) ) ) );
+                    }
                 }
 
                 // Transaction Type
