@@ -1,0 +1,53 @@
+{% comment %}{% include '~~/Assets/Lava/EventItemList.lava' %}{% endcomment %}
+
+{% assign firstEventOccurrenceSummary = EventOccurrenceSummaries | First %}
+{% assign firstMonth = firstEventOccurrenceSummary.DateTime | Date: 'MMMM' %}
+{% assign currentMonth = firstMonth %}
+
+
+<h2 style="margin-top: 20px;">{{ firstMonth }}</h2>
+
+<table class="table">
+
+  {% for eventOccurrenceSummary in EventOccurrenceSummaries %}
+    {% if eventOccurrenceSummary.EventItem.IsApproved %}
+
+      {% comment %} EventCalendarId 1 is public calendar {% endcomment %}
+      {% assign eventCalendarItem = eventOccurrenceSummary.EventItem.EventCalendarItems | Where: 'EventCalendarId', 1 | First %}
+
+      {% assign thisMonth = eventOccurrenceSummary.DateTime | Date: 'MMMM' %}
+
+      {% if thisMonth != currentMonth %}
+</table>
+<h2 style="margin-top: 20px;">{{ thisMonth }}</h2>
+
+<table class="table">
+      {% endif %}
+
+      <tr>
+        <td>
+          {% if DetailsPage != empty %}
+            <a href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}"><strong style="margin-right: 5px;">{{ eventOccurrenceSummary.Name }}</strong></a>
+          {% else %}
+            <strong style="margin-right: 5px;">{{ eventOccurrenceSummary.Name }}</strong>
+          {% endif %}
+          <small style="display: inline-block;">{{ eventOccurrenceSummary.DateTime | Date: 'ddd, MMM d / h:mmtt' }}</small>
+
+          {% assign currentMonth = thisMonth %}
+        </td>
+      </tr>
+
+    {% endif %}
+  {% endfor %}
+
+
+</table>
+
+
+<script>
+  $(document).ready(function(){
+    $('.contextsetter').removeClass('nav navbar-nav ').addClass('list-unstyled')
+    .find('.navbar-link').removeClass('navbar-link').addClass('btn btn-default btn-sm')
+    .find('.fa-caret-down').removeClass('fa-caret-down').addClass('icon-caret-down')
+  })
+</script>

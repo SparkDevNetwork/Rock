@@ -1,0 +1,65 @@
+<div class="row">
+	<div class="col-md-8 col-md-push-4">
+	  {% if Event.Photo.Guid %}
+	    <center>
+	      <img src="/GetImage.ashx?Guid={{ Event.Photo.Guid }}" class="title-image img-responsive"></img>
+	    </center>
+	  {% endif %}
+
+	  <h1>{{Event.Name}}</h1>
+	  {{Event.Description}}
+	</div>
+	<div class="col-md-4 col-md-pull-8">
+		<div class="well">
+			{% assign linkage = EventItemOccurrence.Linkages | First %}
+
+			{% if EventItemOccurrence.Campus != null %}
+				<h4> {{EventItemOccurrence.Campus.Name}} Campus</h4>
+      {% endif %}
+
+      {% if (EventItemOccurrence.ContactPersonAlias.Person.Fullname | Trim != '') or EventItemOccurrence.ContactEmail != '' or EventItemOccurrence.ContactPhone != '' %}
+      <p>
+				  <strong>Contact</strong><br />
+        {% if EventItemOccurrence.ContactPersonAlias.Person.Fullname | Trim != '' %}
+          {{ EventItemOccurrence.ContactPersonAlias.Person.FullName }} <br />
+        {% endif %}
+
+        {% if EventItemOccurrence.ContactEmail != '' %}
+          {{ EventItemOccurrence.ContactEmail }} <br />
+        {% endif %}
+
+				{{ EventItemOccurrence.ContactPhone }}
+			  </p>
+      {% endif %}
+
+			{% if EventItemOccurrence.Location != '' %}
+				<p>
+					<strong> Location</strong> <br />
+					{{ EventItemOccurrence.Location }}
+				</p>
+			{% endif %}
+
+			<p>
+				<strong>Date / Time</strong> <br />
+                {{ EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal | First | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}
+            </p>
+
+			{% if EventItemOccurrence.Note != '' %}
+				<strong>Note</strong><br />
+				{{ EventItemOccurrence.Note }}
+			{% endif %}
+
+			{% if linkage.RegistrationInstanceId > 0 ) %}
+				<a href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}" class="btn btn-primary btn-block margin-t-md">Register</a>
+			{% endif %}
+		</div>
+
+
+  </div>
+</div>
+
+
+
+
+
+
