@@ -86,7 +86,7 @@
       <p>
         {% if Context.Campus.ShortCode == "ATH" %}
           <strong>7th Grade</strong> Saturdays 4:30-5:30 pm<br>
-          <strong>8th Grade</strong> Saturdays 7:00-8:00 pm<br>
+          <strong>8th Grade</strong> Saturdays 6:00-7:00 pm<br>
         {% else %}
           <strong>7th-8th Grade</strong> {{ campus | Attribute: 'JrHighTime' }}<br>
         {% endif %}
