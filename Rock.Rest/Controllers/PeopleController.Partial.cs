@@ -193,6 +193,62 @@ namespace Rock.Rest.Controllers
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
         }
 
+        public override void Put( int id, Person person )
+        {
+            SetProxyCreation( true );
+
+            var rockContext = (RockContext)Service.Context;
+            var existingPerson = Service.Get( id );
+            if ( existingPerson != null )
+            {
+                var changes = new List<string>();
+                History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( existingPerson.RecordStatusValueId ), DefinedValueCache.GetName( person.RecordStatusValueId ) );
+                History.EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( existingPerson.RecordStatusReasonValueId ), DefinedValueCache.GetName( person.RecordStatusReasonValueId ) );
+                History.EvaluateChange( changes, "Title", DefinedValueCache.GetName( existingPerson.TitleValueId ), DefinedValueCache.GetName( person.TitleValueId ) );
+                History.EvaluateChange( changes, "First Name", existingPerson.FirstName, person.FirstName );
+                History.EvaluateChange( changes, "Nick Name", existingPerson.NickName, person.NickName );
+                History.EvaluateChange( changes, "Middle Name", existingPerson.MiddleName, person.MiddleName );
+                History.EvaluateChange( changes, "Last Name", existingPerson.LastName, person.LastName );
+                History.EvaluateChange( changes, "Suffix", DefinedValueCache.GetName( existingPerson.SuffixValueId ), DefinedValueCache.GetName( person.SuffixValueId ) );
+                History.EvaluateChange( changes, "Birth Month", existingPerson.BirthMonth, person.BirthMonth );
+                History.EvaluateChange( changes, "Birth Day", existingPerson.BirthDay, person.BirthDay );
+                History.EvaluateChange( changes, "Birth Year", existingPerson.BirthYear, person.BirthYear );
+                History.EvaluateChange( changes, "Graduation Year", existingPerson.GraduationYear, person.GraduationYear );
+                History.EvaluateChange( changes, "Anniversary Date", existingPerson.AnniversaryDate, person.AnniversaryDate );
+                History.EvaluateChange( changes, "Gender", existingPerson.Gender, person.Gender );
+                History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( existingPerson.MaritalStatusValueId ), DefinedValueCache.GetName( person.MaritalStatusValueId ) );
+                History.EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( existingPerson.ConnectionStatusValueId ), DefinedValueCache.GetName( person.ConnectionStatusValueId ) );
+                History.EvaluateChange( changes, "Email", existingPerson.Email, person.Email );
+                History.EvaluateChange( changes, "Email Active", existingPerson.IsEmailActive, person.IsEmailActive );
+                History.EvaluateChange( changes, "Email Preference", existingPerson.EmailPreference, person.EmailPreference );
+
+                if ( person.GivingGroupId != existingPerson.GivingGroupId )
+                {
+                    string oldGivingGroupName = existingPerson.GivingGroup != null ? existingPerson.GivingGroup.Name : string.Empty;
+                    string newGivingGroupName = person.GivingGroup != null ? person.GivingGroup.Name : string.Empty;
+                    if ( person.GivingGroupId.HasValue && string.IsNullOrWhiteSpace( newGivingGroupName ) )
+                    {
+                        var givingGroup = new GroupService( rockContext ).Get( person.GivingGroupId.Value );
+                        newGivingGroupName = givingGroup != null ? givingGroup.Name : string.Empty;
+                    }
+                    History.EvaluateChange( changes, "Giving Group", oldGivingGroupName, newGivingGroupName );
+                }
+
+                if ( changes.Any() )
+                {
+                    System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+                    HistoryService.SaveChanges(
+                        rockContext,
+                        typeof( Person ),
+                        Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                        person.Id,
+                        changes );
+                }
+            }
+
+            base.Put( id, person );
+        }
+
         /// <summary>
         /// Adds a new person and adds them to the specified family.
         /// </summary>
