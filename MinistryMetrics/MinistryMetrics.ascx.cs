@@ -179,9 +179,11 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.MinistryMetrics
             // Show the warning if metric source is selected
             ministryMetricWarning.Visible = !GetAttributeValue( "MetricType" ).Any();
 
-            //var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+            
 
-            //var campus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+            // var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+
+            // var campus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
             //var campusContext = GetAttributeValue( "RespectCampusContext" ).AsBooleanOrNull();
 
@@ -205,6 +207,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.MinistryMetrics
 
             if ( !Page.IsPostBack )
             {
+                // Get The Campus Id Query String
+                var campusContextQuery = Request.QueryString["campusId"];
+
                 var MetricTypeValue = GetAttributeValue( "MetricType" ).AsBooleanOrNull();
 
                 string sqlStatement = string.Empty;
@@ -229,17 +234,36 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.MinistryMetrics
                     metricWidth.Value = GetAttributeValue( "NumberofColumns" );
                 }
 
-                if ( sqlStatement != "" )
+                if ( campusContextQuery != null )
                 {
+
+                    var campusSql = Regex.Replace( sqlStatement, "{{campusId}}", "AND CampusId = " + campusContextQuery);
+
                     try
                     {
-                        currentMetricValue.Value = DbService.ExecuteScaler( sqlStatement ).ToString();
+                        currentMetricValue.Value = DbService.ExecuteScaler( campusSql ).ToString();
                     }
                     catch
                     {
                         currentMetricValue.Value = "Error";
                     }
+                }
+                else
+                {
+                    if ( sqlStatement != "" )
+                    {
+                        var campusSql = Regex.Replace( sqlStatement, "{{campusId}}", "");
 
+                        try
+                        {
+                            currentMetricValue.Value = DbService.ExecuteScaler( campusSql ).ToString();
+                        }
+                        catch
+                        {
+                            currentMetricValue.Value = "Error";
+                        }
+
+                    }
                 }
             }
         }
