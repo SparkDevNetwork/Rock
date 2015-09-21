@@ -6092,9 +6092,6 @@ h4,
   letter-spacing: -0.5px;
   font-size: 18px;
 }
-.panel .panel-body {
-  overflow: hidden;
-}
 .panel.panel-primary .panel-heading {
   background-color: #ee7624;
 }
