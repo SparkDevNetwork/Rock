@@ -78,11 +78,17 @@ header {
   .logo {
     display: block;
     background-image: url(../assets/logo.svg);
-    height: 50px;
-    width: 235px;
-    margin-left: -@grid-gutter-width;
+    background-repeat: no-repeat;
+    background-position: left center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    height: 40px;
+    width: 203px;
     @media @sm {
-      margin-left: -@grid-gutter-width/2;
+      margin-left: @grid-gutter-width;
+      height: 50px;
+      width: 244px;
       margin-top: @grid-gutter-width;
       margin-bottom: @grid-gutter-width;
     }
