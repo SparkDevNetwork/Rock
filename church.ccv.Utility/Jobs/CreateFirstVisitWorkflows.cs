@@ -130,7 +130,7 @@ namespace church.ccv.Utility
                     var headOfHouseAliasIds = headOfHouse.Aliases.Select( a => a.Id ).ToList();
 
                     // only create workflow is the head of house age is not known or it's greater than the min age
-                    if ( !headOfHouse.Age.HasValue || headOfHouse.Age > minAgeHeadOfHouse )
+                    if ( !headOfHouse.Age.HasValue || headOfHouse.Age >= minAgeHeadOfHouse )
                     {
                         // don't create a workflow if there is no contact info
                         int addressCount = family.GroupLocations.Count();
