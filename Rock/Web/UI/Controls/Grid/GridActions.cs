@@ -388,9 +388,29 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            var rockPage = Page as RockPage;
+
             _lbPersonMerge.Visible = ShowMergePerson && _parentGrid.CanViewTargetPage( _parentGrid.PersonMergePageRoute );
             _lbBulkUpdate.Visible = ShowBulkUpdate && _parentGrid.CanViewTargetPage( _parentGrid.BulkUpdatePageRoute );
-            _lbCommunicate.Visible = ShowCommunicate && _parentGrid.CanViewTargetPage( _parentGrid.CommunicationPageRoute );
+
+            if ( ShowCommunicate )
+            {
+                string url = _parentGrid.CommunicationPageRoute;
+                if ( string.IsNullOrWhiteSpace( url ) )
+                {
+                    var pageRef = rockPage.Site.CommunicationPageReference;
+                    if ( pageRef.PageId > 0 )
+                    {
+                        pageRef.Parameters.AddOrReplace( "CommunicationId", "0" );
+                        url = pageRef.BuildUrl();
+                    }
+                    else
+                    {
+                        url = "~/Communication/{0}";
+                    }
+                }
+                _lbCommunicate.Visible = _parentGrid.CanViewTargetPage( url );
+            }
 
             _aAdd.Visible = ShowAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
             _lbAdd.Visible = ShowAdd && String.IsNullOrWhiteSpace( ClientAddScript );
