@@ -686,14 +686,11 @@ $(document).ready(function() {
                                 }
                             }
 
-                            // All filtering has been added, now run query and then check security and load attributes
+                            // All filtering has been added, now run query and load attributes
                             foreach ( var item in qry.ToList() )
                             {
-                                if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                                {
-                                    item.LoadAttributes( rockContext );
-                                    items.Add( item );
-                                }
+                                item.LoadAttributes( rockContext );
+                                items.Add( item );
                             }
 
                             // Order the items
