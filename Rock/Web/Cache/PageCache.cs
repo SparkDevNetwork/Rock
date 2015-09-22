@@ -898,8 +898,8 @@ namespace Rock.Web.Cache
             {
                 if ( item.Key.StartsWith( "Rock:Page:" ) )
                 {
-                    var page = cache[item.Key] as Lazy<PageCache>;
-                    if ( page != null && page.Value != null && page.Value.LayoutId == layoutId )
+                    var page = cache[item.Key] as PageCache;
+                    if ( page != null && page.LayoutId == layoutId )
                     {
                         cache.Remove( item.Key );
                     }
@@ -917,10 +917,10 @@ namespace Rock.Web.Cache
             {
                 if ( item.Key.StartsWith( "Rock:Page:" ) )
                 {
-                    var page = cache[item.Key] as Lazy<PageCache>;
-                    if ( page != null && page.Value != null && page.Value.LayoutId == layoutId )
+                    var page = cache[item.Key] as PageCache;
+                    if ( page != null && page.LayoutId == layoutId )
                     {
-                        page.Value.FlushBlocks();
+                        page.FlushBlocks();
                     }
                 }
             }

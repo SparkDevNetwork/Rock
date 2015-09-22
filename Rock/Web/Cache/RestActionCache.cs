@@ -130,7 +130,7 @@ namespace Rock.Web.Cache
                 this.ApiId = RestAction.ApiId;
                 this.Path = RestAction.Path;
 
-                SetCache( RestAction.ApiId, new Lazy<int>( () => AsLazy( model.Id ) ), new CacheItemPolicy() );
+                SetCache( RestAction.ApiId, model.Id, new CacheItemPolicy() );
             }
         }
 

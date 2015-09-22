@@ -52,7 +52,19 @@ namespace Rock.Web.UI
 
             if ( Person == null )
             {
-                Person = new Person();
+                // check the query string and attempt to load the person from it
+                if ( Request["PersonId"] != null )
+                {
+                    int personId = Request["PersonId"].AsInteger();
+
+                    Person = new PersonService( new RockContext() ).Get( personId );
+                    Person.LoadAttributes();
+                }
+
+                if ( Person == null )
+                {
+                    Person = new Person();
+                }
             }
         }
 

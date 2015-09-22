@@ -107,6 +107,11 @@ namespace Rock.Client
         /// <summary />
         public string MiddleName { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public string NickName { get; set; }
 
@@ -175,6 +180,7 @@ namespace Rock.Client
             this.LastName = source.LastName;
             this.MaritalStatusValueId = source.MaritalStatusValueId;
             this.MiddleName = source.MiddleName;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NickName = source.NickName;
             this.PhotoId = source.PhotoId;
             this.RecordStatusReasonValueId = source.RecordStatusReasonValueId;

@@ -665,6 +665,7 @@ namespace RockWeb.Blocks.Reporting
                     bool isAuthorizedForField = true;
                     var listItem = new ListItem();
                     listItem.Text = entityField.Title;
+
                     if ( entityField.FieldKind == FieldKind.Property )
                     {
                         listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Property, entityField.Name );

@@ -61,6 +61,11 @@ namespace Rock.Client
         /// <summary />
         public bool IsSystem { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public string Note { get; set; }
 
@@ -89,6 +94,7 @@ namespace Rock.Client
             this.GuestCount = source.GuestCount;
             this.IsNotified = source.IsNotified;
             this.IsSystem = source.IsSystem;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Note = source.Note;
             this.PersonId = source.PersonId;
             this.Guid = source.Guid;

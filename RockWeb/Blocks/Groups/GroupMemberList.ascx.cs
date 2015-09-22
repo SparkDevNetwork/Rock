@@ -520,7 +520,7 @@ namespace RockWeb.Blocks.Groups
             hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
             hlPersonProfileLink.DataNavigateUrlFields = new string[1] { "PersonId" };
             hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( "###", "{0}" );
-            hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default'><i class='fa fa-user'></i></div>";
+            hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default btn-sm'><i class='fa fa-user'></i></div>";
             hlPersonProfileLink.DataTextField = "PersonId";
             gGroupMembers.Columns.Add( hlPersonProfileLink );
         }
@@ -535,7 +535,7 @@ namespace RockWeb.Blocks.Groups
             btnPlaceElsewhere.HeaderStyle.CssClass = "grid-columncommand";
             btnPlaceElsewhere.ItemStyle.CssClass = "grid-columncommand";
             btnPlaceElsewhere.Text = "<i class='fa fa-share'></i>";
-            btnPlaceElsewhere.CssClass = "btn btn-default";
+            btnPlaceElsewhere.CssClass = "btn btn-default btn-sm";
             btnPlaceElsewhere.ToolTip = "Place Elsewhere";
             btnPlaceElsewhere.Click += btnPlaceElsewhere_Click;
 

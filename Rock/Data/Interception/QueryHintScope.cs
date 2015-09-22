@@ -67,7 +67,7 @@ namespace Rock.Data
         /// NOTE: Make sure to use a USING { } pattern to prevent the query hint from getting added to other queries that fire off later
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <param name="hintType">The hint.</param>
+        /// <param name="hint">The hint.</param>
         public QueryHintScope( Rock.Data.DbContext context, string hint )
         {
             _hintInterceptor = new QueryHintDbCommandInterceptor( context, hint);

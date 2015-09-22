@@ -469,6 +469,9 @@
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataComponentSettingsHelper.cs" />
     <Compile Include="Reporting\DataFilter\BaseAccountFilter.cs" />
+    <Compile Include="Reporting\DataFilter\ContentChannelItem\ContentChannelItemAttributesFilter.cs" />
+    <Compile Include="Reporting\DataFilter\ContentChannelItem\ContentChannel.cs" />
+    <Compile Include="Reporting\DataFilter\ContentChannelItem\ContentChannelType.cs" />
     <Compile Include="Reporting\DataFilter\FinancialPledge\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialTransactionDetail\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialTransaction\TotalAmountFilter.cs" />
@@ -510,6 +513,7 @@
     <Compile Include="Utility\ExtensionMethods\CurrencyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
+    <Compile Include="Web\InternalContext.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />
     <Compile Include="Security\Authentication\Facebook.cs">

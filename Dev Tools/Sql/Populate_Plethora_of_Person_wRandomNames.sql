@@ -12382,6 +12382,9 @@ BEGIN
         SET @personCounter += 2;
     END
 
+	-- fix up any birthdates that got set to a future date
+	UPDATE Person set BirthYear = DATEPART(year, SysDateTime()) - 1 where BirthDate > SysDateTime();
+
     COMMIT TRANSACTION
 
     IF OBJECT_ID('tempdb..#lastNames') IS NOT NULL

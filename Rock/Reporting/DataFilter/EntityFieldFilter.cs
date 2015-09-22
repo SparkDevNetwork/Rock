@@ -128,7 +128,7 @@ namespace Rock.Reporting.DataFilter
             // create a javascript block for all the possible entityFields which will get rendered once per entityType
             foreach ( var entityField in entityFields )
             {
-                string clientFormatSelection = entityField.FieldType.Field.GetFilterFormatScript( entityField.FieldConfig, entityField.Title );
+                string clientFormatSelection = entityField.FieldType.Field.GetFilterFormatScript( entityField.FieldConfig, entityField.TitleWithoutQualifier );
 
                 if ( clientFormatSelection != string.Empty )
                 {
