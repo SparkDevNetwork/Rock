@@ -311,17 +311,18 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GlobalAttributesCache GetOrAddExisting( string key, Func<GlobalAttributesCache> valueFactory )
         {
-            var newValue = new Lazy<GlobalAttributesCache>( valueFactory );
-            var oldValue = _cache.AddOrGetExisting( key, newValue, new CacheItemPolicy() ) as Lazy<GlobalAttributesCache>;
-            try
+            var value = _cache.Get( key ) as GlobalAttributesCache;
+            if ( value != null )
             {
-                return ( oldValue ?? newValue ).Value;
+                return value;
             }
-            catch
+
+            value = valueFactory();
+            if ( value != null )
             {
-                _cache.Remove( key );
-                throw;
+                _cache.Set( key, value, new CacheItemPolicy() );
             }
+            return value;
         }
 
         /// <summary>

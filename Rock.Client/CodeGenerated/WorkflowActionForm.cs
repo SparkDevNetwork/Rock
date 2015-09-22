@@ -58,6 +58,11 @@ namespace Rock.Client
         /// <summary />
         public bool IncludeActionsInNotification { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public int? NotificationSystemEmailId { get; set; }
 
@@ -82,6 +87,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.Header = source.Header;
             this.IncludeActionsInNotification = source.IncludeActionsInNotification;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NotificationSystemEmailId = source.NotificationSystemEmailId;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;

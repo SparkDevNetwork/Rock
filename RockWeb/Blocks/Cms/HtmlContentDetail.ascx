@@ -8,7 +8,7 @@
 
         <%-- Edit Panel --%>
         <asp:Panel ID="pnlEditModel" runat="server" Visible="false">
-            <Rock:ModalDialog ID="mdEdit" runat="server" OnSaveClick="lbSave_Click" Title="Edit Html">
+            <Rock:ModalDialog ID="mdEdit" runat="server" OnSaveClick="lbSave_Click" Title="Edit HTML">
                 <Content>
 
                     <asp:UpdatePanel runat="server" ID="upnlEdit">

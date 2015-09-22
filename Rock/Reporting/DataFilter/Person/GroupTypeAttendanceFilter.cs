@@ -177,11 +177,15 @@ namespace Rock.Reporting.DataFilter.Person
 
             var controls = new Control[5] { gtpGroupType, cbChildGroupTypes, ddlIntegerCompare, tbAttendedCount, slidingDateRangePicker };
 
+            // convert pipe to comma delimited
+            var defaultDelimitedValues = slidingDateRangePicker.DelimitedValues.Replace( "|", "," );
+            var defaultCount = 4;
+
             // set the default values in case this is a newly added filter
             SetSelection(
                 entityType,
                 controls,
-                string.Format( "{0}|{1}|4|Last,4,Week,,|false", gtpGroupType.Items.Count > 0 ? gtpGroupType.Items[0].Value : "0", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
+                string.Format( "{0}|{1}|{2}|{3}|false", gtpGroupType.Items.Count > 0 ? gtpGroupType.Items[0].Value : "0", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString(), defaultCount, defaultDelimitedValues ) );
 
             return controls;
         }

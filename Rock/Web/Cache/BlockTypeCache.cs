@@ -145,7 +145,7 @@ namespace Rock.Web.Cache
 
                 var guidCachePolicy = new CacheItemPolicy();
                 AddChangeMonitor( guidCachePolicy, blockType.Path );
-                SetCache( blockType.Guid.ToString(), new Lazy<int> ( () => AsLazy(blockType.Id) ), guidCachePolicy );
+                SetCache( blockType.Guid.ToString(), blockType.Id, guidCachePolicy );
 
                 this.IsSystem = blockType.IsSystem;
                 this.Path = blockType.Path;
@@ -195,7 +195,7 @@ namespace Rock.Web.Cache
                 var cachePolicy = new CacheItemPolicy();
                 AddChangeMonitor( cachePolicy, blockType.Path );
 
-                SetCache( cacheKey, new Lazy<BlockTypeCache>( () => AsLazy( blockType) ), cachePolicy );
+                SetCache( cacheKey, blockType, cachePolicy );
             }
                 
             return blockType;

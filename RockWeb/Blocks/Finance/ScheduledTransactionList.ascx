@@ -25,13 +25,15 @@
                             <Rock:RockBoundField DataField="AuthorizedPersonAlias.Person.FullNameReversed" HeaderText="Contributor"
                                 SortExpression="AuthorizedPersonAlias.Person.LastName,AuthorizedPersonAlias.Person.NickName" />
                             <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" SortExpression="Amount" />
+                            <Rock:RockTemplateField HeaderText="Accounts" >
+                                <ItemTemplate><%# GetAccounts( Container.DataItem ) %></ItemTemplate>
+                            </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="TransactionFrequencyValue" HeaderText="Frequency" SortExpression="TransactionFrequencyValue.Value" />
                             <Rock:DateField DataField="CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime" />
                             <Rock:DateField DataField="StartDate" HeaderText="Starting" SortExpression="StartDate" />
                             <Rock:DateField DataField="EndDate" HeaderText="Ending" SortExpression="EndDate" />
                             <Rock:DateField DataField="NextPaymentDate" HeaderText="Next Payment" SortExpression="NextPaymentDate" />
                             <Rock:DefinedValueField DataField="FinancialPaymentDetail.CurrencyTypeValueId" HeaderText="Currency Type" SortExpression="FinancialPaymentDetail.CurrencyTypeValue.Value" />
-                            <Rock:RockBoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" />
                             <Rock:RockBoundField DataField="GatewayScheduleId" HeaderText="Schedule ID" SortExpression="GatewayScheduleId" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
                             <Rock:DateTimeField DataField="LastStatusUpdateDateTime" HeaderText="Last Refresh" SortExpression="LastStatusUpdateDateTime" />

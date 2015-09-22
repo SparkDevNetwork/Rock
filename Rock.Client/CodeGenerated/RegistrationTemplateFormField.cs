@@ -55,6 +55,11 @@ namespace Rock.Client
         /// <summary />
         public bool IsSharedValue { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public int Order { get; set; }
 
@@ -93,6 +98,7 @@ namespace Rock.Client
             this.IsGridField = source.IsGridField;
             this.IsRequired = source.IsRequired;
             this.IsSharedValue = source.IsSharedValue;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Order = source.Order;
             this.PersonFieldType = source.PersonFieldType;
             this.PostText = source.PostText;

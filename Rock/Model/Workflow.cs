@@ -56,7 +56,7 @@ namespace Rock.Model
         /// A <see cref="System.String" /> representing a friendly name of this Workflow instance.
         /// </value>
         [Required]
-        [MaxLength( 100 )]
+        [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 

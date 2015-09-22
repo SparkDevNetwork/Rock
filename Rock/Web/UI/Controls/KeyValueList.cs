@@ -318,6 +318,7 @@ namespace Rock.Web.UI.Controls
         e.preventDefault();
         var $keyValueList = $(this).closest('.key-value-list');
         $keyValueList.find('.key-value-rows').append($keyValueList.find('.js-value-html').val());
+        updateKeyValues($(this));
         Rock.controls.modal.updateSize($(this));
     });
 

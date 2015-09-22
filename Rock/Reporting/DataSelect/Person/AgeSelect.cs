@@ -107,6 +107,34 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
+        /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field
+        /// To disable sorting for this field, return string.Empty;
+        /// </summary>
+        /// <param name="selection"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The sort expression.
+        /// </value>
+        public override string SortProperties( string selection )
+        {
+            // sort by Birthdate instead Age since Birthdate will sort much faster than the calculated age, and will give the same sort if we set SortReversed=true
+            return "BirthDate";
+        }
+
+        /// <summary>
+        /// Override this and set to true to have this field sort in the opposite direction
+        /// Normally this should be left as false unless there is a special case where it makes sense have it sort reversed
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        /// <value></value>
+        public override bool SortReversed( string selection )
+        {
+            // sort reversed since we are sorting by by Birthdate instead Age since Birthdate will sort much faster than the calculated age
+            return true;
+        }
+
+        /// <summary>
         /// Gets the expression.
         /// </summary>
         /// <param name="context">The context.</param>

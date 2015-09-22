@@ -327,7 +327,7 @@ namespace Rock.Lava
             
             string inputAsString = input.ToString();
 
-            string replacementString = replacement.ToString();
+            string replacementString = (replacement ?? string.Empty).ToString();
             string pattern = Regex.Escape( @string.ToString() );
 
             /*// escape common regex meta characters

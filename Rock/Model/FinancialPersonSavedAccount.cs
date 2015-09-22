@@ -176,11 +176,20 @@ namespace Rock.Model
                 var reference = new ReferencePaymentInfo();
                 reference.TransactionCode = this.TransactionCode;
                 reference.ReferenceNumber = this.ReferenceNumber;
-                reference.MaskedAccountNumber = this.FinancialPaymentDetail.AccountNumberMasked;
-                reference.InitialCurrencyTypeValue = DefinedValueCache.Read( this.FinancialPaymentDetail.CurrencyTypeValue );
-                if ( reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
+
+                if ( this.FinancialPaymentDetail != null )
                 {
-                    reference.InitialCreditCardTypeValue = DefinedValueCache.Read( this.FinancialPaymentDetail.CreditCardTypeValue );
+                    reference.MaskedAccountNumber = this.FinancialPaymentDetail.AccountNumberMasked;
+                    if ( this.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
+                    {
+                        reference.InitialCurrencyTypeValue = DefinedValueCache.Read( this.FinancialPaymentDetail.CurrencyTypeValueId.Value );
+                        if ( reference.InitialCurrencyTypeValue != null &&
+                            reference.InitialCreditCardTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) &&
+                            this.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
+                        {
+                            reference.InitialCreditCardTypeValue = DefinedValueCache.Read( this.FinancialPaymentDetail.CreditCardTypeValueId.Value );
+                        }
+                    }
                 }
 
                 return reference;

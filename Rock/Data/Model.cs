@@ -172,6 +172,20 @@ namespace Rock.Data
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the ModifiedByPersonAliasId and ModifiedDateTime values have already been 
+        /// updated to reflect who/when model was updated. If this value is false (default) the framework will update 
+        /// these values with the current user and datetime when the model is saved. Set this value to true if this automatic
+        /// update should not be done.
+        /// </summary>
+        /// <value>
+        /// <c>false</c> if rock should set the ModifiedDateTime to current time and ModifiedByPersonAliasId to current user when saving model; otherwise, <c>true</c>.
+        /// </value>
+        [NotMapped]
+        [DataMember]
+        [RockClientInclude("If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true")]
+        public virtual bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         #endregion
 
         #region Methods

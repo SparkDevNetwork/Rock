@@ -179,6 +179,15 @@ namespace Rock.Reporting
                                 a.EntityTypeQualifierColumn == string.Empty ||
                                 a.EntityTypeQualifierColumn == "GroupTypeId" );
                     }
+                    else if ( entityType == typeof( ContentChannelItem ) )
+                    {
+                        // in the case of ContentChannelItem, show attributes that are entity global, but also ones that are qualified by ContentChannelTypeId
+                        qryAttributes = qryAttributes
+                            .Where( a =>
+                                a.EntityTypeQualifierColumn == null ||
+                                a.EntityTypeQualifierColumn == string.Empty ||
+                                a.EntityTypeQualifierColumn == "ContentChannelTypeId" );
+                    }
                     else
                     {
                         qryAttributes = qryAttributes.Where( a => a.EntityTypeQualifierColumn == string.Empty && a.EntityTypeQualifierValue == string.Empty );
@@ -269,6 +278,7 @@ namespace Rock.Reporting
             {
                 var entityField = new EntityField( propName, FieldKind.Attribute, typeof( string ), attribute.Guid, fieldType );
                 entityField.Title = attribute.Name.SplitCase();
+                entityField.TitleWithoutQualifier = entityField.Title;
 
                 foreach ( var config in attribute.QualifierValues )
                 {
@@ -282,7 +292,21 @@ namespace Rock.Reporting
                         var groupType = new GroupTypeService( rockContext ).Get( attribute.EntityTypeQualifierValue.AsInteger() );
                         if ( groupType != null )
                         {
+                            // Append the Qualifier to the title
                             entityField.Title = string.Format( "{0} ({1})", attribute.Name, groupType.Name );
+                        }
+                    }
+                }
+
+                if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( ContentChannelItem ) ) && attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var contentChannelType = new ContentChannelTypeService( rockContext ).Get( attribute.EntityTypeQualifierValue.AsInteger() );
+                        if ( contentChannelType != null )
+                        {
+                            // Append the Qualifier to the title
+                            entityField.Title = string.Format( "{0} ({1})", attribute.Name, contentChannelType.Name );
                         }
                     }
                 }
@@ -314,6 +338,14 @@ namespace Rock.Reporting
         /// The title.
         /// </value>
         public string Title { get; set; }
+
+        /// <summary>
+        /// Gets or sets the title without qualifier (if there was an Attribute Qualifier)
+        /// </summary>
+        /// <value>
+        /// The title without qualifier.
+        /// </value>
+        public string TitleWithoutQualifier { get; set; }
 
         /// <summary>
         /// Gets or sets whether this field is a Property or an Attribute

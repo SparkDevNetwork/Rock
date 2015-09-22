@@ -34,10 +34,11 @@ namespace Rock.Rest.Controllers
         /// Gets the children.
         /// </summary>
         /// <param name="id">The identifier.</param>
+        /// <param name="activeOnly">if set to <c>true</c> [active only].</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}" )]
-        public IQueryable<TreeViewItem> GetChildren( int id )
+        [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}" )]
+        public IQueryable<TreeViewItem> GetChildren( int id, bool activeOnly )
         {
             IQueryable<FinancialAccount> qry;
 
@@ -51,6 +52,12 @@ namespace Rock.Rest.Controllers
                 qry = Get().Where( f => 
                     f.ParentAccountId.HasValue && 
                     f.ParentAccountId.Value == id );
+            }
+
+            if ( activeOnly )
+            {
+                qry = qry
+                    .Where( f => f.IsActive == true );
             }
 
             var accountList = qry
