@@ -1113,7 +1113,7 @@ td.grid-col-actions {
 .grid-select-field .checkbox,
 .grid-select-field .radio {
   padding-left: 0;
-  margin: 0;
+  margin: 4px 0 0 0;
 }
 .grid-select-field .checkbox input,
 .grid-select-field .radio input {
@@ -1129,23 +1129,28 @@ td.grid-col-actions {
 .grid-select-field .radio label {
   padding: 0;
 }
-.table > tbody > tr > th,
+.table > tbody > tr > td.grid-select-field {
+  padding: 12px 12px 0 12px;
+}
+.table > thead > tr > th.grid-select-field {
+  padding: 14px 12px 10px 12px;
+}
+.table > thead > tr > th,
 .table > tbody > tr > td {
   padding: 12px;
 }
-.table > tbody > tr > th.grid-columncommand,
+.table > thead > tr > th.grid-columncommand,
 .table > tbody > tr > td.grid-columncommand {
   padding: 6px;
-  padding-top: 12px;
   min-width: 48px;
 }
-.table > tbody > tr > th.grid-columnreorder,
+.table > thead > tr > th.grid-columnreorder,
 .table > tbody > tr > td.grid-columnreorder {
   padding-top: 12px;
   min-width: 48px;
   width: 48px;
 }
-.table > tbody > tr > th.grid-columnreorder a,
+.table > thead > tr > th.grid-columnreorder a,
 .table > tbody > tr > td.grid-columnreorder a {
   color: #ffffff;
 }
@@ -1254,8 +1259,16 @@ tr.row-highlight td {
   float: right;
   margin-top: 4px;
 }
+.codeeditor-header {
+  position: absolute;
+  top: -4px;
+  right: 0;
+}
 .codeeditor-header .picker-mergefield {
   float: right;
+}
+.codeeditor-header .picker .picker-label {
+  padding: 2px 6px;
 }
 .my-account {
   margin-bottom: 15px;
@@ -2302,7 +2315,6 @@ table.attribute-grid tr th:nth-child(3) {
   border-bottom: 1px solid #000000;
   color: #ffffff;
   min-height: 60px;
-  padding-bottom: 0;
 }
 .personprofilebar-family a {
   color: #ffffff;
