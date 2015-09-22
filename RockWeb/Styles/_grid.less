@@ -29,7 +29,6 @@
   color: @grid-row-odd-color;
 }
 
-
 td.grid-select-cell {
     cursor: pointer;
 }
@@ -309,7 +308,7 @@ td.grid-col-actions {
     .checkbox, .radio {
 
         padding-left: 0;
-        margin: 0;
+        margin: 4px 0 0 0;
 
         input {
             float: none;
@@ -328,15 +327,23 @@ td.grid-col-actions {
     // future add this: http://webdesign.tutsplus.com/tutorials/quick-tip-easy-css3-checkboxes-and-radio-buttons--webdesign-8953
 }
 
-.table > tbody > tr > th,
+//
+.table > tbody > tr > td.grid-select-field {
+    padding: 12px 12px 0 12px;
+}
+
+.table > thead > tr > th.grid-select-field {
+    padding: 14px 12px 10px 12px;
+}
+
+.table > thead > tr > th,
 .table > tbody > tr > td { // get buttons and text columns to look good together
 
     padding: 12px;
 
     &.grid-columncommand {
          padding: 6px;
-         padding-top: 12px;
-          min-width: 48px;
+         min-width: 48px;
     }
 
     &.grid-columnreorder {

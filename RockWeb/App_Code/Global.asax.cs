@@ -310,6 +310,7 @@ namespace RockWeb
             }
 
             Context.Items.Add( "Request_Start_Time", RockDateTime.Now );
+            Context.Items.Add( "Cache_Hits", new Dictionary<string, bool>() );
         }
 
         /// <summary>
@@ -613,6 +614,10 @@ namespace RockWeb
             routes.Clear();
 
             PageRouteService pageRouteService = new PageRouteService( rockContext );
+
+            //Add ingore rule for asp.net ScriptManager files. 
+            routes.Ignore("{resource}.axd/{*pathInfo}");
+
 
             // find each page that has defined a custom routes.
             foreach ( PageRoute pageRoute in pageRouteService.Queryable() )

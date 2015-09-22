@@ -183,6 +183,11 @@ h4, .h4 {
   font-weight: 500;
 }
 
+.table-hover > tbody > tr:hover {  
+    td {
+        background-color: @grid-hover-bg;
+    }
+}
 
 // panel tweaks
 .panel {
@@ -196,10 +201,6 @@ h4, .h4 {
       letter-spacing: -.5px;
       font-size: 18px;
     }
-  }
-
-  .panel-body {
-    overflow: hidden;
   }
 
   &.panel-primary {

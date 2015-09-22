@@ -72,6 +72,20 @@ namespace Rock
             return String.Empty;
         }
 
+        /// <summary>
+        /// Gets the data annotaion attribute from. http://stackoverflow.com/questions/7027613/how-to-retrieve-data-annotations-from-code-programmatically
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="instance">The instance.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <returns></returns>
+        public static T GetAttributeFrom<T>( this object instance, string propertyName ) where T : System.Attribute
+        {
+            var attrType = typeof( T );
+            var property = instance.GetType().GetProperty( propertyName );
+            return (T)property.GetCustomAttributes( attrType, false ).First();
+        }
+
         #endregion
 
         #region Stream extension methods

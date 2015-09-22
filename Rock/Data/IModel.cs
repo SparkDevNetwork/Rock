@@ -79,6 +79,17 @@ namespace Rock.Data
         PersonAlias ModifiedByPersonAlias { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the ModifiedByPersonAliasId and ModifiedDateTime values have already been 
+        /// updated to reflect who/when model was updated. If this value is false (default) the framework will update 
+        /// these values with the current user and datetime when the model is saved. Set this value to true if this automatic
+        /// update should not be done.
+        /// </summary>
+        /// <value>
+        /// <c>false</c> if rock should set the ModifiedDateTime to current time and ModifiedByPersonAliasId to current user when saving model; otherwise, <c>true</c>.
+        /// </value>
+        bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary>
         /// Method that will be called on an entity immediately before the item is saved
         /// </summary>
         void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry );

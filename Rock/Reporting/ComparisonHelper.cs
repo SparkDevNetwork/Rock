@@ -239,7 +239,8 @@ namespace Rock.Reporting
         /// </summary>
         public const ComparisonType ContainsFilterComparisonTypes =
                         ComparisonType.Contains |
-                        ComparisonType.DoesNotContain;
+                        ComparisonType.DoesNotContain |
+                        ComparisonType.IsBlank;
 
         /// <summary>
         /// Gets the comparison types typically used for numeric fields

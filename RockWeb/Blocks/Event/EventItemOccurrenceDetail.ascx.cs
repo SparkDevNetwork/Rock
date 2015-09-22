@@ -886,7 +886,7 @@ namespace RockWeb.Blocks.Event
             using ( var rockContext = new RockContext() )
             {
                 foreach ( var template in new RegistrationTemplateService( rockContext )
-                    .Queryable().AsNoTracking() )
+                    .Queryable().AsNoTracking().OrderBy(t => t.Name ))
                 {
                     if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {

@@ -199,23 +199,29 @@ namespace Rock.Reporting
                                 if ( columnField is BoundField )
                                 {
                                     ( columnField as BoundField ).DataField = string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, columnIndex );
-                                    var customSortExpression = selectComponent.SortProperties( reportField.Selection ?? string.Empty );
-                                    if ( customSortExpression != null )
+                                    var customSortProperties = selectComponent.SortProperties( reportField.Selection ?? string.Empty );
+                                    bool sortReversed = selectComponent.SortReversed( reportField.Selection ?? string.Empty );
+                                    if ( customSortProperties != null )
                                     {
-                                        if ( customSortExpression == string.Empty )
+                                        if ( customSortProperties == string.Empty )
                                         {
                                             // disable sorting if customSortExpression set to string.empty
                                             columnField.SortExpression = string.Empty;
                                         }
                                         else
                                         {
-                                            columnField.SortExpression = customSortExpression.Split( ',' ).Select( a => string.Format( "Sort_{0}_{1}", a, columnIndex ) ).ToList().AsDelimited( "," );
+                                            columnField.SortExpression = customSortProperties.Split( ',' ).Select( a => string.Format( "Sort_{0}_{1}", a, columnIndex ) ).ToList().AsDelimited( "," );
                                         }
                                     }
                                     else
                                     {
                                         // use default sorting if customSortExpression was null
                                         columnField.SortExpression = ( columnField as BoundField ).DataField;
+                                    }
+
+                                    if ( sortReversed == true && !string.IsNullOrWhiteSpace( columnField.SortExpression ) )
+                                    {
+                                        columnField.SortExpression = columnField.SortExpression + " DESC";
                                     }
                                 }
 

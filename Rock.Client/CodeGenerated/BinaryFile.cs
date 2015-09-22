@@ -61,6 +61,11 @@ namespace Rock.Client
         /// <summary />
         public string MimeType { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public string Path { get; set; }
 
@@ -89,6 +94,7 @@ namespace Rock.Client
             this.IsSystem = source.IsSystem;
             this.IsTemporary = source.IsTemporary;
             this.MimeType = source.MimeType;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Path = source.Path;
             this.StorageEntitySettings = source.StorageEntitySettings;
             this.Guid = source.Guid;

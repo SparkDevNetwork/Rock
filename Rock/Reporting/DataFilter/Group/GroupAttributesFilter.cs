@@ -184,7 +184,7 @@ namespace Rock.Reporting.DataFilter.Group
                 if ( control != null )
                 {
                     // Add the field to the dropdown of available fields
-                    ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
+                    ddlProperty.Items.Add( new ListItem( entityField.TitleWithoutQualifier, entityField.Name ) );
                     containerControl.Controls.Add( control );
                 }
             }
@@ -411,7 +411,7 @@ namespace Rock.Reporting.DataFilter.Group
 
             int index = 0;
             var sortedFields = new List<EntityField>();
-            foreach ( var entityProperty in entityAttributeFields.OrderBy( p => p.Title ).ThenBy( p => p.Name ) )
+            foreach ( var entityProperty in entityAttributeFields.OrderBy( p => p.TitleWithoutQualifier ).ThenBy( p => p.Name ) )
             {
                 entityProperty.Index = index;
                 index++;
