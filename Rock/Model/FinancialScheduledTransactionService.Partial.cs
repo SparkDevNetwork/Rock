@@ -267,8 +267,8 @@ namespace Rock.Model
                                 // If the configured amount is greater than the remaining amount, only allocate
                                 // the remaining amount
                                 transaction.Summary = "Note: Downloaded transaction amount was less than the configured allocation amounts for the Scheduled Transaction.";
-                                detail.Amount = remainingAmount;
-                                detail.Summary = "Note: The downloaded amount was not enough to apply the configured amount to this account.";
+                                transactionDetail.Amount = remainingAmount;
+                                transactionDetail.Summary = "Note: The downloaded amount was not enough to apply the configured amount to this account.";
                                 remainingAmount = 0.0M;
                             }
 
