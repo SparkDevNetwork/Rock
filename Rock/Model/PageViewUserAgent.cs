@@ -86,7 +86,7 @@ namespace Rock.Model
         /// <summary>
         /// Determineds the ClientType (Mobile, Desktop, Tablet, etc) from a UserAgent string
         /// </summary>
-        /// <param name="userAgentString">The user agent string.</param>
+        /// <param name="userAgent">The user agent.</param>
         /// <returns></returns>
         public static string GetClientType( string userAgent )
         {
