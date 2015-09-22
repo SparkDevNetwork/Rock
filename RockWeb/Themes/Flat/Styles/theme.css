@@ -1,3 +1,5 @@
+@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
 /*
 
   Rock's Core CSS
@@ -19,8 +21,6 @@
   A better method for styling can be seen below with .jcrop-light
   (Add a class to the holder and style elements for that extended class)
 */
-@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
 .jcrop-holder {
   direction: ltr;
   text-align: left;
@@ -800,27 +800,33 @@ dl:not(.dl-horizontal) dd {
   margin-left: 0;
 }
 .form-control.input-width-xs,
-.input-group.input-width-xs {
+.input-group.input-width-xs,
+.form-control-group.input-width-xs input {
   width: 60px;
 }
 .form-control.input-width-sm,
-.input-group.input-width-sm {
+.input-group.input-width-sm,
+.form-control-group.input-width-sm input {
   width: 90px;
 }
 .form-control.input-width-md,
-.input-group.input-width-md {
+.input-group.input-width-md,
+.form-control-group.input-width-md input {
   width: 140px;
 }
 .form-control.input-width-lg,
-.input-group.input-width-lg {
+.input-group.input-width-lg,
+.form-control-group.input-width-lg input {
   width: 210px;
 }
 .form-control.input-width-xl,
-.input-group.input-width-xl {
+.input-group.input-width-xl,
+.form-control-group.input-width-xl input {
   width: 270px;
 }
 .form-control.input-width-xxl,
-.input-group.input-width-xxl {
+.input-group.input-width-xxl,
+.form-control-group.input-width-xxl input {
   width: 530px;
 }
 .form-control-group:before,
