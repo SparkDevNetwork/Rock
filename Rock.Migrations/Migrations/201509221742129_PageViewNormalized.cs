@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -118,44 +118,52 @@ JOIN (
     AND j.SessionId = pv.SessionId
     AND j.IpAddress = pv.IpAddress" );
 
-            
+
             DropColumn( "dbo.PageView", "UserAgent" );
             DropColumn( "dbo.PageView", "ClientType" );
             DropColumn( "dbo.PageView", "SessionId" );
             DropColumn( "dbo.PageView", "IpAddress" );
 
-            AlterColumn( "dbo.PageView", "PageViewSessionId", c => c.Int(nullable:false) );
+            AlterColumn( "dbo.PageView", "PageViewSessionId", c => c.Int( nullable: false ) );
             CreateIndex( "dbo.PageView", "PageViewSessionId" );
             AddForeignKey( "dbo.PageView", "PageViewSessionId", "dbo.PageViewSession", "Id" );
+
+            AddColumn( "dbo.Site", "EnablePageViews", c => c.Boolean( nullable: false ) );
+            AddColumn( "dbo.Site", "PageViewRetentionPeriodDays", c => c.Int() );
+
+            Sql( "UPDATE [Site] SET [EnablePageViews] = 1" );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            AddColumn("dbo.PageView", "IpAddress", c => c.String(maxLength: 45));
-            AddColumn("dbo.PageView", "SessionId", c => c.Guid());
-            AddColumn("dbo.PageView", "ClientType", c => c.String(maxLength: 25));
-            AddColumn("dbo.PageView", "UserAgent", c => c.String(maxLength: 500));
-            DropForeignKey("dbo.PageView", "PageViewSessionId", "dbo.PageViewSession");
-            DropForeignKey("dbo.PageViewSession", "PageViewUserAgentId", "dbo.PageViewUserAgent");
-            DropIndex("dbo.PageViewUserAgent", new[] { "ForeignKey" });
-            DropIndex("dbo.PageViewUserAgent", new[] { "ForeignGuid" });
-            DropIndex("dbo.PageViewUserAgent", new[] { "ForeignId" });
-            DropIndex("dbo.PageViewUserAgent", new[] { "Guid" });
-            DropIndex("dbo.PageViewUserAgent", new[] { "UserAgent" });
-            DropIndex("dbo.PageViewSession", new[] { "ForeignKey" });
-            DropIndex("dbo.PageViewSession", new[] { "ForeignGuid" });
-            DropIndex("dbo.PageViewSession", new[] { "ForeignId" });
-            DropIndex("dbo.PageViewSession", new[] { "Guid" });
-            DropIndex("dbo.PageViewSession", new[] { "SessionId" });
-            DropIndex("dbo.PageViewSession", new[] { "PageViewUserAgentId" });
-            DropIndex("dbo.PageView", new[] { "DateTimeViewed" });
-            DropIndex("dbo.PageView", new[] { "PageViewSessionId" });
-            DropColumn("dbo.PageView", "PageViewSessionId");
-            DropTable("dbo.PageViewUserAgent");
-            DropTable("dbo.PageViewSession");
+            DropColumn( "dbo.Site", "PageViewRetentionPeriodDays" );
+            DropColumn( "dbo.Site", "EnablePageViews" );
+
+            AddColumn( "dbo.PageView", "IpAddress", c => c.String( maxLength: 45 ) );
+            AddColumn( "dbo.PageView", "SessionId", c => c.Guid() );
+            AddColumn( "dbo.PageView", "ClientType", c => c.String( maxLength: 25 ) );
+            AddColumn( "dbo.PageView", "UserAgent", c => c.String( maxLength: 500 ) );
+            DropForeignKey( "dbo.PageView", "PageViewSessionId", "dbo.PageViewSession" );
+            DropForeignKey( "dbo.PageViewSession", "PageViewUserAgentId", "dbo.PageViewUserAgent" );
+            DropIndex( "dbo.PageViewUserAgent", new[] { "ForeignKey" } );
+            DropIndex( "dbo.PageViewUserAgent", new[] { "ForeignGuid" } );
+            DropIndex( "dbo.PageViewUserAgent", new[] { "ForeignId" } );
+            DropIndex( "dbo.PageViewUserAgent", new[] { "Guid" } );
+            DropIndex( "dbo.PageViewUserAgent", new[] { "UserAgent" } );
+            DropIndex( "dbo.PageViewSession", new[] { "ForeignKey" } );
+            DropIndex( "dbo.PageViewSession", new[] { "ForeignGuid" } );
+            DropIndex( "dbo.PageViewSession", new[] { "ForeignId" } );
+            DropIndex( "dbo.PageViewSession", new[] { "Guid" } );
+            DropIndex( "dbo.PageViewSession", new[] { "SessionId" } );
+            DropIndex( "dbo.PageViewSession", new[] { "PageViewUserAgentId" } );
+            DropIndex( "dbo.PageView", new[] { "DateTimeViewed" } );
+            DropIndex( "dbo.PageView", new[] { "PageViewSessionId" } );
+            DropColumn( "dbo.PageView", "PageViewSessionId" );
+            DropTable( "dbo.PageViewUserAgent" );
+            DropTable( "dbo.PageViewSession" );
         }
     }
 }
