@@ -1,5 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContentChannelView.ascx.cs" Inherits="RockWeb.Blocks.Cms.ContentChannelView" %>
 
+<script type="text/javascript">
+    function clearDialog() {
+        $('#rock-config-cancel-trigger').click();
+    }
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server" UpdateMode="Conditional">
     <ContentTemplate>
 
@@ -12,7 +18,7 @@
 
         <%-- Edit Panel --%>
         <asp:Panel ID="pnlEditModal" runat="server" Visible="false">
-            <Rock:ModalDialog ID="mdEdit" runat="server" OnSaveClick="lbSave_Click" Title="Channel Configuration">
+            <Rock:ModalDialog ID="mdEdit" runat="server" OnSaveClick="lbSave_Click" Title="Channel Configuration" OnCancelScript="clearDialog();">
                 <Content>
 
                     <asp:UpdatePanel ID="upnlEdit" runat="server">

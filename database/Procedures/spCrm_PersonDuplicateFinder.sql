@@ -309,7 +309,7 @@ BEGIN
     -- get the original ConfidenceScore of the IgnoreUntilScoreChanges records so that we can un-ignore the ones that have a changed score
     DECLARE @IgnoreUntilScoreChangesTable TABLE (
         Id INT
-        ,ConfidenceScore float
+        ,ConfidenceScore FLOAT
         );
 
     INSERT INTO @IgnoreUntilScoreChangesTable
@@ -333,11 +333,13 @@ BEGIN
     USING (
         SELECT [e1].[PersonAliasId] [PersonAliasId]
             ,[e2].[PersonAliasId] [DuplicatePersonAliasId]
-            ,[e1].[Email] [Email]
+            ,max([e1].[Email]) [Email]
         FROM #PersonDuplicateByEmailTable [e1]
         JOIN #PersonDuplicateByEmailTable [e2] ON [e1].[email] = [e2].[email]
             AND [e1].[Id] != [e2].[Id]
             AND [e1].[PersonAliasId] > [e2].[PersonAliasId] -- we only need the matched pair in there once (don't need both PersonA == PersonB and PersonB == PersonA)
+        GROUP BY e1.PersonAliasId
+            ,e2.PersonAliasId
         ) AS source(PersonAliasId, DuplicatePersonAliasId, Email)
         ON (target.PersonAliasId = source.PersonAliasId)
             AND (target.DuplicatePersonAliasId = source.DuplicatePersonAliasId)
@@ -368,20 +370,23 @@ BEGIN
                 ,@processDateTime
                 ,@processDateTime
                 ,NEWID()
-                );
+                )
+    OPTION (QUERYTRACEON 8790);
 
     -- Update PersonDuplicate table with results of partial name match
     MERGE [PersonDuplicate] AS TARGET
     USING (
         SELECT [e1].[PersonAliasId] [PersonAliasId]
             ,[e2].[PersonAliasId] [DuplicatePersonAliasId]
-            ,[e1].[First2] [First2]
-            ,[e1].[LastName] [LastName]
+            ,max([e1].[First2]) [First2]
+            ,max([e1].[LastName]) [LastName]
         FROM #PersonDuplicateByNameTable [e1]
         JOIN #PersonDuplicateByNameTable [e2] ON [e1].[First2] = [e2].[First2]
             AND [e1].[LastName] = [e2].[LastName]
             AND [e1].[Id] != [e2].[Id]
             AND [e1].[PersonAliasId] > [e2].[PersonAliasId] -- we only need the matched pair in there once (don't need both PersonA == PersonB and PersonB == PersonA)
+        GROUP BY e1.PersonAliasId
+            ,e2.PersonAliasId
         ) AS source(PersonAliasId, DuplicatePersonAliasId, LastName, First2)
         ON (target.PersonAliasId = source.PersonAliasId)
             AND (target.DuplicatePersonAliasId = source.DuplicatePersonAliasId)
@@ -412,7 +417,8 @@ BEGIN
                 ,@processDateTime
                 ,@processDateTime
                 ,NEWID()
-                );
+                )
+    OPTION (QUERYTRACEON 8790);
 
     --  Update PersonDuplicate table with results of phonenumber match for each number type. 
     --  For example, if both the Cell and Home phone match, that should be a higher score 
@@ -454,11 +460,11 @@ BEGIN
         USING (
             SELECT [e1].[PersonAliasId] [PersonAliasId]
                 ,[e2].[PersonAliasId] [DuplicatePersonAliasId]
-                ,[e1].[Number]
-                ,[e1].[Extension]
-                ,[e1].[CountryCode]
-                ,[e1].[NumberTypeValueId]
-                ,[e1].[Gender]
+                ,max([e1].[Number])
+                ,max([e1].[Extension])
+                ,max([e1].[CountryCode])
+                ,max([e1].[NumberTypeValueId])
+                ,max([e1].[Gender])
             FROM #PersonDuplicateByPhoneTable [e1]
             JOIN #PersonDuplicateByPhoneTable [e2] ON [e1].[Number] = [e2].[Number]
                 AND [e1].[Extension] = [e2].[Extension]
@@ -468,6 +474,8 @@ BEGIN
                 AND [e1].[Id] != [e2].[Id]
                 AND [e1].[PersonAliasId] > [e2].[PersonAliasId] -- we only need the matched pair in there once (don't need both PersonA == PersonB and PersonB == PersonA)
             WHERE [e1].[NumberTypeValueId] = @PhoneNumberTypeValueId
+            GROUP BY e1.PersonAliasId
+                ,e2.PersonAliasId
             ) AS source(PersonAliasId, DuplicatePersonAliasId, Number, Extension, CountryCode, NumberTypeValueId, Gender)
             ON (target.PersonAliasId = source.PersonAliasId)
                 AND (target.DuplicatePersonAliasId = source.DuplicatePersonAliasId)
@@ -498,7 +506,8 @@ BEGIN
                     ,@processDateTime
                     ,@processDateTime
                     ,NEWID()
-                    );
+                    )
+        OPTION (QUERYTRACEON 8790);
 
         FETCH NEXT
         FROM phoneNumberTypeCursor
@@ -514,15 +523,17 @@ BEGIN
     USING (
         SELECT [e1].[PersonAliasId] [PersonAliasId]
             ,[e2].[PersonAliasId] [DuplicatePersonAliasId]
-            ,[e1].[LocationId]
-            ,[e1].[Gender]
-            ,[e1].[GroupRoleId]
+            ,max([e1].[LocationId])
+            ,max([e1].[Gender])
+            ,max([e1].[GroupRoleId])
         FROM #PersonDuplicateByAddressTable [e1]
         JOIN #PersonDuplicateByAddressTable [e2] ON [e1].[LocationId] = [e2].[LocationId]
             AND [e1].[Gender] = [e2].[Gender]
             AND [e1].[GroupRoleId] = [e2].[GroupRoleId]
             AND [e1].[Id] != [e2].[Id]
             AND [e1].[PersonAliasId] > [e2].[PersonAliasId] -- we only need the matched pair in there once (don't need both PersonA == PersonB and PersonB == PersonA)
+        GROUP BY e1.PersonAliasId
+            ,e2.PersonAliasId
         ) AS source(PersonAliasId, DuplicatePersonAliasId, LocationId, Gender, GroupRoleId)
         ON (target.PersonAliasId = source.PersonAliasId)
             AND (target.DuplicatePersonAliasId = source.DuplicatePersonAliasId)
@@ -553,7 +564,8 @@ BEGIN
                 ,@processDateTime
                 ,@processDateTime
                 ,NEWID()
-                );
+                )
+    OPTION (QUERYTRACEON 8790);
 
     /* Calculate Capacities before we do the additional scores
     */
@@ -853,14 +865,13 @@ BEGIN
     UPDATE [PersonDuplicate]
     SET [TotalCapacity] = @TotalCapacity
     WHERE [TotalCapacity] != @TotalCapacity
-    OR [TotalCapacity] is null
+        OR [TotalCapacity] IS NULL
 
     UPDATE [PersonDuplicate]
-    set IgnoreUntilScoreChanges = 0
-    from [PersonDuplicate] [pd]
-    join @IgnoreUntilScoreChangesTable [g]
-    on pd.Id = g.id
-    where pd.ConfidenceScore != g.ConfidenceScore; 
+    SET IgnoreUntilScoreChanges = 0
+    FROM [PersonDuplicate] [pd]
+    JOIN @IgnoreUntilScoreChangesTable [g] ON pd.Id = g.id
+    WHERE pd.ConfidenceScore != g.ConfidenceScore;
 
     /*
     Explicitly clean up temp tables before the proc exits (vs. have SQL Server do it for us after the proc is done)
@@ -876,3 +887,5 @@ BEGIN
     COMMIT
 END
 GO
+
+

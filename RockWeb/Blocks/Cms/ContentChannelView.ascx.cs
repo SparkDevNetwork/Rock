@@ -145,6 +145,17 @@ $(document).ready(function() {
 
             this.BlockUpdated += ContentDynamic_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            Button btnTrigger = new Button();
+            btnTrigger.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            btnTrigger.ID = "rock-config-cancel-trigger";
+            btnTrigger.Click += btnTrigger_Click;
+            pnlEditModal.Controls.Add( btnTrigger );
+
+            AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
+            trigger.ControlID ="rock-config-cancel-trigger";
+            trigger.EventName = "Click";
+            upnlContent.Triggers.Add( trigger );
         }
 
         /// <summary>
@@ -181,6 +192,14 @@ $(document).ready(function() {
 
         void ContentDynamic_BlockUpdated( object sender, EventArgs e )
         {
+            ShowView();
+        }
+
+        void btnTrigger_Click( object sender, EventArgs e )
+        {
+            mdEdit.Hide();
+            pnlEditModal.Visible = false;
+
             ShowView();
         }
 
@@ -667,14 +686,11 @@ $(document).ready(function() {
                                 }
                             }
 
-                            // All filtering has been added, now run query and then check security and load attributes
+                            // All filtering has been added, now run query and load attributes
                             foreach ( var item in qry.ToList() )
                             {
-                                if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                                {
-                                    item.LoadAttributes( rockContext );
-                                    items.Add( item );
-                                }
+                                item.LoadAttributes( rockContext );
+                                items.Add( item );
                             }
 
                             // Order the items
