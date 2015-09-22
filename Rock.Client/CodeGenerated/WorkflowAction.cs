@@ -55,6 +55,11 @@ namespace Rock.Client
         /// <summary />
         public DateTime? LastProcessedDateTime { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public Guid Guid { get; set; }
 
@@ -75,6 +80,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.FormAction = source.FormAction;
             this.LastProcessedDateTime = source.LastProcessedDateTime;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 

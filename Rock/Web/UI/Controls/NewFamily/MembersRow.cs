@@ -154,21 +154,12 @@ namespace Rock.Web.UI.Controls
         {
             get 
             {
-                if ( string.IsNullOrWhiteSpace( _rblGender.SelectedValue ) )
-                {
-                    return Gender.Unknown;
-                }
                 return _rblGender.SelectedValueAsEnum<Gender>(); 
             }
 
             set 
             {
-                string selectedValue = value.ConvertToInt().ToString();
-                if ( selectedValue == "0" )
-                {
-                    selectedValue = string.Empty;
-                }
-                SetListValue( _rblGender, selectedValue );
+                SetListValue( _rblGender, value.ConvertToInt().ToString() );
             }
         }
 
@@ -466,11 +457,11 @@ namespace Rock.Web.UI.Controls
             string selectedValue = _rblGender.SelectedValue;
 
             _rblGender.Items.Clear();
-            _rblGender.Items.Add( new ListItem( "M", "Male" ) );
-            _rblGender.Items.Add( new ListItem( "F", "Female" ) );
+            _rblGender.Items.Add( new ListItem( "M", "1" ) );
+            _rblGender.Items.Add( new ListItem( "F", "2" ) );
             if ( !RequireGender )
             {
-                _rblGender.Items.Add( new ListItem( "?", "" ) );
+                _rblGender.Items.Add( new ListItem( "Unknown", "0" ) );
             }
 
             _rblGender.SelectedValue = selectedValue;

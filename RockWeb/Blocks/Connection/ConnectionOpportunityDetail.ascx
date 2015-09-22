@@ -88,8 +88,8 @@
                             <div class="grid">
                                 <Rock:Grid ID="gConnectionOpportunityGroups" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group" ShowConfirmDeleteDialog="false">
                                     <Columns>
-                                        <Rock:RockBoundField DataField="Name" HeaderText="Name" />
-                                        <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
+                                        <Rock:RockBoundField DataField="GroupName" HeaderText="Name" />
+                                        <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
                                         <Rock:DeleteField OnClick="gConnectionOpportunityGroups_Delete" />
                                     </Columns>
                                 </Rock:Grid>
@@ -100,8 +100,8 @@
                             <div class="grid">
                                 <Rock:Grid ID="gConnectionOpportunityConnectorGroups" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Campus Connector Group" ShowConfirmDeleteDialog="false">
                                     <Columns>
-                                        <Rock:RockBoundField DataField="Group" HeaderText="Group" />
-                                        <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
+                                        <Rock:RockBoundField DataField="GroupName" HeaderText="Group" />
+                                        <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
                                         <Rock:EditField OnClick="gConnectionOpportunityConnectorGroups_Edit" />
                                         <Rock:DeleteField OnClick="gConnectionOpportunityConnectorGroups_Delete" />
                                     </Columns>
@@ -114,7 +114,7 @@
                                 <Rock:Grid ID="gConnectionOpportunityWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow" 
                                     ShowConfirmDeleteDialog="false" OnRowDataBound="gConnectionOpportunityWorkflows_RowDataBound">
                                     <Columns>
-                                        <Rock:RockBoundField DataField="WorkflowType" HeaderText="Workflow Type" HtmlEncode="false" />
+                                        <Rock:RockBoundField DataField="WorkflowTypeName" HeaderText="Workflow Type" HtmlEncode="false" />
                                         <Rock:RockBoundField DataField="Trigger" HeaderText="Trigger" />
                                         <Rock:EditField OnClick="gConnectionOpportunityWorkflows_Edit" />
                                         <Rock:DeleteField OnClick="gConnectionOpportunityWorkflows_Delete" />

@@ -64,8 +64,6 @@ namespace Rock.Jobs
             {
                 try
                 {
-                    var groupMemberQry = groupMemberService.Queryable().Where( a => a.GroupId == groupRequirement.GroupId ).AsNoTracking();
-                    var personQry = groupMemberQry.Select( a => a.Person );
                     var currentDateTime = RockDateTime.Now;
                     var expireDaysCount = groupRequirement.GroupRequirementType.ExpireInDays.Value;
                     var qryGroupMemberRequirementsAlreadyOK = groupMemberRequirementService.Queryable().Where( a => a.GroupRequirementId == groupRequirement.Id );
@@ -81,7 +79,8 @@ namespace Rock.Jobs
                         qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => a.RequirementMetDateTime.HasValue );
                     }
 
-                    personQry = personQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMember.PersonId == a.Id ) );
+                    var groupMemberQry = groupMemberService.Queryable().Where( a => a.GroupId == groupRequirement.GroupId ).AsNoTracking();
+                    var personQry = groupMemberQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMemberId == a.Id ) ).Select( a => a.Person );
 
                     var results = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, personQry, groupRequirement.GroupRoleId ).ToList();
                     foreach ( var result in results )

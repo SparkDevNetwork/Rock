@@ -58,6 +58,11 @@ namespace Rock.Client
         /// <summary />
         public bool IsUnlisted { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public string Number { get; set; }
 
@@ -91,6 +96,7 @@ namespace Rock.Client
             this.IsMessagingEnabled = source.IsMessagingEnabled;
             this.IsSystem = source.IsSystem;
             this.IsUnlisted = source.IsUnlisted;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Number = source.Number;
             this.NumberFormatted = source.NumberFormatted;
             this.NumberTypeValueId = source.NumberTypeValueId;

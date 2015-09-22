@@ -64,6 +64,11 @@ namespace Rock.Client
         /// <summary />
         public int? MinCount { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public string Name { get; set; }
 
@@ -96,6 +101,7 @@ namespace Rock.Client
             this.IsSystem = source.IsSystem;
             this.MaxCount = source.MaxCount;
             this.MinCount = source.MinCount;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;
             this.ReceiveRequirementsNotifications = source.ReceiveRequirementsNotifications;

@@ -33,7 +33,7 @@
                             <Rock:RockTextBox ID="txtUsername" runat="server" Label="Store Username" />
                             <Rock:RockTextBox ID="txtPassword" runat="server" TextMode="Password" Label="Store Password" />
 
-                            <Rock:RockCheckBox ID="cbAgreeToTerms" runat="server" Label="I have read and agree to the terms of the Rock Store <small><a href='http://www.rockrms.com/Store/Terms'>(read terms)</a></small>" AutoPostBack="true" OnCheckedChanged="cbAgreeToTerms_CheckedChanged" />
+                            <Rock:RockCheckBox ID="cbAgreeToTerms" runat="server" Label="I have read and agree to the terms of the Rock Store <small><a href='http://www.rockrms.com/Store/Terms' target='_blank'>(read terms)</a></small>" AutoPostBack="true" OnCheckedChanged="cbAgreeToTerms_CheckedChanged" />
 
                             <asp:Button ID="btnInstall" CssClass="btn btn-primary" OnClick="btnInstall_Click" runat="server" Text="Install" Enabled="false" />
 

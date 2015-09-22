@@ -55,6 +55,11 @@ namespace Rock.Client
         /// <summary />
         public bool IsVisible { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public int Order { get; set; }
 
@@ -87,6 +92,7 @@ namespace Rock.Client
             this.IsReadOnly = source.IsReadOnly;
             this.IsRequired = source.IsRequired;
             this.IsVisible = source.IsVisible;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Order = source.Order;
             this.PostHtml = source.PostHtml;
             this.PreHtml = source.PreHtml;

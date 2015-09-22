@@ -14,7 +14,7 @@
             <asp:ListItem Text="simple" />
             <asp:ListItem Text="expanded" />
         </Rock:RockRadioButtonList>
-        <Rock:RockTextBox ID="tbPayload" runat="server" Label="Payload" TextMode="MultiLine" Rows="10" />
+        <Rock:CodeEditor ID="tbPayload" runat="server" Label="Payload" TextMode="MultiLine" Rows="10" EditorMode="JavaScript" />
         <Rock:KeyValueList ID="lstParameterValues" runat="server" Label="Parameter Values" />
         <a id="btnPOST" class="btn btn-action" runat="server" href="javascript:doPost()">POST</a>
         <a id="btnDELETE" class="btn btn-action" runat="server" href="javascript:doDelete()">DELETE</a>

@@ -305,48 +305,51 @@ namespace Rock.Model
             var currentDateTime = RockDateTime.Now;
             GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
-            var groupMemberQry = groupMemberService.Queryable( true ).Where( a => a.GroupId == groupRequirement.GroupId ).AsNoTracking();
-
-            var groupMemberRequirement = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.PersonId == personId && a.GroupRequirementId == groupRequirement.Id ).FirstOrDefault();
-            if ( groupMemberRequirement == null )
+            var groupMemberQry = groupMemberService.Queryable( true ).Where( a => a.PersonId == personId && a.GroupId == groupRequirement.GroupId );
+            if ( this.GroupRoleId != null )
             {
-                var groupMemberId = groupMemberQry.Where( a => a.PersonId == personId ).Select( a => a.Id ).FirstOrDefault();
-                if ( groupMemberId > 0 )
+                groupMemberQry = groupMemberQry.Where( a => a.GroupRoleId == this.GroupRoleId );
+            }
+
+            foreach ( var groupMemberId in groupMemberQry.Select( a => a.Id ) )
+            {
+                var groupMemberRequirement = groupMemberRequirementService.Queryable().Where( a => a.GroupMemberId == groupMemberId && a.GroupRequirementId == groupRequirement.Id ).FirstOrDefault();
+                if ( groupMemberRequirement == null )
                 {
                     groupMemberRequirement = new GroupMemberRequirement();
                     groupMemberRequirement.GroupMemberId = groupMemberId;
                     groupMemberRequirement.GroupRequirementId = groupRequirement.Id;
                     groupMemberRequirementService.Add( groupMemberRequirement );
                 }
-            }
 
-            groupMemberRequirement.LastRequirementCheckDateTime = currentDateTime;
+                groupMemberRequirement.LastRequirementCheckDateTime = currentDateTime;
 
-            if ( ( meetsGroupRequirement == MeetsGroupRequirement.Meets ) || ( meetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning ) )
-            {
-                // they meet the requirement so update the Requirement Met Date/Time
-                groupMemberRequirement.RequirementMetDateTime = currentDateTime;
-                groupMemberRequirement.RequirementFailDateTime = null;
-            }
-            else
-            {
-                // they don't meet the requirement so set the Requirement Met Date/Time to null
-                groupMemberRequirement.RequirementMetDateTime = null;
-                groupMemberRequirement.RequirementFailDateTime = currentDateTime;
-            }
-
-            if ( meetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
-            {
-                if ( !groupMemberRequirement.RequirementWarningDateTime.HasValue )
+                if ( ( meetsGroupRequirement == MeetsGroupRequirement.Meets ) || ( meetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning ) )
                 {
-                    // they have a warning for the requirement, and didn't have a warning already
-                    groupMemberRequirement.RequirementWarningDateTime = currentDateTime;
+                    // they meet the requirement so update the Requirement Met Date/Time
+                    groupMemberRequirement.RequirementMetDateTime = currentDateTime;
+                    groupMemberRequirement.RequirementFailDateTime = null;
                 }
-            }
-            else
-            {
-                // no warning, so set to null
-                groupMemberRequirement.RequirementWarningDateTime = null;
+                else
+                {
+                    // they don't meet the requirement so set the Requirement Met Date/Time to null
+                    groupMemberRequirement.RequirementMetDateTime = null;
+                    groupMemberRequirement.RequirementFailDateTime = currentDateTime;
+                }
+
+                if ( meetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
+                {
+                    if ( !groupMemberRequirement.RequirementWarningDateTime.HasValue )
+                    {
+                        // they have a warning for the requirement, and didn't have a warning already
+                        groupMemberRequirement.RequirementWarningDateTime = currentDateTime;
+                    }
+                }
+                else
+                {
+                    // no warning, so set to null
+                    groupMemberRequirement.RequirementWarningDateTime = null;
+                }
             }
         }
 

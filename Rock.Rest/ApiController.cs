@@ -25,6 +25,8 @@ using System.Reflection;
 using System.ServiceModel.Channels;
 using System.Web.Http;
 using System.Web.Http.OData;
+
+using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -125,7 +127,10 @@ namespace Rock.Rest
                     string.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
             }
 
-            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+            if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            {
+                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+            }
             Service.Context.SaveChanges();
 
             var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created, value.Id );
@@ -158,7 +163,10 @@ namespace Rock.Rest
 
             if ( targetModel.IsValid )
             {
-                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+                if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+                {
+                    System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+                }
                 Service.Context.SaveChanges();
             }
             else
@@ -274,7 +282,10 @@ namespace Rock.Rest
             // Verify model is valid before saving
             if ( targetModel.IsValid )
             {
-                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+                if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+                {
+                    System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+                }
                 Service.Context.SaveChanges();
             }
             else
