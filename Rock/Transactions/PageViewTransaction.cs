@@ -112,7 +112,7 @@ namespace Rock.Transactions
                 PageViewUserAgentService pageViewUserAgentService = new PageViewUserAgentService( rockContext );
                 PageViewSessionService pageViewSessionService = new PageViewSessionService( rockContext );
 
-                var userAgent = this.UserAgent.Trim();
+                var userAgent = ( this.UserAgent ?? "" ).Trim();
 
                 // lookup the pageViewUserAgent, and create it if it doesn't exist
                 int? pageViewUserAgentId = pageViewUserAgentService.Queryable().Where( a => a.UserAgent == userAgent ).Select( a => (int?)a.Id ).FirstOrDefault();
@@ -120,10 +120,10 @@ namespace Rock.Transactions
                 {
                     var pageViewUserAgent = new PageViewUserAgent();
                     pageViewUserAgent.UserAgent = userAgent;
-                    pageViewUserAgent.ClientType = PageViewUserAgent.GetClientType( this.UserAgent );
+                    pageViewUserAgent.ClientType = PageViewUserAgent.GetClientType( userAgent );
 
                     Parser uaParser = Parser.GetDefault();
-                    ClientInfo client = uaParser.Parse( this.UserAgent );
+                    ClientInfo client = uaParser.Parse( userAgent );
                     pageViewUserAgent.OperatingSystem = client.OS.ToString();
                     pageViewUserAgent.Browser = client.UserAgent.ToString();
 
@@ -135,7 +135,7 @@ namespace Rock.Transactions
 
                 // lookup PageViewSession, and create it if it doesn't exist
                 Guid sessionId = this.SessionId.AsGuid();
-                int? pageViewSessionId = pageViewSessionService.Queryable().Where( a => a.PageViewUserAgentId == pageViewUserAgentId && a.SessionId == sessionId && a.IpAddress == this.IPAddress ).Select(a => (int?)a.Id).FirstOrDefault();
+                int? pageViewSessionId = pageViewSessionService.Queryable().Where( a => a.PageViewUserAgentId == pageViewUserAgentId && a.SessionId == sessionId && a.IpAddress == this.IPAddress ).Select( a => (int?)a.Id ).FirstOrDefault();
                 if ( !pageViewSessionId.HasValue )
                 {
                     var pageViewSession = new PageViewSession();
