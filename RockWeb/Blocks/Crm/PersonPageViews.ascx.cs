@@ -131,9 +131,14 @@ namespace RockWeb.Blocks.Crm
             ShowList();
         }
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptSessions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptSessions_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            /*if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
                 var session = e.Item.DataItem as WebSession;
                 if ( session != null )
@@ -143,7 +148,7 @@ namespace RockWeb.Blocks.Crm
 
                     var lClientIcon = e.Item.FindControl( "lClientIcon" ) as Literal;
                     string icon = string.Empty;
-                    switch ( session.ClientType )
+                    switch ( session.PageViewSession.PageViewUserAgent.ClientType )
                     {
                         case "Desktop":
                             icon = "fa-desktop";
@@ -156,14 +161,12 @@ namespace RockWeb.Blocks.Crm
                             break;
                     }
                     var lUserAgent = e.Item.FindControl( "lUserAgent" ) as Literal;
-                    //Parser uaParser = Parser.GetDefault();
-                    //ClientInfo client = uaParser.Parse( session.UserAgent );
 
-                    lClientIcon.Text = String.Format( "<div class='pageviewsession-client pull-right'><div class='pull-left'><small>{0}<br>{1}</small></div><i class='fa {2} fa-2x pull-right'></i></div>", 
-                                            client.UserAgent, 
-                                            client.OS,
+                    lClientIcon.Text = String.Format( "<div class='pageviewsession-client pull-right'><div class='pull-left'><small>{0}<br>{1}</small></div><i class='fa {2} fa-2x pull-right'></i></div>",
+                                            session.PageViewSession.PageViewUserAgent.Browser,
+                                            session.PageViewSession.PageViewUserAgent.OperatingSystem,
                                             icon );
-                    
+
                     var lSessionDuration = e.Item.FindControl( "lSessionDuration" ) as Literal;
                     TimeSpan duration = (DateTime)session.EndDateTime - (DateTime)session.StartDateTime;
 
@@ -176,9 +179,14 @@ namespace RockWeb.Blocks.Crm
                         lSessionDuration.Text = String.Format( "{0}m", duration.Minutes );
                     }
                 }
-            }*/
+            }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnFilter_Click( object sender, EventArgs e )
         {
             if ( drpDateFilter.LowerValue.HasValue )
@@ -200,16 +208,16 @@ namespace RockWeb.Blocks.Crm
 
         #region Methods
 
-        void ShowList() 
+        public void ShowList()
         {
-            /*var rockContext = new RockContext();
+            var rockContext = new RockContext();
 
-            int sessionCount = Int32.Parse( GetAttributeValue( "SessionCount" ) );
+            int sessionCount = GetAttributeValue( "SessionCount" ).AsInteger();
 
             int skipCount = pageNumber * sessionCount;
 
             var person = new PersonService( rockContext ).GetByUrlEncodedKey( PageParameter( "Person" ) );
-            if (person != null)
+            if ( person != null )
             {
                 lPersonName.Text = person.FullName;
 
@@ -219,7 +227,7 @@ namespace RockWeb.Blocks.Crm
 
                 var sessionInfo = pageviewService.Queryable()
                     .Where( s => s.PersonAlias.PersonId == person.Id );
-                    
+
 
                 if ( startDate != DateTime.MinValue )
                 {
@@ -236,18 +244,20 @@ namespace RockWeb.Blocks.Crm
                     sessionInfo = sessionInfo.Where( p => p.SiteId == siteId );
                 }
 
-                var pageviewInfo = sessionInfo.GroupBy( s => new { s.PageViewSession, s.SiteId, SiteName = s.Site.Name } )
+                var pageviewInfo = sessionInfo.GroupBy( s => new
+                                {
+                                    s.PageViewSession,
+                                    s.SiteId,
+                                    SiteName = s.Site.Name
+                                } )
                                 .Select( s => new WebSession
                                 {
-                                    //SessionId = s.Key.PageViewSession.,
+                                    PageViewSession = s.Key.PageViewSession,
                                     StartDateTime = s.Min( x => x.DateTimeViewed ),
                                     EndDateTime = s.Max( x => x.DateTimeViewed ),
                                     SiteId = s.Key.SiteId,
                                     Site = s.Key.SiteName,
-                                    //ClientType = s.Key.ClientType,
-                                    //IpAddress = s.Key.IpAddress,
-                                    //UserAgent = s.Key.UserAgent,
-                                    PageViews = pageViews.Where( p => p.PageViewSessionId == s.Key.PageViewSessionId && p.SiteId == s.Key.SiteId ).ToList()
+                                    PageViews = pageViews.Where( p => p.PageViewSessionId == s.Key.PageViewSession.Id && p.SiteId == s.Key.SiteId ).ToList()
                                 } );
 
                 pageviewInfo = pageviewInfo.OrderByDescending( p => p.StartDateTime )
@@ -315,24 +325,18 @@ namespace RockWeb.Blocks.Crm
             {
                 lMessages.Text = "<div class='alert alert-warning'>No person provided to show results for.</div>";
             }
-            */
-            
         }
 
         #endregion
 
         public class WebSession
         {
-            //public Guid? SessionId { get; set; }
+            public PageViewSession PageViewSession { get; set; }
             public DateTime? StartDateTime { get; set; }
             public DateTime? EndDateTime { get; set; }
             public int? SiteId { get; set; }
             public string Site { get; set; }
-            
-            //public string ClientType { get; set; }
-            //public string IpAddress { get; set; }
-            //public string UserAgent { get; set; }
             public ICollection<PageView> PageViews { get; set; }
         }
-}
+    }
 }
