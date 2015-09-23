@@ -129,7 +129,7 @@
                                 <div class="panel">
                                     <div class="grid-filter">
 
-                                        <div class="controls pull-right margin-t-sm">
+                                        <asp:Panel ID="pnlViewBy" runat="server" CssClass="controls pull-right margin-t-sm">
                                             <div class="js-view-by">
                                                 <Rock:HiddenFieldWithClass ID="hfViewBy" CssClass="js-hidden-selected" runat="server" />
                                                 <div class="btn-group">
@@ -147,7 +147,7 @@
                                                     </asp:HyperLink>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </asp:Panel>
 
                                         <Rock:RockControlWrapper ID="rcwGiversFilter" runat="server" Label="Filter" CssClass="rock-radio-button-list">
                                             <p>
