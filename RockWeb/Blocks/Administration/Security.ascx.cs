@@ -545,7 +545,7 @@ namespace RockWeb.Blocks.Administration
             if ( parent != null )
             {
                 var entityType = Rock.Web.Cache.EntityTypeCache.Read( parent.TypeId );
-                foreach ( var auth in authService.GetAuths( iSecured.TypeId, iSecured.Id, CurrentAction ) )
+                foreach ( var auth in authService.GetAuths( parent.TypeId, parent.Id, action ) )
                 {
                     var rule = new AuthRule( auth );
 

@@ -119,12 +119,12 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( !Page.IsPostBack )
             {
+                lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now );
+                
                 LoadDropDowns();
                 try
                 {
                     LoadSettingsFromUserPreferences();
-                    LoadChartAndGrids();
-
                 }
                 catch ( Exception exception )
                 {
@@ -259,7 +259,8 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         public void LoadChartAndGrids()
         {
-            lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now );
+            pnlUpdateMessage.Visible = false;
+            pnlResults.Visible = true;
 
             lcAttendance.ShowTooltip = true;
             if ( this.DetailPageGuid.HasValue )

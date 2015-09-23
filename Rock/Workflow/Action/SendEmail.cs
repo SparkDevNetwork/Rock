@@ -37,7 +37,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowTextOrAttribute( "From Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent from (will default to organization email). <span class='tip tip-lava'></span>", false, "", "", 0, "From",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowTextOrAttribute( "Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
+    [WorkflowTextOrAttribute( "Send To Email Addresses", "Attribute Value", "The email addresses or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType" } )]
     [TextField( "Subject", "The subject that should be used when sending email. <span class='tip tip-lava'></span>", false, "", "", 2 )]
     [CodeEditorField( "Body", "The body of the email that should be sent. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 3 )]
@@ -202,10 +202,9 @@ namespace Rock.Workflow.Action
             return true;
         }
 
-        private void Send( string recipient, string from, string subject, string body, Dictionary<string, object> mergeFields, RockContext rockContext, bool createCommunicationRecord )
+        private void Send( string recipients, string from, string subject, string body, Dictionary<string, object> mergeFields, RockContext rockContext, bool createCommunicationRecord )
         {
-            var recipients = new List<string>();
-            recipients.Add( recipient );
+            var recipientList = recipients.SplitDelimitedValues().ToList();
              
             var mediumData = new Dictionary<string, string>();
             mediumData.Add( "From", from.ResolveMergeFields( mergeFields ) );
@@ -225,11 +224,11 @@ namespace Rock.Workflow.Action
 
                         if ( transport is Rock.Communication.Transport.SMTPComponent )
                         {
-                            ( (Rock.Communication.Transport.SMTPComponent)transport ).Send( mediumData, recipients, appRoot, string.Empty, createCommunicationRecord );
+                            ( (Rock.Communication.Transport.SMTPComponent)transport ).Send( mediumData, recipientList, appRoot, string.Empty, createCommunicationRecord );
                         }
                         else
                         {
-                            transport.Send( mediumData, recipients, appRoot, string.Empty );
+                            transport.Send( mediumData, recipientList, appRoot, string.Empty );
                         }
                     }
                 }

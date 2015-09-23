@@ -650,7 +650,7 @@ namespace Rock.Web.UI.Controls
                             else
                             {
                                 string value = Page.Request.Form[cb.UniqueID.Replace( cb.ID, ( (RockRadioButton)cb ).GroupName )];
-                                if ( value == cb.ClientID )
+                                if ( value == cb.ID )
                                 {
                                     col.SelectedKeys.Add( this.DataKeys[row.RowIndex].Value );
                                 }
@@ -1410,15 +1410,18 @@ namespace Rock.Web.UI.Controls
                 }
 
                 var dataItems = this.DataSourceAsList;
-                var gridViewRow = this.Rows.OfType<GridViewRow>().FirstOrDefault();
-                if ( gridViewRow == null )
+                var gridViewRows = this.Rows.OfType<GridViewRow>().ToList();
+                if ( gridViewRows.Count  != dataItems.Count )
                 {
                     return;
                 }
 
                 var selectedKeys = SelectedKeys.ToList();
-                foreach ( var dataItem in dataItems )
+                for ( int i = 0; i < dataItems.Count; i++ )
                 {
+                    var dataItem = dataItems[i];
+                    var gridViewRow = gridViewRows[i];
+
                     if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
                     {
                         var dataKeyValue = dataItem.GetPropertyValue( this.DataKeyNames[0] );
@@ -1452,24 +1455,7 @@ namespace Rock.Web.UI.Controls
                             }
                         }
 
-                        if ( exportValue != null &&
-                            ( exportValue is decimal || exportValue is decimal? ||
-                            exportValue is int || exportValue is int? ||
-                            exportValue is double || exportValue is double? ||
-                            exportValue is DateTime || exportValue is DateTime? ) )
-                        {
-                            worksheet.Cells[rowCounter, columnCounter].Value = exportValue;
-                        }
-                        else
-                        {
-                            string value = exportValue != null ? exportValue.ToString() : fieldCell.Text;
-                            value = value.ConvertBrToCrLf().Replace( "&nbsp;", " " );
-                            worksheet.Cells[rowCounter, columnCounter].Value = value;
-                            if ( value.Contains( Environment.NewLine ) )
-                            {
-                                worksheet.Cells[rowCounter, columnCounter].Style.WrapText = true;
-                            }
-                        }
+                        SetExcelValue( worksheet.Cells[rowCounter, columnCounter], exportValue );
 
                         if ( col.Value is CurrencyField )
                         {
@@ -1513,7 +1499,7 @@ namespace Rock.Web.UI.Controls
                     {
                         for ( int i = 0; i < data.Columns.Count; i++ )
                         {
-                            worksheet.Cells[rowCounter, i + 1].Value = row[i].ToString().ConvertBrToCrLf();
+                            SetExcelValue( worksheet.Cells[rowCounter, i + 1], row[i] );
 
                             // format background color for alternating rows
                             if ( rowCounter % 2 == 1 )
@@ -1532,11 +1518,11 @@ namespace Rock.Web.UI.Controls
 
                     // get all properties of the objects in the grid
                     IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
-                    IList<PropertyInfo> props = new List<PropertyInfo>();
 
                     // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
                     // The fields are exported in the same order as they appear in the Grid.
                     var orderedProps = new SortedDictionary<int, PropertyInfo>();
+                    var hiddenProps = new List<PropertyInfo>();
 
                     foreach ( PropertyInfo prop in allprops )
                     {
@@ -1549,17 +1535,20 @@ namespace Rock.Web.UI.Controls
 
                         // Find a matching field in the Grid and add it to the list of exported properties.
                         var gridField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
-                        if ( gridField == null )
+                        if ( gridField != null )
                         {
-                            continue;
+                            int fieldIndex = gridDataFields.IndexOf( gridField );
+                            orderedProps.Add( fieldIndex, prop );
+                        }
+                        else
+                        {
+                            hiddenProps.Add( prop );
                         }
 
-                        int fieldIndex = gridDataFields.IndexOf( gridField );
-
-                        orderedProps.Add( fieldIndex, prop );
                     }
 
-                    props = orderedProps.Values.ToList();
+                    var props = orderedProps.Values.ToList();
+                    props.AddRange( hiddenProps );
 
                     // print column headings
                     foreach ( PropertyInfo prop in props )
@@ -1618,12 +1607,7 @@ namespace Rock.Web.UI.Controls
                             bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
 
                             var cell = worksheet.Cells[rowCounter, columnCounter];
-                            string value = this.GetExportValue( prop, propValue, isDefinedValue, cell ).ConvertBrToCrLf();
-                            cell.Value = value;
-                            if ( value.Contains( Environment.NewLine ))
-                            {
-                                cell.Style.WrapText = true;
-                            }
+                            SetExcelValue( cell, this.GetExportValue( prop, propValue, isDefinedValue, cell ) );
 
                             // format background color for alternating rows
                             if ( rowCounter % 2 == 1 )
@@ -1757,6 +1741,32 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Formats the export value.
+        /// </summary>
+        /// <param name="range">The range.</param>
+        /// <param name="exportValue">The export value.</param>
+        private void SetExcelValue( ExcelRange range, object exportValue )
+        {
+            if ( exportValue != null &&
+                ( exportValue is decimal || exportValue is decimal? ||
+                exportValue is int || exportValue is int? ||
+                exportValue is double || exportValue is double? ||
+                exportValue is DateTime || exportValue is DateTime? ) )
+            {
+                range.Value = exportValue;
+            }
+            else
+            {
+                string value = exportValue != null ? exportValue.ToString().ConvertBrToCrLf().Replace( "&nbsp;", " " ) : string.Empty;
+                range.Value = value;
+                if ( value.Contains( Environment.NewLine ) )
+                {
+                    range.Style.WrapText = true;
+                }
+            }
+        }
+
+        /// <summary>
         /// Calls OnGridRebind with an option to disable paging so the entire datasource is loaded vs just what is needed for the current page
         /// </summary>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
@@ -1781,11 +1791,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="isDefinedValueField">if set to <c>true</c> [is defined value field].</param>
         /// <param name="cell">The cell.</param>
         /// <returns></returns>
-        private string GetExportValue( PropertyInfo prop, object propValue, bool isDefinedValueField, ExcelRange cell )
+        private object GetExportValue( PropertyInfo prop, object propValue, bool isDefinedValueField, ExcelRange cell )
         {
-            // Get the formatted value string for export.
-            string value = string.Empty;
-
             if ( propValue != null )
             {
                 if ( isDefinedValueField )
@@ -1807,7 +1814,11 @@ namespace Rock.Web.UI.Controls
                         if ( definedValueId > 0 )
                         {
                             var definedValue = DefinedValueCache.Read( definedValueId );
-                            value = definedValue != null ? definedValue.Value : definedValueId.ToString();
+                            if ( definedValue != null )
+                            {
+                                return definedValue.Value;
+                            }
+                            return definedValueId;
                         }
                     }
                     else if ( prop.PropertyType == typeof( string ) )
@@ -1841,25 +1852,12 @@ namespace Rock.Web.UI.Controls
                             }
                         }
 
-                        value = definedValues.AsDelimited( ", " );
+                        return definedValues.AsDelimited( ", " );
                     }
                 }
                 else if ( propValue is IEnumerable<object> )
                 {
-                    value = ( propValue as IEnumerable<object> ).ToList().AsDelimited( ", " );
-                }
-                else if ( propValue is DateTime? )
-                {
-                    DateTime dateTimeValue = ( propValue as DateTime? ).Value;
-                    var columnAttribute = prop.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>( true );
-                    if ( ( columnAttribute != null && columnAttribute.Name == "Date" ) || prop.Name.EndsWith( "Date" ) )
-                    {
-                        value = dateTimeValue.ToShortDateString();
-                    }
-                    else
-                    {
-                        value = dateTimeValue.ToString();
-                    }
+                    return ( propValue as IEnumerable<object> ).ToList().AsDelimited( ", " );
                 }
                 else
                 {
@@ -1874,21 +1872,14 @@ namespace Rock.Web.UI.Controls
                             var aNode = htmlSnippet.GetElementsByTagName( "a" ).Item( 0 );
                             string url = string.Format( "{0}{1}", this.RockBlock().RootPath, aNode.Attributes["href"].Value );
                             cell.Hyperlink = new Uri( url );
-                            value = aNode.InnerText;
+                            return aNode.InnerText;
                         }
-                        catch ( System.Xml.XmlException )
-                        {
-                            value = propValue.ToString();
-                        }
-                    }
-                    else
-                    {
-                        value = propValue.ToString();
+                        catch ( System.Xml.XmlException ) { }
                     }
                 }
             }
 
-            return value;
+            return propValue;
         }
 
         /// <summary>
@@ -2443,6 +2434,49 @@ namespace Rock.Web.UI.Controls
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Determines whether this instance [can view target page] the specified route.
+        /// </summary>
+        /// <param name="route">The route.</param>
+        /// <returns></returns>
+        public bool CanViewTargetPage( string route )
+        {
+            try
+            {
+                // cast the page as a Rock Page
+                var rockPage = Page as RockPage;
+                if ( rockPage != null )
+                {
+                    // If the route contains a parameter
+                    if ( route.Contains( "{0}" ) )
+                    {
+                        // replace it with a fake param
+                        route = string.Format( route, 1 );
+                    }
+
+                    // Get a uri
+                    Uri uri = new Uri( rockPage.ResolveRockUrlIncludeRoot( route ) );
+                    if ( uri != null )
+                    {
+                        // Find a page ref based on the uri
+                        var pageRef = new Rock.Web.PageReference( uri, Page.Request.ApplicationPath );
+                        if ( pageRef.IsValid )
+                        {
+                            // if a valid pageref was found, check the security of the page
+                            var page = PageCache.Read( pageRef.PageId );
+                            if ( page != null )
+                            {
+                                return page.IsAuthorized( Rock.Security.Authorization.VIEW, rockPage.CurrentPerson );
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            return false;
         }
 
         #endregion

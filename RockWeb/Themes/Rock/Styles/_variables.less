@@ -185,7 +185,7 @@
 @grid-row-odd-color: @text-color;   // The odd rows text color.
 
 //// Hover
-@grid-hover-bg: #D5E6ED;            // Row background color when hovered over.
+@grid-hover-bg: darken(@panel-heading-bg, 2%);            // Row background color when hovered over.
 @grid-hover-color: @text-color;     // Row text color when hovered over.
 
 //// Section Headers
@@ -363,6 +363,11 @@
 @btn-security-border:           @btn-default-border;
 //--
 @btn-link-disabled-color:        @gray-light;
+
+// Custom Alerts
+@alert-default-bg: @theme-6; 
+@alert-default-border: darken(@alert-default-bg, 10%); 
+@alert-default-text: @theme-6-text;
 
 // Custom Labels { The bootstrap labels use the brand colors. }
 @label-campus-bg: #83758f;               // Used for identifing campuses.

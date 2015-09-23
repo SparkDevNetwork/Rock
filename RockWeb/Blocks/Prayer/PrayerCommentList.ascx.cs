@@ -22,9 +22,11 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
@@ -38,25 +40,6 @@ namespace RockWeb.Blocks.Prayer
     public partial class PrayerCommentsList : Rock.Web.UI.RockBlock
     {
         #region Fields
-        /// <summary>
-        /// The prayer comment key parameter seen in the QueryString
-        /// </summary>
-        private static readonly string _prayerCommentKeyParameter = "noteId";
-
-        /// <summary>
-        /// The prayer request key parameter seen in the QueryString
-        /// </summary>
-        private static readonly string _prayerRequestKeyParameter = "prayerRequestId";
-
-        /// <summary>
-        /// The block instance configured group category guid.  This causes only comments for the appropriate root/group-level category to be seen.
-        /// </summary>
-        private Guid? _blockInstancePrayerRequestCategoryGuid = null;
-
-        /// <summary>
-        /// Holds whether or not the person can add, edit, and delete.
-        /// </summary>
-        private bool _canAddEditDelete = false;
 
         /// <summary>
         /// Holds whether or not the person can approve.
@@ -79,17 +62,15 @@ namespace RockWeb.Blocks.Prayer
         {
             base.OnInit( e );
 
-            _blockInstancePrayerRequestCategoryGuid = GetAttributeValue( "PrayerRequestCategory" ).AsGuidOrNull();
-
             BindFilter();
 
             // Block Security and special attributes (RockPage takes care of View)
-            _canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+            var canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             _canApprove = IsUserAuthorized( "Approve" );
 
             // grid stuff...
             gPrayerComments.Actions.ShowAdd = false;
-            gPrayerComments.IsDeleteEnabled = _canAddEditDelete;
+            gPrayerComments.IsDeleteEnabled = canAddEditDelete;
 
             gPrayerComments.DataKeyNames = new string[] { "id", "entityid" };
             gPrayerComments.GridRebind += gPrayerComments_GridRebind;
@@ -108,6 +89,7 @@ namespace RockWeb.Blocks.Prayer
 
             base.OnLoad( e );
         }
+
         #endregion
 
         #region Events
@@ -120,7 +102,7 @@ namespace RockWeb.Blocks.Prayer
         protected void gPrayerComments_Edit( object sender, RowEventArgs e )
         {
             // NOTE: DataKeys for Grid has two fields "id,entityId"
-            NavigateToLinkedPage( "DetailPage", _prayerCommentKeyParameter, (int)e.RowKeyValues["id"], _prayerRequestKeyParameter, (int)e.RowKeyValues["entityid"] );
+            NavigateToLinkedPage( "DetailPage", "noteId", (int)e.RowKeyValues["id"], "prayerRequestId", (int)e.RowKeyValues["entityid"] );
         }
 
         /// <summary>
@@ -136,6 +118,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 var rockContext = new RockContext();
                 NoteService noteService = new NoteService( rockContext );
+
                 // NOTE: DataKeys for Grid has two fields "id,entityId"
                 Note prayerComment = noteService.Get( (int)e.RowKeyValues["id"] );
 
@@ -227,6 +210,7 @@ namespace RockWeb.Blocks.Prayer
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfFilter.SaveUserPreference( FilterSetting.DateRange, drpDateRange.DelimitedValues );
+            gfFilter.SaveUserPreference( FilterSetting.PrayerCategory, catpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty : catpPrayerCategoryFilter.SelectedValue );
             BindCommentsGrid();
         }
 
@@ -252,6 +236,24 @@ namespace RockWeb.Blocks.Prayer
                 case "To Date":
                     e.Value = string.Empty;
                     break;
+
+                case "Prayer Category":
+
+                    int categoryId = e.Value.AsIntegerOrNull() ?? All.Id;
+                    if ( categoryId == All.Id )
+                    {
+                        e.Value = "All";
+                    }
+                    else
+                    {
+                        var category = Rock.Web.Cache.CategoryCache.Read( categoryId );
+                        if ( category != null )
+                        {
+                            e.Value = category.Name;
+                        }
+                    }
+
+                    break;
             }
         }
 
@@ -268,29 +270,39 @@ namespace RockWeb.Blocks.Prayer
 
             var noteTypeService = new NoteTypeService( rockContext );
             var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
-
-            // TODO log exception if noteType is null
-
             var noteService = new NoteService( rockContext );
             var prayerComments = noteService.GetByNoteTypeId( noteType.Id );
 
             SortProperty sortProperty = gPrayerComments.SortProperty;
 
-            if ( _blockInstancePrayerRequestCategoryGuid.HasValue )
+            // Filter by Category.  First see if there is a Block Setting, otherwise use the Grid Filter
+            CategoryCache categoryFilter = null;
+            var blockCategoryGuid = GetAttributeValue( "PrayerRequestCategory" ).AsGuidOrNull();
+            if ( blockCategoryGuid.HasValue )
+            {
+                categoryFilter = CategoryCache.Read( blockCategoryGuid.Value );
+            }
+
+            if ( categoryFilter == null && catpPrayerCategoryFilter.Visible )
+            {
+                int? filterCategoryId = catpPrayerCategoryFilter.SelectedValue.AsIntegerOrNull();
+                if ( filterCategoryId.HasValue )
+                {
+                    categoryFilter = CategoryCache.Read( filterCategoryId.Value );
+                }
+            }
+
+            if ( categoryFilter != null )
             {
                 // if filtered by category, only show comments for prayer requests in that category or any of its decendent categories
                 var categoryService = new CategoryService( rockContext );
+                var categories = new CategoryService( rockContext ).GetAllDescendents( categoryFilter.Guid ).Select( a => a.Id ).ToList();
 
-                if ( _blockInstancePrayerRequestCategoryGuid.HasValue )
-                {
-                    var categories = new CategoryService( rockContext ).GetAllDescendents( _blockInstancePrayerRequestCategoryGuid.Value ).Select( a => a.Id ).ToList();
+                var prayerRequestQry = new PrayerRequestService( rockContext ).Queryable().Where( a => a.CategoryId.HasValue &&
+                    ( a.Category.Guid == categoryFilter.Guid || categories.Contains( a.CategoryId.Value ) ) )
+                    .Select( a => a.Id );
 
-                    var prayerRequestQry = new PrayerRequestService( rockContext ).Queryable().Where( a => a.CategoryId.HasValue &&
-                        ( a.Category.Guid == _blockInstancePrayerRequestCategoryGuid.Value || categories.Contains( a.CategoryId.Value ) ) )
-                        .Select( a => a.Id );
-
-                    prayerComments = prayerComments.Where( a => a.EntityId.HasValue && prayerRequestQry.Contains( a.EntityId.Value ) );
-                }
+                prayerComments = prayerComments.Where( a => a.EntityId.HasValue && prayerRequestQry.Contains( a.EntityId.Value ) );
             }
 
             // Filter by Date Range
@@ -327,6 +339,21 @@ namespace RockWeb.Blocks.Prayer
         private void BindFilter()
         {
             drpDateRange.DelimitedValues = gfFilter.GetUserPreference( FilterSetting.DateRange );
+
+            // Set the category picker's selected value
+            int selectedPrayerCategoryId = gfFilter.GetUserPreference( FilterSetting.PrayerCategory ).AsInteger();
+            Category prayerCategory = new CategoryService( new RockContext() ).Get( selectedPrayerCategoryId );
+            catpPrayerCategoryFilter.SetValue( prayerCategory );
+
+            // only show the Filter if there isn't Category set in the Block Setting
+            CategoryCache blockCategory = null;
+            var blockCategoryGuid = GetAttributeValue( "PrayerRequestCategory" ).AsGuidOrNull();
+            if ( blockCategoryGuid.HasValue )
+            {
+                blockCategory = CategoryCache.Read( blockCategoryGuid.Value );
+            }
+
+            catpPrayerCategoryFilter.Visible = blockCategory == null;
         }
 
         #endregion
@@ -337,7 +364,7 @@ namespace RockWeb.Blocks.Prayer
         public static class FilterSetting
         {
             public static readonly string DateRange = "Date Range";
-            public static readonly string ApprovalStatus = "Approval Status";
+            public static readonly string PrayerCategory = "Prayer Category";
         }
     }
 }

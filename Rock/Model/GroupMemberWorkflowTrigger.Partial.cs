@@ -52,17 +52,18 @@ namespace Rock.Model
         {
             RockMemoryCache cache = RockMemoryCache.Default;
 
-            var newValue = new Lazy<List<GroupMemberWorkflowTrigger>>( factory );
-            var oldValue = cache.AddOrGetExisting( CACHE_KEY, newValue, new CacheItemPolicy() ) as Lazy<List<GroupMemberWorkflowTrigger>>;
-            try
+            var value = cache.Get( CACHE_KEY ) as List<GroupMemberWorkflowTrigger>;
+            if ( value != null )
             {
-                return ( oldValue ?? newValue ).Value;
+                return value;
             }
-            catch
+
+            value = factory();
+            if ( value != null )
             {
-                cache.Remove( CACHE_KEY );
-                throw;
+                cache.Set( CACHE_KEY, value, new CacheItemPolicy() );
             }
+            return value; 
         }
 
         /// <summary>

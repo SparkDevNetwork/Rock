@@ -36,14 +36,18 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group" id="divStatus" runat="server">
-                                <label class="control-label">Status</label>
+                                
                                 <div class="form-control-static">
                                     <asp:HiddenField ID="hfStatus" runat="server" />
-                                    <asp:Panel ID="pnlStatus" runat="server" CssClass="toggle-container">
-                                        <div class="btn-group btn-toggle">
-                                            <a class="btn btn-xs <%=PendingCss%>" data-status="1" data-active-css="btn-warning">Pending</a>
-                                            <a class="btn btn-xs <%=ApprovedCss%>" data-status="2" data-active-css="btn-success">Approved</a>
-                                            <a class="btn btn-xs <%=DeniedCss%>" data-status="3" data-active-css="btn-danger">Denied</a>
+                                    <asp:Panel ID="pnlStatus" runat="server">
+                                        <label class="control-label">Status</label>
+
+                                        <div class="toggle-container">
+                                            <div class="btn-group btn-toggle">
+                                                <a class="btn btn-xs <%=PendingCss%>" data-status="1" data-active-css="btn-warning">Pending</a>
+                                                <a class="btn btn-xs <%=ApprovedCss%>" data-status="2" data-active-css="btn-success">Approved</a>
+                                                <a class="btn btn-xs <%=DeniedCss%>" data-status="3" data-active-css="btn-danger">Denied</a>
+                                            </div>
                                         </div>
                                     </asp:Panel>
                                 </div>

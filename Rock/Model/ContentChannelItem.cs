@@ -42,6 +42,7 @@ namespace Rock.Model
         /// The content channel identifier.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public int ContentChannelId { get; set; }
 
         /// <summary>
@@ -51,6 +52,7 @@ namespace Rock.Model
         /// The content channel type identifier.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public int ContentChannelTypeId { get; set; }
 
         /// <summary>

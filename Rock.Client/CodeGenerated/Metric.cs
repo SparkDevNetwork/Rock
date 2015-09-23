@@ -67,6 +67,11 @@ namespace Rock.Client
         /// <summary />
         public int? MetricChampionPersonAliasId { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public int? ScheduleId { get; set; }
 
@@ -112,6 +117,7 @@ namespace Rock.Client
             this.IsSystem = source.IsSystem;
             this.LastRunDateTime = source.LastRunDateTime;
             this.MetricChampionPersonAliasId = source.MetricChampionPersonAliasId;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.ScheduleId = source.ScheduleId;
             this.SourceSql = source.SourceSql;
             this.SourceValueTypeId = source.SourceValueTypeId;

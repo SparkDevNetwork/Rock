@@ -276,12 +276,21 @@ namespace Rock.Web.UI.Controls
             base.LoadViewState( savedState );
             var savedAttributes = ViewState["ItemAttributes"] as List<Dictionary<string, string>>;
             int itemPosition = 0;
-            foreach ( var item in this.Items.OfType<ListItem>() )
+            
+            // make sure the list has the same number of items as it did when ViewState was saved
+            if ( savedAttributes.Count == this.Items.Count )
             {
-                var itemAttributes = savedAttributes[itemPosition++];
-                foreach ( var a in itemAttributes )
+                // don't bother doing anything if nothing has any attributes
+                if ( savedAttributes.Any( a => a.Count > 0 ) )
                 {
-                    item.Attributes.Add( a.Key, a.Value );
+                    foreach ( var item in this.Items.OfType<ListItem>() )
+                    {
+                        var itemAttributes = savedAttributes[itemPosition++];
+                        foreach ( var a in itemAttributes )
+                        {
+                            item.Attributes.Add( a.Key, a.Value );
+                        }
+                    }
                 }
             }
         }

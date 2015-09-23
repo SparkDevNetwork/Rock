@@ -64,6 +64,11 @@ namespace Rock.Client
         /// <summary />
         public Rock.Client.Enums.MICRStatus? MICRStatus { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public int? ProcessedByPersonAliasId { get; set; }
 
@@ -111,6 +116,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.MICRStatus = source.MICRStatus;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.ProcessedByPersonAliasId = source.ProcessedByPersonAliasId;
             this.ProcessedDateTime = source.ProcessedDateTime;
             this.ScheduledTransactionId = source.ScheduledTransactionId;

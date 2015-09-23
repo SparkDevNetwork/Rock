@@ -89,6 +89,18 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// Override this and set to true to have this field sort in the opposite direction
+        /// Normally this should be left as false unless there is a special case where it makes sense have it sort reversed
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        /// <value></value>
+        public virtual bool SortReversed( string selection )
+        {
+            return false;
+        }
+
+        /// <summary>
         /// Gets the type of the column field.
         /// </summary>
         /// <value>

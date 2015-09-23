@@ -35,7 +35,7 @@ namespace Rock.Jobs
     [SystemEmailField( "Notification Email Template", required: true, order: 0 )]
     [GroupTypesField( "Group Types", "Group types use to check the group requirements on.", order: 1 )]
     [EnumField( "Notify Parent Leaders", "", typeof( NotificationOption ), true, "None", order: 2 )]
-    [GroupField( "Accountability Group", "Optional group that will receive a list of all group members that do not meet requirements.", order: 3 )]
+    [GroupField( "Accountability Group", "Optional group that will receive a list of all group members that do not meet requirements.", false, order: 3 )]
     [TextField( "Excluded Group Type Role Id's", "Optional comma delimited list of group type role Id's that should be excluded from the notification.", false, order: 4, key: "ExcludedGroupRoleIds" )]
     [DisallowConcurrentExecution]
     public class SendGroupRequirementsNotification : IJob

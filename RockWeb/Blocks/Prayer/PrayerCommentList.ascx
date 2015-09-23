@@ -11,6 +11,7 @@
                     <div class="grid grid-panel">
                         <Rock:GridFilter ID="gfFilter" runat="server" OnApplyFilterClick="gfFilter_ApplyFilterClick" OnDisplayFilterValue="gfFilter_DisplayFilterValue">
                             <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
+                            <Rock:CategoryPicker ID="catpPrayerCategoryFilter" runat="server" Label="Category" EntityTypeName="Rock.Model.PrayerRequest"/>
                         </Rock:GridFilter>
                         <Rock:ModalAlert ID="maGridWarning" runat="server" />
                         <Rock:Grid ID="gPrayerComments" runat="server" AllowSorting="true" RowItemText="comment" OnRowSelected="gPrayerComments_Edit" ExcelExportEnabled="false">

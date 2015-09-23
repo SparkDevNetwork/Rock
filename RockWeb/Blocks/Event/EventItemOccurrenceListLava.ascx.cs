@@ -157,8 +157,8 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    // default show all future
-                    itemOccurrences.RemoveAll( o => o.GetStartTimes( RockDateTime.Now, DateTime.MaxValue ).Count() == 0 );
+                    // default show all future (max 1 year)
+                    itemOccurrences.RemoveAll( o => o.GetStartTimes( RockDateTime.Now, RockDateTime.Now.AddDays(365) ).Count() == 0 );
                 }
 
                 // limit results

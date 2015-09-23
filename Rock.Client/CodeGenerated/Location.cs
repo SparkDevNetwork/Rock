@@ -79,6 +79,11 @@ namespace Rock.Client
         /// <summary />
         public int? LocationTypeValueId { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public string Name { get; set; }
 
@@ -140,6 +145,7 @@ namespace Rock.Client
             this.IsActive = source.IsActive;
             this.IsGeoPointLocked = source.IsGeoPointLocked;
             this.LocationTypeValueId = source.LocationTypeValueId;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.ParentLocationId = source.ParentLocationId;
             this.PostalCode = source.PostalCode;
