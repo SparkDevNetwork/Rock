@@ -53,6 +53,14 @@ namespace Rock.Client
         public bool EnableMobileRedirect { get; set; }
 
         /// <summary />
+        public bool EnablePageViews
+        {
+            get { return _EnablePageViews; }
+            set { _EnablePageViews = value; }
+        }
+        private bool _EnablePageViews = true;
+
+        /// <summary />
         public string ErrorPage { get; set; }
 
         /// <summary />
@@ -94,6 +102,9 @@ namespace Rock.Client
         public int? PageNotFoundPageRouteId { get; set; }
 
         /// <summary />
+        public int? PageViewRetentionPeriodDays { get; set; }
+
+        /// <summary />
         public bool RedirectTablets { get; set; }
 
         /// <summary />
@@ -124,6 +135,7 @@ namespace Rock.Client
             this.DefaultPageRouteId = source.DefaultPageRouteId;
             this.Description = source.Description;
             this.EnableMobileRedirect = source.EnableMobileRedirect;
+            this.EnablePageViews = source.EnablePageViews;
             this.ErrorPage = source.ErrorPage;
             this.ExternalUrl = source.ExternalUrl;
             this.ForeignGuid = source.ForeignGuid;
@@ -137,6 +149,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.PageNotFoundPageId = source.PageNotFoundPageId;
             this.PageNotFoundPageRouteId = source.PageNotFoundPageRouteId;
+            this.PageViewRetentionPeriodDays = source.PageViewRetentionPeriodDays;
             this.RedirectTablets = source.RedirectTablets;
             this.RegistrationPageId = source.RegistrationPageId;
             this.RegistrationPageRouteId = source.RegistrationPageRouteId;
