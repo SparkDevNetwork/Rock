@@ -49,6 +49,11 @@ namespace Rock.Client
         /// <summary />
         public int? GroupRoleId { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public Guid Guid { get; set; }
 
@@ -67,6 +72,7 @@ namespace Rock.Client
             this.GroupId = source.GroupId;
             this.GroupRequirementTypeId = source.GroupRequirementTypeId;
             this.GroupRoleId = source.GroupRoleId;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 

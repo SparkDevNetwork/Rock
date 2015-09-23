@@ -17,11 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -232,17 +233,35 @@ namespace Rock.Field.Types
         #region Filter Control
 
         /// <summary>
-        /// Creates the control needed to filter (query) values using this field type.
+        /// Gets the filter value control with the specified FilterMode
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
-            // This field type does not support filtering
-            return null;
+            // only supports IsBlank and IsNotBlank, so don't show any value control
+            var filterValueControl = base.FilterValueControl( configurationValues, id, required, filterMode );
+            if ( filterValueControl != null )
+            {
+                filterValueControl.Visible = false;
+            }
+
+            return filterValueControl;
+        }
+
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // return a dummy value since this only supports IsBlank and IsNotBlank
+            return "0";
         }
 
         /// <summary>
@@ -251,9 +270,24 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override bool HasFilterControl()
         {
-            return false;
+            return true;
         }
 
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                // This field type only supports IsBlank and IsNotBlank since the content is stored as binarydata
+                return ComparisonType.IsBlank | ComparisonType.IsNotBlank;
+            }
+        }
+        
         #endregion
 
         #region Entity Methods

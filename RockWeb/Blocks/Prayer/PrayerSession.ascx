@@ -8,7 +8,8 @@
             <asp:Literal ID="lWelcomeInstructions" runat="server"></asp:Literal>
             <p>Select one or more categories to begin your prayer session:</p>
             <Rock:NotificationBox id="nbSelectCategories" runat="server" NotificationBoxType="Danger" Visible="false" Heading="I'm Sorry...">Please select at least one prayer category.</Rock:NotificationBox>
-            <Rock:RockCheckBoxList ID="cblCategories" runat="server" RepeatColumns="2"></Rock:RockCheckBoxList>
+            <Rock:RockCheckBox ID="cbSelectAll" CssClass="js-select-all" runat="server" Text="Select All"/>
+            <Rock:RockCheckBoxList ID="cblCategories" CssClass="js-category-items" runat="server" RepeatColumns="2"></Rock:RockCheckBoxList>
             <asp:LinkButton ID="lbStart" runat="server" Text="Start" CssClass="btn btn-primary" OnClick="lbStart_Click" />
         </asp:Panel>
 
@@ -54,18 +55,20 @@
                         </div>
 
 
-                    <div class="actions margin-b-md">
+                    <div class="actions margin-t-lg margin-b-md">
                         <asp:LinkButton ID="lbNext" TabIndex="1" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" CssClass="btn btn-primary pull-right" OnClick="lbNext_Click" />
                         <asp:LinkButton ID="lbFlag" runat="server" Text="<i class='fa fa-flag'></i> Flag" CssClass="btn btn-warning" ToolTip="Flag as inappropriate so that an administrator can review the content." CausesValidation="false" OnClick="lbFlag_Click" />
                         <asp:LinkButton ID="lbStop" runat="server" Text="End Session" CssClass="btn btn-link" CausesValidation="false" OnClick="lbStop_Click" />
                     </div>
 
                     <!-- Comments -->
-                    <h4>Comments</h4>
-                    <Rock:NoteContainer ID="notesComments" runat="server" Term="Comment" ShowHeading="false"
-                         DisplayType="Full" UsePersonIcon="true" ShowAlertCheckBox="false" 
-                        ShowPrivateCheckBox="false" ShowSecurityButton="false" 
-                        AllowAnonymousEntry="false" AddAlwaysVisible="true" SortDirection="Ascending" />
+                    <asp:Panel ID="pnlPrayerComments" runat="server">
+                        <h4>Comments</h4>
+                        <Rock:NoteContainer ID="notesComments" runat="server" Term="Comment" ShowHeading="false"
+                             DisplayType="Full" UsePersonIcon="true" ShowAlertCheckBox="false" 
+                            ShowPrivateCheckBox="false" ShowSecurityButton="false" 
+                            AllowAnonymousEntry="false" AddAlwaysVisible="true" SortDirection="Ascending" />
+                    </asp:Panel>
 
                 </div>
             </div>
@@ -96,5 +99,10 @@
     }
     $(document).ready(function () { FadePanelIn(); });
     Sys.WebForms.PageRequestManager.getInstance().add_endRequest(FadePanelIn);
+
+    $('.js-select-all').click(function () {
+        var selectAllChecked = $('.js-select-all').prop('checked');
+        $('.js-category-items input').prop('checked', selectAllChecked)
+    });
 
 </script>

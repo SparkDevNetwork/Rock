@@ -388,9 +388,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            _lbPersonMerge.Visible = ShowMergePerson;
-            _lbBulkUpdate.Visible = ShowBulkUpdate;
-            _lbCommunicate.Visible = ShowCommunicate;
+            _lbPersonMerge.Visible = ShowMergePerson && _parentGrid.CanViewTargetPage( _parentGrid.PersonMergePageRoute );
+            _lbBulkUpdate.Visible = ShowBulkUpdate && _parentGrid.CanViewTargetPage( _parentGrid.BulkUpdatePageRoute );
+            _lbCommunicate.Visible = ShowCommunicate && _parentGrid.CanViewTargetPage( _parentGrid.CommunicationPageRoute );
 
             _aAdd.Visible = ShowAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
             _lbAdd.Visible = ShowAdd && String.IsNullOrWhiteSpace( ClientAddScript );
@@ -398,7 +398,7 @@ namespace Rock.Web.UI.Controls
             _aExcelExport.Visible = ShowExcelExport && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
             _lbExcelExport.Visible = ShowExcelExport && String.IsNullOrWhiteSpace( ClientExcelExportScript );
 
-            _lbMergeTemplate.Visible = ShowMergeTemplate;
+            _lbMergeTemplate.Visible = ShowMergeTemplate && _parentGrid.CanViewTargetPage( _parentGrid.MergeTemplatePageRoute );
 
             base.RenderControl( writer );
         }

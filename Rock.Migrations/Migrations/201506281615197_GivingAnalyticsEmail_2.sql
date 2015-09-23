@@ -36,20 +36,22 @@ BEGIN
 	END
 
 	SET @Sql = '
-	;WITH CTE
+	;WITH CTE0
 	AS
 	(
 		SELECT 
 			[p].[GivingLeaderId],
 			[ftd].[AccountId],
-			MIN( [ft].[TransactionDateTime] ) AS [FirstGift],
-			COUNT( DISTINCT [ft].[Id] ) AS [NumberGifts],
-			SUM( [ftd].[Amount] ) AS [Amount]
+			[ft].[TransactionDateTime],
+			[ft].[Id],
+			[ftd].[Amount]
 		FROM [FinancialTransactionDetail] [ftd]
 		INNER JOIN [FinancialTransaction] [ft] ON [ft].[Id] = [ftd].[TransactionId]
+		INNER JOIN [DefinedValue] [dv] ON [dv].[Id] = [ft].[TransactionTypeValueId]
 		INNER JOIN [PersonAlias] [pa] ON [pa].[Id] = [ft].[AuthorizedPersonAliasId]
 		INNER JOIN [Person] [p] ON [p].[Id] = [pa].[PersonId]
-		WHERE [p].[Id] IS NOT NULL'
+		LEFT OUTER JOIN [FinancialPaymentDetail] [fpd] ON [fpd].[Id] = [ft].[FinancialPaymentDetailId]
+		WHERE [dv].[Guid] = ''2D607262-52D6-4724-910D-5C6E8FB89ACC'''
 
 	IF @StartDate IS NOT NULL
 	BEGIN
@@ -72,7 +74,7 @@ BEGIN
 	IF @CurrencyTypeIds IS NOT NULL
 	BEGIN
 		SET @Sql = @Sql + '
-		AND ft.[CurrencyTypeValueId] in (select * from ufnUtility_CsvToTable( ''' + @CurrencyTypeIds + ''' ) )'
+		AND fpd.[CurrencyTypeValueId] in (select * from ufnUtility_CsvToTable( ''' + @CurrencyTypeIds + ''' ) )'
 	END
 
 	IF @SourceTypeIds IS NOT NULL
@@ -82,7 +84,19 @@ BEGIN
 	END
 
 		SET @Sql = @Sql + '
-		GROUP BY [p].[GivingLeaderId],[ftd].[AccountId]
+	),
+
+	CTE
+	AS
+	(
+		SELECT 
+			[GivingLeaderId],
+			[AccountId],
+			MIN( [TransactionDateTime] ) AS [FirstGift],
+			COUNT( DISTINCT [Id] ) AS [NumberGifts],
+			SUM( [Amount] ) AS [Amount]
+		FROM CTE0
+		GROUP BY [GivingLeaderId],[AccountId]
 	),
 
 	CTE1
@@ -119,10 +133,10 @@ BEGIN
 		SELECT *
 		FROM (
 			SELECT [GivingLeaderId],
-			MIN( [FirstGift] ) AS [FirstGift],
-			SUM( [NumberGifts] ) AS [NumberGifts],
+			MIN( [TransactionDateTime] ) AS [FirstGift],
+			COUNT( DISTINCT [Id] ) AS [NumberGifts],
 			SUM( [Amount] ) AS [TotalAmount]
-			FROM CTE
+			FROM CTE0
 			GROUP BY [GivingLeaderId]
 		) [s]
 		WHERE [GivingLeaderId] IS NOT NULL'
@@ -165,7 +179,6 @@ BEGIN
 	SET @Sql = @Sql + '
 	)
 '
-
 	IF @ViewBy = 'G'
 	BEGIN
 
@@ -236,7 +249,7 @@ BEGIN
 		[p].[Guid],
 		[p].[NickName],
 		[p].[LastName],
-        [p].[Email],
+		[p].[Email],
 		[p].[GivingId]
 '		
 

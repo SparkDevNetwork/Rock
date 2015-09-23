@@ -130,6 +130,91 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Updates the cache hit miss.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="hit">if set to <c>true</c> [hit].</param>
+        private void UpdateCacheHitMiss( string key, bool hit )
+        {
+            var httpContext = System.Web.HttpContext.Current;
+            if ( httpContext != null && httpContext.Items.Contains( "Cache_Hits" ) )
+            {
+                var cacheHits = httpContext.Items["Cache_Hits"] as System.Collections.Generic.Dictionary<string, bool>;
+                if ( cacheHits != null )
+                {
+                    cacheHits.AddOrIgnore( key, hit );
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Gets or sets a value in the cache by using the default indexer property for an instance of the <see cref="T:System.Runtime.Caching.MemoryCache" /> class.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public override object this[string key]
+        {
+            get
+            {
+                object obj = base[key];
+                UpdateCacheHitMiss( key, obj != null );
+                return obj;
+            }
+            set
+            {
+                base[key] = value;
+            }
+        }
+
+        /// <summary>
+        /// Inserts a cache entry into the cache using the specified key and value and the specified details for how it is to be evicted.
+        /// </summary>
+        /// <param name="key">A unique identifier for the cache entry to add or get.</param>
+        /// <param name="value">The data for the cache entry.</param>
+        /// <param name="policy">An object that contains eviction details for the cache entry. This object provides more options for eviction than a simple absolute expiration.</param>
+        /// <param name="regionName">A named region in the cache to which a cache entry can be added. Do not pass a value for this parameter. By default, this parameter is null, because the <see cref="T:System.Runtime.Caching.MemoryCache" /> class does not implement regions.</param>
+        /// <returns>
+        /// If a matching cache entry already exists, a cache entry; otherwise, null.
+        /// </returns>
+        public override object AddOrGetExisting( string key, object value, CacheItemPolicy policy, string regionName = null )
+        {
+            UpdateCacheHitMiss( key, Contains( key ) );
+            return base.AddOrGetExisting( key, value, policy, regionName );
+        }
+
+        /// <summary>
+        /// Adds a cache entry into the cache using the specified key and a value and an absolute expiration value.
+        /// </summary>
+        /// <param name="key">A unique identifier for the cache entry to add.</param>
+        /// <param name="value">The data for the cache entry.</param>
+        /// <param name="absoluteExpiration">The fixed date and time at which the cache entry will expire.</param>
+        /// <param name="regionName">A named region in the cache to which a cache entry can be added. Do not pass a value for this parameter. This parameter is null by default, because the <see cref="T:System.Runtime.Caching.MemoryCache" /> class does not implement regions.</param>
+        /// <returns>
+        /// If a cache entry with the same key exists, the existing cache entry; otherwise, null.
+        /// </returns>
+        public override object AddOrGetExisting( string key, object value, DateTimeOffset absoluteExpiration, string regionName = null )
+        {
+            UpdateCacheHitMiss( key, Contains( key ) );
+            return base.AddOrGetExisting( key, value, absoluteExpiration, regionName );
+        }
+
+        /// <summary>
+        /// Returns an entry from the cache.
+        /// </summary>
+        /// <param name="key">A unique identifier for the cache entry to get.</param>
+        /// <param name="regionName">A named region in the cache to which a cache entry was added. Do not pass a value for this parameter. This parameter is null by default, because the <see cref="T:System.Runtime.Caching.MemoryCache" /> class does not implement regions.</param>
+        /// <returns>
+        /// A reference to the cache entry that is identified by <paramref name="key" />, if the entry exists; otherwise, null.
+        /// </returns>
+        public override object Get( string key, string regionName = null )
+        {
+            object obj = base.Get( key, regionName );
+            UpdateCacheHitMiss( key, obj != null );
+            return obj;
+        }
+
+        /// <summary>
         /// Gets the default.
         /// </summary>
         /// <value>

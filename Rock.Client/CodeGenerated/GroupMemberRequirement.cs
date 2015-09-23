@@ -49,6 +49,11 @@ namespace Rock.Client
         /// <summary />
         public DateTime? LastRequirementCheckDateTime { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public DateTime? RequirementFailDateTime { get; set; }
 
@@ -76,6 +81,7 @@ namespace Rock.Client
             this.GroupMemberId = source.GroupMemberId;
             this.GroupRequirementId = source.GroupRequirementId;
             this.LastRequirementCheckDateTime = source.LastRequirementCheckDateTime;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.RequirementFailDateTime = source.RequirementFailDateTime;
             this.RequirementMetDateTime = source.RequirementMetDateTime;
             this.RequirementWarningDateTime = source.RequirementWarningDateTime;

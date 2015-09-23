@@ -83,6 +83,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionScannedCheck.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Following.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FollowingEvent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FollowingEventNotification.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FollowingEventSubscription.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FollowingEventType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FollowingSuggested.cs" />

@@ -17,6 +17,7 @@
 using System.Data.Entity.Infrastructure.Interception;
 using System.Diagnostics;
 using System.Linq;
+using Rock.Data;
 
 namespace Rock
 {
@@ -30,8 +31,26 @@ namespace Rock
         /// </summary>
         private class DebugLoggingDbCommandInterceptor : DbCommandInterceptor
         {
+            /// <summary>
+            /// Gets or sets the rock context to show the SQL Output for.  Leave null to show SQL for all rockContexts
+            /// </summary>
+            /// <value>
+            /// The rock context.
+            /// </value>
+            public RockContext RockContext { get; set; }
+
+            /// <summary>
+            /// </summary>
+            /// <param name="command"></param>
+            /// <param name="interceptionContext"></param>
+            /// <inheritdoc />
             public override void ReaderExecuting( System.Data.Common.DbCommand command, DbCommandInterceptionContext<System.Data.Common.DbDataReader> interceptionContext )
             {
+                if ( RockContext != null && !interceptionContext.DbContexts.Any( a => a == RockContext ) )
+                {
+                    return;
+                }
+                
                 System.Diagnostics.Debug.WriteLine( "\n" );
 
                 StackTrace st = new StackTrace( 1, true );
@@ -72,9 +91,11 @@ namespace Rock
         /// <summary>
         /// Starts logging all EF SQL Calls to the Debug Output Window as T-SQL Blocks
         /// </summary>
-        public static void SQLLoggingStart()
+        /// <param name="rockContext">The rock context to limit the output to.  Leave blank to show output for all rockContexts.</param>
+        public static void SQLLoggingStart( RockContext rockContext = null)
         {
             SQLLoggingStop();
+            _debugLoggingDbCommandInterceptor.RockContext = rockContext;
             DbInterception.Add( _debugLoggingDbCommandInterceptor );
         }
 

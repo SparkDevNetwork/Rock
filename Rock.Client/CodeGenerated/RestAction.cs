@@ -49,6 +49,11 @@ namespace Rock.Client
         /// <summary />
         public string Method { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public string Path { get; set; }
 
@@ -70,6 +75,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.Method = source.Method;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Path = source.Path;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;

@@ -64,6 +64,11 @@ namespace Rock.Client
         /// <summary />
         public int? LocationId { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public string Note { get; set; }
 
@@ -111,6 +116,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
             this.LocationId = source.LocationId;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Note = source.Note;
             this.PersonAliasId = source.PersonAliasId;
             this.Processed = source.Processed;

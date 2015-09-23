@@ -1692,12 +1692,16 @@ namespace RockWeb.Blocks.Event
             if ( readOnly )
             {
                 btnEdit.Visible = false;
+                btnDelete.Visible = false;
+                btnCopy.Visible = false;
                 btnSecurity.Visible = false;
                 ShowReadonlyDetails( registrationTemplate );
             }
             else
             {
                 btnEdit.Visible = true;
+                btnDelete.Visible = true;
+                btnCopy.Visible = true;
 
                 btnSecurity.Title = "Secure " + registrationTemplate.Name;
                 btnSecurity.EntityId = registrationTemplate.Id;

@@ -46,6 +46,11 @@ namespace Rock.Client
         /// <summary />
         public DateTime? LogDateTime { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public string Name { get; set; }
 
@@ -75,6 +80,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.Input = source.Input;
             this.LogDateTime = source.LogDateTime;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Result = source.Result;
             this.Success = source.Success;
