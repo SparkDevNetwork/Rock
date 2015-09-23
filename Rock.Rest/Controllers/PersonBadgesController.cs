@@ -156,8 +156,6 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/PersonBadges/LastVisitOnSite/{personId}/{siteId}" )]
         public int GetLastVisitOnSite( int personId, int siteId )
         {
-            // TODO
-            
             PageView mostRecentPageView = new PageViewService( (Rock.Data.RockContext)Service.Context ).Queryable()
                                                 .Where( p => p.PersonAlias.PersonId == personId && p.SiteId == siteId )
                                                 .OrderByDescending( p => p.DateTimeViewed )

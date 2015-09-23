@@ -106,6 +106,12 @@ namespace RockWeb.Blocks.Cms
                 lSiteName.Text = "<h4>" + site.Name + "</h4>";
                 lSiteName.Visible = GetAttributeValue( "ShowSiteNameAsTitle" ).AsBoolean();
 
+                if (!site.EnablePageViews)
+                {
+                    lMessages.Text = "<div class='alert alert-warning'>Active " + site.Name + " users not available because page views are not enabled for site.</div>";
+                    return;
+                }
+
                 lMessages.Text = string.Empty;
 
                 using ( var rockContext = new RockContext() )
@@ -135,14 +141,20 @@ namespace RockWeb.Blocks.Cms
                     }
 
                     // Query to get who is logged in and last visit was to selected site
-                    var activeLogins = new UserLoginService( rockContext ).Queryable( "Person" )
+                    var activeLogins = new UserLoginService( rockContext ).Queryable()
                         .Where( l =>
                             l.PersonId.HasValue &&
                             l.IsOnLine == true )
                         .OrderByDescending( l => l.LastActivityDateTime )
                         .Select( l => new
                         {
-                            login = l,
+                            login = new
+                            {
+                                l.UserName,
+                                l.LastActivityDateTime,
+                                l.PersonId,
+                                l.Person
+                            },
                             pageViews = pageViewQry
                                 .Where( v => v.PersonAliasPersonId == l.PersonId )
                                 .Where( v => v.DateTimeViewed > last24Hours )
@@ -167,16 +179,14 @@ namespace RockWeb.Blocks.Cms
                     foreach ( var activeLogin in activeLogins )
                     {
                         var login = activeLogin.login;
-
-                        //Guid? latestSession = activeLogin.LatestSessionId;
                         var latestPageViewSessionId = activeLogin.LatestPageViewSessionId;
 
-                        
                         TimeSpan tsLastActivity = login.LastActivityDateTime.HasValue ? RockDateTime.Now.Subtract( login.LastActivityDateTime.Value ) : TimeSpan.MaxValue;
                         string className = tsLastActivity.Minutes <= 5 ? "recent" : "not-recent";
 
                         // create link to the person
-                        string personLink = login.Person.FullName;
+                        string personFullName = login.Person.FullName;
+                        string personLink = personFullName;
 
                         if ( GetAttributeValue( "PersonProfilePage" ) != null )
                         {
@@ -184,7 +194,7 @@ namespace RockWeb.Blocks.Cms
                             var pageParams = new Dictionary<string, string>();
                             pageParams.Add( "PersonId", login.Person.Id.ToString() );
                             var pageReference = new Rock.Web.PageReference( personProfilePage, pageParams );
-                            personLink = string.Format( @"<a href='{0}'>{1}</a>", pageReference.BuildUrl(), login.Person.FullName );
+                            personLink = string.Format( @"<a href='{0}'>{1}</a>", pageReference.BuildUrl(), personFullName );
                         }
 
                         // determine whether to show last page views

@@ -1082,8 +1082,7 @@ namespace Rock.Web.UI
             Page.Header.DataBind();
 
             // create a page view transaction if enabled
-            var globalAttributesCache = GlobalAttributesCache.Read();
-            if ( !Page.IsPostBack && _pageCache != null && globalAttributesCache.GetValue( "EnablePageViewTracking" ).AsBoolean() )
+            if ( !Page.IsPostBack && _pageCache != null )
             {
                 if ( _pageCache.Layout.Site.EnablePageViews )
                 {
@@ -1097,7 +1096,7 @@ namespace Rock.Web.UI
                     }
 
                     transaction.IPAddress = Request.UserHostAddress;
-                    transaction.UserAgent = Request.UserAgent;
+                    transaction.UserAgent = Request.UserAgent ?? "";
                     transaction.Url = Request.Url.ToString();
                     transaction.PageTitle = _pageCache.PageTitle;
                     var sessionId = Session["RockSessionID"];
