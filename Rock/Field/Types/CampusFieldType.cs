@@ -29,7 +29,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type to select a single (or null) CampusFieldType
+    /// Field Type to select a single (or null) Campus
     /// Stored as Campus's Guid
     /// </summary>
     public class CampusFieldType : FieldType, IEntityFieldType
