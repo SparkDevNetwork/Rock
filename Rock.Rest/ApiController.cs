@@ -326,8 +326,10 @@ namespace Rock.Rest
         public IQueryable<T> GetDataView( int id )
         {
             var dataView = new DataViewService( new RockContext() ).Get( id );
-
-            CheckCanEdit( dataView );
+            
+            // since DataViews can be secured at the Dataview or Category level, specifically check for CanView
+            CheckCanView( dataView, GetPerson() );
+            
             SetProxyCreation( false );
 
             if ( dataView != null && dataView.EntityType.Name == typeof( T ).FullName )
@@ -488,6 +490,38 @@ namespace Rock.Rest
                     SetProxyCreation( true );
                     ISecured reloadedModel = (ISecured)Service.Get( securedModel.Id );
                     if ( reloadedModel != null && !reloadedModel.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
+                    {
+                        throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks to see if the person is authorized to VIEW
+        /// </summary>
+        /// <param name="securedModel">The secured model.</param>
+        /// <param name="person">The person.</param>
+        /// <exception cref="System.Web.Http.HttpResponseException">
+        /// </exception>
+        protected virtual void CheckCanView( ISecured securedModel, Person person )
+        {
+            if ( securedModel != null )
+            {
+                if ( IsProxy( securedModel ) )
+                {
+                    if ( !securedModel.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                    {
+                        throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                    }
+                }
+                else
+                {
+                    // Need to reload using service with a proxy enabled so that if model has custom
+                    // parent authorities, those properties can be lazy-loaded and checked for authorization
+                    SetProxyCreation( true );
+                    ISecured reloadedModel = (ISecured)Service.Get( securedModel.Id );
+                    if ( reloadedModel != null && !reloadedModel.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                     {
                         throw new HttpResponseException( HttpStatusCode.Unauthorized );
                     }
