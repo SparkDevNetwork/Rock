@@ -1,0 +1,23 @@
+{% comment %}
+
+{% include '~~/Assets/Lava/SearchResults.lava' %}
+
+{% endcomment %}
+
+
+
+<iframe width="100%" frameborder="0" scrolling="no" class="js-search-iframe" src="http://search.ccv.church/search?site=ccv_church&amp;client=ccv_church_v7&amp;output=xml_no_dtd&amp;proxystylesheet=ccv_church_v7&amp;filter=p" name="ifrm" id="ifrm"></iframe>
+
+<script src="/Themes/church_ccv_External_v7/Scripts/Vendor/iframeResizer.min.js"></script>
+
+<script>
+  $(document).ready(function(){
+    var query = CCV.getParameterByName('q')
+    if (query.length > 0) {
+      var iframeSearchUrl = 'http://search.ccv.church/search?q=' + query + '&btnG=Search+CCV&entqr=0&output=xml_no_dtd&sort=date%3AD%3AL%3Ad1&ud=1&client=ccv_church_v7&oe=UTF-8&ie=UTF-8&proxystylesheet=ccv_church_v7&site=ccv_church&filter=p'
+      $('.js-search-iframe').attr('src', iframeSearchUrl)
+    }
+  });
+
+  $('.js-search-iframe').iFrameResize({})
+</script>
