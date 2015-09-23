@@ -43,7 +43,7 @@ namespace Rock.Model
         public int PageViewUserAgentId { get; set; }
 
         /// <summary>
-        /// Gets or sets the session identifier.
+        /// Gets or sets the session identifier that ASP.NET assigned to this session
         /// </summary>
         /// <value>
         /// The session identifier.
