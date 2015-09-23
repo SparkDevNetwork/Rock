@@ -564,7 +564,7 @@ namespace Rock.PayFlowPro
                 {
                     for ( int i = 0; i < customTable.Rows.Count; i++ )
                     {
-                        transactionCodes.Add( customTable.Rows[i]["Transaction Id"].ToString(), i );
+                        transactionCodes.Add( customTable.Rows[i]["Transaction Id"].ToString().Trim(), i );
                     }
                 }
 
@@ -578,7 +578,7 @@ namespace Rock.PayFlowPro
                 foreach ( DataRow recurringBillingRow in recurringBillingTable.Rows )
                 {
                     bool foundTxn = false;
-                    string transactionId = recurringBillingRow["Transaction ID"].ToString();
+                    string transactionId = recurringBillingRow["Transaction ID"].ToString().Trim();
                     decimal amount = decimal.MinValue;
                     string tenderType = string.Empty;
 
@@ -607,7 +607,7 @@ namespace Rock.PayFlowPro
                         var payment = new Payment();
                         payment.Amount = amount;
                         payment.TransactionDateTime = recurringBillingRow["Time"].ToString().AsDateTime() ?? DateTime.MinValue;
-                        payment.TransactionCode = recurringBillingRow["Transaction ID"].ToString();
+                        payment.TransactionCode = recurringBillingRow["Transaction ID"].ToString().Trim();
                         payment.GatewayScheduleId = recurringBillingRow["Profile ID"].ToString();
                         payment.ScheduleActive = recurringBillingRow["Status"].ToString() == "Active";
                         payment.CreditCardTypeValue = creditCardTypes.Where( t => t.Value == tenderType ).FirstOrDefault();
