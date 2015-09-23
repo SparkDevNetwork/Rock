@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Cms
         private void ShowActiveUsers()
         {
             int? siteId = GetAttributeValue( "Site" ).AsIntegerOrNull();
-            if (!siteId.HasValue)
+            if ( !siteId.HasValue )
             {
                 lMessages.Text = "<div class='alert alert-warning'>No site is currently configured.</div>";
                 return;
@@ -99,14 +99,14 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 int pageViewCount = GetAttributeValue( "PageViewCount" ).AsIntegerOrNull() ?? 0;
-                
+
                 StringBuilder sbUsers = new StringBuilder();
 
                 var site = SiteCache.Read( siteId.Value );
                 lSiteName.Text = "<h4>" + site.Name + "</h4>";
                 lSiteName.Visible = GetAttributeValue( "ShowSiteNameAsTitle" ).AsBoolean();
 
-                if (!site.EnablePageViews)
+                if ( !site.EnablePageViews )
                 {
                     lMessages.Text = "<div class='alert alert-warning'>Active " + site.Name + " users not available because page views are not enabled for site.</div>";
                     return;
@@ -122,8 +122,8 @@ namespace RockWeb.Blocks.Cms
                         qryPersonAlias,
                         pv => pv.PersonAliasId,
                         pa => pa.Id,
-                        (pv, pa) =>
-                        new 
+                        ( pv, pa ) =>
+                        new
                         {
                             PersonAliasPersonId = pa.PersonId,
                             pv.DateTimeViewed,
@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Cms
                             PagePageTitle = pv.Page.PageTitle
                         } );
 
-                    var last24Hours = RockDateTime.Now.AddDays(-1);
+                    var last24Hours = RockDateTime.Now.AddDays( -1 );
 
                     int pageViewTakeCount = pageViewCount;
                     if ( pageViewTakeCount == 0 )
@@ -210,7 +210,6 @@ namespace RockWeb.Blocks.Cms
                                 string pageViewsHtml = activeLogin.pageViews.ToList()
                                                     .Where( v => v.PageViewSessionId == latestPageViewSessionId )
                                                     .Select( v => HttpUtility.HtmlEncode( v.PagePageTitle ) ).ToList().AsDelimited( "<br> " );
-
 
                                 sbUsers.Append( string.Format( format, className, personLink, pageViewsHtml ) );
                             }
