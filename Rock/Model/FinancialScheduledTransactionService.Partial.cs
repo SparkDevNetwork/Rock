@@ -271,17 +271,20 @@ namespace Rock.Model
 
                 var batchTxnChanges = new Dictionary<Guid, List<string>>();
                 var batchBatchChanges = new Dictionary<Guid, List<string>>();
+                var scheduledTransactionIds = new List<int>();
 
                 foreach ( var payment in payments.Where( p => p.Amount > 0.0M ) )
                 {
                     totalPayments++;
 
                     // Only consider transactions that have not already been added
-                    if ( txnService.GetByTransactionCode( payment.TransactionCode ) == null )
+                    if ( !txnService.Queryable().AsNoTracking().Any( p => p.TransactionCode.Equals( payment.TransactionCode ) ) )
                     {
                         var scheduledTransaction = scheduledTxnService.GetByScheduleId( payment.GatewayScheduleId );
                         if ( scheduledTransaction != null )
                         {
+                            scheduledTransactionIds.Add( scheduledTransaction.Id );
+
                             scheduledTransaction.IsActive = payment.ScheduleActive;
 
                             var txnChanges = new List<string>();
@@ -431,13 +434,6 @@ namespace Rock.Model
                             batchSummary[batch.Guid].Add( payment );
 
                             totalAdded++;
-
-                            // Update the status of the scheduled transaction
-                            if ( gatewayComponent != null )
-                            {
-                                string statusMsgs = string.Empty;
-                                gatewayComponent.GetScheduledPaymentStatus( scheduledTransaction, out statusMsgs );
-                            }
                         }
                         else
                         {
@@ -504,6 +500,11 @@ namespace Rock.Model
 
                     rockContext.SaveChanges();
                 } );
+
+                // Queue a transaction to update the status of all affected scheduled transactions
+                var updatePaymentStatusTxn = new Rock.Transactions.UpdatePaymentStatusTransaction( gateway.Id, scheduledTransactionIds );
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( updatePaymentStatusTxn );
+
             }
              
             StringBuilder sb = new StringBuilder();
