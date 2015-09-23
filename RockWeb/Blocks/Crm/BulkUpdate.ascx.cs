@@ -874,13 +874,17 @@ namespace RockWeb.Blocks.Crm
 
                             foreach ( int id in ids.Where( id => !alreadyFollowingIds.Contains( id ) ) )
                             {
-                                var following = new Following
+                                var person = people.FirstOrDefault( p => p.Id == id );
+                                if ( person != null && person.PrimaryAliasId.HasValue )
                                 {
-                                    EntityTypeId = personAliasEntityTypeId,
-                                    EntityId = ( people.FirstOrDefault( p => p.Id == id ).PrimaryAliasId ) ?? 0,
-                                    PersonAliasId = CurrentPersonAlias.Id
-                                };
-                                followingService.Add( following );
+                                    var following = new Following
+                                    {
+                                        EntityTypeId = personAliasEntityTypeId,
+                                        EntityId = person.PrimaryAliasId.Value,
+                                        PersonAliasId = CurrentPersonAlias.Id
+                                    };
+                                    followingService.Add( following );
+                                }
                             }
                         }
                         else
