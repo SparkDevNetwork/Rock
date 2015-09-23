@@ -336,8 +336,12 @@ namespace Rock.MergeTemplates
                             // get all the paragraph elements after the 'next_empty' node and clear out the content
                             var nodesToClean = afterSiblings.Where( a => a.Name.LocalName == "p" ).ToList();
                             
-                            // add the next_empty node so it gets cleaned too
-                            nodesToClean.Add( xx );
+                            // if the next_empty node has lava, clean that up too
+                            var xxContent = xx.ToString();
+                            if ( lavaRegEx.IsMatch(xxContent) )
+                            {
+                                nodesToClean.Add( xx );
+                            }
                             
                             foreach (var node in nodesToClean)
                             {
@@ -349,6 +353,9 @@ namespace Rock.MergeTemplates
                             }
 
                         } );
+
+                    // remove all the 'next_empty' delimiters
+                    OpenXmlRegex.Replace( outputBodyNode.Nodes().OfType<XElement>(), this.nextEmptyRecordRegEx, string.Empty, ( xx, mm ) => { return true; } );
 
                     // remove all but the last SectionProperties element (there should only be one per section (body))
                     var sectPrItems = outputBodyNode.Nodes().OfType<XElement>().Where( a => a.Name.LocalName == "sectPr" );
