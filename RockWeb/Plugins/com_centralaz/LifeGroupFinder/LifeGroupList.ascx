@@ -16,7 +16,9 @@
                         <asp:LinkButton ID="lbReturn" runat="server" OnClick="lbReturn_Click" Text='<< Back' />
                     </div>
                 </div>
-                <asp:PlaceHolder ID="phGroups" runat="server" />
+                <asp:Literal ID="lOutput" runat="server"></asp:Literal>
+
+                <asp:Literal ID="lDebug" Visible="false" runat="server"></asp:Literal>
             </div>
         </div>
 

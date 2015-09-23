@@ -1,0 +1,65 @@
+{% for group in Groups %}
+
+<div class='row'>
+	<div class='col-md-1'>
+		<div class='photo'>
+			{{ group.Image }}
+		</div>
+	</div>
+
+	<div class='col-md-1'>
+		<div class='row'>
+			{% if group.HasPets %}
+				<i class='fa fa-paw fa-4x text-primary fa-fw'></i>
+			{% else %}
+				<i class='fa fa-paw fa-4x text-muted fa-fw'></i>
+			{% endif %}
+		</div>
+		<div class='row'>
+			{% if group.HasKids %}
+				<i class='fa fa-child fa-4x text-primary fa-fw'></i>
+			{% else %}
+				<i class='fa fa-child fa-4x text-muted fa-fw'></i>
+			{% endif %}
+		</div>
+	</div>
+
+	<div class='col-md-10'>
+		<div class='row'>
+			<div class='pull-left'>
+				<u><b><p style='font-size:24px'>{{ group.Name }}</p></b></u>
+			</div>
+			<div class='pull-right'>
+				<a href="{{ DetailPage }}?GroupId={{ group.Id }}">View >></a>
+			</div>
+		</div>
+		<div class='row'>
+			{{ group.ListDescription }}
+		</div>
+		<hr />
+		<div class='row'>
+			<div class='pull-left'>
+				{{ group.Schedule }}
+			</div>
+			<center>
+				{{ group.Crossroads }}
+			</center>
+			<div class='pull-right'>
+				{{ group.Distance }}
+			</div>
+		</div>
+	</div>
+
+</div>
+</br>
+</br>
+
+
+
+
+
+{% endfor %}
+{% assign size = Groups | Size %}
+{% if size == 0 %}
+<h1>No Results</h1>
+{% endif %}

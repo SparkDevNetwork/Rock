@@ -37,8 +37,8 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
     [DisplayName( "Life Group Search" )]
     [Category( "com_centralaz > Groups" )]
     [Description( "Central custom group search block." )]
-    [LinkedPage( "Life Group List Page", "The page to navigate to for group details.", false, "", "", 0 )]
-    [LinkedPage( "Information Security Page", "The page to navigate to for group details.", false, "", "", 0 )]
+    [LinkedPage( "Life Group List Page", "The page to navigate to for the group list.", false, "", "", 0 )]
+    [LinkedPage( "Information Security Page", "The page describing why your information is safe with us.", false, "", "", 0 )]
 
     public partial class LifeGroupSearch : Rock.Web.UI.RockBlock
     {
