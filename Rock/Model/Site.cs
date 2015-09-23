@@ -16,11 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -242,6 +242,30 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool RedirectTablets { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to log Page Views for pages in this site
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable page views]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        [DefaultValue( true )]
+        public bool EnablePageViews
+        {
+            get { return _enablePageViews; }
+            set { _enablePageViews = value; }
+        }
+        private bool _enablePageViews = true;
+
+        /// <summary>
+        /// Gets or sets the number of days to keep Page Views for pages in this site
+        /// </summary>
+        /// <value>
+        /// The page view retention period days.
+        /// </value>
+        [DataMember]
+        public int? PageViewRetentionPeriodDays { get; set; }
 
         /// <summary>
         /// Gets or sets the Site's Facebook AppId for utilizing the Facebook SDK.
