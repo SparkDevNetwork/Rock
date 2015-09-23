@@ -18,15 +18,17 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.MergeTemplates;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -39,6 +41,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Allow Add", "Should block support adding new attendance dates outside of the group's configured schedule and group type's exclusion dates?", true, "", 0 )]
     [BooleanField( "Allow Adding Person", "Should block support adding new attendee ( Requires that person has rights to search for new person )?", false, "", 1 )]
     [WorkflowTypeField( "Workflow", "An optional workflow type to launch whenever attendance is saved. The Group will be used as the workflow 'Entity' when processing is started. Additionally if a 'StartDateTime' and/or 'Schedule' attribute exist, their values will be set with the corresponding saved attendance values.", false, false, "", "", 2 )]
+    [MergeTemplateField( "Attendance Roster Template", "", false )]
     public partial class GroupAttendanceDetail : RockBlock
     {
         #region Private Variables
@@ -273,6 +276,87 @@ namespace RockWeb.Blocks.Groups
             {
                 NavigateToParentPage( new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } } );
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbPrintAttendanceRoster control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbPrintAttendanceRoster_Click( object sender, EventArgs e )
+        {
+            // NOTE: lbPrintAttendanceRoster is a full postback since we are returning a download of the roster
+            
+            nbPrintRosterWarning.Visible = false;
+            var rockContext = new RockContext();
+
+            Dictionary<int, object> mergeObjectsDictionary = new Dictionary<int, object>();
+            if ( _attendees != null )
+            {
+                var personIdList = _attendees.Select( a => a.PersonId ).ToList();
+                var personList = new PersonService( rockContext ).GetByIds( personIdList );
+                foreach ( var person in personList )
+                {
+                    mergeObjectsDictionary.AddOrIgnore( person.Id, person );
+                }
+            }
+
+            var globalMergeFields = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
+            globalMergeFields.Add( "CurrentPerson", this.CurrentPerson );
+            globalMergeFields.Add( "Group", this._group );
+
+            var mergeTemplate = new MergeTemplateService( rockContext ).Get( this.GetAttributeValue( "AttendanceRosterTemplate" ).AsGuid() );
+            
+            if ( mergeTemplate == null )
+            {
+                this.LogException( new Exception( "No Merge Template specified in block settings" ) );
+                nbPrintRosterWarning.Visible = true;
+                nbPrintRosterWarning.Text = "Unable to print Attendance Roster";
+                return;
+            }
+
+            MergeTemplateType mergeTemplateType = mergeTemplate.GetMergeTemplateType();
+            if (mergeTemplateType == null)
+            {
+                this.LogException( new Exception( "Unable to determine Merge Template Type" ) );
+                nbPrintRosterWarning.Visible = true;
+                nbPrintRosterWarning.Text = "Error printing Attendance Roster";
+                return;
+            }
+
+            BinaryFile outputBinaryFileDoc = null;
+
+            var mergeObjectList = mergeObjectsDictionary.Select( a => a.Value ).ToList();
+
+            outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate, mergeObjectList, globalMergeFields );
+
+            // set the name of the output doc
+            outputBinaryFileDoc = new BinaryFileService( rockContext ).Get( outputBinaryFileDoc.Id );
+            outputBinaryFileDoc.FileName = _group.Name + " Attendance Roster" + Path.GetExtension( outputBinaryFileDoc.FileName ?? "" ) ?? ".docx"; ;
+            rockContext.SaveChanges();
+
+            if ( mergeTemplateType.Exceptions != null && mergeTemplateType.Exceptions.Any() )
+            {
+                if ( mergeTemplateType.Exceptions.Count == 1 )
+                {
+                    this.LogException( mergeTemplateType.Exceptions[0] );
+                }
+                else if ( mergeTemplateType.Exceptions.Count > 50 )
+                {
+                    this.LogException( new AggregateException( string.Format( "Exceptions merging template {0}. See InnerExceptions for top 50.", mergeTemplate.Name ), mergeTemplateType.Exceptions.Take( 50 ).ToList() ) );
+                }
+                else
+                {
+                    this.LogException( new AggregateException( string.Format( "Exceptions merging template {0}. See InnerExceptions", mergeTemplate.Name ), mergeTemplateType.Exceptions.ToList() ) );
+                }
+            }
+
+            var uri = new UriBuilder( outputBinaryFileDoc.Url );
+            var qry = System.Web.HttpUtility.ParseQueryString( uri.Query );
+            qry["attachment"] = true.ToTrueFalse();
+            uri.Query = qry.ToString();
+            Response.Redirect( uri.ToString(), false );
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>
@@ -695,5 +779,6 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
+
     }
 }
