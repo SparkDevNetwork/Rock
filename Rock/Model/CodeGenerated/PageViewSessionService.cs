@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// PageView Service class
+    /// PageViewSession Service class
     /// </summary>
-    public partial class PageViewService : Service<PageView>
+    public partial class PageViewSessionService : Service<PageViewSession>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PageViewService"/> class
+        /// Initializes a new instance of the <see cref="PageViewSessionService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public PageViewService(RockContext context) : base(context)
+        public PageViewSessionService(RockContext context) : base(context)
         {
         }
 
@@ -48,9 +48,15 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( PageView item, out string errorMessage )
+        public bool CanDelete( PageViewSession item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<PageView>( Context ).Queryable().Any( a => a.PageViewSessionId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PageViewSession.FriendlyTypeName, PageView.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -58,45 +64,41 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class PageViewExtensionMethods
+    public static partial class PageViewSessionExtensionMethods
     {
         /// <summary>
-        /// Clones this PageView object to a new PageView object
+        /// Clones this PageViewSession object to a new PageViewSession object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static PageView Clone( this PageView source, bool deepCopy )
+        public static PageViewSession Clone( this PageViewSession source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as PageView;
+                return source.Clone() as PageViewSession;
             }
             else
             {
-                var target = new PageView();
+                var target = new PageViewSession();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another PageView object to this PageView object
+        /// Copies the properties from another PageViewSession object to this PageViewSession object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this PageView target, PageView source )
+        public static void CopyPropertiesFrom( this PageViewSession target, PageViewSession source )
         {
             target.Id = source.Id;
-            target.DateTimeViewed = source.DateTimeViewed;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.PageId = source.PageId;
-            target.PageTitle = source.PageTitle;
-            target.PageViewSessionId = source.PageViewSessionId;
-            target.PersonAliasId = source.PersonAliasId;
-            target.SiteId = source.SiteId;
-            target.Url = source.Url;
+            target.IpAddress = source.IpAddress;
+            target.PageViewUserAgentId = source.PageViewUserAgentId;
+            target.SessionId = source.SessionId;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 
