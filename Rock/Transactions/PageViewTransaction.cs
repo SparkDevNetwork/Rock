@@ -112,7 +112,7 @@ namespace Rock.Transactions
                 PageViewUserAgentService pageViewUserAgentService = new PageViewUserAgentService( rockContext );
                 PageViewSessionService pageViewSessionService = new PageViewSessionService( rockContext );
 
-                var userAgent = ( this.UserAgent ?? "" ).Trim();
+                var userAgent = ( this.UserAgent ?? string.Empty ).Trim();
 
                 // lookup the pageViewUserAgent, and create it if it doesn't exist
                 int? pageViewUserAgentId = pageViewUserAgentService.Queryable().Where( a => a.UserAgent == userAgent ).Select( a => (int?)a.Id ).FirstOrDefault();
