@@ -411,6 +411,10 @@ namespace Rock.Web.UI.Controls
                 }
                 _lbCommunicate.Visible = _parentGrid.CanViewTargetPage( url );
             }
+            else
+            {
+                _lbCommunicate.Visible = false;
+            }
 
             _aAdd.Visible = ShowAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
             _lbAdd.Visible = ShowAdd && String.IsNullOrWhiteSpace( ClientAddScript );
