@@ -154,7 +154,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The attribute values.
         /// </value>
-        public Dictionary<string, AttributeValue> AttributeValues { get; set; }
+        public Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.  This property can be used by a subclass to override the parent class's default
@@ -228,7 +228,7 @@ namespace Rock.Web.UI.Controls
         public AttributeFieldObject()
         {
             Attributes = new Dictionary<string, AttributeCache>();
-            AttributeValues = new Dictionary<string, AttributeValue>();
+            AttributeValues = new Dictionary<string, AttributeValueCache>();
         }
     }
 }

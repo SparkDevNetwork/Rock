@@ -171,7 +171,6 @@ namespace Rock.Model
         /// <summary>
         /// Gets the MergeTemplateType MEF Component for the specified MergeTemplate
         /// </summary>
-        /// <param name="mergeTemplate">The merge template.</param>
         /// <returns></returns>
         public MergeTemplateType GetMergeTemplateType()
         {

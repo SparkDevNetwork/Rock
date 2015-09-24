@@ -516,6 +516,7 @@
     <Compile Include="Utility\ExtensionMethods\CurrencyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
+    <Compile Include="Web\Cache\AttributeValueCache.cs" />
     <Compile Include="Web\InternalContext.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />

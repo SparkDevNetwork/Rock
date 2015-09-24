@@ -854,8 +854,11 @@ namespace RockWeb.Blocks.Examples
                         var newValue = gm.Person.AttributeValues[attributeCache.Key];
                         if ( newValue != null )
                         {
-                            newValue.EntityId = gm.Person.Id;
-                            rockContext.AttributeValues.Add( newValue );
+                            var attributeValue = new AttributeValue();
+                            attributeValue.AttributeId = newValue.AttributeId;
+                            attributeValue.EntityId = gm.Person.Id;
+                            attributeValue.Value = newValue.Value;
+                            rockContext.AttributeValues.Add( attributeValue );
                         }
                     }
                 }
