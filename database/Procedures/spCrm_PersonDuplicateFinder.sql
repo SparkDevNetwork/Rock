@@ -370,8 +370,7 @@ BEGIN
                 ,@processDateTime
                 ,@processDateTime
                 ,NEWID()
-                )
-    OPTION (QUERYTRACEON 8790);
+                );
 
     -- Update PersonDuplicate table with results of partial name match
     MERGE [PersonDuplicate] AS TARGET
@@ -417,8 +416,7 @@ BEGIN
                 ,@processDateTime
                 ,@processDateTime
                 ,NEWID()
-                )
-    OPTION (QUERYTRACEON 8790);
+                );
 
     --  Update PersonDuplicate table with results of phonenumber match for each number type. 
     --  For example, if both the Cell and Home phone match, that should be a higher score 
@@ -506,8 +504,7 @@ BEGIN
                     ,@processDateTime
                     ,@processDateTime
                     ,NEWID()
-                    )
-        OPTION (QUERYTRACEON 8790);
+                    );
 
         FETCH NEXT
         FROM phoneNumberTypeCursor
@@ -564,8 +561,7 @@ BEGIN
                 ,@processDateTime
                 ,@processDateTime
                 ,NEWID()
-                )
-    OPTION (QUERYTRACEON 8790);
+                );
 
     /* Calculate Capacities before we do the additional scores
     */
