@@ -1437,7 +1437,7 @@ namespace RockWeb.Blocks.Groups
                     .SelectMany( l => l.EventItemOccurrence.ContentChannelItems.Where( i => i.ContentChannelItem != null ) )
                     .ToList()
                     .ForEach( i => contentItems
-                        .AddOrIgnore( i.ContentChannelItem.Id, i.ContentChannelItem.Title ) );
+                        .AddOrIgnore( i.ContentChannelItem.Id, string.Format("{0} <small>({1})</small>", i.ContentChannelItem.Title, i.ContentChannelItem.ContentChannelType.Name ) ) );
 
                 rptLinkedRegistrations.DataSource = registrations;
                 rptLinkedRegistrations.DataBind();
