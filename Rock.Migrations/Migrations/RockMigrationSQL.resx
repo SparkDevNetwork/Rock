@@ -208,4 +208,13 @@
   <data name="_201509032145388_PersonMergeRequests" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201509032145388_personmergerequests.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201509242206062_GroupAttendanceRoster_AddGroupRosterMergeTemplate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201509242206062_groupattendanceroster_addgrouprostermergetemplate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201509242206062_GroupAttendanceRoster_SecondaryAudience" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201509242206062_groupattendanceroster_secondaryaudience.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201509242206062_GroupAttendanceRoster_spCrm_PersonDuplicateFinder" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201509242206062_groupattendanceroster_spcrm_personduplicatefinder.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>
