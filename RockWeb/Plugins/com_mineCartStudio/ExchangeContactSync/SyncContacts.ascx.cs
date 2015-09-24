@@ -40,6 +40,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.ExchangeContactSync
 
     [TextField("Admin Email Address", "The exchange admin's email address.", true, "", "", 0)]
     [TextField("Admin Password", "The exchange admin's password.", true, "", "", 1, "AdminPassword", true )]
+    [SecurityRoleField( "Eligible People", "The security role that contains individuals who are allowed to sync contacts.", true, order: 2 )]
     public partial class SyncContacts : Rock.Web.UI.RockBlock
     {
 
@@ -75,12 +76,47 @@ namespace RockWeb.Plugins.com_mineCartStudio.ExchangeContactSync
 
             if ( !Page.IsPostBack )
             {
-                cbFollowing.Checked = GetUserPreference( _keyPrefix + "IncludeFollowing" ).AsBoolean();
-                cbStaff.Checked = GetUserPreference( _keyPrefix + "IncludeStaff" ).AsBoolean();
-                    
-                var groupIds = new List<int>();
-                GetUserPreference( _keyPrefix + "Groups" ).SplitDelimitedValues().ToList().ForEach( v => groupIds.Add( v.AsInteger() ) );
-                gpGroup.SetValues( new GroupService( new RockContext() ).Queryable().AsNoTracking().Where( g => groupIds.Contains( g.Id ) ) );
+                Guid groupGuid = GetAttributeValue( "EligiblePeople" ).AsGuid();
+
+                var rockContext = new RockContext();
+
+                // Verify person is eligible
+                var person = new GroupMemberService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( m =>
+                        m.Group != null &&
+                        m.Group.Guid.Equals( groupGuid ) &&
+                        m.GroupMemberStatus == GroupMemberStatus.Active &&
+                        m.PersonId == ( CurrentPersonId ?? 0 ) )
+                    .Select( m => m.Person )
+                    .FirstOrDefault();
+
+                if ( person == null )
+                {
+                    nbNotice.Heading = "No Access";
+                    nbNotice.Text = "<p>Sorry, you do not currently belong to the group that is allowed to sync Rock with their Exchange contact list.</p>"; 
+                    nbNotice.NotificationBoxType = NotificationBoxType.Warning;
+                    nbNotice.Visible = true;
+
+                    pnlEntry.Visible = false;
+                }
+                else
+                {
+                    if ( string.IsNullOrWhiteSpace( person.Email ) )
+                    {
+                        nbNotice.Heading = "Missing Email Address";
+                        nbNotice.Text = "<p>You do not currently have an email address on your profile record. Your contacts will not sync until a valid email address is added.</p>";
+                        nbNotice.NotificationBoxType = NotificationBoxType.Warning;
+                        nbNotice.Visible = true;
+                    }
+
+                    cbFollowing.Checked = GetUserPreference( _keyPrefix + "IncludeFollowing" ).AsBoolean();
+                    cbStaff.Checked = GetUserPreference( _keyPrefix + "IncludeStaff" ).AsBoolean();
+
+                    var groupIds = new List<int>();
+                    GetUserPreference( _keyPrefix + "Groups" ).SplitDelimitedValues().ToList().ForEach( v => groupIds.Add( v.AsInteger() ) );
+                    gpGroup.SetValues( new GroupService( new RockContext() ).Queryable().AsNoTracking().Where( g => groupIds.Contains( g.Id ) ) );
+                }
             }
         }
 
