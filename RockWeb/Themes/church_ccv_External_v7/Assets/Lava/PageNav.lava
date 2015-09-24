@@ -3,7 +3,6 @@
   <div class="search">
     <label class="sr-only" for="search-input"><span>Search</span></label>
     <input class="form-control" type="search" id="search-input" onkeypress="CCV.receiveSearchKeypress(event)" name="s" value="">
-    <input type="submit" id="search-submit" onclick="CCV.receiveSearchEnter()" value="Search" class="hide">
     <i class="fa fa-search search-icon"></i>
   </div>
 

@@ -6710,6 +6710,7 @@ h6,
 [id=search-input] {
   border-radius: 60px;
   padding-left: 30px;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 @media (min-width: 768px) {
   [id=search-input] {
