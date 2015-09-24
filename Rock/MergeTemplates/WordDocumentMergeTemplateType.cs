@@ -373,6 +373,8 @@ namespace Rock.MergeTemplates
                         lastId++;
                     }
 
+                    HeaderFooterGlobalMerge( outputDoc, globalMergeFields );
+
                     // remove the last pagebreak
                     MarkupSimplifier.SimplifyMarkup( outputDoc, new SimplifyMarkupSettings { RemoveLastRenderedPageBreak = true } );
 
@@ -395,6 +397,40 @@ namespace Rock.MergeTemplates
             }
 
             return outputBinaryFile;
+        }
+
+        /// <summary>
+        /// Merges global merge fields into the Header and Footer parts of the document
+        /// </summary>
+        /// <param name="outputDoc">The output document.</param>
+        /// <param name="globalMergeFields">The global merge fields.</param>
+        private void HeaderFooterGlobalMerge( WordprocessingDocument outputDoc, Dictionary<string, object> globalMergeFields )
+        {
+            DotLiquid.Hash globalMergeHash = new DotLiquid.Hash();
+            foreach ( var field in globalMergeFields )
+            {
+                globalMergeHash.Add( field.Key, field.Value );
+            }
+
+            // update the doc headers and footers for any Lava having to do with Global merge fields
+            // from http://stackoverflow.com/a/19012057/1755417
+            foreach( var headerFooterPart in outputDoc.MainDocumentPart.HeaderParts.OfType<OpenXmlPart>().Union(outputDoc.MainDocumentPart.FooterParts))
+            {
+                foreach (var currentParagraph in headerFooterPart.RootElement.Descendants<DocumentFormat.OpenXml.Wordprocessing.Paragraph>())
+                {
+                    foreach ( var currentRun in currentParagraph.Descendants<DocumentFormat.OpenXml.Wordprocessing.Run>())
+                    {
+                        foreach ( var currentText in currentRun.Descendants<DocumentFormat.OpenXml.Wordprocessing.Text>() )
+                        {
+                            string nodeText = currentText.Text.ReplaceWordChars();
+                            if ( lavaRegEx.IsMatch( nodeText ) )
+                            {
+                                currentText.Text = nodeText.ResolveMergeFields( globalMergeHash, true, true );
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
