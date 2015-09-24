@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\003_ForeignKeyChange.cs" />
     <Compile Include="Migrations\002_AddContributionStatementPrefs.cs" />
     <Compile Include="MSSearch\MSQueryRequest.cs" />
     <Compile Include="MSSearch\MSQueryResponse.cs" />
