@@ -466,6 +466,7 @@
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
     <Compile Include="Model\GroupMemberWorkflowTrigger.cs" />
     <Compile Include="Net\RockWebRequest.cs" />
+    <Compile Include="PersonProfile\Badge\AlertNote.cs" />
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
