@@ -34,7 +34,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     /// <summary>
     /// All Church Metrics Block
     /// </summary>
-
     [DisplayName( "Church Metrics" )]
     [Category( "NewSpring" )]
     [Description( "Custom church metrics block using the Chart.js library" )]
@@ -105,6 +104,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             Campus campus;
             var campusContext = GetAttributeValue( "RespectCampusContext" ).AsBooleanOrNull();
 
+            // set a breakpoint here to catch whether or not the context fires as a postback or not
             if ( !Page.IsPostBack )
             {
                 campus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
