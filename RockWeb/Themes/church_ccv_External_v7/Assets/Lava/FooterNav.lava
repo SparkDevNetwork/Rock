@@ -32,14 +32,28 @@
         <ul class="footernav-items">
         {% for gchildPage in childPage.Pages %}
 
+          {% assign showgchildPage = true %}
           {% if gchildPage.Title == "Sub" %}
-            {% for ggchildPage in gchildPage.Pages %}
-              <li class="footernav-item footernav-item-sub"><a href="{{ ggchildPage.Url }}">{{ ggchildPage.Title }}</a></li>
-            {% endfor %}
-          {% else %}
-            <li class="footernav-item"><a href="{{ gchildPage.Url }}">{{ gchildPage.Title }}</a></li>
+            {% assign showgchildPage = false %}
+          {% endif %}
+          {% if Context.Campus.Id != 1 and gchildPage.Title == "Young Adults" %}
+            {% assign showgchildPage = false %}
           {% endif %}
 
+          {% if showgchildPage %}
+            <li class="footernav-item"><a href="{{ gchildPage.Url }}">{{ gchildPage.Title }}</a></li>
+          {% else %}
+            {% for ggchildPage in gchildPage.Pages %}
+              {% assign showggchildPage = true %}
+              {% if Context.Campus.Id != 1 and ggchildPage.Title == "Senior Adults" %}
+                {% assign showggchildPage = false %}
+              {% endif %}
+
+              {% if showggchildPage %}
+                <li class="footernav-item footernav-item-sub"><a href="{{ ggchildPage.Url }}">{{ ggchildPage.Title }}</a></li>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
 
         {% endfor %}
         </ul>
