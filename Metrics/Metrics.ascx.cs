@@ -19,16 +19,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Web.UI;
 using Newtonsoft.Json;
-// using RestSharp;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Reporting.Dashboard;
-using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -49,7 +45,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [CustomCheckboxListField( "Compare Against Last Year", "", "Yes", Order = 5 )]
     [MetricCategoriesField( "Metric Source", "Select the metric to include in this chart.", false, "", "", 6 )]
     [CustomCheckboxListField( "Respect Campus Context", "", "Yes", Order = 7 )]
-
     public partial class Metrics : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -60,22 +55,16 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         /// <value>
         /// The metric block values.
         /// </value>
-        protected string metricBlockValues
+        protected string MetricBlockValues
         {
             get
             {
-                var metricBlockValues = ViewState["metricBlockValues"] as string;
-
-                if ( metricBlockValues != null )
-                {
-                    return metricBlockValues;
-                }
-
-                return string.Empty;
+                var viewStateValues = ViewState["MetricBlockValues"] as string;
+                return viewStateValues ?? string.Empty;
             }
             set
             {
-                ViewState["metricBlockValues"] = value;
+                ViewState["MetricBlockValues"] = value;
             }
         }
 
@@ -89,23 +78,14 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         {
             get
             {
-                
-                var savedValue = ViewState[ string.Format( "MetricCompareLastYear_{0}", BlockId) ] as string;
-
-                if ( savedValue != null )
-                {
-                    return savedValue.ToString();
-                }
-
-                return string.Empty;
+                var viewStateValue = ViewState[string.Format( "MetricCompareLastYear_{0}", BlockId )] as string;
+                return viewStateValue ?? string.Empty;
             }
             set
             {
-                ViewState[ string.Format( "MetricCompareLastYear_{0}", BlockId ) ] = value;
+                ViewState[string.Format( "MetricCompareLastYear_{0}", BlockId )] = value;
             }
         }
-
-        
 
         #endregion
 
@@ -117,22 +97,29 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnInit( e );
+            base.OnLoad( e );
 
             #region Campus Context
 
-            var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
-
-            var campus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
-
+            var campusEntityType = EntityTypeCache.Read( typeof( Campus ) );
+            Campus campus;
             var campusContext = GetAttributeValue( "RespectCampusContext" ).AsBooleanOrNull();
+
+            if ( !Page.IsPostBack )
+            {
+                campus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+            }
+            else
+            {
+                campus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+            }
 
             #endregion
 
             #region Global Variables
 
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( this.GetAttributeValue( "SlidingDateRange" ) ?? string.Empty );
-            
+
             // Output variables direct to the ascx
             metricBlockNumber.Value = BlockId.ToString();
             metricBlockId.Value = BlockName.Replace( " ", "" ).ToString();
@@ -168,12 +155,11 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     {
                         if ( campus != null && campusContext.HasValue )
                         {
-
                             var currentweekMetricValue = newMetric.MetricValues
                                 .Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End && a.EntityId.ToString() == campus.Id.ToString() )
                                 .Select( a => a.YValue )
                                 .Sum();
-                            
+
                             currentMetricValue.Value = string.Format( "{0:n0}", currentweekMetricValue );
 
                             // Compare currentMetricValue to the same date range 7 days previous
@@ -235,15 +221,13 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                                     );
                             }
                         }
-                        
                     }
                     else if ( metricCustomDates == "One Year Ago" )
                     {
                         if ( campus != null && campusContext.HasValue )
                         {
-
                             currentMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
-                                .Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == calendar.GetWeekOfYear( DateTime.Now.AddYears( -1 ).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) && a.MetricValueDateTime.Value.Year.ToString() == DateTime.Now.AddYears(-1).ToString() && a.EntityId.ToString() == campus.Id.ToString() )
+                                .Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == calendar.GetWeekOfYear( DateTime.Now.AddYears( -1 ).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) && a.MetricValueDateTime.Value.Year.ToString() == DateTime.Now.AddYears( -1 ).ToString() && a.EntityId.ToString() == campus.Id.ToString() )
                                 .Select( a => a.YValue )
                                 .Sum()
                             );
@@ -283,7 +267,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     // Search for data if a source is selected
                     if ( dateRange.Start.HasValue && dateRange.End.HasValue )
                     {
-
                         if ( campus != null && campusContext.HasValue )
                         {
                             metricCurrentYear = newMetric.MetricValues
@@ -342,7 +325,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                                     .ToList();
                             }
                         }
-                        
                     }
 
                     foreach ( var currentMetric in metricCurrentYear )
@@ -423,20 +405,20 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                                     .Select( a => a.YValue )
                                     .FirstOrDefault();
                             }
-
-                        } else {
-
+                        }
+                        else
+                        {
                             currentWeekMetric = metricItem.MetricValues
-                                .Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.AddDays(-7).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == currentWeekOfYear && a.MetricValueDateTime.Value.Year == DateTime.Now.Year )
+                                .Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.AddDays( -7 ).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == currentWeekOfYear && a.MetricValueDateTime.Value.Year == DateTime.Now.Year )
                                 .Select( a => a.YValue )
                                 .FirstOrDefault();
 
                             previousWeekMetric = metricItem.MetricValues
-                                .Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.AddDays(-7).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == lastWeekOfYear && a.MetricValueDateTime.Value.Year == DateTime.Now.Year )
+                                .Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.AddDays( -7 ).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == lastWeekOfYear && a.MetricValueDateTime.Value.Year == DateTime.Now.Year )
                                 .Select( a => a.YValue )
                                 .FirstOrDefault();
                         }
-                        
+
                         // Assign Colors to Var
                         string metricItemColor = "#6bac43";
 
@@ -464,7 +446,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                         }
                     }
 
-                    metricBlockValues = JsonConvert.SerializeObject( blockValues.ToArray() );
+                    MetricBlockValues = JsonConvert.SerializeObject( blockValues.ToArray() );
                 }
             }
         }
@@ -510,13 +492,10 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         #region Internal Methods
 
         /// <summary>
-        /// Gets the metrics.
+        /// Gets the metric ids.
         /// </summary>
+        /// <param name="metricAttribute">The metric attribute.</param>
         /// <returns></returns>
-        ///
-        /// <value>
-        /// The metrics.
-        /// </value>
         public List<int> GetMetricIds( string metricAttribute )
         {
             var metricCategories = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( GetAttributeValue( metricAttribute ) );

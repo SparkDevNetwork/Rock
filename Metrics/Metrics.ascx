@@ -9,7 +9,7 @@
             <asp:HiddenField ID="metricWidth" runat="server" />
             <asp:HiddenField ID="metricClass" runat="server" />
             <asp:HiddenField ID="metricDisplay" runat="server" />
-            
+
             <asp:HiddenField ID="metricTitle" runat="server" />
             <asp:HiddenField ID="metricBlockId" runat="server" />
 
@@ -112,7 +112,7 @@
 
                 $( document ).ready( function() {
                     var <%= metricBlockId.Value %> = document.getElementById("<%= metricBlockId.Value %>Chart").getContext("2d");
-                    window.<%= metricBlockId.Value %>Chart = new Chart(<%= metricBlockId.Value %>).Doughnut(<%= metricBlockValues %>, pieOptions);
+                    window.<%= metricBlockId.Value %>Chart = new Chart(<%= metricBlockId.Value %>).Doughnut(<%= MetricBlockValues %>, pieOptions);
                 });
             </script>
 
