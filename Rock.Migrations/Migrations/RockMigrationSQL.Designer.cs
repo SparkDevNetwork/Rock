@@ -690,5 +690,78 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201509032145388_PersonMergeRequests", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @BinaryFileTypeMergeTemplate INT = (
+        ///        SELECT TOP 1 Id
+        ///        FROM BinaryFileType
+        ///        WHERE [Guid] = &apos;BD63EC0C-2DF8-4C55-97E3-616870C67C59&apos;
+        ///        )
+        ///    ,@StorageEntityTypeDatabase INT = (
+        ///        SELECT TOP 1 Id
+        ///        FROM EntityType
+        ///        WHERE NAME = &apos;Rock.Storage.Provider.Database&apos;
+        ///        )
+        ///
+        ///INSERT INTO [dbo].[BinaryFile] (
+        ///    [IsTemporary]
+        ///    ,[IsSystem]
+        ///    ,[BinaryFileTypeId]
+        ///    ,[FileName]
+        ///    ,[MimeType]
+        ///    ,[Description]
+        ///    ,[StorageEntityTypeId]
+        ///   [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201509242206062_GroupAttendanceRoster_AddGroupRosterMergeTemplate {
+            get {
+                return ResourceManager.GetString("_201509242206062_GroupAttendanceRoster_AddGroupRosterMergeTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @Id int
+        ///DECLARE @ParentId int
+        ///DECLARE @Selection nvarchar(max)
+        ///DECLARE @FilterEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Reporting.DataFilter.PropertyFilter&apos; )
+        ///DECLARE @AndFilterId int
+        ///
+        ///DECLARE DataViewCursor INSENSITIVE CURSOR FOR
+        ///SELECT 
+        ///	F.[Id],
+        ///	F.[ParentId],
+        ///	&apos;[&apos; + char(13) + char(10) + 
+        ///	char(9) + &apos;&quot;SecondaryAudiences&quot;,&apos; + char(13) + char(10) + 
+        ///	char(9) + &apos;&quot;8&quot;,&apos; + char(13) + char(10) + 
+        ///	char(9) + &apos;&quot;&apos; + SUBSTRING( F.[Selection], 38, 36 ) + &apos;&quot;,&apos;  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201509242206062_GroupAttendanceRoster_SecondaryAudience {
+            get {
+                return ResourceManager.GetString("_201509242206062_GroupAttendanceRoster_SecondaryAudience", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A-AE6E-5EE307D9A0DC&apos;
+        ///            * Phone Type - Home: &apos;407E7E45-7B2E-4FCD-9605-ECB1339F2453&apos;
+        ///            * Phone Type - Cell: &apos;AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303&apos;
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		EX [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201509242206062_GroupAttendanceRoster_spCrm_PersonDuplicateFinder {
+            get {
+                return ResourceManager.GetString("_201509242206062_GroupAttendanceRoster_spCrm_PersonDuplicateFinder", resourceCulture);
+            }
+        }
     }
 }
