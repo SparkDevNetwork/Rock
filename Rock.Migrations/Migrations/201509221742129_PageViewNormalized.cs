@@ -118,6 +118,10 @@ JOIN (
     AND j.SessionId = pv.SessionId
     AND j.IpAddress = pv.IpAddress" );
 
+            DropIndex( "dbo.PageView", new[] { "PageId", "ClientType" } );
+            DropIndex( "dbo.PageView", new[] { "SiteId", "ClientType" } );
+            DropIndex( "dbo.PageView", new[] { "SessionId" } );
+            DropIndex( "dbo.PageView", new[] { "IpAddress" } );
 
             DropColumn( "dbo.PageView", "UserAgent" );
             DropColumn( "dbo.PageView", "ClientType" );
@@ -164,6 +168,11 @@ JOIN (
             DropColumn( "dbo.PageView", "PageViewSessionId" );
             DropTable( "dbo.PageViewUserAgent" );
             DropTable( "dbo.PageViewSession" );
+
+            CreateIndex( "dbo.PageView", new[] { "PageId", "ClientType" } );
+            CreateIndex( "dbo.PageView", new[] { "SiteId", "ClientType" } );
+            CreateIndex( "dbo.PageView", "SessionId" );
+            CreateIndex( "dbo.PageView",  "IpAddress" );
         }
     }
 }
