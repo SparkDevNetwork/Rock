@@ -123,6 +123,12 @@ a.help {
 // 4. Bootstrap Overrides
 //--------------------------------
 
+// add new alert style
+.alert-default {
+    .alert-variant(@alert-default-bg; @alert-default-border; @alert-default-text);
+}
+
+
 // grid controls in asp.net center content using align=center but bootstrap overrides this 
 th[align=center] {
     text-align: center;
@@ -392,12 +398,6 @@ th[align=center] {
 
     .grid.grid-panel {
       margin-bottom: 0;
-    }
-
-    @media @md {
-      .row {
-        margin-left: -16px;
-      }
     }
   }
 

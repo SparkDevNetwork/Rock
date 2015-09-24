@@ -33,7 +33,7 @@ namespace Rock.Attribute
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultCampusGuids">The default campus guids.</param>
+        /// <param name="defaultGuids">The default guids.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>

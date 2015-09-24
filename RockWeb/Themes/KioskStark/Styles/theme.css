@@ -909,6 +909,7 @@ dl:not(.dl-horizontal) dd {
     8. Column Types
     9. Row Types
     10. Responsive Columns
+    11. Components
 */
 .table > tbody > tr > td {
   color: #333333;
@@ -1230,6 +1231,13 @@ tr.row-highlight td {
   .table-responsive td[data-priority="6"] {
     display: table-cell;
   }
+}
+.alert.alert-grid {
+  margin-top: -15px;
+  margin-right: -15px;
+  margin-left: -15px;
+  border-radius: 0;
+  margin-bottom: 15px;
 }
 /*
     Used to manage styles for specific blocks.
@@ -3572,6 +3580,53 @@ fieldset .actions {
 .datepicker {
   padding: 10px;
 }
+.datepicker.datepicker-dropdown:before {
+  content: '';
+  display: inline-block;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid #ccc;
+  border-top: 0;
+  border-bottom-color: rgba(0, 0, 0, 0.2);
+  position: absolute;
+}
+.datepicker.datepicker-dropdown:after {
+  content: '';
+  display: inline-block;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid #fff;
+  border-top: 0;
+  position: absolute;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-left:before {
+  left: 6px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-left:after {
+  left: 7px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-right:before {
+  right: 6px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-right:after {
+  right: 7px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-top:before {
+  top: -7px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-top:after {
+  top: -6px;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-bottom:before {
+  bottom: -7px;
+  border-bottom: 0;
+  border-top: 7px solid #999;
+}
+.datepicker.datepicker-dropdown.datepicker-orient-bottom:after {
+  bottom: -6px;
+  border-bottom: 0;
+  border-top: 6px solid #fff;
+}
 .datepicker table {
   background-color: transparent;
 }
@@ -5185,6 +5240,17 @@ a.help {
 .well > h4 {
   margin-top: 0;
 }
+.alert-default {
+  background-color: #eeeeee;
+  border-color: #d5d5d5;
+  color: #333333;
+}
+.alert-default hr {
+  border-top-color: #c8c8c8;
+}
+.alert-default .alert-link {
+  color: #1a1a1a;
+}
 th[align=center] {
   text-align: center;
 }
@@ -5445,11 +5511,6 @@ th[align=center] {
 }
 .panel-analytics .panel-body .grid.grid-panel {
   margin-bottom: 0;
-}
-@media (min-width: 992px) {
-  .panel-analytics .panel-body .row {
-    margin-left: -16px;
-  }
 }
 .panel-analytics .filter-options {
   background-color: #f5f9fc;

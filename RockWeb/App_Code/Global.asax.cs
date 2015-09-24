@@ -843,8 +843,8 @@ namespace RockWeb
                     string scheme = serverVariables["HTTP_X_FORWARDED_PROTO"] ?? request.Url.Scheme;
                     Uri hostAndPort = new Uri( scheme + Uri.SchemeDelimiter + serverVariables["HTTP_HOST"] );
 
-                    // If host is a local port (occurs with Azure hosting), ignore this request
-                    if ( hostAndPort.Host == "127.0.0.1" )
+                    // If host is local (occurs with Azure hosting), ignore this request
+                    if ( hostAndPort.Host == "127.0.0.1" || hostAndPort.Host.ToLower() == "localhost" )
                     {
                         return null;
                     }

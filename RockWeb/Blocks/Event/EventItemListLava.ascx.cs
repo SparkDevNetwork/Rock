@@ -141,7 +141,10 @@ namespace RockWeb.Blocks.Event
                 var campusEntityType = EntityTypeCache.Read<Campus>();
                 var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
-                qry = qry.Where( e => e.CampusId == contextCampus.Id || !e.CampusId.HasValue );
+                if ( contextCampus != null )
+                {
+                    qry = qry.Where( e => e.CampusId == contextCampus.Id || !e.CampusId.HasValue );
+                }
             }
             else
             {

@@ -8,7 +8,7 @@
         var exports = {
             adjust: function (btn, adjustment) {
 
-                var $parent = $(btn).closest('.input-group');
+                var $parent = $(btn).closest('div.numberincrement');
                 var $min = $parent.find('.js-number-up-down-min').first();
                 var $max = $parent.find('.js-number-up-down-max').first();
                 var $value = $parent.find('.js-number-up-down-value').first();

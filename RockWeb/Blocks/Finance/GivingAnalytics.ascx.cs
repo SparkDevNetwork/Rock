@@ -100,6 +100,9 @@ namespace RockWeb.Blocks.Finance
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             gChartAmount.GridRebind += gChartAmount_GridRebind;
+
+            gGiversGifts.DataKeyNames = new string[] { "Id" };
+            gGiversGifts.PersonIdField = "Id";
             gGiversGifts.GridRebind += gGiversGifts_GridRebind;
 
             pnlTotal = new Panel();
@@ -137,7 +140,8 @@ namespace RockWeb.Blocks.Finance
                 BuildDynamicControls();
                 LoadDropDowns();
                 LoadSettingsFromUserPreferences();
-                LoadChartAndGrids();
+
+                lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now );
             }
         }
 
@@ -297,6 +301,15 @@ namespace RockWeb.Blocks.Finance
             HideShowDataViewResultOption();
         }
 
+
+        protected void gGiversGifts_RowSelected( object sender, RowEventArgs e )
+        {
+            int personId = e.RowKeyId;
+            Response.Redirect( string.Format( "~/Person/{0}/Contributions", personId ), false );
+            Context.ApplicationInstance.CompleteRequest();
+            return;
+        }
+
         #endregion
 
         #region Methods
@@ -310,9 +323,22 @@ namespace RockWeb.Blocks.Finance
                 {
                     _campusAccounts = new Dictionary<int, Dictionary<int, string>>();
 
+                    Guid contributionGuid = Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid();
+                    var contributionAccountIds = new FinancialTransactionDetailService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( d => 
+                            d.Transaction != null &&
+                            d.Transaction.TransactionTypeValue != null &&
+                            d.Transaction.TransactionTypeValue.Guid.Equals( contributionGuid ) )
+                        .Select( d => d.AccountId )
+                        .Distinct()
+                        .ToList();
+
                     foreach ( var campusAccounts in new FinancialAccountService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( a => a.IsActive )
+                        .Where( a => 
+                            a.IsActive &&
+                            contributionAccountIds.Contains( a.Id ) )
                         .GroupBy( a => a.CampusId ?? 0 )
                         .Select( c => new
                         {
@@ -370,7 +396,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         public void LoadChartAndGrids()
         {
-            lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now );
+            pnlUpdateMessage.Visible = false;
+            pnlResults.Visible = true;
             
             lcAmount.ShowTooltip = true;
             if ( this.DetailPageGuid.HasValue )
@@ -746,7 +773,7 @@ function(item) {
                 {
                     DataField = "PersonName",
                     HeaderText = "Person",
-                    SortExpression = "PersonName"
+                    SortExpression = "LastName,NickName"
                 } );
 
             // add a column for email (but is only included on excel export)
@@ -892,7 +919,7 @@ function(item) {
             // The stored procedure returns two tables. First is a list of all matching transaction summary 
             // information and the second table is each giving leader's first-ever gift date to a tax-deductible account
             DataSet ds = FinancialTransactionDetailService.GetGivingAnalytics( start, end, minAmount, maxAmount, 
-                accountIds, currencyTypeIds, sourceTypeIds, dataViewId, viewBy );
+                accountIds, currencyTypeIds, sourceTypeIds,  dataViewId, viewBy );
 
             // Get the results table
             DataTable dtResults = ds.Tables[0];
@@ -1045,7 +1072,12 @@ function(item) {
             {
                 try
                 {
-                    dv.Sort = string.Format( "[{0}] {1}", gGiversGifts.SortProperty.Property, gGiversGifts.SortProperty.DirectionString );
+                    var sortProperties = new List<string>();
+                    foreach( string prop in gGiversGifts.SortProperty.Property.SplitDelimitedValues(false))
+                    {
+                        sortProperties.Add( string.Format( "[{0}] {1}", prop, gGiversGifts.SortProperty.DirectionString ) );
+                    }
+                    dv.Sort = sortProperties.AsDelimited( ", " );
                 }
                 catch
                 {

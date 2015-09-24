@@ -51,6 +51,17 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the value that should be exported to Excel
+        /// </summary>
+        /// <param name="row">The row.</param>
+        /// <returns></returns>
+        public override object GetExportValue( GridViewRow row )
+        {
+            var dataValue = base.GetExportValue( row );
+            return FormatDataValue( dataValue, false );
+        }
+
+        /// <summary>
         /// Occurs when [on format data value].
         /// This is the callback event that you can use to use custom logic to set the formatted value
         /// </summary>

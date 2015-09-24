@@ -1,5 +1,4 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BatchDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.BatchDetail" %>
-<%@ Reference Control="~/Blocks/Finance/TransactionList.ascx" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>

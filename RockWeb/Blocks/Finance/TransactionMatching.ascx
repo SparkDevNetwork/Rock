@@ -57,12 +57,10 @@
                                 <div class="col-md-6">
                                     <asp:Panel ID="pnlPreview" CssClass="contents" runat="server">
                                         <asp:Literal ID="lPersonName" runat="server" />
-                                        <p>
-                                            <asp:Literal ID="lSpouseName" runat="server" />
-                                        </p>
+                                        <asp:Literal ID="lSpouseName" runat="server" />
+                                        <asp:Literal ID="lCampus" runat="server" />
 
                                         <!-- List of addresses associated with this person -->
-
                                         <ul class="list-unstyled">
                                             <asp:Repeater ID="rptrAddresses" runat="server">
                                                 <ItemTemplate>
@@ -109,7 +107,7 @@
 
             <Rock:ModalDialog ID="mdAccountsPersonalFilter" runat="server" Title="Accounts Filter" OnSaveClick="mdAccountsPersonalFilter_SaveClick">
                 <Content>
-                    <Rock:AccountPicker ID="apPersonalAccounts" runat="server" AllowMultiSelect="true" Label="Select Account(s)" />
+                    <Rock:AccountPicker ID="apPersonalAccounts" runat="server" AllowMultiSelect="true" Label="Select Account(s)" DisplayActiveOnly="true" />
                 </Content>
             </Rock:ModalDialog>
 
