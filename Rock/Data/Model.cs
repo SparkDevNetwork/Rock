@@ -25,6 +25,7 @@ using System.Runtime.Serialization;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Data
 {
@@ -487,7 +488,7 @@ namespace Rock.Data
         [NotMapped]
         [DataMember]
         [LavaIgnore]
-        public virtual Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes { get; set; }
+        public virtual Dictionary<string, AttributeCache> Attributes { get; set; }
 
         /// <summary>
         /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the associated attribute value
@@ -498,7 +499,7 @@ namespace Rock.Data
         [NotMapped]
         [DataMember]
         [LavaIgnore]
-        public virtual Dictionary<string, Rock.Model.AttributeValue> AttributeValues { get; set; }
+        public virtual Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.
