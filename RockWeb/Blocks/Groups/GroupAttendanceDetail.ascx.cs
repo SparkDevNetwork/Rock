@@ -295,7 +295,7 @@ namespace RockWeb.Blocks.Groups
             {
                 var personIdList = _attendees.Select( a => a.PersonId ).ToList();
                 var personList = new PersonService( rockContext ).GetByIds( personIdList );
-                foreach ( var person in personList )
+                foreach ( var person in personList.OrderBy(a => a.LastName ).ThenBy(a => a.NickName) )
                 {
                     mergeObjectsDictionary.AddOrIgnore( person.Id, person );
                 }
