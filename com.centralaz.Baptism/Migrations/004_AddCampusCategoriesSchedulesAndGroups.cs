@@ -76,7 +76,7 @@ INSERT INTO [Category]
 			,[ModifiedDateTime])
 	SELECT
 			0
-			,@BlackoutParentCategoryId
+			,@ServiceTimesParentCategoryId
 			,@ScheduleEntityTypeId
 			,N''
 			,N''

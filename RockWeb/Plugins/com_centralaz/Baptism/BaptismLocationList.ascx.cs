@@ -283,7 +283,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                 {
                     serviceTimes = new Category();
                     serviceTimes.IsSystem = false;
-                    serviceTimes.ParentCategoryId = blackoutParentCategoryId;
+                    serviceTimes.ParentCategoryId = serviceTimesParentCategoryId;
                     serviceTimes.EntityTypeId = scheduleEntityTypeId;
                     serviceTimes.Name = String.Format( "{0} Service Times", campus.Name );
                     serviceTimes.IconCssClass = "fa fa-bell";
