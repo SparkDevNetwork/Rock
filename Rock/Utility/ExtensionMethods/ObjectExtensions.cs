@@ -28,7 +28,7 @@ namespace Rock
         #region Object Extensions
 
         /// <summary>
-        /// Gets the property value.
+        /// Gets the property Value of the object's property as specified by propertyPathName.
         /// </summary>
         /// <param name="rootObj">The root obj.</param>
         /// <param name="propertyPathName">Name of the property path.</param>
@@ -56,6 +56,35 @@ namespace Rock
             }
 
             return obj;
+        }
+
+        /// <summary>
+        /// Gets the Property Type of the type's property as specified by propertyPathName.
+        /// </summary>
+        /// <param name="rootType">Type of the root.</param>
+        /// <param name="propertyPathName">Name of the property path.</param>
+        /// <returns></returns>
+        public static Type GetPropertyType( this Type rootType, string propertyPathName )
+        {
+            var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
+
+            Type objType = rootType;
+
+            while ( propPath.Any() )
+            {
+                PropertyInfo property = objType.GetProperty( propPath.First() );
+                if ( property != null )
+                {
+                    objType = property.PropertyType;
+                    propPath = propPath.Skip( 1 ).ToList();
+                }
+                else
+                {
+                    objType = null;
+                }
+            }
+
+            return objType;
         }
 
         /// <summary>
