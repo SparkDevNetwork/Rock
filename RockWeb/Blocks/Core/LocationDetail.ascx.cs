@@ -237,9 +237,13 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            if ( !location.IsValid )
+            // if the location IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of location didn't pass.
+            // So, make sure a message is displayed in the validation summary
+            cvLocation.IsValid = location.IsValid;
+
+            if ( !cvLocation.IsValid )
             {
-                // Controls will render the error messages                    
+                cvLocation.ErrorMessage = location.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                 return;
             }
 
