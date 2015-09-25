@@ -72,8 +72,7 @@ namespace Rock.Rest.Controllers
                 //// scanners (that don't know about the new FinancialPaymentDetailId) can't post
                 return ControllerContext.Request.CreateErrorResponse(
                     HttpStatusCode.BadRequest,
-                    "FinancialPaymentDetailId cannot be null"
-                     );
+                    "FinancialPaymentDetailId cannot be null" );
             }
 
             return base.Post( value );
@@ -159,7 +158,7 @@ namespace Rock.Rest.Controllers
                         List<string> errorMessages = new List<string>();
                         var personList = dataView.GetQuery( null, null, out errorMessages ).OfType<Rock.Model.Person>().Select( a => new { a.Id, a.GivingGroupId } ).ToList();
                         HashSet<int> personIds = new HashSet<int>( personList.Select( a => a.Id ) );
-                        HashSet<int> groupsIds = new HashSet<int>( personList.Where(a => a.GivingGroupId.HasValue).Select( a => a.GivingGroupId.Value ).Distinct() );
+                        HashSet<int> groupsIds = new HashSet<int>( personList.Where( a => a.GivingGroupId.HasValue ).Select( a => a.GivingGroupId.Value ).Distinct() );
 
                         foreach ( var row in dataTable.Rows.OfType<DataRow>().ToList() )
                         {
@@ -250,7 +249,7 @@ namespace Rock.Rest.Controllers
             var selectQry = qry.Select( a => new
             {
                 a.TransactionDateTime,
-                CurrencyTypeValueName = a.FinancialPaymentDetail != null ? a.FinancialPaymentDetail.CurrencyTypeValue.Value : "",
+                CurrencyTypeValueName = a.FinancialPaymentDetail != null ? a.FinancialPaymentDetail.CurrencyTypeValue.Value : string.Empty,
                 a.Summary,
                 Details = a.TransactionDetails.Select( d => new
                 {
