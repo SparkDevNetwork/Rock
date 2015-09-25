@@ -76,7 +76,7 @@ namespace Rock.Web.UI.Controls
                         break;
                     }
 
-                    parentAccountIds.Insert( 0, parentAccount.Id ); ;
+                    parentAccountIds.Insert( 0, parentAccount.Id );
                     parentAccount = parentAccount.ParentAccount;
                 }
 
@@ -102,7 +102,7 @@ namespace Rock.Web.UI.Controls
             {
                 var ids = new List<string>();
                 var names = new List<string>();
-                var parentAccountIds = string.Empty;
+                List<int> parentAccountIds = new List<int>();
 
                 foreach ( var account in financialAccounts )
                 {
@@ -114,13 +114,19 @@ namespace Rock.Web.UI.Controls
 
                         while ( parentAccount != null )
                         {
-                            parentAccountIds += parentAccount.Id.ToString() + ",";
+                            if ( parentAccountIds.Contains( parentAccount.Id ) )
+                            {
+                                // infinite recursion
+                                break;
+                            }
+
+                            parentAccountIds.Insert( 0, parentAccount.Id );
                             parentAccount = parentAccount.ParentAccount;
                         }
                     }
                 }
 
-                InitialItemParentIds = parentAccountIds.TrimEnd( new[] { ',' } );
+                InitialItemParentIds = parentAccountIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;
             }
