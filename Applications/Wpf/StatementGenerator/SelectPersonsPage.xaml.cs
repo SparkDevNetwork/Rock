@@ -132,19 +132,10 @@ namespace Rock.Apps.StatementGenerator
         {
             if ( this.IsInitialized )
             {
-                if ( radSingle.IsChecked == true )
-                {
-                    txtPersonSearch.Visibility = Visibility.Visible;
-                    grdPersons.Visibility = Visibility.Visible;
-                    ckIncludeIndividualsWithNoAddress.Visibility = Visibility.Hidden;
-
-                }
-                else
-                {
-                    txtPersonSearch.Visibility = Visibility.Hidden;
-                    grdPersons.Visibility = Visibility.Collapsed;
-                    ckIncludeIndividualsWithNoAddress.Visibility = Visibility.Visible;
-                }
+                txtPersonSearch.Visibility = radSingle.IsChecked ?? false ? Visibility.Visible : Visibility.Collapsed;
+                grdPersons.Visibility = radSingle.IsChecked ?? false ? Visibility.Visible : Visibility.Collapsed;
+                ckIncludeIndividualsWithNoAddress.Visibility = radAllPersons.IsChecked ?? false ? Visibility.Visible : Visibility.Collapsed;
+                ddlDataView.Visibility = radDataView.IsChecked ?? false ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
