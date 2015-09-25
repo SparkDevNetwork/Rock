@@ -268,8 +268,11 @@ namespace Rock.Model
                             {
                                 foreach ( var customSortProperty in customSortProperties.Split( ',' ) )
                                 {
-                                    var customSortPropertyType = entityType.GetProperty( customSortProperty ).PropertyType;
-                                    dynamicFields.Add( string.Format( "Sort_{0}_{1}", customSortProperty, reportField.Key ), customSortPropertyType ?? typeof( string ) );
+                                    if ( !string.IsNullOrWhiteSpace( customSortProperty ) )
+                                    {
+                                        var customSortPropertyType = entityType.GetPropertyType( customSortProperty );
+                                        dynamicFields.Add( string.Format( "Sort_{0}_{1}", customSortProperty, reportField.Key ), customSortPropertyType ?? typeof( string ) );
+                                    }
                                 }
                             }
                         }
