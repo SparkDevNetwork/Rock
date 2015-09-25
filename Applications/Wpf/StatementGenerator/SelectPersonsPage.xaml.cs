@@ -52,6 +52,11 @@ namespace Rock.Apps.StatementGenerator
 
             _rockRestClient = new RockRestClient( rockConfig.RockBaseUrl );
             _rockRestClient.Login( rockConfig.Username, rockConfig.Password );
+
+            var dataViews = _rockRestClient.GetData<List<Rock.Client.DataView>>( "api/DataViews", "EntityType/Name eq 'Rock.Model.Person'" ).OrderBy( a => a.Name );
+
+            ddlDataView.DisplayMemberPath = "Name";
+            ddlDataView.ItemsSource = dataViews;
         }
 
         /// <summary>
@@ -73,7 +78,23 @@ namespace Rock.Apps.StatementGenerator
         {
             if ( radAllPersons.IsChecked ?? false )
             {
+                ReportOptions.Current.DataViewId = null;
                 ReportOptions.Current.PersonId = null;
+            }
+            else if ( radDataView.IsChecked ?? false )
+            {
+                if ( ddlDataView.SelectedValue != null )
+                {
+                    ReportOptions.Current.DataViewId = (int)ddlDataView.SelectedValue.GetPropertyValue( "Id" );
+                    ReportOptions.Current.PersonId = null;
+                }
+                else
+                {
+                    // no dataview is selected, show a warning message 
+                    lblWarning.Content = "Please select a Dataview when 'Dataview' is checked.";
+                    lblWarning.Visibility = Visibility.Visible;
+                    return;
+                }
             }
             else
             {
@@ -90,6 +111,7 @@ namespace Rock.Apps.StatementGenerator
                 else
                 {
                     // no person is selected, show a warning message 
+                    lblWarning.Content = "Please select a person when 'Single individual' is checked.";
                     lblWarning.Visibility = Visibility.Visible;
                     return;
                 }
@@ -110,17 +132,17 @@ namespace Rock.Apps.StatementGenerator
         {
             if ( this.IsInitialized )
             {
-                if ( radSingle.IsChecked == true)
+                if ( radSingle.IsChecked == true )
                 {
                     txtPersonSearch.Visibility = Visibility.Visible;
                     grdPersons.Visibility = Visibility.Visible;
                     ckIncludeIndividualsWithNoAddress.Visibility = Visibility.Hidden;
-                    
+
                 }
                 else
                 {
                     txtPersonSearch.Visibility = Visibility.Hidden;
-                    grdPersons.Visibility = Visibility.Hidden;
+                    grdPersons.Visibility = Visibility.Collapsed;
                     ckIncludeIndividualsWithNoAddress.Visibility = Visibility.Visible;
                 }
             }
@@ -197,20 +219,20 @@ namespace Rock.Apps.StatementGenerator
                     XmlNode root = doc.DocumentElement;
                     foreach ( var node in root.ChildNodes.OfType<XmlNode>() )
                     {
-                       personResults.Add( new
-                        {
-                            Id = node["Id"].InnerText.AsInteger(),
-                            FullName = node["Name"].InnerText,
-                            Age = node["Age"].InnerText == "-1" ? "" : node["Age"].InnerText,
-                            Gender = node["Gender"].InnerText,
-                            ToolTip = string.Format( 
-                                string.IsNullOrWhiteSpace(node["SpouseName"].InnerText) ? "-" : node["SpouseName"].InnerText, 
-                                node["Email"].InnerText, 
-                                node["Address"].InnerText ),
-                            SpouseName = node["SpouseName"].InnerText,
-                            Email = node["Email"].InnerText,
-                            Address = node["Address"].InnerText
-                        } );
+                        personResults.Add( new
+                         {
+                             Id = node["Id"].InnerText.AsInteger(),
+                             FullName = node["Name"].InnerText,
+                             Age = node["Age"].InnerText == "-1" ? "" : node["Age"].InnerText,
+                             Gender = node["Gender"].InnerText,
+                             ToolTip = string.Format(
+                                 string.IsNullOrWhiteSpace( node["SpouseName"].InnerText ) ? "-" : node["SpouseName"].InnerText,
+                                 node["Email"].InnerText,
+                                 node["Address"].InnerText ),
+                             SpouseName = node["SpouseName"].InnerText,
+                             Email = node["Email"].InnerText,
+                             Address = node["Address"].InnerText
+                         } );
                     }
                 }
             }

@@ -66,6 +66,14 @@ namespace Rock.Apps.StatementGenerator
         public int? PersonId { get; set; }
 
         /// <summary>
+        /// Gets or sets the Person DataViewId to filter the statements to
+        /// </summary>
+        /// <value>
+        /// The data view identifier.
+        /// </value>
+        public int? DataViewId { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [include individuals with no address].
         /// </summary>
         /// <value>
@@ -200,6 +208,7 @@ namespace Rock.Apps.StatementGenerator
                 EndDate = Options.EndDate,
                 AccountIds = Options.AccountIds,
                 IncludeIndividualsWithNoAddress = Options.PersonId.HasValue || Options.IncludeIndividualsWithNoAddress,
+                DataViewId = Options.DataViewId,
                 PersonId = Options.PersonId,
                 OrderByPostalCode = true
             };
