@@ -204,9 +204,6 @@ namespace com.centralaz.Accountability.Migrations
             // Attrib for BlockType: Accountability Group Detail:Group Types
             RockMigrationHelper.AddBlockTypeAttribute( "0F962947-0DE7-408D-BCBE-24B44E0CD14C", "F725B854-A15E-46AE-9D4C-0608D4154F1E", "Group Types", "GroupTypes", "", "Select group types to show in this block.  Leave all unchecked to show all group types.", 0, @"", "21B030FD-108E-4AB3-A21E-4858F09BF8C5" );
 
-            // Attrib for BlockType: Accountability Group Detail:Limit to Group Types that are shown in navigation
-            RockMigrationHelper.AddBlockTypeAttribute( "0F962947-0DE7-408D-BCBE-24B44E0CD14C", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Limit to Group Types that are shown in navigation", "LimitToShowInNavigationGroupTypes", "", "", 3, @"False", "4E1C2BA2-52E3-4777-88ED-255DF39D3DFE" );
-
             // Attrib for BlockType: Accountability Group Detail:Limit to Security Role Groups
             RockMigrationHelper.AddBlockTypeAttribute( "0F962947-0DE7-408D-BCBE-24B44E0CD14C", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Limit to Security Role Groups", "LimittoSecurityRoleGroups", "", "", 2, @"False", "1DF95A83-3767-4257-9033-2B6D5D96D479" );
 
@@ -454,8 +451,6 @@ namespace com.centralaz.Accountability.Migrations
             RockMigrationHelper.DeleteAttribute( "24FBAA42-E8D0-4CA1-83C6-186314A96EB4" );
             // Attrib for BlockType: Accountability Group Detail:Limit to Security Role Groups
             RockMigrationHelper.DeleteAttribute( "1DF95A83-3767-4257-9033-2B6D5D96D479" );
-            // Attrib for BlockType: Accountability Group Detail:Limit to Group Types that are shown in navigation
-            RockMigrationHelper.DeleteAttribute( "4E1C2BA2-52E3-4777-88ED-255DF39D3DFE" );
             // Attrib for BlockType: Accountability Group Detail:Show Edit
             RockMigrationHelper.DeleteAttribute( "50A3724A-219C-4611-AC52-B64FB1D52A78" );
             // Attrib for BlockType: Accountability Group Detail:Group Types

@@ -28,7 +28,6 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
 
     [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false, "", "", 0 )]
     [BooleanField( "Limit to Security Role Groups", "", false, "", 2 )]
-    [BooleanField( "Limit to Group Types that are shown in navigation", "", false, "", 3, "LimitToShowInNavigationGroupTypes" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The style of maps to use", false, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK, "", 4 )]
     [LinkedPage( "Group Map Page", "The page to display detailed group map." )]
     public partial class AccountabilityGroupDetail : RockBlock, IDetailBlock
