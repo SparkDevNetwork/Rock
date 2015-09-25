@@ -6262,6 +6262,9 @@ body {
   margin-left: auto;
   margin-right: auto;
 }
+.jumbotron .container-md {
+  max-width: 50em;
+}
 h1,
 h2,
 h3,

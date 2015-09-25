@@ -1,5 +1,5 @@
 <header class="jumbotron">
-  <div class="container-md">
+  <div class="container container-md">
     <p class="hidden-xs">&nbsp;</p>
     <h1 class="page-header margin-v-none">Program Blog</h1>
     <p class="margin-v-none">Full length stories from our weekly program</p>
