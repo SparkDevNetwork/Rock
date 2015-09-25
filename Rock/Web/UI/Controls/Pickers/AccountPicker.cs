@@ -65,16 +65,22 @@ namespace Rock.Web.UI.Controls
             if ( account != null )
             {
                 ItemId = account.Id.ToString();
-                var parentAccountIds = string.Empty;
+                List<int> parentAccountIds = new List<int>();
                 var parentAccount = account.ParentAccount;
 
                 while ( parentAccount != null )
                 {
-                    parentAccountIds = parentAccount.Id + "," + parentAccountIds;
+                    if ( parentAccountIds.Contains( parentAccount.Id ) )
+                    {
+                        // infinite recursion
+                        break;
+                    }
+
+                    parentAccountIds.Insert( 0, parentAccount.Id ); ;
                     parentAccount = parentAccount.ParentAccount;
                 }
 
-                InitialItemParentIds = parentAccountIds.TrimEnd( new[] { ',' } );
+                InitialItemParentIds = parentAccountIds.AsDelimited( "," );
                 ItemName = account.PublicName;
             }
             else
