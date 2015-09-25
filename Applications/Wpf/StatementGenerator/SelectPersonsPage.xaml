@@ -52,6 +52,11 @@
                           Content="Include individuals that don't have a mailing address"
                           Margin="16,4,8,8"
                           IsChecked="False" />
+                <RadioButton Name="radDataView"
+                             Content="Dataview"
+                             Checked="radPersons_Checked"
+                             GroupName="radSelect" />
+                <ComboBox Name="ddlDataView" Style="{StaticResource comboBoxStyleXL}" Margin="16,4,8,8"/>
                 <RadioButton Name="radSingle"
                              Content="Single individual"
                              Checked="radPersons_Checked"
@@ -143,6 +148,8 @@
                         </DataGridTextColumn>
                     </DataGrid.Columns>
                 </DataGrid>
+
+                
 
             </StackPanel>
 
