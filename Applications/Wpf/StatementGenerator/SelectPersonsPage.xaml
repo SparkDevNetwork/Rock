@@ -83,7 +83,7 @@
                           SelectionMode="Single"
                           ColumnWidth="SizeToHeader"
                           Style="{StaticResource gridStyle}"
-                          MaxHeight="250"
+                          MaxHeight="180"
                           Height="Auto"
                           Width="Auto"
                           Margin="0,10,0,0"
