@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -72,7 +73,7 @@ namespace Rock.Follow.Suggestion
                 {
                     var groupMemberService = new GroupMemberService( rockContext );
 
-                    var followers = groupMemberService.Queryable()
+                    var followers = groupMemberService.Queryable().AsNoTracking()
                         .Where( m =>
                             m.GroupMemberStatus == GroupMemberStatus.Active &&
                             m.Group != null &&
@@ -104,7 +105,7 @@ namespace Rock.Follow.Suggestion
                         } )
                         .ToList();
 
-                    var followed = groupMemberService.Queryable();
+                    var followed = groupMemberService.Queryable().AsNoTracking();
 
                     Guid? followedRoleGuid = GetAttributeValue( followingSuggestionType, "FollowedGroupType" ).AsGuidOrNull();
                     if ( followedRoleGuid.HasValue )
@@ -125,6 +126,7 @@ namespace Rock.Follow.Suggestion
                                 f.PersonId != personId &&
                                 groupIds.Contains( f.GroupId ) )
                             .Select( f => f.Person )
+                            .ToList()
                             .Distinct()
                             .ToList() )
                         {
