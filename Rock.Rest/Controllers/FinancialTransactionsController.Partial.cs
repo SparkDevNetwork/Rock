@@ -148,7 +148,40 @@ namespace Rock.Rest.Controllers
 
             if ( result.Tables.Count > 0 )
             {
-                result.Tables[0].TableName = "contribution_person_group_address";
+                var dataTable = result.Tables[0];
+                dataTable.TableName = "contribution_person_group_address";
+
+                if ( options.DataViewId.HasValue )
+                {
+                    var dataView = new DataViewService( new RockContext() ).Get( options.DataViewId.Value );
+                    if ( dataView != null )
+                    {
+                        List<string> errorMessages = new List<string>();
+                        var personList = dataView.GetQuery( null, null, out errorMessages ).OfType<Rock.Model.Person>().Select( a => new { a.Id, a.GivingGroupId } ).ToList();
+                        HashSet<int> personIds = new HashSet<int>( personList.Select( a => a.Id ) );
+                        HashSet<int> groupsIds = new HashSet<int>( personList.Where(a => a.GivingGroupId.HasValue).Select( a => a.GivingGroupId.Value ).Distinct() );
+
+                        foreach ( var row in dataTable.Rows.OfType<DataRow>().ToList() )
+                        {
+                            var personId = row["PersonId"];
+                            var groupId = row["GroupId"];
+                            if ( personId != null && personId is int )
+                            {
+                                if ( !personIds.Contains( (int)personId ) )
+                                {
+                                    dataTable.Rows.Remove( row );
+                                }
+                            }
+                            else if ( groupId != null && groupId is int )
+                            {
+                                if ( !groupsIds.Contains( (int)groupId ) )
+                                {
+                                    dataTable.Rows.Remove( row );
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             return result;
@@ -312,6 +345,14 @@ namespace Rock.Rest.Controllers
             /// The person id.
             /// </value>
             public int? PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Person DataViewId to filter the statements to
+            /// </summary>
+            /// <value>
+            /// The data view identifier.
+            /// </value>
+            public int? DataViewId { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating whether [include individuals with no address].
