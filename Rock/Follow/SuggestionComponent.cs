@@ -141,6 +141,16 @@ namespace Rock.Follow
         }
 
         /// <summary>
+        /// Sorts the entities.
+        /// </summary>
+        /// <param name="entities">The entities.</param>
+        /// <returns></returns>
+        public virtual List<IEntity> SortEntities( List<IEntity> entities )
+        {
+            return entities;
+        }
+
+        /// <summary>
         /// Formats the entity notification.
         /// </summary>
         /// <param name="followingSuggestionType">Type of the following suggestion.</param>
