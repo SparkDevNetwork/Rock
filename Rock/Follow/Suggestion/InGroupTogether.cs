@@ -66,13 +66,16 @@ namespace Rock.Follow.Suggestion
         {
             var suggestions = new List<PersonEntitySuggestion>();
 
+            // Get the grouptype guid
             Guid? groupTypeGuid = GetAttributeValue( followingSuggestionType, "GroupType" ).AsGuidOrNull();
             if ( groupTypeGuid.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
                     var groupMemberService = new GroupMemberService( rockContext );
+                    var personAliasService = new PersonAliasService( rockContext );
 
+                    // Get all the groupmember records for any follower and the selected group type
                     var followers = groupMemberService.Queryable().AsNoTracking()
                         .Where( m =>
                             m.GroupMemberStatus == GroupMemberStatus.Active &&
@@ -81,6 +84,7 @@ namespace Rock.Follow.Suggestion
                             m.Group.GroupType.Guid.Equals( groupTypeGuid.Value ) &&
                             followerPersonIds.Contains( m.PersonId ) );
 
+                    // If a specific group or security role was specifed, limit groupmembers to only those of the selected group
                     Guid? groupGuid = GetAttributeValue( followingSuggestionType, "Group" ).AsGuidOrNull();
                     if ( !groupGuid.HasValue )
                     {
@@ -91,13 +95,15 @@ namespace Rock.Follow.Suggestion
                         followers = followers.Where( m => m.Group.Guid.Equals( groupGuid.Value ) );
                     }
 
+                    // If a specific role for the follower was specified, limit groupmembers to only those with the selected role
                     Guid? followerRoleGuid = GetAttributeValue( followingSuggestionType, "FollowerGroupType" ).AsGuidOrNull();
                     if ( followerRoleGuid.HasValue )
                     {
                         followers = followers.Where( m => m.GroupRole.Guid.Equals( followerRoleGuid.Value ) );
                     }
 
-                    var followerGroupIds = followers
+                    // Run the query to get all the groups that follower is a member of with selected filters
+                    var followerPersonGroup = followers
                         .Select( f => new
                         {
                             f.PersonId,
@@ -105,42 +111,93 @@ namespace Rock.Follow.Suggestion
                         } )
                         .ToList();
 
-                    var followed = groupMemberService.Queryable().AsNoTracking();
+                    // Get a unique list of any of the groups that followers belong to
+                    var followedGroupIds = followerPersonGroup
+                        .Select( f => f.GroupId )
+                        .Distinct()
+                        .ToList();
 
+                    // Start building query to get the people to follow from any group that contains a follower
+                    var followed = groupMemberService
+                        .Queryable().AsNoTracking()
+                        .Where( m => followedGroupIds.Contains( m.GroupId ) );
+
+                    // If a specific role for the people being followed was specified, limit the query to only those with the selected role
                     Guid? followedRoleGuid = GetAttributeValue( followingSuggestionType, "FollowedGroupType" ).AsGuidOrNull();
                     if ( followedRoleGuid.HasValue )
                     {
                         followed = followed.Where( m => m.GroupRole.Guid.Equals( followedRoleGuid.Value ) );
                     }
 
-                    foreach ( int personId in followerGroupIds.Select( f => f.PersonId ).Distinct() )
-                    {
-                        var groupIds = followerGroupIds
-                            .Where( f => f.PersonId == personId )
-                            .Select( f => f.GroupId )
-                            .Distinct()
-                            .ToList();
-
-                        foreach ( var followedPerson in followed
-                            .Where( f => 
-                                f.PersonId != personId &&
-                                groupIds.Contains( f.GroupId ) )
-                            .Select( f => f.Person )
-                            .ToList()
-                            .Distinct()
-                            .ToList() )
+                    // Get all the people in any of the groups that contain a follower
+                    var followedPersonGroup = followed
+                        .Select( f => new
                         {
-                            int? entityId = followedPerson.PrimaryAliasId;
-                            if ( entityId.HasValue )
+                            f.PersonId,
+                            f.GroupId
+                        } )
+                        .ToList();
+
+                    // Get distinct list of people
+                    var followedPersonIds = followedPersonGroup
+                        .Select( f => f.PersonId )
+                        .Distinct()
+                        .ToList();
+
+                    // Build a dictionary of the personid->personaliasid 
+                    var personAliasIds = new Dictionary<int, int>();
+                    personAliasService.Queryable().AsNoTracking()
+                        .Where( a =>
+                            followedPersonIds.Contains( a.PersonId ) &&
+                            a.PersonId == a.AliasPersonId )
+                        .ToList()
+                        .ForEach( a => personAliasIds.AddOrIgnore( a.PersonId, a.Id ) );
+
+                    // Loop through each follower/group combination
+                    foreach ( var followedGroup in followerPersonGroup )
+                    {
+                        // Loop through the other people in that group
+                        foreach ( int followedPersonId in followedPersonGroup
+                            .Where( f =>
+                                f.GroupId == followedGroup.GroupId &&
+                                f.PersonId != followedGroup.PersonId )
+                            .Select( f => f.PersonId ) )
+                        {
+                            // If the person has a valid personalias id
+                            if ( personAliasIds.ContainsKey( followedPersonId ) )
                             {
-                                suggestions.Add( new PersonEntitySuggestion( personId, entityId.Value ) );
+                                // add them to the list of suggestions
+                                suggestions.Add( new PersonEntitySuggestion( followedGroup.PersonId, personAliasIds[followedPersonId] ) );
                             }
                         }
+
                     }
                 }
             }
 
             return suggestions;
+        }
+
+        /// <summary>
+        /// Sorts the notifications.
+        /// </summary>
+        /// <param name="entities">The entities.</param>
+        /// <returns></returns>
+        public override List<IEntity> SortEntities( List<IEntity> entities )
+        {
+            var people = new List<PersonAlias>();
+            foreach( var entity in entities )
+            {
+                people.Add( entity as PersonAlias );
+            }
+            var orderedEntities = new List<IEntity>();
+            people
+                .OrderBy( p => p.Person.LastName )
+                .ThenBy( p => p.Person.NickName )
+                .ToList()
+                .ForEach( p => orderedEntities.Add( p ) );
+
+            return orderedEntities;
         }
 
         #endregion
