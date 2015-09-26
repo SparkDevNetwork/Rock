@@ -341,9 +341,10 @@
 				        
 				        $li.append($childUl);
 
-				        $.each(node.children, function (index, childNode) {
-				            renderNode($childUl, childNode);
-				        });
+				        var l = node.children.length;
+				        for (var i = 0; i < 1; i++) {
+				            renderNode($childUl, node.children[i]);
+				        }
 				    }
 				};
 
