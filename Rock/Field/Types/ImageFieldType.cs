@@ -75,7 +75,7 @@ namespace Rock.Field.Types
                 Guid? imageGuid = value.AsGuidOrNull();
                 if ( imageGuid.HasValue )
                 {
-                    return string.Format("<a href='{0}?guid={1}' target='_blank'><img src='{0}?guid={1}{2}' /></a>", imagePath, imageGuid, queryParms );
+                    return string.Format("<img src='{0}?guid={1}{2}' />", imagePath, imageGuid, queryParms );
                 }
             }
 
