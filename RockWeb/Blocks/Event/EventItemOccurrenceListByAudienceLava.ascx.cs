@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Event
     [EventCalendarField("Calendar", "Filters the events by a specific calendar.", false, order: 1)]
     [CampusesField("Campuses", "List of which campuses to show occurences for. This setting will be ignored in the 'Use Campus Context' is enabled.", order:2)]
     [BooleanField("Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 3)]
-    [SlidingDateRangeField("Date Range", "Optional date range to filter the occurrences on.", false, order:4)]
+    [SlidingDateRangeField("Date Range", "Optional date range to filter the occurrences on.", enabledSlidingDateRangeTypes: "Next,Upcoming,Current", false, order:4)]
     [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 5)]
     [LinkedPage( "Registration Page", "The page to use for registrations.", order: 6 )]
     [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Liquid, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemOccurrenceListByAudience.lava' %}", order: 7 )]
