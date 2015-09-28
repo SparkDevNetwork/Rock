@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Prayer
     
     [CategoryField( "Category", "The category (or parent category) to limit the listed prayer requests to.", true, "Rock.Model.PrayerRequest", order: 0 )]
     [LinkedPage( "Prayer Request Detail Page", "The Page Request Detail Page to use for the LinkUrl merge field.  The LinkUrl field will include a [Id] which can be replaced by the prayerrequestitem.Id.", order: 1 )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
 <div class='panel panel-block'> 
     <div class='panel-heading'>
        <h4 class='panel-title'>Prayer Requests</h4>

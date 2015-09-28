@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Crm
     [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10, "", 7 )]
     [TextField( "Search Regex", "Regular Expression to run the search input through before searching. Useful for stripping off characters.", false, "", "", 8 )]
     [MemoField( "Update Message", "Message to show on the profile form. Leaving this blank will hide the message.", false, "Please provide only the information that needs to be updated.", "", 9 )]
-    [CodeEditorField("Complete Message Lava", "Message to display when complete.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-success'>We have recuived your updated information. Thank you for helping us keep your information current.</div>", "", 10)]
+    [CodeEditorField("Complete Message Lava", "Message to display when complete.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-success'>We have recuived your updated information. Thank you for helping us keep your information current.</div>", "", 10)]
     [SystemEmailField( "Update Email", "The system email to use to send the updated information.", false, "", "", 11 )]
     [WorkflowTypeField("Workflow Type", @"The workflow type to launch when an update is made. The following attribute keys should be available on the workflow:
                             <ul>

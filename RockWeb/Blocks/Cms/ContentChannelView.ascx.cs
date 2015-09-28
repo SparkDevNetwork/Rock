@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Cms
     // Custom Settings
     [ContentChannelField( "Channel", "The channel to display items from.", false, "", "CustomSetting" )]
     [EnumsField( "Status", "Include items with the following status.", typeof( ContentChannelItemStatus ), false, "2", "CustomSetting" )]
-    [CodeEditorField( "Template", "The template to use when formatting the list of items.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, false, @"", "CustomSetting" )]
+    [CodeEditorField( "Template", "The template to use when formatting the list of items.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 600, false, @"", "CustomSetting" )]
     [IntegerField( "Count", "The maximum number of items to display.", false, 5, "CustomSetting" )]
     [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "CustomSetting" )]
     [BooleanField( "Enable Debug", "Enabling debug will display the fields of the first 5 items to help show you wants available for your liquid.", false, "CustomSetting" )]

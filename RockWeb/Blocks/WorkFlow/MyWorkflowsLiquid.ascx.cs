@@ -170,7 +170,7 @@ as fields on the workflow or activity)...
   ]
 }
 </pre>
-", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, false, @"
+", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, @"
 {% if Actions.size > 0 %}
     <div class='panel panel-block'> 
         <div class='panel-heading'>

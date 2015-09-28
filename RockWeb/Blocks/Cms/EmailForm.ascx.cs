@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Cms
     [TextField("Subject", "The subject line for the email.", true, "", "", 1)]
     [EmailField("From Email", "The email address to use for the from.", true, "", "", 2)]
     [TextField("From Name", "The name to use for the from address.", true, "", "", 3)]
-    [CodeEditorField( "HTML Form", "The HTML for the form the user will complete. <span class='tip tip-lava'></span>", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, false, @"{% if CurentUser %}
+    [CodeEditorField( "HTML Form", "The HTML for the form the user will complete. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, @"{% if CurentUser %}
     {{ CurrentPerson.NickName }}, could you please complete the form below.
 {% else %}
     Please complete the form below.
@@ -94,7 +94,7 @@ namespace RockWeb.Blocks.Cms
     <input type=""file"" id=""attachment2"" name=""attachment2"" />
 </div>
 ", "", 4 )]
-    [CodeEditorField( "Message Body", "The email message body. <span class='tip tip-lava'></span>", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, false, @"{{ GlobalAttribute.EmailHeader }}
+    [CodeEditorField( "Message Body", "The email message body. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, @"{{ GlobalAttribute.EmailHeader }}
 
 <p>
     A email form has been submitted. Please find the information below:
@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Cms
 <p>&nbsp;</p>
 
 {{ GlobalAttribute.EmailFooter }}", "", 5 )]  
-    [CodeEditorField("Response Message", "The message the user will see when they submit the form if no response page if provided. Lava merege fields are available for you to use in your message.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"<div class=""alert alert-info"">
+    [CodeEditorField("Response Message", "The message the user will see when they submit the form if no response page if provided. Lava merege fields are available for you to use in your message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"<div class=""alert alert-info"">
     Thank you for your response. We appreciate your feedback!
 </div>","",6)]
     [LinkedPage("Response Page", "The page the use will be taken to after submitting the form. Use the 'Response Message' field if you just need a simple message.", false, "", "", 7)]
