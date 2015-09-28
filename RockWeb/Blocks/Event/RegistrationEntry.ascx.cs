@@ -1484,7 +1484,7 @@ namespace RockWeb.Blocks.Event
                 foreach ( var field in RegistrationTemplate.Forms
                     .SelectMany( f => f.Fields
                         .Where( t =>
-                            t.FieldSource == RegistrationFieldSource.GroupMemberAttribute &&
+                            t.FieldSource == RegistrationFieldSource.PersonAttribute &&
                             t.AttributeId.HasValue ) ) )
                 {
                     // Find the registrant's value

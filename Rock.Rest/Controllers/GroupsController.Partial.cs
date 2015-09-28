@@ -325,10 +325,9 @@ namespace Rock.Rest.Controllers
         /// <param name="locationId">The location identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [EnableQuery]
         [HttpGet]
         [System.Web.Http.Route( "api/Groups/ByLocation/{geofenceGroupTypeId}/{groupTypeId}/{locationId}" )]
-        public IQueryable<Group> GetByLocation( int geofenceGroupTypeId, int groupTypeId, int locationId )
+        public IQueryable GetByLocation( int geofenceGroupTypeId, int groupTypeId, int locationId, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions )
         {
             var fenceGroups = new List<Group>();
 
@@ -388,8 +387,10 @@ namespace Rock.Rest.Controllers
                     }
                 }
             }
-
-            return fenceGroups.AsQueryable();
+            
+            // manually apply any OData parameters to the InMemory Query
+            var qryResults = queryOptions.ApplyTo( fenceGroups.AsQueryable() );
+            return qryResults;
         }
 
         /// <summary>

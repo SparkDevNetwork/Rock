@@ -1082,28 +1082,31 @@ namespace Rock.Web.UI
             Page.Header.DataBind();
 
             // create a page view transaction if enabled
-            var globalAttributesCache = GlobalAttributesCache.Read();
-            if ( !Page.IsPostBack && _pageCache != null && globalAttributesCache.GetValue( "EnablePageViewTracking" ).AsBoolean() )
+            if ( !Page.IsPostBack && _pageCache != null )
             {
-                PageViewTransaction transaction = new PageViewTransaction();
-                transaction.DateViewed = RockDateTime.Now;
-                transaction.PageId = _pageCache.Id;
-                transaction.SiteId = _pageCache.Layout.Site.Id;
-                if ( CurrentPersonAlias != null )
+                if ( _pageCache.Layout.Site.EnablePageViews )
                 {
-                    transaction.PersonAliasId = CurrentPersonAlias.Id;
-                }
-                transaction.IPAddress = Request.UserHostAddress;
-                transaction.UserAgent = Request.UserAgent;
-                transaction.Url = Request.Url.ToString();
-                transaction.PageTitle = _pageCache.PageTitle;
-                var sessionId = Session["RockSessionID"];
-                if ( sessionId != null )
-                {
-                    transaction.SessionId = sessionId.ToString();
-                }
+                    PageViewTransaction transaction = new PageViewTransaction();
+                    transaction.DateViewed = RockDateTime.Now;
+                    transaction.PageId = _pageCache.Id;
+                    transaction.SiteId = _pageCache.Layout.Site.Id;
+                    if ( CurrentPersonAlias != null )
+                    {
+                        transaction.PersonAliasId = CurrentPersonAlias.Id;
+                    }
 
-                RockQueue.TransactionQueue.Enqueue( transaction );
+                    transaction.IPAddress = Request.UserHostAddress;
+                    transaction.UserAgent = Request.UserAgent ?? "";
+                    transaction.Url = Request.Url.ToString();
+                    transaction.PageTitle = _pageCache.PageTitle;
+                    var sessionId = Session["RockSessionID"];
+                    if ( sessionId != null )
+                    {
+                        transaction.SessionId = sessionId.ToString();
+                    }
+
+                    RockQueue.TransactionQueue.Enqueue( transaction );
+                }
             }
         }
 

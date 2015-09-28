@@ -240,6 +240,7 @@ namespace Rock.Model
                                 }
                                 catch (SystemException ex)
                                 {
+                                    ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
                                     errorMessages.Add( string.Format( "{0}: {1}", component.FormatSelection( filteredEntityType, this.Selection ), ex.Message ) );
                                 }
                             }

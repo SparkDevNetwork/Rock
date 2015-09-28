@@ -146,9 +146,10 @@
 @panel-text:                  @text-color; // The text color of the panel.
 @panel-border:                darken(@theme-3, 10%);                  // The panel's border color.
 @panel-top-border-color:      darken(@panel-border, 5%);           // Color of the panel's top border often used as an accent color.
+@panel-border-radius:         @border-radius-base;
 //--
-@panel-heading-bg:            @gray-lighter;                  // The background color of the panel's header.
-@panel-heading-text-color:    @text-color;              // The heading's text color.
+@panel-heading-bg:            @theme-5;                  // The background color of the panel's header.
+@panel-heading-text-color:    @theme-5-text;              // The heading's text color.
 @panel-heading-border:        darken(@panel-heading-bg, 30%); // The headings border color.
 //--
 @panel-following-active-bg:   @panel-top-border-color;   // The background color of the following square when it's active at the top of panels that support the following feature (e.g. Group Details block).
@@ -247,8 +248,8 @@
 @modal-header-text-color: @theme-1-text;
 @modal-body-bg: @body-bg;
 @modal-body-text-color: @text-color;
-@modal-footer-bg: @theme-3;
-@modal-footer-text-color: @theme-3-text;
+@modal-footer-bg: @theme-5;
+@modal-footer-text-color: @theme-5-text;
 @modal-dropshadow-color: rgba(0,0,0,0.6);
 
 //// Backdrop
@@ -348,8 +349,8 @@
 @btn-info-bg:                    @brand-info;
 @btn-info-border:                darken(@btn-info-bg, 5%);
 //--
-@btn-action-color:              @theme-3-text;
-@btn-action-bg:                 @theme-3;
+@btn-action-color:              @theme-4-text;
+@btn-action-bg:                 @theme-4;
 @btn-action-border:             darken(@btn-action-bg, 5%);
 //--
 @btn-security-color:            @btn-default-color;

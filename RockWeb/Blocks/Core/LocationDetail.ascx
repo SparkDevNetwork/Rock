@@ -19,6 +19,7 @@
 
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:CustomValidator ID="cvLocation" runat="server" Display="None" />
 
                     <div id="pnlEditDetails" runat="server">
 
