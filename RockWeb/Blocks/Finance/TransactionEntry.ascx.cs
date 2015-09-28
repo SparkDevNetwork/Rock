@@ -1159,6 +1159,13 @@ namespace RockWeb.Blocks.Finance
                     errorMessages.Add( "When scheduling a repeating payment, make sure the First Gift date is in the future (after today)" );
                 }
             }
+            else
+            {
+                if ( dtpStartDate.SelectedDate < RockDateTime.Today )
+                {
+                    errorMessages.Add( "Make sure the date is not in the past" );
+                }
+            }
 
             if ( txtFirstName.Visible == true )
             {
@@ -1410,7 +1417,7 @@ namespace RockWeb.Blocks.Finance
             {
                 // If a one-time gift was selected for today's date, then treat as a onetime immediate transaction (not scheduled)
                 int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
-                if ( btnFrequency.SelectedValue == oneTimeFrequencyId.ToString() && dtpStartDate.SelectedDate == RockDateTime.Today )
+                if ( btnFrequency.SelectedValue == oneTimeFrequencyId.ToString() && dtpStartDate.SelectedDate <= RockDateTime.Today )
                 {
                     // one-time immediate payment
                     return null;
