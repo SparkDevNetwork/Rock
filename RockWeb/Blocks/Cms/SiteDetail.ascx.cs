@@ -16,21 +16,21 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Model;
+using Rock.Constants;
 using Rock.Data;
+using Rock.Model;
+using Rock.Security;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Site = Rock.Model.Site;
-using Rock.Constants;
-using Rock.Web;
-using System.ComponentModel;
-using Rock.Security;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -42,19 +42,6 @@ namespace RockWeb.Blocks.Cms
     [Description( "Displays the details of a specific site." )]
     public partial class SiteDetail : RockBlock, IDetailBlock
     {
-
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
-
         #region Base Control Methods
 
         /// <summary>
@@ -80,7 +67,6 @@ namespace RockWeb.Blocks.Cms
             {
                 ShowDetail( PageParameter( "siteId" ).AsInteger() );
             }
-
         }
 
         #endregion
@@ -94,10 +80,9 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var site = new SiteService( new RockContext() ).Get( int.Parse( hfSiteId.Value ) );
+            var site = new SiteService( new RockContext() ).Get( hfSiteId.Value.AsInteger() );
             ShowEditDetails( site );
         }
-
 
         /// <summary>
         /// Handles the Click event of the btnDeleteCancel control.
@@ -111,7 +96,6 @@ namespace RockWeb.Blocks.Cms
             pnlDeleteConfirm.Visible = false;
         }
 
-
         /// <summary>
         /// Handles the Click event of the btnDeleteConfirm control.
         /// </summary>
@@ -123,7 +107,7 @@ namespace RockWeb.Blocks.Cms
 
             var rockContext = new RockContext();
             SiteService siteService = new SiteService( rockContext );
-            Site site = siteService.Get( int.Parse( hfSiteId.Value ) );
+            Site site = siteService.Get( hfSiteId.Value.AsInteger() );
             LayoutService layoutService = new LayoutService( rockContext );
             PageService pageService = new PageService( rockContext );
             PageViewService pageViewService = new PageViewService( rockContext );
@@ -139,7 +123,7 @@ namespace RockWeb.Blocks.Cms
 
                 foreach ( var pageView in pageViewService
                     .Queryable()
-                    .Where( t => 
+                    .Where( t =>
                         t.Page != null &&
                         t.Page.Layout != null &&
                         t.Page.Layout.SiteId == site.Id ) )
@@ -178,6 +162,7 @@ namespace RockWeb.Blocks.Cms
 
             NavigateToParentPage();
         }
+
         /// <summary>
         /// Handles the Click event of the btnDelete control.
         /// </summary>
@@ -206,7 +191,7 @@ namespace RockWeb.Blocks.Cms
                 SiteDomainService siteDomainService = new SiteDomainService( rockContext );
                 bool newSite = false;
 
-                int siteId = int.Parse( hfSiteId.Value );
+                int siteId = hfSiteId.Value.AsInteger();
 
                 if ( siteId == 0 )
                 {
@@ -302,6 +287,7 @@ namespace RockWeb.Blocks.Cms
                     {
                         layout = layouts.FirstOrDefault();
                     }
+
                     if ( layout != null )
                     {
                         var pageService = new PageService( rockContext );
@@ -314,8 +300,7 @@ namespace RockWeb.Blocks.Cms
                         page.IncludeAdminFooter = true;
                         page.MenuDisplayChildPages = true;
 
-                        var lastPage = pageService.GetByParentPageId( null ).
-                            OrderByDescending( b => b.Order ).FirstOrDefault();
+                        var lastPage = pageService.GetByParentPageId( null ).OrderByDescending( b => b.Order ).FirstOrDefault();
 
                         page.Order = lastPage != null ? lastPage.Order + 1 : 0;
                         pageService.Add( page );
@@ -353,7 +338,7 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 // Cancelling on edit, return to details
-                var site = new SiteService( new RockContext() ).Get( int.Parse( hfSiteId.Value ) );
+                var site = new SiteService( new RockContext() ).Get( hfSiteId.Value.AsInteger() );
                 ShowReadonlyDetails( site );
             }
         }
@@ -453,7 +438,6 @@ namespace RockWeb.Blocks.Cms
                     ShowEditDetails( site );
                 }
             }
-
         }
 
         /// <summary>
@@ -591,7 +575,5 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
-
-        
-}
+    }
 }
