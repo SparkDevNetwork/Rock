@@ -33,6 +33,9 @@ using Rock.Web.Cache;
 namespace Rock.PersonProfile.AlertNote
 {
 
+    /// <summary>
+    /// 
+    /// </summary>
     [Description( "Displays if the person has an alert note." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Alert Note" )]
