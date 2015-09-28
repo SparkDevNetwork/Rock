@@ -20,30 +20,21 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 using System.Text.RegularExpressions;
-
+using System.Web.UI;
+using com.centralaz.Prayerbook.Utility;
 using Rock;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Security;
-
-using com.centralaz.Prayerbook.Utility;
 
 namespace RockWeb.Plugins.com_centralaz.Prayerbook
 {
     /// <summary>
     /// Edit and Add Prayer Book Entries
     /// </summary>
-    [DisplayName( "UP Team Prayerbook Edit Entry" )]
+    [DisplayName( "Edit Entry" )]
     [Category( "centralaz > Prayerbook" )]
     [Description( "Edit and Add Prayerbook Entries" )]
     public partial class EditEntry : Rock.Web.UI.RockBlock
@@ -63,15 +54,8 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
 
         #endregion
 
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
-
         #region Base Control Methods
 
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -207,7 +191,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
                 book.LoadAttributes( rockContext );
 
                 //Lock all the controls if the book has already been published
-                if ( Boolean.Parse( book.AttributeValues["isPublished"].Value ) )
+                if ( Boolean.Parse( book.AttributeValues["IsPublished"].Value ) )
                 {
                     ddlMinistry.Enabled = false;
                     ddlSubministry.Enabled = false;
@@ -519,7 +503,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
         private List<DefinedValue> GetActiveDefinedValues( string definedTypeGuid )
         {
             var ministryDefinedValues = definedValueService.GetByDefinedTypeGuid( Guid.Parse( definedTypeGuid ) )
-                .WhereAttributeValue( rockContext, "isActive", "true" )
+                .WhereAttributeValue( rockContext, "IsActive", "true" )
                 .ToList();
             ministryDefinedValues.Insert( 0, new DefinedValue() );
             return ministryDefinedValues;

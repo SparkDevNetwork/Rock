@@ -18,16 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 using System.Net;
+using System.Web.UI;
 using System.Xml.Linq;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -157,8 +154,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
                 qry = qry.Where( g => attributeValues.Select( v => v.EntityId ).Contains( g.Id ) );
             }
-
-            bool shadeRow = false;
 
             // Construct List
             var attributeChildValues = attributeValueService

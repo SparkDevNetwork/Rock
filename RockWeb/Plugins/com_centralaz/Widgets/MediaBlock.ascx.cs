@@ -15,40 +15,27 @@
 // </copyright>
 //
 using System;
-using System.Net;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
-using System.Linq;
-using System.Web.Security;
-using System.Web.UI;
-using System.Dynamic;
 
-using System.Web;
-using System.IO;
-using System.Text;
-using System.Web.Script.Serialization;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using RestSharp;
-using RestSharp.Authenticators;
-
-using Rock;
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_centralaz.Widgets
 {
     [DisplayName( "Media Block" )]
     [Category( "com_centralaz > Widgets" )]
     [Description( "A lava block for searching the external website using OpenSearchServer." )]
-    [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 7 )]
+
+    [IntegerField("Maximum Number Of Tweets", "The maximum allowed number of tweets.", true, 10, order: 1)]
+    [TextField( "Twitter Username", "The Twitter Username", true, "CentralAZ", order: 2 )]
+    [TextField( "Twitter Widget Id", "The twitter widget Id.", true, "626813522828132352", order: 3 )]
+
+    [TextField( "Instagram Client Id", "The Instagram Client Id", true, "dd090c6166f14026b4443b6db4070ebb", order: 4 )]
+    [TextField( "Instagram User Id", "The Instagram User Id", true, "1469755635", order: 5 )]
+
+    [IntegerField( "Number Of Images", "The number of images. Keep to a number whose square root is an integer", true, 9, order: 6 )]
+    [TextField( "Pixel Size", "The pixel size to use as length and width for the images.", true, "380px", order: 7 )]
     public partial class MediaBlock : RockBlock
     {
 
@@ -61,64 +48,10 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
             RockPage.AddCSSLink( ResolveRockUrl( "~/Plugins/com_centralaz/Widgets/Styles/style.css" ) );
         }
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
-        {
-            base.OnLoad( e );
-            if ( !Page.IsPostBack )
-            {
-                LoadContent();
-            }
-        }
-
         #endregion
 
-        #region Events
-
-        /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-            LoadContent();
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        /// <summary>
-        /// Loads the content.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        public void LoadContent()
-        {
-            var mergeFields = new Dictionary<string, object>();
-
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-            mergeFields.Add( "CurrentUser", CurrentUser );
-
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
-        }
-
-
-        #endregion
     }
 }

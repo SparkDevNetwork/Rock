@@ -1,4 +1,4 @@
-<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PrayerbookHomePageSidebar.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.Prayerbook.PrayerbookHomePageSidebar" %>
+<%@ Control Language="C#" AutoEventWireup="true" CodeFile="HomepageSidebar.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.Prayerbook.HomepageSidebar" %>
 
 <Rock:RockLiteral ID="lActiveBook" runat="server" Text="" Label="Now accepting submissions for: " />
 

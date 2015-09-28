@@ -30,8 +30,6 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
     [BooleanField( "Display Active Status Column", "Should the Active Status column be displayed?", false, "", 6 )]
     [BooleanField( "Display System Column", "Should the System column be displayed?", true, "", 6 )]
     [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 7 )]
-    [BooleanField( "Is Editor" )]
-
     [ContextAware]
     public partial class AccountabilityGroupList : Rock.Web.UI.RockBlock
     {
@@ -343,8 +341,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                 boundFields["DateAdded"].Visible = false;
                 boundFields["MemberCount"].Visible = true;
 
-                bool isEditor = bool.Parse( GetAttributeValue( "IsEditor" ) );
-                if ( !isEditor )
+                if ( !canEdit )
                 {
                     var purpose = new DefinedValueService( new RockContext() ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() ).Where( a => a.Value == "Accountability Group" ).FirstOrDefault();
                     var qry = new GroupMemberService( rockContext ).Queryable()

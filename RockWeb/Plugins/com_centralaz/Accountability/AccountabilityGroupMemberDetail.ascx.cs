@@ -3,28 +3,19 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-
-using com.centralaz.Accountability.Data;
-using com.centralaz.Accountability.Model;
-
 using Rock;
-using Rock.Web;
-using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Web;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_centralaz.Accountability
 {
     [DisplayName( "Accountability Group Member Detail" )]
     [Category( "com_centralaz > Accountability" )]
     [Description( "Shows the detail for a group Member" )]
-    [BooleanField( "Able to choose leader" )]
 
     public partial class AccountabilityGroupMemberDetail : Rock.Web.UI.RockBlock
     {
@@ -605,10 +596,10 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         {
             int groupId = hfGroupId.ValueAsInt();
             Group group = new GroupService( new RockContext() ).Get( groupId );
-            bool isAbleToSelectLeader = bool.Parse( GetAttributeValue( "Abletochooseleader" ) );
+            bool canAdministrate = IsUserAuthorized( Authorization.ADMINISTRATE );
             if ( group != null )
             {
-                if ( isAbleToSelectLeader )
+                if ( canAdministrate )
                 {
                     ddlGroupRole.DataSource = group.GroupType.Roles.OrderBy( a => a.Order ).ToList();
                 }

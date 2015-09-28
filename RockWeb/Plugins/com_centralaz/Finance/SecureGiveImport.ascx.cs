@@ -1,22 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using Rock.Web.UI;
-using Rock.Web;
 
 namespace RockWeb.Plugins.com_centralaz.Finance
 {
@@ -32,7 +27,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
     [IntegerField( "Anonymous Giver PersonAliasID", "PersonAliasId to use in case of anonymous giver", true )]
     [BooleanField( "Use Negative Foreign Keys", "Indicates whether Rock uses the negative of the SecureGive reference ID for the contribution record's foreign key", false )]
     [TextField( "Batch Name", "The name that should be used for the batches created", true, "SecureGive Import" )]
-    [TextField( "Tender Mappings", "If you don't want to clutter your tender types, just map them here. Split them with commas or semicolons, and write them in the format 'SecureGive Tender Type=Rock Tender type'. Do not use commas unless they are in the tender type names." )]
+    [TextField( "Tender Mappings", "If you don't want to clutter your tender types, just map them here. Split them with commas or semicolons, and write them in the format 'SecureGive Tender Type=Rock Tender type'." )]
     [LinkedPage( "Batch Detail Page", "The page used to display the contributions for a specific batch", true, "", "", 0 )]
     [LinkedPage( "Contribution Detail Page", "The page used to display the contribution details", true, "", "", 1 )]
     public partial class SecureGiveImport : Rock.Web.UI.RockBlock

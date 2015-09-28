@@ -26,7 +26,7 @@
                         <div class="discbar-label" style="text-transform: initial; font-size: 19px">Teaching</div>
                     </li>
                     <li id="giftScore_Encouragement" runat="server" class="discbar">
-                        <div class="discbar-label" style="text-transform: initial; font-size: 19px">Encouragement</div>
+                        <div class="discbar-label" style="text-transform: initial; font-size: 17px">Encouragement</div>
                     </li>
                     <li id="giftScore_Giving" runat="server" class="discbar">
                         <div class="discbar-label" style="text-transform: initial; font-size: 19px">Giving</div>

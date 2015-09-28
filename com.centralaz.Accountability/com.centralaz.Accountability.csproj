@@ -61,6 +61,7 @@
     <Compile Include="Jobs\SendAccountabilityReportReminder.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
     <Compile Include="Migrations\002_AddSystemData.cs" />
+    <Compile Include="Migrations\005_AccountabilityRollup.cs" />
     <Compile Include="Migrations\004_AddAccountabilityJob.cs" />
     <Compile Include="Migrations\003_MemberStartDate.cs" />
     <Compile Include="Model\Question.cs" />

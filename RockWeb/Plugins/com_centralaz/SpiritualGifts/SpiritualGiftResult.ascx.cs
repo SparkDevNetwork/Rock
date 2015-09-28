@@ -15,24 +15,15 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.IO;
 using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
-using com.centralaz.SpiritualGifts.Data;
 using com.centralaz.SpiritualGifts.Model;
 
 using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using System.Web.UI.HtmlControls;
 
 namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
 {

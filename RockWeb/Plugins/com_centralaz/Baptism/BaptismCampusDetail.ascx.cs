@@ -5,22 +5,17 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
-using com.centralaz.Baptism.Model;
 using com.centralaz.Baptism.Data;
-
+using com.centralaz.Baptism.Model;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
-using iTextSharp.text.pdf.draw;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using Rock.Web;
 
 namespace RockWeb.Plugins.com_centralaz.Baptism
 {
@@ -29,7 +24,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
     [Category( "com_centralaz > Baptism" )]
     [Description( "Detail block for Baptism scheduling" )]
     [LinkedPage( "Add Baptism Page", "", true, "", "", 0 )]
-    [LinkedPage( "Add Blackout Day Page", "", true, "", "", 0 )]
+    [LinkedPage( "Add Blackout Date Page", "", true, "", "", 0 )]
     [TextField( "Report Font", "", true, "Gotham", "", 0 )]
     public partial class BaptismCampusDetail : Rock.Web.UI.RockBlock
     {
@@ -146,7 +141,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             Dictionary<string, string> dictionaryInfo = new Dictionary<string, string>();
             dictionaryInfo.Add( "GroupId", PageParameter( "GroupId" ) );
             dictionaryInfo.Add( "SelectedDate", calBaptism.SelectedDate.ToShortDateString() );
-            NavigateToLinkedPage( "AddBlackoutDayPage", dictionaryInfo );
+            NavigateToLinkedPage( "AddBlackoutDatePage", dictionaryInfo );
         }
 
         /// <summary>
@@ -161,7 +156,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             dictionaryInfo.Add( "GroupId", PageParameter( "GroupId" ) );
             dictionaryInfo.Add( "SelectedDate", calBaptism.SelectedDate.ToShortDateString() );
             dictionaryInfo.Add( "BlackoutId", _blackoutDate.Id.ToString() );
-            NavigateToLinkedPage( "AddBlackoutDayPage", dictionaryInfo );
+            NavigateToLinkedPage( "AddBlackoutDatePage", dictionaryInfo );
         }
 
         /// <summary>

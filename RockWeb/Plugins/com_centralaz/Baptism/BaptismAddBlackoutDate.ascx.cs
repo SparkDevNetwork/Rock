@@ -1,21 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-
 using DDay.iCal;
 using DDay.iCal.Serialization.iCalendar;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using Rock.Web.UI;
 using Rock.Web;
+using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb.Plugins.com_centralaz.Baptism
 {

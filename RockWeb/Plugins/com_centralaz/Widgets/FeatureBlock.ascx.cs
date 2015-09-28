@@ -19,17 +19,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -45,7 +38,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [SecurityAction( Authorization.EDIT, "The roles and/or users that can edit the HTML content." )]
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
 
-    [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/", false, "", "", 2 )]
+    [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/Headers", false, "", "", 2 )]
     [TextField( "Feature Title" )]
 
     [CodeEditorField( "Lava Template", "Lava template to use to display the header.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/FeatureBlock.lava' %}", "", 2 )]
@@ -55,7 +48,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     {
         #region Fields
 
-        private string _virtualBasePath = "~/Content/ExternalSite/";
+        private string _virtualBasePath = "~/Content/ExternalSite/Headers";
         private string _physicalPath;
         private int? _height = null;
         private int? _width = null;

@@ -15,19 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
-using System.Linq;
-using System.Web.Security;
-using System.Web.UI;
 
-using Rock;
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -36,8 +27,9 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [DisplayName( "Twitter Block" )]
     [Category( "com_centralaz > Widgets" )]
     [Description( "Displays a twitter feed" )]
-    [TextField("Twitter Username")]
+    [TextField( "Twitter Username" )]
     [IntegerField( "Number Of Tweets", required: true )]
+    [TextField( "Twitter Widget Id", "The twitter widget Id.", true, "626813522828132352" )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the package details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/TwitterLava.lava' %}", "", 2 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     public partial class TwitterBlock : RockBlock
@@ -78,37 +70,12 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            LoadContent();
         }
 
         #endregion
 
         #region Internal Methods
 
-
-        public void LoadContent()
-        {
-            var mergeFields = new Dictionary<string, object>();
-
-            // add linked pages
-            Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-            mergeFields.Add( "TwitterWidgetId", GetAttributeValue( "TwitterWidgetId" ) );
-
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-            mergeFields.Add( "CurrentUser", CurrentUser );
-
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-
-            //lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
-
-            //// show debug info
-            //if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            //{
-            //    lDebug.Visible = true;
-            //    lDebug.Text = mergeFields.lavaDebugInfo();
-            //}
-        }
 
         #endregion
 

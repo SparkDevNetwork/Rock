@@ -4,10 +4,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
-using com.centralaz.Accountability.Model;
 using com.centralaz.Accountability.Data;
-
+using com.centralaz.Accountability.Model;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;

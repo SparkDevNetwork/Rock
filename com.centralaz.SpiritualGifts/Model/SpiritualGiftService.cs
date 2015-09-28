@@ -118,7 +118,7 @@ namespace com.centralaz.SpiritualGifts.Model
             public const string Leadership = "Leadership";
             public const string Mercy = "Mercy";
             public const string Gifting = "Gifting";
-            public const string LastSaveDate = "LastSaveDate";
+            public const string LastSaveDate = "LastSpiritualSaveDate";
         }
 
 #pragma warning restore 1591

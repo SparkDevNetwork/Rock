@@ -45,7 +45,7 @@
         //Grabs the Twitter Images
         var twitterFetcher = {
             fetch: function (config) {
-                config.maxTweets = 10;
+                config.maxTweets = <%= Int32.Parse(GetAttributeValue( "MaximumNumberOfTweets" )) %>;
 
                 if (inProgress) {
                     queue.push(config);
@@ -125,7 +125,7 @@
                     if (images[n] !== undefined) {
                         var tweetInfo = {
                             Caption: tweets[n].textContent,
-                            Link: "https://twitter.com/CentralAZ/status/" + tids[n],
+                            Link: "https://twitter.com/"+"<%= GetAttributeValue( "TwitterUsername" )%>"+"/status/" + tids[n],
                             ImageLink: extractImageUrl(images[n])
                         }
                         arrayTweets.push(tweetInfo);
@@ -148,13 +148,13 @@
             // This is my private client id. You'll need to create one for Central
             // and change it here. You will probably need to make this into a
             // block setting.
-            var clientId = 'dd090c6166f14026b4443b6db4070ebb',
+            var clientId ='<%= GetAttributeValue( "InstagramClientId" )%>',
 
             // This is the "user id" for centralchristianaz in instagram.com. It's
             // not immediately obvious how to get at this data, since they hide
             // it so well. I was able to get it with this URL:
             // https://api.instagram.com/v1/users/search?q=[USERNAME]&client_id=[CLIENT ID]
-                userId = '1469755635';
+                userId = '<%= GetAttributeValue( "InstagramUserId" )%>';
 
             return $.ajax({
                 url: 'https://api.instagram.com/v1/users/' + userId + '/media/recent/?client_id=' + clientId,
@@ -200,12 +200,13 @@
         //Output to html
         function handleImages(allImages) {
 
-            var x = allImages.length;
+            var x = <%= GetAttributeValue( "NumberOfImages" ) %>;
             var n = 0;
+            var pixels = '<%= GetAttributeValue( "PixelSize" )%>';
             var element = document.getElementById(domNode);
             var html = '<ul>';
-            while (n < 9) {
-                html += '<li style="width: 380px; height: 380px;" ><a class="thumb" href="' + allImages[n].Link + '" style="background-image: url(' + allImages[n].ImageLink + ');"><div class="image-caption">' + allImages[n].Caption + '</div></a></li>';
+            while (n < x) {
+                html += '<li style="width: '+pixels+'; height: '+pixels+';" ><a class="thumb" href="' + allImages[n].Link + '" style="background-image: url(' + allImages[n].ImageLink + ');"><div class="image-caption">' + allImages[n].Caption + '</div></a></li>';
                 n++;
             }
             html += '</ul>';
@@ -220,8 +221,8 @@
 
     Sys.Application.add_load(function () {
         var config1 = {
-            "id": '626813522828132352',
-            "domId": 'ri-grid',
+            "id": '<%= GetAttributeValue( "TwitterWidgetId" )%>',
+            "domId": 'divPhotoGrid',
         };
         twitterFetcher.fetch(config1);
 
@@ -252,10 +253,8 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <div id="ri-grid" class="ri-grid">
+        <div id="divPhotoGrid" class="ri-grid" >
         </div>
-
-        <asp:Literal ID="lDebug" Visible="false" runat="server"></asp:Literal>
 
     </ContentTemplate>
 </asp:UpdatePanel>

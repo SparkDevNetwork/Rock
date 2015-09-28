@@ -41,7 +41,6 @@ namespace com.centralaz.SpiritualGifts.Migrations
             RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.INTEGER, "12D8E61F-ED07-41D9-BE0B-43C73907896D", "Leadership", "Leadership", "fa fa-bullhorn", "Leadership", 6, string.Empty, "52E79769-3445-4AB4-9BA1-27C4171A4F41" );
             RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.INTEGER, "12D8E61F-ED07-41D9-BE0B-43C73907896D", "Mercy", "Mercy", "fa fa-lifesaver", "Mercy", 7, string.Empty, "3DF89611-E027-4CA1-8F1E-4879BC54002D" );
 
-            RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.DATE, "12D8E61F-ED07-41D9-BE0B-43C73907896D", "Last Save Date", "LastSaveDate", "fa fa-gift", "The date the person took the spiritual gifts test.", 9, string.Empty, "E0841055-FC6C-47DB-9CF3-36BD8DB66151" );
             RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.TEXT, "12D8E61F-ED07-41D9-BE0B-43C73907896D", "Gifting", "Gifting", "fa fa-gift", "The strongest spiritual gifting of a person.", 10, string.Empty, "C31F31AD-D1B8-41A8-A06A-FA8F5CA97970" );
 
         }

@@ -1,24 +1,18 @@
 ﻿
 using System;
-using System.Data;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.Data;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
-using com.centralaz.DpsMatch.Model;
 using com.centralaz.DpsMatch.Data;
+using com.centralaz.DpsMatch.Model;
 using com.centralaz.DpsMatch.Web.UI.Controls.Grid;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 
 namespace RockWeb.Plugins.com_centralaz.DpsMatch
 {
@@ -29,7 +23,7 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
     [Category( "com_centralaz > DpsMatch" )]
     [Description( "Block to manually evaluate Person entries similar to known sexual offenders" )]
     [TextField( "Note Text", "The text for the alert note that is placed on the person's timeline", true, "Known Sex Offender" )]
-    [TextField( "Completion Text", "The text for the notification box at completion", true, "DPS Matching Complete" )]
+    [TextField( "Completion Text", "The text for the notification box at completion", true, "There are no unprocessed matches at this time." )]
     public partial class DPSEvaluationBlock : Rock.Web.UI.RockBlock
     {
         #region Fields

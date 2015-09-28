@@ -3,24 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 using System.Text;
-
-using DDay.iCal;
-
-using com.centralaz.Baptism.Model;
+using System.Web.UI;
 using com.centralaz.Baptism.Data;
-
+using com.centralaz.Baptism.Model;
+using DDay.iCal;
 using Rock;
-using Rock.Web;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using Rock.Constants;
-using Rock.Security;
 using Rock.Web.UI;
 namespace RockWeb.Plugins.com_centralaz.Baptism
 {

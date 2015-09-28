@@ -17,21 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using Rock.Store;
-using System.Text;
-using Rock.Security;
 
 namespace RockWeb.Plugins.com_centralaz.Widgets
 {
@@ -47,7 +42,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [CodeEditorField( "Lava Template", "Lava template to use to display the search results.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/PopupCalendar.lava' %}", "", 3)]
     [DayOfWeekField( "Start of Week Day", "Determines what day is the start of day", true, DayOfWeek.Sunday, order: 4 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 5 )]
-    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false, order: 6 )]
 
     public partial class PopupCalendar : Rock.Web.UI.RockBlock
     {
@@ -133,18 +127,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             ViewState["CalendarEventDates"] = CalendarEventDates;
 
             return base.SaveViewState();
-        }
-
-        protected override void OnPreRender( EventArgs e )
-        {
-            if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() && !string.IsNullOrWhiteSpace( _calendarName ) )
-            {
-                string pageTitle = _calendarName.EndsWith( "Calendar", StringComparison.OrdinalIgnoreCase ) ? _calendarName : string.Format( "{0} Calendar", _calendarName );
-                RockPage.PageTitle = pageTitle;
-                RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
-                RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
-            }
-            base.OnPreRender( e );
         }
 
         /// <summary>

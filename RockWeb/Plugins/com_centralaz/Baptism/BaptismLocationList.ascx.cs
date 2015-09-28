@@ -37,7 +37,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
     [Description( "Lists all baptism locations." )]
 
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
-    [BooleanField( "Display Member Count Column", "Should the Member Count column be displayed? Does not affect lists with a person context.", true, "", 7 )]
     public partial class BaptismLocationList : RockBlock
     {
         #region Control Methods

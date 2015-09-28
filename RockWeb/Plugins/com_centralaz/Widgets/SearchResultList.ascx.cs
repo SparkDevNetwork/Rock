@@ -15,25 +15,18 @@
 // </copyright>
 //
 using System;
-using System.Net;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
-using System.Linq;
-using System.Web.Security;
-using System.Web.UI;
 using System.Dynamic;
-
+using System.Linq;
+using System.Net;
+using System.Web.UI;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using RestSharp;
-
 using Rock;
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 

@@ -58,6 +58,7 @@
     <Compile Include="Data\BaptismContext.cs" />
     <Compile Include="Data\BaptismService.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
+    <Compile Include="Migrations\007_BaptismCleanup.cs" />
     <Compile Include="Migrations\006_BaptismUpdates.cs" />
     <Compile Include="Migrations\005_NewBaptismLocationListBlock.cs" />
     <Compile Include="Migrations\003_AddHistoryCategory.cs" />

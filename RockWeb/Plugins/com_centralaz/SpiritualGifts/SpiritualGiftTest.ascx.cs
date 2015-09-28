@@ -17,13 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.IO;
 using System.Linq;
-using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using com.centralaz.SpiritualGifts.Data;
 using com.centralaz.SpiritualGifts.Model;
 
 using Rock;
@@ -32,7 +28,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using System.Web.UI.HtmlControls;
 
 namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
 {
@@ -43,7 +38,7 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
     [DisplayName( "Spiritual Gifts Test" )]
     [Category( "com_centralaz > Spiritual Gifts" )]
     [Description( "Allows you to take a spiritual gift test and saves your spiritual gift score." )]
-    [IntegerField( "Min Days To Retake", "The number of days that must pass before the test can be taken again.", false, 30 )]
+    [IntegerField( "Minimum Days To Retake", "The number of days that must pass before the test can be taken again.", false, 30 )]
     [CodeEditorField( "Instructions", "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
             <h2>Welcome!</h2>
             <p>
@@ -329,8 +324,8 @@ namespace Rockweb.Plugins.com_centralaz.SpiritualGifts
             }
             lHeading.Text = string.Format( "<div class='disc-heading'><h1>{0}</h1><h4>Spiritual Gift: {1}</h4></div>", _targetPerson.FullName, savedScores.Gifting );
 
-            // Show re-take test button if MinDaysToRetake has passed...
-            double days = GetAttributeValue( "MinDaysToRetake" ).AsDouble();
+            // Show re-take test button if MinimumDaysToRetake has passed...
+            double days = GetAttributeValue( "MinimumDaysToRetake" ).AsDouble();
             if ( savedScores.LastSaveDate.AddDays( days ) <= RockDateTime.Now )
             {
                 btnRetakeTest.Visible = true;

@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="Data\SpiritualGiftsContext.cs" />
     <Compile Include="Data\SpiritualGiftsService.cs" />
+    <Compile Include="Migrations\005_BadgeDetailPageFix.cs" />
     <Compile Include="Migrations\004_Badge.cs" />
     <Compile Include="Migrations\003_Workflow.cs" />
     <Compile Include="Migrations\002_PagesAndBlocks.cs" />

@@ -17,43 +17,27 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-
+using com.centralaz.Prayerbook.Utility;
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Security;
-
-using com.centralaz.Prayerbook.Utility;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_centralaz.Prayerbook
 {
     /// <summary>
     /// Sidebar for Prayerbook Home Page.
     /// </summary>
-    [DisplayName( "UP Team Prayerbook Home Page Sidebar" )]
+    [DisplayName( "Homepage Sidebar" )]
     [Category( "centralaz > Prayerbook" )]
     [Description( "Sidebar to UP Team Prayerbook Home Page" )]
     [LinkedPage( "Edit Entry Page" )]
-    public partial class PrayerbookHomePageSidebar : Rock.Web.UI.RockBlock
+    public partial class HomepageSidebar : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
 
         #region Base Control Methods
 
@@ -102,7 +86,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
                     var selectedBook = allBooks[ddlBooks.SelectedIndex];
                     selectedBook.LoadAttributes();
 
-                    if ( selectedBook.GetAttributeValue( "isOpen" ).AsBoolean() )
+                    if ( selectedBook.GetAttributeValue( "IsOpen" ).AsBoolean() )
                     {
                         //enable 'new entry'
                         bbtnAddNewRequest.Enabled = true;

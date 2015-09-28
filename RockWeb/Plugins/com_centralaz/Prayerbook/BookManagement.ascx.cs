@@ -15,29 +15,21 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
+using System.Text;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-
+using com.centralaz.Prayerbook.Utility;
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
-
-using System.Text;
-using com.centralaz.Prayerbook.Utility;
 
 namespace RockWeb.Plugins.com_centralaz.Prayerbook
 {
     /// <summary>
     /// Manage UP Team Books.
     /// </summary>
-    [DisplayName( "UP Team Prayerbook Management" )]
+    [DisplayName( "Book Management" )]
     [Category( "centralaz > Prayerbook" )]
     [Description( "Manage Books; Open, Close, Publish, etc." )]
     [LinkedPage( "UP Team Prayerbook Homepage", "The homepage of the Prayerbook App", false )]
@@ -51,11 +43,6 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
 
         #endregion
 
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
 
         #region Base Control Methods
 
@@ -70,7 +57,6 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
             base.OnInit( e );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlOpenNewBook );
         }
 
@@ -94,8 +80,8 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
             Group book = MostRecentBook.Get( rockContext ); ;
 
             book.LoadAttributes();
-            bookIsOpen = Boolean.Parse( book.GetAttributeValue( "isOpen" ) );
-            bookIsPublished = Boolean.Parse( book.GetAttributeValue( "isPublished" ) );
+            bookIsOpen = Boolean.Parse( book.GetAttributeValue( "IsOpen" ) );
+            bookIsPublished = Boolean.Parse( book.GetAttributeValue( "IsPublished" ) );
 
             if ( bookIsOpen && ( book.Id != 0 ) )
             {
@@ -156,16 +142,6 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
         // handlers called by the controls on your block
 
         /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-
-        }
-
-        /// <summary>
         /// Event handler for 'Open New Book' button click. 
         /// Opens a new book for entry submission.
         /// </summary>
@@ -183,7 +159,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
 
             if ( !string.IsNullOrEmpty( book.Name ) )
             {
-                if ( DateTime.TryParse( book.GetAttributeValue( "openDate" ), out openDate ) )
+                if ( DateTime.TryParse( book.GetAttributeValue( "OpenDate" ), out openDate ) )
                 {
                     openDate = openDate.AddMonths( 1 );
                 }
@@ -192,7 +168,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
                     openDate = DateTime.Now;
                 }
 
-                if ( DateTime.TryParse( book.GetAttributeValue( "closeDate" ), out closeDate ) )
+                if ( DateTime.TryParse( book.GetAttributeValue( "CloseDate" ), out closeDate ) )
                 {
                     closeDate = closeDate.AddMonths( 1 );
                 }
@@ -230,7 +206,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
             {
                 if ( book != null )
                 {
-                    book.SetAttributeValue( "isOpen", "false" );
+                    book.SetAttributeValue( "IsOpen", "false" );
                 }
 
                 book.SaveAttributeValues( rockContext );
@@ -255,7 +231,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
             {
                 if ( book != null )
                 {
-                    book.SetAttributeValue( "isOpen", "true" );
+                    book.SetAttributeValue( "IsOpen", "true" );
                     book.SaveAttributeValues( rockContext );
                     rockContext.SaveChanges();
                 }
@@ -291,7 +267,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
             {
                 if ( book != null )
                 {
-                    book.SetAttributeValue( "isPublished", "true" );
+                    book.SetAttributeValue( "IsPublished", "true" );
                     book.SaveAttributeValues( rockContext );
                     rockContext.SaveChanges();
                 }
@@ -326,10 +302,10 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
             book.LoadAttributes( rockContext );
 
             book.Name = txtTitle.Text;
-            book.SetAttributeValue( "openDate", dpOpenDate.SelectedDate.Value.ToShortDateString() );
-            book.SetAttributeValue( "closeDate", dpCloseDate.SelectedDate.Value.ToShortDateString() );
-            book.SetAttributeValue( "isPublished", "false" ); ;
-            book.SetAttributeValue( "isOpen", "true" );
+            book.SetAttributeValue( "OpenDate", dpOpenDate.SelectedDate.Value.ToShortDateString() );
+            book.SetAttributeValue( "CloseDate", dpCloseDate.SelectedDate.Value.ToShortDateString() );
+            book.SetAttributeValue( "IsPublished", "false" ); ;
+            book.SetAttributeValue( "IsOpen", "true" );
 
             groupService.Add( book );
 

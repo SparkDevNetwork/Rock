@@ -4,7 +4,7 @@
         <script>
             Sys.Application.add_load(function () {
                 var config1 = {
-                    "id": '626813522828132352',
+                    "id": '<%= GetAttributeValue( "TwitterWidgetId" )%>',
                     "domId": 'tw-widget1',
                     "maxTweets": 1,
                     "enableLinks": true

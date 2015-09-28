@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\005_LifeGroupAddHasChildren.cs" />
     <Compile Include="Migrations\004_LifeGroupSearchFix.cs" />
     <Compile Include="Migrations\003_LifeGroupWorkflow.cs" />
     <Compile Include="Migrations\002_LifeGroupFinderPages.cs" />
