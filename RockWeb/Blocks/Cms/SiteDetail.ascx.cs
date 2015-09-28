@@ -358,9 +358,24 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbEnableMobileRedirect control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbEnableMobileRedirect_CheckedChanged( object sender, EventArgs e )
         {
-            SetMobileRedirectVisiblity();
+            SetControlsVisiblity();
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbEnablePageViews control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbEnablePageViews_CheckedChanged( object sender, EventArgs e )
+        {
+            SetControlsVisiblity();
         }
 
         #endregion
@@ -527,7 +542,7 @@ namespace RockWeb.Blocks.Cms
             cbRedirectTablets.Checked = site.RedirectTablets;
             cbEnablePageViews.Checked = site.EnablePageViews;
             nbPageViewRetentionPeriodDays.Text = site.PageViewRetentionPeriodDays.ToString();
-            SetMobileRedirectVisiblity();
+            SetControlsVisiblity();
         }
 
         /// <summary>
@@ -562,15 +577,21 @@ namespace RockWeb.Blocks.Cms
             this.HideSecondaryBlocks( editable );
         }
 
-        private void SetMobileRedirectVisiblity()
+        /// <summary>
+        /// Sets the controls visiblity.
+        /// </summary>
+        private void SetControlsVisiblity()
         {
-            bool visible = cbEnableMobileRedirect.Checked;
-            ppMobilePage.Visible = visible;
-            tbExternalURL.Visible = visible;
-            cbRedirectTablets.Visible = visible;
+            bool mobileRedirectVisible = cbEnableMobileRedirect.Checked;
+            ppMobilePage.Visible = mobileRedirectVisible;
+            tbExternalURL.Visible = mobileRedirectVisible;
+            cbRedirectTablets.Visible = mobileRedirectVisible;
+
+            nbPageViewRetentionPeriodDays.Visible = cbEnablePageViews.Checked;
         }
 
         #endregion
 
+        
 }
 }
