@@ -67,7 +67,6 @@ namespace com.centralaz.LifeGroupFinder.Migrations
             RockMigrationHelper.DeleteAttribute( "C4287E3F-D2D8-413E-A3AE-F9A3EE7A5021" );
             RockMigrationHelper.DeleteAttribute( "FBF13ACE-F9DC-4A28-87B3-2FA3D36FF55A" );
             RockMigrationHelper.DeleteBlock( "91782D7C-9DCE-49F8-99AB-DEC58BF9ACA1" );
-            RockMigrationHelper.DeleteBlockType( "9D0EF3AC-D0F7-4FA7-9C64-E7B0855648C7" );
             RockMigrationHelper.DeletePage( "7D24FE9A-710C-4B25-B1C7-76161ED78DB8" ); //  Page: Group Registration
 
             RockMigrationHelper.AddPage( "EA515FD1-7D71-4E24-A09D-EA9EC34BEC71", "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD", "Life Group Detail", "", "803A7786-6A83-43DF-A247-BB4DFF50AAE8", "" ); // Site:External Website
