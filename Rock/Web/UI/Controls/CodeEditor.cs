@@ -548,14 +548,18 @@ namespace Rock.Web.UI.Controls
         /// HTML
         /// </summary>
         Html = 2,
+        
         /// <summary>
         /// liquid
         /// </summary>
+        [Obsolete("Use CodeEditorMode.Lava instead")]
         Liquid = 3,
+        
         /// <summary>
         /// The lava
         /// </summary>
         Lava = 3,
+
         /// <summary>
         /// java script
         /// </summary>
