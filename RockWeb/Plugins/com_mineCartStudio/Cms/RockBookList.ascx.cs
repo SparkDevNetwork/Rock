@@ -41,7 +41,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.Cms
 
     [CustomCheckboxListField( "Categories", "Documentation categories to include.", "136^Getting Started,152^User Guides,153^Administration", true, order: 0 )]
     [TextField("Rock Version", "Rock version to show. Leave blank to have the block use the current running version of Rock.", false, order: 1)]
-    [CodeEditorField("Lava Template", "Lava template to use for the layout", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, true, @"<div class='panel panel-block'>
+    [CodeEditorField("Lava Template", "Lava template to use for the layout", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, @"<div class='panel panel-block'>
     <div class='panel-heading'>
         <h1 class='panel-title'>
             <i class='fa fa-book'></i> Rock Documentation
