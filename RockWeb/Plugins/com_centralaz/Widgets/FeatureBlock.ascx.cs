@@ -38,7 +38,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [SecurityAction( Authorization.EDIT, "The roles and/or users that can edit the HTML content." )]
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
 
-    [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/Headers", false, "", "", 2 )]
+    [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/Headers/", false, "", "", 2 )]
     [TextField( "Feature Title" )]
 
     [CodeEditorField( "Lava Template", "Lava template to use to display the header.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/FeatureBlock.lava' %}", "", 2 )]
