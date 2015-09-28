@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Core
     [Description( "Takes a entity type and displays a person's following items for that entity using a Lava template." )]
     [EntityTypeField("Entity Type", "The type of entity to show following for.", order: 0)]
     [TextField("Link URL", "The address to use for the link. The text '[Id]' will be replaced with the Id of the entity '[Guid]' will be replaced with the Guid.", false, "/samplepage/[Id]", "", 1, "LinkUrl")]
-    [CodeEditorField("Lava Template", "Lava template to use to display content", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"<div class=""panel panel-block""> 
+    [CodeEditorField("Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"<div class=""panel panel-block""> 
     <div class=""panel-heading"">
        <h4 class=""panel-title"">Followed {{ EntityType | Pluralize }}</h4>
     </div>

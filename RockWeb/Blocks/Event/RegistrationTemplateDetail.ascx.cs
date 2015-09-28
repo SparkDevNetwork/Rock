@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of the given registration template." )]
 
-    [CodeEditorField( "Default Confirmation Email", "The default Confirmation Email Template value to use for a new template", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
+    [CodeEditorField( "Default Confirmation Email", "The default Confirmation Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"
 {{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% assign registrantCount = Registration.Registrants | Size %}
@@ -110,7 +110,7 @@ namespace RockWeb.Blocks.Event
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 0 )]
 
-    [CodeEditorField( "Default Reminder Email", "The default Reminder Email Template value to use for a new template", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
+    [CodeEditorField( "Default Reminder Email", "The default Reminder Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
 {% assign registrantCount = Registration.Registrants | Size %}
@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Event
 {{ 'Global' | Attribute:'EmailFooter' }}
 ", "", 1 )]
 
-    [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
+    [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% assign registrantCount = Registration.Registrants | Size %}
 <p>

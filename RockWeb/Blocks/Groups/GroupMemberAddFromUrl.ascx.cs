@@ -40,10 +40,10 @@ namespace RockWeb.Blocks.Groups
     [Description( "Adds a person to a group based on inputs from the URL query string." )]
     [GroupField("Default Group", "The default group to use if one is not passed through the query string (optional).", false)]
     [GroupRoleField("", "Default Group Member Role", "The default role to use if one is not passed through the quert string (optional).", false)]
-    [CodeEditorField("Success Message", "Lava template to display when person has been added to the group.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-success'>
+    [CodeEditorField("Success Message", "Lava template to display when person has been added to the group.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-success'>
     {{ Person.NickName }} has been added to the group '{{ Group.Name }}' with the role of {{ Role.Name }}.
 </div>")]
-    [CodeEditorField( "Already In Group Message", "Lava template to display when person is already in the group with that role.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-warning'>
+    [CodeEditorField( "Already In Group Message", "Lava template to display when person is already in the group with that role.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-warning'>
     {{ Person.NickName }} is already in the group '{{ Group.Name }}' with the role of {{ Role.Name }}.
 </div>" )]
     [BooleanField("Enable Debug", "Shows the Lava variables availabled for this block")]

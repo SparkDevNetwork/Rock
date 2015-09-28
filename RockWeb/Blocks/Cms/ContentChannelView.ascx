@@ -40,7 +40,7 @@
 
                             <div class="row">
                                 <div class="col-md-12">
-                                    <Rock:CodeEditor ID="ceTemplate" runat="server" EditorHeight="200" EditorMode="Liquid" EditorTheme="Rock" Label="Format"
+                                    <Rock:CodeEditor ID="ceTemplate" runat="server" EditorHeight="200" EditorMode="Lava" EditorTheme="Rock" Label="Format"
                                         Help="The template to use when formatting the list of items." />
                                 </div>
                             </div>

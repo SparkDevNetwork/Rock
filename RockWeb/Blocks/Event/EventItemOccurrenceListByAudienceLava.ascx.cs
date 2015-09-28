@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Event
     [SlidingDateRangeField("Date Range", "Optional date range to filter the occurrences on.", false, enabledSlidingDateRangeTypes: "Next,Upcoming,Current", order:4)]
     [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 5)]
     [LinkedPage( "Registration Page", "The page to use for registrations.", order: 6 )]
-    [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Liquid, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemOccurrenceListByAudience.lava' %}", order: 7 )]
+    [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemOccurrenceListByAudience.lava' %}", order: 7 )]
     [BooleanField("Enable Debug", "Show the lava merge fields.", order: 8)]
     public partial class EventItemOccurrenceListByAudienceLava : Rock.Web.UI.RockBlock
     {
