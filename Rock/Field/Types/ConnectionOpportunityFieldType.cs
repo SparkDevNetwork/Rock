@@ -31,7 +31,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of connection opportunities
     /// Stored as ConnectionOpportunity.Guid
     /// </summary>
-    public class ConnectionOpportunityFieldType : FieldType
+    public class ConnectionOpportunityFieldType : FieldType, IEntityFieldType
     {
 
         #region Formatting
