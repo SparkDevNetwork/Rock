@@ -237,25 +237,8 @@ function(item) {
 
             fExceptionList.SaveUserPreference( "Status Code", txtStatusCode.Text );
 
-            DateTime startDate;
-            if ( DateTime.TryParse( dpStartDate.Text, out startDate ) )
-            {
-                fExceptionList.SaveUserPreference( "Start Date", startDate.ToShortDateString() );
-            }
-            else
-            {
-                fExceptionList.SaveUserPreference( "Start Date", String.Empty );
-            }
-
-            DateTime endDate;
-            if ( DateTime.TryParse( dpEndDate.Text, out endDate ) )
-            {
-                fExceptionList.SaveUserPreference( "End Date", endDate.ToShortDateString() );
-            }
-            else
-            {
-                fExceptionList.SaveUserPreference( "End Date", String.Empty );
-            }
+            fExceptionList.SaveUserPreference( "Date Range", sdpDateRange.DelimitedValues );
+           
             BindExceptionListGrid();
         }
 
@@ -279,6 +262,7 @@ function(item) {
                         }
                     }
                     break;
+
                 case "Page":
                     int pageId;
                     if ( int.TryParse( e.Value, out pageId ) )
@@ -290,6 +274,7 @@ function(item) {
                         }
                     }
                     break;
+
                 case "User":
                     int userPersonId;
                     if ( int.TryParse( e.Value, out userPersonId ) )
@@ -302,6 +287,17 @@ function(item) {
                         }
                     }
                     break;
+
+                // ignore old filter parameters
+                case "Start Date":
+                case "End Date":
+                    e.Value = null;
+                    break;
+
+                case "Date Range":
+                    e.Value = SlidingDateRangePicker.FormatDelimitedValues( e.Value );
+                    break;
+                        
             }
         }
 
@@ -424,18 +420,7 @@ function(item) {
                 txtStatusCode.Text = fExceptionList.GetUserPreference( "Status Code" );
             }
 
-            DateTime startDate;
-            if ( DateTime.TryParse( fExceptionList.GetUserPreference( "Start Date" ), out startDate ) )
-            {
-                dpStartDate.Text = startDate.ToShortDateString();
-            }
-
-            DateTime endDate;
-            if ( DateTime.TryParse( fExceptionList.GetUserPreference( "End Date" ), out endDate ) )
-            {
-                dpEndDate.Text = endDate.ToShortDateString();
-            }
-
+            sdpDateRange.DelimitedValues = fExceptionList.GetUserPreference( "Date Range" );
         }
 
         /// <summary>
@@ -567,18 +552,16 @@ function(item) {
                 query = query.Where( e => e.StatusCode == statusCode );
             }
 
-            DateTime startDate;
-            if ( DateTime.TryParse( fExceptionList.GetUserPreference( "Start Date" ), out startDate ) )
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( fExceptionList.GetUserPreference( "Date Range" ) );
+
+            if ( dateRange.Start.HasValue )
             {
-                startDate = startDate.Date;
-                query = query.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= startDate );
+                query = query.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= dateRange.Start.Value );
             }
 
-            DateTime endDate;
-            if ( DateTime.TryParse( fExceptionList.GetUserPreference( "End Date" ), out endDate ) )
+            if ( dateRange.End.HasValue )
             {
-                endDate = endDate.Date.AddDays( 1 );
-                query = query.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value < endDate );
+                query = query.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value < dateRange.End.Value );
             }
 
             //Only look for inner exceptions

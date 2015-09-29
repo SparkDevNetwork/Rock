@@ -45,8 +45,7 @@
                         <Rock:PagePicker ID="ppPage" runat="server" Label="Page" />
                         <Rock:PersonPicker ID="ppUser" runat="server" Label="User" />
                         <Rock:RockTextBox ID="txtStatusCode" runat="server" Label="Status Code" />
-                        <Rock:DatePicker ID="dpStartDate" runat="server" Label="Start Date" />
-                        <Rock:DatePicker ID="dpEndDate" runat="server" Label="End Date" />
+                        <Rock:SlidingDateRangePicker id="sdpDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
                     </Rock:GridFilter>
                     <Rock:Grid ID="gExceptionList" runat="server" AllowSorting="true" OnRowSelected="gExceptionList_RowSelected" EmptyDataText="No Exceptions Found">
                         <Columns>
