@@ -824,7 +824,7 @@ namespace RockWeb.Blocks.Event
             {
                 var eventCalendarService = new EventCalendarService( rockContext );
 
-                foreach ( int eventCalendarId in eventCalendarList )
+                foreach ( int eventCalendarId in eventCalendarList.Distinct() )
                 {
                     EventCalendarItem eventCalendarItem = ItemsState.FirstOrDefault( i => i.EventCalendarId == eventCalendarId );
                     if ( eventCalendarItem == null )

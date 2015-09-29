@@ -30,7 +30,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Content Channels
     /// Stored as ContentChannel.Guid
     /// </summary>
-    public class ContentChannelFieldType : FieldType
+    public class ContentChannelFieldType : FieldType, IEntityFieldType
     {
 
         #region Formatting

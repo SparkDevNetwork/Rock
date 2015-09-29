@@ -6568,8 +6568,9 @@ body.navbar-side-close #content-wrapper {
 @media print {
   @page {
     size: 8.5in 11in;
-    /* width height */
     margin: .25in;
+    
+    /* width height */
   }
   html,
   body {
