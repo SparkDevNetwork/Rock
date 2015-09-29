@@ -36,7 +36,7 @@ Check-in
 Check-in Manager
 Self Service Kiosk
 */
-update [Site] set EnablePageViews=1 where [Guid] in ( '15AEFC01-ACB3-4F5D-B83E-AB3AB7F2A54A','A5FA7C3C-A238-4E0B-95DE-B540144321EC','05E96F7B-B75E-4987-825A-B6F51F8D9CAA')
+update [Site] set EnablePageViews=0 where [Guid] in ( '15AEFC01-ACB3-4F5D-B83E-AB3AB7F2A54A','A5FA7C3C-A238-4E0B-95DE-B540144321EC','05E96F7B-B75E-4987-825A-B6F51F8D9CAA')
 
 /* Internal site set the 'Page View Retention Period' to 60 days */
 update [Site] set PageViewRetentionPeriodDays = 60 where [Guid] = 'C2D29296-6A87-47A9-A753-EE4E9159C4C4'" );
