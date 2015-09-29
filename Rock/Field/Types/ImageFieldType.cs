@@ -43,7 +43,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override List<string> ConfigurationKeys()
         {
-            List<string> configKeys = new List<string>();
+            var configKeys = base.ConfigurationKeys();
             configKeys.Add( FORMAT_AS_LINK );
             return configKeys;
         }
@@ -54,12 +54,14 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override List<Control> ConfigurationControls()
         {
-            List<Control> controls = new List<Control>();
+            List<Control> controls = base.ConfigurationControls();
 
             var cbFormatAsLink = new RockCheckBox();
             cbFormatAsLink.Label = "Format as Link";
             cbFormatAsLink.Help = "Enable this to navigate to a full size image when the image is clicked";
+            cbFormatAsLink.Text = "Yes";
             controls.Add( cbFormatAsLink );
+
             return controls;
         }
 
@@ -70,12 +72,12 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( FORMAT_AS_LINK, new ConfigurationValue( "Format Image as Link", string.Empty, string.Empty ) );
+            Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
+            configurationValues.Add( FORMAT_AS_LINK, new ConfigurationValue( "Format Image as Link", "Enable this to navigate to a full size image when the image is clicked", string.Empty ) );
 
-            if ( controls != null && controls.Count == 1 )
+            if ( controls != null && controls.Count > 1 )
             {
-                var cbFormatAsLink = controls[0] as RockCheckBox;
+                var cbFormatAsLink = controls[1] as RockCheckBox;
                 if ( cbFormatAsLink != null )
                 {
                     configurationValues[FORMAT_AS_LINK].Value = cbFormatAsLink.Checked.ToTrueFalse();
@@ -92,10 +94,12 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Count == 1 && configurationValues != null )
+            base.SetConfigurationValues( controls, configurationValues );
+
+            if ( controls != null && controls.Count > 1 && configurationValues != null )
             {
-                var cbFormatAsLink = controls[0] as RockCheckBox;
-                if ( cbFormatAsLink != null )
+                var cbFormatAsLink = controls[1] as RockCheckBox;
+                if ( cbFormatAsLink != null && configurationValues.ContainsKey( FORMAT_AS_LINK ) )
                 {
                     cbFormatAsLink.Checked = configurationValues[FORMAT_AS_LINK].Value.AsBooleanOrNull() ?? false;
                 }
@@ -152,8 +156,9 @@ namespace Rock.Field.Types
                     string imageUrl = string.Format( "{0}?guid={1}", imagePath, imageGuid );
                     var imageTag = string.Format( "<img src='{0}{1}' />", imageUrl, queryParms );
 
-                    var formatAsLink = configurationValues[FORMAT_AS_LINK].Value.AsBooleanOrNull() ?? false;
-                    if ( formatAsLink )
+                    if ( configurationValues != null &&
+                        configurationValues.ContainsKey( FORMAT_AS_LINK ) &&
+                        ( configurationValues[FORMAT_AS_LINK].Value.AsBooleanOrNull() ?? false ) )
                     {
                         return string.Format( "<a href='{0}'>{1}</a>", imageUrl, imageTag );
                     }
