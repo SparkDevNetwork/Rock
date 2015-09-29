@@ -87,21 +87,31 @@
              <asp:Literal ID="lLastMigrations" runat="server"></asp:Literal>
         </p>
 
-        <h4>Cache</h4>
-        <div id="cache-details">
-            <asp:Literal ID="lCacheOverview" runat="server"></asp:Literal>
-        </div>
+        <div class="row">
+            <div class="col-md-6">
 
-<%-- This appears to have been disabled 9/19/2012:
-    https://github.com/SparkDevNetwork/Rock/commit/f295069b2152d4b1ff93d44fa0d82fd2a2fb0d14#diff-357e7f0be3ea16b9658156b1ee1f8145L27    
-    but this link was still here:         --%>
-        <a id="show-cache-objects" href="#">Show Cache Objects</a>
-        <div id="cache-objects" style="display:none">
-            <asp:Literal ID="lCacheObjects" runat="server"></asp:Literal>
-        </div>
+                <h4>Cache</h4>
+                <div id="cache-details">
+                    <asp:Literal ID="lCacheOverview" runat="server"></asp:Literal>
+                </div>
+
+                <asp:Literal ID="lFalseCacheHits" runat="server"></asp:Literal>
+
+                <p><a id="show-cache-objects" href="#">Show Cache Objects</a></p>
+                <div id="cache-objects" style="display:none">
+                    <p><strong>Cached Object Counts:</strong><br />
+                    <asp:Literal ID="lCacheObjects" runat="server"></asp:Literal>
+                    </p>
+                </div>
         
-        <h4>Routes</h4>
-        <asp:Literal ID="lRoutes" runat="server"></asp:Literal>
+            </div>
+            <div class="col-md-6">
+
+                <h4>Routes</h4>
+                <asp:Literal ID="lRoutes" runat="server"></asp:Literal>
+
+            </div>
+        </div>
 
         <asp:LinkButton runat="server" ID="btnDumpDiagnostics" CssClass="btn btn-action margin-t-lg" OnClick="btnDumpDiagnostics_Click" ToolTip="Generates a diagnostics file for sharing with others.">
             <i class="fa fa-download"></i> Download Diagnostics File
