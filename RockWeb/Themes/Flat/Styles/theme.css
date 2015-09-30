@@ -5360,6 +5360,9 @@ th[align=center] {
   display: block;
   float: left;
 }
+.panel-headerimage {
+  margin: -15px -15px 15px -15px;
+}
 .panel .panel-heading a.btn-link {
   color: #333333;
 }
@@ -5872,13 +5875,13 @@ div.aspNetDisabled {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.packagedetail .packagedetail-image {
+.packagedetail-image {
   width: 100%;
 }
-.packagedetail .packagedetail-additionalversions {
+.packagedetail-additionalversions {
   display: none;
 }
-.packagedetail .btn-install {
+.btn-install {
   width: 100%;
 }
 .rating {

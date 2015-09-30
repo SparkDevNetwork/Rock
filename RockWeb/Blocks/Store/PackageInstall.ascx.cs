@@ -50,8 +50,8 @@ namespace RockWeb.Blocks.Store
         #region Fields
 
         // used for private variables
-        private string _installPurchaseMessage = "Login below with your Rock Store account. Your credit card on file will be charged ${0}.";
-        private string _installFreeMessage = "Login below with your Rock Store account to install this free package.";
+        private string _installPurchaseMessage = "Login below with your Rock Store account to install the <em>{0}</em> package. Your credit card on file will be charged ${1}.";
+        private string _installFreeMessage = "Login below with your Rock Store account to install free <em>{0}</em> package.";
         private string _updateMessage = "Login below with your Rock Store account to upgrade this package.";
         private string _installPreviousPurchase = "Login below with your Rock Store account to install this previously purchased package.";
 
@@ -356,24 +356,19 @@ namespace RockWeb.Blocks.Store
                 // check for errors
                 ErrorCheck( errorResponse );
 
-                lPackageName.Text = package.Name;
-                lPackageDescription.Text = package.Description;
+                //lPackageName.Text = package.Name;
+                imgPackageImage.ImageUrl = package.PackageIconBinaryFile.ImageUrl;
 
-                lPackageImage.Text = String.Format( @"<div class=""margin-b-md"" style=""
-                                background: url('{0}') no-repeat center;
-                                width: 100%;
-                                height: 140px;"">
-                                </div>", package.PackageIconBinaryFile.ImageUrl );
 
                 if ( package.IsFree )
                 {
-                    lCost.Text = "<div class='pricelabel free'><h4>Free</h4></div>";
-                    lInstallMessage.Text = _installFreeMessage;
+                    //lCost.Text = "<div class='pricelabel free'><h4>Free</h4></div>";
+                    lInstallMessage.Text = string.Format(_installFreeMessage, package.Name);
                 }
                 else
                 {
-                    lCost.Text = string.Format( "<div class='pricelabel cost'><h4>${0}</h4></div>", package.Price );
-                    lInstallMessage.Text = string.Format( _installPurchaseMessage, package.Price.ToString() );
+                    //lCost.Text = string.Format( "<div class='pricelabel cost'><h4>${0}</h4></div>", package.Price );
+                    lInstallMessage.Text = string.Format( _installPurchaseMessage, package.Name, package.Price.ToString() );
                 }
 
                 if ( package.IsPurchased )
@@ -384,12 +379,12 @@ namespace RockWeb.Blocks.Store
 
                     if ( installedPackage == null )
                     {
-                        lCost.Visible = false;
+                        //lCost.Visible = false;
                         lInstallMessage.Text = _installPreviousPurchase;
                     }
                     else
                     {
-                        lCost.Visible = false;
+                        //lCost.Visible = false;
                         lInstallMessage.Text = _updateMessage;
                         btnInstall.Text = "Update";
                     }

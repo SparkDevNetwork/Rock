@@ -5358,6 +5358,9 @@ th[align=center] {
   display: block;
   float: left;
 }
+.panel-headerimage {
+  margin: -15px -15px 15px -15px;
+}
 .panel .panel-heading a.btn-link {
   color: #5697d0;
 }
