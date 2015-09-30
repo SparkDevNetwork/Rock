@@ -1311,9 +1311,13 @@ namespace RockWeb.Blocks.Event
 
                 registrar = SavePerson( rockContext, person, Guid.NewGuid(), null, null, adultRoleId, childRoleId, multipleFamilyGroupIds, singleFamilyId );
                 registration.PersonAliasId = registrar != null ? registrar.PrimaryAliasId : (int?)null;
-            }
 
-            History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registrar.FullName );
+                History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registrar.FullName );
+            }
+            else
+            {
+                History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registration.ToString() );
+            }
 
             // Save the registration ( so we can get an id )
             rockContext.SaveChanges();
