@@ -84,16 +84,13 @@ namespace Rock.Web.UI.Controls
             }
 
             // If we have encountered this node previously in our tree walk, there is a recursive loop in the tree.
-            // Add an invalid Id to indicate that a problem was encountered, and exit.
             if ( ancestorGroupIds.Contains( group.Id ) )
             {
-                ancestorGroupIds.Add( -1 );
-
                 return ancestorGroupIds;
             }
 
             // Create or add this node to the history stack for this tree walk.
-            ancestorGroupIds.Add( group.Id );
+            ancestorGroupIds.Insert(0, group.Id );
 
             ancestorGroupIds = this.GetGroupAncestorsIdList( group.ParentGroup, ancestorGroupIds );
 
