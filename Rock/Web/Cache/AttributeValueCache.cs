@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using DotLiquid;
 using Newtonsoft.Json;
 
 using Rock.Data;
@@ -39,7 +40,8 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    public class AttributeValueCache 
+    [DotLiquid.LiquidType( "AttributeId", "Value", "ValueFormatted", "AttributeName", "AttributeKey" )]
+    public class AttributeValueCache
     {
         #region constructors
 
