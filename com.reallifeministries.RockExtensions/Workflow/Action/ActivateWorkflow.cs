@@ -18,7 +18,7 @@ namespace com.reallifeministries.RockExtensions.Workflow.Action
     /// <summary>
     /// Activates a new activity for a given activity type
     /// </summary>
-    [Description( "Activates a new workflow. The attributes from this current activity will be passed as attributes to the workflow." )]
+    [Description( "Activates a new workflow. The attributes from this current activity, and workflow will be passed as attributes to the next workflow." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Workflow" )]
 
@@ -45,7 +45,6 @@ namespace com.reallifeministries.RockExtensions.Workflow.Action
             }
 
             var currentActivity = action.Activity;
-            var currentWorkflow = action.Activity.Workflow;
             var newWorkflowType = new WorkflowTypeService( rockContext ).Get( guid );
             var newWorkflowName = GetAttributeValue(action, "WorkflowName" );
 
@@ -62,30 +61,13 @@ namespace com.reallifeministries.RockExtensions.Workflow.Action
                 return false;
             }
 
-            if (currentActivity.Attributes == null)
-            {
-                currentActivity.LoadAttributes( rockContext );
-            }
+            CopyAttributes( newWorkflow, currentActivity, rockContext );
 
-            if (currentWorkflow.Attributes == null)
-            {
-                currentWorkflow.LoadAttributes( rockContext );
-            }
+            SaveForProcessingLater( newWorkflow, rockContext );
 
-            // Pass attributes from current Workflow to new Workflow.
-            foreach (string key in currentWorkflow.AttributeValues.Keys)
-            {
-                newWorkflow.SetAttributeValue( key, currentWorkflow.GetAttributeValue( key ) );
-            }
-
-            // Pass attributes from current Activity to new Workflow.
-            foreach (string key in currentActivity.AttributeValues.Keys)
-            {
-                newWorkflow.SetAttributeValue( key, currentActivity.GetAttributeValue(key) );
-            }
-            
+            return true;
             // Kick off processing of new Workflow
-            if(newWorkflow.Process( rockContext, entity, out errorMessages )) 
+            /*if(newWorkflow.Process( rockContext, entity, out errorMessages )) 
             {
                 if (newWorkflow.IsPersisted || newWorkflowType.IsPersisted)
                 {
@@ -108,6 +90,50 @@ namespace com.reallifeministries.RockExtensions.Workflow.Action
             else
             {
                 return false;
+            }*/
+        }
+        private void SaveForProcessingLater(Rock.Model.Workflow newWorkflow, RockContext rockContext)
+        {
+            newWorkflow.IsPersisted = true;
+            var service = new WorkflowService( rockContext );
+            if (newWorkflow.Id == 0)
+            {
+                service.Add( newWorkflow );
+            }
+
+            rockContext.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
+                newWorkflow.SaveAttributeValues( rockContext );
+                foreach (var activity in newWorkflow.Activities)
+                {
+                    activity.SaveAttributeValues( rockContext );
+                }
+            } );
+        }
+
+        private void CopyAttributes(Rock.Model.Workflow newWorkflow, Rock.Model.WorkflowActivity currentActivity, RockContext rockContext)
+        {
+            if (currentActivity.Attributes == null)
+            {
+                currentActivity.LoadAttributes( rockContext );
+            }
+
+            if (currentActivity.Workflow.Attributes == null)
+            {
+                currentActivity.Workflow.LoadAttributes( rockContext );
+            }
+
+            // Pass attributes from current Workflow to new Workflow.
+            foreach (string key in currentActivity.Workflow.AttributeValues.Keys)
+            {
+                newWorkflow.SetAttributeValue( key, currentActivity.Workflow.GetAttributeValue( key ) );
+            }
+
+            // Pass attributes from current Activity to new Workflow.
+            foreach (string key in currentActivity.AttributeValues.Keys)
+            {
+                newWorkflow.SetAttributeValue( key, currentActivity.GetAttributeValue(key) );
             }
         }
     }
