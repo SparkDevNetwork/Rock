@@ -13,7 +13,10 @@
                 <div class="packagedetail">
                     
                     <asp:Panel ID="pnlPackageDetails" runat="server">
-                        <asp:Image ID="imgPackageImage" runat="server" CssClass="packagedetail-image" />
+                        
+                        <div class="panel-headerimage">
+                            <asp:Image ID="imgPackageImage" runat="server" CssClass="packagedetail-image" />
+                        </div>
 
                         <div class="row">
                             <div class="col-md-3">
