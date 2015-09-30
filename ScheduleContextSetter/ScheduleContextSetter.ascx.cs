@@ -91,6 +91,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
         private void SetScheduleContext()
         {
 
+           
             var scheduleContextQuery = Request.QueryString["scheduleId"];
 
             if ( scheduleContextQuery != null )
@@ -99,14 +100,75 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
 
                 var schedule = new ScheduleService( new RockContext() ).Get( scheduleContextQuery.ToString().AsInteger() );
 
+                HttpCookie cookieUrl = Request.Cookies["Rock.Schedule.Context.Query"];
+
                 if ( schedule != null )
                 {
-                    HttpCookie cookieUrl = Request.Cookies["Rock.Schedule.Context.Query"];
 
                     if ( cookieUrl == null || Request.QueryString["scheduleId"].ToString() != cookieUrl.Value.Replace( "scheduleId=", "" ) )
                     {
                         SetContextUrlCookie();
                         RockPage.SetContextCookie( schedule, pageScope, true );
+                    }
+                }
+                else
+                {
+                    if ( cookieUrl == null || Request.QueryString["scheduleId"].ToString() != cookieUrl.Value.Replace( "scheduleId=", "" ) )
+                    {
+                        SetContextUrlCookie();
+
+                        // Check for a page specific Rock Context Cookie
+                        if ( Request.Cookies["Rock_Context:" + RockPage.PageId.ToString()] != null) {
+
+                            var cookieKeys = Request.Cookies["Rock_Context:" + RockPage.PageId.ToString()].Value.Split( '&' ).ToArray();
+
+                            HttpCookie newRockCookie = new HttpCookie( "Rock_Context:" + RockPage.PageId.ToString() );
+
+                            foreach ( var cookieKey in cookieKeys )
+                            {
+
+                                if ( !cookieKey.ToString().StartsWith("Rock.Model.Schedule") )
+                                {
+                                    var cookieValue = cookieKey.Split( '=' );
+
+                                    var cookieId = cookieValue[0].ToString();
+                                    var cookieHash = cookieValue[1].ToString();
+
+                                    newRockCookie[cookieId] = cookieHash;
+                                }
+                            }
+
+                            newRockCookie.Expires = DateTime.Now.AddHours( 1 );
+                            Response.Cookies.Add( newRockCookie );
+                        }
+
+                        // Check for a site specific Rock Context Cookie
+                        if ( Request.Cookies["Rock_Context"] != null )
+                        {
+                            var cookieKeys = Request.Cookies["Rock_Context"].Value.Split( '&' ).ToArray();
+
+                            HttpCookie newRockCookie = new HttpCookie( "Rock_Context" );
+
+                            foreach ( var cookieKey in cookieKeys )
+                            {
+
+                                if ( !cookieKey.ToString().StartsWith( "Rock.Model.Schedule" ) )
+                                {
+                                    var cookieValue = cookieKey.Split( '=' );
+
+                                    var cookieId = cookieValue[0].ToString();
+                                    var cookieHash = cookieValue[1].ToString();
+
+                                    newRockCookie[cookieId] = cookieHash;
+                                }
+                            }
+
+                            newRockCookie.Expires = DateTime.Now.AddHours( 1 );
+                            Response.Cookies.Add( newRockCookie );
+                        }
+
+                        // Refresh the page once we expire the cookies
+                        Response.Redirect( Request.Url.ToString() );
                     }
                 }
             }
@@ -122,7 +184,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
 
             var scheduleEntityType = EntityTypeCache.Read( "Rock.Model.Schedule" );
             var defaultSchedule = RockPage.GetCurrentContext( scheduleEntityType ) as Schedule;
-
+             
             if ( defaultSchedule != null )
             {
                 mergeObjects.Add( "ScheduleName", defaultSchedule.Name );
@@ -134,6 +196,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
             }
 
             List<ScheduleItem> schedules = new List<ScheduleItem>();
+            schedules.Add( new ScheduleItem { Name = "All Schedules", Id = 1 } );
 
             if ( GetAttributeValue( "ScheduleGroup" ) != null )
             {
@@ -148,7 +211,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
                         .Select( a => new { a.Name, a.Id, a.Guid } )
                         .ToArray();
 
-                    schedules.Add( new ScheduleItem { Name = scheduleItem[0].Name, Id = scheduleItem[0].Id, Guid = scheduleItem[0].Guid } );
+                    schedules.Add( new ScheduleItem { Name = scheduleItem[0].Name, Id = scheduleItem[0].Id } );
                 }
             }
 
@@ -179,26 +242,26 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
             bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
             var schedule = new ScheduleService( new RockContext() ).Get( e.CommandArgument.ToString().AsInteger() );
             
+            var scheduleId = e.CommandArgument;
+
+            var nameValues = HttpUtility.ParseQueryString( Request.QueryString.ToString() );
+            nameValues.Set( "scheduleId", scheduleId.ToString() );
+            string url = Request.Url.AbsolutePath;
+            string updatedQueryString = "?" + nameValues.ToString();
+
+            // Only update the Context Cookie if the Schedule is valid
             if ( schedule != null )
             {
-                var scheduleId = e.CommandArgument;
-                // var scheduleName = {schedule[0].Name.ToString().ToList()};
-
-                var nameValues = HttpUtility.ParseQueryString( Request.QueryString.ToString() );
-                nameValues.Set( "scheduleId", scheduleId.ToString() );
-                string url = Request.Url.AbsolutePath;
-                string updatedQueryString = "?" + nameValues.ToString();
-
                 RockPage.SetContextCookie( schedule, pageScope, false );
-
-                Response.Redirect( url + updatedQueryString );
             }
+
+            Response.Redirect( url + updatedQueryString );
         }
 
         #endregion
 
         /// <summary>
-        /// Campus Item
+        /// Schedule Item
         /// </summary>
         public class ScheduleItem
         {
@@ -217,9 +280,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
             /// The identifier.
             /// </value>
             public int Id { get; set; }
-
-            public Guid Guid { get; set; }
         }
-
     }
 }
