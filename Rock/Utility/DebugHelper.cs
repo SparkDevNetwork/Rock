@@ -66,6 +66,10 @@ namespace Rock
                         {
                             return string.Format( "@{0} {1}({2}) = '{3}'", p.ParameterName, p.SqlDbType, p.Size, p.SqlValue );
                         }
+                        else if (p.SqlDbType == System.Data.SqlDbType.Udt)
+                        {
+                            return string.Format( "@{0} {1} = '{2}'", p.ParameterName, p.UdtTypeName, p.SqlValue );
+                        }
                         else
                         {
                             return string.Format( "@{0} {1} = '{2}'", p.ParameterName, p.SqlDbType, p.SqlValue );
