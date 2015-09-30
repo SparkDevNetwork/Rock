@@ -124,7 +124,7 @@
                             <Rock:RockDropDownList ID="ddlPlacementGroup" runat="server" Label="Placement Group" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" />
+                            <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" AutoPostBack="true" OnSelectedIndexChanged="ddlCampus_SelectedIndexChanged" />
                         </div>
                     </div>
 
