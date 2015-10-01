@@ -2094,10 +2094,11 @@ namespace RockWeb.Blocks.Event
                                 .Select( m => m.GroupMember ) )
                             {
                                 groupMemberIds.Add( groupMember.Id );
-                                GroupLinks.AddOrIgnore( groupMember.GroupId, 
-                                    string.Format( "<a href='{0}'>{1}</a>",
-                                        LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } ),
-                                        groupMember.Group.Name ) );
+                                GroupLinks.AddOrIgnore( groupMember.GroupId,
+                                    gRegistrants.AllowPaging ?
+                                        string.Format( "<a href='{0}'>{1}</a>",
+                                            LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } ),
+                                            groupMember.Group.Name ) : groupMember.Group.Name );
                             }
 
                             // If the campus column was selected to be displayed on grid, preload all the people's
