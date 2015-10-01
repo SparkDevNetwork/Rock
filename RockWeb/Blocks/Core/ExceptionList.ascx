@@ -52,7 +52,7 @@
                             <Rock:DateTimeField DataField="LastExceptionDate" HeaderText="Last Date" ItemStyle-Wrap="false" SortExpression="LastExceptionDate" ItemStyle-HorizontalAlign="Left" />
                             <Rock:RockBoundField DataField="SiteName" HeaderText="Site Name" SortExpression="SiteName" />
                             <Rock:RockBoundField DataField="PageName" HeaderText="Page" SortExpression="PageName" />
-                            <Rock:RockBoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
+                            <Rock:RockBoundField DataField="Description" HeaderText="Exception" SortExpression="Description" TruncateLength="255"  />
                             <Rock:RockBoundField DataField="TotalCount" HeaderText="Total Count" SortExpression="TotalCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:RockBoundField DataField="SubsetCount" SortExpression="SubsetCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                         </Columns>
