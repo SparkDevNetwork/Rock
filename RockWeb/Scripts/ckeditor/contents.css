@@ -122,6 +122,8 @@ figure figcaption
 	display: block; /* For IE8 */
 }
 
-table, th, td {
+.table,
+.table th,
+.table td {
   border: 1px solid #ccc;
 }
