@@ -46,6 +46,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the value that should be exported to Excel
+        /// </summary>
+        /// <param name="row">The row.</param>
+        /// <returns></returns>
+        public override object GetExportValue( GridViewRow row )
+        {
+            return GetRowValue( row );
+        }
+
+        /// <summary>
         /// Retrieves the value of the field bound to the <see cref="T:System.Web.UI.WebControls.BoundField" /> object.
         /// </summary>
         /// <param name="controlContainer">The container for the field value.</param>
@@ -57,33 +67,45 @@ namespace Rock.Web.UI.Controls
             var row = controlContainer as GridViewRow;
             if ( row != null )
             {
-                // First try to get an IHasAttributes from the grid's object list
-                IHasAttributes dataItem = GetAttributeObject( row );
-                if ( dataItem == null )
-                {
-                    // If unsuccesful, check to see if row has attributes
-                    dataItem = row.DataItem as IHasAttributes;
-                }
-
-                if (dataItem != null)
-                {
-                    if ( dataItem.Attributes == null )
-                    {
-                        dataItem.LoadAttributes();
-                    }
-
-                    bool exists = dataItem.Attributes.ContainsKey( this.DataField );
-                    if ( exists )
-                    {
-                        var attrib = dataItem.Attributes[this.DataField];
-                        string rawValue = dataItem.GetAttributeValue( this.DataField );
-                        string resultHtml = attrib.FieldType.Field.FormatValueAsHtml( controlContainer, rawValue, attrib.QualifierValues, Condensed );
-                        return new HtmlString( resultHtml ?? string.Empty );
-                    }
-                }
+                return GetRowValue( row );
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the row value.
+        /// </summary>
+        /// <param name="row">The row.</param>
+        /// <returns></returns>
+        private object GetRowValue( GridViewRow row )
+        {
+            // First try to get an IHasAttributes from the grid's object list
+            IHasAttributes dataItem = GetAttributeObject( row );
+            if ( dataItem == null )
+            {
+                // If unsuccesful, check to see if row has attributes
+                dataItem = row.DataItem as IHasAttributes;
+            }
+
+            if ( dataItem != null )
+            {
+                if ( dataItem.Attributes == null )
+                {
+                    dataItem.LoadAttributes();
+                }
+
+                bool exists = dataItem.Attributes.ContainsKey( this.DataField );
+                if ( exists )
+                {
+                    var attrib = dataItem.Attributes[this.DataField];
+                    string rawValue = dataItem.GetAttributeValue( this.DataField );
+                    string resultHtml = attrib.FieldType.Field.FormatValueAsHtml( null, rawValue, attrib.QualifierValues, Condensed );
+                    return new HtmlString( resultHtml ?? string.Empty );
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
