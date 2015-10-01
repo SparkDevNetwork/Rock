@@ -224,11 +224,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
         {
             bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
             var schedule = new ScheduleService( new RockContext() ).Get( e.CommandArgument.ToString().AsInteger() );
-            
-            var scheduleId = e.CommandArgument;
 
             var nameValues = HttpUtility.ParseQueryString( Request.QueryString.ToString() );
-            nameValues.Set( "scheduleId", scheduleId.ToString() );
+            nameValues.Set( "scheduleId", e.CommandArgument.ToString() );
             string url = Request.Url.AbsolutePath;
             string updatedQueryString = "?" + nameValues.ToString();
 
