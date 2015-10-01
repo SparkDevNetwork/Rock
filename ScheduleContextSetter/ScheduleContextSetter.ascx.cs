@@ -47,7 +47,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
     [SchedulesField( "Schedule Group", "Choose a schedule group to populate the dropdown", order: 1 )]
     [TextField( "Current Item Template", "Lava template for the current item. The only merge field is {{ ScheduleName }}.", true, "{{ ScheduleName }}", order: 2 )]
     [TextField( "Dropdown Item Template", "Lava template for items in the dropdown. The only merge field is {{ ScheduleName }}.", true, "{{ ScheduleName }}", order: 2 )]
-    [TextField( "No Schedule Text", "The text to show when there is no schedule in the context.", true, "Select Schedule", order: 3 )]
+    [TextField( "No Schedule Text", "The text to show when there is no schedule in the context.", true, "All Schedules", order: 3 )]
 
     public partial class ScheduleContextSetter : Rock.Web.UI.RockBlock
     {
@@ -179,7 +179,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
             }
 
             List<ScheduleItem> schedules = new List<ScheduleItem>();
-            schedules.Add( new ScheduleItem { Name = Rock.Constants.All.ListItem.Text.ToString(), Id = Rock.Constants.All.ListItem.Value.AsInteger() } );
+            schedules.Add( new ScheduleItem { Name = GetAttributeValue( "NoScheduleText" ), Id = Rock.Constants.All.ListItem.Value.AsInteger() } );
 
             if ( GetAttributeValue( "ScheduleGroup" ) != null )
             {
@@ -198,7 +198,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
                 }
             }
 
-            var formattedCampuses = new Dictionary<int, string>();
+            var formattedSchedule = new Dictionary<int, string>();
             // run lava on each campus
             foreach ( var schedule in schedules )
             {
