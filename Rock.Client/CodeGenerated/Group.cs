@@ -96,6 +96,26 @@ namespace Rock.Client
         /// <summary />
         public int? WelcomeSystemEmailId { get; set; }
 
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
+        public DateTime? CreatedDateTime { get; set; }
+
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
+        public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
+        public int? ModifiedByPersonAliasId { get; set; }
+
         /// <summary />
         public Guid Guid { get; set; }
 
@@ -129,6 +149,10 @@ namespace Rock.Client
             this.ScheduleId = source.ScheduleId;
             this.SyncDataViewId = source.SyncDataViewId;
             this.WelcomeSystemEmailId = source.WelcomeSystemEmailId;
+            this.CreatedDateTime = source.CreatedDateTime;
+            this.ModifiedDateTime = source.ModifiedDateTime;
+            this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            this.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 
@@ -169,18 +193,6 @@ namespace Rock.Client
 
         /// <summary />
         public SystemEmail WelcomeSystemEmail { get; set; }
-
-        /// <summary />
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary />
-        public DateTime? ModifiedDateTime { get; set; }
-
-        /// <summary />
-        public int? CreatedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

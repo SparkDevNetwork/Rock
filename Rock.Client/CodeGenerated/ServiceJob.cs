@@ -90,6 +90,26 @@ namespace Rock.Client
         /// <summary />
         public Rock.Client.Enums.JobNotificationStatus NotificationStatus { get; set; }
 
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
+        public DateTime? CreatedDateTime { get; set; }
+
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
+        public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
+        public int? ModifiedByPersonAliasId { get; set; }
+
         /// <summary />
         public Guid Guid { get; set; }
 
@@ -121,6 +141,10 @@ namespace Rock.Client
             this.Name = source.Name;
             this.NotificationEmails = source.NotificationEmails;
             this.NotificationStatus = source.NotificationStatus;
+            this.CreatedDateTime = source.CreatedDateTime;
+            this.ModifiedDateTime = source.ModifiedDateTime;
+            this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            this.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 
@@ -132,18 +156,6 @@ namespace Rock.Client
     /// </summary>
     public partial class ServiceJob : ServiceJobEntity
     {
-        /// <summary />
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary />
-        public DateTime? ModifiedDateTime { get; set; }
-
-        /// <summary />
-        public int? CreatedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? ModifiedByPersonAliasId { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
