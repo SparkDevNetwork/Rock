@@ -1115,6 +1115,7 @@
     <Compile Include="Workflow\Action\ActivateActions.cs" />
     <Compile Include="Workflow\Action\AddPersonToGroupAttribute.cs" />
     <Compile Include="Workflow\Action\AssignActivityFromAttributeValue.cs" />
+    <Compile Include="Workflow\Action\SetInitiatorFromAttribute.cs" />
     <Compile Include="Workflow\Action\AssignActivityToSecurityRole.cs" />
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
     <Compile Include="Workflow\Action\AssignActivityToGroup.cs" />
