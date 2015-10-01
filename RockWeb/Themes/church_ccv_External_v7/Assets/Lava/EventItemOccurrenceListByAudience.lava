@@ -19,7 +19,7 @@
       {% for occurrence in EventItemOccurrences %}
         {% comment %}<a class="list-group-item" href="{{ RegistrationPage }}?RegistrationInstanceId={{ occurrence.Linkages | Select: 'RegistrationInstanceId' }}">{% endcomment %}
         <a class="list-group-item" href="{{ RegistrationPage }}?EventOccurrenceId={{ occurrence.Id }}">
-          {{ occurrence.EventItem.Name }} <small class="text-muted">{{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'dddd, MMM d / h:mmtt'  }}</small>
+          {{ occurrence.EventItem.Name }} <small class="text-muted" style="display: inline-block;">{{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'dddd, MMM d / h:mmtt'  }}</small>
         </a>
       {% endfor %}
     </div>
