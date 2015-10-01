@@ -463,6 +463,12 @@ namespace RockWeb.Blocks.Connection
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionRequest = connectionRequestService.Get( hfConnectionRequestId.ValueAsInt() );
+                if ( connectionRequest == null )
+                {
+                    connectionRequest = new ConnectionRequest();
+                    connectionRequest.ConnectionOpportunity = new ConnectionOpportunityService( rockContext ).Get( hfConnectionOpportunityId.ValueAsInt() );
+                }
+
                 RebindConnectors( connectionRequest, ddlCampus.SelectedValueAsInt(), rockContext );
             }
         }
@@ -553,6 +559,12 @@ namespace RockWeb.Blocks.Connection
                 {
                     cblCampus.DataSource = CampusCache.All();
                     cblCampus.DataBind();
+
+                    if ( connectionRequest.CampusId.HasValue )
+                    {
+                        cblCampus.SetValues( new List<string> { connectionRequest.CampusId.Value.ToString() } );
+                    }
+
                     BindAttributes();
                     AddDynamicControls();
 
@@ -1081,8 +1093,16 @@ namespace RockWeb.Blocks.Connection
             }
 
             btnSave.Visible = false;
-            Person person = connectionRequest.PersonAlias.Person;
-            if ( person.PhoneNumbers.Any() || !String.IsNullOrWhiteSpace( person.Email ) )
+
+            lContactInfo.Text = string.Empty;
+
+            Person person = null;
+            if ( connectionRequest != null && connectionRequest.PersonAlias != null )
+            {
+                person = connectionRequest.PersonAlias.Person;
+            }
+
+            if ( person != null && (person.PhoneNumbers.Any() || !String.IsNullOrWhiteSpace( person.Email ) ) )
             {
                 List<String> contactList = new List<string>();
 
@@ -1105,7 +1125,7 @@ namespace RockWeb.Blocks.Connection
                 lContactInfo.Text = "No contact Info";
             }
 
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PersonProfilePage" ) ) )
+            if ( person != null && !string.IsNullOrWhiteSpace( GetAttributeValue( "PersonProfilePage" ) ) )
             {
                 lbProfilePage.Visible = true;
 
@@ -1118,19 +1138,27 @@ namespace RockWeb.Blocks.Connection
                 lbProfilePage.Visible = false;
             }
 
-            string imgTag = Rock.Model.Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 200, 200, className: "img-thumbnail" );
-            if ( person.PhotoId.HasValue )
+            if ( person != null )
             {
-                lPortrait.Text = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, imgTag );
+                string imgTag = Rock.Model.Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 200, 200, className: "img-thumbnail" );
+                if ( person.PhotoId.HasValue )
+                {
+                    lPortrait.Text = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, imgTag );
+                }
+                else
+                {
+                    lPortrait.Text = imgTag;
+                }
             }
             else
             {
-                lPortrait.Text = imgTag;
+                lPortrait.Text = string.Empty;;
             }
 
-            lComments.Text = connectionRequest.Comments.ScrubHtmlAndConvertCrLfToBr();
-            lRequestDate.Text = connectionRequest.CreatedDateTime.Value.ToShortDateString();
-            if ( connectionRequest.AssignedGroup != null )
+
+            lComments.Text = connectionRequest != null && connectionRequest.Comments != null ? connectionRequest.Comments.ScrubHtmlAndConvertCrLfToBr() : string.Empty;
+            lRequestDate.Text = connectionRequest != null && connectionRequest.CreatedDateTime.HasValue ? connectionRequest.CreatedDateTime.Value.ToShortDateString() : string.Empty;
+            if ( connectionRequest != null && connectionRequest.AssignedGroup != null )
             {
                 var qryParams = new Dictionary<string, string>();
                 qryParams.Add( "GroupId", connectionRequest.AssignedGroup.Id.ToString() );
@@ -1146,7 +1174,9 @@ namespace RockWeb.Blocks.Connection
                 lPlacementGroup.Text = "No group assigned";
             }
 
-            if ( connectionRequest.ConnectorPersonAlias != null )
+            if ( connectionRequest != null && 
+                connectionRequest.ConnectorPersonAlias != null &&
+                connectionRequest.ConnectorPersonAlias.Person != null )
             {
                 lConnector.Text = connectionRequest.ConnectorPersonAlias.Person.FullName;
             }
@@ -1155,44 +1185,63 @@ namespace RockWeb.Blocks.Connection
                 lConnector.Text = "No connector assigned";
             }
 
-            hlState.Visible = true;
-            hlState.Text = connectionRequest.ConnectionState.ConvertToString();
-            hlState.LabelType = connectionRequest.ConnectionState == ConnectionState.Inactive ? LabelType.Danger :
+            if ( connectionRequest != null )
+            {
+                hlState.Visible = true;
+                hlState.Text = connectionRequest.ConnectionState.ConvertToString();
+                hlState.LabelType = connectionRequest.ConnectionState == ConnectionState.Inactive ? LabelType.Danger :
                 ( connectionRequest.ConnectionState == ConnectionState.FutureFollowUp ? LabelType.Info : LabelType.Success );
 
-            hlStatus.Visible = true;
-            hlStatus.Text = connectionRequest.ConnectionStatus.Name;
-            hlStatus.LabelType = connectionRequest.ConnectionStatus.IsCritical ? LabelType.Warning : LabelType.Type;
+                hlStatus.Visible = true;
+                hlStatus.Text = connectionRequest.ConnectionStatus.Name;
+                hlStatus.LabelType = connectionRequest.ConnectionStatus.IsCritical ? LabelType.Warning : LabelType.Type;
 
-            hlOpportunity.Text = connectionRequest.ConnectionOpportunity.Name;
-            hlCampus.Text = connectionRequest.Campus != null ? connectionRequest.Campus.Name : string.Empty;
+                hlOpportunity.Text = connectionRequest.ConnectionOpportunity != null ? connectionRequest.ConnectionOpportunity.Name : string.Empty;
+                hlCampus.Text = connectionRequest.Campus != null ? connectionRequest.Campus.Name : string.Empty;
 
-            var connectionWorkflows = connectionRequest.ConnectionOpportunity.ConnectionWorkflows.Union( connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionWorkflows );
-            var manualWorkflows = connectionWorkflows
-                .Where( w => 
-                    w.TriggerType == ConnectionWorkflowTriggerType.Manual &&
-                    w.WorkflowType != null )
-                .OrderBy( w => w.WorkflowType.Name )
-                .Distinct();
+                if ( connectionRequest.ConnectionOpportunity != null )
+                {
+                    var connectionWorkflows = connectionRequest.ConnectionOpportunity.ConnectionWorkflows.Union( connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionWorkflows );
+                    var manualWorkflows = connectionWorkflows
+                        .Where( w =>
+                            w.TriggerType == ConnectionWorkflowTriggerType.Manual &&
+                            w.WorkflowType != null )
+                        .OrderBy( w => w.WorkflowType.Name )
+                        .Distinct();
 
-            if ( manualWorkflows.Any() )
-            {
-                rptRequestWorkflows.DataSource = manualWorkflows.ToList();
-                rptRequestWorkflows.DataBind();
+                    if ( manualWorkflows.Any() )
+                    {
+                        lblWorkflows.Visible = true;
+                        rptRequestWorkflows.DataSource = manualWorkflows.ToList();
+                        rptRequestWorkflows.DataBind();
+                    }
+                    else
+                    {
+                        lblWorkflows.Visible = false;
+                    }
+                }
+
+                if ( connectionRequest.ConnectionState == ConnectionState.Inactive || connectionRequest.ConnectionState == ConnectionState.Connected )
+                {
+                    lbConnect.Enabled = false;
+                }
+                else
+                {
+                    lbConnect.Enabled = true;
+                }
+
+                BindConnectionRequestActivitiesGrid( connectionRequest, new RockContext() );
+                BindConnectionRequestWorkflowsGrid();
             }
             else
             {
+                hlState.Visible = false;
+                hlStatus.Visible = false;
+                hlOpportunity.Visible = false;
+                hlCampus.Visible = false;
                 lblWorkflows.Visible = false;
-            }
-
-            if ( connectionRequest.ConnectionState == ConnectionState.Inactive || connectionRequest.ConnectionState == ConnectionState.Connected )
-            {
                 lbConnect.Enabled = false;
             }
-
-            BindConnectionRequestActivitiesGrid( connectionRequest, new RockContext() );
-
-            BindConnectionRequestWorkflowsGrid();
         }
 
         /// <summary>
@@ -1244,8 +1293,6 @@ namespace RockWeb.Blocks.Connection
                 ddlPlacementGroup.Items.Add( new ListItem( String.Format( "{0} ({1})", g.Name, g.Campus != null ? g.Campus.Name : "No Campus" ), g.Id.ToString().ToUpper() ) );
             }
 
-            RebindConnectors( connectionRequest, connectionRequest.CampusId, rockContext );
-
             if ( connectionRequest.PersonAlias != null )
             {
                 ppRequestor.SetValue( connectionRequest.PersonAlias.Person );
@@ -1255,7 +1302,6 @@ namespace RockWeb.Blocks.Connection
             {
                 ppRequestor.Enabled = true;
             }
-
 
             rblStatus.SetValue( connectionRequest.ConnectionStatus.Id );
             rblStatus.Enabled = true;
@@ -1284,6 +1330,8 @@ namespace RockWeb.Blocks.Connection
                 ddlCampus.SelectedValue = connectionRequest.CampusId.ToString();
             }
             ddlCampus.DataBind();
+
+            RebindConnectors( connectionRequest, ddlCampus.SelectedValueAsInt(), rockContext );
 
             rblState.BindToEnum<ConnectionState>();
             if ( !connectionRequest.ConnectionOpportunity.ConnectionType.EnableFutureFollowup )
@@ -1611,6 +1659,10 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     connectionRequest.ConnectionOpportunity.ConnectionOpportunityConnectorGroups
+                        .Where( g =>
+                            !g.CampusId.HasValue ||
+                            !connectionRequest.CampusId.HasValue ||
+                            g.CampusId.Value == connectionRequest.CampusId.Value )
                         .SelectMany( g => g.ConnectorGroup.Members )
                         .Select( m => m.Person )
                         .ToList()
