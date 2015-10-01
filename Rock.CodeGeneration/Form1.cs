@@ -898,10 +898,6 @@ order by [parentTable], [columnName]
         {
             // make a copy of the EntityProperties since we are deleting some for this method
             var entityProperties = GetEntityProperties( type, true ).ToDictionary( k => k.Key, v => v.Value);
-            entityProperties.Remove( "CreatedDateTime" );
-            entityProperties.Remove( "ModifiedDateTime" );
-            entityProperties.Remove( "CreatedByPersonAliasId" );
-            entityProperties.Remove( "ModifiedByPersonAliasId" );
 
             var dataMembers = type.GetProperties().SortByStandardOrder()
                 .Where( a => a.GetCustomAttribute<DataMemberAttribute>() != null )

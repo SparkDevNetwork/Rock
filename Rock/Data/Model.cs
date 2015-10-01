@@ -48,6 +48,7 @@ namespace Rock.Data
         /// </value>
         [DataMember]
         [IncludeForReporting]
+        [RockClientInclude( "Leave this as NULL to let Rock set this" )]
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
@@ -58,6 +59,7 @@ namespace Rock.Data
         /// </value>
         [DataMember]
         [IncludeForReporting]
+        [RockClientInclude( "If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it" )]
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
@@ -67,6 +69,7 @@ namespace Rock.Data
         /// The created by person alias identifier.
         /// </value>
         [DataMember]
+        [RockClientInclude( "Leave this as NULL to let Rock set this" )]
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
@@ -76,6 +79,7 @@ namespace Rock.Data
         /// The modified by person alias identifier.
         /// </value>
         [DataMember]
+        [RockClientInclude( "If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it" )]
         public int? ModifiedByPersonAliasId { get; set; }
 
         #endregion
