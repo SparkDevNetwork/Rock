@@ -90,7 +90,9 @@ PAGE TITLE LAVA
       <div class="list-group">
         <a href="{{ table1.rows.first.VideoDownload }}" class="list-group-item"><i class="fa fa-fw fa-film"></i> Download Video</a>
         <a href="{{ table1.rows.first.Audio }}" class="list-group-item"><i class="fa fa-fw fa-headphones"></i> Download Audio</a>
-        <a href="{{ table1.rows.first.SermonNotes }}" class="list-group-item"><i class="fa fa-fw fa-file-text-o"></i> Download Sermon Notes</a>
+        {% if table1.rows.first.SermonNotes != "" %}
+          <a href="{{ table1.rows.first.SermonNotes }}" class="list-group-item"><i class="fa fa-fw fa-file-text-o"></i> Download Sermon Notes</a>
+        {% endif %}
       </div>
     </div>
   </div>
