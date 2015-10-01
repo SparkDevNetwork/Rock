@@ -37,14 +37,6 @@ namespace Rock.Store
         public int Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name of the Package Category. 
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the Name of the Package Category.
-        /// </value>
-        public string Name { get; set; }
-
-        /// <summary>
         /// Gets or sets the Guid of the Package Category. 
         /// </summary>
         /// <value>
