@@ -907,7 +907,8 @@ namespace RockWeb.Blocks.Crm
                 foreach ( var attribute in person.Attributes.OrderBy( a => a.Value.Order ) )
                 {
                     string value = person.GetAttributeValue( attribute.Key );
-                    string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false );
+                    bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
+                    string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, condensed );
                     AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue );
                 }
             }
