@@ -62,8 +62,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
             {
                 SetScheduleContext();
             }
-
-
         }
 
         /// <summary>
@@ -86,6 +84,30 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
             cookieUrl["scheduleId"] = Request.QueryString["scheduleId"].ToString();
             cookieUrl.Expires = DateTime.Now.AddHours( 1 );
             Response.Cookies.Add( cookieUrl );
+        }
+
+        private void ClearRockContext( string cookieName )
+        {
+            var cookieKeys = Request.Cookies[ cookieName ].Value.Split( '&' ).ToArray();
+
+            HttpCookie newRockCookie = new HttpCookie( cookieName );
+
+            foreach ( var cookieKey in cookieKeys )
+            {
+
+                if ( !cookieKey.ToString().StartsWith( "Rock.Model.Schedule" ) )
+                {
+                    var cookieValue = cookieKey.Split( '=' );
+
+                    var cookieId = cookieValue[0].ToString();
+                    var cookieHash = cookieValue[1].ToString();
+
+                    newRockCookie[cookieId] = cookieHash;
+                }
+            }
+
+            newRockCookie.Expires = DateTime.Now.AddHours( 1 );
+            Response.Cookies.Add( newRockCookie );
         }
 
         private void SetScheduleContext()
@@ -118,68 +140,33 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
                         SetContextUrlCookie();
 
                         // Check for a page specific Rock Context Cookie
-                        if ( Request.Cookies["Rock_Context:" + RockPage.PageId.ToString()] != null) {
+                        if ( Request.Cookies["Rock_Context:" + RockPage.PageId.ToString()] != null )
+                        {
 
-                            var cookieKeys = Request.Cookies["Rock_Context:" + RockPage.PageId.ToString()].Value.Split( '&' ).ToArray();
+                            ClearRockContext("Rock_Context:" + RockPage.PageId.ToString());
 
-                            HttpCookie newRockCookie = new HttpCookie( "Rock_Context:" + RockPage.PageId.ToString() );
-
-                            foreach ( var cookieKey in cookieKeys )
-                            {
-
-                                if ( !cookieKey.ToString().StartsWith("Rock.Model.Schedule") )
-                                {
-                                    var cookieValue = cookieKey.Split( '=' );
-
-                                    var cookieId = cookieValue[0].ToString();
-                                    var cookieHash = cookieValue[1].ToString();
-
-                                    newRockCookie[cookieId] = cookieHash;
-                                }
-                            }
-
-                            newRockCookie.Expires = DateTime.Now.AddHours( 1 );
-                            Response.Cookies.Add( newRockCookie );
                         }
 
                         // Check for a site specific Rock Context Cookie
                         if ( Request.Cookies["Rock_Context"] != null )
                         {
-                            var cookieKeys = Request.Cookies["Rock_Context"].Value.Split( '&' ).ToArray();
 
-                            HttpCookie newRockCookie = new HttpCookie( "Rock_Context" );
-
-                            foreach ( var cookieKey in cookieKeys )
-                            {
-
-                                if ( !cookieKey.ToString().StartsWith( "Rock.Model.Schedule" ) )
-                                {
-                                    var cookieValue = cookieKey.Split( '=' );
-
-                                    var cookieId = cookieValue[0].ToString();
-                                    var cookieHash = cookieValue[1].ToString();
-
-                                    newRockCookie[cookieId] = cookieHash;
-                                }
-                            }
-
-                            newRockCookie.Expires = DateTime.Now.AddHours( 1 );
-                            Response.Cookies.Add( newRockCookie );
+                            ClearRockContext("Rock_Context");
+                            
                         }
 
-                        // Refresh the page once we expire the cookies
+                        // Refresh the page once we modify the cookies
                         Response.Redirect( Request.Url.ToString() );
                     }
                 }
             }
-
         }
 
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
         private void LoadDropDowns()
-       {
+        {
             Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
 
             var scheduleEntityType = EntityTypeCache.Read( "Rock.Model.Schedule" );
@@ -196,7 +183,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
             }
 
             List<ScheduleItem> schedules = new List<ScheduleItem>();
-            schedules.Add( new ScheduleItem { Name = "All Schedules", Id = 1 } );
+            schedules.Add( new ScheduleItem { Name = Rock.Constants.All.ListItem.Text.ToString(), Id = Rock.Constants.All.ListItem.Value.AsInteger() } );
 
             if ( GetAttributeValue( "ScheduleGroup" ) != null )
             {
