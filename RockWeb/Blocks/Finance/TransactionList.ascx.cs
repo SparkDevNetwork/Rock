@@ -916,6 +916,36 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Gets the accounts.
+        /// </summary>
+        /// <param name="dataItem">The data item.</param>
+        /// <returns></returns>
+        protected string GetAccounts( object dataItem )
+        {
+            var txn = dataItem as FinancialTransaction;
+            if ( txn != null )
+            {
+                var summary = txn.TransactionDetails
+                    .OrderBy( d => d.Account.Order )
+                    .Select( d => string.Format( "{0}: {1}", d.Account.Name, d.Amount.FormatAsCurrency() ) )
+                    .ToList();
+                if ( summary.Any() )
+                {
+                    if ( gTransactions.AllowPaging )
+                    {
+                        return "<small>" + summary.AsDelimited( "<br/>" ) + "</small>";
+                    }
+                    else
+                    {
+                        // Allow paging is turned off when exporting to excel. In this case, do not add the html
+                        return summary.AsDelimited( Environment.NewLine );
+                    }
+                }
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Shows the detail form.
         /// </summary>
         /// <param name="id">The id.</param>
