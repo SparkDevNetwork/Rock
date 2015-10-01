@@ -49,7 +49,7 @@
                     </Rock:GridFilter>
                     <Rock:Grid ID="gExceptionList" runat="server" AllowSorting="true" OnRowSelected="gExceptionList_RowSelected" EmptyDataText="No Exceptions Found">
                         <Columns>
-                            <Rock:DateField DataField="LastExceptionDate" HeaderText="Last Date" SortExpression="LastExceptionDate" />
+                            <Rock:DateTimeField DataField="LastExceptionDate" HeaderText="Last Date" ItemStyle-Wrap="false" SortExpression="LastExceptionDate" ItemStyle-HorizontalAlign="Left" />
                             <Rock:RockBoundField DataField="SiteName" HeaderText="Site Name" SortExpression="SiteName" />
                             <Rock:RockBoundField DataField="PageName" HeaderText="Page" SortExpression="PageName" />
                             <Rock:RockBoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
