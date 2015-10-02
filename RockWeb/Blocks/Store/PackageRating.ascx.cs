@@ -34,15 +34,12 @@ using Rock.VersionInfo;
 
 namespace RockWeb.Blocks.Store
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
-    [DisplayName( "Package Detail" )]
+
+    [DisplayName( "Package Rating" )]
     [Category( "Store" )]
-    [Description( "Manages the details of a package." )]
-    [LinkedPage( "Install Page", "Page reference to use for the install / update page.", false, "", "", 1 )]
-    [LinkedPage( "Rating Page", "Page reference to use for the rating page.", false, "", "", 1 )]
-    public partial class PackageDetail : Rock.Web.UI.RockBlock
+    [Description( "Enters ratings for a given package." )]
+    [LinkedPage( "Package Detail Page", "Page reference to use for the package detail page.", false, "", "", 1 )]
+    public partial class PackageRating : Rock.Web.UI.RockBlock
     {
         #region Fields
 
