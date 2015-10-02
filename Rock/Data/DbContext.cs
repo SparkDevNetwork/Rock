@@ -253,16 +253,21 @@ namespace Rock.Data
                                 model.Guid = Guid.NewGuid();
                             }
 
-                            if ( !model.ModifiedAuditValuesAlreadyUpdated )
+                            model.ModifiedDateTime = RockDateTime.Now;
+
+                            if ( !model.ModifiedAuditValuesAlreadyUpdated || model.ModifiedByPersonAliasId == null )
                             {
-                                model.ModifiedDateTime = RockDateTime.Now;
                                 model.ModifiedByPersonAliasId = personAliasId;
                             }
                         }
-                        else if ( entry.State == EntityState.Modified && !model.ModifiedAuditValuesAlreadyUpdated )
+                        else if ( entry.State == EntityState.Modified )
                         {
                             model.ModifiedDateTime = RockDateTime.Now;
-                            model.ModifiedByPersonAliasId = personAliasId;
+
+                            if ( !model.ModifiedAuditValuesAlreadyUpdated || model.ModifiedByPersonAliasId == null )
+                            {
+                                model.ModifiedByPersonAliasId = personAliasId;
+                            }
                         }
                     }
                 }
@@ -278,7 +283,7 @@ namespace Rock.Data
                 {
                     try
                     {
-                            GetAuditDetails( dbContext, contextItem, personAliasId );
+                        GetAuditDetails( dbContext, contextItem, personAliasId );
                     }
                     catch ( SystemException ex )
                     {
@@ -448,7 +453,7 @@ namespace Rock.Data
                     previousValue = dbEntity.State == EntityState.Added ? string.Empty : dbPropertyEntry.OriginalValue.ToStringSafe();
                 }
 
-                if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PreDelete || 
+                if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PreDelete ||
                     trigger.WorkflowTriggerType == WorkflowTriggerType.PostDelete )
                 {
                     match = ( previousValue == trigger.EntityTypeQualifierValue );
