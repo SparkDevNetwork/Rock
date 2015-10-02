@@ -66,8 +66,8 @@
 				Messy and Grace – two words that we don’t often see together. But if we’re all honest, extending grace can be messy at times.
 			</Description>
 			<DateRanges>9/6/2015 - 9/27/2015</DateRanges>
-			<BillboardUrl>images/2015_messy_grace.png</BillboardUrl>
-			<ThumbnailUrl>images/2015_messy_grace_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2015/messy_grace/2015_messy_grace.png</BillboardUrl>
+			<ThumbnailUrl>images/2015/messy_grace/2015_messy_grace_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 		
@@ -77,7 +77,7 @@
 				<Name>STAND ALONE</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>8/30/2015</Date>
-				<NoteUrl>xml/message_8_29_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_8_29_2015.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/137845002.m3u8?p=high,standard,mobile&amp;s=149fbf2eabcc31d8b3b5900ef0a7c1d8</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=523</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Courageous/Courageous_Wk5_Stand_Alone.mp3</AudioUrl>
@@ -86,7 +86,7 @@
 				<Name>BOUNCE BACK</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>8/23/2015</Date>
-				<NoteUrl>xml/message_8_22_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_8_22_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Courageous/Courageous_Wk4_Bounce_Back.mp3</AudioUrl>
 				<WatchUrl>http://player.vimeo.com/external/137064637.m3u8?p=high,standard,mobile&amp;s=faa6b46bed846477b258ebae04aea1aa</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=522</ShareUrl>
@@ -96,7 +96,7 @@
 				<Name>TAKE RISKS</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>8/16/2015</Date>
-				<NoteUrl>xml/message_8_15_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_8_15_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Courageous/Courageous_Wk3_Take_Risks.mp3</AudioUrl>
 				<WatchUrl>http://player.vimeo.com/external/136439610.m3u8?p=high,standard,mobile&amp;s=8148999314eddb21c3f858e11303cafa</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=521</ShareUrl>
@@ -106,7 +106,7 @@
 				<Name>OVERCOME FEAR</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>8/9/2015</Date>
-				<NoteUrl>xml/message_8_8_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_8_8_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Courageous/Courageous_Wk2_Overcome_Fear.mp3</AudioUrl>
 				<WatchUrl>http://player.vimeo.com/external/135802143.m3u8?p=high,standard,mobile&amp;s=7d27c942e32ba5afa80cb28ee90b66b1</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=520</ShareUrl>
@@ -116,7 +116,7 @@
 				<Name>THINK BIG</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>8/2/2015</Date>
-				<NoteUrl>xml/message_8_1_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_8_1_2015.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/135219387.m3u8?p=high,standard,mobile&amp;s=9c62799953a31cfca8458b21533030f5</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=519</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Courageous/Courageous_Wk1_ThinkBig_new.mp3</AudioUrl>
@@ -127,8 +127,8 @@
 				Life never has to be boring or mundane. It has its share of challenges, but the life of a Christian is a life of overcoming challenges.
 			</Description>
 			<DateRanges>8/2/2015 - 8/23/2015</DateRanges>
-			<BillboardUrl>images/courageous_2015.png</BillboardUrl>
-			<ThumbnailUrl>images/courageous_2015_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2015/courageous/courageous_2015.png</BillboardUrl>
+			<ThumbnailUrl>images/2015/courageous/courageous_2015_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 		<!--Start Series-->
@@ -137,7 +137,7 @@
 				<Name>PROMISES</Name>
 				<Speaker>Dr. Mark Moore</Speaker>
 				<Date>7/25/2015</Date>
-				<NoteUrl>xml/message_7_25_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_7_25_2015.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/134629380.m3u8?p=high,standard,mobile&amp;s=b6cf3a0a4e8e62d1dc8a6641ae9b0515</WatchUrl>
 				<ShareUrl>http://www.ccvonline.com/Arena/default.aspx?page=17529&amp;item=518</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Revealed/Revealed_WK4_Promises.mp3</AudioUrl>
@@ -146,7 +146,7 @@
 				<Name>POWERS</Name>
 				<Speaker>Dr. Mark Moore</Speaker>
 				<Date>7/19/2015</Date>
-				<NoteUrl>xml/message_7_18_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_7_18_2015.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/133904574.m3u8?p=high,standard,mobile&amp;s=18ff2125db500d13d2b66be75e32df07</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=517</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Revealed/Revealed_WK3_Who_Holds_The_Power.mp3</AudioUrl>
@@ -155,7 +155,7 @@
 				<Name>PAIN</Name>
 				<Speaker>Dr. Mark Moore</Speaker>
 				<Date>7/12/2015</Date>
-				<NoteUrl>xml/message_7_11_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_7_11_2015.xml</NoteUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=516</ShareUrl>
 				<WatchUrl>http://player.vimeo.com/external/133356736.m3u8?p=high,standard,mobile&amp;s=314f73c2954398f98b048d629ba9ee61</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Revealed/Revealed_WK2_HowDoIManagePain_New.mp3</AudioUrl>
@@ -164,7 +164,7 @@
 				<Name>PRIORITIES</Name>
 				<Speaker>Dr. Mark Moore</Speaker>
 				<Date>7/5/2015</Date>
-				<NoteUrl>xml/message_7_4_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_7_4_2015.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/132650794.m3u8?p=high,standard,mobile&amp;s=c16d4ba88870c42eb90e4bc67112b039</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=515</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Revealed/Revealed_WK1_WhatAreMyPriorities.mp3</AudioUrl>
@@ -175,8 +175,8 @@
 				How can we thrive in the trying times we face? The book of Revelation offers a crystal clear answer to this question.
 			</Description>
 			<DateRanges>7/5/2015 - 7/25/2015</DateRanges>
-			<BillboardUrl>images/revealed_2015.png</BillboardUrl>
-			<ThumbnailUrl>images/revealed_2015_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2015/revealed/revealed_2015.png</BillboardUrl>
+			<ThumbnailUrl>images/2015/revealed/revealed_2015_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 		
@@ -186,7 +186,7 @@
 				<Name>RUNNING AGAINST GOD</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>6/28/2015</Date>
-				<NoteUrl>xml/message_6_27_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_6_27_2015.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/132109518.m3u8?p=high,standard,mobile&amp;s=1a479ff85c3f4afebf0c5e6f65cb5cc3</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=514</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Jonah2015/Jonah_Wk4_Running_Against_God.mp3</AudioUrl>
@@ -195,7 +195,7 @@
 				<Name>RUNNING WITH GOD</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>6/21/2015</Date>
-				<NoteUrl>xml/message_6_20_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_6_20_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Jonah2015/Jonah_Wk3_RunningWithGod.mp3</AudioUrl>
 				<WatchUrl>http://player.vimeo.com/external/131353298.m3u8?p=high,standard,mobile&amp;s=a596312062f1723bb8241942ca147e89</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17609&amp;item=513</ShareUrl>
@@ -204,7 +204,7 @@
 				<Name>RUNNING TO GOD</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>6/14/2015</Date>
-				<NoteUrl>xml/message_6_13_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_6_13_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Jonah2015/Jonah_Wk2_RunningToGod.mp3</AudioUrl>
 				<WatchUrl>http://player.vimeo.com/external/131353292.m3u8?p=high,standard,mobile&amp;s=a24f5338e7d3325cefe38f5cb0112521</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17609&amp;item=512</ShareUrl>
@@ -214,7 +214,7 @@
 				<Name>A MAN WHO RAN</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>5/10/2015</Date>
-				<NoteUrl>xml/message_6_6_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_6_6_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Jonah2015/Jonah_Wk1_AManWhoRan.mp3</AudioUrl>
 				<WatchUrl>http://player.vimeo.com/external/130114369.m3u8?p=high,standard,mobile&amp;s=ad30a92de1cadd45dc193a709fa0126f</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17609&amp;item=511</ShareUrl>
@@ -225,8 +225,8 @@
 				The story of Jonah is really all of our stories. Each of us can look back at some point in our lives where we have attempted to run from God.
 			</Description>
 			<DateRanges>6/7/2015 - 6/28/2015</DateRanges>
-			<BillboardUrl>images/jonah.png</BillboardUrl>
-			<ThumbnailUrl>images/jonah_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2015/jonah/jonah.png</BillboardUrl>
+			<ThumbnailUrl>images/2015/jonah/jonah_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 		
@@ -236,7 +236,7 @@
 				<Name>WHAT HAPPENS WHEN WE DIE?</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>5/31/2015</Date>
-				<NoteUrl>xml/message_5_30_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_5_30_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/YouAskedForIt/YouAskedForIt_Wk4_WhatHappensAfterWeDie.mp3</AudioUrl>
 				<WatchUrl>http://player.vimeo.com/external/129363664.m3u8?p=high,standard,mobile&amp;s=b62d911a7a9523d81e0dcf9e938e8ad2</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17609&amp;item=510</ShareUrl>
@@ -245,7 +245,7 @@
 				<Name>WHAT IS THE TRINITY?</Name>
 				<Speaker>Dr. Mark Moore</Speaker>
 				<Date>5/24/2015</Date>
-				<NoteUrl>xml/message_5_23_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_5_23_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/YouAskedForIt/YouAskedForIt_Wk3_HowCanIUnderstandTheTrinity.mp3</AudioUrl>
 				<WatchUrl>http://player.vimeo.com/external/128730540.m3u8?p=high,standard,mobile&amp;s=6a1eff8afd4d5f7a664e8aee83f379f6</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17609&amp;item=509</ShareUrl>
@@ -254,7 +254,7 @@
 				<Name>WHY DOES GOD ALLOW SUFFERING?</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>5/17/2015</Date>
-				<NoteUrl>xml/message_5_16_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_5_16_2015.xml</NoteUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=508</ShareUrl>
 				<WatchUrl>http://player.vimeo.com/external/128071288.m3u8?p=high,standard,mobile&amp;s=606ddbf7ef9ee33a397e6edcbea8675d</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/YouAskedForIt/You_Asked_For_It_Wk2_Why_Does_God_Allow_Suffering.mp3</AudioUrl>
@@ -263,7 +263,7 @@
 				<Name>ARE ALL FAITHS EQUAL?</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>5/10/2015</Date>
-				<NoteUrl>xml/message_5_9_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_5_9_2015.xml</NoteUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=507</ShareUrl>
 				<WatchUrl>http://player.vimeo.com/external/127414630.m3u8?p=high,standard,mobile&amp;s=ee40c5ad61278752c1be305dacb64802</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/YouAskedForIt/YouAskedForIt_Wk1_AreAllFaithsEqual.mp3</AudioUrl>
@@ -274,8 +274,8 @@
 				Do you have a tough question about life or faith that you just can't seem to find a good answer for? We will take on some of your top questions.
 			</Description>
 			<DateRanges>5/9/2015 - 6/1/2015</DateRanges>
-			<BillboardUrl>images/you_asked_for_it.png</BillboardUrl>
-			<ThumbnailUrl>images/you_asked_for_it_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2015/you_asked_for_it/you_asked_for_it.png</BillboardUrl>
+			<ThumbnailUrl>images/2015/you_asked_for_it/you_asked_for_it_thumb.png</ThumbnailUrl>
 
 		</Series>
 		<!--End Series-->
@@ -286,7 +286,7 @@
 				<Name>RELIGION</Name>
 				<Speaker>Dr. Mark Moore</Speaker>
 				<Date>5/3/2015</Date>
-				<NoteUrl>xml/message_5_2_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_5_2_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Detox/Detox_Wk4_Religion_New.mp3</AudioUrl>
 				<WatchUrl>http://player.vimeo.com/external/126836226.m3u8?p=high,standard,mobile&amp;s=101a4897f5628219e36cb41dca3b7060</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=506</ShareUrl>
@@ -296,7 +296,7 @@
 				<Name>HIDDEN SINS</Name>
 				<Speaker>Ashley Wooldridge</Speaker>
 				<Date>4/26/2015</Date>
-				<NoteUrl>xml/message_4_25_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_4_25_2015.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/126318868.m3u8?p=high,standard,mobile&amp;s=1c40c66636fcc1e3fe19b091e2afe2fc</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Detox/Detox_Wk3_HiddenSins.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=505</ShareUrl>
@@ -306,7 +306,7 @@
 				<Name>COMPARISON</Name>
 				<Speaker>Ashley Wooldridge</Speaker>
 				<Date>4/19/2015</Date>
-				<NoteUrl>xml/message_4_18_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_4_18_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Detox/Detox_Wk2_ComparisonEnvy.mp3</AudioUrl>
 				<WatchUrl>http://player.vimeo.com/external/125484474.m3u8?p=high,standard,mobile&amp;s=23c06443a0ef9f0a668c669f63f8380f</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=504</ShareUrl>
@@ -316,7 +316,7 @@
 				<Name>DOUBT</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>4/12/2015</Date>
-				<NoteUrl>xml/message_4_11_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_4_11_2015.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/124855889.m3u8?p=high,standard,mobile&amp;s=5a20cbfadb3301a1ac8e6d19373c8fbe</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=503</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Detox/Detox_Wk1_Doubt.mp3</AudioUrl>
@@ -327,8 +327,8 @@
 				Detox Description
 			</Description>
 			<DateRanges>4/12/2015 - 5/3/2015</DateRanges>
-			<BillboardUrl>images/detox.png</BillboardUrl>
-			<ThumbnailUrl>images/detox_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2015/detox/detox.png</BillboardUrl>
+			<ThumbnailUrl>images/2015/detox/detox_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 
@@ -347,8 +347,8 @@
 				Easter 2015 at the University of Phoenix Stadium
 			</Description>
 			<DateRanges>4/5/2015</DateRanges>
-			<BillboardUrl>images/easter_2015.png</BillboardUrl>
-			<ThumbnailUrl>images/easter_2015_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2015/easter/easter_2015.png</BillboardUrl>
+			<ThumbnailUrl>images/2015/easter/easter_2015_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 
@@ -358,7 +358,7 @@
 				<Name>CHURCH</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>3/29/2015</Date>
-				<NoteUrl>xml/message_3_28_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_3_28_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Unstoppable/Unstoppable_WK2_Church.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=500</ShareUrl>
 				<WatchUrl>http://player.vimeo.com/external/123553864.m3u8?p=high,standard,mobile&amp;s=e6e99fb3afaf7af70d66e0cf63738cec</WatchUrl>
@@ -368,7 +368,7 @@
 				<Name>CHRISTIAN</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>3/22/2015</Date>
-				<NoteUrl>xml/message_3_21_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_3_21_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Unstoppable/Unstoppable_WK1_Christian_New.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=499</ShareUrl>
 				<WatchUrl>http://player.vimeo.com/external/122988865.m3u8?p=high,standard,mobile&amp;s=77188d6063e76c3e8a26a8fc436a55e4</WatchUrl>
@@ -379,8 +379,8 @@
 				The Message of Jesus Christ is one that has stood the test of time. It has held up to the most extreme criticism and scrutiny over thousands of years. Yet we live in a time where it’s easy to doubt what the future holds. What would happen if Christians and the church fully embraced our mission with confidence? The world we live in would literally be changed. Join us for this series and hear how God wants each and every one of us to play a key role in His UNSTOPPABLE mission.
 			</Description>
 			<DateRanges>3/22/2015 - 3/29/2015</DateRanges>
-			<BillboardUrl>images/unstoppable.png</BillboardUrl>
-			<ThumbnailUrl>images/unstoppable_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2015/unstoppable/unstoppable.png</BillboardUrl>
+			<ThumbnailUrl>images/2015/unstoppable/unstoppable_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 
@@ -390,7 +390,7 @@
 				<Name>INFLUENCE</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>3/15/2015</Date>
-				<NoteUrl>xml/message_3_14_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_3_14_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/LoveDoes/LoveDoes_Wk5_Influence.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=498</ShareUrl>
 				<WatchUrl>http://player.vimeo.com/external/122370059.m3u8?p=high,standard,mobile&amp;s=7f847e5f37855bf632414293eedd7f99</WatchUrl>
@@ -400,7 +400,7 @@
 				<Name>INVITE</Name>
 				<Speaker>Ashley Wooldridge</Speaker>
 				<Date>3/8/2015</Date>
-				<NoteUrl>xml/message_3_7_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_3_7_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/LoveDoes/LoveDoes_Wk4_Invite_NEW.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=497</ShareUrl>
 				<WatchUrl>http://player.vimeo.com/external/121608178.m3u8?p=high,standard,mobile&amp;s=1627f246a010ae7e31ae3991f6fbb923</WatchUrl>
@@ -410,7 +410,7 @@
 				<Name>INVEST</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>3/1/2015</Date>
-				<NoteUrl>xml/message_2_28_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_2_28_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/LoveDoes/LoveDoes_Wk3_Invest.mp3</AudioUrl>
 				<WatchUrl>http://player.vimeo.com/external/120961921.m3u8?p=high,standard,mobile&amp;s=c4b51c720083cd915312d94c81fa7839</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=496</ShareUrl>
@@ -420,7 +420,7 @@
 				<Name>ACCEPT</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>2/22/2015</Date>
-				<NoteUrl>xml/message_2_21_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_2_21_2015.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/LoveDoes/LoveDoes_Wk2_Accept_New.mp3</AudioUrl>
 				<WatchUrl>http://player.vimeo.com/external/120602281.m3u8?p=high,standard,mobile&amp;s=69fc21cb017b9e053d86bcb24ba5e821</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=495</ShareUrl>
@@ -430,7 +430,7 @@
 				<Name>PRAY</Name>
 				<Speaker>Dr. Mark Moore</Speaker>
 				<Date>2/15/2015</Date>
-				<NoteUrl>xml/message_2_14_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_2_14_2015.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/119861057.m3u8?p=high,standard,mobile&amp;s=58b389f68a5c2dac8cd3206803e20efb</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/LoveDoes/LoveDoes_Pray.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=494</ShareUrl>
@@ -441,8 +441,8 @@
 				Loves does lots of things. It causes people young and old to act sacrificially, selflessly, passionately and some would say irrationally. Love does surprising and unexpected things when it transforms your life. Join us as we consider what &quot;Love Does&quot; in and through a local church when it is understood and embraced by the people.
 			</Description>
 			<DateRanges>2/14/2015 - 3/15/2015</DateRanges>
-			<BillboardUrl>images/love_does.png</BillboardUrl>
-			<ThumbnailUrl>images/love_does_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2015/love_does/love_does.png</BillboardUrl>
+			<ThumbnailUrl>images/2015/love_does/love_does_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 
@@ -452,7 +452,7 @@
 				<Name>STATE OF THE CHURCH</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>2/8/2015</Date>
-				<NoteUrl>xml/message_2_7_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_2_7_2015.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/119063101.m3u8?p=high,standard,mobile&amp;s=74c6667e4559303dce5eabc31ca56e14</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/LoveYourNeighbor/StateOfTheChurch.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=493</ShareUrl>
@@ -463,8 +463,8 @@
 				State of the Church 2015
 			</Description>
 			<DateRanges>2/8/2015</DateRanges>
-			<BillboardUrl>images/state_of_church_2015.png</BillboardUrl>
-			<ThumbnailUrl>images/state_of_church_2015_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2015/state_of_church/state_of_church_2015.png</BillboardUrl>
+			<ThumbnailUrl>images/2015/state_of_church/state_of_church_2015_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 
@@ -474,7 +474,7 @@
 				<Name>FAN OR FOLLOWER</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>2/1/2015</Date>
-				<NoteUrl>xml/message_1_31_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_1_31_2015.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/118415552.m3u8?p=high,standard,mobile&amp;s=b565a74f30fc2ee6db55039746840b0c</WatchUrl>
 				<ShareUrl>http://www.ccvonline.com/Arena/default.aspx?page=17529&amp;item=492</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/FanOrFollower/FanOrFollower.mp3</AudioUrl>
@@ -485,8 +485,8 @@
 				Are you a fan of Jesus, or are you a follower of Jesus? Join us as we learn about this critical difference, and why it might matter more than you think.
 			</Description>
 			<DateRanges>2/1/2015</DateRanges>
-			<BillboardUrl>images/fan_or_follower.png</BillboardUrl>
-			<ThumbnailUrl>images/fan_or_follower_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2015/fan_or_follower/fan_or_follower.png</BillboardUrl>
+			<ThumbnailUrl>images/2015/fan_or_follower/fan_or_follower_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 
@@ -496,7 +496,7 @@
 				<Name>FRIENDS</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>1/25/2015</Date>
-				<NoteUrl>xml/message_1_24_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_1_24_2015.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/117838587.m3u8?p=high,standard,mobile&amp;s=b1733ebff4f44f6fc04d5183870db6cb</WatchUrl>
 				<ShareUrl>http://www.ccvonline.com/Arena/default.aspx?page=17529&amp;item=490</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/FreshStart/Fresh_Start_WK4_Friends.mp3</AudioUrl>
@@ -505,7 +505,7 @@
 				<Name>FAMILY</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>1/18/2015</Date>
-				<NoteUrl>xml/message_1_17_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_1_17_2015.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/117281570.m3u8?p=high,standard,mobile&amp;s=c8c7c2c449f105023948851c147972e4</WatchUrl>
 				<ShareUrl>http://www.ccvonline.com/Arena/default.aspx?page=17529&amp;item=489</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/FreshStart/Fresh_Start_WK3_Family.mp3</AudioUrl>
@@ -514,7 +514,7 @@
 				<Name>FINANCES</Name>
 				<Speaker>Dr. Mark Moore</Speaker>
 				<Date>1/11/2015</Date>
-				<NoteUrl>xml/message_1_10_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_1_10_2015.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/116591869.m3u8?p=high,standard,mobile&amp;s=952e71be321b377d2c118b7b795ecdb9</WatchUrl>
 				<ShareUrl>http://www.ccvonline.com/Arena/default.aspx?page=17529&amp;item=488</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/FreshStart/Fresh_Start_WK2_Finances.mp3</AudioUrl>
@@ -524,7 +524,7 @@
 				<Name>FAITH</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>1/4/2015</Date>
-				<NoteUrl>xml/message_1_3_2015.xml</NoteUrl>
+				<NoteUrl>xml/2015/message_1_3_2015.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/115912898.m3u8?p=high,standard,mobile&amp;s=db8e267ab39cd127fc7ec95ae432b554</WatchUrl>
 				<ShareUrl>http://www.ccvonline.com/Arena/default.aspx?page=17529&amp;item=487</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/FreshStart/FreshStart_WK1_Faith.mp3</AudioUrl>
@@ -535,8 +535,8 @@
 				New year’s resolutions center on what we need to change and improve. We often resolve to prioritize our faith, family and friends, take control of our finances and focus on what is really important. But isn’t it easy to find ourselves repeating the same old patterns and routines that we committed to change? Join us as we kick off the new year and discover how to make a Fresh Start that lasts.
 			</Description>
 			<DateRanges>1/4/2015 - 1/25/2015</DateRanges>
-			<BillboardUrl>images/fresh_start.png</BillboardUrl>
-			<ThumbnailUrl>images/fresh_start_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2015/fresh_start/fresh_start.png</BillboardUrl>
+			<ThumbnailUrl>images/2015/fresh_start/fresh_start_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 
@@ -546,7 +546,7 @@
 				<Name>PAUL TO THE PHOENICIANS</Name>
 				<Speaker>Dr. Mark Moore</Speaker>
 				<Date>12/28/2014</Date>
-				<NoteUrl>xml/message_12_27_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_12_27_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/115523982.m3u8?p=high,standard,mobile&amp;s=77b710e3d1334bf3e9227666ce1f4ae8</WatchUrl>
 				<ShareUrl>http://www.ccvonline.com/Arena/default.aspx?page=17529&amp;item=486</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/PaulToThePhoenicians/Paul_To_The_Phoenicians.mp3</AudioUrl>
@@ -557,8 +557,8 @@
 				As we close out 2014, you&apos;ve probably noticed the news stations recapping major stories from this past year. How can we look at these stories through the lens of God&apos;s word? If the Apostle Paul were writing a letter to us, as he did with the Colossians, Philippians and Thessalonians, what would he have to say?
 			</Description>
 			<DateRanges>12/28/2014</DateRanges>
-			<BillboardUrl>images/paul_to_phoenicians.png</BillboardUrl>
-			<ThumbnailUrl>images/paul_to_phoenicians_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2014/paul_to_phoenicians/paul_to_phoenicians.png</BillboardUrl>
+			<ThumbnailUrl>images/2014/paul_to_phoenicians/paul_to_phoenicians_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 
@@ -577,8 +577,8 @@
 				The 2014 Christmas Eve service at Christ's Church of the Valley.
 			</Description>
 			<DateRanges>12/24/2014</DateRanges>
-			<BillboardUrl>images/christmas_2014.png</BillboardUrl>
-			<ThumbnailUrl>images/christmas_2014_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2014/christmas/christmas_2014.png</BillboardUrl>
+			<ThumbnailUrl>images/2014/christmas/christmas_2014_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 
@@ -588,7 +588,7 @@
 				<Name>MAKE ROOM FOR GIVING</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>12/21/2014</Date>
-				<NoteUrl>xml/message_12_20_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_12_20_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/115115130.m3u8?p=high,standard,mobile&amp;s=c0ca3976224569f67d5a82ac67a71074</WatchUrl>
 				<ShareUrl>http://www.ccvonline.com/Arena/default.aspx?page=17529&amp;item=484</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Uncluttered/Uncluttered_WK3_Make_Room_For_Giving.mp3</AudioUrl>
@@ -598,7 +598,7 @@
 				<Name>MAKE ROOM FOR RELATIONSHIPS</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>12/14/2014</Date>
-				<NoteUrl>xml/message_12_13_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_12_13_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/114482297.m3u8?p=high,standard,mobile&amp;s=00d86cfe8ba5dfba5609172fdf0555cc</WatchUrl>
 				<ShareUrl>http://www.ccvonline.com/Arena/default.aspx?page=17529&amp;item=483</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Uncluttered/Uncluttered_WK2_MakeRoomForRelationships.mp3</AudioUrl>
@@ -608,7 +608,7 @@
 				<Name>MAKE ROOM FOR SERVING</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>12/7/2014</Date>
-				<NoteUrl>xml/message_12_6_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_12_6_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/113873526.m3u8?p=high,standard,mobile&amp;s=595bdf7b301a5e29ae48bdad98f0fd70</WatchUrl>
 				<ShareUrl>http://www.ccvonline.com/Arena/default.aspx?page=17529&amp;item=482</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Uncluttered/Uncluttered_WK1_Make_Room_For_Serving.mp3</AudioUrl>
@@ -619,8 +619,8 @@
 				Does the Christmas season have you feeling exhausted? It is easy to become so caught up in the festivities that sometimes we lose the real reason for the celebration. This December we'll discover what an "Uncluttered" Christmas looks like. Invite a friend to join you as we make room for the most important part of the Christmas season, Jesus Christ.
 			</Description>
 			<DateRanges>12/7/2014 - 12/31/2014</DateRanges>
-			<BillboardUrl>images/uncluttered.png</BillboardUrl>
-			<ThumbnailUrl>images/uncluttered_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2014/uncluttered/uncluttered.png</BillboardUrl>
+			<ThumbnailUrl>images/2014/uncluttered/uncluttered_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 
@@ -630,7 +630,7 @@
 				<Name>FOR OUR CULTURE</Name>
 				<Speaker>John Stonestreet</Speaker>
 				<Date>11/30/2014</Date>
-				<NoteUrl>xml/message_11_29_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_11_29_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/113338811.m3u8?p=high,standard,mobile&amp;s=29aec2037f545e21dee13b067c0752bb</WatchUrl>
 				<ShareUrl>http://www.ccvonline.com/Arena/default.aspx?page=17529&amp;item=481</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/ThereIsHope/ThereIsHope_WK5_HopeForOurCulture.mp3</AudioUrl>
@@ -639,7 +639,7 @@
 				<Name>FOR YOUR FINANCES</Name>
 				<Speaker>Dave Ramsey</Speaker>
 				<Date>11/23/2014</Date>
-				<NoteUrl>xml/message_11_22_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_11_22_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/112712667.m3u8?p=high,standard,mobile&amp;s=cdfa965739fed7f1cab1601a8fce1a78</WatchUrl>
 				<ShareUrl>http://www.ccvonline.com/Arena/default.aspx?page=17529&amp;item=480</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/ThereIsHope/There_Is_Hope_WK4_Hope_For_Your_Finances.mp3</AudioUrl>
@@ -648,7 +648,7 @@
 				<Name>FOR YOUR WORKPLACE</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>11/16/2014</Date>
-				<NoteUrl>xml/message_11_15_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_11_15_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/112065685.m3u8?p=high,standard,mobile&amp;s=fe6376dc9d3881f989648737cf592ef3</WatchUrl>
 				<ShareUrl>http://www.ccvonline.com/Arena/default.aspx?page=17529&amp;item=479</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/ThereIsHope/There_Is_Hope_WK3_Hope_For_Your_Workplace.mp3</AudioUrl>
@@ -657,7 +657,7 @@
 				<Name>MARRIAGE</Name>
 				<Speaker>Dr. Shaunti Feldhahn</Speaker>
 				<Date>11/9/2014</Date>
-				<NoteUrl>xml/message_11_8_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_11_8_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/111342574.m3u8?p=high,standard,mobile&amp;s=0a5e0dbcb44d80e60baa53b16c3e845e</WatchUrl>
 				<ShareUrl>http://www.ccvonline.com/Arena/default.aspx?page=17529&amp;item=478</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/ThereIsHope/ThereIsHope_WK2_HopeForYourMarriage.mp3</AudioUrl>
@@ -666,7 +666,7 @@
 				<Name>FAMILY</Name>
 				<Speaker>Dr. Kevin Leman</Speaker>
 				<Date>11/2/2014</Date>
-				<NoteUrl>xml/message_11_1_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_11_1_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/110803854.m3u8?p=high,standard,mobile&amp;s=710549d248d633dc466f777cc4a2d42b</WatchUrl>
 				<ShareUrl>http://www.ccvonline.com/Arena/default.aspx?page=17529&amp;item=477</ShareUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/ThereIsHope/ThereIsHope_WK1_HopeForYourFamilySermon.mp3</AudioUrl>
@@ -677,8 +677,8 @@
 			<Description>
 				Hope is a powerful thing. In this series we will be studying how the Bible says we can gain HOPE for our marriages, families, finances, workplaces and culture. Join us as we learn from some of the leading experts in the country and discover There Is Hope.
 			</Description>
-			<BillboardUrl>images/there_is_hope.png</BillboardUrl>
-			<ThumbnailUrl>images/there_is_hope_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2014/there_is_hope/there_is_hope.png</BillboardUrl>
+			<ThumbnailUrl>images/2014/there_is_hope/there_is_hope_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 
@@ -688,7 +688,7 @@
 				<Name>HONESTY</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>10/26/2014</Date>
-				<NoteUrl>xml/message_10_25_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_10_25_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/110150296.m3u8?p=high,standard,mobile&amp;s=2a58d2404936be3a2358a53ce1dda48c</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Wisdom/Wisdom_WK8_SpeakingTruthHonesty.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=476</ShareUrl>
@@ -698,7 +698,7 @@
 				<Name>LAZINESS</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>10/19/2014</Date>
-				<NoteUrl>xml/message_10_18_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_10_18_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/109377228.m3u8?p=high,standard,mobile&amp;s=326cbe8841cdea2bf134bc3f733e8e45</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Wisdom/Wisdom_WK7_Lazyness_Taking_Initiative.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=475</ShareUrl>
@@ -708,7 +708,7 @@
 				<Name>CONFLICT</Name>
 				<Speaker>Dr. Don &amp; Sue Wilson</Speaker>
 				<Date>10/12/2014</Date>
-				<NoteUrl>xml/message_10_11_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_10_11_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/108744882.m3u8?p=high,standard,mobile&amp;s=8e34de4873d2258550c1367f174c2c6b</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Wisdom/Wisdom_WK6_Conflict.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=474</ShareUrl>
@@ -718,7 +718,7 @@
 				<Name>SOUL</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>10/5/2014</Date>
-				<NoteUrl>xml/message_10_4_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_10_4_2014.xml</NoteUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Wisdom/Wisdom_WK5_Soul.mp3</AudioUrl>
 				<WatchUrl>http://player.vimeo.com/external/108133114.m3u8?p=high,standard,mobile&amp;s=ac35ce787137398450f30809522d74f5</WatchUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=473</ShareUrl>
@@ -728,7 +728,7 @@
 				<Name>PRIDE</Name>
 				<Speaker>Dr. Mark Moore</Speaker>
 				<Date>9/28/2014</Date>
-				<NoteUrl>xml/message_9_27_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_9_27_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/107767528.m3u8?p=high,standard,mobile&amp;s=91461a3e46627b8212ae39605f51377f</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Wisdom/Wisdom_WK4_Pride.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=472</ShareUrl>
@@ -738,7 +738,7 @@
 				<Name>ANGER</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>9/21/2014</Date>
-				<NoteUrl>xml/message_9_20_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_9_20_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/106738802.m3u8?p=high,standard,mobile&amp;s=cdce5b8ff22a0fa6964d6cc7d1deb40d</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Wisdom/Wisdom_WK3_Anger.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=471</ShareUrl>
@@ -748,7 +748,7 @@
 				<Name>GETTING DIRECTIONS</Name>
 				<Speaker>Ashley Wooldridge</Speaker>
 				<Date>9/14/2014</Date>
-				<NoteUrl>xml/message_9_13_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_9_13_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/106189969.m3u8?p=high,standard,mobile&amp;s=fd8605ffefc0220498c817e5dfa8176d</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Wisdom/Wisdom_WK2_GettingDirections.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=470</ShareUrl>
@@ -758,7 +758,7 @@
 				<Name>GET WISDOM</Name>
 				<Speaker>Todd Clark</Speaker>
 				<Date>9/7/2014</Date>
-				<NoteUrl>xml/message_9_6_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_9_6_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/105602163.m3u8?p=high,standard,mobile&amp;s=15b75063ee27bd391e13deb5139d9a76</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/Wisdom/14090618_Wisdom_WK1_Get_Wisdom_An-Introduction_to_Proverbs.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=469</ShareUrl>
@@ -769,8 +769,8 @@
 			<Description>
 				Each day we make decisions and each decision often has many options that are morally permissible. It&apos;s not so much which is the &quot;right&quot; choice, it&apos;s which is the &quot;wise&quot; choice. Wisdom goes beyond right and wrong, and illuminates which choice is best based on the complex realities of life. So join us as we seek and gain wisdom that will benefit every area of our lives.
 			</Description>
-			<BillboardUrl>images/wisdom.png</BillboardUrl>
-			<ThumbnailUrl>images/wisdom_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2014/wisdom/wisdom.png</BillboardUrl>
+			<ThumbnailUrl>images/2014/wisdom/wisdom_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 
@@ -780,7 +780,7 @@
 				<Name>WHEN LIFE SPINS OUT OF CONTROL</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>8/31/2014</Date>
-				<NoteUrl>xml/message_8_31_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_8_31_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/104860435.m3u8?p=high,standard,mobile&amp;s=b2f06d32c18f54c306478f289078f4c2</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/LivingOnTheEdge/LivingOnTheEdge_wk5_Worry_WhenLifeSpinsOutOfControl.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=468</ShareUrl>
@@ -790,7 +790,7 @@
 				<Name>WHEN LIFE NEEDS CHANGE</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>8/24/2014</Date>
-				<NoteUrl>xml/message_8_24_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_8_24_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/104337503.m3u8?p=high,standard,mobile&amp;s=3c6ad520722f1597a1e61a2f074dad5c</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/LivingOnTheEdge/LivingOnTheEdge_WK4_ChangeWhenLifeNeedstoChange.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=467</ShareUrl>
@@ -800,7 +800,7 @@
 				<Name>WHEN LIFE IS OUT OF BALANCE</Name>
 				<Speaker>Dr. Don Wilson</Speaker>
 				<Date>8/17/2014</Date>
-				<NoteUrl>xml/message_8_17_2014.xml</NoteUrl>
+				<NoteUrl>xml/2014/message_8_17_2014.xml</NoteUrl>
 				<WatchUrl>http://player.vimeo.com/external/103646977.m3u8?p=high,standard,mobile&amp;s=8cd1b5594ddfc7fbb16d994dea7ee63b</WatchUrl>
 				<AudioUrl>http://podcasts.ccvonline.com.s3.amazonaws.com/contemporaryaudio/LivingOnTheEdge/LivingOnTheEdge_WK3_Priorities_WhenLifeIsOutOfControl.mp3</AudioUrl>
 				<ShareUrl>http://ccv.church/Arena/default.aspx?page=17529&amp;item=466</ShareUrl>
@@ -811,8 +811,8 @@
 				Do you ever feel like you are living life right on the edge? The stress associated with maintaining healthy friendships, family, marriages, and career can seem overwhelming at times. In this new series we will discover how to move away from the edge and gain greater margin and balance in our everyday lives.
 			</Description>
 			<DateRanges>8/3/2014 - 8/31/2014</DateRanges>
-			<BillboardUrl>images/living_on_the_edge.png</BillboardUrl>
-			<ThumbnailUrl>images/living_on_the_edge_thumb.png</ThumbnailUrl>
+			<BillboardUrl>images/2014/living_on_the_edge/living_on_the_edge.png</BillboardUrl>
+			<ThumbnailUrl>images/2014/living_on_the_edge/living_on_the_edge_thumb.png</ThumbnailUrl>
 		</Series>
 		<!--End Series-->
 
