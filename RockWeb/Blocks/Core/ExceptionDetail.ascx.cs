@@ -185,6 +185,10 @@ namespace RockWeb.Blocks.Core
 
             lCookies.Text = baseException.Cookies;
             lServerVariables.Text = baseException.ServerVariables;
+            lFormData.Text = baseException.Form;
+            btnShowCookies.Visible = !string.IsNullOrWhiteSpace( baseException.Cookies );
+            btnShowVariables.Visible = !string.IsNullOrWhiteSpace( baseException.ServerVariables );
+            btnShowFormData.Visible = !string.IsNullOrWhiteSpace( baseException.Form );
 
             rptExcpetionDetails.DataSource = GetExceptionLogs( baseException ).OrderBy( e => e.Id );
             rptExcpetionDetails.DataBind();
