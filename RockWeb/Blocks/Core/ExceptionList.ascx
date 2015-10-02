@@ -85,8 +85,8 @@
                 <div class="grid margin-t-md">
                     <Rock:Grid ID="gExceptionOccurrences" runat="server" AllowSorting="true">
                         <Columns>
-                            <Rock:DateField DataField="CreatedDateTime" HeaderText="Date" SortExpression="CreatedDateTime" />
-                            <Rock:TimeField DataField="CreatedDateTime" HeaderText="Time" SortExpression="CreatedDateTime" />
+                            <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="Date/Time" SortExpression="CreatedDateTime" />
+                            <Rock:RockBoundField DataField="PageName" HeaderText="Page/URL" SortExpression="PageName" />
                             <Rock:RockBoundField DataField="FullName" HeaderText="Logged In User" SortExpression="FullName" />
                             <Rock:RockBoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
                         </Columns>
