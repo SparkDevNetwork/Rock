@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Note StyleSheet="xml/default_style.xml">    
     <Header MarginBottom="5%">
-        <Title>#WISDOM - ANGER</Title>
+        <Title>ANGER</Title>
         <Speaker>Todd Clark</Speaker>
         <Date>September 20 &amp; 21, 2014</Date>
     </Header>
 
-    <List Indentation="0%" BulletPoint="⚓︎">
+    <List>
     	<ListItem>
 			<Quote MarginBottom="0%" Citation="Proverbs 20:2 (MSG)"></Quote>
 		</ListItem>
@@ -50,7 +50,7 @@
 		</ListItem>
 	</List>
 
-	<List MarginTop="5%" Indentation="0%" BulletPoint="☂">
+	<List MarginTop="5%">
 		<ListItem>
 			<Quote Citation="Ephesians 4:27"></Quote>
 		</ListItem>
@@ -60,7 +60,7 @@
 		</ListItem>
 	</List>
 
-	<List BorderWidth="1" BorderRadius="4" BorderColor="#777777FF" BulletPoint="✈">
+	<List BorderWidth="1" BorderRadius="4" BorderColor="#777777FF">
 		<ListItem>
 			<Paragraph>Identify <RevealBox>WHO</RevealBox> has made you angry.</Paragraph>
 		</ListItem>
@@ -74,5 +74,6 @@
 		</ListItem>
 	</List>
 
-	<Paragraph MarginTop="5%" >TAKE AWAY: <TextInput PlaceHolder="Takeaway"></TextInput></Paragraph>
+	<Paragraph MarginTop="5%" >TAKE AWAY:</Paragraph> 
+	<TextInput PlaceHolder="Takeaway"></TextInput>
 </Note>
