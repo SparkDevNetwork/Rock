@@ -24,7 +24,7 @@
               {% assign showItem = true %}
             {% else %}
               {% for itemCampus in itemCampuses %}
-                {% if itemCampus == ContextObjects.Campus.Name %}
+                {% if itemCampus == Context.Campus.Name %}
                   {% assign showItem = true %}
                 {% endif %}
               {% endfor %}
@@ -58,7 +58,7 @@
             {% assign showItem = true %}
           {% else %}
             {% for itemCampus in itemCampuses %}
-              {% if itemCampus == ContextObjects.Campus.Name %}
+              {% if itemCampus == Context.Campus.Name %}
                 {% assign showItem = true %}
               {% endif %}
             {% endfor %}
