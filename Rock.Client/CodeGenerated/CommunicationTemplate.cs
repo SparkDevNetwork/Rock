@@ -50,7 +50,7 @@ namespace Rock.Client
         public int? MediumEntityTypeId { get; set; }
 
         /// <summary>
-        /// If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true
+        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
@@ -69,7 +69,7 @@ namespace Rock.Client
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
         /// </summary>
         public DateTime? ModifiedDateTime { get; set; }
 
