@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Note Padding="5%" StyleSheet="xml/default_style.xml">
+
+    <Header>
+        <Title>PRIORITIES</Title>
+        <Speaker>Dr. Mark Moore</Speaker>
+        <Date>July 4th &amp; 5th, 2015</Date>
+    </Header>
+    
+    <Q Citation="David F. Jakielo" Url="http://www.goodreads.com/author/quotes/5447895.David_F_Jakielo" ChildAlignment="Center">
+        The most important thing in life is knowing the most important things in life.
+    </Q>
+    
+    <P MarginTop="5%" FontName="OpenSans-Bold">Change the Question:</P>
+    <P MarginTop="2%"><RB>WHEN</RB> is Jesus <RB>RETURNING?</RB></P>
+    <P MarginTop="2%"><RB>WHO</RB> is this Jesus who is <RB>REIGNING?</RB></P>
+    
+    
+    <P MarginTop="10%" FontName="OpenSans-Bold">How Priorities get Derailed:</P>
+    
+    <P><RB>PRIDE</RB> - We do good things with the wrong motives.</P>
+    <Q Citation="Revelation 2:4-5" Url="https://www.bible.com/bible/111/rev.2.niv">
+        4 Yet I hold this against you: You have forsaken the love you had at first. 
+        5 Consider how far you have fallen! Repent and do the things you did at first. 
+        If you do not repent, I will come to you and remove your lampstand from its place.
+    </Q>
+    <P>Solution: <RB>REMEMBER</RB></P>
+    
+    
+    <P MarginTop="15%"><RB>TOLERANCE</RB> - We do good things publicly and wrong things privately.</P>
+    <Q Citation="Revelation 2:14-15" Url="https://www.bible.com/bible/111/rev.2.niv">
+        14 Nevertheless, I have a few things against you: There are some among you who hold to the teaching of Balaam, 
+        who taught Balak to entice the Israelites to sin so that they ate food sacrificed to idols and committed sexual immorality. 
+        15 Likewise, you also have those who hold to the teaching of the Nicolaitans.
+    </Q>
+    <P>Solution: <RB>REPENT</RB></P>
+    
+    
+    <P MarginTop="15%"><RB>INDEPENDENCE</RB> - We do the wrong things with good motives.</P>
+    <Q Citation="Revelation 3:15-16" Url="https://www.bible.com/bible/111/rev.3.niv">
+        15 I know your deeds, that you are neither cold nor hot. I wish you were either one or the other! 
+        16 So, because you are lukewarm—neither hot nor cold—I am about to spit you out of my mouth.
+    </Q>
+    <P>Solution: <RB>RELEASE</RB></P>
+    
+    
+    <P MarginTop="15%">TAKE AWAY:</P>
+    <TextInput Height="200">Text</TextInput>
+</Note>
