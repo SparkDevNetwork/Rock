@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Note StyleSheet="xml/default_style.xml">    
+    <Header>
+        <Title>Living On The Edge: When Life Is Out Of Balance</Title>
+        <Speaker>Dr. Don Wilson</Speaker>
+        <Date>August 16 &amp; 17, 2014</Date>
+    </Header>
+    
+    <Quote Citation="Psalm 37:1-7">
+        Do not fret because of evil men or be envious of those who do wrong; for like grass they
+        will soon wither, like green plants they will soon die away. Trust in the Lord and do good;
+        dwell in the land and enjoy safe pasture. Delight yourself in the Lord and he will give you the desires of your heart.
+        Commit your way to the Lord; trust in him and he will do this: He will make your righteousness shine like the dawn,
+        the justice of your cause like the noonday sun. Be still before the Lord and wait patiently for him...</Quote>
+    
+    <List MarginTop="5%" Type="Numbered">  
+        <ListItem>
+            <Paragraph>Commitment gives<RevealBox>STABILITY</RevealBox>to life.</Paragraph>
+            
+            <List Type="Bullet">
+                <ListItem>
+                    <Paragraph>Your commitments reflect your <RevealBox>VALUES.</RevealBox></Paragraph>
+                </ListItem>
+            </List>
+            <Quote Citation="Matthew 6:33">
+                Seek first his kingdom and his rightesouness, and all these things will be given to you as well.
+            </Quote>
+        </ListItem>
+        
+        <ListItem>
+            <Paragraph>Trust gives<RevealBox>PEACE</RevealBox>to life.</Paragraph>
+            
+            <List Type="Bullet">
+                <ListItem>
+                    <Paragraph>Release things to God palms <RevealBox>DOWN</RevealBox></Paragraph>
+                </ListItem>
+            </List>
+            <Quote Citation="Proverbs 3:5-6">
+                Trust in the Lord with all your heart and lean not on your own understanding; in all your ways acknowledge him and he will make your paths straight.
+            </Quote>
+        </ListItem>
+        
+        <ListItem>
+            <Paragraph>Delight gives<RevealBox>MOMENTUM</RevealBox>to life.</Paragraph>
+            
+            <Quote Citation="Luke 24:50-52">
+                When he had led them out to the vicinity of Bethany, he lifted up his hands and blessed them. While he was belssing themn,
+                he left them and was tken up into heaven. Then they worshiped him and returned to Jerusalem with great joy.
+            </Quote>
+        </ListItem>
+        
+        
+        <ListItem>
+            <Paragraph>Rest gives<RevealBox>PERSPECTIVE</RevealBox>to life.</Paragraph>
+            
+            <List Type="Bullet">
+                <ListItem>
+                    <Paragraph>God answers our prayers with a <RevealBox>YES, </RevealBox> <RevealBox>NO,</RevealBox> or <RevealBox>WAIT.</RevealBox></Paragraph>
+                </ListItem>
+            </List>
+            <Quote Citation="Psalm 40:1-2">
+                I waited patiently for the Lord; he turned to me and heard my cry. He lifted me out of the slimy pit, out of the mud and mire; he set my feet on a rock and gave me a firm place to stand.
+            </Quote>
+        </ListItem>
+    </List>
+    
+
+    <Paragraph>
+        TAKE AWAY: What is one change you need to make so that <RevealBox>GOD</RevealBox> is your <RevealBox>TOP</RevealBox> priority?          
+    </Paragraph>
+    
+    <TextInput PlaceHolder="Enter takeaway"/>
+</Note>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Note StyleSheet="xml/default_style.xml">    
+    <Header MarginBottom="5%">
+        <Title>Make Room For Relationships</Title>
+        <Speaker>Dr. Don Wilson</Speaker>
+        <Date>Dec 13th &amp; 14th, 2014</Date>
+    </Header>
+
+
+    <List Type="Numbered">
+    	<ListItem>
+    		<P MarginBottom="2%">Be <RB>FOCUSED</RB></P>
+    		<P Url="https://www.bible.com/bible/97/luk.1.26-38.msg">Mary&apos;s perspective: Luke 1:26-38</P>
+			<Quote Url="https://www.bible.com/bible/97/mat.6.33.msg" Citation="Matthew 6:33">
+				But seek first his kingdom and his righteousness, and all these things will be given to you as well.
+			</Quote>
+
+			<P MarginLeft="10%">Prioritize: <RB>MAXIMIZE</RB></P>
+		</ListItem>
+
+		<ListItem>
+    		<P MarginBottom="2%">Be <RB>FORGIVING</RB></P>
+    		<P Url="https://www.bible.com/bible/97/mat.1.18-25.msg">Joseph&apos;s perspective: Matthew 1:18-25</P>
+			<Quote Citation="Ephesians 4:31-32" Url="https://www.bible.com/bible/97/eph.4.31-32.msg">
+				Get rid of all bitterness, rage and anger, brawling and slander, along with every form of malice. Be kind and compassionate to one another, forgiving each other, just as Christ God forgave you.
+			</Quote>
+
+			<P MarginLeft="10%">Release: <RB>REBUILD</RB></P>
+		</ListItem>
+
+		<ListItem>
+    		<P MarginBottom="2%">Be <RB>FLEXIBLE</RB></P>
+    		<P Url="https://www.bible.com/bible/97/luk.2.1-7.msg">Family&apos;s perspective: Luke 2:1-7</P>
+			<Quote Citation="Proverbs 3:5-6" Url="https://www.bible.com/bible/97/pro.3.5-6.msg">
+				Trust in the Lord with all your heart and lean not on your own understanding; in all your ways acknowledge him, and he will make your paths straight.
+			</Quote>
+
+			<P MarginLeft="10%"> Adjust: <RB>TRUST</RB></P>
+		</ListItem>
+	</List>
+
+	<P>Takeaway: Make a <RB>MEMORY</RB></P>
+
+</Note>

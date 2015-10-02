@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Note StyleSheet="xml/default_style.xml">    
+    <Header>
+        <Title>ACCEPT</Title>
+        <Speaker>Todd Clark</Speaker>
+        <Date>February 21st &amp; 22nd, 2015</Date>
+    </Header>
+
+    <Paragraph MarginBottom="2%"><RevealBox>ACCEPTANCE</RevealBox> does not equal <RevealBox>APPROVAL</RevealBox></Paragraph>
+
+    <Quote Citation="John 8:1-11" Url="https://www.bible.com/bible/111/jhn.8.niv">Jesus went to the Mount of Olives. At dawn he appeared again in the temple courts, where all the people gathered around him, and he sat down to teach them. The teachers of the law and the Pharisees brought in a woman caught in adultery. They made her stand before the group and said to Jesus, &quot;Teacher, this woman was caught in the act of adultery. In the Law Moses commanded us to stone such women. Now what do you say?&quot; They were using this question as a trap, in order to have a basis for accusing him. But Jesus bent down and started to write on the ground with his finger. When they kept on questioning him, he straightened up and said to them, &quot;Let any one of you who is without sin be the first to throw a stone at her.&quot; Again he stooped down and wrote on the ground. &quot;At this, those who heard began to go away one at a time, the older ones first, until only Jesus was left, with the woman still standing there. Jesus straightened up and asked her, &quot;Woman, where are they? Has no one condemned you?&quot; &quot;No one, sir.&quot; she said. &quot;Then neither do I condemn you.&quot; Jesus declared. &quot;Go now and leave your life of sin.&quot;</Quote>
+
+    <Quote Citation="Matthew 5:27-30" Url="https://www.bible.com/bible/111/mat.5.niv">&quot;You have heard that it was said, &apos;You shall not commit adultery.&apos; But I tell you that anyone who looks at a woman lustfully has already committed adultery with her in his heart. If your right eye causes you to stumble, gouge it out and throw it away. It is better for you to lose one part of your body than for your whole body to be thrown into hell. And if your right hand causes you to stumble, cut it off and throw it away. It is better for you to lose one part of your body than for your whole body to go into hell.</Quote>
+
+    <List Type="Numbered">
+    	<ListItem>
+			<Paragraph MarginBottom="2%">Jesus was not put off by her <RB>PAST</RB></Paragraph>
+
+            <Paragraph MarginTop="5%">Your <RB>PAST</RB> does not have to determine your <RB>FUTURE</RB></Paragraph>
+
+            <Quote Citation="John 3:16-17" Url="https://www.bible.com/bible/111/jhn.3.niv">For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life. 17For God did not send his Son into the world to condemn the world, but to save the world through him.</Quote>
+
+            <Quote Citation="2 Corinthians 5:17" Url="https://www.bible.com/bible/111/2co.5.11-21.niv">Therefore, if anyone is in Christ, the new creation has come: The old has gone, the new is here!</Quote>
+
+		</ListItem>
+
+		<ListItem>
+    		<Paragraph MarginBottom="2%">Jesus was not <RevealBox>INTIMIDATED</RevealBox> by the crowds.</Paragraph>
+		</ListItem>
+
+        <ListItem>
+            <Paragraph MarginBottom="2%">Jesus <RevealBox>ACCEPTED</RevealBox> her but did not <RB>APPROVE</RB> of her sin.</Paragraph>
+        </ListItem>
+	</List>
+
+</Note>

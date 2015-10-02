@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Note StyleSheet="xml/default_style.xml">    
+    <Header MarginBottom="5%">
+        <Title>#WISDOM - ANGER</Title>
+        <Speaker>Todd Clark</Speaker>
+        <Date>September 20 &amp; 21, 2014</Date>
+    </Header>
+
+    <List Indentation="0%" BulletPoint="⚓︎">
+    	<ListItem>
+			<Quote MarginBottom="0%" Citation="Proverbs 20:2 (MSG)"></Quote>
+		</ListItem>
+		
+		<ListItem>
+			<Quote MarginBottom="0%" Citation="Proverbs 22:24 (NIV)"></Quote>
+		</ListItem>
+		
+		<ListItem>
+			<Quote MarginBottom="0%" Citation="Proverbs 29:11 (GNT)"></Quote>
+		</ListItem>
+
+		<ListItem>
+			<Quote MarginBottom="0%" Citation="Proverbs 14:29 (MSG)"></Quote>
+		</ListItem>
+	</List>
+
+	<List BorderWidth="1" BorderRadius="4" BorderColor="#777777FF">
+		<ListItem>
+			<Paragraph MarginBottom="2%">
+				It is not a sin to get <RevealBox>ANGRY.</RevealBox> 
+			</Paragraph>
+			
+			<Quote MarginBottom="2%" Citation="Ephesians 4:26a"></Quote>
+
+			<Paragraph MarginBottom="5%" MarginLeft="10%">
+					Anger is a <RevealBox>NEUTRAL</RevealBox> emotion.
+			</Paragraph>
+		</ListItem>
+
+		<ListItem>
+			<Paragraph MarginBottom="2%">
+				It is a sin to <RevealBox>STAY</RevealBox> angry.
+			</Paragraph>
+			
+			<Quote MarginBottom="2%" Citation="Ephesians 4:26b"></Quote>
+
+			<Paragraph MarginLeft="10%">
+					Anger is a <RevealBox>SECONDARY</RevealBox> emotion.
+			</Paragraph>
+		</ListItem>
+	</List>
+
+	<List MarginTop="5%" Indentation="0%" BulletPoint="☂">
+		<ListItem>
+			<Quote Citation="Ephesians 4:27"></Quote>
+		</ListItem>
+
+		<ListItem>
+			<Quote Citation="Ephesians 4:32"></Quote>
+		</ListItem>
+	</List>
+
+	<List BorderWidth="1" BorderRadius="4" BorderColor="#777777FF" BulletPoint="✈">
+		<ListItem>
+			<Paragraph>Identify <RevealBox>WHO</RevealBox> has made you angry.</Paragraph>
+		</ListItem>
+		
+		<ListItem>
+			<Paragraph>Identify <RevealBox>WHAT</RevealBox> was taken from you.</Paragraph>
+		</ListItem>
+
+		<ListItem>
+			<Paragraph>Decide to <RevealBox>FORGIVE</RevealBox> that person.</Paragraph>
+		</ListItem>
+	</List>
+
+	<Paragraph MarginTop="5%" >TAKE AWAY: <TextInput PlaceHolder="Takeaway"></TextInput></Paragraph>
+</Note>

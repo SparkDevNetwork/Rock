@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Note Padding="5%" StyleSheet="xml/default_style.xml">
+
+    <Header>
+        <Title>A MAN WHO RAN</Title>
+        <Speaker>Todd Clark</Speaker>
+        <Date>June 6th &amp; 7th, 2015</Date>
+    </Header>
+    
+    
+    <Q Citation="Jonah 1" Url="https://www.bible.com/bible/111/jon.1" ChildAlignment="Center">The word of the Lord came to Jonah son of Amittai: 
+        &quot;Go to the great city of Nineveh and preach against it, because its wickedness has come up before me.&quot;
+        	But Jonah ran away from the Lord and headed for Tarshish. He went down to Joppa, where he found a ship bound for that port. 
+        After paying the fare, he went aboard and sailed for Tarshish to flee from the Lord.
+    </Q>
+     
+    <P MarginTop="10%">We run to <RB>ODD</RB> and <RB>UNSAFE</RB> places.</P>
+     
+    <P MarginTop="10%" Url="http://en.wikipedia.org/wiki/Nineveh">Tap to learn about:</P>
+    <P Url="http://en.wikipedia.org/wiki/Nineveh" FontName="OpenSans-Bold">Nineveh</P>
+     
+    <P MarginTop="10%" Url="http://en.wikipedia.org/wiki/Tarshish">Tap to learn about:</P>
+    <P Url="http://en.wikipedia.org/wiki/Tarshish" FontName="OpenSans-Bold">Tarshish</P>
+     
+    <P MarginTop="10%">Live begins to <RB>UNRAVEL.</RB></P>
+         
+    <P MarginTop="10%">We stop <RB>HEARING</RB> God&apos;s voice.</P>
+         
+    <P MarginTop="10%">We start to confuse <RB>OPPORTUNITY</RB> with God&apos;s blessing.</P>
+         
+    <P MarginTop="10%">God gets involved in our lives not to <RB>PAY</RB> us back, but to <RB>BRING</RB> us back.</P>
+         
+    <P MarginTop="10%">He doesn&apos;t <RB>CHASE</RB> you.</P>
+         
+    <P MarginTop="10%">He goes ahead and <RB>WAITS</RB> for you.</P>
+         
+    <P MarginTop="10%" FontName="OpenSans-Bold">TAKE AWAY:</P>
+          
+    <TextInput Height="200">Text</TextInput>
+</Note>

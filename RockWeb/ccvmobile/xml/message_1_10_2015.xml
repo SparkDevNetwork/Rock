@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Note StyleSheet="xml/default_style.xml">    
+    <Header MarginBottom="5%">
+        <Title>FINANCES</Title>
+        <Speaker>Dr. Mark Moore</Speaker>
+        <Date>Jan 10th &amp; 11th, 2015</Date>
+    </Header>
+
+    <Paragraph MarginBottom="5%">Rules for <RevealBox>WEALTH</RevealBox></Paragraph>
+
+    <List Type="Bullet">
+    	<ListItem>
+    		<Paragraph>Anticipation - Delayed <RevealBox>GRATIFICATION</RevealBox></Paragraph>
+    	</ListItem>
+
+    	<ListItem>
+    		<Paragraph>Buy for <RevealBox>FUNCTION</RevealBox> not <RevealBox>REPUTATION</RevealBox></Paragraph>
+    	</ListItem>
+
+    	<ListItem>
+    		<Paragraph>Cash is <RevealBox>KING</RevealBox></Paragraph>
+    	</ListItem>
+    </List>
+
+    <Paragraph>Relationships for <RevealBox>LIFE</RevealBox></Paragraph>
+
+    
+	<Paragraph MarginTop="5%">Save <RevealBox>10%</RevealBox> for <RevealBox>SECURITY.</RevealBox> When we trust our family, our future is secure.</Paragraph>
+	<Quote Citation="1 Timothy 5:8" Url="https://www.bible.com/bible/111/1ti.5.8-35.niv">
+		If anyone does not provide for his relatives, and especially for his immediate family, he has denied the faith and is worse than an unbeliever.
+	</Quote>
+
+	<Paragraph MarginTop="5%">Tithe <RevealBox>10%</RevealBox> for <RevealBox>CLARITY.</RevealBox> When we trust our God our tithe pays dividends.</Paragraph>
+	<Quote Citation="Malachi 3:10" Url="https://www.bible.com/bible/111/mal.3.6-12.niv">
+		&apos;Bring the whole tithe into the storehouse, that there may be food in my house. Test me in this,&apos; says the Lord Almighty, &apos;and see if I will not throw open the floodgates of heaven and pour out so much blessing that you will not have room enough for it.&apos;
+	</Quote>
+
+	<Paragraph MarginTop="5%">Give <RevealBox>?%</RevealBox> for <RevealBox>HAPPINESS.</RevealBox> When we love our neighbors, they will trust our God.</Paragraph>
+	<Quote Citation="Acts 20:35" Url="https://www.bible.com/bible/111/act.20.35-36.niv">
+		&apos;In everything I did, I showed you that by this kind of hard work we must help the weak, remembering the words the Lord Jesus himself said: &apos;It is more blessed to give than to receive.&apos;&apos;
+	</Quote>
+
+	<Paragraph MarginTop="5%" FontName="OpenSans-Semibold">Final Thought:</Paragraph>
+	<Quote Citation="Matthew 6:19-21" Url="https://www.bible.com/bible/111/mat.6.19-24.niv">
+		Do not store up for yourselves treasures on earth, where moth and rust destroy, and where thieves break in and steal. But store up for yourselves treasures in heaven, where moth and rust do not destroy, and where thieves do not break in and steal. For where your treasure is, there your heart will be also.
+	</Quote>
+
+	<TextInput Placeholder="Takeaway"></TextInput>
+
+</Note>

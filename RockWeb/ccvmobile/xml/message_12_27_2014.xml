@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Note StyleSheet="xml/default_style.xml">    
+    <Header MarginBottom="5%">
+        <Title>Paul to the Phoenicians</Title>
+        <Speaker>Dr. Mark Moore</Speaker>
+        <Date>Dec 27th &amp; 28th, 2014</Date>
+    </Header>
+
+    <P>Story #1: <RB>EBOLA</RB></P>
+    <P>Real Issue: <RB>FEAR</RB></P>
+    <P>Resolution: </P>
+    <Quote MarginBottom="5%" FontName="OpenSans-Semibold" Url="https://www.bible.com/bible/111/2ti.1.7.niv" Citation="2 Timothy 1:7">For God did not give us a spirit of timidity, but a spirit of power, of love and of self-discipline.</Quote>
+
+    <P>Story #2: <RB>ISIS</RB></P>
+    <P>Real Issue: <RB>REVENGE</RB></P>
+    <P>Resolution: </P>
+    <Quote MarginBottom="5%" FontName="OpenSans-Semibold" Url="https://www.bible.com/bible/111/rom.12.19-20.niv" Citation="Romans 12:19-20">Do not take revenge, my friends, but leave room for God&apos;s wrath, for it is written: &quot;It is mine to avenge; I will repay.&quot; says the Lord. On the contrary: &quot;If your enemy is hungry, feed him; if he is thirsty, give him something to drink. In doing this, you will heap burning coals on his head.&quot;</Quote>
+
+    <P>Story #3: <RB>MALAYSIAN FLIGHT 370</RB></P>
+    <P>Real Issue: <RB>PURPOSE</RB></P>
+    <P>Resolution: </P>
+    <Quote MarginBottom="5%" FontName="OpenSans-Semibold" Url="https://www.bible.com/bible/111/rom.14.niv" Citation="Romans 14:7-8">For none of us lives to himself alone and none of us dies to himself alone. If we live, we live to the Lord; and if we die, we die to the Lord. So whether we live or die, we belong to the Lord.</Quote>
+
+    <P>Story #4: <RB>WINTER OLYMPICS</RB></P>
+    <P>Real Issue: <RB>BELONGING</RB></P>
+    <P>Resolution: </P>
+    <Quote MarginBottom="5%" FontName="OpenSans-Semibold" Url="https://www.bible.com/bible/111/rom.7.niv" Citation="Romans 7:4">So, my brothers, you also died to the law through the body of Christ, that you might belong to another, to him who was raised from the dead, in order that we might bear fruit to God.</Quote>
+
+	<P MarginTop="5%">Takeaway:</P>
+	<P>Choose one of these versus as a resolution verse in 2015.</P>
+
+
+	<P MarginTop="10%" FontName="OpenSans-Semibold"> Bonus: </P>
+	<P FontName="OpenSans-Semibold">Do You Know Your News?</P>
+
+	<List MarginTop="2%" Type="Numbered">
+		<ListItem>
+			<P>How many people have died from this Ebola outbreak?</P>
+			<P>A: 375</P>
+			<P>B: 1,000</P>
+			<P>C: 2,014</P>
+			<P>D:  4,922</P>
+			<P>Answer: <RB>D: 4,922</RB> </P>
+		</ListItem>
+
+		<ListItem>
+			<P>True or False</P>
+			<P>Ebola was the third leading cause of death in Africa in 2014.</P>
+			<P>Answer: <RB>False.</RB> </P>
+		</ListItem>
+
+		<ListItem>
+			<P>What was the leading cause of death in America in 2014?</P>
+			<P>A: Ebola</P> 
+			<P>B: Auto Accidents</P>
+			<P>C: Cancer</P>
+			<P>D: Heart Disease</P>
+			<P>Answer: <RB>C: Cancer</RB> </P>
+		</ListItem>
+
+		<ListItem>
+			<P>When did news of of ISIS first break?</P>
+			<P>A: January</P> 
+			<P>B: April</P>
+			<P>C: June</P>
+			<P>D: August</P>
+			<P>Answer: <RB>C: June</RB> </P>
+		</ListItem>
+
+		<ListItem>
+			<P>True or False</P> 
+			<P>Most of Crimea's 2 million inhabitants speak Russian, and describe themselves as Russian - even though they hold Ukranian passports.</P>
+			<P>Answer: <RB>True.</RB> </P>
+		</ListItem>
+
+		<ListItem>
+			<P>How many of the original 273 Nigerian school girls abducted are still missing?</P>
+			<P>A: None</P> 
+			<P>B: All of Them</P>
+			<P>C: 50</P>
+			<P>D: 219</P>
+			<P>Answer: <RB>D: 219</RB> </P>
+		</ListItem>
+
+		<ListItem>
+			<P>How many people perished on Malaysian flight 370?</P>
+			<P>A: 100</P> 
+			<P>B: 239</P>
+			<P>C: 305</P>
+			<P>D: 415</P>
+			<P>Answer: <RB>B: 239</RB></P>
+		</ListItem>
+
+		<ListItem>
+			<P>What was the first country to legalize euthanasia for terminally ill patients of any age?</P>
+			<P>A: America</P> 
+			<P>B: Belgium</P>
+			<P>C: Canada</P>
+			<P>D: Denmark</P>
+			<P>Answer: <RB>B: Belgium</RB> </P>
+		</ListItem>
+
+		<ListItem>
+			<P>In what country were the Winter Olympics held?</P>
+			<P>A: Russia</P> 
+			<P>B: Denmark</P>
+			<P>C: Finland</P>
+			<P>D: Iceland</P>
+			<P>Answer: <RB>A: Russia</RB> </P>
+		</ListItem>
+
+		<ListItem>
+			<P>Who won the World Cup hosted in Brazil?</P>
+			<P>A: Argentina</P> 
+			<P>B: Brazil</P>
+			<P>C: Germany</P>
+			<P>D: Netherlands</P>
+			<P>Answer: <RB>C: Germany</RB> </P>
+		</ListItem>
+	</List>
+
+</Note>

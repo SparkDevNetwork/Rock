@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Note StyleSheet="xml/default_style.xml">
+
+    <Header>
+        <Title>MEMORIES</Title>
+        <Speaker>Todd Clark</Speaker>
+        <Date>September 26th &amp; 27th, 2015</Date>
+    </Header>
+     
+    <Q Citation="2 Samuel 11" Url="https://www.bible.com/bible/111/2sam.11.niv">David and Bathsheba</Q>
+    
+	<P MarginTop="5%">1. Messy memories are created when we are at the <RB>WRONG PLACE</RB> at the <RB>WRONG TIME.</RB></P>
+
+	<P MarginTop="5%">2. Messy memories are created when we <RB>STAY</RB> rather than <RB>WALK</RB> away.</P>
+
+	<P MarginTop="5%">3. Messy memories are created when we <RB>COVER UP</RB> rather than <RB>CONFESS.</RB></P>
+	
+	<Q Citation="Psalm 32:3-4" Url="https://www.bible.com/bible/111/psa.32.niv">
+		3. When I kept silent, 
+		my bones wasted away 
+		through my groaning all day long. 
+		4. For day and night 
+		your hand was heavy on me; 
+		my strength was sapped 
+		as in the heat of summer.
+	</Q>
+	
+	<Q Citation="Psalm 38:2-4" Url="https://www.bible.com/bible/111/psa.38.niv">
+		2. Your arrows have pierced me, 
+		and your hand has come down on me. 
+		3. Because of your wrath there is no health in my body; 
+		there is no soundness in my bones because of my sin. 
+		4. My guilt has overwhelmed me 
+		like a burden too heavy to bear.
+	</Q>
+
+	<P MarginTop="5%">TAKE AWAY:</P>
+    <TextInput Height="200"></TextInput>
+</Note>

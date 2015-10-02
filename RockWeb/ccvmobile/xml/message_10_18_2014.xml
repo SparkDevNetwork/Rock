@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Note StyleSheet="xml/default_style.xml">    
+    <Header MarginBottom="5%">
+        <Title>#WISDOM - LAZINESS</Title>
+        <Speaker>Todd Clark</Speaker>
+        <Date>October 18th &amp; 19th, 2014</Date>
+    </Header>
+
+    <Quote Citation="Exodus 8"></Quote>
+
+    <Paragraph MarginBottom="5%">If you have a frog to eat <RevealBox>EAT IT EARLY.</RevealBox></Paragraph>
+
+    <List Type="Numbered">
+    	<ListItem>
+			<Paragraph>
+				Lazy people make <RevealBox>EXCUSES.</RevealBox>
+			</Paragraph>
+
+			<Quote Citation="Proverbs 22:13 (NLT)">
+				The lazy person claims, &quot;There&apos;s a lion out there! If I go outside, I might be killed!&quot;
+			</Quote>
+		</ListItem>
+		
+		<ListItem MarginBottom="5%">
+			<Paragraph>
+				Lazy people postpone <RevealBox>RESPONSIBILITIES.</RevealBox>
+			</Paragraph>
+
+			<Quote Citation="Proverbs 6:9-11 (CEV)">
+				How long will you lie there doing nothing at all? When are you going to get up and stop sleeping? Sleep a little. Doze a little. Fold your hands and twiddle your thumbs. Suddenly,
+				everything is gone, as though it had been taken by an armed robber.
+			</Quote>
+		</ListItem>
+
+		<ListItem MarginBottom="5%">
+			<Paragraph>
+				Lazy people refuse to solve <RevealBox>PROBLEMS.</RevealBox>
+			</Paragraph>
+		</ListItem>
+	</List>
+
+	<Paragraph MarginTop="5%" MarginBottom="5%">FAMILY</Paragraph>
+	<Quote MarginBottom="5%" Citation="Proverbs 11:29 (MSG)">
+		Exploit or abuse your family, and end up with a fistful of air; common sense tells you it&apos;s a stupid way to live.
+	</Quote>
+
+	<Paragraph MarginTop="5%" MarginBottom="5%">FINANCES</Paragraph>
+	<Quote MarginBottom="5%" Citation="Proverbs 21:20">
+		In the hosue of the wise are stores of choice fod and oil, but a foolish man devours all he has.
+	</Quote>
+
+	<Quote MarginBottom="5%" Citation="Proverbs 21:5">
+		The plans of the diligent lead to profit as surely as haste leads to pverty.
+	</Quote>
+
+	<Paragraph MarginTop="5%" MarginBottom="5%">FAITH</Paragraph>
+	<Quote MarginBottom="5%" Citation="Matthew 16:25-26">
+		For whoever wants to save his life will lose it, but whoever loses his life for me will find it. What good will it be for a man if he gains the whole world, yet forfeits his soul? Or what can a man give in exchange for his soul?
+	</Quote>
+	
+	<TextInput PlaceHolder="Take away"></TextInput>
+</Note>
