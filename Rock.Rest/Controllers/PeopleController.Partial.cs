@@ -237,12 +237,17 @@ namespace Rock.Rest.Controllers
                 if ( changes.Any() )
                 {
                     System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+
+                    int? modifiedByPersonAliasId = person.ModifiedAuditValuesAlreadyUpdated ? person.ModifiedByPersonAliasId : (int?)null;
+
                     HistoryService.SaveChanges(
                         rockContext,
                         typeof( Person ),
                         Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                         person.Id,
-                        changes );
+                        changes,
+                        true,
+                        modifiedByPersonAliasId );
                 }
             }
 
