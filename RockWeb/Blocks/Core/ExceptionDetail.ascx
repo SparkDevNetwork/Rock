@@ -19,10 +19,13 @@
                     </div>
                     <div class="row actions">
                         <div class="col-md-3">
-                            <a href="#" class="btn-show-cookies btn btn-action"><i class="fa fa-laptop"></i> Show Cookies</a>
+                            <a href="#" id="btnShowCookies" runat="server" class="btn-show-cookies btn btn-action"><i class="fa fa-laptop"></i> Show Cookies</a>
                         </div>
                         <div class="col-md-3">
-                            <a href="#" class="btn-show-servervars btn btn-action"><i class="fa fa-hdd-o"></i> Show Server Variables</a>
+                            <a href="#" id="btnShowVariables" runat="server" class="btn-show-servervars btn btn-action"><i class="fa fa-hdd-o"></i> Show Server Variables</a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="#" id="btnShowFormData" runat="server" class="btn-show-formdata btn btn-action"><i class="fa fa-hdd-o"></i> Show Form Data</a>
                         </div>
                         <div class="col-md-6"></div>
                     </div>
@@ -38,6 +41,12 @@
                     <fieldset>
                         <h4>Server Variables</h4>
                         <asp:Literal ID="lServerVariables" runat="server" />
+                    </fieldset>
+                </div>
+                <div id="divFormData" style="display: none">
+                    <fieldset>
+                        <h4>Form Data</h4>
+                        <asp:Literal ID="lFormData" runat="server" />
                     </fieldset>
                 </div>
                 <div id="divExceptionDetails">
@@ -116,6 +125,11 @@
 
     $(".btn-show-servervars").click(function () {
         $("#divServerVariables").slideToggle();
+        return false;
+    });
+
+    $(".btn-show-formdata").click(function () {
+        $("#divFormData").slideToggle();
         return false;
     });
 
