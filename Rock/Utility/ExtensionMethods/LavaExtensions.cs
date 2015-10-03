@@ -491,7 +491,7 @@ namespace Rock
             {
                 if ( throwExceptionOnErrors )
                 {
-                    throw ex;
+                    throw;
                 }
                 else
                 {

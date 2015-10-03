@@ -825,7 +825,7 @@ namespace Rock.Web.UI
                                     if ( this.IsPostBack )
                                     {
                                         // throw an error on PostBack so that the ErrorPage gets shown (vs nothing happening)
-                                        throw ex;
+                                        throw;
                                     }
                                 }
                             }
