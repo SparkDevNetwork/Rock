@@ -93,7 +93,7 @@ namespace Rock.Jobs
                 }
                 catch ( Exception ex )
                 {
-                    calculationExceptions.Add( new Exception( string.Format( "Exception when calculating group requirement: ", groupRequirement ), ex ) );
+                    calculationExceptions.Add( new Exception( string.Format( "Exception when calculating group requirement: {0} ", groupRequirement ), ex ) );
                 }
             }
 
