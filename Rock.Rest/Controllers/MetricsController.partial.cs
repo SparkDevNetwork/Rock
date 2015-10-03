@@ -154,7 +154,7 @@ namespace Rock.Rest.Controllers
 
             return string.Format(
                 @"<div class='alert alert-danger'> 
-                    unable to find block_id: {1}
+                    unable to find block_id: {0}
                 </div>",
                 blockId );
         }
