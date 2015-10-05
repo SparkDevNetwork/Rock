@@ -2520,7 +2520,7 @@ tr.inactive td {
 }
 .bulk-update .form-group.bulk-item-selected {
   opacity: 1;
-  background-color: #f3f3f4;
+  background-color: #efefef;
   padding: 12px;
   border-radius: 4px;
 }
