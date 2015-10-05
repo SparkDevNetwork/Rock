@@ -71,7 +71,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 var rockContext = new RockContext();
                 var connectionTypeService = new ConnectionTypeService( rockContext );
-                var connectionTypesList = connectionTypeService.Queryable().OrderBy( a => a.Name ).AsNoTracking().ToList();
+                var connectionTypesQry = connectionTypeService.Queryable().Where( a => a.ConnectionOpportunities.Any( b => b.ConnectionRequests.Any( r => r.PersonAlias.PersonId == this.Person.Id) ) ).OrderBy( a => a.Name );
+
+                var connectionTypesList = connectionTypesQry.AsNoTracking().ToList();
 
                 rConnectionTypes.DataSource = connectionTypesList.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).ToList();
                 rConnectionTypes.DataBind();
