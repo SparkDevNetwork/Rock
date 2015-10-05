@@ -8,6 +8,7 @@
 
 {% assign displayOccurrenceName = false %}
 {% assign displayDateRange = false %}
+{% assign showIfEmpty = true %}
 
 {% endcomment %}
 
@@ -18,6 +19,9 @@
 {% endunless %}
 {% unless displayDateRange or displayDateRange == false %}
   {% assign displayDateRange = false %}
+{% endunless %}
+{% unless showIfEmpty or showIfEmpty == false %}
+  {% assign showIfEmpty = true %}
 {% endunless %}
 
 
@@ -49,9 +53,11 @@
     </div>
   </div>
 {% else %}
-  <div class="panel panel-default">
-    <div class="panel-body">
-      {{ emptyMessage | Default: "There are currently no events scheduled" }}
+  {% if showIfEmpty %}
+    <div class="panel panel-default">
+      <div class="panel-body">
+        {{ emptyMessage | Default: "There are currently no events scheduled" }}
+      </div>
     </div>
-  </div>
+  {% endif %}
 {% endif %}
