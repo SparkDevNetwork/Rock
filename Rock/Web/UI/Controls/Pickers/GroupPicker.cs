@@ -51,10 +51,7 @@ namespace Rock.Web.UI.Controls
                 ItemId = group.Id.ToString();
 
                 var parentIds = GetGroupAncestorsIdList( group.ParentGroup );
-
-                var parentGroupIds = parentIds.AsDelimited( "," );
-
-                InitialItemParentIds = parentGroupIds.TrimEnd( new[] { ',' } );
+                InitialItemParentIds = parentIds.AsDelimited( "," );
                 ItemName = group.Name;
             }
             else
@@ -109,7 +106,7 @@ namespace Rock.Web.UI.Controls
             {
                 var ids = new List<string>();
                 var names = new List<string>();
-                var parentGroupIds = string.Empty;
+                var parentIds = new List<int>();
 
                 foreach ( var group in theGroups )
                 {
@@ -118,16 +115,12 @@ namespace Rock.Web.UI.Controls
                         ids.Add( group.Id.ToString() );
                         names.Add( group.Name );
                         var parentGroup = group.ParentGroup;
-
-                        while ( parentGroup != null )
-                        {
-                            parentGroupIds += parentGroup.Id.ToString() + ",";
-                            parentGroup = parentGroup.ParentGroup;
-                        }
+                        var groupParentIds = GetGroupAncestorsIdList( parentGroup );
+                        parentIds.AddRange( groupParentIds );
                     }
                 }
 
-                InitialItemParentIds = parentGroupIds.TrimEnd( new[] { ',' } );
+                InitialItemParentIds = parentIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;
             }
