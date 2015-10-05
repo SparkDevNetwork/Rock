@@ -245,8 +245,13 @@ namespace RockWeb.Blocks.Finance
                 gTransactions.Columns[0].Visible = false;
                 _ddlMove.Visible = false;
 
+                // not in batch mode, so don't allow Add, and don't show the DeleteButton
                 gTransactions.Actions.ShowAdd = false;
-                gTransactions.IsDeleteEnabled = false;
+                var deleteField = gTransactions.ColumnsOfType<DeleteField>().FirstOrDefault();
+                if (deleteField != null)
+                {
+                    deleteField.Visible = false;
+                }
             }
 
             base.OnPreRender( e );
