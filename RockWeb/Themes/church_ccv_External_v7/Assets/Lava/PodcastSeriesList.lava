@@ -17,7 +17,7 @@ REQUIRED VARIABLES
 
 {% if table1.rows.first.CurrentPage == 1 %}
 <a href="{{ seriesDetailPage }}?SeriesId={{ table1.rows.first.SeriesId }}">
-  <header class="bigblock bigblock-flexbg bigblock-flexbg-md" style="background-image: url('http://ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId3 }}');">
+  <header class="bigblock bigblock-flexbg bigblock-flexbg-md" style="background-image: url('http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId3 }}');">
     <div class="container">
       <div class="watch-currenttag">Current Series</div>
     </div>
@@ -34,7 +34,7 @@ REQUIRED VARIABLES
       <div class="row">
         <div class="col-sm-6 col-md-4">
           <div class="thumbnail padding-b-none js-series">
-            <a href="{{ seriesDetailPage }}?SeriesId={{ r.SeriesId }}"><img class="img-full" src="http://ccv.church/Arena/cachedblob.aspx?guid={{ r.MessageImageBlobId1 }}&amp;width=720&amp;height=720" alt="{{ r.SeriesTitle }}"></a>
+            <a href="{{ seriesDetailPage }}?SeriesId={{ r.SeriesId }}"><img class="img-full" src="http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ r.MessageImageBlobId1 }}&amp;width=720&amp;height=720" alt="{{ r.SeriesTitle }}"></a>
             <div class="caption">
               <h3 class="panel-title">{{ r.SeriesTitle }}</h3>
             </div>
@@ -60,7 +60,7 @@ REQUIRED VARIABLES
         </div>
         <div class="col-sm-6 col-md-4">
           <div class="thumbnail padding-b-none js-series">
-            <a href="{{ seriesDetailPage }}?SeriesId={{ r.SeriesId }}"><img class="img-full" src="http://ccv.church/Arena/cachedblob.aspx?guid={{ r.MessageImageBlobId1 }}&amp;width=720&amp;height=720" alt="{{ r.SeriesTitle }}"></a>
+            <a href="{{ seriesDetailPage }}?SeriesId={{ r.SeriesId }}"><img class="img-full" src="http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ r.MessageImageBlobId1 }}&amp;width=720&amp;height=720" alt="{{ r.SeriesTitle }}"></a>
             <div class="caption">
               <h3 class="panel-title">{{ r.SeriesTitle }}</h3>
             </div>
