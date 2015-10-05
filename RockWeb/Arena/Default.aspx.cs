@@ -71,6 +71,7 @@ public partial class Arena_Default : System.Web.UI.Page
         _redirectRules.Add( new RedirectRule( "/Arena/default.aspx?page=17429&channel=1", "/watch", false ) );
         _redirectRules.Add( new RedirectRule( "/Arena/default.aspx?page=18646&p=", "/watch?PageNum=", true ) );
         _redirectRules.Add( new RedirectRule( "/Arena/default.aspx?page=17529&item=", "/watch/message?MessageId=", true ) );
+        _redirectRules.Add( new RedirectRule( "/Arena/default.aspx?page=17609&item=", "/watch/fullservice?MessageId=", true ) );
         _redirectRules.Add( new RedirectRule( "/Arena/default.aspx?page=18604&topic=", "/watch/series?SeriesId=", true ) );
         _redirectRules.Add( new RedirectRule( "/Arena/default.aspx?page=18735", "/youngadults", false ) );
 
