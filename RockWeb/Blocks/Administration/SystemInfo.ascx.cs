@@ -73,6 +73,12 @@ namespace RockWeb.Blocks.Administration
             // register btnDumpDiagnostics as a PostBackControl since it is returning a File download
             ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
             scriptManager.RegisterPostBackControl( btnDumpDiagnostics );
+
+            btn1.Visible = false;
+            btn2.Visible = false;
+            btn3.Visible = false;
+            btn4.Visible = false;
+            btn5.Visible = false;
         }
 
         protected override void OnPreRender( EventArgs e )
@@ -108,45 +114,75 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnClearCache_Click( object sender, EventArgs e )
         {
-            // Clear all cached items
-            Rock.Web.Cache.RockMemoryCache.Clear();
+            var msgs = new List<string>();
 
-            // Clear the static object that contains all auth rules (so that it will be refreshed)
-            Rock.Security.Authorization.Flush();
-
-            // Flush the static entity attributes cache
-            Rock.Web.Cache.AttributeCache.FlushEntityAttributes();
-
-            // Check for any unregistered entity types, field types, and block types
-            string webAppPath = Server.MapPath("~");
-            EntityTypeService.RegisterEntityTypes( webAppPath );
-            FieldTypeService.RegisterFieldTypes( webAppPath );
-            BlockTypeService.RegisterBlockTypes( webAppPath, Page, false );
-
-            // Delete all cached files
-            try
+            var btnSender = sender as System.Web.UI.WebControls.Button;
+            if ( btnSender != null )
             {
-                var dirInfo = new DirectoryInfo( Path.Combine( webAppPath, "App_Data/Cache" ) );
-                foreach ( var childDir in dirInfo.GetDirectories() )
+                string btnId = btnSender.ID;
+
+                if ( btnId == "btnFlushCache" || btnId == "btn1" )
                 {
-                    childDir.Delete( true );
+                    // Clear all cached items
+                    Rock.Web.Cache.RockMemoryCache.Clear();
+                    msgs.Add( "RockMemoryCache has been cleared" );
                 }
-                foreach ( var file in dirInfo.GetFiles().Where( f => f.Name != ".gitignore" ) )
+
+                if ( btnId == "btnFlushCache" || btnId == "btn2" )
                 {
-                    file.Delete();
+                    // Clear the static object that contains all auth rules (so that it will be refreshed)
+                    Rock.Security.Authorization.Flush();
+                    msgs.Add( "Authorizations have been cleared" );
                 }
-            }
-            catch( Exception ex )
-            {
-                nbMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
-                nbMessage.Visible = true;
-                nbMessage.Text = "Cache has been cleared, but following error occurred when attempting to delete cached files: " + ex.Message;
-                return;
+
+                if ( btnId == "btnFlushCache" || btnId == "btn3" )
+                {
+                    // Flush the static entity attributes cache
+                    Rock.Web.Cache.AttributeCache.FlushEntityAttributes();
+                    msgs.Add( "EntityAttributes have been cleared" );
+                }
+
+                string webAppPath = Server.MapPath( "~" );
+
+                if ( btnId == "btnFlushCache" || btnId == "btn4" )
+                {
+                    // Check for any unregistered entity types, field types, and block types
+                    EntityTypeService.RegisterEntityTypes( webAppPath );
+                    FieldTypeService.RegisterFieldTypes( webAppPath );
+                    BlockTypeService.RegisterBlockTypes( webAppPath, Page, false );
+                    msgs.Add( "EntityTypes, FieldTypes, BlockTypes have been re-registered" );
+                }
+
+                // Delete all cached files
+                try
+                {
+                    if ( btnId == "btnFlushCache" || btnId == "btn5" )
+                    {
+                        var dirInfo = new DirectoryInfo( Path.Combine( webAppPath, "App_Data/Cache" ) );
+                        foreach ( var childDir in dirInfo.GetDirectories() )
+                        {
+                            childDir.Delete( true );
+                        }
+                        foreach ( var file in dirInfo.GetFiles().Where( f => f.Name != ".gitignore" ) )
+                        {
+                            file.Delete();
+                        }
+                        msgs.Add( "Cached files have been deleted" );
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    nbMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
+                    nbMessage.Visible = true;
+                    nbMessage.Text = "The following error occurred when attempting to delete cached files: " + ex.Message;
+                    return;
+                }
             }
 
             nbMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Success;
             nbMessage.Visible = true;
-            nbMessage.Text = "The cache has been cleared.";
+            nbMessage.Title = "Clear Cache";
+            nbMessage.Text = string.Format( "<p>{0}</p>", msgs.AsDelimited( "<br/>" ) );
         }
 
         protected void btnRestart_Click( object sender, EventArgs e )
@@ -361,5 +397,6 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
-    }
+
+}
 }
