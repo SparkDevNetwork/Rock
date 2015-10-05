@@ -230,6 +230,15 @@ namespace Rock.Model
 
             try
             {
+                ex.Data.Add( "ExceptionLogGuid", exceptionLog.Guid );
+            }
+            catch
+            {
+                // ignore
+            }
+
+            try
+            {
                 // If current HttpContext is null, return early.
                 if ( context == null )
                 {
