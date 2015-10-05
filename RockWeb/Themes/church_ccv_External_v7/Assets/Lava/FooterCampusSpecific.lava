@@ -14,7 +14,7 @@
   <div class="row">
 
     <div class="col-sm-6">
-      <img class="img-rounded margin-b-sm" width="260" height="260" src="//maps.googleapis.com/maps/api/staticmap?zoom=12&size=260x260&markers=scale:2%7Cicon:http://bit.ly/1npXPPc%7C{{ Context.Campus.Location.GeoPoint }}&sensor=false&style=feature:all%7Csaturation:-100&scale=2" alt="Map to {{ Context.Campus.Name }}">
+      <img class="img-rounded margin-b-sm" width="260" height="260" src="//maps.googleapis.com/maps/api/staticmap?zoom=12&size=260x260&markers=scale:2%7Cicon:http://bit.ly/1hlohgi%7C{{ Context.Campus.Location.GeoPoint }}&sensor=false&style=feature:all%7Csaturation:-100&scale=2" alt="Map to {{ Context.Campus.Name }}">
       <ul class="fa-ul">
         <li class="margin-b-sm">
           <i class="fa-li fa fa-map-marker"></i>
