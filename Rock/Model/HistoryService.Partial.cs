@@ -37,11 +37,12 @@ namespace Rock.Model
         /// <param name="categoryGuid">The category unique identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="changes">The changes.</param>
-        public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes )
+        /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
+        public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, int? modifiedByPersonAliasId = null )
         {
-            AddChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null );
+            AddChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, modifiedByPersonAliasId );
         }
-        
+
         /// <summary>
         /// Adds the changes.
         /// </summary>
@@ -53,7 +54,8 @@ namespace Rock.Model
         /// <param name="caption">The caption.</param>
         /// <param name="relatedModelType">Type of the related model.</param>
         /// <param name="relatedEntityId">The related entity identifier.</param>
-        public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId )
+        /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
+        public static void AddChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, int? modifiedByPersonAliasId = null )
         {
             var entityType = EntityTypeCache.Read( modelType );
             var category = CategoryCache.Read( categoryGuid );
@@ -84,6 +86,11 @@ namespace Rock.Model
                     history.RelatedEntityTypeId = relatedEntityTypeId;
                     history.RelatedEntityId = relatedEntityId;
 
+                    if ( modifiedByPersonAliasId.HasValue )
+                    {
+                        history.CreatedByPersonAliasId = modifiedByPersonAliasId;
+                    }
+
                     // Manually set creation date on these history items so that they will be grouped together
                     history.CreatedDateTime = creationDate;
 
@@ -101,9 +108,10 @@ namespace Rock.Model
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="changes">The changes.</param>
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
-        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, bool commitSave = true )
+        /// <param name="modifiedByPersonAliasId">The modified by person alias identifier.</param>
+        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, bool commitSave = true, int? modifiedByPersonAliasId = null )
         {
-            SaveChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, commitSave );
+            SaveChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null, commitSave, modifiedByPersonAliasId );
         }
 
         /// <summary>
@@ -118,11 +126,11 @@ namespace Rock.Model
         /// <param name="relatedModelType">Type of the related model.</param>
         /// <param name="relatedEntityId">The related entity identifier.</param>
         /// <param name="commitSave">if set to <c>true</c> [commit save].</param>
-        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, bool commitSave = true )
+        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, bool commitSave = true, int? modifiedByPersonAliasId = null )
         {
             if ( changes.Any() )
             {
-                AddChanges( rockContext, modelType, categoryGuid, entityId, changes, caption, relatedModelType, relatedEntityId );
+                AddChanges( rockContext, modelType, categoryGuid, entityId, changes, caption, relatedModelType, relatedEntityId, modifiedByPersonAliasId );
                 if ( commitSave )
                 {
                     rockContext.SaveChanges();

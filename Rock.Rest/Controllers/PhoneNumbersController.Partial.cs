@@ -63,12 +63,17 @@ namespace Rock.Rest.Controllers
                 if ( changes.Any() )
                 {
                     System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+
+                    int? modifiedByPersonAliasId = phoneNumber.ModifiedAuditValuesAlreadyUpdated ? phoneNumber.ModifiedByPersonAliasId : (int?)null;
+                    
                     HistoryService.SaveChanges(
                         rockContext,
                         typeof( Person ),
                         Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                         phoneNumber.PersonId,
-                        changes );
+                        changes,
+                        true,
+                        modifiedByPersonAliasId );
                 }
             }
 
@@ -93,12 +98,17 @@ namespace Rock.Rest.Controllers
             var rockContext = (RockContext)Service.Context;
 
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+            
+            int? modifiedByPersonAliasId = phoneNumber.ModifiedAuditValuesAlreadyUpdated ? phoneNumber.ModifiedByPersonAliasId : (int?)null;
+
             HistoryService.SaveChanges(
                 rockContext,
                 typeof( Person ),
                 Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                 phoneNumber.PersonId,
-                changes );            
+                changes,
+                true,
+                modifiedByPersonAliasId );            
             
             return base.Post( phoneNumber );
         }

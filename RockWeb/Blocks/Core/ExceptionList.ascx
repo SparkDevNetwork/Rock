@@ -49,10 +49,10 @@
                     </Rock:GridFilter>
                     <Rock:Grid ID="gExceptionList" runat="server" AllowSorting="true" OnRowSelected="gExceptionList_RowSelected" EmptyDataText="No Exceptions Found">
                         <Columns>
-                            <Rock:DateField DataField="LastExceptionDate" HeaderText="Last Date" SortExpression="LastExceptionDate" />
+                            <Rock:DateTimeField DataField="LastExceptionDate" HeaderText="Last Date" ItemStyle-Wrap="false" SortExpression="LastExceptionDate" ItemStyle-HorizontalAlign="Left" />
                             <Rock:RockBoundField DataField="SiteName" HeaderText="Site Name" SortExpression="SiteName" />
                             <Rock:RockBoundField DataField="PageName" HeaderText="Page" SortExpression="PageName" />
-                            <Rock:RockBoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
+                            <Rock:RockBoundField DataField="Description" HeaderText="Exception" SortExpression="Description" TruncateLength="255"  />
                             <Rock:RockBoundField DataField="TotalCount" HeaderText="Total Count" SortExpression="TotalCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:RockBoundField DataField="SubsetCount" SortExpression="SubsetCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                         </Columns>
@@ -85,8 +85,8 @@
                 <div class="grid margin-t-md">
                     <Rock:Grid ID="gExceptionOccurrences" runat="server" AllowSorting="true">
                         <Columns>
-                            <Rock:DateField DataField="CreatedDateTime" HeaderText="Date" SortExpression="CreatedDateTime" />
-                            <Rock:TimeField DataField="CreatedDateTime" HeaderText="Time" SortExpression="CreatedDateTime" />
+                            <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="Date/Time" SortExpression="CreatedDateTime" />
+                            <Rock:RockBoundField DataField="PageName" HeaderText="Page/URL" SortExpression="PageName" />
                             <Rock:RockBoundField DataField="FullName" HeaderText="Logged In User" SortExpression="FullName" />
                             <Rock:RockBoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
                         </Columns>

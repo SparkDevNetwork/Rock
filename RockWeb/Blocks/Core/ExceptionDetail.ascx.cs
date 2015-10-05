@@ -160,7 +160,10 @@ namespace RockWeb.Blocks.Core
             DescriptionList dl = new DescriptionList();
 
             dl.Add( "Site", baseException.Site != null ? baseException.Site.Name : String.Empty, true );
-            dl.Add( "Page", baseException.Page != null ? string.Format( "{0} <a href=\"{1}\" class=\"btn btn-link btn-xs\" target=\"_blank\">Visit Page</a>", baseException.Page.InternalName, baseException.PageUrl ) : String.Empty, true );
+            if ( baseException.Page != null || !string.IsNullOrWhiteSpace(baseException.PageUrl) )
+            {
+                dl.Add( "Page", string.Format( "{0} <a href=\"{1}\" class=\"btn btn-link btn-xs\" target=\"_blank\">Visit Page</a>", baseException.Page != null ? baseException.Page.InternalName : baseException.PageUrl, baseException.PageUrl ) );
+            }
 
             //If query string is not empty build query string list
             if ( !String.IsNullOrWhiteSpace( baseException.QueryString ) )
@@ -182,6 +185,10 @@ namespace RockWeb.Blocks.Core
 
             lCookies.Text = baseException.Cookies;
             lServerVariables.Text = baseException.ServerVariables;
+            lFormData.Text = baseException.Form;
+            btnShowCookies.Visible = !string.IsNullOrWhiteSpace( baseException.Cookies );
+            btnShowVariables.Visible = !string.IsNullOrWhiteSpace( baseException.ServerVariables );
+            btnShowFormData.Visible = !string.IsNullOrWhiteSpace( baseException.Form );
 
             rptExcpetionDetails.DataSource = GetExceptionLogs( baseException ).OrderBy( e => e.Id );
             rptExcpetionDetails.DataBind();

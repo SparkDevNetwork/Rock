@@ -1625,20 +1625,23 @@ namespace Rock.Web.UI.Controls
 
                         if ( attributeFields.Any() )
                         {
-                            // First check if DataItem has attributes
-                            var dataItem = item as Rock.Attribute.IHasAttributes;
+                            Rock.Attribute.IHasAttributes dataItem = null;
+
+                            // First check to see if there is an object list
+                            if ( ObjectList != null )
+                            {
+                                // If an object list exists, check to see if the associated object has attributes
+                                string key = DataKeys[dataIndex].Value.ToString();
+                                if ( !string.IsNullOrWhiteSpace( key ) && ObjectList.ContainsKey( key ) )
+                                {
+                                    dataItem = ObjectList[key] as Rock.Attribute.IHasAttributes;
+                                }
+                            }
+
+                            // Then check if DataItem has attributes
                             if ( dataItem == null )
                             {
-                                // If the DataItem does not have attributes, check to see if there is an object list
-                                if ( ObjectList != null )
-                                {
-                                    // If an object list exists, check to see if the associated object has attributes
-                                    string key = DataKeys[dataIndex].Value.ToString();
-                                    if ( !string.IsNullOrWhiteSpace( key ) && ObjectList.ContainsKey( key ) )
-                                    {
-                                        dataItem = ObjectList[key] as Rock.Attribute.IHasAttributes;
-                                    }
-                                }
+                                dataItem = item as Rock.Attribute.IHasAttributes;
                             }
 
                             if ( dataItem != null )

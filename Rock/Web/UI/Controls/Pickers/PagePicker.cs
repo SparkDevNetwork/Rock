@@ -220,15 +220,24 @@ namespace Rock.Web.UI.Controls
                 PageRouteId = pageRoute.Id;
                 ItemId = page.Id.ToString();
 
-                string parentPageIds = string.Empty;
+                var parentPageIds = new List<string>();
                 var parentPage = page.ParentPage;
                 while ( parentPage != null )
                 {
-                    parentPageIds = parentPage.Id + "," + parentPageIds;
+                    if ( !parentPageIds.Contains( parentPage.Id.ToString() ) )
+                    {
+                        parentPageIds.Insert( 0, parentPage.Id.ToString() );
+                    }
+                    else
+                    {
+                        // infinite recursion
+                        break;
+                    }
+
                     parentPage = parentPage.ParentPage;
                 }
 
-                InitialItemParentIds = parentPageIds.TrimEnd( new char[] { ',' } );
+                InitialItemParentIds = parentPageIds.AsDelimited( "," );
                 if ( pageRoute.Id != 0 )
                 {
                     // PageRoute is selected, so show the Page and its PageRoute and don't show the PageRoute picker

@@ -458,6 +458,9 @@ namespace Rock.Rest.Controllers
                     if ( changes.Any() )
                     {
                         System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+
+                        int? modifiedByPersonAliasId = group.ModifiedAuditValuesAlreadyUpdated ? group.ModifiedByPersonAliasId : (int?)null;
+
                         foreach ( var fm in existingGroup.Members )
                         {
                             HistoryService.SaveChanges(
@@ -468,7 +471,9 @@ namespace Rock.Rest.Controllers
                                 changes,
                                 existingGroup.Name,
                                 typeof( Group ),
-                                existingGroup.Id );
+                                existingGroup.Id,
+                                true,
+                                modifiedByPersonAliasId );
                         }
                     }
                 }

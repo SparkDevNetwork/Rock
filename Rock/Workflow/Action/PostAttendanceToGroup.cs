@@ -206,7 +206,7 @@ namespace Rock.Workflow.Action
                 }
                 else
                 {
-                    errorMessages.Add(string.Format("Could not find group matching the guid ''.", groupGuid));
+                    errorMessages.Add(string.Format("Could not find group matching the guid '{0}'.", groupGuid));
                 }
             }
 

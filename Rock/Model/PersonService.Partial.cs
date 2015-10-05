@@ -315,6 +315,7 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased, bool includeBusinesses, bool allowFirstNameOnly, out bool reversed )
         {
+            fullName = fullName.Trim();
             string firstName = string.Empty;
             string lastName = string.Empty;
             string singleName = string.Empty;
@@ -333,7 +334,7 @@ namespace Rock.Model
                 reversed = false;
 
                 // if no comma, assume the search is in 'firstname lastname' format (note: 'firstname lastname1 lastname2' isn't supported yet)
-                var names = fullName.Split( ' ' );
+                var names = fullName.Trim().Split( ' ' );
                 firstName = names.Length >= 1 ? names[0].Trim() : string.Empty;
                 lastName = names.Length >= 2 ? names[1].Trim() : string.Empty;
             }

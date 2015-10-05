@@ -767,7 +767,7 @@ namespace Rock.Web.UI
                     }
 
                     // Flag indicating if user has rights to administer one or more of the blocks on page
-                    bool canAdministrateBlock = false;
+                    bool canAdministrateBlockOnPage = false;
 
                     // Load the blocks and insert them into page zones
                     Page.Trace.Warn( "Loading Blocks" );
@@ -781,11 +781,6 @@ namespace Rock.Web.UI
                         bool canAdministrate = block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
                         bool canEdit = block.IsAuthorized( Authorization.EDIT, CurrentPerson );
                         bool canView = block.IsAuthorized( Authorization.VIEW, CurrentPerson );
-
-                        if ( canAdministrate || canEdit )
-                        {
-                            canAdministrateBlock = true;
-                        }
 
                         // Make sure user has access to view block instance
                         if ( canAdministrate || canEdit || canView )
@@ -830,13 +825,18 @@ namespace Rock.Web.UI
                                     if ( this.IsPostBack )
                                     {
                                         // throw an error on PostBack so that the ErrorPage gets shown (vs nothing happening)
-                                        throw ex;
+                                        throw;
                                     }
                                 }
                             }
 
                             if ( control != null )
                             {
+                                if ( canAdministrate || ( canEdit && control is RockBlockCustomSettings ) )
+                                {
+                                    canAdministrateBlockOnPage = true;
+                                }
+
                                 // If the current control is a block, set its properties
                                 var blockControl = control as RockBlock;
                                 if ( blockControl != null )
@@ -907,7 +907,7 @@ namespace Rock.Web.UI
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( _pageCache.IncludeAdminFooter && ( canAdministratePage || canAdministrateBlock ) )
+                    if ( _pageCache.IncludeAdminFooter && ( canAdministratePage || canAdministrateBlockOnPage ) )
                     {
                         // Add the page admin script
                         AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin", false );

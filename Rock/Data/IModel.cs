@@ -79,13 +79,13 @@ namespace Rock.Data
         PersonAlias ModifiedByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the ModifiedByPersonAliasId and ModifiedDateTime values have already been 
+        /// Gets or sets a value indicating whether the ModifiedByPersonAliasId value has already been 
         /// updated to reflect who/when model was updated. If this value is false (default) the framework will update 
-        /// these values with the current user and datetime when the model is saved. Set this value to true if this automatic
+        /// the value with the current user when the model is saved. Set this value to true if this automatic
         /// update should not be done.
         /// </summary>
         /// <value>
-        /// <c>false</c> if rock should set the ModifiedDateTime to current time and ModifiedByPersonAliasId to current user when saving model; otherwise, <c>true</c>.
+        /// <c>false</c> if rock should set the ModifiedByPersonAliasId to current user when saving model; otherwise, <c>true</c>.
         /// </value>
         bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 

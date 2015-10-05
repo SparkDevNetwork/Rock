@@ -485,6 +485,7 @@ function(item) {
                     {
                         Id = e.Id,
                         CreatedDateTime = e.CreatedDateTime,
+                        PageName = e.Page.InternalName ?? e.PageUrl,
                         FullName = ( e.CreatedByPersonAlias != null &&
                             e.CreatedByPersonAlias.Person != null ) ?
                             e.CreatedByPersonAlias.Person.LastName + ", " + e.CreatedByPersonAlias.Person.NickName : "",

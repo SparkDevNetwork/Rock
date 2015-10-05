@@ -267,10 +267,10 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( e.Row.DataItem != null )
             {
-                var entityColumn = gMetricValues.Columns.OfType<BoundField>().FirstOrDefault( a => a.DataField == "EntityId" );
-                if ( entityColumn.Visible )
+                var lEntityTypeName = e.Row.FindControl( "lEntityTypeName" ) as Literal;
+                if ( lEntityTypeName != null )
                 {
-                    e.Row.Cells[gMetricValues.Columns.IndexOf( entityColumn )].Text = GetSeriesName( e.Row.DataItem.GetPropertyValue( "EntityId" ) as int? );
+                    lEntityTypeName.Text = GetSeriesName( e.Row.DataItem.GetPropertyValue( "EntityId" ) as int? );
                 }
             }
         }
@@ -317,9 +317,9 @@ namespace RockWeb.Blocks.Reporting
 
             qry = qry.Where( a => a.MetricId == metricId );
 
-            var entityColumn = gMetricValues.Columns.OfType<BoundField>().FirstOrDefault( a => a.DataField == "EntityId" );
+            var entityTypeNameColumn = gMetricValues.Columns.OfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lEntityTypeName" );
             var metric = new MetricService( rockContext ).Get( metricId ?? 0 );
-            entityColumn.Visible = metric != null && metric.EntityTypeId.HasValue;
+            entityTypeNameColumn.Visible = metric != null && metric.EntityTypeId.HasValue;
 
             if ( metric != null )
             {
@@ -328,7 +328,7 @@ namespace RockWeb.Blocks.Reporting
                 var entityTypeCache = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
                 if ( entityTypeCache != null )
                 {
-                    entityColumn.HeaderText = entityTypeCache.FriendlyName;
+                    entityTypeNameColumn.HeaderText = entityTypeCache.FriendlyName;
                     IQueryable<IEntity> entityQry = null;
                     if ( entityTypeCache.GetEntityType() == typeof( Rock.Model.Group ) )
                     {
@@ -390,12 +390,14 @@ namespace RockWeb.Blocks.Reporting
 
             if ( sortProperty != null )
             {
-                gMetricValues.DataSource = qry.Sort( sortProperty ).ToList();
+                qry = qry.Sort( sortProperty );
             }
             else
             {
-                gMetricValues.DataSource = qry.OrderBy( s => s.Order ).ThenByDescending( s => s.MetricValueDateTime ).ThenBy( s => s.YValue ).ThenBy( s => s.XValue ).ToList();
+                qry = qry.OrderBy( s => s.Order ).ThenByDescending( s => s.MetricValueDateTime ).ThenBy( s => s.YValue ).ThenBy( s => s.XValue ).ThenByDescending( s => s.ModifiedDateTime );
             }
+
+            gMetricValues.SetLinqDataSource( qry );
 
             gMetricValues.DataBind();
         }

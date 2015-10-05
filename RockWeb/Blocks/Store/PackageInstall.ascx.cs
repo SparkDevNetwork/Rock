@@ -232,12 +232,17 @@ namespace RockWeb.Blocks.Store
                                     string fullpath = Path.Combine( appRoot, entry.FullName.Replace("content/", "") );
                                     string directory = Path.GetDirectoryName( fullpath ).Replace("content/", "");
 
-                                    if ( !Directory.Exists( directory ) )
+                                    // if entry is a directory ignore it
+                                    if ( entry.Length != 0 )
                                     {
-                                        Directory.CreateDirectory( directory );
-                                    }
+                                        if ( !Directory.Exists( directory ) )
+                                        {
+                                            Directory.CreateDirectory( directory );
+                                        }
 
-                                    entry.ExtractToFile( fullpath, true );
+                                        entry.ExtractToFile( fullpath, true );
+                                    }
+                                    
                                 }
                             }
 
