@@ -10,30 +10,30 @@
      
     <Q Citation="Matthew 5:1-12" Url="https://www.bible.com/bible/111/mat.5.1-12.niv">The Sermon on the Mount</Q>
     
-	<P MarginTop="5%" Alignment="Center" FontSize="17">CHRISTIAN VALUES // WORLDLY VALUES</P>
-	<P Alignment="Center" FontName="OpenSans-Bold">Poor in spirit // <RB>PRIDE</RB></P>
-	<P Align="Center">You can't be filled with God when you're already full of <RB>YOURSELF.</RB></P>
+	<P MarginTop="5%" FontSize="17">CHRISTIAN VALUES // WORLDLY VALUES</P>
+	<P MarginTop="5%" FontName="OpenSans-Bold">Poor in spirit // <RB>PRIDE</RB></P>
+	<P>You can't be filled with God when you're already full of <RB>YOURSELF.</RB></P>
 	
-	<P MarginTop="5%" Align="Center" FontName="OpenSans-Bold">Mourning // <RB>PLEASURE</RB></P>
-	<P Align="Center">Repentance is necessary before <RB>RESTORATION</RB> can occur.</P>
+	<P MarginTop="5%" FontName="OpenSans-Bold">Mourning // <RB>PLEASURE</RB></P>
+	<P>Repentance is necessary before <RB>RESTORATION</RB> can occur.</P>
 	
-	<P MarginTop="5%" Align="Center" FontName="OpenSans-Bold">Meekness // <RB>POWER</RB></P>
-	<P Align="Center">You must find <RB>CONTENTMENT</RB> in the situation where God places you.</P>
+	<P MarginTop="5%" FontName="OpenSans-Bold">Meekness // <RB>POWER</RB></P>
+	<P>You must find <RB>CONTENTMENT</RB> in the situation where God places you.</P>
 
-	<P MarginTop="5%" Align="Center" FontName="OpenSans-Bold">Righteousness // <RB>PERSONAL SATISFACTION</RB></P>
-	<P Align="Center">Awards and accomplishments will still leave you  <RB>EMPTY.</RB></P>
+	<P MarginTop="5%" FontName="OpenSans-Bold">Righteousness // <RB>PERSONAL SATISFACTION</RB></P>
+	<P>Awards and accomplishments will still leave you  <RB>EMPTY.</RB></P>
 
-	<P MarginTop="5%" Align="Center" FontName="OpenSans-Bold">Mercy // <RB>COMPLACENCY</RB></P>
-	<P Align="Center">Caring for others overcomes bystander <RB>APATHY.</RB></P>
+	<P MarginTop="5%" FontName="OpenSans-Bold">Mercy // <RB>COMPLACENCY</RB></P>
+	<P>Caring for others overcomes bystander <RB>APATHY.</RB></P>
 
-	<P MarginTop="5%" Align="Center" FontName="OpenSans-Bold">Pure in heart // <RB>DECEPTION</RB></P>
-	<P Align="Center">Make sure that what you're doing today is what you can live with <RB>TOMORROW</RB></P>
+	<P MarginTop="5%" FontName="OpenSans-Bold">Pure in heart // <RB>DECEPTION</RB></P>
+	<P>Make sure that what you're doing today is what you can live with <RB>TOMORROW.</RB></P>
 
-	<P MarginTop="5%" Align="Center" FontName="OpenSans-Bold">Peacemaker // <RB>CONFLICT</RB></P>
-	<P Align="Center">Healthy conflict is necessary for <RB>GROWTH</RB></P>
+	<P MarginTop="5%" FontName="OpenSans-Bold">Peacemaker // <RB>CONFLICT</RB></P>
+	<P>Healthy conflict is necessary for <RB>GROWTH.</RB></P>
 
-	<P MarginTop="5%" Align="Center" FontName="OpenSans-Bold">Persecution // <RB>COMPROMISE</RB></P>
-	<P Align="Center">You will never find happiness until the cause of Christ becomes more <RB>IMPORTANT</RB> than your own cause.</P>
+	<P MarginTop="5%" FontName="OpenSans-Bold">Persecution // <RB>COMPROMISE</RB></P>
+	<P>You will never find happiness until the cause of Christ becomes more <RB>IMPORTANT</RB> than your own cause.</P>
 
 	<P MarginTop="5%" FontName="OpenSans-Bold">TAKE AWAY:</P>
     <TextInput Height="200"></TextInput>
