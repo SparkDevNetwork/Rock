@@ -5,7 +5,7 @@
 	<SeriesList>
 
 		<!--Start Series-->
- 		<Series Private="True">
+ 		<Series>
 			<Message>
 				<Name>LIVING DIFFERENTLY</Name>
 				<Speaker>Don Wilson</Speaker>
