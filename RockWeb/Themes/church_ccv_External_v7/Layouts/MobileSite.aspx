@@ -5,6 +5,8 @@
 <html class="no-js">
 <head runat="server">
 
+    <script type="text/javascript">var _sf_startpt=(new Date()).getTime()</script>
+
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta charset="utf-8">
     <title></title>
@@ -67,5 +69,23 @@
         </div>
 
     </form>
+
+    <script type="text/javascript">
+        var _sf_async_config = { uid: 23413, domain: 'ccv.church', useCanonical: true };
+        (function() {
+            function loadChartbeat() {
+                window._sf_endpt = (new Date()).getTime();
+                var e = document.createElement('script');
+                e.setAttribute('language', 'javascript');
+                e.setAttribute('type', 'text/javascript');
+                e.setAttribute('src','//static.chartbeat.com/js/chartbeat.js');
+                document.body.appendChild(e);
+            };
+            var oldonload = window.onload;
+            window.onload = (typeof window.onload != 'function') ?
+                loadChartbeat : function() { oldonload(); loadChartbeat(); };
+        })();
+    </script>
+
 </body>
 </html>
