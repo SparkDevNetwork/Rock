@@ -948,7 +948,7 @@ namespace RockWeb.Blocks.Finance
 
                 this.Accounts = new Dictionary<int, string>();
 
-                foreach ( var account in accounts.ToList() )
+                foreach ( var account in accounts.OrderBy( a => a.Order ).ToList() )
                 {
                     this.Accounts.Add( account.Id, account.PublicName );
                 }
