@@ -70,25 +70,30 @@ public class Mandrill : IHttpHandler
 
                         if ( communicationRecipient != null )
                         {
+                            if ( item.UserAgent == null )
+                            {
+                                item.UserAgent = new UserAgent();
+                            }
+
                             switch ( item.EventType )
                             {
                                 case MandrillEventType.Send:
                                     communicationRecipient.Status = CommunicationRecipientStatus.Delivered;
-                                    communicationRecipient.StatusNote = String.Format( "Confirmed delivered by Mandrill at {0}", item.EventDateTime.ToString() );
+                                    communicationRecipient.StatusNote = String.Format( "Confirmed delivered by Mandrill at {0}", item.EventDateTime.ToString());
                                     break;
                                 case MandrillEventType.Opened:
                                     communicationRecipient.Status = CommunicationRecipientStatus.Opened;
                                     communicationRecipient.OpenedDateTime = item.EventDateTime;
                                     communicationRecipient.OpenedClient = String.Format( "{0} {1} ({2})",
-                                                                            item.UserAgent.OperatingSystemName,
-                                                                            item.UserAgent.UserAgentName,
-                                                                            item.UserAgent.Type );
+                                                                            item.UserAgent.OperatingSystemName ?? "unknown",
+                                                                            item.UserAgent.UserAgentName ?? "unknown",
+                                                                            item.UserAgent.Type ?? "unknown" );
                                     CommunicationRecipientActivity openActivity = new CommunicationRecipientActivity();
                                     openActivity.ActivityType = "Opened";
                                     openActivity.ActivityDateTime = item.EventDateTime;
                                     openActivity.ActivityDetail = string.Format( "Opened from {0} on {1} ({2})",
-                                                                    item.UserAgent.UserAgentName,
-                                                                    item.UserAgent.OperatingSystemName,
+                                                                    item.UserAgent.UserAgentName ?? "unknown",
+                                                                    item.UserAgent.OperatingSystemName ?? "unknown",
                                                                     item.IpAddress );
                                     communicationRecipient.Activities.Add( openActivity );
                                     break;
@@ -99,10 +104,10 @@ public class Mandrill : IHttpHandler
                                     clickActivity.ActivityDetail = string.Format( "Clicked the address {0} from {1} using {2} {3} {4} ({5})",
                                                                     item.UrlAddress,
                                                                     item.IpAddress,
-                                                                    item.UserAgent.OperatingSystemName,
-                                                                    item.UserAgent.UserAgentFamily,
-                                                                    item.UserAgent.UserAgentVersion,
-                                                                    item.UserAgent.Type );
+                                                                    item.UserAgent.OperatingSystemName ?? "unknown",
+                                                                    item.UserAgent.UserAgentFamily ?? "unknown",
+                                                                    item.UserAgent.UserAgentVersion ?? "unknown",
+                                                                    item.UserAgent.Type ?? "unknown" );
                                     communicationRecipient.Activities.Add( clickActivity );
                                     break;
                             }
