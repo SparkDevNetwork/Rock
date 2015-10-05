@@ -15,14 +15,11 @@
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gAccountPersons" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gAccountPersons_RowSelected" AllowSorting="False" TooltipField="Id">
                         <Columns>
-                            <Rock:PersonField DataField="PersonAlias.Person" HeaderText="Person" />
-                            <Rock:RockBoundField DataField="PCOId" HeaderText="PCO Id" />
-                            <Rock:RockTemplateField HeaderText="Rock Security">
-                                <ItemTemplate><asp:Literal ID="lRockSecurity" runat="server" /></ItemTemplate>
-                            </Rock:RockTemplateField>
-                            <Rock:RockTemplateField HeaderText="PCO Security">
-                                <ItemTemplate><asp:Literal ID="lPCOSecurity" runat="server" /></ItemTemplate>
-                            </Rock:RockTemplateField>
+                            <Rock:PersonField DataField="Person" HeaderText="Person" SortExpression="LastName,NickName" />
+                            <Rock:BoolField DataField="Current" HeaderText="Current" SortExpression="Current" />
+                            <Rock:RockBoundField DataField="PCOId" HeaderText="PCO Id" SortExpression="PCOId" />
+                            <Rock:RockBoundField DataField="RockPermissionLabel" HeaderText="Rock Permission" SortExpression="RockPermission" HtmlEncode="false" />
+                            <Rock:RockBoundField DataField="PCOPermissionLabel" HeaderText="PCO Permission" SortExpression="PCOPermission" HtmlEncode="false" />
                         </Columns>
                     </Rock:Grid>
                 </div>

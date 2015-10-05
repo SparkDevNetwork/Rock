@@ -15,8 +15,11 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -29,6 +32,7 @@ using Rock.Web.UI.Controls;
 
 using com.minecartstudio.PCOSync.Model;
 using com.minecartstudio.PCOSync;
+
 using Newtonsoft.Json;
 
 namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
@@ -59,13 +63,15 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
 
             int accountId = PageParameter( "accountId" ).AsInteger();
 
-            _account = new AccountService( new RockContext() ).Get( accountId );
+            _account = new AccountService( new RockContext() )
+                .Queryable( "AdministratorGroup.Members,EditorGroup.Members,SchedulerGroup.Members,ViewerGroup.Members,ScheduledViewerGroup.Members" )
+                .AsNoTracking()
+                .FirstOrDefault( a => a.Id == accountId );
 
             if ( _account != null )
             {
                 gAccountPersons.DataKeyNames = new string[] { "Id" };
                 gAccountPersons.Actions.ShowAdd = false;
-                gAccountPersons.RowDataBound += gAccountPersons_RowDataBound;
                 gAccountPersons.GridRebind += gAccountPersons_GridRebind;
                 gAccountPersons.IsDeleteEnabled = false;
 
@@ -86,6 +92,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
             {
                 if ( _account != null )
                 {
+                    AddMissingPeople();
                     ShowDetail();
                 }
             }
@@ -94,50 +101,6 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         #endregion
 
         #region Events
-
-        void gAccountPersons_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
-        {
-            if ( e.Row.RowType == System.Web.UI.WebControls.DataControlRowType.DataRow )
-            {
-                var accountPerson = e.Row.DataItem as AccountPerson;
-                if ( accountPerson != null )
-                {
-                    if ( !string.IsNullOrWhiteSpace(accountPerson.RockSyncState))
-                    {
-                        var pcoPerson = JsonConvert.DeserializeObject<PCOPerson>( accountPerson.RockSyncState );
-                        var lSecurity = e.Row.FindControl( "lRockSecurity" ) as System.Web.UI.WebControls.Literal;
-                        SetSecurityLabel( lSecurity, pcoPerson );
-                    }
-
-                    if ( !string.IsNullOrWhiteSpace( accountPerson.PCOSyncState ) )
-                    {
-                        var pcoPerson = JsonConvert.DeserializeObject<PCOPerson>( accountPerson.PCOSyncState );
-                        var lSecurity = e.Row.FindControl( "lPCOSecurity" ) as System.Web.UI.WebControls.Literal;
-                        SetSecurityLabel( lSecurity, pcoPerson );
-                    }
-                }
-            }
-        }
-
-        private void SetSecurityLabel( System.Web.UI.WebControls.Literal literal, PCOPerson person )
-        {
-            if ( literal != null && person != null )
-            {
-                var permission = People.PermissionLevel( person.permissions );
-                string labelType = "default";
-                switch( permission )
-                {
-                    case Permission.Administrator: labelType = "success"; break;
-                    case Permission.Editor: labelType = "info"; break;
-                    case Permission.Scheduler: labelType = "info"; break;
-                    case Permission.ScheduledViewer: labelType = "warning"; break;
-                    case Permission.Viewer: labelType = "warning"; break;
-                    default: labelType = "default"; break;
-                }
-
-                literal.Text = string.Format( "<span class='label label-{0}'>{1}</span>", labelType, permission.ConvertToString() );
-            }
-        }
 
         protected void gAccountPersons_RowSelected( object sender, RowEventArgs e )
         {
@@ -198,6 +161,10 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
 
         #region Internal Methods
 
+        public void AddMissingPeople()
+        {
+        }
+
         /// <summary>
         /// Shows the detail.
         /// </summary>
@@ -224,17 +191,134 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         {
             if ( _account != null )
             {
-                var queryable = new AccountPersonService( new RockContext() )
-                    .Queryable()
-                    .Where( a =>
-                        a.AccountId == _account.Id &&
-                        a.PersonAlias != null &&
-                        a.PersonAlias.Person != null )
-                    .OrderBy( a => a.PersonAlias.Person.LastName )
-                    .ThenBy( a => a.PersonAlias.Person.NickName );
+                using ( var rockContext = new RockContext() )
+                {
+                    // Get the group ids that this account is associated with
+                    var groupIdList = new List<int>();
+                    if ( _account.AdministratorGroupId.HasValue )
+                    {
+                        groupIdList.Add( _account.AdministratorGroupId.Value );
+                    }
+                    if ( _account.EditorGroupId.HasValue )
+                    {
+                        groupIdList.Add( _account.EditorGroupId.Value );
+                    }
+                    if ( _account.SchedulerGroupId.HasValue )
+                    {
+                        groupIdList.Add( _account.SchedulerGroupId.Value );
+                    }
+                    if ( _account.ViewerGroupId.HasValue )
+                    {
+                        groupIdList.Add( _account.ViewerGroupId.Value );
+                    }
+                    if ( _account.ScheduledViewerGroupId.HasValue )
+                    {
+                        groupIdList.Add( _account.ScheduledViewerGroupId.Value );
+                    }
 
-                gAccountPersons.DataSource = queryable.ToList();
-                gAccountPersons.DataBind();
+                    // Get all the existing entries for this account
+                    var accountPersonService = new AccountPersonService( rockContext );
+                    var existingEntries = accountPersonService
+                        .Queryable()
+                        .Where( a =>
+                            a.AccountId == _account.Id &&
+                            a.PersonAlias != null )
+                        .ToList();
+
+                    // Group all the entries by person id & PCO id
+                    var lastEntries = existingEntries
+                        .GroupBy( g => new { g.PersonAlias.PersonId, g.PCOId } )
+                        .Select( t => new
+                        {
+                            Id = t.Max( g => g.Id ),
+                            PersonId = t.Key.PersonId,
+                            PCOId = t.Key.PCOId
+                        } )
+                        .ToList();
+
+                    // get the list of unique person ids
+                    var existingPersonIds = lastEntries
+                        .Select( e => e.PersonId )
+                        .Distinct()
+                        .ToList();
+
+                    // If there were any duplicate entries, remove those with the older ids
+                    var primaryIds = lastEntries.Select( e => e.Id ).ToList();
+                    var dupEntries = existingEntries
+                        .Where( e => !primaryIds.Contains( e.Id ) )
+                        .ToList();
+                    if ( dupEntries.Any() )
+                    {
+                        foreach ( var dupEntry in dupEntries )
+                        {
+                            accountPersonService.Delete( dupEntry );
+                        }
+                        rockContext.SaveChanges();
+                    }
+
+                    // Get all the active group members that belong to any of the groups that this account is associated with
+                    var groupMemberPersonIds = new GroupMemberService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( m =>
+                            groupIdList.Contains( m.GroupId ) &&
+                            m.GroupMemberStatus == GroupMemberStatus.Active )
+                        .Select( m => m.PersonId );
+
+                    // Find any people that are in the group that have not been added to this account
+                    var newPersonIds = groupMemberPersonIds
+                        .Where( i => !existingPersonIds.Contains( i ) )
+                        .ToList();
+
+                    // If there are any new people, add them to the account
+                    if ( newPersonIds.Any() )
+                    {
+                        foreach ( var person in new PersonService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( p => newPersonIds.Contains( p.Id ) ) )
+                        {
+                            int? personAliasId = person.PrimaryAliasId;
+                            if ( personAliasId.HasValue )
+                            {
+                                var accountPerson = new AccountPerson();
+                                accountPerson.AccountId = _account.Id;
+                                accountPerson.PersonAliasId = personAliasId.Value;
+                                accountPersonService.Add( accountPerson );
+                            }
+                        }
+
+                        rockContext.SaveChanges();
+                    }
+
+                    var people = new List<AccountPersonHelper>();
+                    foreach ( var accountPerson in accountPersonService
+                        .Queryable()
+                        .Where( a =>
+                            a.AccountId == _account.Id &&
+                            a.PersonAlias != null &&
+                            a.PersonAlias.Person != null )
+                        .OrderBy( a => a.PersonAlias.Person.LastName )
+                        .ThenBy( a => a.PersonAlias.Person.NickName ) )
+                    {
+                        people.Add( new AccountPersonHelper(
+                            accountPerson,
+                            groupMemberPersonIds.Contains( accountPerson.PersonAlias.PersonId ) ) );
+                    }
+
+                    var qry = people.AsQueryable();
+
+                    SortProperty sortProperty = gAccountPersons.SortProperty;
+                    if ( sortProperty != null )
+                    {
+                        qry = qry.Sort( sortProperty );
+                    }
+                    else
+                    {
+                        qry = qry.OrderBy( p => p.LastName ).ThenBy( p => p.NickName );
+                    }
+
+                    gAccountPersons.DataSource = qry.ToList();
+                    gAccountPersons.DataBind();
+                }
             }
         }
 
@@ -249,6 +333,79 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         public void SetVisible( bool visible )
         {
             pnlContent.Visible = visible;
+        }
+
+        #endregion
+
+        #region HelperClass
+
+        public class AccountPersonHelper
+        {
+            public int Id { get; set; }
+            public Person person { get; set; }
+            public string LastName { get; set; }
+            public string NickName { get; set; }
+            public int? PCOId { get; set; }
+            public bool Current { get; set; }
+            public string RockPermission { get; set; }
+            public string PCOPermission { get; set; }
+            public string RockPermissionLabel { get; set; }
+            public string PCOPermissionLabel { get; set; }
+
+            public AccountPersonHelper( AccountPerson accountPerson, bool current )
+            {
+                if ( accountPerson != null )
+                {
+                    Id = accountPerson.Id;
+
+                    if ( accountPerson.PersonAlias != null )
+                    {
+                        person = accountPerson.PersonAlias.Person;
+                        if ( person != null )
+                        {
+                            LastName = person.LastName;
+                            NickName = person.NickName;
+                        }
+                    }
+
+                    PCOId = accountPerson.PCOId;
+                    Current = current;
+
+                    var rockPermission = GetPermission( accountPerson.RockSyncState );
+                    var pcoPermission = GetPermission( accountPerson.PCOSyncState );
+                    RockPermission = rockPermission.ConvertToString();
+                    PCOPermission = pcoPermission.ConvertToString();
+                    RockPermissionLabel = GetSecurityLabel( rockPermission );
+                    PCOPermissionLabel = GetSecurityLabel( pcoPermission );
+                }
+            }
+
+            private Permission GetPermission( string state )
+            {
+                if ( !string.IsNullOrWhiteSpace( state ) )
+                {
+                    var pcoPerson = JsonConvert.DeserializeObject<PCOPerson>( state );
+                    return People.PermissionLevel( pcoPerson.permissions );
+                }
+
+                return Permission.None;
+            }
+
+            private string GetSecurityLabel( Permission permission )
+            {
+                string labelType = "default";
+                switch ( permission )
+                {
+                    case Permission.Administrator: labelType = "success"; break;
+                    case Permission.Editor: labelType = "info"; break;
+                    case Permission.Scheduler: labelType = "info"; break;
+                    case Permission.ScheduledViewer: labelType = "warning"; break;
+                    case Permission.Viewer: labelType = "warning"; break;
+                    default: labelType = "default"; break;
+                }
+
+                return string.Format( "<span class='label label-{0}'>{1}</span>", labelType, permission.ConvertToString() );
+            }
         }
 
         #endregion
