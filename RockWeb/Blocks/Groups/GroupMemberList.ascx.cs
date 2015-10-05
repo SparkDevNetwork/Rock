@@ -214,6 +214,7 @@ namespace RockWeb.Blocks.Groups
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Last Name" ), "Last Name", tbLastName.Text );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Role" ), "Role", cblRole.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Status" ), "Status", cblStatus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Campus" ), "Campus", cpCampusFilter.SelectedCampusId.ToString() );
 
             if ( AvailableAttributes != null )
             {
@@ -278,6 +279,19 @@ namespace RockWeb.Blocks.Groups
             else if ( e.Key == MakeKeyUniqueToGroup( "Status" ) )
             {
                 e.Value = ResolveValues( e.Value, cblStatus );
+            }
+            else if ( e.Key == MakeKeyUniqueToGroup( "Campus" ) )
+            {
+                var campusId = e.Value.AsIntegerOrNull();
+                if ( campusId.HasValue )
+                {
+                    var campusCache = CampusCache.Read( campusId.Value );
+                    e.Value = campusCache.Name;
+                }
+                else
+                {
+                    e.Value = null;
+                }
             }
             else
             {
@@ -370,11 +384,14 @@ namespace RockWeb.Blocks.Groups
 
             cblStatus.BindToEnum<GroupMemberStatus>();
 
+            cpCampusFilter.Campuses = CampusCache.All();
+
             BindAttributes();
             AddDynamicControls();
 
             tbFirstName.Text = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "First Name" ) );
             tbLastName.Text = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Last Name" ) );
+            cpCampusFilter.SelectedCampusId = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Campus" ) ).AsIntegerOrNull();
 
             string roleValue = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Role" ) );
             if ( !string.IsNullOrWhiteSpace( roleValue ) )
@@ -754,6 +771,15 @@ namespace RockWeb.Blocks.Groups
                     if ( statuses.Any() )
                     {
                         qry = qry.Where( m => statuses.Contains( m.GroupMemberStatus ) );
+                    }
+
+                    // Filter by Campus
+                    if ( cpCampusFilter.SelectedCampusId.HasValue )
+                    {
+                        Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                        int campusId = cpCampusFilter.SelectedCampusId.Value;
+                        var qryFamilyMembersForCampus = new GroupMemberService( rockContext ).Queryable().Where( a => a.Group.GroupType.Guid == familyGuid && a.Group.CampusId == campusId );
+                        qry = qry.Where( a => qryFamilyMembersForCampus.Any( f => f.PersonId == a.PersonId ) );
                     }
 
                     // Filter query by any configured attribute filters
