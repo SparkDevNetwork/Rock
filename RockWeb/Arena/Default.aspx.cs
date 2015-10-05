@@ -13,6 +13,7 @@ public partial class Arena_Default : System.Web.UI.Page
     protected void Page_Load(object sender, EventArgs e)
     {
         // add the rules
+        _redirectRules.Add( new RedirectRule( "/Arena/default.aspx", "/", false ) );
         _redirectRules.Add( new RedirectRule( "/Arena/default.aspx?portal=5", "/", false ) );
         _redirectRules.Add( new RedirectRule( "/Arena/default.aspx?page=17623", "/about", false ) );
         _redirectRules.Add( new RedirectRule( "/Arena/default.aspx?page=18386", "/anthem", false ) );
