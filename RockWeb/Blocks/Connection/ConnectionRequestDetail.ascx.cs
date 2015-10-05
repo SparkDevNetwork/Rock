@@ -1108,7 +1108,7 @@ namespace RockWeb.Blocks.Connection
 
                 foreach ( PhoneNumber phoneNumber in person.PhoneNumbers )
                 {
-                    contactList.Add( String.Format( "{0} <font color='#808080'>{1}</font>", phoneNumber.NumberFormatted, phoneNumber.NumberTypeValue.Value ) );
+                    contactList.Add( String.Format( "{0} <font color='#808080'>{1}</font>", phoneNumber.NumberFormatted, phoneNumber.NumberTypeValue ) );
                 }
 
                 string emailTag = person.GetEmailTag( ResolveRockUrl( "/" ) );
