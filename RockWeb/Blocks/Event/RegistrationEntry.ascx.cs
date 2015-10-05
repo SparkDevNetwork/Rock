@@ -58,10 +58,11 @@ namespace RockWeb.Blocks.Event
 
         // Page (query string) parameter names
         private const string REGISTRATION_ID_PARAM_NAME = "RegistrationId";
-        private const string REGISTRATION_SLUG_PARAM_NAME = "Slug";
+        private const string SLUG_PARAM_NAME = "Slug";
         private const string REGISTRATION_INSTANCE_ID_PARAM_NAME = "RegistrationInstanceId";
-        private const string REGISTRATION_GROUP_ID_PARAM_NAME = "GroupId";
-        private const string REGISTRATION_CAMPUS_ID_PARAM_NAME = "CampusId";
+        private const string EVENT_OCCURRENCE_ID_PARAM_NAME = "EventOccurrenceId";
+        private const string GROUP_ID_PARAM_NAME = "GroupId";
+        private const string CAMPUS_ID_PARAM_NAME = "CampusId";
 
         // Viewstate keys
         private const string REGISTRATION_INSTANCE_STATE_KEY = "RegistrationInstanceState";
@@ -907,11 +908,12 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void SetRegistrationState()
         {
-            string registrationSlug = PageParameter( REGISTRATION_SLUG_PARAM_NAME );
+            string registrationSlug = PageParameter( SLUG_PARAM_NAME );
             int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
             int? registrationId = PageParameter( REGISTRATION_ID_PARAM_NAME ).AsIntegerOrNull();
-            int? groupId = PageParameter( REGISTRATION_GROUP_ID_PARAM_NAME ).AsIntegerOrNull();
-            int? campusId = PageParameter( REGISTRATION_CAMPUS_ID_PARAM_NAME ).AsIntegerOrNull();
+            int? groupId = PageParameter( GROUP_ID_PARAM_NAME ).AsIntegerOrNull();
+            int? campusId = PageParameter( CAMPUS_ID_PARAM_NAME ).AsIntegerOrNull();
+            int? eventOccurrenceId = PageParameter( EVENT_OCCURRENCE_ID_PARAM_NAME ).AsIntegerOrNull();
 
             // Not inside a "using" due to serialization needing context to still be active
             var rockContext = new RockContext();
@@ -982,7 +984,7 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            // A registratio instance id was specified
+            // A registration instance id was specified
             if ( RegistrationState == null && registrationInstanceId.HasValue )
             {
                 var dateTime = RockDateTime.Now;
@@ -1000,6 +1002,26 @@ namespace RockWeb.Blocks.Event
                 if ( RegistrationInstanceState != null )
                 {
                     RegistrationState = new RegistrationInfo( CurrentPerson );
+                }
+            }
+
+            // If registration instance id and event occurrence were specified, but a group (linkage) hasn't been loaded, find the first group for the event occurrence
+            if ( RegistrationInstanceState != null && eventOccurrenceId.HasValue && !groupId.HasValue )
+            {
+                var eventItemOccurrence = new EventItemOccurrenceService( rockContext )
+                    .Queryable()
+                    .Where( o => o.Id == eventOccurrenceId.Value )
+                    .FirstOrDefault();
+                if ( eventItemOccurrence != null )
+                {
+                    var linkage = eventItemOccurrence.Linkages
+                        .Where( l => l.RegistrationInstanceId == RegistrationInstanceState.Id )
+                        .FirstOrDefault();
+
+                    if ( linkage != null )
+                    {
+                        GroupId = linkage.GroupId;
+                    }
                 }
             }
 
