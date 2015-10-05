@@ -12,7 +12,7 @@ REQUIRED VARIABLES
 {% endcomment %}
 
 <h3 class="sermonTitle">{{ table1.rows.first.SeriesTitle }}</h3>
-<img class="seriesArt" src="http://ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId1 }}&amp;width=720&amp;height=720" alt="{{ table1.rows.first.SeriesTitle }}">
+<img class="seriesArt" src="http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId1 }}&amp;width=720&amp;height=720" alt="{{ table1.rows.first.SeriesTitle }}">
 <p>
   {{ table1.rows.first.MessageDescription }}
 </p>
