@@ -230,8 +230,8 @@ namespace RockWeb.Blocks.Finance
                 // NOTE that gTransactions_Delete click will also check if the transaction is part of a closed batch
                 if ( _batch.Status != BatchStatus.Closed && _canEdit )
                 {
-                    gTransactions.Actions.ShowAdd = true;
-                    gTransactions.IsDeleteEnabled = true;
+                    gTransactions.Actions.ShowAdd = _canEdit;
+                    gTransactions.IsDeleteEnabled = _canEdit;
                 }
                 else
                 {
@@ -743,7 +743,7 @@ namespace RockWeb.Blocks.Finance
                 // If the batch is closed, do not allow any editing of the transactions
                 if ( _batch.Status != BatchStatus.Closed && _canEdit )
                 {
-                    gTransactions.IsDeleteEnabled = true;
+                    gTransactions.IsDeleteEnabled = _canEdit;
                 }
                 else
                 {
