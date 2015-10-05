@@ -65,7 +65,7 @@
         <div class="Footer">
             <p class="Copyright">Copyright 2015 Christ’s Church of the Valley. All Rights Reserved.</p>
             <p class="ViewFullLink">
-            <a href="http://ccv.church/" class="ccvonline-link">ccv.church full web site</a></p>
+            <a href="http://ccv.church/landing" class="ccvonline-link">ccv.church full web site</a></p>
         </div>
 
     </form>
