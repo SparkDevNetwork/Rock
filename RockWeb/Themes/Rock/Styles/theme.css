@@ -1412,11 +1412,11 @@ tr.row-highlight td {
   display: block;
 }
 /*
-    Used to manage styles for specific blocks.
+  Used to manage styles for specific blocks.
 
-    1. Notes - block to display, add, edit, delete notes
-    2. Schedule Builder - block for building schedules
-    3. Workflow - styles for workflow blocks
+  1. Notes - block to display, add, edit, delete notes
+  2. Schedule Builder - block for building schedules
+  3. Workflow - styles for workflow blocks
 
 */
 .panel-note {
@@ -1439,7 +1439,7 @@ tr.row-highlight td {
   border-bottom-color: #d8d1c8;
 }
 .panel-note .panel-body {
-  background-color: #fffs;
+  background-color: #fff;
 }
 .panel-note .panel-heading h3 {
   float: left;
@@ -6571,9 +6571,8 @@ body.navbar-side-close #content-wrapper {
 @media print {
   @page {
     size: 8.5in 11in;
-    margin: .25in;
-    
     /* width height */
+    margin: .25in;
   }
   html,
   body {
