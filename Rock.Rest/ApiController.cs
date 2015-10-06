@@ -353,7 +353,7 @@ namespace Rock.Rest
         [HttpDelete]
         public virtual HttpResponseMessage DeleteAttributeValue( int id, string attributeKey )
         {
-            return SetAttributeValue( id, attributeKey, null );
+            return SetAttributeValue( id, attributeKey, string.Empty );
         }
 
         // POST api/<controller>/AttributeValue 
