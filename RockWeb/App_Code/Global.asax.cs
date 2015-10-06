@@ -747,6 +747,16 @@ namespace RockWeb
                 var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
                 mergeObjects.Add( "ExceptionDetails", string.Format( "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
                     person != null ? " for " + person.FullName : "", siteName, Context.Request.Url.OriginalString, FormatException( ex, "" ) ) );
+
+                try
+                {
+                    mergeObjects.Add( "Exception", Hash.FromAnonymousObject( ex ) );
+                }
+                catch
+                {
+                    // ignore
+                }
+
                 mergeObjects.Add( "Person", person );
 
                 // get email addresses to send to

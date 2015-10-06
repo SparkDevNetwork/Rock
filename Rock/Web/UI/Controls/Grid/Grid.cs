@@ -1968,7 +1968,7 @@ namespace Rock.Web.UI.Controls
             {
                 // limit to non-virtual methods to prevent lazy loading issues
                 var getMethod = property.GetGetMethod();
-                if ( !getMethod.IsVirtual )
+                if ( !getMethod.IsVirtual || ( property.GetCustomAttribute<PreviewableAttribute>() != null ) )
                 {
                     if ( property.Name != "Id" )
                     {

@@ -36,9 +36,9 @@
                                     <asp:Literal ID="lInstallNotes" runat="server" />
                                 </p>
 
-                                <p>
-                                    <asp:Literal ID="lRatingSummary" runat="server" /> <asp:LinkButton ID="lbRate" Visible="false" runat="server">Rate</asp:LinkButton>
-                                </p>
+                                <div class="clearfix margin-v-lg">
+                                    <asp:Literal ID="lRatingSummary" runat="server" /> <asp:LinkButton ID="lbRate" Visible="true" runat="server" CssClass="pull-left" OnClick="lbRate_Click">Rate</asp:LinkButton>
+                                </div>
 
                                 <p>
                                     <strong>Last Updated</strong><br />

@@ -230,8 +230,8 @@ namespace RockWeb.Blocks.Finance
                 // NOTE that gTransactions_Delete click will also check if the transaction is part of a closed batch
                 if ( _batch.Status != BatchStatus.Closed && _canEdit )
                 {
-                    gTransactions.Actions.ShowAdd = true;
-                    gTransactions.IsDeleteEnabled = true;
+                    gTransactions.Actions.ShowAdd = _canEdit;
+                    gTransactions.IsDeleteEnabled = _canEdit;
                 }
                 else
                 {
@@ -245,8 +245,13 @@ namespace RockWeb.Blocks.Finance
                 gTransactions.Columns[0].Visible = false;
                 _ddlMove.Visible = false;
 
+                // not in batch mode, so don't allow Add, and don't show the DeleteButton
                 gTransactions.Actions.ShowAdd = false;
-                gTransactions.IsDeleteEnabled = false;
+                var deleteField = gTransactions.ColumnsOfType<DeleteField>().FirstOrDefault();
+                if (deleteField != null)
+                {
+                    deleteField.Visible = false;
+                }
             }
 
             base.OnPreRender( e );
@@ -743,7 +748,7 @@ namespace RockWeb.Blocks.Finance
                 // If the batch is closed, do not allow any editing of the transactions
                 if ( _batch.Status != BatchStatus.Closed && _canEdit )
                 {
-                    gTransactions.IsDeleteEnabled = true;
+                    gTransactions.IsDeleteEnabled = _canEdit;
                 }
                 else
                 {

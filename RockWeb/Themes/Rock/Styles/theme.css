@@ -1439,7 +1439,7 @@ tr.row-highlight td {
   border-bottom-color: #d8d1c8;
 }
 .panel-note .panel-body {
-  background-color: #fff;
+  background-color: #fffs;
 }
 .panel-note .panel-heading h3 {
   float: left;
@@ -2518,7 +2518,7 @@ tr.inactive td {
 }
 .bulk-update .form-group.bulk-item-selected {
   opacity: 1;
-  background-color: #777777;
+  background-color: #eeeeee;
   padding: 12px;
   border-radius: 4px;
 }
@@ -6571,8 +6571,9 @@ body.navbar-side-close #content-wrapper {
 @media print {
   @page {
     size: 8.5in 11in;
-    /* width height */
     margin: .25in;
+    
+    /* width height */
   }
   html,
   body {

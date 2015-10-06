@@ -73,6 +73,12 @@ namespace RockWeb.Blocks.Administration
             // register btnDumpDiagnostics as a PostBackControl since it is returning a File download
             ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
             scriptManager.RegisterPostBackControl( btnDumpDiagnostics );
+
+            btn1.Visible = false;
+            btn2.Visible = false;
+            btn3.Visible = false;
+            btn4.Visible = false;
+            btn5.Visible = false;
         }
 
         protected override void OnPreRender( EventArgs e )

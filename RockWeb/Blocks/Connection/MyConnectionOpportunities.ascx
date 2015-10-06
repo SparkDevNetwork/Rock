@@ -63,19 +63,19 @@
                         </Rock:RockCheckBoxList>
                         <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit" CssClass="js-grid-requests" >
+                    <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit" CssClass="js-grid-requests" AllowSorting="true" >
                         <Columns>
-                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campu" />
-                            <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="Group" />
-                            <Rock:RockBoundField DataField="Connector" HeaderText="Connector" />
-                            <Rock:RockBoundField DataField="Activities" HeaderText="Activities" HtmlEncode="false" />
-                            <asp:TemplateField HeaderText="State">
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
+                            <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus.Name" />
+                            <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="AssignedGroup.Name" />
+                            <Rock:RockBoundField DataField="Connector" HeaderText="Connector" SortExpression="Connector.PersonAlias.Person.LastName,Connector.PersonAlias.Person.NickName" />
+                            <Rock:RockBoundField DataField="LastActivity" HeaderText="Last Activity" HtmlEncode="false"  />
+                            <asp:TemplateField HeaderText="State" SortExpression="ConnectionState" >
                                 <ItemTemplate>
                                     <%# Eval("StateLabel") %>
                                 </ItemTemplate>
                             </asp:TemplateField>
-                            <asp:TemplateField HeaderText="Status">
+                            <asp:TemplateField HeaderText="Status" SortExpression="ConnectionStatus.Name">
                                 <ItemTemplate>
                                     <span class='label label-<%# Eval("StatusLabel") %>'><%# Eval("Status") %></span>
                                 </ItemTemplate>
