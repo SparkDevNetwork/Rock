@@ -157,37 +157,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
             }
         }
 
-        #endregion
-
-        #region Internal Methods
-
-        public void AddMissingPeople()
-        {
-        }
-
-        /// <summary>
-        /// Shows the detail.
-        /// </summary>
-        public void ShowDetail()
-        {
-            hfAccountId.SetValue( _account.Id );
-            BindAccountPersonsGrid();
-        }
-
-        /// <summary>
-        /// Handles the GridRebind event of the gAccountPersons control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gAccountPersons_GridRebind( object sender, EventArgs e )
-        {
-            BindAccountPersonsGrid();
-        }
-
-        /// <summary>
-        /// Binds the defined values grid.
-        /// </summary>
-        protected void BindAccountPersonsGrid()
+        protected void btnRefresh_Click( object sender, EventArgs arg )
         {
             if ( _account != null )
             {
@@ -288,16 +258,87 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
 
                         rockContext.SaveChanges();
                     }
+                }
+            }
 
+            BindAccountPersonsGrid();
+        }
+        
+        #endregion
+
+        #region Internal Methods
+
+        public void AddMissingPeople()
+        {
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        public void ShowDetail()
+        {
+            hfAccountId.SetValue( _account.Id );
+            BindAccountPersonsGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gAccountPersons control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gAccountPersons_GridRebind( object sender, EventArgs e )
+        {
+            BindAccountPersonsGrid();
+        }
+
+        /// <summary>
+        /// Binds the defined values grid.
+        /// </summary>
+        protected void BindAccountPersonsGrid()
+        {
+            if ( _account != null )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    // Get the group ids that this account is associated with
+                    var groupIdList = new List<int>();
+                    if ( _account.AdministratorGroupId.HasValue )
+                    {
+                        groupIdList.Add( _account.AdministratorGroupId.Value );
+                    }
+                    if ( _account.EditorGroupId.HasValue )
+                    {
+                        groupIdList.Add( _account.EditorGroupId.Value );
+                    }
+                    if ( _account.SchedulerGroupId.HasValue )
+                    {
+                        groupIdList.Add( _account.SchedulerGroupId.Value );
+                    }
+                    if ( _account.ViewerGroupId.HasValue )
+                    {
+                        groupIdList.Add( _account.ViewerGroupId.Value );
+                    }
+                    if ( _account.ScheduledViewerGroupId.HasValue )
+                    {
+                        groupIdList.Add( _account.ScheduledViewerGroupId.Value );
+                    }
+                    var groupMemberPersonIds = new GroupMemberService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( m =>
+                            groupIdList.Contains( m.GroupId ) &&
+                            m.GroupMemberStatus == GroupMemberStatus.Active )
+                        .Select( m => m.PersonId );
+                    
                     var people = new List<AccountPersonHelper>();
-                    foreach ( var accountPerson in accountPersonService
+                    foreach ( var accountPerson in new AccountPersonService( rockContext )
                         .Queryable()
                         .Where( a =>
                             a.AccountId == _account.Id &&
                             a.PersonAlias != null &&
                             a.PersonAlias.Person != null )
                         .OrderBy( a => a.PersonAlias.Person.LastName )
-                        .ThenBy( a => a.PersonAlias.Person.NickName ) )
+                        .ThenBy( a => a.PersonAlias.Person.NickName )
+                        .ToList() )
                     {
                         people.Add( new AccountPersonHelper(
                             accountPerson,
