@@ -46,8 +46,7 @@ namespace RockWeb.Blocks.Crm
         #region Fields
 
         // used for private variables
-        string size = "65";
-        string sizepx = "65px";
+        int size = 65;
 
         /// <summary>
         /// Group that manages the people using the Photo Request system.
@@ -75,8 +74,16 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            size = GetAttributeValue( "PhotoSize" );
-            sizepx = string.Format( "{0}px", size );
+            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+
+
+            size = GetAttributeValue( "PhotoSize" ).AsInteger();
+            if ( size <= 0 )
+            {
+                size = 65;
+            }
 
             if ( _photoRequestGroup == null )
             {
@@ -96,6 +103,7 @@ namespace RockWeb.Blocks.Crm
             gList.Actions.AddCustomActionControl( _bbtnVerify );
             gList.Actions.ShowExcelExport = false;
             gList.Actions.ShowMergeTemplate = false;
+            gList.GridRebind += gList_GridRebind;
         }
 
         /// <summary>
@@ -129,21 +137,30 @@ namespace RockWeb.Blocks.Crm
                 var groupMember = e.Row.DataItem as GroupMember;
                 if ( groupMember != null )
                 {
-                    HtmlImage imgPersonImage = e.Row.FindControl( "imgPersonImage" ) as HtmlImage;
-                    if ( imgPersonImage != null )
+                    Literal lImage = e.Row.FindControl( "lImage" ) as Literal;
+                    if ( lImage != null )
                     {
-                         if ( groupMember.Person.PhotoId == null )
-                         {
-                             var deleteField = gList.Columns.OfType<DeleteField>().First();
-                             var cell = (e.Row.Cells[gList.Columns.IndexOf( deleteField )] as DataControlFieldCell).Controls[0];
-                             if ( cell != null )
-                             {
-                                cell.Visible = false;
-                             }
-                         }
+                        string imgTag = Person.GetPhotoImageTag( groupMember.Person.PhotoId, groupMember.Person.Gender, size, size );
 
-                        imgPersonImage.Src = String.Format( @"{0}&width={1}", Person.GetPhotoUrl( groupMember.Person.PhotoId, groupMember.Person.Gender ), size );
-                        imgPersonImage.Style.Add( "width", sizepx );
+                        if ( groupMember.Person.PhotoId.HasValue )
+                        {
+                            lImage.Text = string.Format( "<a href='{0}'>{1}</a>", groupMember.Person.PhotoUrl, imgTag );
+                        }
+                        else
+                        {
+                            lImage.Text = imgTag;
+
+                            var deleteField = gList.Columns.OfType<DeleteField>().First();
+                            var cell = ( e.Row.Cells[gList.Columns.IndexOf( deleteField )] as DataControlFieldCell ).Controls[0];
+                            if ( cell != null )
+                            {
+                                var lb = cell.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+                                if ( lb != null )
+                                {
+                                    lb.Visible = false;
+                                }
+                            }
+                        }
                     }
 
                     if ( groupMember.GroupMemberStatus != GroupMemberStatus.Pending )
@@ -180,8 +197,6 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            size = GetAttributeValue( "PhotoSize" );
-            sizepx = string.Format( "{0}px", size );
             BindGrid();
         }
 
@@ -285,6 +300,16 @@ namespace RockWeb.Blocks.Crm
         /// <param name="sender"></param>
         /// <param name="e"></param>
         protected void cbShowAll_CheckedChanged( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void gList_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
