@@ -1412,11 +1412,11 @@ tr.row-highlight td {
   display: block;
 }
 /*
-    Used to manage styles for specific blocks.
+  Used to manage styles for specific blocks.
 
-    1. Notes - block to display, add, edit, delete notes
-    2. Schedule Builder - block for building schedules
-    3. Workflow - styles for workflow blocks
+  1. Notes - block to display, add, edit, delete notes
+  2. Schedule Builder - block for building schedules
+  3. Workflow - styles for workflow blocks
 
 */
 .panel-note {
@@ -2518,7 +2518,7 @@ tr.inactive td {
 }
 .bulk-update .form-group.bulk-item-selected {
   opacity: 1;
-  background-color: #999999;
+  background-color: #eeeeee;
   padding: 12px;
   border-radius: 4px;
 }
