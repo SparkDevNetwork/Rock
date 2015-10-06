@@ -53,7 +53,6 @@ namespace com.centralaz.SpiritualGifts.PersonProfile.Badge
             {
                 int pageId = Rock.Web.Cache.PageCache.Read( Guid.Parse( GetAttributeValue( badge, "SpiritualGiftResultDetail" ) ) ).Id;
                 detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?Person={1}", pageId, Person.UrlEncodedKey ) );
-                writer.Write( "<a href='{0}'>", detailPageUrl );
             }
 
             //Determine icon
@@ -81,16 +80,14 @@ namespace com.centralaz.SpiritualGifts.PersonProfile.Badge
                         iconClass = "badge-icon fa fa-bullhorn";
                         break;
                     case "Mercy":
-                        iconClass = "badge-icon fa fa-lifesaver";
+                        iconClass = "badge-icon fa fa-life-ring";
                         break;
                 }
-                //Badge HTML
-                writer.Write( String.Format( "<i class='{0}'></i>", iconClass ) );
 
-                if ( !String.IsNullOrEmpty( detailPageUrl ) )
-                {
-                    writer.Write( "</a>" );
-                }
+                //Badge HTML
+                writer.Write( "<div class='badge' data-original-title='Spiritual Gift is {0}' ><a href='{1}'>", giftingValue.Value, !String.IsNullOrEmpty( detailPageUrl ) ? detailPageUrl  : "#" );
+                writer.Write( String.Format( "<i class='{0}'></i>", iconClass ) );
+                writer.Write( "</a></div>" );
             }
         }
 
