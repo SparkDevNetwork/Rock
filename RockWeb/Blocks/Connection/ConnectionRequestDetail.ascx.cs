@@ -811,7 +811,7 @@ namespace RockWeb.Blocks.Connection
             var activityGuid = e.RowKeyValue.ToString().AsGuid();
             var activity = new ConnectionRequestActivityService( new RockContext() ).Get( activityGuid );
             if ( activity != null &&
-                activity.CreatedByPersonAliasId.Equals( CurrentPersonAliasId ) &&
+                ( activity.CreatedByPersonAliasId.Equals( CurrentPersonAliasId ) || activity.ConnectorPersonAliasId.Equals( CurrentPersonAliasId ) ) &&
                 activity.ConnectionActivityType.ConnectionTypeId.HasValue )
             {
                 ShowActivityDialog( activityGuid );
@@ -857,7 +857,7 @@ namespace RockWeb.Blocks.Connection
                 var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
                 var activity = connectionRequestActivityService.Get( activityGuid );
                 if ( activity != null &&
-                    activity.CreatedByPersonAliasId.Equals( CurrentPersonAliasId ) &&
+                    ( activity.CreatedByPersonAliasId.Equals( CurrentPersonAliasId ) || activity.ConnectorPersonAliasId.Equals( CurrentPersonAliasId ) ) && 
                     activity.ConnectionActivityType.ConnectionTypeId.HasValue )
                 {
                     connectionRequestActivityService.Delete( activity );
@@ -911,7 +911,9 @@ namespace RockWeb.Blocks.Connection
                             OpportunityId = a.ConnectionOpportunityId,
                             Connector = a.ConnectorPersonAlias != null && a.ConnectorPersonAlias.Person != null ? a.ConnectorPersonAlias.Person.FullName : "",
                             Note = a.Note,
-                            CanEdit = a.ConnectorPersonAliasId.Equals( CurrentPersonAliasId ) && a.ConnectionActivityType.ConnectionTypeId.HasValue
+                            CanEdit = 
+                                ( a.CreatedByPersonAliasId.Equals( CurrentPersonAliasId ) || a.ConnectorPersonAliasId.Equals( CurrentPersonAliasId ) ) && 
+                                a.ConnectionActivityType.ConnectionTypeId.HasValue
                         } )
                     .OrderByDescending( a => a.CreatedDate )
                     .ToList();
