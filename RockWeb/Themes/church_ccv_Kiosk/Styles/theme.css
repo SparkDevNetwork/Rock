@@ -922,7 +922,7 @@ dl:not(.dl-horizontal) dd {
 }
 .table-striped > tbody > tr:nth-child(odd) > td,
 .table-striped > tbody > tr:nth-child(odd) > th {
-  background-color: #f7f7f7;
+  background-color: #090909;
   color: #ffffff;
 }
 td.grid-select-cell {
@@ -2728,7 +2728,7 @@ iframe.email-body {
 .calendar {
   padding: 0 10px 10px 10px;
   display: inline-block;
-  border: 1px solid #d5d5d5;
+  border: 1px solid #555555;
   border-radius: 6px;
   width: 100%;
 }
