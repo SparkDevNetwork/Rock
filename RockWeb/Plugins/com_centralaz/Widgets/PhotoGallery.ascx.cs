@@ -39,7 +39,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [SecurityAction( Authorization.EDIT, "The roles and/or users that can edit the HTML content." )]
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
 
-    [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/", false, "", "", 2 )]
+    [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/", false, "PhotoGallery", "", 2 )]
     [IntegerField( "Pause Seconds", "The number of seconds to pause on each photo (default 4 seconds).", false, 4 )]
 
     [CustomRadioListField( "Display Mode", "", "1^Slideshow, 2^Gallery", true, "1")]
