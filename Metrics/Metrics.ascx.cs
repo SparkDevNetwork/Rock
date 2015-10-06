@@ -41,7 +41,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [CustomDropdownListField( "Number of Columns", "", "1,2,3,4,5,6,7,8,9,10,11,12", false, DefaultValue = "12", Order = 1 )]
     [CustomDropdownListField( "Metric Display Type", "", "Text,Line,Donut", Order = 2 )]
     [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", Order = 3 )]
-    [CustomRadioListField( "Custom Dates", "If not using date range, please select a custom date from here", "One Year Ago", Order = 4 )]
+    [CustomRadioListField( "Custom Dates", "If not using date range, please select a custom date from here", "This Week Last Year", Order = 4 )]
     [CustomCheckboxListField( "Compare Against Last Year", "", "Yes", Order = 5 )]
     [MetricCategoriesField( "Metric Source", "Select the metric to include in this chart.", false, "", "", 6 )]
     [CustomCheckboxListField( "Respect Page Context", "", "Yes", Order = 7 )]
@@ -95,37 +95,84 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
         }
 
-        private decimal MetricValueFunction( List<int> churchMetricSource, Rock.DateRange dateRange, IEntity campusContext, IEntity groupContext, IEntity scheduleContext )
+        private int
+            TimeSpanDifference(
+                Rock.DateRange dateRange
+            )
+        {
+            DateTime dateRangeStart = dateRange.Start ?? DateTime.Now;
+            DateTime dateRangeEnd = dateRange.End ?? DateTime.Now;
+
+            TimeSpan ts = dateRangeEnd - dateRangeStart;
+
+            return ts.Days + 1;
+        }
+
+        private decimal
+            MetricValueFunction( 
+                List<int> churchMetricSource,
+                Rock.DateRange dateRange,
+                IEntity campusContext,
+                IEntity groupContext,
+                IEntity scheduleContext
+            )
         {
 
+            var executeQuery = new List<Rock.Model.MetricValue>();
+            var metricList = new List<MetricValueList>();
 
-            var metricData = new MetricService( new RockContext() ).GetByIds( churchMetricSource ).FirstOrDefault();
+            // This only returns the first metric value
 
-            var queryable = metricData.MetricValues.AsQueryable().AsNoTracking();
+            foreach ( int churchMetricItem in churchMetricSource ) {
 
-            if ( dateRange != null )
-            {
-                queryable = queryable.Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End );
+                var metricData = new MetricService( new RockContext() ).Get( churchMetricItem );
+
+                var queryable = metricData.MetricValues.AsQueryable().AsNoTracking();
+
+                if ( dateRange != null )
+                {
+                    queryable = queryable.Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End );
+                }
+
+                if ( campusContext != null )
+                {
+                    queryable = queryable.Where( a => a.EntityId == campusContext.Id );
+                }
+
+                if ( scheduleContext != null )
+                {
+                    queryable = queryable.Where( a => a.MetricValueDateTime.Value.TimeOfDay == new ScheduleService( new RockContext() ).Get( scheduleContext.Guid ).StartTimeOfDay );
+                }
+
+                // Subsequent task will add group context to the query
+                // ---------------------------------------------------
+                //if ( groupContext != null )
+                //{
+                //    // queryable = queryable.Where( a => )
+                //}
+
+                executeQuery = queryable.ToList();
+
+                metricList.Add( new MetricValueList{ Name = metricData.Title, Value = executeQuery.Select( a => a.YValue ).Sum() ?? 0});
             }
 
-            if ( campusContext != null )
+            if ( metricList.Count() == 1 )
             {
-                queryable = queryable.Where( a => a.EntityId == campusContext.Id );
+                return metricList[0].Value;
+            }
+            else
+            {
+                return metricList[0].Value;
+
+                foreach ( var metricItem in metricList ) {
+                    // Let's add these together
+                    return metricItem.Value;
+                }
             }
 
-            //if ( groupContext != null )
-            //{
-            //    // queryable = queryable.Where( a => )
-            //}
+            // Need to alter this return for multiple entries in the metricList
+           //  return executeQuery.Select( a => a.YValue ).Sum() ?? 0;
 
-            if ( scheduleContext != null )
-            {
-                queryable = queryable.Where( a => a.MetricValueDateTime.Value.TimeOfDay == new ScheduleService( new RockContext() ).Get( scheduleContext.Guid ).StartTimeOfDay );    
-            }
-
-            var executeQuery = queryable.ToList();
-
-            return executeQuery.Select( a => a.YValue ).Sum() ?? 0;
         }
 
         #region Control Methods
@@ -139,23 +186,21 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             base.OnLoad( e );
 
             // Let's create null context values so they are available
-            IEntity campus = new List<IEntity>() as IEntity;
+            IEntity campusContext = new List<IEntity>() as IEntity;
             IEntity scheduleContext = new List<IEntity>() as IEntity;
             IEntity groupContext = new List<IEntity>() as IEntity;
 
             // Should The Blocks Respect Page Context?
-            var campusContext = GetAttributeValue( "RespectPageContext" ).AsBooleanOrNull();
+            var pageContext = GetAttributeValue( "RespectPageContext" ).AsBooleanOrNull();
 
             // If the blocks respect page context let's set those vars
-            if ( campusContext.HasValue )
+            if ( pageContext.HasValue )
             {
                 // Get Current Campus Context
-                campus = RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) );
+                campusContext = RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) );
 
                 // Get Current Schedule Context
                 scheduleContext = RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Schedule" ) );
-                // var newSchedule = new Schedule();
-                // newSchedule.GetCalenderEvent().DTStart.TimeOfDay;
 
                 // Get Current Group Context
                 groupContext = RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Group" ) );
@@ -192,119 +237,61 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             {
                 if ( GetAttributeValue( "MetricDisplayType" ) == "Text" && newMetric != null )
                 {
-
-                    decimal currentWeekMetricValue = MetricValueFunction( churchMetricSource, dateRange, campus, groupContext, scheduleContext );
-
-                    currentMetricValue.Value = string.Format( "{0:n0}", currentWeekMetricValue );
-
-                    // currentMetricValue = string.Format( "{0:n0}", currentMetricValue );
-
-                    // This should be able to accept page context
-
-                    var churchMetricValue = newMetric.MetricValues;
-
+                    // This is using the date range picker
                     if ( dateRange.Start.HasValue && dateRange.End.HasValue )
                     {
 
-                        // MetricValueFunction();
+                        var differenceInDays = TimeSpanDifference( dateRange );
 
-                        //if ( campus != null && campusContext.HasValue )
-                        //{
-                        //    var currentweekMetricValue = 0;
+                        var compareMetricValue = new DateRange
+                        {
+                            Start = dateRange.Start.Value.AddDays( -differenceInDays ),
+                            End = dateRange.End.Value.AddDays( -differenceInDays )
+                        };
 
-                        //    currentMetricValue.Value = string.Format( "{0:n0}", currentweekMetricValue );
+                        decimal currentRangeMetricValue = MetricValueFunction( churchMetricSource, dateRange, campusContext, groupContext, scheduleContext );
 
-                        //    // Compare currentMetricValue to the same date range 7 days previous
+                        decimal previousRangeMetricValue = MetricValueFunction( churchMetricSource, compareMetricValue, campusContext, groupContext, scheduleContext );
 
-                        //    var previousweekMetricValue = newMetric.MetricValues
-                        //        .Where( a => a.MetricValueDateTime >= dateRange.Start.Value.AddDays( -7 ) && a.MetricValueDateTime <= dateRange.End.Value.AddDays( -7 ) && a.EntityId.ToString() == campus.Id.ToString() )
-                        //        .Select( a => a.YValue )
-                        //        .Sum();
+                        currentMetricValue.Value = string.Format( "{0:n0}", currentRangeMetricValue );
 
-                        //    if ( currentweekMetricValue > previousweekMetricValue )
-                        //    {
-                        //        metricClass.Value = "fa-caret-up brand-success";
-                        //    }
-                        //    else if ( currentweekMetricValue < previousweekMetricValue )
-                        //    {
-                        //        metricClass.Value = "fa-caret-down brand-danger";
-                        //    }
+                        // Check to make sure that current and previous have a value to compare
+                        if ( currentRangeMetricValue != null && previousRangeMetricValue != null )
+                        {
+                            if ( currentRangeMetricValue > previousRangeMetricValue )
+                            {
+                                metricClass.Value = "fa-caret-up brand-success";
+                            }
+                            else if ( currentRangeMetricValue < previousRangeMetricValue )
+                            {
+                                metricClass.Value = "fa-caret-down brand-danger";
+                            }
+                        }
 
-                        //    if ( MetricCompareLastYear == "Yes" )
-                        //    {
-                        //        previousMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
-                        //            .Where( a => a.MetricValueDateTime >= dateRange.Start.Value.AddYears( -1 ) && a.MetricValueDateTime <= dateRange.End.Value.AddYears( -1 ) && a.EntityId.ToString() == campus.Id.ToString() )
-                        //            .Select( a => a.YValue )
-                        //            .Sum()
-                        //            );
-                        //    }
-                        //}
-                        //else
-                        //{
-                        //    var currentweekMetricValue = newMetric.MetricValues
-                        //        .Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End )
-                        //        .Select( a => a.YValue )
-                        //        .Sum();
+                        if ( MetricCompareLastYear == "Yes" )
+                        {
+                            var comparePreviousYearMetricValue = new DateRange
+                            {
+                                Start = dateRange.Start.Value.AddYears( -1 ),
+                                End = dateRange.End.Value.AddYears( -1 )
+                            };
 
-                        //    currentMetricValue.Value = string.Format( "{0:n0}", currentweekMetricValue );
+                            decimal previousYearRangeMetricValue = MetricValueFunction( churchMetricSource, comparePreviousYearMetricValue, campusContext, groupContext, scheduleContext );
 
-                        //    // Compare currentMetricValue to the same date range 7 days previous
-
-                        //    var previousweekMetricValue = newMetric.MetricValues
-                        //        .Where( a => a.MetricValueDateTime >= dateRange.Start.Value.AddDays( -7 ) && a.MetricValueDateTime <= dateRange.End.Value.AddDays( -7 ) )
-                        //        .Select( a => a.YValue )
-                        //        .Sum();
-
-                        //    if ( currentweekMetricValue > previousweekMetricValue )
-                        //    {
-                        //        metricClass.Value = "fa-caret-up brand-success";
-                        //    }
-                        //    else if ( currentweekMetricValue < previousweekMetricValue )
-                        //    {
-                        //        metricClass.Value = "fa-caret-down brand-danger";
-                        //    }
-
-                        //    if ( MetricCompareLastYear == "Yes" )
-                        //    {
-                        //        previousMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
-                        //            .Where( a => a.MetricValueDateTime >= dateRange.Start.Value.AddYears( -1 ) && a.MetricValueDateTime <= dateRange.End.Value.AddYears( -1 ) )
-                        //            .Select( a => a.YValue )
-                        //            .Sum()
-                        //            );
-                        //    }
-                        //}
+                            previousMetricValue.Value = string.Format( "{0:n0}", previousYearRangeMetricValue );
+                        }
                     }
-                    else if ( metricCustomDates == "One Year Ago" )
+
+                    // This Week Last Year
+                    else if ( metricCustomDates == "This Week Last Year" )
                     {
-                        if ( campus != null && campusContext.HasValue )
-                        {
-                            //currentMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
-                            //    .Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == calendar.GetWeekOfYear( DateTime.Now.AddYears( -1 ).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) && a.MetricValueDateTime.Value.Year.ToString() == DateTime.Now.AddYears( -1 ).ToString() && a.EntityId.ToString() == campus.Id.ToString() )
-                            //    .Select( a => a.YValue )
-                            //    .Sum()
-                            //);
-                        }
-                        else
-                        {
-                            //currentMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
-                            //.Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == calendar.GetWeekOfYear( DateTime.Now.AddYears( -1 ).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) && a.MetricValueDateTime.Value.Year.ToString() == DateTime.Now.AddYears( -1 ).ToString() )
-                            //.Select( a => a.YValue )
-                            //.Sum()
-                            //);
-                        }
+                        //currentMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
+                        //.Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == calendar.GetWeekOfYear( DateTime.Now.AddYears( -1 ).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) && a.MetricValueDateTime.Value.Year.ToString() == DateTime.Now.AddYears( -1 ).ToString() )
+                        //.Select( a => a.YValue )
+                        //.Sum()
+                        //);
+
                     }
-
-                    // Still Need to add the trending arrows back in
-
-                    // Get The CSS Classes For The Trend Arrow
-                    // if ( currentWeekMetric > lastWeekMetric )
-                    // {
-                    //  metricClass.Value = "fa-caret-up brand-success";
-                    // }
-                    // else
-                    // {
-                    //  metricClass.Value = "fa-caret-down brand-danger";
-                    // }
                 }
                 else if ( GetAttributeValue( "MetricDisplayType" ) == "Line" && newMetric != null )
                 {
@@ -319,10 +306,10 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     // Search for data if a source is selected
                     if ( dateRange.Start.HasValue && dateRange.End.HasValue )
                     {
-                        if ( campus != null && campusContext.HasValue )
+                        if ( campusContext != null && pageContext.HasValue )
                         {
                             metricCurrentYear = newMetric.MetricValues
-                                .Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End && a.EntityId.ToString() == campus.Id.ToString() )
+                                .Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End && a.EntityId.ToString() == campusContext.Id.ToString() )
                                 .OrderBy( a => a.MetricValueDateTime )
                                 .Select( a => new MetricJson
                                 {
@@ -336,7 +323,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                             if ( GetAttributeValue( "CompareAgainstLastYear" ) == "Yes" )
                             {
                                 metricPreviousYear = newMetric.MetricValues
-                                    .Where( a => a.MetricValueDateTime >= dateRange.Start.Value.AddYears( -1 ) && a.MetricValueDateTime <= dateRange.End.Value.AddYears( -1 ) && a.EntityId.ToString() == campus.Id.ToString() )
+                                    .Where( a => a.MetricValueDateTime >= dateRange.Start.Value.AddYears( -1 ) && a.MetricValueDateTime <= dateRange.End.Value.AddYears( -1 ) && a.EntityId.ToString() == campusContext.Id.ToString() )
                                     .OrderBy( a => a.MetricValueDateTime )
                                     .Select( a => new MetricJson
                                     {
@@ -442,10 +429,10 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                         // Search DB Based on Current Week of Year
                         if ( dateRange.Start.HasValue && dateRange.End.HasValue )
                         {
-                            if ( campus != null && campusContext.HasValue )
+                            if ( campusContext != null && pageContext.HasValue )
                             {
                                 currentMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
-                                    .Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End && a.EntityId.ToString() == campus.Id.ToString() )
+                                    .Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End && a.EntityId.ToString() == campusContext.Id.ToString() )
                                     .Select( a => a.YValue )
                                     .FirstOrDefault()
                                     );
@@ -537,6 +524,12 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         public static class MyStaticValues
         {
             public static bool metricCompareLastYear { get; set; }
+        }
+
+        public class MetricValueList
+        {
+            public string Name { get; set; }
+            public decimal Value { get; set; }
         }
 
         #endregion Classes

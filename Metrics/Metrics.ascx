@@ -26,7 +26,7 @@
                     <h1><%= currentMetricValue.Value %><% if ( metricClass.Value != "" )
                                                                   { %> <i class="fa fa-fw <%= metricClass.Value %> pull-right"></i><% } %></h1>
 
-                    <% if ( previousMetricValue.Value != "" && previousMetricValue.Value != "0" ) { %>
+                    <% if ( previousMetricValue.Value != "" ) { %>
                     <h4>Last Year</h4>
                     <h3><%= previousMetricValue.Value %></h3>
                     <% } %>
