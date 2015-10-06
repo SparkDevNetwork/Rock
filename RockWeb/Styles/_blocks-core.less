@@ -1,436 +1,436 @@
 ﻿/*
-    Used to manage styles for specific blocks.
+  Used to manage styles for specific blocks.
 
-    1. Notes - block to display, add, edit, delete notes
-    2. Schedule Builder - block for building schedules
-    3. Workflow - styles for workflow blocks
+  1. Notes - block to display, add, edit, delete notes
+  2. Schedule Builder - block for building schedules
+  3. Workflow - styles for workflow blocks
 
 */
 
-// 1. Notes 
+// 1. Notes
 // -------------------------
 .panel-note {
-    // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
-    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+  // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
+  .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
-    border-top-color: @panel-top-border-color;
+  border-top-color: @panel-top-border-color;
 
-    .panel-body {
-        background-color: #fffs;
+  .panel-body {
+    background-color: #fff;
+  }
+
+  .panel-heading {
+    h3 {
+      float: left;
+      margin-top: 4px;
     }
 
-    .panel-heading {
-        h3 {
-            float: left;
-            margin-top: 4px;
-        }
+    .btn {
+      float: right;
+      margin: 0;
+    }
+  }
 
-        .btn {
-            float: right;
-            margin: 0;
-        }
+  article {
+    border-radius: @border-radius-base;
+    border: 1px solid @state-info-border;
+    padding: @spacing-md-px;
+    margin-bottom: @spacing-md-px;
+    background-color: @state-info-bg;
+    position: relative;
+    color: @state-info-text;
+
+    .date {
+      font-size: 13px;
+      font-weight: @font-weight-light;
+      margin-left: 8px;
     }
 
-    article {
-        border-radius: @border-radius-base;
-        border: 1px solid @state-info-border;
-        padding: @spacing-md-px;
-        margin-bottom: @spacing-md-px;
-        background-color: @state-info-bg;
-        position: relative;
-        color: @state-info-text;
-
-        .date {
-            font-size: 13px;
-            font-weight: @font-weight-light;
-            margin-left: 8px;
-        }
-
-        & > i {
-            position: absolute;
-            width: 28px;
-            font-size: 28px;
-            margin: 0 12px 0 4px;
-            opacity: .2;
-        }
-
-        .details {
-            margin-left: 70px; 
-
-            h5 {
-                margin-top: 0;
-                margin-bottom: 6px;
-                max-width: 70%;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-        }
-
-        .actions {
-            position: absolute;
-            right: 15px;
-            top: 10px;
-
-            a {
-                float: right;
-                margin-left: 8px;
-                font-size: 14px;
-            }
-        }
-
-        &.highlight {
-            background-color: @note-highlight-bg;
-            border: 1px solid @note-highlight-border;
-            color: @note-highlight-text;
-
-            a {
-                color: @note-highlight-text;
-            }
-        }
-
-        &.personal {
-            background-color: @note-personal-bg;
-            border: 1px solid @note-personal-border;
-            color: @note-personal-text;
-        }
-
-        & > img {
-            float: left;
-            margin: 0 12px 0 4px;
-        }
+    & > i {
+      position: absolute;
+      width: 28px;
+      font-size: 28px;
+      margin: 0 12px 0 4px;
+      opacity: .2;
     }
 
-    .load-more {
-        margin: 0 40%;
-        min-width: 150px;
-        width: 20%;
+    .details {
+      margin-left: 70px;
 
-        span {
-            margin: 0 12px;
-        }
+      h5 {
+        margin-top: 0;
+        margin-bottom: 6px;
+        max-width: 70%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     }
+
+    .actions {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+
+      a {
+        float: right;
+        margin-left: 8px;
+        font-size: 14px;
+      }
+    }
+
+    &.highlight {
+      background-color: @note-highlight-bg;
+      border: 1px solid @note-highlight-border;
+      color: @note-highlight-text;
+
+      a {
+        color: @note-highlight-text;
+      }
+    }
+
+    &.personal {
+      background-color: @note-personal-bg;
+      border: 1px solid @note-personal-border;
+      color: @note-personal-text;
+    }
+
+    & > img {
+      float: left;
+      margin: 0 12px 0 4px;
+    }
+  }
+
+  .load-more {
+    margin: 0 40%;
+    min-width: 150px;
+    width: 20%;
+
+    span {
+      margin: 0 12px;
+    }
+  }
 }
 
 .note-deny,
 .note-danger,
 .note-security {
 
-    article {
-        border-color: @alert-danger-border;
-        background-color: @alert-danger-bg;
-        color: @alert-danger-text;
-    }
+  article {
+    border-color: @alert-danger-border;
+    background-color: @alert-danger-bg;
+    color: @alert-danger-text;
+  }
 
-    .actions a {
-        color: @alert-danger-text;
-    }
+  .actions a {
+    color: @alert-danger-text;
+  }
 }
 
 .note-approve,
 .note-success {
 
-    article {
-        border-color: @alert-success-border;
-        background-color: @alert-success-bg;
-        color: @alert-success-text;
-    }
+  article {
+    border-color: @alert-success-border;
+    background-color: @alert-success-bg;
+    color: @alert-success-text;
+  }
 
-    .actions a {
-        color: @alert-success-text;
-    }
+  .actions a {
+    color: @alert-success-text;
+  }
 }
 
 .note-info {
 
-    article {
-        border-color: @alert-info-border;
-        background-color: @alert-info-bg;
-        color: @alert-info-text;
-    }
+  article {
+    border-color: @alert-info-border;
+    background-color: @alert-info-bg;
+    color: @alert-info-text;
+  }
 
-    .actions a {
-        color: @alert-info-text;
-    }
+  .actions a {
+    color: @alert-info-text;
+  }
 }
 
 .note-warning {
 
-    article {
-        border-color: @alert-warning-border;
-        background-color: @alert-warning-bg;
-        color: @alert-warning-text;
-    }
+  article {
+    border-color: @alert-warning-border;
+    background-color: @alert-warning-bg;
+    color: @alert-warning-text;
+  }
 
-    .actions a {
-        color: @alert-warning-text;
-    }
+  .actions a {
+    color: @alert-warning-text;
+  }
 }
 
 
 .panel-note-light {
-    border: 0;
+  border: 0;
+  background: none;
+
+  .panel-body {
     background: none;
+  }
 
-    .panel-body {
-        background: none;
+  article {
+    background: none;
+    border-radius: 0;
+    border-width: 0 0 1px 0;
+    padding-left: 0;
+
+    .details {
+      margin-left: 0;
     }
 
-    article {
-        background: none;
-        border-radius: 0;
-        border-width: 0 0 1px 0;
-        padding-left: 0;
-
-        .details {
-            margin-left: 0;
-        }
-
-        .note-author,
-        .note-created {
-            font-size: @font-size-base - 1px;
-            opacity: 0.7;
-        }
+    .note-author,
+    .note-created {
+      font-size: @font-size-base - 1px;
+      opacity: 0.7;
     }
+  }
 }
 
 .panel-noteentry
 {
-    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+  .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
-    .createDate {
-          margin-top:10px;
-          width:50%;
+  .createDate {
+      margin-top:10px;
+      width:50%;
+  }
+
+  .settings {
+    margin-top: 4px;
+    .options {
+      input {
+        margin-right: 4px;
+      }
+    }
+  }
+
+  .panel-body {
+
+    .noteentry-control {
+      overflow: hidden;
     }
 
-    .settings {
-        margin-top: 4px;
-        .options {
-            input {
-                margin-right: 4px;
-            }
-        }
-    }
-    
-    .panel-body {
-        
-        .noteentry-control {
-            overflow: hidden;
-        }
-
-        .noteentry-notetype {
-            margin-bottom: 4px;
-        }
-
-        img {
-            float: left;
-            margin: 0 12px 0 4px;
-        }
-
+    .noteentry-notetype {
+      margin-bottom: 4px;
     }
 
-    .options .checkbox {
-        float: left;
-        margin: 0 @spacing-md-px 0 5px;
-    } 
-
-    .panel-footer {
-        background-color: @panel-default-heading-bg;
+    img {
+      float: left;
+      margin: 0 12px 0 4px;
     }
+
+  }
+
+  .options .checkbox {
+    float: left;
+    margin: 0 @spacing-md-px 0 5px;
+  }
+
+  .panel-footer {
+    background-color: @panel-default-heading-bg;
+  }
 }
 
 // 2. Schedule Builder
 // -------------------------
 
 .recurrence-pattern-type {
-    margin-top: 12px;
-    padding-left: @spacing-lg-px;
+  margin-top: 12px;
+  padding-left: @spacing-lg-px;
 }
 
 .recurrence-pattern-specific-date {
-    .clearfix();
-    
-    .input-group {
-        float: left;
-    }
+  .clearfix();
 
-    .actions {
-        float: left;
-        margin-left: 12px;
-        margin-top: 4px;
-    }
+  .input-group {
+    float: left;
+  }
+
+  .actions {
+    float: left;
+    margin-left: 12px;
+    margin-top: 4px;
+  }
 }
 
 .recurrence-pattern-daily {
 
-    .form-control-group {
-        min-height: @spacing-lg-px;
-    }
+  .form-control-group {
+    min-height: @spacing-lg-px;
+  }
 }
 
 .recurrence-pattern-weekly {
 
-    .week-days {
-        margin-top: @spacing-md-px;
-        .clearfix();
+  .week-days {
+    margin-top: @spacing-md-px;
+    .clearfix();
 
-        .checkbox {
-            float: left;
-            margin: 0 @spacing-md-px;
-        }
+    .checkbox {
+      float: left;
+      margin: 0 @spacing-md-px;
     }
+  }
 }
 
 .recurrence-pattern-monthly {
 
-    .form-control-group {
-        min-height: 40px;
-        display: block;    
-    }
+  .form-control-group {
+    min-height: 40px;
+    display: block;
+  }
 }
 
 .continue-until {
 
-    .form-control-group {
-        min-height: 40px;
-    }
+  .form-control-group {
+    min-height: 40px;
+  }
 }
 
 .exclusions {
 
-    .add-exclusion {
-        .form-control-group {
-            float: left;
-        }
-
-        .actions {
-            float: left;
-            margin-top: 5px;
-        }
+  .add-exclusion {
+    .form-control-group {
+      float: left;
     }
+
+    .actions {
+      float: left;
+      margin-top: 5px;
+    }
+  }
 }
 
 // 3. Workflow
 // -------------------------
 
 .workflow-section-activities {
-    margin-top: 64px;
+  margin-top: 64px;
 }
 
 .workflow-activities-readonly-header
 {
-	color: #515151;
-	left: auto;
-	top: auto;
-	padding-top: 8px;
-    padding-right: 8px;
-    padding-bottom: 8px;
+  color: #515151;
+  left: auto;
+  top: auto;
+  padding-top: 8px;
+  padding-right: 8px;
+  padding-bottom: 8px;
 
-    &:hover {
-	    color: inherit;
-	    text-decoration: none;
-    }
+  &:hover {
+    color: inherit;
+    text-decoration: none;
+  }
 
 }
 
-.panel.workflow-activity { 
-    
-    &.activated-with-workflow {
-       border-color:  @state-success-text;
+.panel.workflow-activity {
 
-       & > .panel-heading {
-            background-color: @state-success-bg;
-            color: @state-success-text;
-           
-            a.btn-link {
-                color: @state-success-text;
-            }
-        }
-    }
+  &.activated-with-workflow {
+     border-color:  @state-success-text;
 
-    .panel-title:before {
-        content: @fa-var-cubes;
-        font-family: FontAwesome;
-        font-weight: normal;
-        margin-right: 4px;
+     & > .panel-heading {
+      background-color: @state-success-bg;
+      color: @state-success-text;
+
+      a.btn-link {
+        color: @state-success-text;
+      }
     }
+  }
+
+  .panel-title:before {
+    content: @fa-var-cubes;
+    font-family: FontAwesome;
+    font-weight: normal;
+    margin-right: 4px;
+  }
 }
 
 .workflow-action {
-    .workflow-action-name:before {
-        content: @fa-var-cube;
-        font-family: FontAwesome;
-        font-weight: normal;
-    }
+  .workflow-action-name:before {
+    content: @fa-var-cube;
+    font-family: FontAwesome;
+    font-weight: normal;
+  }
 
-    .criteria-exists {
-        background-color: @btn-warning-bg;
-        color: @btn-warning-color;
-        border: 1px solid @btn-warning-border;
-    }
+  .criteria-exists {
+    background-color: @btn-warning-bg;
+    color: @btn-warning-color;
+    border: 1px solid @btn-warning-border;
+  }
 
-    .conditional-run-criteria {
-        margin-top: -15px;
-        margin-bottom: 15px;
-        padding-top: 15px;
-        border-width: 1px;
-        border-style: solid;
-    }
+  .conditional-run-criteria {
+    margin-top: -15px;
+    margin-bottom: 15px;
+    padding-top: 15px;
+    border-width: 1px;
+    border-style: solid;
+  }
 
-    .form-action-rows .row {
-        margin-bottom: 12px;
-    }
+  .form-action-rows .row {
+    margin-bottom: 12px;
+  }
 }
 
 // panel for workflow entry/navigation
 .panel-group {
-    .panel-workflowitem {
-        // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
-        .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
+  .panel-workflowitem {
+    // .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
+    .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
-        margin-bottom: 30px;
+    margin-bottom: 30px;
 
-        &:hover {
-            background-color: #fff;
-        }
-
-        .panel-heading {
-            padding: 30px;
-
-            a {
-                display: block;
-
-                .panel-title {
-                    width: 100%;
-
-                     h3 {
-                        margin: 0;
-
-                        i {
-                            font-size: 35px;
-                            margin-right: 12px;
-                        }
-                    }
-                }
-               
-
-                i.panel-navigation {
-                    margin-top: 8px;
-
-                    &:before {
-                        margin-top: 6px;
-                        font-family: FontAwesome;
-                        content: @fa-var-chevron-up;
-                        font-size: 20px;
-                    }
-                }
-
-                &.collapsed {
-                    i.panel-navigation:before {
-                        content: @fa-var-chevron-down;
-                    }
-                }
-            }
-        }
+    &:hover {
+      background-color: #fff;
     }
+
+    .panel-heading {
+      padding: 30px;
+
+      a {
+        display: block;
+
+        .panel-title {
+          width: 100%;
+
+           h3 {
+            margin: 0;
+
+            i {
+              font-size: 35px;
+              margin-right: 12px;
+            }
+          }
+        }
+
+
+        i.panel-navigation {
+          margin-top: 8px;
+
+          &:before {
+            margin-top: 6px;
+            font-family: FontAwesome;
+            content: @fa-var-chevron-up;
+            font-size: 20px;
+          }
+        }
+
+        &.collapsed {
+          i.panel-navigation:before {
+            content: @fa-var-chevron-down;
+          }
+        }
+      }
+    }
+  }
 }
