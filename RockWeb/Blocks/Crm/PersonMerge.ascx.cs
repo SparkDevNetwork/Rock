@@ -478,7 +478,7 @@ namespace RockWeb.Blocks.Crm
                             foreach ( var login in userLoginService.GetByPersonId( p.Id ) )
                             {
                                 var component = Rock.Security.AuthenticationContainer.GetComponent( login.EntityType.Name );
-                                if ( !component.RequiresRemoteAuthentication )
+                                if ( component != null && !component.RequiresRemoteAuthentication )
                                 {
                                     login.IsConfirmed = false;
                                 }
