@@ -39,7 +39,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [SecurityAction( Authorization.EDIT, "The roles and/or users that can edit the HTML content." )]
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
 
-    [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/PhotoGallery/", false, "", "", 2 )]
+    [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/", false, "", "", 2 )]
     [IntegerField( "Pause Seconds", "The number of seconds to pause on each photo (default 4 seconds).", false, 4 )]
 
     [CustomRadioListField( "Display Mode", "", "1^Slideshow, 2^Gallery", true, "1")]
@@ -52,7 +52,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     {
         #region Fields
 
-        private string _virtualBasePath = "~/Content/ExternalSite/PhotoGallery/";
+        private string _virtualBasePath = "~/Content/ExternalSite/";
         private string _physicalPath;
         private int? _height = null;
         private int? _width = null;
@@ -184,6 +184,10 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             }
 
             _physicalPath = Server.MapPath( ImageFolderPath );
+            if ( ! Directory.Exists( _physicalPath ) )
+            {
+                Directory.CreateDirectory( _physicalPath );
+            }
         }
 
         /// <summary>
@@ -228,6 +232,11 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             ShowView();
         }
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptPhoto control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptPhoto_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             if ( SpecifyingSize )
@@ -235,6 +244,39 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
                 {
                     var imgPhoto = e.Item.FindControl( "imgPhoto" ) as HtmlImage;
+                    if ( imgPhoto != null )
+                    {
+                        imgPhoto.Attributes.Add( "style", string.Format( "height: {0}px; width:{1}px", Height, Width ) );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the size of the image.
+        /// </summary>
+        /// <returns></returns>
+        protected string GetImageSize()
+        {
+            if ( SpecifyingSize )
+            {
+                return string.Format( "height: {0}px; width:{1}px", Height, Width );
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the lvGallery control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ListViewItemEventArgs"/> instance containing the event data.</param>
+        protected void lvGallery_ItemDataBound( object sender, ListViewItemEventArgs e )
+        {
+            if ( SpecifyingSize )
+            {
+                if (e.Item.ItemType == ListViewItemType.DataItem)
+                {
+                    var imgPhoto = e.Item.FindControl( "imbGalleryItem" ) as HtmlImage;
                     if ( imgPhoto != null )
                     {
                         imgPhoto.Attributes.Add( "style", string.Format( "height: {0}px; width:{1}px", Height, Width ) );
@@ -312,22 +354,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             mdEdit.Show();
         }
 
-        //private Dictionary<string, object> GetPageProperties()
-        //{
-        //    Dictionary<string, object> pageProperties = new Dictionary<string, object>();
-        //    pageProperties.Add( "Id", this.RockPage.PageId.ToString() );
-        //    pageProperties.Add( "BrowserTitle", this.RockPage.BrowserTitle );
-        //    pageProperties.Add( "PageTitle", this.RockPage.PageTitle );
-        //    pageProperties.Add( "Site", this.RockPage.Site.Name );
-        //    pageProperties.Add( "SiteId", this.RockPage.Site.Id.ToString() );
-        //    pageProperties.Add( "LayoutId", this.RockPage.Layout.Id.ToString() );
-        //    pageProperties.Add( "Layout", this.RockPage.Layout.Name );
-        //    pageProperties.Add( "SiteTheme", this.RockPage.Site.Theme );
-        //    pageProperties.Add( "PageIcon", this.RockPage.PageIcon );
-        //    pageProperties.Add( "Description", this.RockPage.MetaDescription );
-        //    return pageProperties;
-        //}
-
         /// <summary>
         /// Shows the view.
         /// </summary>
@@ -375,6 +401,9 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         }
 
+        /// <summary>
+        /// Binds the view data.
+        /// </summary>
         private void BindViewData()
         {
             var images = GetImageList();
@@ -398,6 +427,10 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         }
 
+        /// <summary>
+        /// Gets the image list.
+        /// </summary>
+        /// <returns></returns>
         private List<string> GetImageList()
         {
             var images = new List<string>();
@@ -421,12 +454,5 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         }
 
         #endregion
-
-        enum Tristate : byte
-        {
-            Unknown = 0,
-            True = 1,
-            False = 2
-        }
     }
 }

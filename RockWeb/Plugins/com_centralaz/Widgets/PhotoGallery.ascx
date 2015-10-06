@@ -74,9 +74,9 @@
             </div>
         </div>
 
-        <asp:ListView runat="server" ID="lvGallery">
+        <asp:ListView runat="server" ID="lvGallery" OnItemDataBound="lvGallery_ItemDataBound">
             <ItemTemplate>
-                    <asp:Image ID="imbGalleryItem" runat="server" ImageUrl="<%# Container.DataItem %>" />
+                    <asp:Image ID="imbGalleryItem" runat="server" ImageUrl="<%# Container.DataItem %>" Style="<%# GetImageSize() %>"/>
             </ItemTemplate>
         </asp:ListView>
 
