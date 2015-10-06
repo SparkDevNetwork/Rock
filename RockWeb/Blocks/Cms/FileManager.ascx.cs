@@ -30,15 +30,38 @@ namespace RockWeb.Blocks.Cms
     [Description( "Block that can be used to browse and manage files on the web server" )]
 
     [TextField( "Root Folder", "The Root folder to browse", true, "~/Content" )]
-    [CustomDropdownListField( "Browse Mode", "", "doc,image", true, "doc" )]
+    [CustomDropdownListField( "Browse Mode", "Select 'image' to show only image files. Select 'doc' to show all files. Also, in 'image' mode, the ImageUploader handler will process uploaded files instead of FileUploader.", "doc,image", true, "doc" )]
     public partial class FileManager : RockBlock
     {
         /// <summary>
-        /// Handles the Click event of the btnFileBrowser control.
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
+
+            SetupIFrame();
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnFileBrowser_Click( object sender, EventArgs e )
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            SetupIFrame();
+        }
+
+        /// <summary>
+        /// Sets up the iframe.
+        /// </summary>
+        private void SetupIFrame()
         {
             var globalAttributesCache = GlobalAttributesCache.Read();
 
@@ -60,8 +83,6 @@ namespace RockWeb.Blocks.Cms
             iframeUrl += "&theme=" + this.RockPage.Site.Theme;
 
             iframeFileBrowser.Src = iframeUrl;
-            mdFileBrowser.Visible = true;
-            mdFileBrowser.Show();
         }
     }
 }
