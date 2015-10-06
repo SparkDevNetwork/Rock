@@ -69,9 +69,9 @@
                             </HeaderTemplate>
                             <ItemTemplate>
                                 <tr>
-                                    <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# Eval("ExceptionType") %></td>
-                                    <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# Eval("Source") %></td>
-                                    <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# Eval("Description") %></td>
+                                    <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# EncodeHtml( Eval("ExceptionType") ) %></td>
+                                    <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# EncodeHtml( Eval("Source") )%></td>
+                                    <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# EncodeHtml( Eval("Description") ) %></td>
                                     <td style="text-align: center;">
                                         <a id="<%# "lbToggleStackTrace_" + Eval("Id").ToString()  %>" href="#" onclick="<%# string.Format("return toggleStackTrace({0});", Eval("Id")) %>" class="btn btn-default">
                                             <i class="fa fa-file-o"></i> Show Stack Trace

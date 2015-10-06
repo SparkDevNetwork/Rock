@@ -162,13 +162,13 @@ namespace RockWeb.Blocks.Core
             dl.Add( "Site", baseException.Site != null ? baseException.Site.Name : String.Empty, true );
             if ( baseException.Page != null || !string.IsNullOrWhiteSpace(baseException.PageUrl) )
             {
-                dl.Add( "Page", string.Format( "{0} <a href=\"{1}\" class=\"btn btn-link btn-xs\" target=\"_blank\">Visit Page</a>", baseException.Page != null ? baseException.Page.InternalName : baseException.PageUrl, baseException.PageUrl ) );
+                dl.Add( "Page", string.Format( "{0} <a href=\"{1}\" class=\"btn btn-link btn-xs\" target=\"_blank\">Visit Page</a>", baseException.Page != null ? baseException.Page.InternalName : baseException.PageUrl.EncodeHtml(), baseException.PageUrl.EncodeHtml() ) );
             }
 
             //If query string is not empty build query string list
             if ( !String.IsNullOrWhiteSpace( baseException.QueryString ) )
             {
-                dl.Add( "Query String", BuildQueryStringList( baseException.QueryString ) );
+                dl.Add( "Query String", BuildQueryStringList( baseException.QueryString.EncodeHtml() ) );
             }
 
             if (baseException.CreatedByPersonAlias != null &&  baseException.CreatedByPersonAlias.Person != null)
@@ -195,6 +195,12 @@ namespace RockWeb.Blocks.Core
 
             pnlSummary.Visible = true;
         }
+
+        protected string EncodeHtml( object obj )
+        {
+            return obj.ToString().EncodeHtml();
+        }
+
         #endregion
     }
 
