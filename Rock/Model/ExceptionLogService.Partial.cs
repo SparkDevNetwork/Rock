@@ -259,7 +259,7 @@ namespace Rock.Model
                     {
                         var httpCookie = cookieList[cookie];
                         if ( httpCookie != null )
-                            cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + httpCookie.Value + "</td></tr>" );
+                            cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + httpCookie.Value.EncodeHtml() + "</td></tr>" );
                     }
 
                     cookies.Append( "</table>" );
@@ -273,7 +273,7 @@ namespace Rock.Model
                     formItems.Append( "<table class=\"form-items exception-table\">" );
 
                     foreach ( string formItem in formList )
-                        formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + formList[formItem] + "</td></tr>" );
+                        formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + formList[formItem].EncodeHtml() + "</td></tr>" );
 
                     formItems.Append( "</table>" );
                 }
@@ -286,7 +286,7 @@ namespace Rock.Model
                     serverVars.Append( "<table class=\"server-variables exception-table\">" );
 
                     foreach ( string serverVar in serverVarList )
-                        serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + serverVarList[serverVar] + "</td></tr>" );
+                        serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + serverVarList[serverVar].EncodeHtml() + "</td></tr>" );
 
                     serverVars.Append( "</table>" );
                 }
