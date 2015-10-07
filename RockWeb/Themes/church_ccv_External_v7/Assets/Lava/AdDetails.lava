@@ -1,16 +1,42 @@
-﻿{% for item in Items %}
-  {% if item.DetailImage_unformatted != '' %}
+﻿{% assign item = Items.first %}
 
-    <img src="/GetImage.ashx?Guid={{ item.DetailImage_unformatted }}" class="title-image img-responsive">
-    <div class="container-md">
+{% if item %}
+  {% assign daysTillStartDate = 'Now' | DateDiff: item.StartDateTime, 'm' %}
+  {% assign daysTillEndDate = 'Now' | DateDiff: item.ExpireDateTime, 'm' %}
+  {% assign showItem = true %}
+  {% if daysTillStartDate and daysTillStartDate > 0 %}
+    {% assign showItem = false %}
+  {% endif %}
+  {% if daysTillEndDate and daysTillEndDate < 0 %}
+    {% assign showItem = false %}
+  {% endif %}
+  {% if item.Status != 'Approved' %}{% assign showItem = false %}{% endif %}
+  {% comment %}
+  <pre>{{ daysTillStartDate }}</pre>
+  <pre>{{ daysTillEndDate }}</pre>
+  <pre>{{ showItem }}</pre>
+  <pre>{{ item.Status }}</pre>
+  {% endcomment %}
+  {% if showItem %}
+
+    {% capture pageTitle %}{{ item.Title }} | CCV{% endcapture %}
+
+    {{ pageTitle | SetPageTitle }}
+
+    {% if item.DetailImage_unformatted != '' %}
+      <img src="/GetImage.ashx?Guid={{ item.DetailImage_unformatted }}" class="title-image img-responsive">
+      <div class="container-md">
+        <h1>{{ item.Title }}</h1>
+        {{ item.Content }}
+      </div>
+    {% else %}
       <h1>{{ item.Title }}</h1>
       {{ item.Content }}
-    </div>
+    {% endif %}
 
   {% else %}
-
-    <h1>{{ item.Title }}</h1>
-    {{ item.Content }}
-
+    <div class="alert alert-warning">Item currently unavailable.</div>
   {% endif %}
-{% endfor -%}
+{% else %}
+  <div class="alert alert-danger">Unable to find selected item.</div>
+{% endif %}
