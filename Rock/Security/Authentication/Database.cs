@@ -226,26 +226,25 @@ namespace Rock.Security.Authentication
         public override bool ChangePassword( UserLogin user, string oldPassword, string newPassword, out string warningMessage )
         {
             warningMessage = null;
-            AuthenticationComponent authenticationComponent = AuthenticationContainer.GetComponent( user.EntityType.Name );
-            if ( authenticationComponent == null || !authenticationComponent.IsActive )
-            {
-                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.EntityType.FriendlyName ) );
-            }
 
-            if ( authenticationComponent.ServiceType == AuthenticationServiceType.External )
-            {
-                throw new Exception( "Cannot change password on external service type" );
-            }
-
-            if ( !authenticationComponent.Authenticate( user, oldPassword ) )
+            if ( !Authenticate( user, oldPassword ) )
             {
                 return false;
             }
 
-            user.Password = authenticationComponent.EncodePassword( user, newPassword );
-            user.LastPasswordChangedDateTime = RockDateTime.Now;
-
+            SetPassword( user, newPassword );
             return true;
+        }
+
+        /// <summary>
+        /// Sets the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        public override void SetPassword( UserLogin user, string password )
+        {
+            user.Password = EncodePassword( user, password );
+            user.LastPasswordChangedDateTime = RockDateTime.Now;
         }
 
         /// <summary>

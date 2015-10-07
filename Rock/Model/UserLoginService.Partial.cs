@@ -81,7 +81,7 @@ namespace Rock.Model
             if ( authenticationComponent.ServiceType == AuthenticationServiceType.External )
                 throw new Exception( "Cannot change password on external service type" );
 
-            user.Password = authenticationComponent.EncodePassword( user, password );
+            authenticationComponent.SetPassword( user, password );
             user.LastPasswordChangedDateTime = RockDateTime.Now;
         }
 

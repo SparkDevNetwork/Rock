@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 using System.Web.Configuration;
-
+using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -54,8 +54,7 @@ namespace church.ccv.Authentication
             string encodedPassword = EncodePassword( user, password );
             bool valid = encodedPassword == Convert.ToBase64String( bytes );
 
-            bool convert = false;
-            if ( valid && Boolean.TryParse( GetAttributeValue( "ConvertToDatabaseLogin" ), out convert ) && convert )
+            if ( valid && GetAttributeValue( "ConvertToDatabaseLogin" ).AsBoolean() )
             {
                 var databaseAuthEntityType = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Security.Authentication.Database" );
                 if ( databaseAuthEntityType != null )
@@ -66,7 +65,7 @@ namespace church.ccv.Authentication
                     var rockUser = service.GetByUserName( user.UserName );
                     if ( rockUser != null )
                     {
-                        rockUser.Password = DatabaseEncodePassword( password, encryptionKey );
+                        rockUser.Password = DatabaseEncodePassword( rockUser.Guid, password, encryptionKey );
                         rockUser.EntityTypeId = databaseAuthEntityType.Id;
                         rockContext.SaveChanges();
                     }
@@ -88,11 +87,15 @@ namespace church.ccv.Authentication
             return Convert.ToBase64String( hash.ComputeHash( Encoding.Unicode.GetBytes( password ) ) );
         }
 
-        private string DatabaseEncodePassword( string password, byte[] encryptionKey )
+        private string DatabaseEncodePassword( Guid guid, string password, byte[] encryptionKey )
         {
             HMACSHA1 hash = new HMACSHA1();
             hash.Key = encryptionKey;
-            return Convert.ToBase64String( hash.ComputeHash( Encoding.Unicode.GetBytes( password ) ) );
+
+            HMACSHA1 uniqueHash = new HMACSHA1();
+            uniqueHash.Key = Encryption.HexToByte( guid.ToString().Replace( "-", "" ) );
+
+            return Convert.ToBase64String( uniqueHash.ComputeHash( hash.ComputeHash( Encoding.Unicode.GetBytes( password ) ) ) );
         }
 
         private static byte[] ConvertToByteArray( string value )
@@ -172,7 +175,35 @@ namespace church.ccv.Authentication
 
         public override bool ChangePassword( UserLogin user, string oldPassword, string newPassword, out string warningMessage )
         {
-            throw new NotImplementedException();
+            warningMessage = null;
+
+            if ( Authenticate( user, oldPassword ) )
+            {
+                SetPassword( user, newPassword );
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Sets the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        public override void SetPassword( UserLogin user, string password )
+        {
+            if ( GetAttributeValue( "ConvertToDatabaseLogin" ).AsBoolean() )
+            {
+                var databaseAuthEntityType = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Security.Authentication.Database" );
+                if ( databaseAuthEntityType != null )
+                {
+                    // Convert to database type
+                    user.Password = DatabaseEncodePassword( user.Guid, password, encryptionKey );
+                    user.EntityTypeId = databaseAuthEntityType.Id;
+                    user.LastPasswordChangedDateTime = RockDateTime.Now;
+                }
+            }
         }
 
         public override Uri GenerateLoginUrl( HttpRequest request )
@@ -202,7 +233,7 @@ namespace church.ccv.Authentication
 
         public override bool SupportsChangePassword
         {
-            get { return false; }
+            get { return GetAttributeValue( "ConvertToDatabaseLogin" ).AsBoolean(); }
         }
     }
 }

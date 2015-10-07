@@ -108,5 +108,12 @@ namespace Rock.Security
         /// <returns></returns>
         public abstract bool ChangePassword( UserLogin user, string oldPassword, string newPassword, out string warningMessage );
 
+        /// <summary>
+        /// Sets the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        public abstract void SetPassword( UserLogin user, string password );
+
     }
 }
