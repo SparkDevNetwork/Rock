@@ -65,6 +65,7 @@
                     </Rock:GridFilter>
                     <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit" CssClass="js-grid-requests" AllowSorting="true" >
                         <Columns>
+                            <Rock:SelectField />
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus.Name" />
                             <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="AssignedGroup.Name" />
