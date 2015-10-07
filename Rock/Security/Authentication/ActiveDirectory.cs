@@ -188,5 +188,30 @@ namespace Rock.Security.Authentication
 
             return false;
         }
+
+        /// <summary>
+        /// Sets the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override void SetPassword( UserLogin user, string password )
+        {
+            string username = user.UserName;
+            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "Domain" ) ) )
+            {
+                username = string.Format( @"{0}\{1}", GetAttributeValue( "Domain" ), user.UserName );
+            }
+
+            var context = new PrincipalContext( ContextType.Domain, GetAttributeValue( "Server" ) );
+            using ( context )
+            {
+                var userPrincipal = UserPrincipal.FindByIdentity( context, username );
+                if ( userPrincipal != null )
+                {
+                    userPrincipal.SetPassword( password );
+                }
+            }
+        }
     }
 }
