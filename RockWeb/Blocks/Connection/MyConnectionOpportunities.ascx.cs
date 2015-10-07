@@ -91,6 +91,7 @@ namespace RockWeb.Blocks.Connection
             gRequests.IsDeleteEnabled = true;
             gRequests.GridRebind += gRequests_GridRebind;
             gRequests.ShowConfirmDeleteDialog = false;
+            gRequests.PersonIdField = "PersonId";
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -714,6 +715,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         r.Id,
                         r.Guid,
+                        PersonId = r.PersonAlias.PersonId,
                         Name = r.PersonAlias.Person.FullNameReversed,
                         Campus = r.Campus,
                         Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
