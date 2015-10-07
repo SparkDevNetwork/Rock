@@ -508,8 +508,8 @@ namespace Rock.Web.UI.Controls
     expandedIds: [{5}]
 }});
 ";
-            string treeViewScript = string.Format( treeViewScriptFormat, this.ID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower(), this.DefaultText, _hfItemRestUrlExtraParams.ClientID, this.InitialItemParentIds );
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ID, treeViewScript, true );
+            string treeViewScript = string.Format( treeViewScriptFormat, this.ClientID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower(), this.DefaultText, _hfItemRestUrlExtraParams.ClientID, this.InitialItemParentIds );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ClientID, treeViewScript, true );
         }
 
         /// <summary>
@@ -522,20 +522,20 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
 
             _hfItemId = new HiddenFieldWithClass();
-            _hfItemId.ID = this.ID + "_hfItemId";
+            _hfItemId.ID = this.ClientID + "_hfItemId";
             _hfItemId.CssClass = "js-item-id-value";
             _hfItemId.Value = "0";
 
             _hfInitialItemParentIds = new HiddenFieldWithClass();
-            _hfInitialItemParentIds.ID = this.ID + "_hfInitialItemParentIds";
+            _hfInitialItemParentIds.ID = this.ClientID + "_hfInitialItemParentIds";
             _hfInitialItemParentIds.CssClass = "js-initial-item-parent-ids-value";
 
             _hfItemName = new HiddenFieldWithClass();
-            _hfItemName.ID = this.ID + "_hfItemName";
+            _hfItemName.ID = this.ClientID + "_hfItemName";
             _hfItemName.CssClass = "js-item-name-value";
 
             _hfItemRestUrlExtraParams = new HiddenFieldWithClass();
-            _hfItemRestUrlExtraParams.ID = this.ID + "_hfItemRestUrlExtraParams";
+            _hfItemRestUrlExtraParams.ID = this.ClientID + "_hfItemRestUrlExtraParams";
             _hfItemRestUrlExtraParams.CssClass = "js-item-rest-url-extra-params-value";
 
             if ( ModePanel != null )
@@ -545,7 +545,7 @@ namespace Rock.Web.UI.Controls
 
             _btnSelect = new HtmlAnchor();
             _btnSelect.Attributes["class"] = "btn btn-xs btn-primary picker-btn";
-            _btnSelect.ID = this.ID + "_btnSelect";
+            _btnSelect.ID = this.ClientID + "_btnSelect";
             _btnSelect.InnerText = "Select";
             _btnSelect.CausesValidation = false;
 
@@ -557,7 +557,7 @@ namespace Rock.Web.UI.Controls
 
             _btnSelectNone = new HtmlAnchor();
             _btnSelectNone.Attributes["class"] = "picker-select-none";
-            _btnSelectNone.ID = this.ID + "_btnSelectNone";
+            _btnSelectNone.ID = this.ClientID + "_btnSelectNone";
             _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
@@ -603,7 +603,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Enabled )
             {
-                writer.AddAttribute( "id", this.ID.ToString() );
+                writer.AddAttribute( "id", this.ClientID.ToString() );
                 writer.AddAttribute( "class", "picker picker-select rollover-container " + this.CssClass );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -621,7 +621,7 @@ namespace Rock.Web.UI.Controls
                         <b class='fa fa-caret-down pull-right'></b>
                     </a>";
 
-                    writer.Write( pickerLabelHtmlFormat, this.ID, this.ItemName, this.IconCssClass );
+                    writer.Write( pickerLabelHtmlFormat, this.ClientID, this.ItemName, this.IconCssClass );
 
                     writer.WriteLine();
 
@@ -659,13 +659,13 @@ namespace Rock.Web.UI.Controls
                                     </div>
                                 </div>
                             </div>",
-                           this.ID );
+                           this.ClientID );
 
                 // picker actions
                 writer.AddAttribute( "class", "picker-actions" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _btnSelect.RenderControl( writer );
-                writer.Write( "<a class='btn btn-xs btn-link picker-cancel' id='btnCancel_{0}'>Cancel</a>", this.ID );
+                writer.Write( "<a class='btn btn-xs btn-link picker-cancel' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
                 writer.WriteLine();
                 writer.RenderEndTag();
 
