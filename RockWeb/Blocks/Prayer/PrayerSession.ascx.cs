@@ -139,6 +139,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             lbNext.Focus();
+            lbBack.Visible = false;
 
             pnlChooseCategories.Visible = false;
 
@@ -178,6 +179,38 @@ namespace RockWeb.Blocks.Prayer
                 pnlPrayer.Visible = false;
                 lbStartAgain.Focus();
             }
+
+            lbBack.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbPrevious control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbBack_Click( object sender, EventArgs e )
+        {
+            int index = hfPrayerIndex.ValueAsInt();
+
+            index--;
+
+            List<int> prayerRequestIds = (List<int>)Session[_sessionKey];
+            int currentNumber = index + 1;
+            if ( currentNumber > 0 )
+            {
+                UpdateSessionCountLabel( currentNumber, prayerRequestIds.Count );
+
+                hfPrayerIndex.Value = index.ToString();
+                var rockContext = new RockContext();
+                PrayerRequestService service = new PrayerRequestService( rockContext );
+                int prayerRequestId = prayerRequestIds[index];
+                PrayerRequest request = service.Queryable( "RequestedByPersonAlias.Person" ).FirstOrDefault( p => p.Id == prayerRequestId );
+                ShowPrayerRequest( request, rockContext );
+            }
+            else
+            {
+                lbBack.Visible = false;
+            }
         }
 
         /// <summary>
@@ -198,6 +231,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e"></param>
         protected void lbStartAgain_Click( object sender, EventArgs e )
         {
+            lbBack.Visible = false;
             pnlChooseCategories.Visible = true;
             pnlFinished.Visible = false;
             pnlNoPrayerRequestsMessage.Visible = false;
@@ -439,5 +473,7 @@ namespace RockWeb.Blocks.Prayer
 
         #endregion
 
-    }
+        
+        
+}
 }
