@@ -28,6 +28,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -128,7 +129,13 @@ namespace RockWeb.Blocks.Event
                             .ToList();
                     }
 
-                    ContentChannels = channels.Select( c => c.Value ).ToList();
+                    foreach( var channel in channels )
+                    {
+                        if ( channel.Value.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        {
+                            ContentChannels.Add( channel.Value );
+                        }
+                    }
                 }
 
                 CreateGrids( rockContext );
@@ -249,13 +256,12 @@ namespace RockWeb.Blocks.Event
             {
                 this.Visible = true;
 
-                // TODO: security
-                bool canEdit = true;
-
                 phContentChannelGrids.Controls.Clear();
 
                 foreach ( var contentChannel in ContentChannels )
                 {
+                    bool canEdit = UserCanEdit || contentChannel.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
                     string iconClass = "fa fa-bullhorn";
                     if ( !string.IsNullOrWhiteSpace( contentChannel.IconCssClass ) )
                     {
@@ -426,10 +432,7 @@ namespace RockWeb.Blocks.Event
                             var items = new List<ContentChannelItem>();
                             foreach ( var item in contentItems.ToList() )
                             {
-                                if ( item.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
-                                {
-                                    items.Add( item );
-                                }
+                                items.Add( item );
                             }
 
                             SortProperty sortProperty = gItems.SortProperty;
