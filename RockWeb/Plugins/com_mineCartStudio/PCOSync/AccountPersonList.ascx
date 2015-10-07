@@ -8,7 +8,7 @@
             <asp:HiddenField ID="hfAccountId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-users"></i> People</h1>
+                <h1 class="panel-title"><i class="fa fa-users"></i>People</h1>
             </div>
             <div class="panel-body">
 
@@ -16,27 +16,35 @@
 
                     <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
 
-                    <div class="grid grid-panel">
-                        <Rock:Grid ID="gAccountPersons" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gAccountPersons_RowSelected" 
-                            RowItemText="Person" AllowSorting="False" TooltipField="Id">
-                            <Columns>
-                                <Rock:PersonField DataField="Person" HeaderText="Person" SortExpression="LastName,NickName" />
-                                <Rock:BoolField DataField="Current" HeaderText="Current" SortExpression="Current" />
-                                <Rock:RockBoundField DataField="PCOId" HeaderText="PCO Id" SortExpression="PCOId" />
-                                <Rock:RockBoundField DataField="RockPermissionLabel" HeaderText="Rock Permission" SortExpression="RockPermission" HtmlEncode="false" />
-                                <Rock:RockBoundField DataField="PCOPermissionLabel" HeaderText="PCO Permission" SortExpression="PCOPermission" HtmlEncode="false" />
-                            </Columns>
-                        </Rock:Grid>
-                    </div>
+                    <Rock:GridFilter ID="rFilter" runat="server">
+                        <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
+                        <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
+                        <Rock:RockCheckBox ID="cbCurrentOnly" runat="server" Label="Current People Only" />
+                        <Rock:RockCheckBox ID="cbBlankPCOId" runat="server" Label="Blank PCO Ids" />
+                        <Rock:NumberBox ID="nbPCOId" runat="server" Label="Specific PCO Id" />
+                        <Rock:RockCheckBoxList ID="cblRockPermission" runat="server" Label="Rock Permissions" RepeatDirection="Horizontal" />
+                        <Rock:RockCheckBoxList ID="cblPCOPermission" runat="server" Label="PCO Permissions" RepeatDirection="Horizontal" />
+                    </Rock:GridFilter>
+
+                    <Rock:Grid ID="gAccountPersons" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gAccountPersons_RowSelected"
+                        RowItemText="Person" AllowSorting="False" TooltipField="Id">
+                        <Columns>
+                            <Rock:PersonField DataField="Person" HeaderText="Person" SortExpression="LastName,NickName" />
+                            <Rock:BoolField DataField="Current" HeaderText="Current" SortExpression="Current" />
+                            <Rock:RockBoundField DataField="PCOId" HeaderText="PCO Id" SortExpression="PCOId" />
+                            <Rock:RockBoundField DataField="RockPermissionLabel" HeaderText="Rock Permissions" SortExpression="RockPermission" HtmlEncode="false" />
+                            <Rock:RockBoundField DataField="PCOPermissionLabel" HeaderText="PCO Permissions" SortExpression="PCOPermission" HtmlEncode="false" />
+                        </Columns>
+                    </Rock:Grid>
 
                 </div>
             </div>
 
             <div class="actions">
-                <asp:LinkButton id="btnRefresh" runat="server" Text="Refresh List From Groups" CssClass="btn btn-link" CausesValidation="false" OnClick="btnRefresh_Click"/>
+                <asp:LinkButton ID="btnRefresh" runat="server" Text="Refresh List From Groups" CssClass="btn btn-link" CausesValidation="false" OnClick="btnRefresh_Click" />
             </div>
 
-            <Rock:ModalDialog ID="modalValue" runat="server" Title="Defined Value" ValidationGroup="Value" >
+            <Rock:ModalDialog ID="modalValue" runat="server" Title="Defined Value" ValidationGroup="Value">
                 <Content>
 
                     <asp:HiddenField ID="hfAccountPersonId" runat="server" />
@@ -62,6 +70,6 @@
             </Rock:ModalDialog>
 
         </asp:Panel>
-        
+
     </ContentTemplate>
 </asp:UpdatePanel>

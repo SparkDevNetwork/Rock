@@ -70,6 +70,9 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
 
             if ( _account != null )
             {
+                rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+                rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
+
                 gAccountPersons.DataKeyNames = new string[] { "Id" };
                 gAccountPersons.Actions.ShowAdd = false;
                 gAccountPersons.GridRebind += gAccountPersons_GridRebind;
@@ -92,7 +95,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
             {
                 if ( _account != null )
                 {
-                    AddMissingPeople();
+                    SetFilter();
                     ShowDetail();
                 }
             }
@@ -101,6 +104,63 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            rFilter.SaveUserPreference( "First Name" , tbFirstName.Text );
+            rFilter.SaveUserPreference( "Last Name" , tbLastName.Text );
+            rFilter.SaveUserPreference( "Current People Only", cbCurrentOnly.Checked.ToString() );
+            rFilter.SaveUserPreference( "Blank PCO Ids", cbBlankPCOId.Checked.ToString() );
+            rFilter.SaveUserPreference( "Specific PCO Id", nbPCOId.Text );
+            rFilter.SaveUserPreference( "Rock Permissions", cblRockPermission.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( "PCO Permissions", cblPCOPermission.SelectedValues.AsDelimited( ";" ) );
+
+            BindAccountPersonsGrid();
+        }
+
+        /// <summary>
+        /// Rs the filter_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case "First Name":
+                case "Last Name":
+                case "Specific PCO Id":
+                    {
+                        break;
+                    }
+                case "Current People Only":
+                case "Blank PCO Ids":
+                    {
+                        e.Value = e.Value.AsBoolean() ? "Yes" : string.Empty;
+                        break;
+                    }
+                case "Rock Permissions":
+                    {
+                        e.Value = ResolveValues( e.Value, cblRockPermission );
+                        break;
+                    }
+                case "PCO Permissions":
+                    {
+                        e.Value = ResolveValues( e.Value, cblRockPermission );
+                        break;
+                    }
+                default:
+                    {
+                        e.Value = string.Empty;
+                        break;
+                    }
+            }
+        }
 
         protected void gAccountPersons_RowSelected( object sender, RowEventArgs e )
         {
@@ -268,8 +328,33 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
 
         #region Internal Methods
 
-        public void AddMissingPeople()
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void SetFilter()
         {
+            cblRockPermission.BindToEnum<Permission>();
+            cblPCOPermission.BindToEnum<Permission>();
+
+            tbFirstName.Text = rFilter.GetUserPreference( "First Name" );
+            tbLastName.Text = rFilter.GetUserPreference( "Last Name" );
+            cbCurrentOnly.Checked = rFilter.GetUserPreference( "Current People Only" ).AsBoolean();
+            cbBlankPCOId.Checked = rFilter.GetUserPreference( "Blank PCO Ids" ).AsBoolean();
+            int? pcoId = rFilter.GetUserPreference( "Specific PCO Id" ).AsIntegerOrNull();
+            nbPCOId.Text = pcoId.HasValue ? pcoId.Value.ToString() : string.Empty;
+
+            string rockPermissions = rFilter.GetUserPreference( "Rock Permissions" );
+            if ( !string.IsNullOrWhiteSpace( rockPermissions ) )
+            {
+                cblRockPermission.SetValues( rockPermissions.Split( ';' ).ToList() );
+            }
+
+            string pcoPermissions = rFilter.GetUserPreference( "PCO Permissions" );
+            if ( !string.IsNullOrWhiteSpace( pcoPermissions ) )
+            {
+                cblPCOPermission.SetValues( pcoPermissions.Split( ';' ).ToList() );
+            }
+
         }
 
         /// <summary>
@@ -329,13 +414,43 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
                             m.GroupMemberStatus == GroupMemberStatus.Active )
                         .Select( m => m.PersonId );
                     
-                    var people = new List<AccountPersonHelper>();
-                    foreach ( var accountPerson in new AccountPersonService( rockContext )
-                        .Queryable()
+                    var qry = new AccountPersonService( rockContext )
+                        .Queryable( "PersonAlias.Person" )
                         .Where( a =>
                             a.AccountId == _account.Id &&
                             a.PersonAlias != null &&
-                            a.PersonAlias.Person != null )
+                            a.PersonAlias.Person != null );
+
+                    string firstName = rFilter.GetUserPreference( "First Name" );
+                    if ( !string.IsNullOrWhiteSpace( firstName ) )
+                    {
+                        qry = qry.Where( a => a.PersonAlias.Person.FirstName.StartsWith( firstName ) );
+                    }
+
+                    string lastName = rFilter.GetUserPreference( "Last Name" );
+                    if ( !string.IsNullOrWhiteSpace( lastName ) )
+                    {
+                        qry = qry.Where( a => a.PersonAlias.Person.LastName.StartsWith( lastName ) );
+                    }
+
+                    if ( rFilter.GetUserPreference( "Current People Only" ).AsBoolean() )
+                    {
+                        qry = qry.Where( a => groupMemberPersonIds.Contains( a.PersonAlias.PersonId ) );
+                    }
+
+                    if ( rFilter.GetUserPreference( "Blank PCO Ids" ).AsBoolean() )
+                    {
+                        qry = qry.Where( a => !a.PCOId.HasValue || a.PCOId.Value == 0 );
+                    }
+
+                    int? pcoId = rFilter.GetUserPreference( "Specific PCO Id" ).AsIntegerOrNull();
+                    if ( pcoId.HasValue )
+                    {
+                        qry = qry.Where( a => a.PCOId.HasValue && a.PCOId.Value == pcoId.Value );
+                    }
+
+                    var people = new List<AccountPersonHelper>();
+                    foreach ( var accountPerson in qry
                         .OrderBy( a => a.PersonAlias.Person.LastName )
                         .ThenBy( a => a.PersonAlias.Person.NickName )
                         .ToList() )
@@ -345,22 +460,72 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
                             groupMemberPersonIds.Contains( accountPerson.PersonAlias.PersonId ) ) );
                     }
 
-                    var qry = people.AsQueryable();
+                    string rockPermissions = rFilter.GetUserPreference( "Rock Permissions" );
+                    if ( !string.IsNullOrWhiteSpace( rockPermissions ) )
+                    {
+                        var permissions = new List<Permission>();
+                        foreach( var strValue in rockPermissions.Split( new char[] {';'}, StringSplitOptions.RemoveEmptyEntries ) )
+                        {
+                            permissions.Add( strValue.ConvertToEnum<Permission>() );
+                        }
+                        if ( permissions.Any() )
+                        {
+                            people = people.Where( p => permissions.Contains( p.RockPermissionEnum ) ).ToList();
+                        }
+                    }
+
+                    string pcoPermissions = rFilter.GetUserPreference( "Rock Permissions" );
+                    if ( !string.IsNullOrWhiteSpace( pcoPermissions ) )
+                    {
+                        var permissions = new List<Permission>();
+                        foreach ( var strValue in pcoPermissions.Split( new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries ) )
+                        {
+                            permissions.Add( strValue.ConvertToEnum<Permission>() );
+                        }
+                        if ( permissions.Any() )
+                        {
+                            people = people.Where( p => permissions.Contains( p.PCOPermissionEnum ) ).ToList();
+                        }
+                    }
+
+                    var peopleQry = people.AsQueryable();
 
                     SortProperty sortProperty = gAccountPersons.SortProperty;
                     if ( sortProperty != null )
                     {
-                        qry = qry.Sort( sortProperty );
+                        peopleQry = peopleQry.Sort( sortProperty );
                     }
                     else
                     {
-                        qry = qry.OrderBy( p => p.LastName ).ThenBy( p => p.NickName );
+                        peopleQry = peopleQry.OrderBy( p => p.LastName ).ThenBy( p => p.NickName );
                     }
 
-                    gAccountPersons.DataSource = qry.ToList();
+                    gAccountPersons.DataSource = peopleQry.ToList();
                     gAccountPersons.DataBind();
                 }
             }
+        }
+
+        /// <summary>
+        /// Resolves the values.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <param name="listControl">The list control.</param>
+        /// <returns></returns>
+        private string ResolveValues( string values, System.Web.UI.WebControls.CheckBoxList checkBoxList )
+        {
+            var resolvedValues = new List<string>();
+
+            foreach ( string value in values.Split( ';' ) )
+            {
+                var item = checkBoxList.Items.FindByValue( value );
+                if ( item != null )
+                {
+                    resolvedValues.Add( item.Text );
+                }
+            }
+
+            return resolvedValues.AsDelimited( ", " );
         }
 
         #endregion
@@ -388,6 +553,8 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
             public string NickName { get; set; }
             public int? PCOId { get; set; }
             public bool Current { get; set; }
+            public Permission RockPermissionEnum { get; set; }
+            public Permission PCOPermissionEnum { get; set; }
             public string RockPermission { get; set; }
             public string PCOPermission { get; set; }
             public string RockPermissionLabel { get; set; }
@@ -412,12 +579,12 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
                     PCOId = accountPerson.PCOId;
                     Current = current;
 
-                    var rockPermission = GetPermission( accountPerson.RockSyncState );
-                    var pcoPermission = GetPermission( accountPerson.PCOSyncState );
-                    RockPermission = rockPermission.ConvertToString();
-                    PCOPermission = pcoPermission.ConvertToString();
-                    RockPermissionLabel = GetSecurityLabel( rockPermission );
-                    PCOPermissionLabel = GetSecurityLabel( pcoPermission );
+                    RockPermissionEnum = GetPermission( accountPerson.RockSyncState );
+                    PCOPermissionEnum = GetPermission( accountPerson.PCOSyncState );
+                    RockPermission = RockPermissionEnum.ConvertToString();
+                    PCOPermission = PCOPermissionEnum.ConvertToString();
+                    RockPermissionLabel = GetSecurityLabel( RockPermissionEnum );
+                    PCOPermissionLabel = GetSecurityLabel( PCOPermissionEnum );
                 }
             }
 
