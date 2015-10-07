@@ -16,7 +16,7 @@
 
                         <asp:Literal ID="lPromptMessage" runat="server" />
                         <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" DisplayRequiredIndicator="false" ></Rock:RockTextBox>
-                        <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" DisplayRequiredIndicator="false" TextMode="Password" ></Rock:RockTextBox>
+                        <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" AutoCompleteType="Disabled" Required="true" DisplayRequiredIndicator="false" TextMode="Password" ></Rock:RockTextBox>
                         <Rock:RockCheckBox ID="cbRememberMe" runat="server" Text="Remember me on this computer" />        
                     
                         <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary" OnClick="btnLogin_Click" />
