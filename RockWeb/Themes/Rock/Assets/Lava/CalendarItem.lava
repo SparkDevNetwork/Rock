@@ -39,9 +39,32 @@
 				{{ EventItemOccurrence.Note }}
 			{% endif %}
 				
-			{% if linkage.RegistrationInstanceId > 0 ) %}
-				<a href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ EventItemOccurrence.Id }}" class="btn btn-primary btn-block margin-t-md">Register</a>
-			{% endif %}
+      {% if linkage.RegistrationInstanceId > 0 ) %}
+          {% assign daysTillStartDate = 'Now' | DateDiff:linkage.RegistrationInstance.StartDateTime,'m' %}
+          {% assign daysTillEndDate = 'Now' | DateDiff:linkage.RegistrationInstance.EndDateTime,'m' %}
+          {% assign showRegistration = true %}
+          {% assign registrationMessgae = '' %}
+
+
+
+          {% if daysTillStartDate and daysTillStartDate > 0 %}
+              {% assign showRegistration = false %}
+              {% capture registrationMessage %}<p>Registration opens on {{ linkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+          {% endif %}
+
+          {% if daysTillEndDate and daysTillEndDate < 0 %}
+              {% assign showRegistration = false %}
+              {% capture registrationMessage %}<p>Registration closed on {{ linkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+          {% endif %}
+
+
+          {% if showRegistration == true %}
+              <a href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ EventItemOccurrence.Id }}" class="btn btn-primary btn-block margin-t-md">Register</a>
+          {% else %}
+              {{ registrationMessage }}
+          {% endif %}
+
+      {% endif %}
 		</div>
 		
 		<script>function fbs_click() { u = location.href; t = document.title; window.open('http://www.facebook.com/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436'); return false; }</script>
