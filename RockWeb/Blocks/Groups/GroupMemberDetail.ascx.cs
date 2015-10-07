@@ -81,6 +81,18 @@ namespace RockWeb.Blocks.Groups
                 GroupMember groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberId.Value );
                 if ( groupMember != null )
                 {
+                    var parentPageReference = PageReference.GetParentPageReferences( this.RockPage, this.PageCache, pageReference ).LastOrDefault();
+
+                    if ( parentPageReference != null )
+                    {
+                        var groupIdParam = parentPageReference.QueryString["GroupId"].AsIntegerOrNull();
+                        if ( !groupIdParam.HasValue || groupIdParam.Value != groupMember.GroupId)
+                        {
+                            // if the GroupMember's Group isn't included in the breadcrumbs, make sure to add the Group to the breadcrumbs so we know which group the group member is in
+                            breadCrumbs.Add( new BreadCrumb( groupMember.Group.Name, true ) );
+                        }
+                    }
+                    
                     breadCrumbs.Add( new BreadCrumb( groupMember.Person.FullName, pageReference ) );
                 }
                 else
@@ -311,8 +323,19 @@ namespace RockWeb.Blocks.Groups
 
             if ( groupMember == null )
             {
-                nbErrorMessage.Title = "Invalid Request";
-                nbErrorMessage.Text = "An incorrect querystring parameter was used.  A valid GroupMemberId or GroupId parameter is required.";
+                if ( groupMemberId > 0 )
+                {
+                    nbErrorMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
+                    nbErrorMessage.Title = "Warning";
+                    nbErrorMessage.Text = "Group Member not found. Group Member may have been moved to another group or deleted.";
+                }
+                else
+                {
+                    nbErrorMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                    nbErrorMessage.Title = "Invalid Request";
+                    nbErrorMessage.Text = "An incorrect querystring parameter was used.  A valid GroupMemberId or GroupId parameter is required.";
+                }
+
                 pnlEditDetails.Visible = false;
                 return;
             }
