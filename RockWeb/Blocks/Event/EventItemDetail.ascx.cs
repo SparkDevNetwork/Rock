@@ -598,6 +598,8 @@ namespace RockWeb.Blocks.Event
             {
                 eventItem = new EventItem { Id = 0, IsActive = true, Name = "" };
                 eventItem.IsApproved = _canApprove;
+                var calendarItem = new EventCalendarItem { EventCalendarId = _calendarId };
+                eventItem.EventCalendarItems.Add( calendarItem );
             }
 
             eventItem.LoadAttributes( rockContext );
