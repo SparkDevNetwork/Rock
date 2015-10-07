@@ -285,13 +285,16 @@ namespace RockWeb.Blocks.Event
 
                     linkage.CopyPropertiesFrom( LinkageState );
 
-                    // If a new registration instance was created in UI
-                    if ( !linkage.RegistrationInstanceId.HasValue && LinkageState.RegistrationInstance != null )
+                    // update registration instance 
+                    if ( LinkageState.RegistrationInstance != null )
                     {
-                        var registrationInstance = new RegistrationInstance();
-                        registrationInstanceService.Add( registrationInstance );
+                        RegistrationInstance registrationInstance = linkage.RegistrationInstance;
+                        if ( registrationInstance == null )
+                        {
+                            registrationInstance = new RegistrationInstance();
+                            registrationInstanceService.Add( registrationInstance );
+                        }
                         registrationInstance.CopyPropertiesFrom( LinkageState.RegistrationInstance );
-
                         linkage.RegistrationInstance = registrationInstance;
                     }
 
