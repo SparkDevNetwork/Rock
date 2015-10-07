@@ -140,13 +140,13 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
                         SetContextUrlCookie();
 
                         // Check for a page specific Rock Context Cookie
-                        if ( Request.Cookies["Rock_Context:" + RockPage.PageId.ToString()].HasKeys )
+                        if ( Request.Cookies["Rock_Context:" + RockPage.PageId.ToString()] != null )
                         {
                             ClearRockContext("Rock_Context:" + RockPage.PageId.ToString());
                         }
 
                         // Check for a site specific Rock Context Cookie
-                        if ( Request.Cookies["Rock_Context"].HasKeys )
+                        if ( Request.Cookies["Rock_Context"] != null )
                         {
                             ClearRockContext("Rock_Context");   
                         }
