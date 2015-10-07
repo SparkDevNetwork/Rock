@@ -56,9 +56,20 @@
 
 
                     <div class="actions margin-t-lg margin-b-md">
-                        <asp:LinkButton ID="lbNext" TabIndex="1" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" CssClass="btn btn-primary pull-right" OnClick="lbNext_Click" />
-                        <asp:LinkButton ID="lbFlag" runat="server" Text="<i class='fa fa-flag'></i> Flag" CssClass="btn btn-warning" ToolTip="Flag as inappropriate so that an administrator can review the content." CausesValidation="false" OnClick="lbFlag_Click" />
-                        <asp:LinkButton ID="lbStop" runat="server" Text="End Session" CssClass="btn btn-link" CausesValidation="false" OnClick="lbStop_Click" />
+                        <div class="row">
+                            <div class="col-md-12">
+                                <asp:LinkButton ID="lbBack" runat="server" CssClass="btn btn-primary" OnClick="lbBack_Click" ><i class="fa fa-chevron-left"></i> Back</asp:LinkButton>
+                                <asp:LinkButton ID="lbNext" TabIndex="1" runat="server" CssClass="btn btn-primary pull-right" OnClick="lbNext_Click" >Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="row margin-t-md">
+                            <div class="col-md-12">
+                                <asp:LinkButton ID="lbFlag" runat="server" Text="<i class='fa fa-flag'></i> Flag" CssClass="btn btn-warning" ToolTip="Flag as inappropriate so that an administrator can review the content." CausesValidation="false" OnClick="lbFlag_Click" />
+                                <asp:LinkButton ID="lbStop" runat="server" Text="End Session" CssClass="btn btn-link pull-right" CausesValidation="false" OnClick="lbStop_Click" />
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Comments -->
