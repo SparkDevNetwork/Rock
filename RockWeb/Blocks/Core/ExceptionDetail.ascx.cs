@@ -54,7 +54,17 @@ namespace RockWeb.Blocks.Core
             if ( !Page.IsPostBack )
             {
                 //show the detail
-                ShowDetail( PageParameter( "ExceptionId" ).AsInteger() );
+                int? exceptionId = PageParameter( "ExceptionId" ).AsIntegerOrNull();
+                if (!exceptionId.HasValue)
+                {
+                    Guid? exceptionGuid = PageParameter( "ExceptionGuid" ).AsGuidOrNull();
+                    if (exceptionGuid.HasValue)
+                    {
+                        exceptionId = new ExceptionLogService( new RockContext() ).Queryable().Where( a => a.Guid == exceptionGuid.Value ).Select( a => a.Id ).FirstOrDefault();
+                    }
+                }
+
+                ShowDetail( exceptionId ?? 0 );
             }
         }
         #endregion
