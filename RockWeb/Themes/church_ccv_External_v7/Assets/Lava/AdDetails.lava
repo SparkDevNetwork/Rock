@@ -1,6 +1,16 @@
 ﻿{% for item in Items %}
-{% if item.DetailImage_unformatted != '' %}
-<img src="/GetImage.ashx?Guid={{ item.DetailImage_unformatted }}" class="title-image img-responsive">
+  {% if item.DetailImage_unformatted != '' %}
+
+    <img src="/GetImage.ashx?Guid={{ item.DetailImage_unformatted }}" class="title-image img-responsive">
+    <div class="container-md">
+      <h1>{{ item.Title }}</h1>
+      {{ item.Content }}
+    </div>
+
+  {% else %}
+
+    <h1>{{ item.Title }}</h1>
+    {{ item.Content }}
+
   {% endif %}
-  <h1>{{ item.Title }}</h1>{{ item.Content }}
-  {% endfor -%}
+{% endfor -%}
