@@ -218,7 +218,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
                 decimal totalOtherHours = ( timeCardDay.PaidVacationHours ?? 0 ) + ( timeCardDay.TotalHolidayHours ?? 0 ) + ( timeCardDay.PaidSickHours ?? 0 );
                 Literal lTotalHours = repeaterItem.FindControl( "lTotalHours" ) as Literal;
-                lTotalHours.Text = FormatTimeCardHours( timeCardDay.TotalWorkedDuration ?? 0 + totalOtherHours );
+                lTotalHours.Text = FormatTimeCardHours( (timeCardDay.TotalWorkedDuration ?? 0) + totalOtherHours );
 
                 Literal lNotes = repeaterItem.FindControl( "lNotes" ) as Literal;
                 lNotes.Text = timeCardDay.Notes;
