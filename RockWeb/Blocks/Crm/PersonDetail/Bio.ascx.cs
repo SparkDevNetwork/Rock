@@ -158,7 +158,14 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     {
                         string ageText = ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ?
                             string.Format( "{0} yrs old ", Person.BirthDate.Value.Age() ) : string.Empty;
-                        lAge.Text = string.Format( "{0}<small>({1})</small><br/>", ageText, Person.BirthDate.Value.ToMonthDayString() );
+                        if (Person.BirthDate.Value.Year != DateTime.MinValue.Year)
+                        {
+                            lAge.Text = string.Format("{0}<small>({1})</small><br/>", ageText, Person.BirthDate.Value.ToShortDateString());
+                        } else
+                        {
+                            lAge.Text = string.Format("{0}<small>({1})</small><br/>", ageText, Person.BirthDate.Value.ToMonthDayString());
+                        }
+                        
                     }
 
                     lGender.Text = Person.Gender.ToString();
