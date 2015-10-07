@@ -1,0 +1,46 @@
+<link rel="stylesheet" href="/Styles/bootstrap-sortable.css">
+
+{% if Actions.size > 0 %}
+  <div class='panel panel-block'>
+    <div class='panel-heading'>
+      <h4 class='panel-title'>My {% if Role == '0' %}Tasks{% else %}Requests{% endif %}</h4>
+    </div>
+    {% comment %}
+    <div class='panel-body'>
+      <ul class='fa-ul'>
+        {% for action in Actions %}
+          <li>
+            <i class='fa-li {{ action.Activity.Workflow.WorkflowType.IconCssClass }}'></i>
+            <a href='~/{% if Role == '0' %}WorkflowEntry/{{ action.Activity.Workflow.WorkflowTypeId }}{% else %}Workflow{% endif %}/{{ action.Activity.Workflow.Id }}'>{{ action.Activity.Workflow.WorkflowType.Name }}: {{ action.Activity.Workflow.Name }}{% if role == '0' %} ({{ action.Activity.ActivityType.Name }}){% endif %}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endcomment %}
+    <table class="table sortable">
+      <thead>
+        <tr>
+          <th>Created</th>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Due</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for action in Actions %}
+          <tr>
+            <td>{{ action.Activity.Workflow.CreatedDateTime | Date:'MM/d/yy' }}</td>
+            <td>
+              <a href='/{% if Role == '0' %}WorkflowEntry/{{ action.Activity.Workflow.WorkflowTypeId }}{% else %}Workflow{% endif %}/{{ action.Activity.Workflow.Id }}'>{{ action.Activity.Workflow.Name }}{% if role == '0' %} ({{ action.Activity.ActivityType.Name }}){% endif %}</a>
+            </td>
+            <td><i class='fa-fw {{ action.Activity.Workflow.WorkflowType.IconCssClass }}'></i> {{ action.Activity.Workflow.WorkflowType.Name }}</td>
+            <td>{{ action.Activity.Workflow.DueDate }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+
+<script src="/Scripts/moment.min.js"></script>
+<script src="/Scripts/bootstrap-sortable.js"></script>
