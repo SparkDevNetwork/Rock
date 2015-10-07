@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
@@ -46,6 +47,7 @@ namespace RockWeb.Blocks.Groups
         private DefinedValueCache _inactiveStatus = null;
         private Group _group = null;
         private bool _canView = false;
+        private List<int> _groupMembersWithRegistrations = new List<int>();
 
         #endregion
 
@@ -119,6 +121,7 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
                     gGroupMembers.ExportFilename = _group.Name;
                     gGroupMembers.ExportSource = ExcelExportSource.DataSource;
+                    gGroupMembers.ShowConfirmDeleteDialog = false;
 
                     // make sure they have Auth to edit the block OR edit to the Group
                     bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
@@ -134,6 +137,27 @@ namespace RockWeb.Blocks.Groups
                     hlSyncStatus.Visible = true;
                 }
             }
+
+            string deleteScript = @"
+    $('table.js-grid-group-members a.grid-delete-button').click(function( e ){
+        var $btn = $(this);
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this group member?', function (result) {
+            if (result) {
+                if ( $btn.closest('tr').hasClass('js-has-registration') ) {
+                    Rock.dialogs.confirm('This group member was added through a registration. Are you really sure that you want to delete this group member and remove the link from the registration? ', function (result) {
+                        if (result) {
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                        }
+                    });
+                } else {
+                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                }
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( gGroupMembers, gGroupMembers.GetType(), "deleteInstanceScript", deleteScript, true );
         }
 
         /// <summary>
@@ -185,6 +209,11 @@ namespace RockWeb.Blocks.Groups
 
                 if ( groupMember != null )
                 {
+                    if ( _groupMembersWithRegistrations.Contains( groupMember.Id ) )
+                    {
+                        e.Row.AddCssClass( "js-has-registration" );
+                    }
+
                     if ( groupMember != null && groupMember.IsDeceased )
                     {
                         e.Row.AddCssClass( "is-deceased" );
@@ -308,6 +337,7 @@ namespace RockWeb.Blocks.Groups
         {
             RockContext rockContext = new RockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+            RegistrationRegistrantService registrantService = new RegistrationRegistrantService( rockContext );
             GroupMember groupMember = groupMemberService.Get( e.RowKeyId );
             if ( groupMember != null )
             {
@@ -320,7 +350,13 @@ namespace RockWeb.Blocks.Groups
 
                 int groupId = groupMember.GroupId;
 
+                foreach( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId == groupMember.Id ))
+                {
+                    registrant.GroupMemberId = null;
+                }
+
                 groupMemberService.Delete( groupMember );
+
                 rockContext.SaveChanges();
 
                 Group group = new GroupService( rockContext ).Get( groupId );
@@ -849,8 +885,16 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
-                    gGroupMembers.DataSource = groupMembersList
-                        .ToList().Select( m => new
+                    var groupMemberIds = groupMembersList.Select( m => m.Id ).ToList();
+                    _groupMembersWithRegistrations = new RegistrationRegistrantService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( r =>
+                            r.GroupMemberId.HasValue &&
+                            groupMemberIds.Contains( r.GroupMemberId.Value ) )
+                        .Select( r => r.GroupMemberId.Value )
+                        .ToList();
+
+                    gGroupMembers.DataSource = groupMembersList.Select( m => new
                     {
                         m.Id,
                         m.Guid,
