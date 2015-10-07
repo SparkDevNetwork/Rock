@@ -373,7 +373,7 @@ namespace RockWeb.Blocks.Prayer
         {
             RockContext rockContext = new RockContext();
             PrayerRequestService service = new PrayerRequestService( rockContext );
-            var prayerRequests = service.GetByCategoryIds( categoriesList.SelectedValuesAsInt ).OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount );
+            var prayerRequests = service.GetByCategoryIds( categoriesList.SelectedValuesAsInt ).OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount ).ToList();
             List<int> list = prayerRequests.Select( p => p.Id ).ToList<int>();
 
             Session[_sessionKey] = list;
@@ -426,8 +426,15 @@ namespace RockWeb.Blocks.Prayer
 
             CurrentPrayerRequestId = prayerRequest.Id;
 
-            // save because the prayer count was just modified.
-            rockContext.SaveChanges();
+            try
+            {
+                // save because the prayer count was just modified.
+                rockContext.SaveChanges();
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
+            }
         }
 
         #endregion
