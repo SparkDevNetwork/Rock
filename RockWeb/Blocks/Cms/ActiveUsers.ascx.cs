@@ -169,18 +169,18 @@ namespace RockWeb.Blocks.Cms
                         .Select( a => new
                         {
                             a.login,
-                            pageViews = a.pageViews,
+                            pageViews = a.pageViews.ToList()
                         } );
 
                     if ( CurrentUser != null )
                     {
                         activeLogins = activeLogins.Where( m => m.login.UserName != CurrentUser.UserName );
                     }
-                    
+
                     foreach ( var activeLogin in activeLogins )
                     {
                         var login = activeLogin.login;
-                        
+
                         if ( !activeLogin.pageViews.Any() || activeLogin.pageViews.FirstOrDefault().SiteId != site.Id )
                         {
                             // only show active logins with PageViews and the most recent pageview is for the specified site
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.Cms
 </li>";
                             if ( activeLogin.pageViews != null )
                             {
-                                string pageViewsHtml = activeLogin.pageViews.ToList()
+                                string pageViewsHtml = activeLogin.pageViews
                                                     .Where( v => v.PageViewSessionId == latestPageViewSessionId )
                                                     .Select( v => HttpUtility.HtmlEncode( v.PagePageTitle ) ).ToList().AsDelimited( "<br> " );
 
