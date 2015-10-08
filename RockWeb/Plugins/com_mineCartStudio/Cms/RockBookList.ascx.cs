@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock.Security;
 using Rock.VersionInfo;
+using System.Runtime.Caching;
 
 namespace RockWeb.Plugins.com_mineCartStudio.Cms
 {
@@ -72,13 +73,15 @@ namespace RockWeb.Plugins.com_mineCartStudio.Cms
         {%  endfor %}
     </div>
 </div>", order: 2)]
-    [BooleanField( "Enable Debug", "Show the lava merge fields.", order: 3 )]
+    [TextField( "Excluded Book Ids", "A comma delimited list of book ids to exclude.", false, order: 3 )]
+    [BooleanField( "Enable Debug", "Show the lava merge fields.", order: 4 )]
     public partial class RockBookList : Rock.Web.UI.RockBlock
     {
 
         #region Fields
 
-        private string _rockServer = "http://www.rockrms.com";
+        private readonly string _rockServer = "http://www.rockrms.com";
+        private readonly string BOOKS_CACHE_KEY = "RockBooks";
 
         #endregion
 
@@ -104,6 +107,8 @@ namespace RockWeb.Plugins.com_mineCartStudio.Cms
         {
             base.OnLoad( e );
 
+            lMessages.Text = string.Empty;
+
             if ( !Page.IsPostBack )
             {
                 LoadBooks();
@@ -121,67 +126,112 @@ namespace RockWeb.Plugins.com_mineCartStudio.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            FlushCacheItem( BOOKS_CACHE_KEY );
             LoadBooks();
         }
-
         #endregion
 
 
         #region Methods
 
+        /// <summary>
+        /// Loads the books.
+        /// </summary>
         private void LoadBooks()
         {
-            var client = new RestClient( _rockServer );
-            client.Timeout = 12000;
+            // look for books in cache
+            var books = GetCacheItem( BOOKS_CACHE_KEY ) as List<BookResult>;
 
-            string version = GetAttributeValue("RockVersion");
-
-            if (string.IsNullOrWhiteSpace(version)){
-                version = VersionInfo.GetRockSemanticVersionNumber();
-
-                // get major release
-                version = version.Remove( version.Length - 1, 1 ) + "0";
-            }
-
-            
-            string categories = GetAttributeValue("Categories");
-
-            string requestUrl = string.Format( "/api/Books/GetBooksByVersion/{0}/{1}", categories, version);
-
-            var request = new RestRequest( requestUrl, Method.GET );
-            
-            var response = client.Execute<List<BookResult>>( request );
-
-            if ( response.ResponseStatus == ResponseStatus.Completed )
+            if ( books != null )
             {
-                var test = response.Data;
-
-                var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Books", response.Data );
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
-
-                lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
-
-                // show debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo();
-                }
-                else
-                {
-                    lDebug.Visible = false;
-                    lDebug.Text = string.Empty;
-                }
+                DisplayBooks( books );
             }
             else
             {
-                lMessages.Text = string.Format( "<div class='alert alert-warning'>Error in connecting to the Rock server. {0}", response.ErrorMessage );
+                var client = new RestClient( _rockServer );
+                client.Timeout = 12000;
+
+                string version = GetAttributeValue( "RockVersion" );
+
+                if ( string.IsNullOrWhiteSpace( version ) )
+                {
+                    version = VersionInfo.GetRockSemanticVersionNumber();
+
+                    // get major release
+                    version = version.Remove( version.Length - 1, 1 ) + "0";
+                }
+
+                string categories = GetAttributeValue( "Categories" );
+
+                if ( !string.IsNullOrWhiteSpace( categories ) )
+                {
+                    string requestUrl = string.Format( "/api/Books/GetBooksByVersion/{0}/{1}", categories, version );
+
+                    var request = new RestRequest( requestUrl, Method.GET );
+
+                    var response = client.Execute<List<BookResult>>( request );
+
+                    if ( response.ResponseStatus == ResponseStatus.Completed )
+                    {
+                        // cache the result
+                        var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddDays( 1 ) };
+                        AddCacheItem( BOOKS_CACHE_KEY, response.Data, cacheItemPolicy );
+
+                        DisplayBooks( response.Data );
+                    }
+                    else
+                    {
+                        lMessages.Text = string.Format( "<div class='alert alert-warning'>Error in connecting to the Rock server. {0}", response.ErrorMessage );
+                    }
+                }
+                else
+                {
+                    lMessages.Text = string.Format( "<div class='alert alert-warning'>No categories selected for display." );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Displays the books.
+        /// </summary>
+        /// <param name="books">The books.</param>
+        private void DisplayBooks( List<BookResult> books )
+        {
+            // removed excluded books
+            List<int> excludedBookIds = new List<int>();
+            string excludedBookList = GetAttributeValue( "ExcludedBookIds" );
+
+            if ( excludedBookList != null )
+            {
+                int mos = 0;
+                excludedBookIds = excludedBookList.Split( ',' )
+                    .Select( m => { int.TryParse( m, out mos ); return mos; } )
+                    .Where( m => mos != 0 )
+                    .ToList();
+            }
+
+            var bookList = books.Where( b => !excludedBookIds.Contains( b.Id ) );
+
+            var mergeFields = new Dictionary<string, object>();
+            mergeFields.Add( "Books", bookList );
+            mergeFields.Add( "CurrentPerson", CurrentPerson );
+
+            lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
+
+            // show debug info
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+            {
+                lDebug.Visible = true;
+                lDebug.Text = mergeFields.lavaDebugInfo();
+            }
+            else
+            {
+                lDebug.Visible = false;
+                lDebug.Text = string.Empty;
             }
         }
 
         #endregion
-
     }
 
     /// <summary>
