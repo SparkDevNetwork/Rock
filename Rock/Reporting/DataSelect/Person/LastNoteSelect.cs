@@ -169,6 +169,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             RockDropDownList ddlNoteType = new RockDropDownList();
             ddlNoteType.ID = parentControl.ID + "_ddlNoteType";
+            ddlNoteType.Label = "Note Type";
             parentControl.Controls.Add( ddlNoteType );
 
             var noteTypeService = new NoteTypeService( new RockContext() );
