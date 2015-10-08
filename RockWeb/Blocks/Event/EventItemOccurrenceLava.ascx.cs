@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 mergeFields.Add( "EventItemOccurrence", eventItemOccurrence );
-                mergeFields.Add( "Event", eventItemOccurrence.EventItem );
+                mergeFields.Add( "Event", eventItemOccurrence != null ? eventItemOccurrence.EventItem : null );
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
 
                 lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
