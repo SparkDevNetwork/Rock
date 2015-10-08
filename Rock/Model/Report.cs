@@ -308,7 +308,13 @@ namespace Rock.Model
                         {
                             try
                             {
-                                bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression( reportDbContext, idExpression, reportField.Value.Selection ?? string.Empty ) ) );
+                                var componentExpression = selectComponent.GetExpression( reportDbContext, idExpression, reportField.Value.Selection ?? string.Empty );
+                                if (componentExpression == null)
+                                {
+                                    componentExpression = Expression.Constant( null, typeof( string ) );
+                                }
+
+                                bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), componentExpression ) );
 
                                 var customSortProperties = selectComponent.SortProperties( reportField.Value.Selection );
                                 if ( !string.IsNullOrEmpty( customSortProperties ) )
