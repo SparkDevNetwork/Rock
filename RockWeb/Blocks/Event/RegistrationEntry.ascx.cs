@@ -3318,8 +3318,8 @@ namespace RockWeb.Blocks.Event
                                     costSummary.DiscountedCost = costSummary.Cost;
                                 }
 
-                                // Optional Fees are always included in minimum payment
-                                costSummary.MinPayment = costSummary.DiscountedCost;
+                                // If template allows a minimum payment, then fees are not included, otherwise it is included
+                                costSummary.MinPayment = RegistrationTemplate.MinimumInitialPayment.HasValue ? 0 : costSummary.DiscountedCost;
 
                                 costs.Add( costSummary );
                             }
