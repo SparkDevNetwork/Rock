@@ -42,26 +42,26 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
     [DisplayName( "Schedule Context Setter" )]
     [Category( "Core" )]
     [Description( "Block that can be used to set the default schedule context for the site." )]
-    
     [CustomRadioListField( "Context Scope", "The scope of context to set", "Site,Page", true, "Site", order: 0 )]
     [SchedulesField( "Schedule Group", "Choose a schedule group to populate the dropdown", order: 1 )]
     [TextField( "Current Item Template", "Lava template for the current item. The only merge field is {{ ScheduleName }}.", true, "{{ ScheduleName }}", order: 2 )]
     [TextField( "Dropdown Item Template", "Lava template for items in the dropdown. The only merge field is {{ ScheduleName }}.", true, "{{ ScheduleName }}", order: 2 )]
     [TextField( "No Schedule Text", "The text to show when there is no schedule in the context.", true, "All Schedules", order: 3 )]
-
     public partial class ScheduleContextSetter : Rock.Web.UI.RockBlock
     {
-
         #region Base Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
-            if ( Request.QueryString["scheduleId"] != null )
-            {
-                SetScheduleContext();
-            }
+            // repaint the screen after block settings are updated
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
         /// <summary>
@@ -72,102 +72,28 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
-            {
-                LoadDropDowns();
-            }
-        }
-
-        private void SetContextUrlCookie()
-        {
-            HttpCookie cookieUrl = new HttpCookie( "Rock.Schedule.Context.Query" );
-            cookieUrl["scheduleId"] = Request.QueryString["scheduleId"].ToString();
-            cookieUrl.Expires = DateTime.Now.AddHours( 1 );
-            Response.Cookies.Add( cookieUrl );
-        }
-
-        private void ClearRockContext( string cookieName )
-        {
-            var cookieKeys = Request.Cookies[ cookieName ].Value.Split( '&' ).ToArray();
-
-            HttpCookie newRockCookie = new HttpCookie( cookieName );
-
-            foreach ( var cookieKey in cookieKeys )
-            {
-
-                if ( !cookieKey.ToString().StartsWith( "Rock.Model.Schedule" ) )
-                {
-                    var cookieValue = cookieKey.Split( '=' );
-
-                    var cookieId = cookieValue[0].ToString();
-                    var cookieHash = cookieValue[1].ToString();
-
-                    newRockCookie[cookieId] = cookieHash;
-                }
-            }
-
-            newRockCookie.Expires = DateTime.Now.AddHours( 1 );
-            Response.Cookies.Add( newRockCookie );
-        }
-
-        private void SetScheduleContext()
-        {
-
-           
-            var scheduleContextQuery = Request.QueryString["scheduleId"];
-
-            if ( scheduleContextQuery != null )
-            {
-                bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
-
-                var schedule = new ScheduleService( new RockContext() ).Get( scheduleContextQuery.ToString().AsInteger() );
-
-                HttpCookie cookieUrl = Request.Cookies["Rock.Schedule.Context.Query"];
-
-                if ( schedule != null )
-                {
-
-                    if ( cookieUrl == null || Request.QueryString["scheduleId"].ToString() != cookieUrl.Value.Replace( "scheduleId=", "" ) )
-                    {
-                        SetContextUrlCookie();
-                        RockPage.SetContextCookie( schedule, pageScope, true );
-                    }
-                }
-                else
-                {
-                    if ( cookieUrl == null || Request.QueryString["scheduleId"].ToString() != cookieUrl.Value.Replace( "scheduleId=", "" ) )
-                    {
-                        SetContextUrlCookie();
-
-                        // Check for a page specific Rock Context Cookie
-                        if ( Request.Cookies["Rock_Context:" + RockPage.PageId.ToString()] != null )
-                        {
-                            ClearRockContext("Rock_Context:" + RockPage.PageId.ToString());
-                        }
-
-                        // Check for a site specific Rock Context Cookie
-                        if ( Request.Cookies["Rock_Context"] != null )
-                        {
-                            ClearRockContext("Rock_Context");   
-                        }
-
-                        // Refresh the page once we modify the cookies
-                        Response.Redirect( Request.Url.ToString() );
-                    }
-                }
-            }
+            LoadDropdowns();
         }
 
         /// <summary>
-        /// Loads the drop downs.
+        /// Handles the BlockUpdated event of the control.
         /// </summary>
-        private void LoadDropDowns()
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
+            LoadDropdowns();
+        }
 
+        /// <summary>
+        /// Loads the schedules
+        /// </summary>
+        private void LoadDropdowns()
+        {
+            var mergeObjects = new Dictionary<string, object>();
             var scheduleEntityType = EntityTypeCache.Read( "Rock.Model.Schedule" );
             var defaultSchedule = RockPage.GetCurrentContext( scheduleEntityType ) as Schedule;
-             
+
             if ( defaultSchedule != null )
             {
                 mergeObjects.Add( "ScheduleName", defaultSchedule.Name );
@@ -205,6 +131,44 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
             rptSchedules.DataBind();
         }
 
+        /// <summary>
+        /// Sets the schedule context.
+        /// </summary>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="refreshPage">if set to <c>true</c> [refresh page].</param>
+        /// <returns></returns>
+        protected Schedule SetScheduleContext( int scheduleId, bool refreshPage = false )
+        {
+            var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
+            queryString.Set( "scheduleId", scheduleId.ToString() );
+
+            bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
+            var schedule = new ScheduleService( new RockContext() ).Get( scheduleId );
+            if ( schedule != null )
+            {
+                // don't refresh here, refresh below with the correct query string
+                RockPage.SetContextCookie( schedule, false );
+            }
+            else
+            {
+                string cookieName = RockPage.GetContextCookieName( pageScope );
+
+                var contextCookie = Request.Cookies[cookieName];
+                if ( contextCookie != null )
+                {
+                    contextCookie.Values.Remove( typeof( Campus ).FullName );
+                    Response.Cookies.Add( contextCookie );
+                }
+            }
+
+            if ( refreshPage )
+            {
+                Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ) );
+            }
+
+            return schedule;
+        }
+
         #endregion
 
         #region Methods
@@ -216,21 +180,12 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptSchedules_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
-            var schedule = new ScheduleService( new RockContext() ).Get( e.CommandArgument.ToString().AsInteger() );
+            var scheduleId = e.CommandArgument.ToString();
 
-            var nameValues = HttpUtility.ParseQueryString( Request.QueryString.ToString() );
-            nameValues.Set( "scheduleId", e.CommandArgument.ToString() );
-            string url = Request.Url.AbsolutePath;
-            string updatedQueryString = "?" + nameValues.ToString();
-
-            // Only update the Context Cookie if the Schedule is valid
-            if ( schedule != null )
+            if ( scheduleId != null )
             {
-                RockPage.SetContextCookie( schedule, pageScope, false );
+                SetScheduleContext( scheduleId.AsInteger(), true );
             }
-
-            Response.Redirect( url + updatedQueryString );
         }
 
         #endregion
