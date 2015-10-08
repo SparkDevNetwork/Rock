@@ -40,17 +40,19 @@ namespace RockWeb.Blocks.Groups
     [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 1 )]
     [BooleanField( "Limit to Security Role Groups", "Any groups can be flagged as a security group (even if they're not a security role).  Should the list of groups be limited to these groups?", false, "", 2 )]
     [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 3 )]
-    [BooleanField( "Display Group Type Column", "Should the Group Type column be displayed?", true, "", 4 )]
-    [BooleanField( "Display Description Column", "Should the Description column be displayed?", true, "", 5 )]
-    [BooleanField( "Display Active Status Column", "Should the Active Status column be displayed?", false, "", 6 )]
-    [BooleanField( "Display Member Count Column", "Should the Member Count column be displayed? Does not affect lists with a person context.", true, "", 7 )]
-    [BooleanField( "Display System Column", "Should the System column be displayed?", true, "", 8 )]
-    [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 9 )]
-    [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 10 )]
+    [BooleanField( "Display Group Path", "Should the Group path be displayed?", false, "", 4 )]
+    [BooleanField( "Display Group Type Column", "Should the Group Type column be displayed?", true, "", 5 )]
+    [BooleanField( "Display Description Column", "Should the Description column be displayed?", true, "", 6 )]
+    [BooleanField( "Display Active Status Column", "Should the Active Status column be displayed?", false, "", 7 )]
+    [BooleanField( "Display Member Count Column", "Should the Member Count column be displayed? Does not affect lists with a person context.", true, "", 8 )]
+    [BooleanField( "Display System Column", "Should the System column be displayed?", true, "", 9 )]
+    [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 10 )]
+    [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 11 )]
     [ContextAware]
     public partial class GroupList : RockBlock
     {
         private int _groupTypesCount = 0;
+        private bool _showGroupPath = false;
 
         #region Control Methods
 
@@ -99,8 +101,8 @@ namespace RockWeb.Blocks.Groups
             gGroups.Actions.ShowAdd = true;
             gGroups.Actions.AddClick += gGroups_Add;
             gGroups.GridRebind += gGroups_GridRebind;
-
             gGroups.RowDataBound += gGroups_RowDataBound;
+            gGroups.ExportSource = ExcelExportSource.DataSource;
 
             // set up Grid based on Block Settings and Context
             bool showDescriptionColumn = GetAttributeValue( "DisplayDescriptionColumn" ).AsBoolean();
@@ -112,7 +114,11 @@ namespace RockWeb.Blocks.Groups
                 gGroups.TooltipField = "Description";
             }
 
+            _showGroupPath = GetAttributeValue( "DisplayGroupPath" ).AsBoolean();
+            
             Dictionary<string, BoundField> boundFields = gGroups.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
+            boundFields["Name"].Visible = !_showGroupPath;
+            gGroups.Columns[1].Visible = _showGroupPath;
             boundFields["GroupTypeName"].Visible = GetAttributeValue( "DisplayGroupTypeColumn" ).AsBoolean();
             boundFields["Description"].Visible = showDescriptionColumn;
 
@@ -368,6 +374,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             var rockContext = new RockContext();
+            var groupService = new GroupService( rockContext );
 
             SortProperty sortProperty = gGroups.SortProperty;
             if ( sortProperty == null )
@@ -377,7 +384,8 @@ namespace RockWeb.Blocks.Groups
 
             bool onlySecurityGroups = GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean();
 
-            var qryGroups = new GroupService( rockContext ).Queryable().Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
+            var qryGroups = groupService.Queryable()
+                .Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
 
             string limitToActiveStatus = GetAttributeValue( "LimittoActiveStatus" );
 
@@ -409,6 +417,8 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            var groupList = new List<GroupListRowInfo>();
+
             // Person context will exist if used on a person detail page
             int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
             if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) )
@@ -433,9 +443,10 @@ namespace RockWeb.Blocks.Groups
                         qry = qry.Where( gmg => !gmg.Group.IsActive || gmg.GroupMember.GroupMemberStatus == GroupMemberStatus.Inactive );
                     }
 
-                    gGroups.DataSource = qry
+                    groupList = qry
                         .Select( m => new GroupListRowInfo {
                             Id = m.Group.Id, 
+                            Path = string.Empty,
                             Name = m.Group.Name, 
                             GroupTypeName = m.Group.GroupType.Name, 
                             GroupOrder = m.Group.Order, 
@@ -467,9 +478,10 @@ namespace RockWeb.Blocks.Groups
                     qryGroups = qryGroups.Where( x => !x.IsActive );
                 }
 
-                gGroups.DataSource = qryGroups
+                groupList = qryGroups
                     .Select( g => new GroupListRowInfo { 
                         Id = g.Id, 
+                        Path = string.Empty,
                         Name = ( ( useRolePrefix && g.GroupType.Id != roleGroupTypeId ) ? "GROUP - " : "" ) + g.Name, 
                         GroupTypeName = g.GroupType.Name, 
                         GroupOrder = g.Order, 
@@ -486,6 +498,15 @@ namespace RockWeb.Blocks.Groups
                     .ToList();
             }
 
+            if ( _showGroupPath )
+            {
+                foreach( var groupRow in groupList )
+                {
+                    groupRow.Path = groupService.GroupAncestorPathName( groupRow.Id );
+                }
+            }
+
+            gGroups.DataSource = groupList;
             gGroups.EntityTypeId = EntityTypeCache.Read<Group>().Id;
             gGroups.DataBind();
 
@@ -552,6 +573,7 @@ namespace RockWeb.Blocks.Groups
         private class GroupListRowInfo
         {
             public int Id { get; set; }
+            public string Path { get; set; }
             public string Name { get; set; }
             public string GroupTypeName { get; set; }
             public int GroupOrder { get; set; }
