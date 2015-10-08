@@ -1729,6 +1729,7 @@ namespace RockWeb.Blocks.Event
                         note.NoteTypeId = noteType.Id;
                         note.IsSystem = false;
                         note.IsAlert = false;
+                        note.IsPrivateNote = false;
                         note.EntityId = person.Id;
                         note.Caption = string.Empty;
                         note.Text = noteText.ToString();
@@ -1774,6 +1775,7 @@ namespace RockWeb.Blocks.Event
                 note.NoteTypeId = noteType.Id;
                 note.IsSystem = false;
                 note.IsAlert = false;
+                note.IsPrivateNote = false;
                 note.EntityId = registrar.Id;
                 note.Caption = string.Empty;
                 note.Text = string.Format( "Registered {0}for {1} ({2})", namesText, RegistrationInstanceState.Name, RegistrationInstanceState.Id );

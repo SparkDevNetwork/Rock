@@ -82,6 +82,7 @@ namespace Rock.Web.UI.Controls
                 this.CreatedDateTime = value.CreatedDateTime;
                 this.Text = value.Text;
                 this.IsAlert = value.IsAlert.HasValue && value.IsAlert.Value;
+                this.IsPrivate = value.IsPrivateNote;
             }
         }
 
@@ -806,12 +807,8 @@ namespace Rock.Web.UI.Controls
                     note = service.Get( NoteId.Value );
                 }
 
-                bool newNote = false;
-
                 if ( note == null )
                 {
-                    newNote = true;
-
                     note = new Note();
                     note.IsSystem = false;
                     note.EntityId = EntityId;
@@ -822,6 +819,7 @@ namespace Rock.Web.UI.Controls
                 note.Caption = IsPrivate ? "You - Personal Note" : string.Empty;
                 note.Text = Text;
                 note.IsAlert = IsAlert;
+                note.IsPrivateNote = IsPrivate;
 
                 if (ShowCreateDateInput)
                 {
@@ -829,16 +827,6 @@ namespace Rock.Web.UI.Controls
                 }
 
                 rockContext.SaveChanges();
-
-                if ( IsPrivate && !note.IsPrivate( Authorization.VIEW, currentPerson ) )
-                {
-                    note.MakePrivate( Authorization.VIEW, currentPerson );
-                }
-
-                if ( !IsPrivate && note.IsPrivate( Authorization.VIEW, currentPerson ) )
-                {
-                    note.MakeUnPrivate( Authorization.VIEW, currentPerson );
-                }
 
                 if ( SaveButtonClick != null )
                 {
