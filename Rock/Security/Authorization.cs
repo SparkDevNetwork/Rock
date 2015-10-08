@@ -93,7 +93,7 @@ namespace Rock.Security
             {
                 AuthService authService = new AuthService( rockContext );
 
-                foreach ( Auth auth in authService.Queryable( "PersonAlias.Person" ).
+                foreach ( Auth auth in authService.Queryable( "PersonAlias" ).
                     OrderBy( A => A.EntityTypeId ).ThenBy( A => A.EntityId ).ThenBy( A => A.Action ).ThenBy( A => A.Order ) )
                 {
                     if ( !Authorizations.ContainsKey( auth.EntityTypeId ) )

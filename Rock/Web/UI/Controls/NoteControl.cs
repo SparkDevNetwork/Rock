@@ -830,11 +830,6 @@ namespace Rock.Web.UI.Controls
 
                 rockContext.SaveChanges();
 
-                if ( newNote )
-                {
-                    note.AllowPerson( Authorization.ADMINISTRATE, currentPerson );
-                }
-
                 if ( IsPrivate && !note.IsPrivate( Authorization.VIEW, currentPerson ) )
                 {
                     note.MakePrivate( Authorization.VIEW, currentPerson );
@@ -844,7 +839,6 @@ namespace Rock.Web.UI.Controls
                 {
                     note.MakeUnPrivate( Authorization.VIEW, currentPerson );
                 }
-
 
                 if ( SaveButtonClick != null )
                 {
