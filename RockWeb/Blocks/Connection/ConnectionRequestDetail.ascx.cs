@@ -46,6 +46,12 @@ namespace RockWeb.Blocks.Connection
     public partial class ConnectionRequestDetail : RockBlock, IDetailBlock
     {
 
+        #region Fields
+
+        private const string CAMPUS_SETTING = "ConnectionRequestDetail_Campus";
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -245,6 +251,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest = new ConnectionRequest();
                         connectionRequest.ConnectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
+                        SetUserPreference( CAMPUS_SETTING, ddlCampus.SelectedValueAsId().Value.ToString() );
                     }
                     else
                     {
@@ -993,6 +1000,12 @@ namespace RockWeb.Blocks.Connection
                             connectionRequest.ConnectionState = ConnectionState.Active;
                             connectionRequest.ConnectionStatus = connectionStatus;
                             connectionRequest.ConnectionStatusId = connectionStatus.Id;
+
+                            int? campusId = GetUserPreference( CAMPUS_SETTING ).AsIntegerOrNull();
+                            if ( campusId.HasValue )
+                            {
+                                connectionRequest.CampusId = campusId.Value;
+                            }
                         }
                     }
                 }
@@ -1331,7 +1344,10 @@ namespace RockWeb.Blocks.Connection
             {
                 ddlCampus.SelectedValue = connectionRequest.CampusId.ToString();
             }
-            ddlCampus.DataBind();
+            else 
+            {
+                ddlCampus.SelectedIndex = 0;
+            }
 
             RebindConnectors( connectionRequest, ddlCampus.SelectedValueAsInt(), rockContext );
 
