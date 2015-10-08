@@ -1,0 +1,67 @@
+<div class="panel panel-block">
+  <div class="panel-heading">
+    <h4 class="panel-title">
+      <i class="fa fa-users"></i> Followed {{ EntityType | Pluralize }}
+    </h4>
+  </div>
+  <div class="panel-body">
+
+    <ul class="list-unstyled">
+
+      {% assign currentType = '' %}
+      {% assign currentCampus = '' %}
+
+      {% for item in FollowingItems %}
+      {% if SortProperty == '1' %}
+      {% if currentType != item.GroupTypeId %}
+      <h4>{{  item.GroupType.Name }}</h4>
+      {% assign currentType = item.GroupTypeId %}
+      {% endif %}
+      {% else %}
+      {% if currentCampus != item.Campus %}
+      <h4>{{  item.Campus.Name }}</h4>
+      {% assign currentCampus = item.Campus %}
+      {% endif %}
+      {% endif %}
+
+      {% if SortProperty == '2' %}
+      {% if currentType != item.GroupTypeId %}
+      {% if currentType != '' %}
+    </ul>
+    {% endif %}
+
+    <strong>{{ item.GroupType.Name }}</strong>
+    <ul class="list-unstyled margin-b-md">
+      {% assign currentType = item.GroupTypeId %}
+      {% endif %}
+      {% else %}
+      {% if currentCampus != item.CampusId %}
+      {% if currentCampus != '' %}
+    </ul>
+    {% endif %}
+
+    <strong>{{ item.Campus.Name }}</strong>
+    <ul class="list-unstyled margin-b-md">
+      {% assign currentCampus = item.CampusId %}
+      {% endif %}
+      {% endif %}
+
+      <li>
+        <i class="{{ item.GroupType.IconCssClass }} icon-fw"></i>
+        <a href="{{ LinkUrl | Replace:'[Id]',item.Id }}">{{ item.Name }}</a>
+      </li>
+      {% endfor %}
+
+      {% if SortProperty == '2' %}
+      {% if currentType != '' %}
+    </ul>
+    {% endif %}
+    {% else %}
+    {% if currentCampus != '' %}
+    </ul>
+    {% endif %}
+    {% endif %}
+
+
+  </div>
+</div>
