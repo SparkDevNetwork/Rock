@@ -1,7 +1,10 @@
 ﻿<div class="row announcement-list padding-v-lg">
   {% for item in Items %}
+  {% assign externalUrl = item | Attribute: 'ExternalLink' %}
+  {% capture internalUrl %}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{% endcapture %}
+  {% assign itemLink = externalUrl | Default: internalUrl %}
   <div class="col-xs-6 col-md-3 announcement">
-    <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}" title="{{ item.Title }}">{{ item.Image }}</a>
+    <a href="{{ itemLink }}" title="{{ item.Title }}">{{ item.Image }}</a>
   </div>
   {% endfor %}
 </div>
