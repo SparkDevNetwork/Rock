@@ -27,7 +27,7 @@
                     name: this.name,
                     limit: 15,
                     remote: {
-                        url: Rock.settings.get('baseUrl') + 'api/search?type=%TYPE&term=%QUERY',
+                        url: Rock.settings.get('baseUrl') + 'api/search?type=%TYPE&term=%QUERY&$top=15',
                         replace: function (url, uriEncodedQuery) {
                             var query = url;
                             query = query.replace('%TYPE', self.$el.parents('.smartsearch').find('input:hidden').val());

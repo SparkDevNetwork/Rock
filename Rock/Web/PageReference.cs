@@ -417,6 +417,31 @@ namespace Rock.Web
                 return string.Empty;
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            var pageCache = PageCache.Read( this.PageId );
+            if (pageCache != null)
+            {
+                var pageRoute = pageCache.PageRoutes.FirstOrDefault( a=> a.Id == this.RouteId);
+                if (pageRoute != null)
+                {
+                    return pageRoute.Route;
+                }
+                else
+                {
+                    return pageCache.InternalName;
+                }
+            }
+
+            return base.ToString();
+        }
+
         #endregion
 
         #region Public Static Methods

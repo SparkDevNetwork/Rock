@@ -695,7 +695,7 @@ namespace RockWeb.Blocks.Communication
             BindMediums();
 
             MediumData = communication.MediumData;
-            MediumData.Add( "Subject", communication.Subject );
+            MediumData.AddOrReplace( "Subject", communication.Subject );
 
             if (communication.Status == CommunicationStatus.Transient && !string.IsNullOrWhiteSpace(GetAttributeValue("DefaultTemplate")))
             {

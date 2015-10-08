@@ -173,7 +173,19 @@ namespace RockWeb.Blocks.Event
                 mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
                 mergeFields.Add( "EventItem", eventItem);
                 mergeFields.Add( "EventItemOccurrences", itemOccurrences );
-               
+
+                // add context to merge fields
+                var contextEntityTypes = RockPage.GetContextEntityTypes();
+
+                var contextObjects = new Dictionary<string, object>();
+                foreach (var conextEntityType in contextEntityTypes)
+                {
+                    var contextObject = RockPage.GetCurrentContext(conextEntityType);
+                    contextObjects.Add(conextEntityType.FriendlyName, contextObject);
+                }
+
+                mergeFields.Add("Context", contextObjects);
+
                 lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
                 // show debug info

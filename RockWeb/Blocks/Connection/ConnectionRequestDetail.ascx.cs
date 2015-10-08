@@ -46,6 +46,12 @@ namespace RockWeb.Blocks.Connection
     public partial class ConnectionRequestDetail : RockBlock, IDetailBlock
     {
 
+        #region Fields
+
+        private const string CAMPUS_SETTING = "ConnectionRequestDetail_Campus";
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -245,6 +251,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest = new ConnectionRequest();
                         connectionRequest.ConnectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
+                        SetUserPreference( CAMPUS_SETTING, ddlCampus.SelectedValueAsId().Value.ToString() );
                     }
                     else
                     {
@@ -811,7 +818,7 @@ namespace RockWeb.Blocks.Connection
             var activityGuid = e.RowKeyValue.ToString().AsGuid();
             var activity = new ConnectionRequestActivityService( new RockContext() ).Get( activityGuid );
             if ( activity != null &&
-                activity.CreatedByPersonAliasId.Equals( CurrentPersonAliasId ) &&
+                ( activity.CreatedByPersonAliasId.Equals( CurrentPersonAliasId ) || activity.ConnectorPersonAliasId.Equals( CurrentPersonAliasId ) ) &&
                 activity.ConnectionActivityType.ConnectionTypeId.HasValue )
             {
                 ShowActivityDialog( activityGuid );
@@ -857,7 +864,7 @@ namespace RockWeb.Blocks.Connection
                 var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
                 var activity = connectionRequestActivityService.Get( activityGuid );
                 if ( activity != null &&
-                    activity.CreatedByPersonAliasId.Equals( CurrentPersonAliasId ) &&
+                    ( activity.CreatedByPersonAliasId.Equals( CurrentPersonAliasId ) || activity.ConnectorPersonAliasId.Equals( CurrentPersonAliasId ) ) && 
                     activity.ConnectionActivityType.ConnectionTypeId.HasValue )
                 {
                     connectionRequestActivityService.Delete( activity );
@@ -911,7 +918,9 @@ namespace RockWeb.Blocks.Connection
                             OpportunityId = a.ConnectionOpportunityId,
                             Connector = a.ConnectorPersonAlias != null && a.ConnectorPersonAlias.Person != null ? a.ConnectorPersonAlias.Person.FullName : "",
                             Note = a.Note,
-                            CanEdit = a.ConnectorPersonAliasId.Equals( CurrentPersonAliasId ) && a.ConnectionActivityType.ConnectionTypeId.HasValue
+                            CanEdit = 
+                                ( a.CreatedByPersonAliasId.Equals( CurrentPersonAliasId ) || a.ConnectorPersonAliasId.Equals( CurrentPersonAliasId ) ) && 
+                                a.ConnectionActivityType.ConnectionTypeId.HasValue
                         } )
                     .OrderByDescending( a => a.CreatedDate )
                     .ToList();
@@ -991,6 +1000,12 @@ namespace RockWeb.Blocks.Connection
                             connectionRequest.ConnectionState = ConnectionState.Active;
                             connectionRequest.ConnectionStatus = connectionStatus;
                             connectionRequest.ConnectionStatusId = connectionStatus.Id;
+
+                            int? campusId = GetUserPreference( CAMPUS_SETTING ).AsIntegerOrNull();
+                            if ( campusId.HasValue )
+                            {
+                                connectionRequest.CampusId = campusId.Value;
+                            }
                         }
                     }
                 }
@@ -1329,7 +1344,10 @@ namespace RockWeb.Blocks.Connection
             {
                 ddlCampus.SelectedValue = connectionRequest.CampusId.ToString();
             }
-            ddlCampus.DataBind();
+            else 
+            {
+                ddlCampus.SelectedIndex = 0;
+            }
 
             RebindConnectors( connectionRequest, ddlCampus.SelectedValueAsInt(), rockContext );
 

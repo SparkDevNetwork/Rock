@@ -1826,17 +1826,23 @@ namespace RockWeb.Blocks.Event
 
                     if ( location != null )
                     {
-                        Guid locTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
-                        var familyGroup = new GroupService( rockContext ).Get( familyId );
-
-                        // Do not update existing location on an existing family ( only update when creating new family or location doesn't already exist )
-                        if ( familyGroup != null && !familyGroup.GroupLocations.Any( l => l.GroupLocationTypeValue.Guid.Equals( locTypeGuid ) ) )
+                        var homeLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                        if ( homeLocationType != null )
                         {
-                            GroupService.AddNewFamilyAddress(
-                                rockContext,
-                                familyGroup,
-                                Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-                                location.Street1, location.Street2, location.City, location.State, location.PostalCode, location.Country );
+                            var familyGroup = new GroupService( rockContext ).Get( familyId );
+
+                            // Do not update existing location on an existing family ( only update when creating new family or location doesn't already exist )
+                            if ( familyGroup != null && !familyGroup.GroupLocations
+                                .Any( l =>
+                                    l.GroupLocationTypeValueId.HasValue &&
+                                    l.GroupLocationTypeValueId.Value == homeLocationType.Id ) )
+                            {
+                                GroupService.AddNewFamilyAddress(
+                                    rockContext,
+                                    familyGroup,
+                                    Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+                                    location.Street1, location.Street2, location.City, location.State, location.PostalCode, location.Country );
+                            }
                         }
                     }
                 }
