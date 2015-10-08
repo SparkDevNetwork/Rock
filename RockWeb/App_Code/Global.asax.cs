@@ -337,6 +337,26 @@ namespace RockWeb
                 {
                     var ex = context.Server.GetLastError();
 
+                    try
+                    {
+                        HttpException httpEx = ex as HttpException;
+                        if ( httpEx != null )
+                        {
+                            int statusCode = httpEx.GetHttpCode();
+                            if (!GlobalAttributesCache.Read().GetValue( "Log404AsException" ).AsBoolean())
+                            {
+                                context.ClearError();
+                                context.Response.StatusCode = 404;
+                                return;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        //
+                    }
+
+
                     SendNotification( ex );
 
                     object siteId = context.Items["Rock:SiteId"];
