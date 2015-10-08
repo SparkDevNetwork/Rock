@@ -57,5 +57,10 @@ namespace Rock.SystemGuid
         /// The Media File file type guid
         /// </summary>
         public const string MEDIA_FILE = "6CBEA3B0-E983-40C1-9712-BD3FA2466EAE";
+
+        /// <summary>
+        /// The Merge Template file type guid
+        /// </summary>
+        public const string MERGE_TEMPLATE = "BD63EC0C-2DF8-4C55-97E3-616870C67C59";
     }
 }

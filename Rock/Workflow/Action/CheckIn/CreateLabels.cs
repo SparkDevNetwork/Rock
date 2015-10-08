@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -139,7 +140,7 @@ namespace Rock.Workflow.Action.CheckIn
             return false;
         }
 
-        private void GetGroupTypeLabels( GroupType groupType, List<CheckInLabel> labels, Dictionary<string, object> mergeObjects )
+        private void GetGroupTypeLabels( GroupTypeCache groupType, List<CheckInLabel> labels, Dictionary<string, object> mergeObjects )
         {
             //groupType.LoadAttributes();
             foreach ( var attribute in groupType.Attributes.OrderBy( a => a.Value.Order ) )

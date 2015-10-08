@@ -8,15 +8,14 @@
                 <h1 class="panel-title"><i class="fa fa-gears"></i> My Workflows</h1>
 
                 <div class="pull-right">
-                    <Rock:Toggle ID="tglRole" CssClass="margin-r-md"  runat="server" OnText="Initiated By Me" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OffText="Assigned To Me" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
-                    <Rock:Toggle ID="tglDisplay" runat="server" OnText="Active Types" ActiveButtonCssClass="btn-success" ButtonSizeCssClass="btn-xs" OffText="All Types" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
+                    <Rock:Toggle ID="tglRole" CssClass="margin-r-sm pull-left"  runat="server" OnText="Initiated By Me" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OffText="Assigned To Me" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
+                    <Rock:Toggle ID="tglDisplay" CssClass="pull-left" runat="server" OnText="Active Types" ActiveButtonCssClass="btn-success" ButtonSizeCssClass="btn-xs" OffText="All Types" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
                 </div>
 
             </div>
             <div class="panel-body">
-
-                <div class="list-as-blocks margin-t-lg clearfix">
-                    <ul class="list-unstyled">
+                <div class="list-as-blocks clearfix">
+                    <ul>
                         <asp:Repeater ID="rptWorkflowTypes" runat="server">
                             <ItemTemplate>
                                 <li class='<%# Eval("Class") %>'>

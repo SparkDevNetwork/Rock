@@ -34,8 +34,9 @@ namespace Rock.Reporting
         /// <param name="comparisonType">Type of the comparison.</param>
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
+        /// <param name="value2">If doing ComparisonType.Between, value2 is the upper value between expression</param>
         /// <returns></returns>
-        public static Expression ComparisonExpression( ComparisonType comparisonType, MemberExpression property, Expression value )
+        public static Expression ComparisonExpression( ComparisonType comparisonType, MemberExpression property, Expression value, Expression value2 = null)
         {
             MemberExpression valueExpression;
             Expression comparisonExpression = null;
@@ -76,10 +77,13 @@ namespace Rock.Reporting
             else if ( comparisonType == ComparisonType.GreaterThan ||
                 comparisonType == ComparisonType.GreaterThanOrEqualTo ||
                 comparisonType == ComparisonType.LessThan ||
-                comparisonType == ComparisonType.LessThanOrEqualTo )
+                comparisonType == ComparisonType.LessThanOrEqualTo ||
+                comparisonType == ComparisonType.Between )
             {
                 Expression leftExpression = valueExpression;
                 Expression rightExpression = value;
+                
+                Expression rightExpression2 = value2;
 
                 if ( valueExpression.Type == typeof( string ) )
                 {
@@ -103,6 +107,23 @@ namespace Rock.Reporting
                 else if ( comparisonType == ComparisonType.LessThanOrEqualTo )
                 {
                     comparisonExpression = Expression.LessThanOrEqual( leftExpression, rightExpression );
+                }
+                else if (comparisonType == ComparisonType.Between)
+                {
+                    var lowerComparisonExpression = rightExpression != null ? Expression.GreaterThanOrEqual( leftExpression, rightExpression ) : null;
+                    var upperComparisonExpression = rightExpression2 != null ? Expression.LessThanOrEqual( leftExpression, rightExpression2 ) : null;
+                    if ( rightExpression != null && rightExpression2 != null )
+                    {
+                        comparisonExpression = Expression.AndAlso( lowerComparisonExpression, upperComparisonExpression );
+                    }
+                    else if (rightExpression != null )
+                    {
+                        comparisonExpression = lowerComparisonExpression;
+                    }
+                    else if ( rightExpression2 != null )
+                    {
+                        comparisonExpression = upperComparisonExpression;
+                    }
                 }
             }
             else if ( comparisonType == ComparisonType.IsBlank )
@@ -130,8 +151,8 @@ namespace Rock.Reporting
                 if ( valueExpression.Type == typeof( string ) )
                 {
                     Expression trimmed = Expression.Call( valueExpression, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
-                    Expression emtpyString = Expression.Constant( string.Empty );
-                    comparisonExpression = Expression.NotEqual( trimmed, value );
+                    Expression emptyString = Expression.Constant( string.Empty );
+                    comparisonExpression = Expression.And( Expression.NotEqual( trimmed, emptyString ), Expression.NotEqual( valueExpression, Expression.Constant( null, valueExpression.Type ) ) );
                 }
                 else
                 {
@@ -218,7 +239,8 @@ namespace Rock.Reporting
         /// </summary>
         public const ComparisonType ContainsFilterComparisonTypes =
                         ComparisonType.Contains |
-                        ComparisonType.DoesNotContain;
+                        ComparisonType.DoesNotContain |
+                        ComparisonType.IsBlank;
 
         /// <summary>
         /// Gets the comparison types typically used for numeric fields
@@ -246,6 +268,7 @@ namespace Rock.Reporting
                     ComparisonType.GreaterThan |
                     ComparisonType.GreaterThanOrEqualTo |
                     ComparisonType.LessThan |
-                    ComparisonType.LessThanOrEqualTo;
+                    ComparisonType.LessThanOrEqualTo |
+                    ComparisonType.Between;
     }
 }

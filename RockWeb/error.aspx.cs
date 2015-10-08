@@ -161,16 +161,22 @@ namespace RockWeb
                 if ( Request.Headers["X-Requested-With"] == "XMLHttpRequest" )
                 {
                     Response.StatusCode = 500;
+                    Response.Clear();
 
                     if ( showDetails )
                     {
+                        var stackTrace = ex.StackTrace;
                         // go get the important exception
                         while ( ex.InnerException != null )
                         {
                             ex = ex.InnerException;
+                            if (ex != null)
+                            {
+                                stackTrace = ex.StackTrace + "<br/>" + stackTrace;
+                            }
                         }
 
-                        Response.Write( string.Format( "{0}<p><pre>{1}</pre>", ex.Message, ex.StackTrace ) );
+                        Response.Write( string.Format( "{0}<p><pre>{1}</pre>", ex.Message, stackTrace ) );
                     }
                     else
                     {

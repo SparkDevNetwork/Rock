@@ -75,6 +75,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialAccount.FriendlyTypeName, FinancialTransactionDetail.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<RegistrationInstance>( Context ).Queryable().Any( a => a.AccountId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialAccount.FriendlyTypeName, RegistrationInstance.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -116,14 +122,20 @@ namespace Rock.Model
             target.CampusId = source.CampusId;
             target.Description = source.Description;
             target.EndDate = source.EndDate;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GlCode = source.GlCode;
+            target.ImageBinaryFileId = source.ImageBinaryFileId;
             target.IsActive = source.IsActive;
+            target.IsPublic = source.IsPublic;
             target.IsTaxDeductible = source.IsTaxDeductible;
             target.Name = source.Name;
             target.Order = source.Order;
             target.ParentAccountId = source.ParentAccountId;
+            target.PublicDescription = source.PublicDescription;
             target.PublicName = source.PublicName;
             target.StartDate = source.StartDate;
+            target.Url = source.Url;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

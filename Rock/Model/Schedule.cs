@@ -105,7 +105,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        public DateTime? EffectiveStartDate { get; private set; }
+        public DateTime? EffectiveStartDate { get; set; }
 
         /// <summary>
         /// Gets or sets that date that this Schedule expires and becomes inactive. This value is inclusive and the schedule will be inactive after this date.
@@ -115,7 +115,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        public DateTime? EffectiveEndDate { get; private set; }
+        public DateTime? EffectiveEndDate { get; set; }
 
         /// <summary>
         /// Gets or sets the weekly day of week.
@@ -234,6 +234,64 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the next start time.
+        /// </summary>
+        /// <returns></returns>
+        [NotMapped]
+        public virtual DateTime? NextStartDateTime 
+        {
+            get
+            {
+                DDay.iCal.Event calEvent = GetCalenderEvent();
+                if ( calEvent != null )
+                {
+                    var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
+                    if ( occurrences.Any() )
+                    {
+                        var minDateTime = occurrences
+                            .Where( a =>
+                                a.Period != null &&
+                                a.Period.StartTime != null )
+                            .Select( a => a.Period.StartTime.Value )
+                            .Min( d => (DateTime?)d );
+                        if ( minDateTime.HasValue )
+                        {
+                            // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
+                            return DateTime.SpecifyKind( minDateTime.Value, DateTimeKind.Local );
+                        }
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the start time of day.
+        /// </summary>
+        /// <value>
+        /// The start time of day.
+        /// </value>
+        public virtual TimeSpan StartTimeOfDay
+        {
+            get
+            {
+                DDay.iCal.Event calendarEvent = this.GetCalenderEvent();
+                if ( calendarEvent != null && calendarEvent.DTStart != null )
+                {
+                    return calendarEvent.DTStart.TimeOfDay;
+                }
+
+                if ( WeeklyTimeOfDay.HasValue )
+                {
+                    return WeeklyTimeOfDay.Value;
+                }
+
+                return new TimeSpan();
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Category"/> that this Schedule belongs to.
         /// </summary>
         /// <value>
@@ -258,6 +316,23 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Pres the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            var calEvent = GetCalenderEvent();
+            if ( calEvent != null )
+            {
+                EffectiveStartDate = calEvent.DTStart != null ? calEvent.DTStart.Value.Date : (DateTime?)null;
+                EffectiveEndDate = calEvent.DTEnd != null ? calEvent.DTEnd.Value.Date : (DateTime?)null;
+            }
+
+            base.PreSaveChanges( dbContext, state );
+        }
 
         /// <summary>
         /// Gets the Schedule's iCalender Event.
@@ -305,20 +380,51 @@ namespace Rock.Model
         public virtual List<DateTime> GetScheduledStartTimes( DateTime beginDateTime, DateTime endDateTime )
         {
             var result = new List<DateTime>();
+
             DDay.iCal.Event calEvent = GetCalenderEvent();
             if ( calEvent != null )
             {
-                // use ThreadSafe helper method to get occurrences
-                var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, endDateTime );
-                
-                foreach ( var startDateTime in occurrences.Where( a => a.Period != null && a.Period.StartTime != null ).Select( a => a.Period.StartTime.Value ) )
+                if ( this.HasSchedule() )
                 {
-                    // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
-                    result.Add( DateTime.SpecifyKind( startDateTime, DateTimeKind.Local ) );
+                    var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, endDateTime );
+                    foreach ( var startDateTime in occurrences
+                        .Where( a =>
+                            a.Period != null &&
+                            a.Period.StartTime != null )
+                        .Select( a => a.Period.StartTime.Value ) )
+                    {
+                        // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
+                        result.Add( DateTime.SpecifyKind( startDateTime, DateTimeKind.Local ) );
+                    }
                 }
             }
 
             return result;
+        }
+
+
+        /// <summary>
+        /// Gets the first start date time.
+        /// </summary>
+        /// <returns></returns>
+        public virtual DateTime? GetFirstStartDateTime()
+        {
+            DateTime? firstStartTime = null;
+            
+            DDay.iCal.Event calEvent = GetCalenderEvent();
+            if ( calEvent != null )
+            {
+                if ( this.EffectiveStartDate.HasValue )
+                {
+                    var scheduledStartTimes = this.GetScheduledStartTimes( this.EffectiveStartDate.Value, this.EffectiveStartDate.Value.AddMonths( 1 ) );
+                    if ( scheduledStartTimes.Count > 0 )
+                    {
+                        firstStartTime = scheduledStartTimes[0];
+                    }
+                }
+            }
+
+            return firstStartTime;
         }
 
         /// <summary>
@@ -336,6 +442,46 @@ namespace Rock.Model
             {
                 // if there is no CalEvent, it might be scheduled using WeeklyDayOfWeek
                 return WeeklyDayOfWeek.HasValue;
+            }
+        }
+
+        /// <summary>
+        /// returns true if there is a blank schedule or a schedule that is incomplete
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool HasScheduleWarning()
+        {
+            DDay.iCal.Event calEvent = GetCalenderEvent();
+            if ( calEvent != null && calEvent.DTStart != null )
+            {
+                if ( calEvent.RecurrenceRules.Any() )
+                {
+                    IRecurrencePattern rrule = calEvent.RecurrenceRules[0];
+                    if ( rrule.Frequency == FrequencyType.Weekly )
+                    {
+                        // if it has a Weekly schedule, but no days are selected, return true that is has a warning
+                        if ( !rrule.ByDay.Any() )
+                        {
+                            return true;
+                        }
+                    }
+                    else if ( rrule.Frequency == FrequencyType.Monthly )
+                    {
+                        // if it has a Monthly schedule, but not configured, return true that is has a warning
+                        if ( !rrule.ByDay.Any() && !rrule.ByMonthDay.Any() )
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                // is scheduled, and doesn't have any warnings
+                return false;
+            }
+            else
+            {
+                // if there is no CalEvent, it might be scheduled using WeeklyDayOfWeek, but if it isn't, return true that is has a warning
+                return !WeeklyDayOfWeek.HasValue;
             }
         }
 
@@ -375,6 +521,11 @@ namespace Rock.Model
                         case FrequencyType.Weekly:
 
                             result = rrule.ByDay.Select( a => a.DayOfWeek.ConvertToString() ).ToList().AsDelimited( "," );
+                            if ( string.IsNullOrEmpty( result ) )
+                            {
+                                // no day selected, so it has an incomplete schedule
+                                return "No Scheduled Days";
+                            }
 
                             if ( rrule.Interval > 1 )
                             {
@@ -631,20 +782,20 @@ namespace Rock.Model
     public class ScheduleOccurrence
     {
         /// <summary>
-        /// Gets or sets the logical occurrence start date time.
+        /// Gets or sets the logical occurrence date of the occurrence
         /// </summary>
         /// <value>
-        /// The occurrence start date time.
+        /// The occurrence date.
         /// </value>
-        public DateTime StartDateTime { get; set; }
+        public DateTime Date { get; set; }
 
         /// <summary>
-        /// Gets or sets the logical occurrence end date time.
+        /// Gets or sets the logical start date/time ( only used for ordering )
         /// </summary>
         /// <value>
-        /// The occurrence end date time.
+        /// The start date time.
         /// </value>
-        public DateTime EndDateTime { get; set; }
+        public TimeSpan StartTime { get; set; }
 
         /// <summary>
         /// Gets or sets the schedule identifier.
@@ -679,6 +830,38 @@ namespace Rock.Model
         public string LocationName { get; set; }
 
         /// <summary>
+        /// Gets or sets the location path.
+        /// </summary>
+        /// <value>
+        /// The location path.
+        /// </value>
+        public string LocationPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total count.
+        /// </summary>
+        /// <value>
+        /// The total count.
+        /// </value>
+        public int TotalCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the did attend count.
+        /// </summary>
+        /// <value>
+        /// The did attend count.
+        /// </value>
+        public int DidAttendCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the did not occur count.
+        /// </summary>
+        /// <value>
+        /// The did not occur count.
+        /// </value>
+        public int DidNotOccurCount { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether attendance has been entered for this occurrence.
         /// </summary>
         /// <value>
@@ -688,7 +871,7 @@ namespace Rock.Model
         {
             get
             {
-                return Attendance != null && Attendance.Any( a => a.DidAttend.HasValue );
+                return DidAttendCount > 0;
             }
         }
 
@@ -705,38 +888,7 @@ namespace Rock.Model
         {
             get
             {
-                return Attendance != null &&
-                    !Attendance.Where( a => a.DidAttend.HasValue ).Any() &&
-                    Attendance.Where( a => a.DidNotOccur.HasValue ).Any();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the attendance records associated with this occurrence
-        /// </summary>
-        /// <value>
-        /// The attendance.
-        /// </value>
-        public List<Attendance> Attendance { get; set; }
-
-        /// <summary>
-        /// Gets the number of people attended.
-        /// </summary>
-        /// <value>
-        /// The attended.
-        /// </value>
-        public int NumberAttended
-        {
-            get
-            {
-                return Attendance
-                    .Where( a =>
-                        a.PersonAlias != null &&
-                        a.DidAttend.HasValue &&
-                        a.DidAttend.Value )
-                    .Select( a => a.PersonAlias.PersonId )
-                    .Distinct()
-                    .Count();
+                return DidAttendCount <= 0 && DidNotOccurCount > 0;
             }
         }
 
@@ -750,33 +902,9 @@ namespace Rock.Model
         {
             get
             {
-                var people = new Dictionary<int, bool>();
-                foreach ( var person in Attendance
-                    .Where( a =>
-                        a.PersonAlias != null &&
-                        a.DidAttend.HasValue )
-                    .Select( a => new
-                    {
-                        PersonId = a.PersonAlias.PersonId,
-                        DidAttend = a.DidAttend.Value
-                    } )
-                    .Distinct() )
+                if ( TotalCount > 0 )
                 {
-                    if ( person.DidAttend )
-                    {
-                        people.AddOrReplace( person.PersonId, true );
-                    }
-                    else
-                    {
-                        people.AddOrIgnore( person.PersonId, false );
-                    }
-                }
-
-                int attended = people.Where( p => p.Value ).Count();
-                int total = people.Count();
-                if ( total > 0 )
-                {
-                    return (double)( attended ) / (double)total;
+                    return (double)( DidAttendCount ) / (double)TotalCount;
                 }
                 else
                 {
@@ -786,40 +914,25 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduleOccurrence"/> class.
+        /// Initializes a new instance of the <see cref="ScheduleOccurrence" /> class.
         /// </summary>
-        /// <param name="occurrence">The occurrence.</param>
+        /// <param name="date">The date.</param>
+        /// <param name="startTime">The start time.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="scheduleName">Name of the schedule.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="locationName">Name of the location.</param>
-        public ScheduleOccurrence( DDay.iCal.Occurrence occurrence, int? scheduleId = null, string scheduleName = "", int? locationId = null, string locationName = "" )
+        /// <param name="locationPath">The location path.</param>
+        /// ,
+        public ScheduleOccurrence( DateTime date, TimeSpan startTime, int? scheduleId = null, string scheduleName = "", int? locationId = null, string locationName = "", string locationPath = "" )
         {
-            StartDateTime = occurrence.Period.StartTime.Value;
-            EndDateTime = occurrence.Period.EndTime.Value;
+            Date = date;
+            StartTime = startTime;
             ScheduleId = scheduleId;
             ScheduleName = scheduleName;
             LocationId = locationId;
             LocationName = locationName;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduleOccurrence"/> class.
-        /// </summary>
-        /// <param name="startDateTime">The start date time.</param>
-        /// <param name="endDateTime">The end date time.</param>
-        /// <param name="scheduleId">The schedule identifier.</param>
-        /// <param name="scheduleName">Name of the schedule.</param>
-        /// <param name="locationId">The location identifier.</param>
-        /// <param name="locationName">Name of the location.</param>
-        public ScheduleOccurrence( DateTime startDateTime, DateTime endDateTime, int? scheduleId = null, string scheduleName = "", int? locationId = null, string locationName = "" )
-        {
-            StartDateTime = startDateTime;
-            EndDateTime = endDateTime;
-            ScheduleId = scheduleId;
-            ScheduleName = scheduleName;
-            LocationId = locationId;
-            LocationName = locationName;
+            LocationPath = locationPath;
         }
     }
 

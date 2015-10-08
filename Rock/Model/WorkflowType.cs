@@ -22,6 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Security;
 using Rock.Data;
 
 namespace Rock.Model
@@ -154,6 +155,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the name of the icon CSS class. This property will be null if a file based icon is being used.
         /// </value>
         [DataMember]
+        [MaxLength( 100 )]
         public string IconCssClass { get; set; }
 
         #endregion
@@ -200,6 +202,23 @@ namespace Rock.Model
                     .Any();
             }
         }
+
+        /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        /// <value>
+        /// The supported actions.
+        /// </value>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( "ViewList", "The roles and/or users that have access to view the workflow lists of this type." );
+                return supportedActions;
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -214,6 +233,7 @@ namespace Rock.Model
         {
             return this.Name;
         }
+
 
         #endregion
 

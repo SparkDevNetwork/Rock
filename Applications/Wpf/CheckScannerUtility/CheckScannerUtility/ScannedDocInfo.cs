@@ -25,14 +25,6 @@ namespace Rock.Apps.CheckScannerUtility
     public class ScannedDocInfo
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ScannedDocInfo"/> class.
-        /// </summary>
-        public ScannedDocInfo()
-        {
-            Uploaded = false;
-        }
-
-        /// <summary>
         /// Gets or sets the front image.
         /// </summary>
         /// <value>
@@ -40,14 +32,27 @@ namespace Rock.Apps.CheckScannerUtility
         /// </value>
         public byte[] FrontImageData { get; set; }
 
+        /// <summary>
+        /// Gets the front image PNG bytes.
+        /// </summary>
+        /// <value>
+        /// The front image PNG bytes.
+        /// </value>
         public byte[] FrontImagePngBytes
         {
             get
             {
-                Bitmap bmp = new Bitmap( new MemoryStream( this.FrontImageData ) );
-                MemoryStream pngStream = new MemoryStream();
-                bmp.Save( pngStream, System.Drawing.Imaging.ImageFormat.Png );
-                return pngStream.ToArray();
+                if ( this.FrontImageData != null )
+                {
+                    Bitmap bmp = new Bitmap( new MemoryStream( this.FrontImageData ) );
+                    MemoryStream pngStream = new MemoryStream();
+                    bmp.Save( pngStream, System.Drawing.Imaging.ImageFormat.Png );
+                    return pngStream.ToArray();
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
@@ -69,10 +74,17 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                Bitmap bmp = new Bitmap( new MemoryStream( this.BackImageData ) );
-                MemoryStream pngStream = new MemoryStream();
-                bmp.Save( pngStream, System.Drawing.Imaging.ImageFormat.Png );
-                return pngStream.ToArray();
+                if ( this.BackImageData != null )
+                {
+                    Bitmap bmp = new Bitmap( new MemoryStream( this.BackImageData ) );
+                    MemoryStream pngStream = new MemoryStream();
+                    bmp.Save( pngStream, System.Drawing.Imaging.ImageFormat.Png );
+                    return pngStream.ToArray();
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
@@ -82,7 +94,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The currency type value.
         /// </value>
-        public Rock.Model.DefinedValue CurrencyTypeValue { get; set; }
+        public Rock.Client.DefinedValue CurrencyTypeValue { get; set; }
 
         /// <summary>
         /// Gets or sets the source type value.
@@ -90,15 +102,15 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The source type value.
         /// </value>
-        public Rock.Model.DefinedValue SourceTypeValue { get; set; }
+        public Rock.Client.DefinedValue SourceTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="ScannedDocInfo"/> is uploaded.
+        /// Gets or sets a value indicating whether this <see cref="ScannedDocInfo"/> should be uploaded
         /// </summary>
         /// <value>
-        ///   <c>true</c> if uploaded; otherwise, <c>false</c>.
+        ///   <c>true</c> if upload; otherwise, <c>false</c>.
         /// </value>
-        public bool Uploaded { get; set; }
+        public bool Upload { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction identifier.
@@ -120,9 +132,17 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                return this.CurrencyTypeValue != null && this.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+                return this.CurrencyTypeValue != null && this.CurrencyTypeValue.Guid == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
             }
         }
+
+        /// <summary>
+        /// Gets the MICR track data that was read off of the check
+        /// </summary>
+        /// <value>
+        /// The scanned check micr.
+        /// </value>
+        public string ScannedCheckMicrData { get; set; }
 
         /// <summary>
         /// Gets the scanned check micr in the format "{RoutingNumber}_{AccountNumber}_{CheckNumber}";
@@ -130,11 +150,19 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The scanned check micr.
         /// </value>
-        public string ScannedCheckMicr
+        public string ScannedCheckMicrParts
         {
             get
             {
-                return string.Format( "{0}_{1}_{2}", this.RoutingNumber, this.AccountNumber, this.CheckNumber );
+                if ( string.IsNullOrWhiteSpace( this.RoutingNumber ) && string.IsNullOrWhiteSpace( this.AccountNumber ) && string.IsNullOrWhiteSpace( this.CheckNumber ) )
+                {
+                    // if all three are blank, return empty string
+                    return string.Empty;
+                }
+                else
+                {
+                    return string.Format( "{0}_{1}_{2}", this.RoutingNumber, this.AccountNumber, this.CheckNumber );
+                }
             }
         }
 
@@ -161,6 +189,14 @@ namespace Rock.Apps.CheckScannerUtility
         /// The check number.
         /// </value>
         public string CheckNumber { get; set; }
+
+        /// <summary>
+        /// Any other MICR data that isn't the Routing, AccountNumber or CheckNumber
+        /// </summary>
+        /// <value>
+        /// The other data.
+        /// </value>
+        public string OtherData { get; set; }
 
         /// <summary>
         /// Gets the masked account number.

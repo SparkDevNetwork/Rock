@@ -164,14 +164,7 @@ namespace Rock.Model
 
             set
             {
-                if ( string.IsNullOrWhiteSpace( value ) )
-                {
-                    AdditionalMergeFields = new List<string>();
-                }
-                else
-                {
-                    AdditionalMergeFields = JsonConvert.DeserializeObject<List<string>>( value );
-                }
+                AdditionalMergeFields = value.FromJsonOrNull<List<string>>() ?? new List<string>();
             }
         }
 
@@ -368,7 +361,7 @@ namespace Rock.Model
                 recipient = new CommunicationRecipientService( rockContext ).Queryable( "Communication,PersonAlias.Person" )
                     .Where( r =>
                         r.CommunicationId == communicationId &&
-                        ( !r.PersonAlias.Person.IsDeceased.HasValue || !r.PersonAlias.Person.IsDeceased.Value ) &&
+                        ( r.PersonAlias.Person.IsDeceased == false ) &&
                         ( r.Status == CommunicationRecipientStatus.Pending ||
                             ( r.Status == CommunicationRecipientStatus.Sending && r.ModifiedDateTime < delayTime ) ) )
                     .FirstOrDefault();

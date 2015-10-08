@@ -29,13 +29,29 @@ namespace Rock.Web.UI.Controls
     {
 
         /// <summary>
+        /// Gets or sets a value indicating whether [display active only].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display active only]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayActiveOnly
+        {
+            get { return ViewState["DisplayActiveOnly"] as bool? ?? false; }
+            set 
+            {
+                ViewState["DisplayActiveOnly"] = value;  
+                this.ItemRestUrlExtraParams = "/" + value.ToString();
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit(EventArgs e)
         {
             base.OnInit(e);
-
+            this.ItemRestUrlExtraParams = "/" + DisplayActiveOnly.ToString();
             this.IconCssClass = "fa fa-building-o";
         }
         
@@ -49,16 +65,22 @@ namespace Rock.Web.UI.Controls
             if ( account != null )
             {
                 ItemId = account.Id.ToString();
-                var parentAccountIds = string.Empty;
+                List<int> parentAccountIds = new List<int>();
                 var parentAccount = account.ParentAccount;
 
                 while ( parentAccount != null )
                 {
-                    parentAccountIds = parentAccount.Id + "," + parentAccountIds;
+                    if ( parentAccountIds.Contains( parentAccount.Id ) )
+                    {
+                        // infinite recursion
+                        break;
+                    }
+
+                    parentAccountIds.Insert( 0, parentAccount.Id );
                     parentAccount = parentAccount.ParentAccount;
                 }
 
-                InitialItemParentIds = parentAccountIds.TrimEnd( new[] { ',' } );
+                InitialItemParentIds = parentAccountIds.AsDelimited( "," );
                 ItemName = account.PublicName;
             }
             else
@@ -80,7 +102,7 @@ namespace Rock.Web.UI.Controls
             {
                 var ids = new List<string>();
                 var names = new List<string>();
-                var parentAccountIds = string.Empty;
+                List<int> parentAccountIds = new List<int>();
 
                 foreach ( var account in financialAccounts )
                 {
@@ -92,13 +114,19 @@ namespace Rock.Web.UI.Controls
 
                         while ( parentAccount != null )
                         {
-                            parentAccountIds += parentAccount.Id.ToString() + ",";
+                            if ( parentAccountIds.Contains( parentAccount.Id ) )
+                            {
+                                // infinite recursion
+                                break;
+                            }
+
+                            parentAccountIds.Insert( 0, parentAccount.Id );
                             parentAccount = parentAccount.ParentAccount;
                         }
                     }
                 }
 
-                InitialItemParentIds = parentAccountIds.TrimEnd( new[] { ',' } );
+                InitialItemParentIds = parentAccountIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;
             }

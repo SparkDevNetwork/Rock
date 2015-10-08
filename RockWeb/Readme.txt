@@ -1,19 +1,21 @@
+Rock McKinley 3.5
+
++ Fixed issue with occasional website hang
++ Fixed issue with ordering of accounts (and their amounts) on transaction entry block when accounts are added by user in different order than the default account order (Fixes #1219)
++ SendEmail workflow action now works with attributes of type Group (Fixes #1167).
++ Merging a person with a security role now refreshes that role (Fixes #1137).
+
 Rock McKinley 3.4
 
 + Improved performance of caching.
-+ Improved performance of Check-in manager
- blocks.
++ Improved performance of Check-in manager blocks.
 + Improved performance of attendance list and detail blocks.
-+ Turned off auditing by default (can be turned back on by changing the value of 'Enable Auditing' global attribute)
-.
++ Turned off auditing by default (can be turned back on by changing the value of 'Enable Auditing' global attribute).
 + Updated PersonPicker control to provides some feedback if the user is unauthorized to search (Fixes #1042).
-
 + Updated performance of First Contribution Date report filter (Fixes #972).
 + Updated Group Finder block to not display inactive groups (Fixes #1019).
-
 + Fixed Pledge List block so that it correctly applies the Account filter when no accounts are selected (Fixes #1032).
 + Added support for financial gateway providers to specify whether they support Saved account functionality for a given currencty type ( credit card, ACH ) and updated UI to render options based on setting (Fixes #1031).
-
 + Fixed Family group members getting added with inactive status (Fixes #1013).
 + Improved performance of Rock Cleanup job (Fixes #1060).
 

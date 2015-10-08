@@ -37,7 +37,14 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/PrayerRequests/Public" )]
         public IQueryable<PrayerRequest> Public()
         {
-            return base.Get().Where( p => p.IsPublic.HasValue && p.IsPublic.Value == true );
+            var now = RockDateTime.Now;
+            return base.Get()
+                .Where( p =>
+                    ( p.IsActive.HasValue && p.IsActive.Value == true ) &&
+                    ( p.IsPublic.HasValue && p.IsPublic.Value == true ) &&
+                    ( p.IsApproved.HasValue && p.IsApproved == true ) &&
+                    ( !p.ExpirationDate.HasValue || p.ExpirationDate.Value > now )
+                );
         }
 
         /// <summary>

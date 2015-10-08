@@ -31,8 +31,17 @@ namespace Rock.Web.UI.Controls
     {
         private HiddenField _hfVisible;
         private LinkButton _lbFilter;
+        private LinkButton _lbClearFilter;
         private List<UserPreference> _userPreferences;
         private bool _isDirty = false;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GridFilter"/> class.
+        /// </summary>
+        public GridFilter() : base()
+        {
+            AdditionalFilterDisplay = new Dictionary<string, string>();
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -64,6 +73,24 @@ namespace Rock.Web.UI.Controls
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the additional filter display.
+        /// </summary>
+        /// <value>
+        /// The additional filter display.
+        /// </value>
+        public Dictionary<string, string> AdditionalFilterDisplay
+        {
+            get
+            {
+                return ViewState["AdditionalFilterDisplay"] as Dictionary<string, string> ?? new Dictionary<string, string>();
+            }
+            set
+            {
+                ViewState["AdditionalFilterDisplay"] = value;
             }
         }
 
@@ -116,6 +143,28 @@ namespace Rock.Web.UI.Controls
             _lbFilter.Text = "Apply Filter";
             _lbFilter.CausesValidation = false;
             _lbFilter.Click += lbFilter_Click;
+
+            _lbClearFilter = new LinkButton();
+            Controls.Add( _lbClearFilter );
+            _lbClearFilter.ID = "_lbClearFilter";
+            _lbClearFilter.CssClass = "filter-clear btn btn-default btn-xs";
+            _lbClearFilter.ToolTip = "Clear Filter";
+            _lbClearFilter.Text = "Clear Filter";
+            _lbClearFilter.CausesValidation = false;
+            _lbClearFilter.Click += lbClearFilter_Click;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the _lbClearFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbClearFilter_Click( object sender, EventArgs e )
+        {
+            if ( ClearFilterClick != null )
+            {
+                ClearFilterClick( sender, e );
+            }
         }
 
         /// <summary>
@@ -166,10 +215,13 @@ namespace Rock.Web.UI.Controls
                 {
                     writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
                 }
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+                var filterDisplay = new Dictionary<string, string>();
+                AdditionalFilterDisplay.ToList().ForEach( d => filterDisplay.Add( d.Key, d.Value ) );
+
                 var nonEmptyValues = _userPreferences.Where( v => !string.IsNullOrEmpty( v.Value ) ).ToList();
-                StringBuilder filtersHtml = new StringBuilder();
                 if ( nonEmptyValues.Count > 0 )
                 {
                     foreach ( var userPreference in nonEmptyValues )
@@ -182,19 +234,23 @@ namespace Rock.Web.UI.Controls
 
                         if ( !string.IsNullOrWhiteSpace( args.Value ) )
                         {
-
-                            filtersHtml.AppendLine( "<div>" );
-                            filtersHtml.AppendLine( string.Format( "<label>{0}:</label> {1}", args.Name, args.Value ) );
-                            filtersHtml.AppendLine( "</div>" );
+                            filterDisplay.AddOrIgnore( args.Name, args.Value );
                         }
                     }
                 }
 
-                if ( filtersHtml.Length > 0 )
+                if ( filterDisplay.Any() )
                 {
                     writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
-                    writer.Write( "<h4>Enabled Filters</h4>" );
-                    writer.Write( filtersHtml.ToString() );
+                    writer.WriteLine( "<h4>Enabled Filters</h4>" );
+                    writer.WriteLine( "<div class='row'>" );
+                    foreach( var filterNameValue in filterDisplay.OrderBy( f => f.Key ) )
+                    {
+                        writer.WriteLine( "<div class='col-md-3'>" );
+                        writer.WriteLine( string.Format( "<label>{0}:</label> {1}", filterNameValue.Key, filterNameValue.Value ) );
+                        writer.WriteLine( "</div>" );
+                    }
+                    writer.WriteLine( "</div>" );
                     writer.RenderEndTag();
                 }
 
@@ -217,6 +273,12 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 _lbFilter.RenderControl( writer );
+
+                if ( ClearFilterClick != null )
+                {
+                    writer.WriteLine();
+                    _lbClearFilter.RenderControl( writer );
+                }
 
                 writer.RenderEndTag();
 
@@ -259,7 +321,7 @@ namespace Rock.Web.UI.Controls
                         cellCount = 0;
                     }
 
-                    if ( child != _lbFilter && child != _hfVisible )
+                    if ( child != _lbFilter && child != _lbClearFilter && child != _hfVisible )
                     {
                         // add column
                         if (child.Visible)
@@ -329,6 +391,9 @@ namespace Rock.Web.UI.Controls
             SaveUserPreference( key, key, value );
         }
 
+        /// <summary>
+        /// Saves the user preferences.
+        /// </summary>
         private void SaveUserPreferences()
         {
             RockBlock rockBlock = this.RockBlock();
@@ -344,9 +409,32 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Deletes the user preferences.
+        /// </summary>
+        public void DeleteUserPreferences()
+        {
+            RockBlock rockBlock = this.RockBlock();
+            if ( rockBlock != null && _userPreferences != null )
+            {
+                foreach ( var userPreference in _userPreferences )
+                {
+                    rockBlock.DeleteUserPreference( userPreference.Key );
+                }
+
+                _userPreferences.Clear();
+            }
+        }
+
+        /// <summary>
         /// Occurs when user applies a filter.
         /// </summary>
         public event EventHandler ApplyFilterClick;
+
+        /// <summary>
+        /// Occurs when user clears a filter.
+        /// HINT: call gFilter.DeleteUserPreferences() then re-bind your filter controls 
+        /// </summary>
+        public event EventHandler ClearFilterClick;
 
         /// <summary>
         /// Occurs when grid filter displays an existing filter value.  Key and Value can be 

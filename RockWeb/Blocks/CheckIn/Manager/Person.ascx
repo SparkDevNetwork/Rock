@@ -7,11 +7,14 @@
 
         <div class="row">
             <div class="col-sm-3">
-                <div class="photoframe">
-                    <asp:Literal ID="lPhoto" runat="server" />
-                </div>
+                <asp:Literal ID="lPhoto" runat="server" />
             </div>
             <div class="col-sm-9">
+                <ul class="list-unstyled">
+                    <li><asp:Literal ID="lGender" runat="server" /></li>
+                    <li><asp:Literal ID="lAge" runat="server" /></li>
+                    <li><asp:Literal ID="lGrade" runat="server" /></li>
+                </ul>
                 <Rock:RockControlWrapper ID="rcwPhone" runat="server" Label="Phone(s)">
                     <ul class="list-unstyled list-horizontal">
                         <asp:Repeater ID="rptrPhones" runat="server">

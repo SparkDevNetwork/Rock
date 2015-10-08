@@ -117,6 +117,15 @@ namespace Rock.Model
         public bool IsLeader { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this role should receive requirements notifications].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the role should receive requirements notifications; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ReceiveRequirementsNotifications { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance can view.
         /// </summary>
         /// <value>

@@ -122,7 +122,7 @@ namespace Rock.Rest.Controllers
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
             Service.Context.SaveChanges();
 
-            return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, tag.Id );
         }
 
         /// <summary>

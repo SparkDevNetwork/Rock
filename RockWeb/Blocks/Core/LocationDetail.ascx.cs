@@ -39,10 +39,10 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of the given location." )]
 
-    [CodeEditorField( "Map HTML", "The HTML to use for displaying group location maps. Liquid syntax is used to render data from the following data structure: points[type, latitude, longitude], polygons[type, polygon_wkt, google_encoded_polygon]", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
+    [CodeEditorField( "Map HTML", "The HTML to use for displaying group location maps. Liquid syntax is used to render data from the following data structure: points[type, latitude, longitude], polygons[type, polygon_wkt, google_encoded_polygon]", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"
     {% if point or polygon %}
         <div class='group-location-map'>
-            <img src='//maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60{% if point %}&markers=color:0x779cb1|{{ point.latitude }},{{ point.longitude }}{% endif %}{% if polygon %}&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:{{ polygon.google_encoded_polygon }}{% endif %}&visual_refresh=true'/>
+            <img class='img-thumbnail' src='//maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60{% if point %}&markers=color:0x779cb1|{{ point.latitude }},{{ point.longitude }}{% endif %}{% if polygon %}&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:{{ polygon.google_encoded_polygon }}{% endif %}&visual_refresh=true'/>
         </div>
     {% endif %}
 " )]
@@ -237,9 +237,13 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            if ( !location.IsValid )
+            // if the location IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of location didn't pass.
+            // So, make sure a message is displayed in the validation summary
+            cvLocation.IsValid = location.IsValid;
+
+            if ( !cvLocation.IsValid )
             {
-                // Controls will render the error messages                    
+                cvLocation.ErrorMessage = location.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                 return;
             }
 
@@ -496,7 +500,7 @@ namespace RockWeb.Blocks.Core
 
         private void BuildAttributeEdits( Location location, bool setValues )
         {
-            Rock.Attribute.Helper.AddEditControls( location, phAttributeEdits, setValues );
+            Rock.Attribute.Helper.AddEditControls( location, phAttributeEdits, setValues, BlockValidationGroup );
         }
 
         /// <summary>
@@ -587,7 +591,7 @@ namespace RockWeb.Blocks.Core
                         string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
                         mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
                         mapLink += "&sensor=false&size=350x200&zoom=13&format=png";
-                        phMaps.Controls.Add( new LiteralControl ( string.Format( "<div class='group-location-map'><img src='{0}'/></div>", mapLink ) ) );
+                        phMaps.Controls.Add( new LiteralControl ( string.Format( "<div class='group-location-map'><img class='img-thumbnail' src='{0}'/></div>", mapLink ) ) );
                     }
 
                     if ( location.GeoFence != null )
@@ -596,7 +600,7 @@ namespace RockWeb.Blocks.Core
                         string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", string.Empty );
                         mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", polygonPoints );
                         mapLink += "&sensor=false&size=350x200&format=png";
-                        phMaps.Controls.Add( new LiteralControl( string.Format( "<div class='group-location-map'><img src='{0}'/></div>", mapLink ) ) );
+                        phMaps.Controls.Add( new LiteralControl( string.Format( "<div class='group-location-map'><img class='img-thumbnail' src='{0}'/></div>", mapLink ) ) );
                     }
                 }
             }
@@ -617,42 +621,6 @@ namespace RockWeb.Blocks.Core
             fieldsetViewDetails.Visible = !editable;
 
             this.HideSecondaryBlocks( editable );
-        }
-
-        public string GetImageTag(int? imageId, int? maxWidth = null, int? maxHeight = null )
-        {
-            var photoUrl = new StringBuilder();
-
-            photoUrl.Append( System.Web.VirtualPathUtility.ToAbsolute( "~/" ) );
-
-            string styleString = string.Empty;
-            
-            if ( imageId.HasValue )
-            {
-                photoUrl.AppendFormat( "GetImage.ashx?id={0}", imageId );
-
-                if ( maxWidth.HasValue )
-                {
-                    photoUrl.AppendFormat( "&maxwidth={0}", maxWidth.Value );
-                }
-                if ( maxHeight.HasValue )
-                {
-                    photoUrl.AppendFormat( "&maxheight={0}", maxHeight.Value );
-                }
-            }
-            else
-            {
-                photoUrl.Append( "Assets/Images/no-picture.svg?" );
-
-                if ( maxWidth.HasValue || maxHeight.HasValue )
-                {
-                    styleString = string.Format( " style='{0}{1}'",
-                        maxWidth.HasValue ? "max-width:" + maxWidth.Value.ToString() + "px; " : "",
-                        maxHeight.HasValue ? "max-height:" + maxHeight.Value.ToString() + "px;" : "" );
-                }
-            }
-
-            return string.Format( "<img src='{0}'{1}/>", photoUrl.ToString(), styleString );
         }
 
         // Flush any cached campus that uses location

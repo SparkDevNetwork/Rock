@@ -306,6 +306,8 @@ namespace RockWeb.Blocks.Cms
                 BlockLayoutId = a.Block.LayoutId,
             } );
 
+            gContentList.EntityTypeId = EntityTypeCache.Read<HtmlContent>().Id;
+
             // Filter by Site
             if ( ddlSiteFilter.SelectedIndex > 0 )
             {

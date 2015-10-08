@@ -82,6 +82,24 @@ namespace Rock.Jobs
 
             try
             {
+                CleanupExpiredEntitySets( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupExpiredEntitySets", ex ) );
+            }
+
+            try
+            {
+                CleanupPageViews( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupPageViews", ex ) );
+            }
+
+            try
+            {
                 PurgeAuditLog( dataMap );
             }
             catch ( Exception ex )
@@ -131,8 +149,10 @@ namespace Rock.Jobs
             // Add any missing person aliases
             var personRockContext = new Rock.Data.RockContext();
             PersonService personService = new PersonService( personRockContext );
+            PersonAliasService personAliasService = new PersonAliasService( personRockContext );
+            var personAliasServiceQry = personAliasService.Queryable();
             foreach ( var person in personService.Queryable( "Aliases" )
-                .Where( p => !p.Aliases.Any() )
+                .Where( p => !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ) )
                 .Take( 300 ) )
             {
                 person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
@@ -188,8 +208,12 @@ namespace Rock.Jobs
             {
                 if ( binaryFile.ModifiedDateTime < RockDateTime.Now.AddDays( -1 ) )
                 {
-                    binaryFileService.Delete( binaryFile );
-                    binaryFileRockContext.SaveChanges();
+                    string errorMessage;
+                    if ( binaryFileService.CanDelete( binaryFile, out errorMessage ) )
+                    {
+                        binaryFileService.Delete( binaryFile );
+                        binaryFileRockContext.SaveChanges();
+                    }
                 }
             }
         }
@@ -306,6 +330,88 @@ namespace Rock.Jobs
                     try
                     {
                         int rowsDeleted = userLoginRockContext.Database.ExecuteSqlCommand( @"DELETE TOP (1000) FROM [UserLogin] WHERE [IsConfirmed] = 0 AND ([CreatedDateTime] is null OR [CreatedDateTime] < @createdDateTime )", new SqlParameter( "createdDateTime", userAccountExpireDate ) );
+                        keepDeleting = rowsDeleted > 0;
+                    }
+                    finally
+                    {
+                        dbTransaction.Commit();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Cleans up expired entity sets.
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private void CleanupExpiredEntitySets( JobDataMap dataMap )
+        {
+            var entitySetRockContext = new Rock.Data.RockContext();
+            var currentDateTime = RockDateTime.Now;
+            var entitySetService = new EntitySetService( entitySetRockContext );
+            var qry = entitySetService.Queryable().Where( a => a.ExpireDateTime.HasValue && a.ExpireDateTime < currentDateTime );
+
+            foreach ( var entitySet in qry.ToList() )
+            {
+                string deleteWarning;
+                if ( entitySetService.CanDelete( entitySet, out deleteWarning ) )
+                {
+                    // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
+                    bool keepDeleting = true;
+                    while ( keepDeleting )
+                    {
+                        var dbTransaction = entitySetRockContext.Database.BeginTransaction();
+                        try
+                        {
+                            string sqlCommand = @"DELETE TOP (1000) FROM [EntitySetItem] WHERE [EntitySetId] = @entitySetId";
+
+                            int rowsDeleted = entitySetRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "entitySetId", entitySet.Id ) );
+                            keepDeleting = rowsDeleted > 0;
+                        }
+                        finally
+                        {
+                            dbTransaction.Commit();
+                        }
+                    }
+
+                    entitySetService.Delete( entitySet );
+                    entitySetRockContext.SaveChanges();
+                }
+            }
+
+        }
+
+
+        /// <summary>
+        /// Cleans up PagesViews for sites that have a Page View retention period
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private void CleanupPageViews( JobDataMap dataMap )
+        {
+            var pageViewRockContext = new Rock.Data.RockContext();
+            var currentDateTime = RockDateTime.Now;
+            var siteService = new SiteService( pageViewRockContext );
+            var siteQry = siteService.Queryable().Where( a => a.PageViewRetentionPeriodDays.HasValue );
+            //
+
+            foreach ( var site in siteQry.ToList() )
+            {
+                var retentionCutoffDateTime = currentDateTime.AddDays( -site.PageViewRetentionPeriodDays.Value );
+                if ( retentionCutoffDateTime < System.Data.SqlTypes.SqlDateTime.MinValue.Value )
+                {
+                    retentionCutoffDateTime = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
+                }
+                
+                // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
+                bool keepDeleting = true;
+                while ( keepDeleting )
+                {
+                    var dbTransaction = pageViewRockContext.Database.BeginTransaction();
+                    try
+                    {
+                        string sqlCommand = @"DELETE TOP (1000) FROM [PageView] WHERE [SiteId] = @siteId AND DateTimeViewed < @retentionCutoffDateTime";
+
+                        int rowsDeleted = pageViewRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "siteId", site.Id ), new SqlParameter( "retentionCutoffDateTime", retentionCutoffDateTime ) );
                         keepDeleting = rowsDeleted > 0;
                     }
                     finally

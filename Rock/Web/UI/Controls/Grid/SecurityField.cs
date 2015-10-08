@@ -56,6 +56,22 @@ namespace Rock.Web.UI.Controls
         public string TitleField { get; set; }
 
         /// <summary>
+        /// When exporting a grid with an Export source of ColumnOutput, this property controls whether a column is included
+        /// in the export or not
+        /// </summary>
+        public override ExcelExportBehavior ExcelExportBehavior
+        {
+            get
+            {
+                return ExcelExportBehavior.NeverInclude;
+            }
+            set
+            {
+                base.ExcelExportBehavior = value;
+            }
+        }
+
+        /// <summary>
         /// Performs basic instance initialization for a data control field.
         /// </summary>
         /// <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>

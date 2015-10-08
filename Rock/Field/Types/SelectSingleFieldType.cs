@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -265,20 +266,26 @@ namespace Rock.Field.Types
         #endregion
 
         #region Filter Control
-
+         
         /// <summary>
         /// Gets the filter compare control.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
-        /// <param name="required"></param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             var lbl = new Label();
             lbl.ID = string.Format( "{0}_lIs", id );
             lbl.AddCssClass( "data-view-filter-label" );
             lbl.Text = "Is";
+
+
+            // hide the compare control when in SimpleFilter mode
+            lbl.Visible = filterMode != FilterMode.SimpleFilter;
+            
             return lbl;
         }
 
@@ -287,9 +294,10 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
-        /// <param name="required"></param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
             if ( configurationValues != null && configurationValues.ContainsKey( "values" ) )
             {
@@ -313,11 +321,21 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Gets the filter compare value.
         /// </summary>
         /// <param name="control">The control.</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override string GetFilterCompareValue( Control control )
+        public override string GetFilterCompareValue( Control control, FilterMode filterMode )
         {
             return null;
         }
@@ -406,9 +424,9 @@ namespace Rock.Field.Types
         public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
         {
             string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
-            return string.Format( "var selectedItems = ''; $('input:checked', $selectedContent).each(function() {{ selectedItems += selectedItems == '' ? '' : ' or '; selectedItems += '\\'' + $(this).parent().text() + '\\'' }}); result = '{0} is ' + selectedItems ", titleJs );
+            var format = "return Rock.reporting.formatFilterForSelectSingleField('{0}', $selectedContent);";
+            return string.Format( format, titleJs );
         }
-
 
         /// <summary>
         /// Gets a filter expression for an entity property value.
@@ -429,7 +447,17 @@ namespace Rock.Field.Types
             {
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
 
-                ConstantExpression constantExpression = Expression.Constant( Enum.Parse( propertyType, selectedValues[0] ) );
+                object constantValue;
+                if ( propertyType.IsEnum )
+                {
+                   constantValue = Enum.Parse( propertyType, selectedValues[0] );
+                }
+                else
+                {
+                    constantValue = selectedValues[0] as string;
+                }
+
+                 ConstantExpression constantExpression = Expression.Constant( constantValue );
                 Expression comparison = Expression.Equal( propertyExpression, constantExpression );
 
                 foreach ( string selectedValue in selectedValues.Skip( 1 ) )
@@ -445,7 +473,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Geta a filter expression for an attribute value.
+        /// Gets a filter expression for an attribute value.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="filterValues">The filter values.</param>

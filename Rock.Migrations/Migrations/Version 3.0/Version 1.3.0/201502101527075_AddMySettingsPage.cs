@@ -115,28 +115,39 @@ namespace Rock.Migrations
 	                WHERE [Guid] = '4508223C-2989-4592-B764-B3F372B6051B'" );
 
             // add my account setting to external layouts
-            Sql( @"DECLARE @MyAccountAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Key] = 'MyAccountPage')
+            Sql( @"
+
+            DECLARE @MyAccountAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Key] = 'MyAccountPage')
 
             DECLARE @BlockId int = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '5A5C6063-EA0D-4EDD-A394-4B1B772F2041')
-            INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
-		            VALUES
-			            (0, @MyAccountAttributeId, @BlockId, 'c0854f84-2e8b-479c-a3fb-6b47be89b795,5ed1e22a-2f7e-43ef-b8f4-3c7bd7f3fcf9', 'e842877b-5f3a-758a-4ea5-509c5145648a')
+            IF @BlockId IS NOT NULL
+            BEGIN
+                INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
+		        VALUES (0, @MyAccountAttributeId, @BlockId, 'c0854f84-2e8b-479c-a3fb-6b47be89b795,5ed1e22a-2f7e-43ef-b8f4-3c7bd7f3fcf9', 'e842877b-5f3a-758a-4ea5-509c5145648a')
+            END
 
             SET @BlockId = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = 'AD5D5155-D5AC-4445-A2C1-C4E8DC6CF23E')
-            INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
-		            VALUES
-			            (0, @MyAccountAttributeId, @BlockId, 'c0854f84-2e8b-479c-a3fb-6b47be89b795,5ed1e22a-2f7e-43ef-b8f4-3c7bd7f3fcf9', '90c8d264-af2b-90af-4ce3-b2a808247c0d')
+            IF @BlockId IS NOT NULL
+            BEGIN
+                INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
+		        VALUES (0, @MyAccountAttributeId, @BlockId, 'c0854f84-2e8b-479c-a3fb-6b47be89b795,5ed1e22a-2f7e-43ef-b8f4-3c7bd7f3fcf9', '90c8d264-af2b-90af-4ce3-b2a808247c0d')
+            END
 
             SET @BlockId = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '5CE3D668-85BF-4B3F-91BE-AB4BF8BA24B9')
-            INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
-		            VALUES
-			            (0, @MyAccountAttributeId, @BlockId, 'c0854f84-2e8b-479c-a3fb-6b47be89b795,5ed1e22a-2f7e-43ef-b8f4-3c7bd7f3fcf9', '4b6badc8-d450-8880-4a06-bfc8132a5d20')
+            IF @BlockId IS NOT NULL
+            BEGIN
+                INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
+		        VALUES (0, @MyAccountAttributeId, @BlockId, 'c0854f84-2e8b-479c-a3fb-6b47be89b795,5ed1e22a-2f7e-43ef-b8f4-3c7bd7f3fcf9', '4b6badc8-d450-8880-4a06-bfc8132a5d20')
+            END
 
             SET @BlockId = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = 'ED8662A3-44A9-4181-8D0B-55087E1062D1')
-            INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
-		            VALUES
-			            (0, @MyAccountAttributeId, @BlockId, 'c0854f84-2e8b-479c-a3fb-6b47be89b795,5ed1e22a-2f7e-43ef-b8f4-3c7bd7f3fcf9', '16cd398f-34e4-cf91-432f-6986310fbe5b')
-            " );
+            IF @BlockId IS NOT NULL
+            BEGIN
+                INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
+		        VALUES (0, @MyAccountAttributeId, @BlockId, 'c0854f84-2e8b-479c-a3fb-6b47be89b795,5ed1e22a-2f7e-43ef-b8f4-3c7bd7f3fcf9', '16cd398f-34e4-cf91-432f-6986310fbe5b')
+            END
+" );
+
         }
         
         /// <summary>

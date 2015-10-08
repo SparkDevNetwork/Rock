@@ -25,6 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -238,6 +239,7 @@ namespace RockWeb.Blocks.Core
                 queryable = queryable.OrderByDescending( q => q.Id );
             }
 
+            gAuditInformationList.EntityTypeId = EntityTypeCache.Read<Rock.Model.Audit>().Id;
             gAuditInformationList.DataSource = queryable.ToList();
             gAuditInformationList.DataBind();
         }

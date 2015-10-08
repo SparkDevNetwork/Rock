@@ -21,19 +21,21 @@
 
                     <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-                    <div id="divMediums" runat="server" class="nav navbar nav-pagelist">
-                        <ul class="nav nav-pills">
-                            <asp:Repeater ID="rptMediums" runat="server">
-                                <ItemTemplate>
-                                    <li class='<%# (int)Eval("Key") == MediumEntityTypeId ? "active" : "" %>'>
-                                        <asp:LinkButton ID="lbMedium" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbMedium_Click" CausesValidation="false">
-                                        </asp:LinkButton>
-                                    </li>
-                                </ItemTemplate>
-                            </asp:Repeater>
-                        </ul>
+                    <div class="well well-pillwrap">
+                        <div id="divMediums" runat="server">
+                            <ul class="nav nav-pills">
+                                <asp:Repeater ID="rptMediums" runat="server">
+                                    <ItemTemplate>
+                                        <li class='<%# (int)Eval("Key") == MediumEntityTypeId ? "active" : "" %>'>
+                                            <asp:LinkButton ID="lbMedium" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbMedium_Click" CausesValidation="false">
+                                            </asp:LinkButton>
+                                        </li>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </ul>
+                        </div>
                     </div>
-        
+
                     <Rock:NotificationBox ID="nbInvalidTransport" runat="server" NotificationBoxType="Warning" Dismissable="true" Title="Warning" Visible="false" />
 
                     <div class="row">
@@ -87,6 +89,7 @@
                         <asp:LinkButton ID="btnSubmit" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="btnSubmit_Click" />
                         <asp:LinkButton ID="btnTest" runat="server" Text="Send Test" CssClass="btn btn-link" OnClick="btnTest_Click" />
                         <asp:LinkButton ID="btnSave" runat="server" Text="Save as Draft" CssClass="btn btn-link" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" />
                     </div>
 
                     <Rock:NotificationBox ID="nbTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test communication has been sent." Visible="false" />

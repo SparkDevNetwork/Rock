@@ -32,6 +32,8 @@ public class Twilio : IHttpHandler
     private HttpRequest request;
     private HttpResponse response;
 
+    private const bool ENABLE_LOGGING = true;
+    
     public void ProcessRequest( HttpContext context )
     {
         request = context.Request;
@@ -45,6 +47,11 @@ public class Twilio : IHttpHandler
             return;
         }
 
+        // determine if we should log
+        if ( ( !string.IsNullOrEmpty( request.QueryString["Log"] ) && request.QueryString["Log"] == "true" ) || ENABLE_LOGGING )
+        {
+            WriteToLog();
+        }
 
         if ( request.Form["SmsStatus"] != null )
         {
@@ -80,9 +87,16 @@ public class Twilio : IHttpHandler
             CommunicationRecipientService recipientService = new CommunicationRecipientService(rockContext);
 
             var communicationRecipient = recipientService.Queryable().Where( r => r.UniqueMessageId == messageSid ).FirstOrDefault();
-            communicationRecipient.Status = CommunicationRecipientStatus.Failed;
-            communicationRecipient.StatusNote = "Message failure notified from Twilio on " + RockDateTime.Now.ToString();
-            rockContext.SaveChanges();
+            if ( communicationRecipient != null )
+            {
+                communicationRecipient.Status = CommunicationRecipientStatus.Failed;
+                communicationRecipient.StatusNote = "Message failure notified from Twilio on " + RockDateTime.Now.ToString();
+                rockContext.SaveChanges();
+            }
+            else
+            {
+                WriteToLog( "No recipient was found with the specified MessageSid value!" );
+            }
         }
     }
     
@@ -106,12 +120,6 @@ public class Twilio : IHttpHandler
             body = request.Form["Body"];
         }
         
-        // determine if we should log
-        if ( !string.IsNullOrEmpty( request.QueryString["Log"] ) && request.QueryString["Log"] == "true" )
-        {
-            WriteToLog( fromPhone, toPhone, body );
-        }
-        
         if ( !(string.IsNullOrWhiteSpace(toPhone)) && !(string.IsNullOrWhiteSpace(fromPhone)) )
         {
             string errorMessage = string.Empty;
@@ -125,14 +133,24 @@ public class Twilio : IHttpHandler
         }
     }
 
-    private void WriteToLog (string fromPhone, string toPhone, string body) {
+    private void WriteToLog () 
+    {
+        var formValues = new List<string>();
+        foreach ( string name in request.Form.AllKeys )
+        {
+            formValues.Add( string.Format( "{0}: '{1}'", name, request.Form[name] ) );
+        }
 
+        WriteToLog( formValues.AsDelimited( ", " ) );
+    }
+    
+    private void WriteToLog( string message )
+    {
         string logFile = HttpContext.Current.Server.MapPath( "~/App_Data/Logs/TwilioLog.txt" );
-
         using ( System.IO.FileStream fs = new System.IO.FileStream( logFile, System.IO.FileMode.Append, System.IO.FileAccess.Write ) )
         using ( System.IO.StreamWriter sw = new System.IO.StreamWriter( fs ) )
         {
-            sw.WriteLine( string.Format("{0} - From: '{1}', To: '{2}', Message: '{3}'", RockDateTime.Now.ToString(), fromPhone, toPhone, body) );
+            sw.WriteLine( string.Format( "{0} - {1}", RockDateTime.Now.ToString(), message ) );
         }
     }
     

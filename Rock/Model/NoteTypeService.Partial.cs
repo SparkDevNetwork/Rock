@@ -26,18 +26,18 @@ namespace Rock.Model
     public partial class NoteTypeService : Service<NoteType>
     {
         /// <summary>
-        /// Gets the first <see cref="Rock.Model.NoteType" /> by Name and EntityType
+        /// Gets the specified entity type identifier.
         /// </summary>
-        /// <param name="entityTypeId">A <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.EntityType" /> to search for.</param>
-        /// <param name="name">A <see cref="System.String" /> representing the Name of the</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="name">The name.</param>
         /// <param name="create">if set to <c>true</c> [create].</param>
-        /// <returns>
-        /// The first <see cref="Rock.Model.NoteType" /> matching the provided values. If a match is not found, this value will be null.
-        /// </returns>
+        /// <returns></returns>
         public NoteType Get( int entityTypeId, string name, bool create = true )
         {
-            var noteType = Queryable().FirstOrDefault( n => n.EntityTypeId == entityTypeId && n.Name == name );
-            if (noteType == null && create )
+            var noteTypes = Get( entityTypeId, string.Empty, string.Empty ).ToList();
+            var noteType = noteTypes.Where( t => t.Name == name ).FirstOrDefault();
+
+            if ( noteType == null && create )
             {
                 noteType = new NoteType();
                 noteType.IsSystem = false;
@@ -45,18 +45,40 @@ namespace Rock.Model
                 noteType.EntityTypeQualifierColumn = string.Empty;
                 noteType.EntityTypeQualifierValue = string.Empty;
                 noteType.Name = name;
+                noteType.UserSelectable = true;
+                noteType.IconCssClass = string.Empty;
+                noteType.CssClass = string.Empty;
+                noteType.Order = noteTypes.Any() ? noteTypes.Max( t => t.Order ) + 1 : 0;
 
                 // Create a new context/service so that save does not affect calling method's context
-                var rockContext = new RockContext();
-                var noteTypeService = new NoteTypeService( rockContext );
-                noteTypeService.Add( noteType );
-                rockContext.SaveChanges();
+                using ( var rockContext = new RockContext() )
+                {
+                    var noteTypeService = new NoteTypeService( rockContext );
+                    noteTypeService.Add( noteType );
+                    rockContext.SaveChanges();
+                }
 
                 // requery using calling context
                 noteType = Get( noteType.Id );
             }
 
             return noteType;
+        }
+
+        /// <summary>
+        /// Gets the specified entity type identifier.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <returns></returns>
+        public IQueryable<NoteType> Get( int entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue )
+        {
+            return Queryable()
+                .Where( n =>
+                    n.EntityTypeId == entityTypeId &&
+                    ( n.EntityTypeQualifierColumn ?? "" ) == ( entityTypeQualifierColumn ?? "" ) &&
+                    ( n.EntityTypeQualifierValue ?? "" ) == ( entityTypeQualifierValue ?? "" ) );
         }
 
     }

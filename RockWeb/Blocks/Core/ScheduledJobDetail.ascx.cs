@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Administration
 
                 job.LoadAttributes();
                 phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( job, phAttributes, true );
+                Rock.Attribute.Helper.AddEditControls( job, phAttributes, true, BlockValidationGroup );
             }
         }
 
@@ -83,6 +83,17 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            try
+            {
+                ExpressionDescriptor.GetDescription( tbCronExpression.Text );
+            }
+            catch (Exception ex)
+            {
+                tbCronExpression.ShowErrorMessage( "Invalid Cron Expression: " + ex.Message );
+                return;
+            }
+            
+            
             ServiceJob job;
             var rockContext = new RockContext();
             ServiceJobService jobService = new ServiceJobService( rockContext );
@@ -102,7 +113,16 @@ namespace RockWeb.Blocks.Administration
             job.Name = tbName.Text;
             job.Description = tbDescription.Text;
             job.IsActive = cbActive.Checked;
-            job.Class = ddlJobTypes.SelectedValue;
+            
+            if (job.Class != ddlJobTypes.SelectedValue)
+            {
+                job.Class = ddlJobTypes.SelectedValue;
+
+                //// if the Class has changed, the current Assembly value might not match, 
+                //// so set the Assembly to null to have Rock figure it out automatically
+                job.Assembly = null;
+            }
+
             job.NotificationEmails = tbNotificationEmails.Text;
             job.NotificationStatus = (JobNotificationStatus)int.Parse( ddlNotificationStatus.SelectedValue );
             job.CronExpression = tbCronExpression.Text;
@@ -126,6 +146,11 @@ namespace RockWeb.Blocks.Administration
             NavigateToParentPage();
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlJobTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlJobTypes_SelectedIndexChanged( object sender, EventArgs e )
         {
             ServiceJob job;
@@ -142,7 +167,7 @@ namespace RockWeb.Blocks.Administration
             job.Class = ddlJobTypes.SelectedValue;
             job.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( job, phAttributes, true );
+            Rock.Attribute.Helper.AddEditControls( job, phAttributes, true, BlockValidationGroup );
             
         }
 
@@ -182,16 +207,20 @@ namespace RockWeb.Blocks.Administration
             {
                 job.Class = ddlJobTypes.SelectedValue;
                 lCronExpressionDesc.Visible = false;
+                lLastStatusMessage.Visible = false;
             }
             else
             {
-                lCronExpressionDesc.Text = ExpressionDescriptor.GetDescription( job.CronExpression );
+                lCronExpressionDesc.Text = ExpressionDescriptor.GetDescription( job.CronExpression, new Options { ThrowExceptionOnParseError = false } );
                 lCronExpressionDesc.Visible = true;
+
+                lLastStatusMessage.Text = job.LastStatusMessage.ConvertCrLfToHtmlBr();
+                lLastStatusMessage.Visible = true;
             }
 
             job.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( job, phAttributes, true );
+            Rock.Attribute.Helper.AddEditControls( job, phAttributes, true, BlockValidationGroup );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;

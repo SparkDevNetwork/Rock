@@ -116,5 +116,27 @@ namespace Rock
                 return DayOfWeek.Monday;
             }
         }
+
+        /// <summary>
+        /// Creates a new datetime based on year, month, day, and handles 2/29 for non leap years (returns 2/28 in this case)
+        /// </summary>
+        /// <param name="year">The year.</param>
+        /// <param name="month">The month.</param>
+        /// <param name="day">The day.</param>
+        /// <returns></returns>
+        public static DateTime? New( int year, int month, int day )
+        {
+            try
+            {
+                if ( !DateTime.IsLeapYear( year ) && month == 2 && day == 29 )
+                {
+                    return new DateTime( year, 2, 28 );
+                }
+                return new DateTime( year, month, day );
+            }
+            catch { }
+
+            return (DateTime?)null;
+        }
     }
 }

@@ -6,9 +6,17 @@
         <Rock:NotificationBox ID="nbNotice" runat="server" Visible="false"/>
 
         <%-- View Panel --%>
-        <asp:Panel ID="pnlView" runat="server">
+        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
+            <div class="panel-heading clearfix">
+                <h1 class="panel-title pull-left">
+                    <i class="fa fa-map-marker"></i> Group Finder
+                </h1>
+            </div>
+            
+            <div class="panel-body">
+                <asp:Literal ID="lTitle" runat="server" />
 
-            <asp:Panel ID="pnlSearch" runat="server" >
+                <asp:Panel ID="pnlSearch" runat="server" >
 
                 <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
@@ -22,7 +30,7 @@
 
             </asp:Panel>
 
-            <asp:Panel ID="pnlResults" runat="server" Visible="false" >
+                <asp:Panel ID="pnlResults" runat="server" Visible="false" >
 
                 <asp:Literal ID="lMapStyling" runat="server" />
 
@@ -54,7 +62,7 @@
                 </asp:Panel>
 
             </asp:Panel>
-
+            </div>
         </asp:Panel>
 
         <%-- Edit Panel --%>
@@ -108,12 +116,12 @@
                                         <Rock:RockCheckBox ID="cbShowFence" runat="server" Label="Show Fence(s)" Text="Yes" 
                                             Help="If a Geofence group type was selected, should that group's boundary be displayed on the map?" ValidationGroup="GroupFinderSettings" />
                                         <Rock:ValueList ID="vlPolygonColors" runat="server" Label="Fence Polygon Colors"
-                                            Help="The list of colors to use when displaying multiple fences ( their should normally be only one fence)." ValidationGroup="GroupFinderSettings" />
+                                            Help="The list of colors to use when displaying multiple fences ( there should normally be only one fence)." ValidationGroup="GroupFinderSettings" />
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <Rock:CodeEditor ID="ceMapInfo" runat="server" Label="Group Window Contents" EditorMode="Liquid" EditorTheme="Rock" Height="300" 
+                                        <Rock:CodeEditor ID="ceMapInfo" runat="server" Label="Group Window Contents" EditorMode="Lava" EditorTheme="Rock" Height="300" 
                                             Help="The Lava template to use for formatting the group information that is displayed when user clicks the group marker on the map." 
                                             ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbMapInfoDebug" runat="server" Text="Enable Debug" />
@@ -132,7 +140,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <Rock:CodeEditor ID="ceLavaOutput" runat="server" Label="Lava Template" EditorMode="Liquid" EditorTheme="Rock" Height="300" 
+                                        <Rock:CodeEditor ID="ceLavaOutput" runat="server" Label="Lava Template" EditorMode="Lava" EditorTheme="Rock" Height="300" 
                                             Help="The Lava template to use for formatting the matching groups." 
                                             ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbLavaOutputDebug" runat="server" Text="Enable Debug" />
@@ -147,6 +155,8 @@
                                             Help="Should a grid be displayed showing the matching groups?" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbShowSchedule" runat="server" Label="Show Schedule" Text="Yes" 
                                             Help="Should the schedule for each group be displayed?" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockCheckBox ID="cbShowDescription" runat="server" Label="Show Description" Text="Yes" 
+                                            Help="Should the description for each group be displayed?" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbShowCount" runat="server" Label="Show Member Count" Text="Yes" 
                                             Help="Should the number of members in each group be displayed in the result grid?" ValidationGroup="GroupFinderSettings" />
                                     </div>

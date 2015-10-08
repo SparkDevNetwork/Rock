@@ -27,12 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for PersonViewed
+    /// Base client model for PersonViewed that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PersonViewed
+    public partial class PersonViewedEntity
     {
         /// <summary />
         public int Id { get; set; }
+
+        /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
 
         /// <summary />
         public string IpAddress { get; set; }
@@ -53,7 +59,32 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source PersonViewed object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( PersonViewed source )
+        {
+            this.Id = source.Id;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
+            this.IpAddress = source.IpAddress;
+            this.Source = source.Source;
+            this.TargetPersonAliasId = source.TargetPersonAliasId;
+            this.ViewDateTime = source.ViewDateTime;
+            this.ViewerPersonAliasId = source.ViewerPersonAliasId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
+    }
+
+    /// <summary>
+    /// Client model for PersonViewed that includes all the fields that are available for GETs. Use this for GETs (use PersonViewedEntity for POST/PUTs)
+    /// </summary>
+    public partial class PersonViewed : PersonViewedEntity
+    {
     }
 }

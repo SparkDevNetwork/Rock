@@ -96,6 +96,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AllowCaching = source.AllowCaching;
             target.Description = source.Description;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
             target.IsSystem = source.IsSystem;
             target.MaxHeight = source.MaxHeight;

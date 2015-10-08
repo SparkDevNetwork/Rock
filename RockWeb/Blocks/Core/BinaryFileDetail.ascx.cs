@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Core
                     {
                         binaryFile.LoadAttributes();
                         phAttributes.Controls.Clear();
-                        Rock.Attribute.Helper.AddEditControls( binaryFile, phAttributes, false );
+                        Rock.Attribute.Helper.AddEditControls( binaryFile, phAttributes, false, BlockValidationGroup );
                     }
                 }
             }
@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                Rock.Attribute.Helper.AddEditControls( binaryFile, phAttributes, true );
+                Rock.Attribute.Helper.AddEditControls( binaryFile, phAttributes, true, BlockValidationGroup );
             }
 
             tbName.ReadOnly = readOnly;
@@ -376,16 +376,9 @@ namespace RockWeb.Blocks.Core
                             var workflow = Workflow.Activate( workflowType, binaryFile.FileName );
 
                             List<string> workflowErrors;
-                            if ( workflow.Process( workflowRockContext, binaryFile, out workflowErrors ) )
+                            if ( new Rock.Model.WorkflowService( workflowRockContext ).Process( workflow, binaryFile, out workflowErrors ) )
                             {
                                 binaryFile = binaryFileService.Get( binaryFile.Id );
-
-                                if ( workflow.IsPersisted || workflowType.IsPersisted )
-                                {
-                                    var workflowService = new Rock.Model.WorkflowService( workflowRockContext );
-                                    workflowService.Add( workflow );
-                                    workflowRockContext.SaveChanges();
-                                }
                             }
                         }
                     }

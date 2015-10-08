@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
@@ -35,7 +36,7 @@ namespace Rock.CheckIn
         /// The type of the group.
         /// </value>
         [DataMember]
-        public GroupType GroupType { get; set; }
+        public GroupTypeCache GroupType { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [excluded by filter].

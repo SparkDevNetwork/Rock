@@ -50,6 +50,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the help text.
         /// </summary>
         /// <value>
@@ -240,7 +257,7 @@ namespace Rock.Web.UI.Controls
                         }
                     }
 
-                    _ddlGroupRole.SelectedValue = groupRoleId.ToString();
+                    _ddlGroupRole.SetValue( groupRoleId.ToString() );
                 }
             }
         }
@@ -352,6 +369,11 @@ namespace Rock.Web.UI.Controls
         private void LoadGroupTypes()
         {
             _ddlGroupType.Items.Clear();
+            
+            if ( !Required )
+            {
+                _ddlGroupType.Items.Add( new ListItem( string.Empty, Rock.Constants.None.IdValue ) );
+            }
 
             using ( var rockContext = new RockContext() )
             {
@@ -359,7 +381,6 @@ namespace Rock.Web.UI.Controls
 
                 // get all group types that have at least one role
                 var groupTypes = groupTypeService.Queryable().Where( a => a.Roles.Any() ).OrderBy( a => a.Name ).ToList();
-
                 foreach ( var g in groupTypes )
                 {
                     _ddlGroupType.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) );

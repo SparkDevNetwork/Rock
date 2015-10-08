@@ -53,6 +53,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the help text.
         /// </summary>
         /// <value>
@@ -531,10 +548,18 @@ namespace Rock.Web.UI.Controls
         /// HTML
         /// </summary>
         Html = 2,
+        
+        /// <summary>
+        /// The lava
+        /// </summary>
+        Lava = 3,
+
         /// <summary>
         /// liquid
         /// </summary>
+        [Obsolete( "Use CodeEditorMode.Lava instead" )]
         Liquid = 3,
+
         /// <summary>
         /// java script
         /// </summary>

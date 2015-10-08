@@ -1,6 +1,7 @@
 ﻿
 // Load Master Styles
 // -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
 @import "../../../Styles/_rock-core.less";
 @import "../../../Styles/_rock-variables.less";
 @import "_variables.less";
@@ -8,12 +9,12 @@
 
 
 /*
-    Rock Theme Styles
+  Rock Theme Styles
 
-    1. HTML Overrides
-    2. Bootstrap Overides
-    3. Theme Styling
-    4. Responsive Overrides 
+  1. HTML Overrides
+  2. Bootstrap Overides
+  3. Theme Styling
+  4. Responsive Overrides
 
 */
 
@@ -21,57 +22,57 @@
 // -------------------------
 
 main {
-    display:block;
+  display:block;
 }
 
 
-// 2. Bootstrap Overrides 
-// ------------------------- 
+// 2. Bootstrap Overrides
+// -------------------------
 
 
-// 3. Theme Styling 
+// 3. Theme Styling
 // -------------------------
 
 header {
-    background-color: @header-bg;
-    color: @header-text-color;
-    min-height: 80px;
+  background-color: @header-bg;
+  color: @header-text-color;
+  min-height: 80px;
 }
 
 main {
-   
+
 }
 
 footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    background-color: @footer-bg;
-    color: @footer-text-color;
-    min-height: 80px;
-    padding-top: 24px;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background-color: @footer-bg;
+  color: @footer-color;
+  min-height: 80px;
+  padding-top: 24px;
 }
 
 
 
-// 4. Responsive Overrides 
+// 4. Responsive Overrides
 // -------------------------
 
 // default styling should be for phones 767px or less
 
 // Small devices (tablets, 768px and up)
 @media (min-width: @screen-sm-min) {
-    
+
 }
 
-// Medium devices (desktops, 992px and up) 
+// Medium devices (desktops, 992px and up)
 @media (min-width: @screen-md-min) {
-    .container {
-        width: 100%;
-    }
+  .container {
+    width: 100%;
+  }
 }
 
-// Large devices (large desktops, 1200px and up) 
+// Large devices (large desktops, 1200px and up)
 @media (min-width: @screen-lg-min) {
 
 }

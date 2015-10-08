@@ -29,14 +29,14 @@ namespace Rock.Model
     {
         /// <summary>
         /// Returns a collection of active <see cref="Rock.Model.PrayerRequest">PrayerRequests</see> that
-        /// are in a specified <see cref="Rock.Model.Category"/> or any of it's subcategories.
+        /// are in a specified <see cref="Rock.Model.Category"/> or any of its subcategories.
         /// </summary>
         /// <param name="categoryIds">A <see cref="System.Collections.Generic.List{Int32}"/> of
         /// the <see cref="Rock.Model.Category"/> IDs to retrieve PrayerRequests for.</param>
         /// <param name="onlyApproved">set false to include un-approved requests.</param>
         /// <param name="onlyUnexpired">set false to include expired requests.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.PrayerRequest"/> that
-        /// are in the specified <see cref="Rock.Model.Category"/> or any of it's subcategories.</returns>
+        /// are in the specified <see cref="Rock.Model.Category"/> or any of its subcategories.</returns>
         public IEnumerable<PrayerRequest> GetByCategoryIds( List<int> categoryIds, bool onlyApproved = true, bool onlyUnexpired = true )
         {
             PrayerRequest prayerRequest = new PrayerRequest();

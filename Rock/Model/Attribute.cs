@@ -179,8 +179,20 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the name of the icon CSS class. This property will be null if a file based icon is being used.
         /// </value>
+        [MaxLength( 100 )]
         [DataMember]
         public string IconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this Attribute should be used in 'search by attribute value' UIs. 
+        /// For example, if you had a UI where you would allow the user to find people based on a list of attributes
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow search]; otherwise, <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public bool AllowSearch { get; set; }
 
         #endregion
 

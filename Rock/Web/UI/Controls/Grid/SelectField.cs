@@ -82,6 +82,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to show the Select All checkbox when in multiselect mode
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show select all]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowSelectAll
+        {
+            get
+            {
+                return ViewState["ShowSelectAll"] as bool? ?? true;
+            }
+            set
+            {
+                ViewState["ShowSelectAll"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the data visible field.
         /// </summary>
         /// <value>
@@ -135,6 +153,25 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["DataTextField"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the checkbox tooltip
+        /// </summary>
+        /// <value>
+        /// The checkbox tooltip
+        /// </value>
+        public string Tooltip
+        {
+            get
+            {
+                return ViewState["Tooltip"] as string;
+            }
+
+            set
+            {
+                ViewState["Tooltip"] = value;
             }
         }
 
@@ -277,6 +314,7 @@ namespace Rock.Web.UI.Controls
 
                     cb.ID = "cbSelect_" + ColumnIndex.ToString();
                     cb.DataBinding += cb_DataBinding;
+                    cell.ToolTip = selectField.Tooltip;
                     cell.Controls.Add( cb );
                 }
             }
@@ -363,7 +401,7 @@ namespace Rock.Web.UI.Controls
                     l.Text = selectField.HeaderText;
                     cell.Controls.Add( l );
 
-                    if ( selectField.SelectionMode == SelectionMode.Multiple && selectField.ShowHeader )
+                    if ( selectField.SelectionMode == SelectionMode.Multiple && selectField.ShowHeader && selectField.ShowSelectAll )
                     {
                         string colIndex = selectField.ColumnIndex.ToString();
                         CheckBox cb = new CheckBox();

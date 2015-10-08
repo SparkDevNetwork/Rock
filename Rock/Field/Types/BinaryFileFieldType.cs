@@ -17,11 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -85,7 +86,7 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( BINARY_FILE_TYPE, new ConfigurationValue( "File Type", "The type of files to list", string.Empty ) );
 
-            if ( controls != null && controls.Count == 1 &&
+            if ( controls != null && controls.Count > 0 &&
                 controls[0] != null && controls[0] is DropDownList )
             {
                 configurationValues[BINARY_FILE_TYPE].Value = ( (DropDownList)controls[0] ).SelectedValue;
@@ -101,7 +102,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Count == 1 && configurationValues != null &&
+            if ( controls != null && controls.Count > 0 && configurationValues != null &&
                 controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( BINARY_FILE_TYPE ) )
             {
                 ( (DropDownList)controls[0] ).SetValue( configurationValues[BINARY_FILE_TYPE].Value.ToLower() );
@@ -148,7 +149,7 @@ namespace Rock.Field.Types
                     else
                     {
                         var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
-                        return string.Format( "<a href='{0}?guid={1}' title={2} class='btn btn-sm btn-default'>View</a>", filePath, binaryFileInfo.Guid, binaryFileInfo.FileName );
+                        return string.Format( "<a href='{0}?guid={1}' title='{2}' class='btn btn-sm btn-default'>View</a>", filePath, binaryFileInfo.Guid, System.Web.HttpUtility.HtmlEncode(binaryFileInfo.FileName) );
                     }
                 }
             }
@@ -232,18 +233,61 @@ namespace Rock.Field.Types
         #region Filter Control
 
         /// <summary>
-        /// Creates the control needed to filter (query) values using this field type.
+        /// Gets the filter value control with the specified FilterMode
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override Control FilterControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
-            // This field type does not support filtering
-            return null;
+            // only supports IsBlank and IsNotBlank, so don't show any value control
+            var filterValueControl = base.FilterValueControl( configurationValues, id, required, filterMode );
+            if ( filterValueControl != null )
+            {
+                filterValueControl.Visible = false;
+            }
+
+            return filterValueControl;
         }
 
+        /// <summary>
+        /// Gets the filter value value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // return a dummy value since this only supports IsBlank and IsNotBlank
+            return "0";
+        }
+
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                // This field type only supports IsBlank and IsNotBlank since the content is stored as binarydata
+                return ComparisonType.IsBlank | ComparisonType.IsNotBlank;
+            }
+        }
+        
         #endregion
 
         #region Entity Methods

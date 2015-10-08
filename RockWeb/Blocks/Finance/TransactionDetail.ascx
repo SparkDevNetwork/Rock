@@ -57,7 +57,7 @@
                                             <Rock:RockTemplateField HeaderText="Accounts">
                                                 <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                             </Rock:RockTemplateField>
-                                            <Rock:RockBoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
+                                            <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                             <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
                                             <Rock:DeleteField OnClick="gAccountsEdit_DeleteClick" />
                                         </Columns>
@@ -73,7 +73,7 @@
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source" />
                             <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
                             <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
-                            <Rock:ComponentPicker ID="cpPaymentGateway" runat="server" Label="Payment Gateway" ContainerType="Rock.Financial.GatewayContainer" />
+                            <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" />
                             <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"
                                 SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
                         </div>
@@ -81,7 +81,7 @@
                             <h4>Images</h4>
                             <asp:DataList ID="dlImages" runat="server" RepeatDirection="Horizontal" RepeatColumns="2" OnItemDataBound="dlImages_ItemDataBound">
                                 <ItemTemplate>
-                                    <Rock:ImageUploader ID="imgupImage" runat="server" OnImageRemoved="imgupImage_ImageRemoved" OnImageUploaded="imgupImage_ImageUploaded" />
+                                    <Rock:ImageUploader ID="imgupImage" runat="server" OnImageRemoved="imgupImage_ImageRemoved" BinaryFileTypeGuid="6D18A9C4-34AB-444A-B95B-C644019465AC" OnImageUploaded="imgupImage_ImageUploaded" />
                                 </ItemTemplate>
                             </asp:DataList>
                             <Rock:RockLiteral ID="lScheduledTransaction" runat="server" Label="Scheduled Transaction" Visible="false" />
@@ -111,7 +111,7 @@
                                     <Rock:RockTemplateField HeaderText="Accounts">
                                         <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                     </Rock:RockTemplateField>
-                                    <Rock:RockBoundField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C2}" />
+                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                     <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
                                 </Columns>
                             </Rock:Grid>
@@ -132,7 +132,8 @@
 
                     <div class="actions">
                         <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" AccessKey="m" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
-                        <asp:LinkButton ID="lbAddTransaction" runat="server" Text="Add New Transaction" AccessKey="a" CssClass="btn btn-default pull-right" CausesValidation="false" OnClick="lbAddTransaction_Click" />
+                        <asp:HyperLink ID="lbNext" runat="server" AccessKey="n" CssClass="btn btn-default margin-r-sm pull-right">Next <i class="fa fa-chevron-right"></i></asp:HyperLink>
+                        <asp:LinkButton ID="lbAddTransaction" runat="server" Text="Add New Transaction" AccessKey="a" CssClass="btn btn-default margin-r-sm pull-right" CausesValidation="false" OnClick="lbAddTransaction_Click" />
                     </div>
 
                 </fieldset>

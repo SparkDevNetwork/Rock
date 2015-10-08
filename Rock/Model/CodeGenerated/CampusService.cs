@@ -52,6 +52,18 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<ConnectionRequest>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, ConnectionRequest.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<EventItemOccurrence>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, EventItemOccurrence.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<FinancialAccount>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, FinancialAccount.FriendlyTypeName );
@@ -107,6 +119,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.Description = source.Description;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.IsSystem = source.IsSystem;
             target.LeaderPersonAliasId = source.LeaderPersonAliasId;

@@ -40,7 +40,7 @@ namespace Rock.Model
         }
         
         /// <summary>
-        /// Returns a <see cref="Rock.Model.FieldType"/> by it's Guid identifier.
+        /// Returns a <see cref="Rock.Model.FieldType"/> by its Guid identifier.
         /// </summary>
         /// <param name="guid">A <see cref="System.Guid"/> representing the Guid identifier of the <see cref="Rock.Model.FieldType"/> to retrieve.</param>
         /// <returns>The <see cref="Rock.Model.FieldType"/> with a Guid identifier that matches the specified value.</returns>
@@ -89,6 +89,23 @@ namespace Rock.Model
 
                 rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Gets the Guid for the FieldType that has the specified Id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Guid? GetGuid( int id )
+        {
+            var cacheItem = Rock.Web.Cache.FieldTypeCache.Read( id );
+            if ( cacheItem != null )
+            {
+                return cacheItem.Guid;
+            }
+
+            return null;
+
         }
     }
 }

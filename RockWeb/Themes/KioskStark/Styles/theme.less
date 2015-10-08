@@ -1,0 +1,73 @@
+﻿
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_kiosk-core.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_print.less";
+
+
+/*
+  Rock Theme Styles
+
+  1. HTML Overrides
+  2. Bootstrap Overides
+  3. Theme Styling
+  4. Responsive Overrides
+
+*/
+
+// 1. HTML Overrides
+// -------------------------
+
+body {
+  display: none;
+}
+
+
+main {
+  display: block;
+}
+
+// 2. Bootstrap Overrides
+// -------------------------
+.input-group.input-width-md {
+  width: 100%;
+}
+
+// 3. Theme Styling
+// -------------------------
+
+header {
+  .clearfix(); /* needed to ensure correct height calculation in jQuery for scroll panel */
+}
+
+footer {
+  .clearfix(); /* needed to ensure correct height calculation in jQuery for scroll panel */
+  position: absolute;
+  bottom: 0;
+  margin-bottom: 24px;
+}
+
+.form-control {
+  font-size: 32px;
+  height: 64px;
+  font-weight: @font-weight-bold;
+}
+
+.swipe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: 0 auto;
+  margin-top: -196px;
+  margin-left: -230px;
+  text-align: center;
+}
+
+.swipe-cards {
+  font-size: 24px;
+  margin-bottom: 24px;
+}

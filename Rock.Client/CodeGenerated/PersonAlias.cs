@@ -27,9 +27,9 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for PersonAlias
+    /// Base client model for PersonAlias that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PersonAlias
+    public partial class PersonAliasEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -41,10 +41,13 @@ namespace Rock.Client
         public int AliasPersonId { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public Guid? ForeignGuid { get; set; }
 
         /// <summary />
-        public Person Person { get; set; }
+        public string ForeignKey { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
 
         /// <summary />
         public int PersonId { get; set; }
@@ -53,7 +56,34 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source PersonAlias object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( PersonAlias source )
+        {
+            this.Id = source.Id;
+            this.AliasPersonGuid = source.AliasPersonGuid;
+            this.AliasPersonId = source.AliasPersonId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
+            this.Name = source.Name;
+            this.PersonId = source.PersonId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
+    }
+
+    /// <summary>
+    /// Client model for PersonAlias that includes all the fields that are available for GETs. Use this for GETs (use PersonAliasEntity for POST/PUTs)
+    /// </summary>
+    public partial class PersonAlias : PersonAliasEntity
+    {
+        /// <summary />
+        public Person Person { get; set; }
 
     }
 }

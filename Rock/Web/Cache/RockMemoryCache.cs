@@ -15,16 +15,11 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.IO;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Caching;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Rock.Web.Cache
 {
@@ -43,10 +38,10 @@ namespace Rock.Web.Cache
 
         // The function that sets the memory cache's last trim gen 2 count to a specific value
         private readonly Action<int> _setMemoryCacheLastTrimGen2CountFunc = null;
-        
+
         // The timer that calls the last trim gen 2 count function
         private readonly Timer _setMemoryCacheLastTrimGen2CountTimer = null;
-        
+
         // The integer incremented as the gen 2 count value
         private int _lastTrimGen2Count = 0;
 
@@ -64,7 +59,8 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Initializes a new instance of the <see cref="RockMemoryCache"/> class.
         /// </summary>
-        public RockMemoryCache() : this("RockDefault", null)
+        public RockMemoryCache()
+            : this( "RockDefault", null )
         {
         }
 
@@ -73,7 +69,8 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="config">The configuration.</param>
-        public RockMemoryCache( string name, NameValueCollection config = null) : base(name, config)
+        public RockMemoryCache( string name, NameValueCollection config = null )
+            : base( name, config )
         {
             // Use lambda expressions to create a set method for MemoryCache._stats._lastTrimGen2Count to circumvent poor functionality of MemoryCache
             // The default MemoryCache does not check for memory pressure except after a Gen 2 Garbage Collection. We want to do this more often than that.
@@ -85,6 +82,7 @@ namespace Rock.Web.Cache
 
             // Define the _stats field on MemoryCache
             var statsField = memoryCacheType.GetField( "_stats", BindingFlags.Instance | BindingFlags.NonPublic );
+
             // Define the _lastTrimGen2Count field on MemoryCacheStatistics
             var lastTrimGen2CountField = memoryCacheStatisticsType.GetField( "_lastTrimGen2Count", BindingFlags.Instance | BindingFlags.NonPublic );
 
@@ -132,6 +130,91 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Updates the cache hit miss.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="hit">if set to <c>true</c> [hit].</param>
+        private void UpdateCacheHitMiss( string key, bool hit )
+        {
+            var httpContext = System.Web.HttpContext.Current;
+            if ( httpContext != null && httpContext.Items.Contains( "Cache_Hits" ) )
+            {
+                var cacheHits = httpContext.Items["Cache_Hits"] as System.Collections.Generic.Dictionary<string, bool>;
+                if ( cacheHits != null )
+                {
+                    cacheHits.AddOrIgnore( key, hit );
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Gets or sets a value in the cache by using the default indexer property for an instance of the <see cref="T:System.Runtime.Caching.MemoryCache" /> class.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public override object this[string key]
+        {
+            get
+            {
+                object obj = base[key];
+                UpdateCacheHitMiss( key, obj != null );
+                return obj;
+            }
+            set
+            {
+                base[key] = value;
+            }
+        }
+
+        /// <summary>
+        /// Inserts a cache entry into the cache using the specified key and value and the specified details for how it is to be evicted.
+        /// </summary>
+        /// <param name="key">A unique identifier for the cache entry to add or get.</param>
+        /// <param name="value">The data for the cache entry.</param>
+        /// <param name="policy">An object that contains eviction details for the cache entry. This object provides more options for eviction than a simple absolute expiration.</param>
+        /// <param name="regionName">A named region in the cache to which a cache entry can be added. Do not pass a value for this parameter. By default, this parameter is null, because the <see cref="T:System.Runtime.Caching.MemoryCache" /> class does not implement regions.</param>
+        /// <returns>
+        /// If a matching cache entry already exists, a cache entry; otherwise, null.
+        /// </returns>
+        public override object AddOrGetExisting( string key, object value, CacheItemPolicy policy, string regionName = null )
+        {
+            UpdateCacheHitMiss( key, Contains( key ) );
+            return base.AddOrGetExisting( key, value, policy, regionName );
+        }
+
+        /// <summary>
+        /// Adds a cache entry into the cache using the specified key and a value and an absolute expiration value.
+        /// </summary>
+        /// <param name="key">A unique identifier for the cache entry to add.</param>
+        /// <param name="value">The data for the cache entry.</param>
+        /// <param name="absoluteExpiration">The fixed date and time at which the cache entry will expire.</param>
+        /// <param name="regionName">A named region in the cache to which a cache entry can be added. Do not pass a value for this parameter. This parameter is null by default, because the <see cref="T:System.Runtime.Caching.MemoryCache" /> class does not implement regions.</param>
+        /// <returns>
+        /// If a cache entry with the same key exists, the existing cache entry; otherwise, null.
+        /// </returns>
+        public override object AddOrGetExisting( string key, object value, DateTimeOffset absoluteExpiration, string regionName = null )
+        {
+            UpdateCacheHitMiss( key, Contains( key ) );
+            return base.AddOrGetExisting( key, value, absoluteExpiration, regionName );
+        }
+
+        /// <summary>
+        /// Returns an entry from the cache.
+        /// </summary>
+        /// <param name="key">A unique identifier for the cache entry to get.</param>
+        /// <param name="regionName">A named region in the cache to which a cache entry was added. Do not pass a value for this parameter. This parameter is null by default, because the <see cref="T:System.Runtime.Caching.MemoryCache" /> class does not implement regions.</param>
+        /// <returns>
+        /// A reference to the cache entry that is identified by <paramref name="key" />, if the entry exists; otherwise, null.
+        /// </returns>
+        public override object Get( string key, string regionName = null )
+        {
+            object obj = base.Get( key, regionName );
+            UpdateCacheHitMiss( key, obj != null );
+            return obj;
+        }
+
+        /// <summary>
         /// Gets the default.
         /// </summary>
         /// <value>
@@ -141,16 +224,17 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if (RockMemoryCache.s_defaultCache == null)
+                if ( RockMemoryCache.s_defaultCache == null )
                 {
-                    lock( RockMemoryCache.s_initLock)
+                    lock ( RockMemoryCache.s_initLock )
                     {
-                        if (RockMemoryCache.s_defaultCache == null)
+                        if ( RockMemoryCache.s_defaultCache == null )
                         {
                             RockMemoryCache.s_defaultCache = new RockMemoryCache();
                         }
                     }
                 }
+
                 return RockMemoryCache.s_defaultCache;
             }
         }
@@ -160,15 +244,14 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Clear()
         {
-            lock( RockMemoryCache.s_initLock)
+            lock ( RockMemoryCache.s_initLock )
             {
-                if (RockMemoryCache.s_defaultCache != null)
+                if ( RockMemoryCache.s_defaultCache != null )
                 {
                     RockMemoryCache.s_defaultCache.Dispose();
                     RockMemoryCache.s_defaultCache = null;
                 }
             }
         }
-
     }
 }

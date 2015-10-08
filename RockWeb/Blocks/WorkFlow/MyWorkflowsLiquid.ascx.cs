@@ -170,9 +170,9 @@ as fields on the workflow or activity)...
   ]
 }
 </pre>
-", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, false, @"
+", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, @"
 {% if Actions.size > 0 %}
-    <div class='panel panel-info'> 
+    <div class='panel panel-block'> 
         <div class='panel-heading'>
             <h4 class='panel-title'>My {% if Role == '0' %}Tasks{% else %}Requests{% endif %}</h4>
         </div>
@@ -261,33 +261,41 @@ as fields on the workflow or activity)...
 
         private void BindData()
         {
-            string role = GetAttributeValue("Role");
-            if (string.IsNullOrWhiteSpace(role))
+            try
             {
-                role = "0";
+                string role = GetAttributeValue( "Role" );
+                if ( string.IsNullOrWhiteSpace( role ) )
+                {
+                    role = "0";
+                }
+
+                string contents = GetAttributeValue( "Contents" );
+
+                string appRoot = ResolveRockUrl( "~/" );
+                string themeRoot = ResolveRockUrl( "~~/" );
+                contents = contents.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                List<WorkflowAction> actions = null;
+                if ( role == "1" )
+                {
+                    actions = GetWorkflows();
+                }
+                else
+                {
+                    actions = GetActions();
+                }
+
+                var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "Role", role );
+                mergeFields.Add( "Actions", actions.OrderByDescending( a => a.CreatedDateTime ) );
+
+                lContents.Text = contents.ResolveMergeFields( mergeFields );
             }
-
-            string contents = GetAttributeValue( "Contents" );
-
-            string appRoot = ResolveRockUrl( "~/" );
-            string themeRoot = ResolveRockUrl( "~~/" );
-            contents = contents.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
-
-            List<WorkflowAction> actions = null;
-            if (role == "1")
+            catch (Exception ex)
             {
-                actions = GetWorkflows();
+                LogException( ex );
+                lContents.Text = "error getting workflows";
             }
-            else
-            {
-                actions = GetActions();
-            }
-
-            var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "Role", role );
-            mergeFields.Add( "Actions", actions );
-
-            lContents.Text = contents.ResolveMergeFields( mergeFields );
         }
 
         private List<WorkflowAction> GetWorkflows()

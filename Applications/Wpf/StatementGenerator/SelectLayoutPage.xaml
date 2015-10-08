@@ -12,82 +12,87 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}" />
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Style="{StaticResource gridPanelBorderRow}"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Style="{StaticResource gridPanelBorderRow}"/>
+            <RowDefinition Style="{StaticResource gridPanelBorderRow}" />
+            <RowDefinition Height="*" />
+            <RowDefinition Style="{StaticResource gridPanelBorderRow}" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Column="1" Grid.Row="1" Style="{StaticResource gridPanel}">
+        <Grid Grid.Column="1"
+              Grid.Row="1"
+              Style="{StaticResource gridPanel}">
             <Grid.RowDefinitions>
-                <RowDefinition Style="{StaticResource rowDefinitionPanelTitle}"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Style="{StaticResource rowDefinitionActions}"/>
+                <RowDefinition Style="{StaticResource rowDefinitionPanelTitle}" />
+                <RowDefinition Height="*" />
+                <RowDefinition Style="{StaticResource rowDefinitionActions}" />
             </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0" Style="{StaticResource panelBanner}" >
-                <Label Content="STEP 4:" Style="{StaticResource labelStyleBannerTitle}" />
-                <Label Content="Statement Layout" Style="{StaticResource labelStyleBannerText}"/>
+            <StackPanel Grid.Row="0"
+                        Style="{StaticResource panelBanner}">
+                <Label Content="STEP 4:"
+                       Style="{StaticResource labelStyleBannerTitle}" />
+                <Label Content="Statement Layout"
+                       Style="{StaticResource labelStyleBannerText}" />
             </StackPanel>
-        <StackPanel HorizontalAlignment="Center"
-                    VerticalAlignment="Center" Grid.Column="1" Grid.Row="1">
-            <Label Style="{StaticResource labelStyleLegend}"
-                   Content="Layouts Available" />
-            <ScrollViewer Height="200"
-                          HorizontalScrollBarVisibility="Hidden"
-                          VerticalScrollBarVisibility="Visible">
-                <ListBox Name="lstLayouts"
-                         Margin="16,8,0,0"
-                         Width="320">
-                </ListBox>
-            </ScrollViewer>
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Grid.Column="1"
+                        Grid.Row="1">
+                <Label Style="{StaticResource labelStyleLegend}"
+                       Content="Layouts Available" />
+                <ScrollViewer Height="200"
+                              HorizontalScrollBarVisibility="Hidden"
+                              VerticalScrollBarVisibility="Visible">
+                    <ListBox Name="lstLayouts"
+                             Margin="16,8,0,0"
+                             Width="320">
+                    </ListBox>
+                </ScrollViewer>
 
-        </StackPanel>
-        <StackPanel Orientation="Horizontal"
-                    HorizontalAlignment="Left"
-                    Grid.Row="2">
-            <Button x:Name="btnPrev"
-                    HorizontalAlignment="Left"
-                    Style="{StaticResource buttonStyle}"
+            </StackPanel>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Left"
+                        Grid.Row="2">
+                <Button x:Name="btnPrev"
+                        HorizontalAlignment="Left"
+                        Style="{StaticResource buttonStyle}"
+                        Margin="8,8,8,8"
+                        Click="btnPrev_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Style="{StaticResource labelStyleIconLeft}"
+                               Content="&#xf053;" />
+                        <Label Style="{StaticResource labelStyleButtonText}"
+                               Content="Prev" />
+                    </StackPanel>
+                </Button>
+                <Button x:Name="btnImport"
+                        Style="{StaticResource buttonStyle}"
+                        Margin="4,8,8,8"
+                        Content="Import..."
+                        Click="btnImport_Click" />
+            </StackPanel>
+
+            <Button x:Name="btnNext"
+                    Grid.Row="2"
+                    HorizontalAlignment="Right"
+                    Style="{StaticResource buttonStylePrimary}"
                     Margin="8,8,8,8"
-                    Click="btnPrev_Click">
+                    Click="btnNext_Click">
                 <StackPanel Orientation="Horizontal">
-                    <Label Style="{StaticResource labelStyleIconLeft}"
-                           Content="&#xf053;" />
-                    <Label Style="{StaticResource labelStyleButtonText}"
-                           Content="Prev" />
+                    <Label Style="{StaticResource labelStyleButtonTextPrimary}"
+                           Content="Next" />
+                    <Label Style="{StaticResource labelStyleIconPrimaryRight}"
+                           Content="&#xf054;" />
                 </StackPanel>
             </Button>
-            <Button x:Name="btnImport"
-                    Style="{StaticResource buttonStyle}"
-                    Margin="4,8,8,8"
-                    Content="Import..."
-                    Click="btnImport_Click" />
-        </StackPanel>
-        
-        <Button x:Name="btnNext"
-                Grid.Row="2"
-                HorizontalAlignment="Right"
-                Style="{StaticResource buttonStylePrimary}"
-                Margin="8,8,8,8"
-                Click="btnNext_Click">
-            <StackPanel Orientation="Horizontal">
-                <Label Style="{StaticResource labelStyleButtonTextPrimary}"
-                       Content="Next" />
-                <Label Style="{StaticResource labelStyleIconPrimaryRight}"
-                       Content="&#xf054;" />
-            </StackPanel>
-        </Button>
 
-    </Grid>
+        </Grid>
 
-    <Frame
-            Grid.Row="3"
-            Grid.Column="2"
-            Source="images/statement-generator.xaml"
-            Style="{StaticResource logoStyleBottomRight}"
-            />
+        <Frame Grid.Row="3"
+               Grid.Column="2"
+               Source="images/statement-generator.xaml"
+               Style="{StaticResource logoStyleBottomRight}" />
     </Grid>
 </Page>

@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Include Inactive Groups", "Determines if inactive groups should be included on the map.", false, "", 6 )]
     [TextField( "Attributes", "Comma delimited list of attribute keys to include values for in the map info window (e.g. 'StudyTopic,MeetingTime').", false, "", "", 7 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 8 )]
-    [CodeEditorField( "Info Window Contents", "Liquid template for the info window. To suppress the window provide a blank template.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, false, @"
+    [CodeEditorField( "Info Window Contents", "Liquid template for the info window. To suppress the window provide a blank template.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 600, false, @"
 <div class='clearfix'>
     <h4 class='pull-left' style='margin-top: 0;'>{{GroupName}}</h4> 
     <span class='label label-campus pull-right'>{{GroupCampus}}</span>
@@ -432,11 +432,11 @@ namespace RockWeb.Blocks.Groups
                                                     var showInfoWindow = {1}; 
                                                     var mapStyle = {2};
                                                     var pinColor = '{3}';
-                                                    var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + pinColor,
+                                                    var pinImage = new google.maps.MarkerImage('http://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + pinColor,
                                                         new google.maps.Size(21, 34),
                                                         new google.maps.Point(0,0),
                                                         new google.maps.Point(10, 34));
-                                                    var pinShadow = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_shadow',
+                                                    var pinShadow = new google.maps.MarkerImage('http://chart.googleapis.com/chart?chst=d_map_pin_shadow',
                                                         new google.maps.Size(40, 37),
                                                         new google.maps.Point(0, 0),
                                                         new google.maps.Point(12, 35));

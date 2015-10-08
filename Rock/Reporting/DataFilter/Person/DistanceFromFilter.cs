@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -218,20 +219,23 @@ function() {
                 var selectedLocationGeoPoint = location.GeoPoint;
                 double miles = selectionValues[1].AsDoubleOrNull() ?? 0;
 
-                double meters = miles * 1609.344;
+                double meters = miles * Location.MetersPerMile;
 
                 GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
                 // limit to Family's Home Addresses that have are a real location (not a PO Box)
                 var groupMemberServiceQry = groupMemberService.Queryable()
-                    .Where( xx => xx.Group.GroupType.Guid == new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) )
-                    .Where( xx => xx.Group.GroupLocations
-                        .Where( l => l.GroupLocationTypeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ) )
-                        .Where( l => l.IsMappedLocation ).Any() );
+                    .Where( xx => xx.Group.GroupType.Guid == new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) );
+
+                int groupLocationTypeHomeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;
 
                 // limit to distance LessThan specified distance (dbGeography uses meters for distance units)
                 groupMemberServiceQry = groupMemberServiceQry
-                    .Where( xx => xx.Group.GroupLocations.Any( l => l.Location.GeoPoint.Distance( selectedLocationGeoPoint ) <= meters ) );
+                    .Where( xx =>
+                        xx.Group.GroupLocations.Any( l => 
+                            l.GroupLocationTypeValue.Id == groupLocationTypeHomeId 
+                            && l.IsMappedLocation 
+                            && l.Location.GeoPoint.Distance( selectedLocationGeoPoint ) <= meters ) );
 
                 var qry = new PersonService( rockContext ).Queryable()
                     .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );

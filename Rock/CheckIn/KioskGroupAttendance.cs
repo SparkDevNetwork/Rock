@@ -60,7 +60,7 @@ namespace Rock.CheckIn
             {
                 if ( Schedules != null )
                 {
-                    return Schedules.SelectMany( s => s.PersonIds ).Distinct().ToList();
+                    return Schedules.Where( s => s.IsActive ).SelectMany( s => s.PersonIds ).Distinct().ToList();
                 }
                 else
                 {

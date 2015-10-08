@@ -197,6 +197,32 @@ namespace Rock.Model
         /// <returns></returns>
         public List<object> GetDataSource( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages )
         {
+            var qry = GetQueryable( entityType, entityFields, attributes, selectComponents, sortProperty, databaseTimeoutSeconds, out errorMessages );
+
+            // enumerate thru the query results and put into a list
+            var reportResult = new List<object>();
+            var enumerator = ( qry as System.Collections.IEnumerable ).GetEnumerator();
+            while ( enumerator.MoveNext() )
+            {
+                reportResult.Add( enumerator.Current );
+            }
+
+            return reportResult;
+        }
+
+        /// <summary>
+        /// Returns a IQueryable of the report
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="entityFields">The entity fields.</param>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="selectComponents">The select components.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public IQueryable GetQueryable( Type entityType, Dictionary<int, EntityField> entityFields, Dictionary<int, AttributeCache> attributes, Dictionary<int, ReportField> selectComponents, Rock.Web.UI.Controls.SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages )
+        {
             errorMessages = new List<string>();
 
             if ( entityType != null )
@@ -228,7 +254,7 @@ namespace Rock.Model
 
                     foreach ( var a in attributes )
                     {
-                        dynamicFields.Add( string.Format( "Attribute_{0}_{1}", a.Value.Id, a.Key ), typeof( string ) );
+                        dynamicFields.Add( string.Format( "Attribute_{0}_{1}", a.Value.Id, a.Key ), a.Value.FieldType.Field.AttributeValueFieldType );
                     }
 
                     foreach ( var reportField in selectComponents )
@@ -237,6 +263,18 @@ namespace Rock.Model
                         if ( selectComponent != null )
                         {
                             dynamicFields.Add( string.Format( "Data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ), selectComponent.ColumnFieldType );
+                            var customSortProperties = selectComponent.SortProperties( reportField.Value.Selection );
+                            if ( customSortProperties != null )
+                            {
+                                foreach ( var customSortProperty in customSortProperties.Split( ',' ) )
+                                {
+                                    if ( !string.IsNullOrWhiteSpace( customSortProperty ) )
+                                    {
+                                        var customSortPropertyType = entityType.GetPropertyType( customSortProperty );
+                                        dynamicFields.Add( string.Format( "Sort_{0}_{1}", customSortProperty, reportField.Key ), customSortPropertyType ?? typeof( string ) );
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -268,7 +306,37 @@ namespace Rock.Model
                         DataSelectComponent selectComponent = DataSelectContainer.GetComponent( reportField.Value.DataSelectComponentEntityType.Name );
                         if ( selectComponent != null )
                         {
-                            bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), selectComponent.GetExpression(reportDbContext, idExpression, reportField.Value.Selection ?? string.Empty ) ) );
+                            try
+                            {
+                                var componentExpression = selectComponent.GetExpression( reportDbContext, idExpression, reportField.Value.Selection ?? string.Empty );
+                                if (componentExpression == null)
+                                {
+                                    componentExpression = Expression.Constant( null, typeof( string ) );
+                                }
+
+                                bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "data_{0}_{1}", selectComponent.ColumnPropertyName, reportField.Key ) ), componentExpression ) );
+
+                                var customSortProperties = selectComponent.SortProperties( reportField.Value.Selection );
+                                if ( !string.IsNullOrEmpty( customSortProperties ) )
+                                {
+                                    foreach ( var customSortProperty in customSortProperties.Split( ',' ) )
+                                    {
+                                        var customSortPropertyParts = customSortProperty.Split( '.' );
+                                        MemberInfo memberInfo = dynamicType.GetField( string.Format( "sort_{0}_{1}", customSortProperty, reportField.Key ) );
+                                        Expression memberExpression = null;
+                                        foreach ( var customSortPropertyPart in customSortPropertyParts )
+                                        {
+                                            memberExpression = Expression.Property( memberExpression ?? paramExpression, customSortPropertyPart );
+                                        }
+                                        
+                                        bindings.Add( Expression.Bind( memberInfo, memberExpression ) );
+                                    }
+                                }
+                            }
+                            catch ( Exception ex )
+                            {
+                                throw new Exception( string.Format( "Exception in {0}", selectComponent ), ex );
+                            }
                         }
                     }
 
@@ -287,65 +355,68 @@ namespace Rock.Model
                     MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
                     if ( getMethod != null )
                     {
-                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, null, this.FetchTop } );
+                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, null, null } );
                         var qry = getResult as IQueryable<IEntity>;
                         var qryExpression = qry.Expression;
 
                         // apply the OrderBy clauses to the Expression from whatever columns are specified in sortProperty.Property
                         string orderByMethod = "OrderBy";
-                        if ( sortProperty != null )
+                        if ( sortProperty == null )
                         {
-                            /*
-                             NOTE:  The sort property sorting rules can be a little confusing. Here is how it works:
-                             * - SortProperty.Direction of Ascending means sort exactly as what the Columns specification says
-                             * - SortProperty.Direction of Descending means sort the _opposite_ of what the Columns specification says
-                             * Examples:
-                             *  1) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Ascending
-                             *     OrderBy should be: "order by LastName desc, FirstName, BirthDate desc"
-                             *  2) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Descending
-                             *     OrderBy should be: "order by LastName, FirstName desc, BirthDate"
-                             */
+                            // if no sorting was specified, sort by Id
+                            sortProperty = new Web.UI.Controls.SortProperty { Direction = SortDirection.Ascending, Property = "Id" };
+                        }
 
-                            foreach ( var column in sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                        /*
+                         NOTE:  The sort property sorting rules can be a little confusing. Here is how it works:
+                         * - SortProperty.Direction of Ascending means sort exactly as what the Columns specification says
+                         * - SortProperty.Direction of Descending means sort the _opposite_ of what the Columns specification says
+                         * Examples:
+                         *  1) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Ascending
+                         *     OrderBy should be: "order by LastName desc, FirstName, BirthDate desc"
+                         *  2) SortProperty.Property "LastName desc, FirstName, BirthDate desc" and SortProperty.Direction = Descending
+                         *     OrderBy should be: "order by LastName, FirstName desc, BirthDate"
+                         */
+
+                        foreach ( var column in sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                        {
+                            string propertyName;
+
+                            var direction = sortProperty.Direction;
+                            if ( column.EndsWith( " desc", StringComparison.OrdinalIgnoreCase ) )
                             {
-                                string propertyName;
+                                propertyName = column.Left( column.Length - 5 );
 
-                                var direction = sortProperty.Direction;
-                                if ( column.EndsWith( " desc", StringComparison.OrdinalIgnoreCase ) )
-                                {
-                                    propertyName = column.Left( column.Length - 5 );
-
-                                    // if the column ends with " desc", toggle the direction if sortProperty is Descending
-                                    direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
-                                }
-                                else
-                                {
-                                    propertyName = column;
-                                }
-
-                                string methodName = direction == SortDirection.Descending ? orderByMethod + "Descending" : orderByMethod;
-
-                                // Call OrderBy on whatever the Expression is for that Column
-                                var sortMember = bindings.FirstOrDefault( a => a.Member.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) );
-                                LambdaExpression sortSelector = Expression.Lambda( sortMember.Expression, paramExpression );
-                                qryExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { qry.ElementType, sortSelector.ReturnType }, qryExpression, sortSelector );
-                                orderByMethod = "ThenBy";
+                                // if the column ends with " desc", toggle the direction if sortProperty is Descending
+                                direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
                             }
+                            else
+                            {
+                                propertyName = column;
+                            }
+
+                            string methodName = direction == SortDirection.Descending ? orderByMethod + "Descending" : orderByMethod;
+
+                            // Call OrderBy on whatever the Expression is for that Column
+                            var sortMember = bindings.FirstOrDefault( a => a.Member.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) );
+                            LambdaExpression sortSelector = Expression.Lambda( sortMember.Expression, paramExpression );
+                            qryExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { qry.ElementType, sortSelector.ReturnType }, qryExpression, sortSelector );
+                            orderByMethod = "ThenBy";
                         }
 
                         var selectExpression = Expression.Call( typeof( Queryable ), "Select", new Type[] { qry.ElementType, dynamicType }, qryExpression, selector );
 
-                        var query = qry.Provider.CreateQuery( selectExpression );
+                        var query = qry.Provider.CreateQuery( selectExpression ).AsNoTracking();
 
-                        // enumerate thru the query results and put into a list
-                        var reportResult = new List<object>();
-                        var enumerator = query.AsNoTracking().GetEnumerator();
-                        while ( enumerator.MoveNext() )
+                        // cast to a dynamic so that we can do a Queryable.Take (the compiler figures out the T in IQueryable at runtime)
+                        dynamic dquery = query;
+
+                        if ( FetchTop.HasValue )
                         {
-                            reportResult.Add( enumerator.Current );
+                            dquery = Queryable.Take( dquery, FetchTop.Value );
                         }
 
-                        return reportResult;
+                        return dquery as IQueryable;
                     }
                 }
             }
@@ -375,14 +446,25 @@ namespace Rock.Model
                 Expression.Constant(attributeValues),
                 Expression.Lambda<Func<AttributeValue, bool>>( andExpression, new ParameterExpression[] { attributeValueParameter })
             };
+
             Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( AttributeValue ) }, match );
 
-            MemberExpression valueProperty = Expression.Property( attributeValueParameter, "Value" );
+            var attributeCache = AttributeCache.Read( attributeId );
+            var attributeValueFieldName = "Value";
+            Type attributeValueFieldType = typeof( string );
+            if ( attributeCache != null )
+            {
+                attributeValueFieldName = attributeCache.FieldType.Field.AttributeValueFieldName;
+                attributeValueFieldType = attributeCache.FieldType.Field.AttributeValueFieldType;
+            }
+
+            MemberExpression valueProperty = Expression.Property( attributeValueParameter, attributeValueFieldName );
+
             Expression valueLambda = Expression.Lambda( valueProperty, new ParameterExpression[] { attributeValueParameter } );
 
-            Expression selectValue = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( AttributeValue ), typeof( string ) }, whereExpression, valueLambda );
+            Expression selectValue = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( AttributeValue ), attributeValueFieldType }, whereExpression, valueLambda );
 
-            Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { typeof( string ) }, selectValue );
+            Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { attributeValueFieldType }, selectValue );
 
             return firstOrDefault;
         }

@@ -103,14 +103,7 @@ namespace Rock.Model
 
             set
             {
-                if ( string.IsNullOrWhiteSpace( value ) )
-                {
-                    MediumData = new Dictionary<string, string>();
-                }
-                else
-                {
-                    MediumData = JsonConvert.DeserializeObject<Dictionary<string, string>>( value );
-                }
+                MediumData = value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
             }
         }
 

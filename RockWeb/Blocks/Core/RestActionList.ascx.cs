@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Web.UI;
 using Rock;
 using Rock.Attribute;
@@ -37,7 +38,7 @@ namespace RockWeb.Blocks.Administration
     [Category( "Core" )]
     [Description( "Displays the actions for a given REST controller." )]
 
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class RestActionList : RockBlock
     {
 
@@ -59,7 +60,7 @@ namespace RockWeb.Blocks.Administration
             {
                 gActions.RowSelected += gActions_RowSelected;
             }
-           
+
             SecurityField securityField = gActions.Columns[2] as SecurityField;
             securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RestAction ) ).Id;
         }
@@ -102,14 +103,25 @@ namespace RockWeb.Blocks.Administration
             var breadCrumbs = new List<BreadCrumb>();
 
             int controllerId = int.MinValue;
-            if (int.TryParse(PageParameter( "controller" ), out controllerId))
+            if ( int.TryParse( PageParameter( "controller" ), out controllerId ) )
             {
                 var controller = new RestControllerService( new RockContext() ).Get( controllerId );
-                if (controller != null)
+                if ( controller != null )
                 {
                     string name = controller.Name.SplitCase();
+                    var controllerType = Reflection.FindTypes( typeof( Rock.Rest.ApiControllerBase ) )
+                        .Where( a => a.Key.Equals( controller.ClassName ) ).Select( a => a.Value ).FirstOrDefault();
+                    if ( controllerType != null )
+                    {
+                        var obsoleteAttribute = controllerType.GetCustomAttribute<System.ObsoleteAttribute>();
+                        if (obsoleteAttribute != null)
+                        {
+                            hlblWarning.Text = string.Format( "Obsolete: {1}", controller.Name.SplitCase(), obsoleteAttribute.Message );
+                        }
+                    }
+
                     lControllerName.Text = name + " Controller";
-                    breadCrumbs.Add(new BreadCrumb(name, pageReference));
+                    breadCrumbs.Add( new BreadCrumb( name, pageReference ) );
                 }
             }
 
@@ -129,7 +141,7 @@ namespace RockWeb.Blocks.Administration
         {
             BindGrid();
         }
-        
+
         #endregion
 
         #region Methods
@@ -159,6 +171,20 @@ namespace RockWeb.Blocks.Administration
 
                 gActions.DataSource = qry.ToList();
                 gActions.DataBind();
+            }
+        }
+
+        /// <summary>
+        /// Handles the OnFormatDataValue event of the gActionsPath control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="CallbackField.CallbackEventArgs"/> instance containing the event data.</param>
+        protected void gActionsPath_OnFormatDataValue( object sender, CallbackField.CallbackEventArgs e )
+        {
+            e.FormattedValue = e.DataValue.ToString();
+            if ( e.FormattedValue.EndsWith( "?key={key}" ) )
+            {
+                e.FormattedValue = e.FormattedValue.Replace( "?key={key}", "(id)" );
             }
         }
 

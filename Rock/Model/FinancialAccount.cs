@@ -34,7 +34,6 @@ namespace Rock.Model
     [DataContract]
     public partial class FinancialAccount : Model<FinancialAccount>, IOrdered
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -56,6 +55,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the CampusId of the <see cref="Rock.Model.Campus"/> that the FinancialAccount is associated with.
         /// </value>
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
         public int? CampusId { get; set; }
 
         /// <summary>
@@ -90,12 +90,13 @@ namespace Rock.Model
                     return _publicName;
                 }
             }
+
             set
             {
                 _publicName = value;
             }
         }
-        
+
         private string _publicName = string.Empty;
 
         /// <summary>
@@ -106,6 +107,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user defined public description of the FinancialAccount.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the user defined public description of the FinancialAccount.
+        /// </value>
+        [DataMember]
+        public string PublicDescription { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if transactions posted to this FinancialAccount are tax-deductible.
@@ -150,6 +160,20 @@ namespace Rock.Model
         private bool _isActive = true;
 
         /// <summary>
+        /// Gets or sets a value indicating if this FinancialAccount is public.
+        /// </summary>
+        /// <value>
+        ///  A <see cref="System.Boolean"/> that is <c>true</c> if this FinancialAccount is public, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool? IsPublic
+        {
+            get { return _isPublic; }
+            set { _isPublic = value; }
+        }
+        private bool? _isPublic = true;
+
+        /// <summary>
         /// Gets or sets the opening date for this FinancialAccount. This is the first date that transactions can be posted to this account. 
         /// If there isn't a start date for this account, transactions can be posted as soon as the account is created until the <see cref="EndDate"/> (if applicable).
         /// </summary>
@@ -172,7 +196,6 @@ namespace Rock.Model
         [Column( TypeName = "Date" )]
         public DateTime? EndDate { get; set; }
 
-
         /// <summary>
         /// Gets or sets the DefinedValueId of the <see cref="Rock.Model.DefinedValue"/> that represents the FinancialAccountType for this FinancialAccount.
         /// </summary>
@@ -182,6 +205,24 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE )]
         public int? AccountTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Image Id that can be used when displaying this Financial Account
+        /// </summary>
+        /// <value>
+        /// The image binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? ImageBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL which could be used to generate a link to a 'More Info' page
+        /// </summary>
+        /// <value>
+        /// The URL.
+        /// </value>
+        [DataMember]
+        public string Url { get; set; }
 
         #endregion
 
@@ -213,18 +254,67 @@ namespace Rock.Model
         public virtual DefinedValue AccountTypeValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the Image that can be used when displaying this Financial Account
+        /// </summary>
+        /// <value>
+        /// The image binary file.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile ImageBinaryFile { get; set; }
+
+        /// <summary>
         /// Gets or sets a collection containing the FinancialAccounts that are sub accounts/child accounts of this account.  This is not a recursive search.
         /// </summary>
         /// <value>
         /// A collection containing all FinancialAccoutns that are sub accounts/child accounts of this account.
         /// </value>
         [DataMember]
-        public virtual ICollection<FinancialAccount> ChildAccounts 
+        public virtual ICollection<FinancialAccount> ChildAccounts
         {
             get { return _childAccounts ?? ( _childAccounts = new Collection<FinancialAccount>() ); }
             set { _childAccounts = value; }
         }
         private ICollection<FinancialAccount> _childAccounts;
+
+        #endregion
+
+        #region overrides
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                var result = base.IsValid;
+                if ( result )
+                {
+                    // make sure it isn't getting saved with a recursive parent hierarchy
+                    var parentIds = new List<int>();
+                    parentIds.Add( this.Id );
+                    var parent = this.ParentAccountId.HasValue ? ( this.ParentAccount ?? new FinancialAccountService( new RockContext() ).Get( this.ParentAccountId.Value ) ) : null;
+                    while ( parent != null )
+                    {
+                        if ( parentIds.Contains( parent.Id ) )
+                        {
+                            this.ValidationResults.Add( new ValidationResult( "Parent Account cannot be a child of this Account (recursion)" ) );
+                            return false;
+                        }
+                        else
+                        {
+                            parentIds.Add( parent.Id );
+                            parent = parent.ParentAccount;
+                        }
+                    }
+                }
+
+                return result;
+            }
+        }
 
         #endregion
 
@@ -242,7 +332,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -260,9 +349,9 @@ namespace Rock.Model
             this.HasOptional( a => a.ParentAccount ).WithMany( a => a.ChildAccounts ).HasForeignKey( a => a.ParentAccountId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( a => a.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AccountTypeValue ).WithMany().HasForeignKey( a => a.AccountTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.ImageBinaryFile ).WithMany().HasForeignKey( a => a.ImageBinaryFileId ).WillCascadeOnDelete( false );
         }
     }
 
     #endregion
-
 }

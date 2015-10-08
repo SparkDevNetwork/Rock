@@ -79,17 +79,30 @@ namespace RockWeb.Blocks.Finance
 
             account.Name = tbName.Text;
             account.IsActive = cbIsActive.Checked;
+            account.IsPublic = cbIsPublic.Checked;
             account.Description = tbDescription.Text;
+            account.PublicDescription = cePublicDescription.Text;
 
             account.ParentAccountId = apParentAccount.SelectedValueAsInt();
             account.AccountTypeValueId = ddlAccountType.SelectedValueAsInt();
             account.PublicName = tbPublicName.Text;
+            account.Url = tbUrl.Text;
             account.CampusId = cpCampus.SelectedValueAsInt();
 
             account.GlCode = tbGLCode.Text;
             account.StartDate = dtpStartDate.SelectedDate;
             account.EndDate = dtpEndDate.SelectedDate;
             account.IsTaxDeductible = cbIsTaxDeductible.Checked;
+
+            // if the account IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of account didn't pass.
+            // So, make sure a message is displayed in the validation summary
+            cvAccount.IsValid = account.IsValid;
+
+            if ( !cvAccount.IsValid )
+            {
+                cvAccount.ErrorMessage = account.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                return;
+            }
 
             rockContext.SaveChanges();
 
@@ -175,11 +188,14 @@ namespace RockWeb.Blocks.Finance
 
             tbName.Text = account.Name;
             cbIsActive.Checked = account.IsActive;
+            cbIsPublic.Checked = account.IsPublic.HasValue ? account.IsPublic.Value : false;
             tbDescription.Text = account.Description;
+            cePublicDescription.Text = account.PublicDescription;
 
             apParentAccount.SetValue( account.ParentAccount );
             ddlAccountType.SetValue( account.AccountTypeValueId );
             tbPublicName.Text = account.PublicName;
+            tbUrl.Text = account.Url;
             cpCampus.SelectedCampusId = account.CampusId;
 
             tbGLCode.Text = account.GlCode;

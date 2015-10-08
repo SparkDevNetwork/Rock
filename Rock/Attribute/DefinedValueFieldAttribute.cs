@@ -15,14 +15,12 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select 0 or more DefinedValues for the given DefinedType Guid.  Stored as DefinedValue.Guid.
+    /// Field Attribute to select 0 or more DefinedValues for the given DefinedType Guid.
+    /// Stored as either a single DefinedValue.Guid or a comma-delimited list of DefinedValue.Guids (if AllowMultiple)
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class DefinedValueFieldAttribute : FieldAttribute

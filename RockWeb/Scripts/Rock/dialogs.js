@@ -1,10 +1,23 @@
 (function ($) {
-    'use strict';
     window.Rock = window.Rock || {};
 
     Rock.dialogs = (function () {
         var _dialogs = {},
             exports = {
+                // Presents a bootstrap style alert box with the specified message 
+                // then executes the callback function(result)
+                alert: function (msg) {
+                    bootbox.dialog({
+                        message: msg,
+                        buttons: {
+                            ok: {
+                                label: 'OK',
+                                className: 'btn-primary'
+                            }
+                        }
+                    });
+                },
+
                 // Presents a bootstrap style alert box with the specified message 
                 // then executes the callback function(result)
                 confirm: function (msg, callback) {

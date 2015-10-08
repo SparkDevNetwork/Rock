@@ -88,11 +88,11 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this FinancialPersonSavedAccount target, FinancialPersonSavedAccount source )
         {
             target.Id = source.Id;
-            target.CreditCardTypeValueId = source.CreditCardTypeValueId;
-            target.CurrencyTypeValueId = source.CurrencyTypeValueId;
-            target.GatewayEntityTypeId = source.GatewayEntityTypeId;
+            target.FinancialGatewayId = source.FinancialGatewayId;
+            target.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
-            target.MaskedAccountNumber = source.MaskedAccountNumber;
             target.Name = source.Name;
             target.PersonAliasId = source.PersonAliasId;
             target.ReferenceNumber = source.ReferenceNumber;

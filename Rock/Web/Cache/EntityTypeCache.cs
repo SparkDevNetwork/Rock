@@ -160,6 +160,7 @@ namespace Rock.Web.Cache
             {
                 return Type.GetType( this.AssemblyName );
             }
+
             return null;
         }
 
@@ -219,11 +220,21 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the id.
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static int? GetId<T>()
+        {
+            return GetId( typeof( T ) );
+        }
+
+        /// <summary>
+        /// Gets the id.
+        /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
         public static int? GetId( string name )
         {
-            if ( String.IsNullOrEmpty( name ) )
+            if ( string.IsNullOrEmpty( name ) )
             {
                 return null;
             }
@@ -240,7 +251,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static EntityTypeCache Read( Type type, bool createIfNotFound = true, RockContext rockContext = null )
         {
-            if ( type.Namespace == "System.Data.Entity.DynamicProxies" )
+            if ( type.IsDynamicProxyType() )
             {
                 type = type.BaseType;
             }
@@ -272,6 +283,18 @@ namespace Rock.Web.Cache
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Reads the specified type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static EntityTypeCache Read<T>( bool createIfNotFound = true, RockContext rockContext = null )
+        {
+            return EntityTypeCache.Read( typeof( T ), createIfNotFound, rockContext );
         }
 
         /// <summary>
@@ -357,7 +380,7 @@ namespace Rock.Web.Cache
             {
                 return new EntityTypeCache( entityTypeModel );
             }
-            
+
             return null;
         }
 

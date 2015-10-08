@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>New Test</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">New Test</td></tr>
+</thead><tbody>
+<tr>
+	<td>setSpeed</td>
+	<td>500</td>
+	<td></td>
+</tr>
+<tr>
+	<td>storeEval</td>
+	<td>var dt=new Date(); dt.getFullYear() + &quot;&quot; + (dt.getMonth() + 1)&nbsp;&nbsp;+ dt.getDate();</td>
+	<td>today</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Data Views</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//div[@id='treeview-content']/ul/li[span[contains(text(), 'Foundational Views')]]/span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_lbAddItem]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=[id$=_tbName]</td>
+	<td>TEST IsBlank Filter ${today}</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=[id$=_etpEntityType]</td>
+	<td>label=Person</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=option[value=&quot;15&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=i.fa.fa-chevron-down</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=select[id^='ctl00_main_ctl33_ctl01_ctl06_fg_'][id$='_ddlProperty']</td>
+	<td>label=Email</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=select[id^='ctl00_main_ctl33_ctl01_ctl06_fg_'][id$='_Email_ddlCompare']</td>
+	<td>label=Is Blank</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_btnSave]</td>
+	<td></td>
+</tr>
+<!--Look for the @ sign in the table and fail the test if it's present-->
+<tr>
+	<td>assertNotText</td>
+	<td>//td[contains(text(),'@')]</td>
+	<td>*@*</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_btnDelete]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=button.btn.btn-primary</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>

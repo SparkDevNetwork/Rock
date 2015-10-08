@@ -139,30 +139,46 @@ namespace RockWeb.Blocks.Crm
             var personDuplicateService = new PersonDuplicateService( rockContext );
             int recordStatusInactiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
 
-            // list duplicates that aren't confirmed as NotDuplicate and aren't IgnoreUntilScoreChanges. Also, don't include records where both the Person and Duplicate are inactive
+            // list duplicates that:
+            // - aren't confirmed as NotDuplicate and aren't IgnoreUntilScoreChanges,
+            // - don't have the PersonAlias and DuplicatePersonAlias records pointing to the same person ( occurs after two people have been merged but before the Calculate Person Duplicates job runs).
+            // - don't include records where both the Person and Duplicate are inactive
             var personDuplicateQry = personDuplicateService.Queryable()
                 .Where( a => !a.IsConfirmedAsNotDuplicate )
                 .Where( a => !a.IgnoreUntilScoreChanges )
-                .Where( a => a.PersonAlias.Person.RecordStatusValueId != recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId != recordStatusInactiveId );
+                .Where( a => a.PersonAlias.PersonId != a.DuplicatePersonAlias.PersonId )
+                .Where( a => !( a.PersonAlias.Person.RecordStatusValueId == recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId == recordStatusInactiveId ) );
 
             double? confidenceScoreLow = GetAttributeValue( "ConfidenceScoreLow" ).AsDoubleOrNull();
-            if (confidenceScoreLow.HasValue)
+            if ( confidenceScoreLow.HasValue )
             {
                 personDuplicateQry = personDuplicateQry.Where( a => a.ConfidenceScore > confidenceScoreLow );
             }
 
-            var groupByQry = personDuplicateQry.GroupBy( a => a.PersonAlias.Person );
+            var groupByQry = personDuplicateQry.GroupBy( a => a.PersonAlias.PersonId );
+
+            var qryPerson = new PersonService( rockContext ).Queryable();
 
             var qry = groupByQry.Select( a => new
             {
-                PersonId = a.Key.Id,
-                LastName = a.Key.LastName,
-                FirstName = a.Key.FirstName,
+                PersonId = a.Key,
                 MatchCount = a.Count(),
                 MaxConfidenceScore = a.Max( s => s.ConfidenceScore ),
-                PersonModifiedDateTime = a.Key.ModifiedDateTime,
-                CreatedByPerson = a.Key.CreatedByPersonAlias.Person.FirstName + " " + a.Key.CreatedByPersonAlias.Person.LastName
-            } );
+            } ).Join(
+            qryPerson,
+            k1 => k1.PersonId,
+            k2 => k2.Id,
+            ( personDuplicate, person ) =>
+                new
+                {
+                    PersonId = person.Id,
+                    person.LastName,
+                    person.FirstName,
+                    PersonModifiedDateTime = person.ModifiedDateTime,
+                    CreatedByPerson = person.CreatedByPersonAlias.Person.FirstName + " " + person.CreatedByPersonAlias.Person.LastName,
+                    personDuplicate.MatchCount,
+                    personDuplicate.MaxConfidenceScore
+                } );
 
             SortProperty sortProperty = gList.SortProperty;
             if ( sortProperty != null )
@@ -174,7 +190,7 @@ namespace RockWeb.Blocks.Crm
                 qry = qry.OrderByDescending( a => a.MaxConfidenceScore ).ThenBy( a => a.LastName ).ThenBy( a => a.FirstName );
             }
 
-            gList.DataSource = qry.ToList();
+            gList.SetLinqDataSource( qry );
             gList.DataBind();
         }
 

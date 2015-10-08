@@ -19,6 +19,7 @@
 
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:CustomValidator ID="cvLocation" runat="server" Display="None" />
 
                     <div id="pnlEditDetails" runat="server">
 
@@ -54,9 +55,7 @@
 
                         <div class="row">
                             <div class="col-md-2">
-                                <div class="photo photoframe">
-                                    <asp:Literal ID="lImage" runat="server" />
-                                </div>
+                                <asp:Literal ID="lImage" runat="server" />
                             </div>
                             <div class="col-md-6">
                                 <asp:Literal ID="lblMainDetails" runat="server" />

@@ -37,9 +37,9 @@ namespace Rock.Web.Cache
         {
         }
 
-        private LayoutCache( Layout Layout )
+        private LayoutCache( Layout layout )
         {
-            CopyFromModel( Layout );
+            CopyFromModel( layout );
         }
 
         #endregion
@@ -128,12 +128,12 @@ namespace Rock.Web.Cache
 
             if ( model is Layout )
             {
-                var Layout = (Layout)model;
-                this.IsSystem = Layout.IsSystem;
-                this.SiteId = Layout.SiteId;
-                this.FileName = Layout.FileName;
-                this.Name = Layout.Name;
-                this.Description = Layout.Description;
+                var layout = (Layout)model;
+                this.IsSystem = layout.IsSystem;
+                this.SiteId = layout.SiteId;
+                this.FileName = layout.FileName;
+                this.Name = layout.Name;
+                this.Description = layout.Description;
             }
         }
 
@@ -185,12 +185,11 @@ namespace Rock.Web.Cache
 
         private static LayoutCache LoadById2( int id, RockContext rockContext )
         {
-            var LayoutService = new LayoutService( rockContext );
-            var LayoutModel = LayoutService.Get( id );
-            if ( LayoutModel != null )
+            var layoutService = new LayoutService( rockContext );
+            var layoutModel = layoutService.Get( id );
+            if ( layoutModel != null )
             {
-                LayoutModel.LoadAttributes( rockContext );
-                return new LayoutCache( LayoutModel );
+                return new LayoutCache( layoutModel );
             }
 
             return null;
@@ -263,6 +262,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
 }

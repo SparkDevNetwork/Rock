@@ -37,6 +37,15 @@ namespace Rock.CheckIn
         public int DeviceId { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [manager logged in].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [manager logged in]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ManagerLoggedIn { get; set; }
+
+        /// <summary>
         /// Gets or sets the configured group types.
         /// </summary>
         /// <value>

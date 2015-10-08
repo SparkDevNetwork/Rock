@@ -54,6 +54,7 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnLogin_Click( object sender, RoutedEventArgs e )
         {
+            lblLoginWarning.Visibility = Visibility.Hidden;
             txtUsername.Text = txtUsername.Text.Trim();
             txtRockUrl.Text = txtRockUrl.Text.Trim();
             Uri rockUrl = new Uri( txtRockUrl.Text );
@@ -67,6 +68,13 @@ namespace Rock.Apps.StatementGenerator
 
             string userName = txtUsername.Text;
             string password = txtPassword.Password;
+
+            if ( string.IsNullOrWhiteSpace( userName ) )
+            {
+                lblLoginWarning.Content = "Username cannot be blank";
+                lblLoginWarning.Visibility = Visibility.Visible;
+                return;
+            }
 
             // start a background thread to Login since this could take a little while and we want a Wait cursor
             BackgroundWorker bw = new BackgroundWorker();
@@ -214,6 +222,17 @@ namespace Rock.Apps.StatementGenerator
             {
                 btnLogin_Click( null, null );
             }
+        }
+
+        /// <summary>
+        /// (EasterEgg) Handles the MouseDoubleClick event of the LoginLabel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="MouseButtonEventArgs"/> instance containing the event data.</param>
+        private void LoginLabel_MouseDoubleClick( object sender, MouseButtonEventArgs e )
+        {
+            lblRockUrl.Visibility = Visibility.Visible;
+            txtRockUrl.Visibility = Visibility.Visible;
         }
     }
 }

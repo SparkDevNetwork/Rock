@@ -46,11 +46,13 @@ namespace RockWeb.Blocks.Groups
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 3 )]
     [WorkflowTypeField( "Workflow", "An optional workflow to start when registration is created. The GroupMember will set as the workflow 'Entity' when processing is started.", false, false, "", "", 4 )]
     [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 5 )]
-    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
 ", "", 6  )]
     [LinkedPage("Result Page", "An optional page to redirect user to after they have been registered for the group.", false, "", "", 7)]
-    [CodeEditorField( "Result Lava Template", "The lava template to use to format result message after user has been registered. Will only display if user is not redirected to a Result Page ( previous setting ).", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Result Lava Template", "The lava template to use to format result message after user has been registered. Will only display if user is not redirected to a Result Page ( previous setting ).", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
 ", "", 8 )]
+    [CustomRadioListField( "Auto Fill Form", "If set to FALSE then the form will not load the context of the logged in user (default: 'True'.)", "true^True,false^False", true, "true", "", 9 )]
+    [TextField( "Register Button Alt Text", "Alternate text to use for the Register button (default is 'Register').", false, "", "", 10 )]
     public partial class GroupRegistration : RockBlock
     {
         #region Fields
@@ -65,6 +67,7 @@ namespace RockWeb.Blocks.Groups
         DefinedValueCache _homeAddressType = null;
         GroupTypeCache _familyType = null;
         GroupTypeRoleCache _adultRole = null;
+        bool _autoFill = true;
 
         #endregion
 
@@ -189,12 +192,15 @@ namespace RockWeb.Blocks.Groups
                 var spouseChanges = new List<string>();
                 var familyChanges = new List<string>();
 
-                // Only use current person if the name entered matches the current person's name
-                if ( CurrentPerson != null &&
-                    tbFirstName.Text.Trim().Equals( CurrentPerson.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) &&
-                    tbLastName.Text.Trim().Equals( CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                // Only use current person if the name entered matches the current person's name and autofill mode is true
+                if ( _autoFill )
                 {
-                    person = personService.Get( CurrentPerson.Id );
+                    if ( CurrentPerson != null &&
+                        tbFirstName.Text.Trim().Equals( CurrentPerson.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) &&
+                        tbLastName.Text.Trim().Equals( CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        person = personService.Get( CurrentPerson.Id );
+                    }
                 }
 
                 // Try to find person by name/email 
@@ -432,7 +438,7 @@ namespace RockWeb.Blocks.Groups
                 pnlCellPhone.Visible = !IsSimple;
                 acAddress.Visible = !IsSimple;
 
-                if ( CurrentPersonId.HasValue )
+                if ( CurrentPersonId.HasValue && _autoFill )
                 {
                     var personService = new PersonService( _rockContext );
                     Person person = personService
@@ -520,31 +526,9 @@ namespace RockWeb.Blocks.Groups
                     {
                         try
                         {
-                            var workflowService = new WorkflowService( rockContext );
-                            var workflow = Workflow.Activate( workflowType, person.FullName );
-
                             List<string> workflowErrors;
-                            if ( workflow.Process( rockContext, groupMember, out workflowErrors ) )
-                            {
-                                if ( workflow.IsPersisted || workflow.IsPersisted )
-                                {
-                                    if ( workflow.Id == 0 )
-                                    {
-                                        workflowService.Add( workflow );
-                                    }
-
-                                    rockContext.WrapTransaction( () =>
-                                    {
-                                        rockContext.SaveChanges();
-                                        workflow.SaveAttributeValues( _rockContext );
-                                        foreach ( var activity in workflow.Activities )
-                                        {
-                                            activity.SaveAttributeValues( rockContext );
-                                        }
-                                    } );
-                                }
-                            }
-
+                            var workflow = Workflow.Activate( workflowType, person.FullName );
+                            new WorkflowService( rockContext ).Process( workflow, groupMember, out workflowErrors );
                         }
                         catch (Exception ex)
                         {
@@ -564,6 +548,17 @@ namespace RockWeb.Blocks.Groups
             _rockContext = _rockContext ?? new RockContext();
 
             _mode = GetAttributeValue( "Mode" );
+
+            _autoFill = GetAttributeValue( "AutoFillForm" ).AsBoolean();
+
+            tbEmail.Required = _autoFill;
+
+            string registerButtonText = GetAttributeValue( "RegisterButtonAltText" );
+            if ( string.IsNullOrWhiteSpace( registerButtonText ) )
+            {
+                registerButtonText = "Register";
+            }
+            btnRegister.Text = registerButtonText;
 
             int groupId = PageParameter( "GroupId" ).AsInteger();
             _group = new GroupService( _rockContext )

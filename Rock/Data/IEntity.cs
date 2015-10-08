@@ -17,15 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Rock.Model;
 
 namespace Rock.Data
 {
     /// <summary>
-    /// Interface for all code-first entitites
+    /// Interface for all code-first entities
     /// </summary>
     public interface IEntity
     {
@@ -46,12 +42,28 @@ namespace Rock.Data
         Guid Guid { get; set; }
 
         /// <summary>
-        /// Gets or sets the foreign identifier.
+        /// Gets or sets the int foreign identifier.
         /// </summary>
         /// <value>
-        /// The foreign identifier.
+        /// The int foreign identifier.
         /// </value>
-        string ForeignId { get; set; }
+        int? ForeignId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Guid foreign identifier.
+        /// </summary>
+        /// <value>
+        /// The Guid foreign identifier.
+        /// </value>
+        Guid? ForeignGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the string foreign identifier.
+        /// </summary>
+        /// <value>
+        /// The string foreign identifier.
+        /// </value>
+        string ForeignKey { get; set; }
 
         /// <summary>
         /// Gets the Entity Type ID for this entity.
@@ -107,5 +119,18 @@ namespace Rock.Data
         /// <returns></returns>
         IEntity Clone();
 
+        /// <summary>
+        /// Creates a dictionary containing the majority of the entity object's properties
+        /// </summary>
+        /// <returns></returns>
+        Dictionary<string, object> ToDictionary();
+
+        /// <summary>
+        /// Gets or sets the additional lava fields.
+        /// </summary>
+        /// <value>
+        /// The additional lava fields.
+        /// </value>
+        Dictionary<string, object> AdditionalLavaFields { get; set; }
     }
 }

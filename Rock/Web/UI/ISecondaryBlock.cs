@@ -22,7 +22,7 @@ namespace Rock.Web.UI
     public interface ISecondaryBlock
     {
         /// <summary>
-        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
         /// </summary>
         /// <param name="visible">if set to <c>true</c> [visible].</param>
         void SetVisible( bool visible );

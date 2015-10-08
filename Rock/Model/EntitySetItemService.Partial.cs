@@ -37,16 +37,16 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<EntitySetItem> GetByEntitySetId( int entitySetId, bool overrideExpiration = false )
         {
-            var maxExpiration = overrideExpiration ? DateTime.MaxValue : RockDateTime.Now;
+            var qry = Queryable().Where( s => s.EntitySetId == entitySetId);
+            if (!overrideExpiration)
+            {
+                var currentDateTime = RockDateTime.Now;
+                qry = qry.Where( s => !s.EntitySet.ExpireDateTime.HasValue || s.EntitySet.ExpireDateTime.Value > currentDateTime);
+            }
 
-            return Queryable()
-                .Where( s =>
-                    s.EntitySetId == entitySetId && ( 
-                        !s.EntitySet.ExpireDateTime.HasValue || 
-                        s.EntitySet.ExpireDateTime.Value > maxExpiration 
-                    ) 
-                )
-                .OrderBy( s => s.Order );
+            qry = qry.OrderBy( s => s.Order ).ThenBy( s => s.Id );
+
+            return qry;
         }
     }
 }

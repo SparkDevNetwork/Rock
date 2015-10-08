@@ -51,6 +51,8 @@ namespace Rock.Model
         public bool CanDelete( GroupMember item, out string errorMessage )
         {
             errorMessage = string.Empty;
+            
+            // ignoring RegistrationRegistrant,GroupMemberId 
             return true;
         }
     }
@@ -88,11 +90,16 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupMember target, GroupMember source )
         {
             target.Id = source.Id;
+            target.DateTimeAdded = source.DateTimeAdded;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
             target.GroupMemberStatus = source.GroupMemberStatus;
             target.GroupRoleId = source.GroupRoleId;
             target.GuestCount = source.GuestCount;
+            target.IsNotified = source.IsNotified;
             target.IsSystem = source.IsSystem;
+            target.Note = source.Note;
             target.PersonId = source.PersonId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

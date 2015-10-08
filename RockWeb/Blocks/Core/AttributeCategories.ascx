@@ -20,13 +20,13 @@
                             <Columns>
                                 <Rock:ReorderField />
                                 <Rock:RockBoundField DataField="Name" HeaderText="Category" />
-                                <Rock:RockBoundField DataField="IconCssClass" HeaderText="Icon Class" />
                                 <Rock:RockTemplateField>
                                     <HeaderTemplate>Entity Type</HeaderTemplate>
                                     <ItemTemplate>
                                         <asp:Literal ID="lEntityType" runat="server"></asp:Literal>
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
+                                <Rock:RockBoundField DataField="IconCssClass" HeaderText="Icon Class" />
                                 <Rock:DeleteField OnClick="rGrid_Delete" />
                             </Columns>
                         </Rock:Grid>

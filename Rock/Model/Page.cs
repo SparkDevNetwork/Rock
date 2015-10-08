@@ -302,6 +302,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the CSS Class Name of the icon being used. This value will be empty/null if a file based icon is being used.
         /// </value>
         [DataMember]
+        [MaxLength( 100 )]
         public string IconCssClass { get; set; }
 
         /// <summary>

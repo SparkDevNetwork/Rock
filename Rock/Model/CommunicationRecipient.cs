@@ -142,14 +142,7 @@ namespace Rock.Model
 
             set
             {
-                if ( string.IsNullOrWhiteSpace( value ) )
-                {
-                    AdditionalMergeValues = new Dictionary<string, string>();
-                }
-                else
-                {
-                    AdditionalMergeValues = JsonConvert.DeserializeObject<Dictionary<string, string>>( value );
-                }
+                AdditionalMergeValues = value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
             }
         }
 

@@ -44,7 +44,13 @@
                     <Rock:NewFamilyContactInfo ID="nfciContactInfo" runat="server" />
                 </asp:Panel>
 
-                <asp:Panel ID="pnlAttributes" runat="server" Visible="true">
+                <asp:Panel ID="pnlAttributes" runat="server" Visible="false">
+                </asp:Panel>
+
+                <asp:Panel ID="pnlDuplicateWarning" runat="server" Visible="false">
+                    <Rock:NotificationBox ID="nbDuplicateWarning" runat="server" NotificationBoxType="Warning" Title="Possible Duplicates!"
+                        Text="<p>One ore more of the people you are adding may already exist! Please confirm that none of the existing people below are the same person as someone that you are adding." />
+                    <asp:PlaceHolder ID="phDuplicates" runat="server" />
                 </asp:Panel>
 
                 <div class="actions">

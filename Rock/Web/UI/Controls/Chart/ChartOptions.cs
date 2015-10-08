@@ -16,9 +16,12 @@
 //
 using System;
 using System.Linq;
+
 using Newtonsoft.Json;
+
 using Rock.Model;
 using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -36,14 +39,10 @@ namespace Rock.Web.UI.Controls
             ChartStyle chartStyle = null;
             if ( chartStyleDefinedValueGuid.HasValue )
             {
-                using ( var rockContext = new Rock.Data.RockContext() )
+                var definedValue = DefinedValueCache.Read( chartStyleDefinedValueGuid.Value );
+                if ( definedValue != null )
                 {
-                    var definedValue = new DefinedValueService( rockContext ).Get( chartStyleDefinedValueGuid.Value );
-                    if ( definedValue != null )
-                    {
-                        definedValue.LoadAttributes( rockContext );
-                        chartStyle = ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( "ChartStyle" ) );
-                    }
+                    chartStyle = ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( "ChartStyle" ) );
                 }
             }
 
@@ -77,9 +76,14 @@ namespace Rock.Web.UI.Controls
 
             this.yaxis.tickFormatter = @"
 function (val, axis) {
+  // round to at most 2 decimal places
+  var roundedVal = (Math.round(val * 100))/100;
+
   // show commas 
   // from http://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
-  return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  var formattedValue =  roundedVal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+  return formattedValue;
 }".Trim();
 
             SetFlotLinesPointsBarsStyle( chartStyle, this.series.lines );
@@ -398,6 +402,14 @@ function (val, axis) {
         public dynamic tickSize { get; set; }
 
         /// <summary>
+        /// Gets or sets the length of the tick.
+        /// </summary>
+        /// <value>
+        /// The length of the tick.
+        /// </value>
+        public dynamic tickLength { get; set; }
+
+        /// <summary>
         /// Gets or sets the minimum size of the tick.
         /// null or double (number of ticks) or double[] (specific minTickSize per tick).
         /// for time mode, "tickSize" and "minTickSize" are in the form "[value, unit]" where unit is one of "second", "minute", "hour", "day", "month" and "year". ex: [3, "month"]
@@ -444,7 +456,12 @@ function (val, axis) {
         /// <summary>
         /// The time
         /// </summary>
-        time
+        time,
+
+        /// <summary>
+        /// The categories (text)
+        /// </summary>
+        categories
     }
 
     /// <summary>

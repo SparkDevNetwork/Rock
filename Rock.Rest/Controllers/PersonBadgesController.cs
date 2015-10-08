@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Data.Entity;
 using System.Net;
 using System.Web.Http;
 using System.Linq;
@@ -40,8 +41,8 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route( "api/PersonBadges/InGroupOfType/{personId}/{groupTypeId}" )]
-        public GroupOfTypeResult GetInGroupOfType(int personId, Guid groupTypeId)
+        [System.Web.Http.Route( "api/PersonBadges/InGroupOfType/{personId}/{groupTypeGuid}" )]
+        public GroupOfTypeResult GetInGroupOfType(int personId, Guid groupTypeGuid)
         {
             GroupOfTypeResult result = new GroupOfTypeResult();
             result.PersonId = personId;
@@ -58,7 +59,7 @@ namespace Rock.Rest.Controllers
             }
 
             // get group type info
-            GroupType groupType = new GroupTypeService( (Rock.Data.RockContext)Service.Context ).Get( groupTypeId );
+            GroupType groupType = new GroupTypeService( (Rock.Data.RockContext)Service.Context ).Get( groupTypeGuid );
 
             if (groupType != null)
             {
@@ -69,8 +70,9 @@ namespace Rock.Rest.Controllers
 
             // determine if person is in this type of group
             GroupMemberService groupMemberService = new GroupMemberService( (Rock.Data.RockContext)Service.Context );
+            
             IQueryable<GroupMember> groupMembershipsQuery = groupMemberService.Queryable("Person,GroupRole,Group")
-                                        .Where(t => t.Group.GroupType.Guid == groupTypeId && t.PersonId == personId )
+                                        .Where(t => t.Group.GroupType.Guid == groupTypeGuid && t.PersonId == personId && t.GroupMemberStatus == GroupMemberStatus.Active )
                                         .OrderBy(g => g.GroupRole.Order);
 
             foreach (GroupMember member in groupMembershipsQuery)
@@ -82,6 +84,40 @@ namespace Rock.Rest.Controllers
                 group.RoleName = member.GroupRole.Name;
 
                 result.GroupList.Add(group);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Returns groups that are a specified type and geofence a given person
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/PersonBadges/GeofencingGroups/{personId}/{groupTypeGuid}" )]
+        public List<GroupAndLeaderInfo> GetGeofencingGroups( int personId, Guid groupTypeGuid )
+        {
+            var rockContext = (Rock.Data.RockContext)Service.Context;
+            var groupMemberService = new GroupMemberService( rockContext );
+
+            var groups = new GroupService( rockContext ).GetGeofencingGroups( personId, groupTypeGuid ).AsNoTracking();
+
+            var result = new List<GroupAndLeaderInfo>();
+            foreach ( var group in groups.OrderBy( g => g.Name ) )
+            {
+                var info = new GroupAndLeaderInfo();
+                info.GroupName = group.Name.Trim();
+                info.LeaderNames = groupMemberService
+                    .Queryable().AsNoTracking()
+                    .Where( m => 
+                        m.GroupId == group.Id &&
+                        m.GroupRole.IsLeader )
+                    .Select( m => m.Person.NickName + " " + m.Person.LastName )
+                    .ToList()
+                    .AsDelimited(", ");
+                result.Add(info);
             }
 
             return result;
@@ -265,6 +301,28 @@ namespace Rock.Rest.Controllers
             /// The group member role name.
             /// </value>
             public string RoleName { get; set; }
+        }
+
+        /// <summary>
+        /// Group and Leader name info
+        /// </summary>
+        public class GroupAndLeaderInfo
+        {
+            /// <summary>
+            /// Gets or sets the name of the group.
+            /// </summary>
+            /// <value>
+            /// The name of the group.
+            /// </value>
+            public string GroupName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the leader names.
+            /// </summary>
+            /// <value>
+            /// The leader names.
+            /// </value>
+            public string LeaderNames { get; set; }
         }
 
         /// <summary>

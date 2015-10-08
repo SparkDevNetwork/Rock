@@ -18,6 +18,10 @@
                 
                 <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn btn-xs btn-default pull-right margin-l-sm" OnClick="btnFilter_Click"><i class="fa fa-gear" title="Filter Accounts"></i></asp:LinkButton>
                 
+                <Rock:RockControlWrapper ID="rcwAddNewBusiness" runat="server"  Visible="false">
+                    <a id="hlAddNewBusiness" class="btn btn-default btn-xs margin-r-sm pull-right" runat="server" href="#">Add Business</a>
+                </Rock:RockControlWrapper>
+                
                 <Rock:RockControlWrapper ID="rcwAddNewFamily" runat="server"  Visible="false">
                     <a id="hlAddNewFamily" class="btn btn-default btn-xs margin-r-sm pull-right" runat="server" href="#">Add Family</a>
                 </Rock:RockControlWrapper>
@@ -30,7 +34,6 @@
                         <div class="col-md-7">
                             <Rock:NotificationBox ID="nbNoTransactionImageWarning" runat="server" NotificationBoxType="Warning" Text="Warning. No Images found for this transaction." />
                             <Rock:NotificationBox ID="nbIsInProcess" runat="server" NotificationBoxType="Warning" Text="Warning. This transaction is getting processed by ...." />
-                            <Rock:NotificationBox ID="nbNoMicrWarning" runat="server" NotificationBoxType="Danger" Text="Warning. Unable to determine Checking Account Number" />
                             <div>
                                 <asp:Image ID="imgPrimary" runat="server" CssClass="transaction-image" />
                             </div>
@@ -46,18 +49,18 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the bank account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
-                                    <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" Help="Select a new person to match to the bank account." IncludeBusinesses="true"/>
+                                    <span ID="badgeIndividualCount" runat="server" class="pull-right badge badge-danger" 
+                                        style="position: relative; top: -58px; left: 10px"></span>
+                                    <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson"/>
                                 </div>
 
                                 <div class="col-md-6">
                                     <asp:Panel ID="pnlPreview" CssClass="contents" runat="server">
                                         <asp:Literal ID="lPersonName" runat="server" />
-                                        <p>
-                                            <asp:Literal ID="lSpouseName" runat="server" />
-                                        </p>
+                                        <asp:Literal ID="lSpouseName" runat="server" />
+                                        <asp:Literal ID="lCampus" runat="server" />
 
                                         <!-- List of addresses associated with this person -->
-
                                         <ul class="list-unstyled">
                                             <asp:Repeater ID="rptrAddresses" runat="server">
                                                 <ItemTemplate>
@@ -76,13 +79,12 @@
                                     </asp:Panel>
                                 </div>
                             </div>
-
                             
                             <Rock:NotificationBox ID="nbSaveError" runat="server" NotificationBoxType="Danger" Dismissable="true" Text="Warning. Unable to save..." />
                             <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the transaction image">
                                 <asp:Repeater ID="rptAccounts" runat="server">
                                     <ItemTemplate>
-                                        <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' data-account-id='<%#Eval("Id")%>' CssClass="js-account-amount" onkeyup="javascript: updateRemainingAccountAllocation()" />
+                                        <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' data-account-id='<%#Eval("Id")%>' CssClass="js-account-amount" onkeydown="javascript:return handleAmountBoxKeyPress(this, event.keyCode);" onkeyup="javascript:handleAmountBoxKeyUp(event.keyCode)" />
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </Rock:RockControlWrapper>
@@ -96,7 +98,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <asp:LinkButton ID="btnPrevious" runat="server" CssClass="btn" OnClick="btnPrevious_Click">Previous</asp:LinkButton>
-                            <asp:LinkButton ID="btnNext" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                            <asp:LinkButton ID="btnNext" runat="server" AccessKey="" CssClass="btn btn-primary pull-right" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
                         </div>
                     </div>
 
@@ -105,13 +107,14 @@
 
             <Rock:ModalDialog ID="mdAccountsPersonalFilter" runat="server" Title="Accounts Filter" OnSaveClick="mdAccountsPersonalFilter_SaveClick">
                 <Content>
-                    <Rock:AccountPicker ID="apPersonalAccounts" runat="server" AllowMultiSelect="true" Label="Select Account(s)" />
+                    <Rock:AccountPicker ID="apPersonalAccounts" runat="server" AllowMultiSelect="true" Label="Select Account(s)" DisplayActiveOnly="true" />
                 </Content>
             </Rock:ModalDialog>
 
         </asp:Panel>
 
         <script>
+            // update the Total Amount UI text as amounts are edited
             function updateRemainingAccountAllocation() {
                 // do currency math in Cents instead of Dollars to avoid floating point math issues
                 var transactionTotalAmountCents = null;
@@ -133,6 +136,46 @@
                     $('#<%=pnlView.ClientID%>').rockFadeIn();
                 }
             })
+
+            // handle onkeypress for the account amount input boxes
+            function handleAmountBoxKeyPress(element, keyCode)
+            {
+                // if Enter was pressed when in one of the Amount boxes, click the Next button.
+                if (keyCode == 13)
+                {
+                    $('#<%=btnNext.ClientID%>')[0].click();
+                    return false;
+                }
+                else if (keyCode == 40) {
+                    // pressing the down arrow goes to the next input or to the Next button
+                    var clientId = element.getAttribute('id');
+                    // find the "next" textbox
+                    var textbox = $('#'+clientId).parent().parent().next().find('input');
+                    if (textbox.length != 0)
+                    {
+                        textbox.focus();
+                    }
+                    else
+                    {
+                        $('#<%=btnNext.ClientID%>').focus();
+                    }
+                }
+                else if (keyCode == 38) {
+                    // pressing the up arrow goes to the previous input
+                    var clientId = element.getAttribute('id');
+                    // find the "previous" textbox
+                    var textbox = $('#' + clientId).parent().parent().prev().find('input');
+                    if (textbox.length != 0) {
+                        textbox.focus();
+                    }
+                }
+            }
+
+            // handle onkeyup for the account amount input boxes
+            function handleAmountBoxKeyUp(keyCode)
+            {
+                updateRemainingAccountAllocation();
+            }
         </script>
 
     </ContentTemplate>

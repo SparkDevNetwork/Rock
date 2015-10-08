@@ -44,7 +44,7 @@ namespace Rock.Web.UI
     {
         #region Private Variables
 
-        private PlaceHolder phLoadTime;
+        private PlaceHolder phLoadStats;
         private ScriptManager _scriptManager;
         private PageCache _pageCache = null;
 
@@ -600,7 +600,7 @@ namespace Rock.Web.UI
                 PageTitle = _pageCache.PageTitle;
                 PageIcon = _pageCache.IconCssClass;
 
-                // If there's a master page, update it's reference to Current Page
+                // If there's a master page, update its reference to Current Page
                 if ( this.Master is RockMasterPage )
                 {
                     ( (RockMasterPage)this.Master ).SetPage( _pageCache );
@@ -651,11 +651,47 @@ namespace Rock.Web.UI
                     ModelContext = new Dictionary<string, Data.KeyEntity>();
                     try
                     {
+                        char[] delim = new char[1] { ',' };
 
-                        // first search cookies, but pageContext can replace it
+                        // Check to see if a context from query string should be saved to a cookie first
+                        foreach ( string param in PageParameter( "SetContext", true ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
+                        {
+                            string[] parts = param.Split( '|' );
+                            if ( parts.Length == 2 )
+                            {
+                                var contextModelEntityType = EntityTypeCache.Read( parts[0], false, rockContext );
+                                int? contextId = parts[1].AsIntegerOrNull();
+
+                                if ( contextModelEntityType != null && contextId.HasValue )
+                                {
+                                    var contextModelType = contextModelEntityType.GetEntityType();
+                                    var contextDbContext = Reflection.GetDbContextForEntityType( contextModelType );
+                                    if ( contextDbContext != null )
+                                    {
+                                        var contextService = Reflection.GetServiceForEntityType( contextModelType, contextDbContext );
+                                        if ( contextService != null )
+                                        {
+                                            MethodInfo getMethod = contextService.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                                            if ( getMethod != null )
+                                            {
+                                                var getResult = getMethod.Invoke( contextService, new object[] { contextId.Value } );
+                                                var contextEntity = getResult as IEntity;
+                                                if ( contextEntity != null )
+                                                {
+                                                    SetContextCookie( contextEntity, false, false );
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // first search the cookies for any saved context, but pageContext can replace it
                         GetCookieContext( GetContextCookieName( false ) );      // Site
                         GetCookieContext( GetContextCookieName( true ) );       // Page (will replace any site values)
 
+                        // check for page context
                         foreach ( var pageContext in _pageCache.PageContexts )
                         {
                             int? contextId = PageParameter( pageContext.Value ).AsIntegerOrNull();
@@ -665,7 +701,7 @@ namespace Rock.Web.UI
                             }
                         }
 
-                        char[] delim = new char[1] { ',' };
+                        // check for any encrypted contextkeys specified in query string
                         foreach ( string param in PageParameter( "context", true ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
                         {
                             string contextItem = Rock.Security.Encryption.DecryptString( param );
@@ -731,11 +767,12 @@ namespace Rock.Web.UI
                     }
 
                     // Flag indicating if user has rights to administer one or more of the blocks on page
-                    bool canAdministrateBlock = false;
+                    bool canAdministrateBlockOnPage = false;
 
                     // Load the blocks and insert them into page zones
                     Page.Trace.Warn( "Loading Blocks" );
-                    foreach ( Rock.Web.Cache.BlockCache block in _pageCache.Blocks )
+                    var pageBlocks = _pageCache.Blocks;
+                    foreach ( Rock.Web.Cache.BlockCache block in pageBlocks )
                     {
                         Page.Trace.Warn( string.Format( "\tLoading '{0}' block", block.Name ) );
 
@@ -744,11 +781,6 @@ namespace Rock.Web.UI
                         bool canAdministrate = block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
                         bool canEdit = block.IsAuthorized( Authorization.EDIT, CurrentPerson );
                         bool canView = block.IsAuthorized( Authorization.VIEW, CurrentPerson );
-
-                        if ( canAdministrate || canEdit )
-                        {
-                            canAdministrateBlock = true;
-                        }
 
                         // Make sure user has access to view block instance
                         if ( canAdministrate || canEdit || canView )
@@ -793,14 +825,19 @@ namespace Rock.Web.UI
                                     if ( this.IsPostBack )
                                     {
                                         // throw an error on PostBack so that the ErrorPage gets shown (vs nothing happening)
-                                        throw ex;
+                                        throw;
                                     }
                                 }
                             }
 
                             if ( control != null )
                             {
-                                // If the current control is a block, set it's properties
+                                if ( canAdministrate || ( canEdit && control is RockBlockCustomSettings ) )
+                                {
+                                    canAdministrateBlockOnPage = true;
+                                }
+
+                                // If the current control is a block, set its properties
                                 var blockControl = control as RockBlock;
                                 if ( blockControl != null )
                                 {
@@ -825,7 +862,14 @@ namespace Rock.Web.UI
                                     if ( !block.BlockType.IsInstancePropertiesVerified )
                                     {
                                         Page.Trace.Warn( "\tCreating block attributes" );
-                                        blockControl.CreateAttributes( rockContext );
+                                        if ( blockControl.CreateAttributes( rockContext ) )
+                                        {
+                                            // If attributes were updated, update the block attributes for all blocks in page of same type
+                                            pageBlocks
+                                                .Where( b => b.BlockTypeId == block.BlockTypeId )
+                                                .ToList()
+                                                .ForEach( b => b.ReloadAttributeValues() );
+                                        }
                                         block.BlockType.IsInstancePropertiesVerified = true;
                                     }
 
@@ -863,7 +907,7 @@ namespace Rock.Web.UI
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( _pageCache.IncludeAdminFooter && ( canAdministratePage || canAdministrateBlock ) )
+                    if ( _pageCache.IncludeAdminFooter && ( canAdministratePage || canAdministrateBlockOnPage ) )
                     {
                         // Add the page admin script
                         AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin", false );
@@ -874,8 +918,8 @@ namespace Rock.Web.UI
                         adminFooter.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         this.Form.Controls.Add( adminFooter );
 
-                        phLoadTime = new PlaceHolder();
-                        adminFooter.Controls.Add( phLoadTime );
+                        phLoadStats = new PlaceHolder();
+                        adminFooter.Controls.Add( phLoadStats );
 
                         HtmlGenericControl buttonBar = new HtmlGenericControl( "div" );
                         adminFooter.Controls.Add( buttonBar );
@@ -1038,28 +1082,31 @@ namespace Rock.Web.UI
             Page.Header.DataBind();
 
             // create a page view transaction if enabled
-            var globalAttributesCache = GlobalAttributesCache.Read();
-            if ( !Page.IsPostBack && _pageCache != null && globalAttributesCache.GetValue( "EnablePageViewTracking" ).AsBoolean() )
+            if ( !Page.IsPostBack && _pageCache != null )
             {
-                PageViewTransaction transaction = new PageViewTransaction();
-                transaction.DateViewed = RockDateTime.Now;
-                transaction.PageId = _pageCache.Id;
-                transaction.SiteId = _pageCache.Layout.Site.Id;
-                if ( CurrentPersonAlias != null )
+                if ( _pageCache.Layout.Site.EnablePageViews )
                 {
-                    transaction.PersonAliasId = CurrentPersonAlias.Id;
-                }
-                transaction.IPAddress = Request.UserHostAddress;
-                transaction.UserAgent = Request.UserAgent;
-                transaction.Url = Request.Url.ToString();
-                transaction.PageTitle = _pageCache.PageTitle;
-                var sessionId = Session["RockSessionID"];
-                if ( sessionId != null )
-                {
-                    transaction.SessionId = sessionId.ToString();
-                }
+                    PageViewTransaction transaction = new PageViewTransaction();
+                    transaction.DateViewed = RockDateTime.Now;
+                    transaction.PageId = _pageCache.Id;
+                    transaction.SiteId = _pageCache.Layout.Site.Id;
+                    if ( CurrentPersonAlias != null )
+                    {
+                        transaction.PersonAliasId = CurrentPersonAlias.Id;
+                    }
 
-                RockQueue.TransactionQueue.Enqueue( transaction );
+                    transaction.IPAddress = Request.UserHostAddress;
+                    transaction.UserAgent = Request.UserAgent ?? "";
+                    transaction.Url = Request.Url.ToString();
+                    transaction.PageTitle = _pageCache.PageTitle;
+                    var sessionId = Session["RockSessionID"];
+                    if ( sessionId != null )
+                    {
+                        transaction.SessionId = sessionId.ToString();
+                    }
+
+                    RockQueue.TransactionQueue.Enqueue( transaction );
+                }
             }
         }
 
@@ -1071,10 +1118,24 @@ namespace Rock.Web.UI
         {
             base.OnSaveStateComplete( e );
 
-            if ( phLoadTime != null )
+            if ( phLoadStats != null )
             {
                 TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
-                phLoadTime.Controls.Add( new LiteralControl( string.Format( "<span>{0}: {1:N2}s </span>", "Page Load Time", tsDuration.TotalSeconds ) ) );
+                double hitPercent = 0D;
+
+                if ( Context.Items.Contains( "Cache_Hits" ) )
+                {
+                    var cacheHits = Context.Items["Cache_Hits"] as System.Collections.Generic.Dictionary<string, bool>;
+                    if ( cacheHits != null )
+                    {
+                        int hits = cacheHits.Where( c => c.Value ).Count();
+                        int total = cacheHits.Count();
+                        hitPercent = total > 0 ? ( (double)hits / (double)total ) : 0D;
+                    }
+                }
+
+                phLoadStats.Controls.Add( new LiteralControl( string.Format(
+                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span>", tsDuration.TotalSeconds, hitPercent ) ) );
             }
         }
 
@@ -1426,7 +1487,13 @@ namespace Rock.Web.UI
                 contextCookie = new HttpCookie( cookieName );
             }
 
-            contextCookie.Values[entity.GetType().FullName] = HttpUtility.UrlDecode( entity.ContextKey );
+            Type entityType = entity.GetType();
+            if ( entityType.IsDynamicProxyType() )
+            {
+                entityType = entityType.BaseType;
+            }
+
+            contextCookie.Values[entityType.FullName] = HttpUtility.UrlDecode( entity.ContextKey );
             contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
 
             Response.Cookies.Add( contextCookie );
@@ -1440,11 +1507,21 @@ namespace Rock.Web.UI
 
         private void GetCookieContext( string cookieName )
         {
-            if ( Request.Cookies[cookieName] != null )
+            HttpCookie cookie = null;
+            if ( Response.Cookies.AllKeys.Contains(cookieName))
             {
-                for ( int valueIndex = 0; valueIndex < Request.Cookies[cookieName].Values.Count; valueIndex++ )
+                cookie = Response.Cookies[cookieName];
+            }
+            else if ( Request.Cookies.AllKeys.Contains(cookieName))
+            {
+                cookie = Request.Cookies[cookieName];
+            }
+
+            if ( cookie != null )
+            {
+                for ( int valueIndex = 0; valueIndex < cookie.Values.Count; valueIndex++ )
                 {
-                    string cookieValue = Request.Cookies[cookieName].Values[valueIndex];
+                    string cookieValue = cookie.Values[valueIndex];
                     if ( !string.IsNullOrWhiteSpace( cookieValue ) )
                     {
                         try
@@ -1472,7 +1549,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public string GetContextCookieName( bool pageSpecific )
         {
-            return "Rock:context" + ( pageSpecific ? ( ":" + PageId.ToString() ) : "" );
+            return "Rock_Context" + ( pageSpecific ? ( ":" + PageId.ToString() ) : "" );
         }
 
         /// <summary>
@@ -2081,11 +2158,12 @@ namespace Rock.Web.UI
 
         /// <summary>
         /// Sets a user preference value for the specified key. If the key already exists, the value will be updated,
-        /// if it is a new key it will be added.
+        /// if it is a new key it will be added. Value is then optionally saved to database.
         /// </summary>
-        /// <param name="key">A <see cref="System.String"/> representing the name of the key.</param>
-        /// <param name="value">A <see cref="System.String"/> representing the preference value.</param>
-        public void SetUserPreference( string key, string value )
+        /// <param name="key">A <see cref="System.String" /> representing the name of the key.</param>
+        /// <param name="value">A <see cref="System.String" /> representing the preference value.</param>
+        /// <param name="saveValue">if set to <c>true</c> [save value].</param>
+        public void SetUserPreference( string key, string value, bool saveValue = true )
         {
             var sessionValues = SessionUserPreferences();
             if ( sessionValues.ContainsKey( key ) )
@@ -2097,9 +2175,45 @@ namespace Rock.Web.UI
                 sessionValues.Add( key, value );
             }
 
-            if ( CurrentPerson != null )
+            if ( saveValue && CurrentPerson != null )
             {
                 PersonService.SaveUserPreference( CurrentPerson, key, value );
+            }
+        }
+
+        /// <summary>
+        /// Saves the user preferences.
+        /// </summary>
+        /// <param name="keyPrefix">The key prefix.</param>
+        public void SaveUserPreferences( string keyPrefix )
+        {
+            if ( CurrentPerson != null )
+            {
+                var values = new Dictionary<string, string>();
+                SessionUserPreferences()
+                    .Where( p => p.Key.StartsWith( keyPrefix ) )
+                    .ToList()
+                    .ForEach( kv => values.Add( kv.Key, kv.Value ) );
+
+                PersonService.SaveUserPreferences( CurrentPerson, values );
+            }
+        }
+
+        /// <summary>
+        /// Deletes a user preference value for the specified key
+        /// </summary>
+        /// <param name="key">A <see cref="System.String"/> representing the name of the key.</param>
+        public void DeleteUserPreference( string key )
+        {
+            var sessionValues = SessionUserPreferences();
+            if ( sessionValues.ContainsKey( key ) )
+            {
+                sessionValues.Remove( key );
+            }
+
+            if ( CurrentPerson != null )
+            {
+                PersonService.DeleteUserPreference( CurrentPerson, key );
             }
         }
 
@@ -2110,7 +2224,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, List}"/> containing the user preferences 
         /// for the current user. If the current user is anonymous or unknown an empty dictionary will be returned.</returns>
-        private Dictionary<string, string> SessionUserPreferences()
+        public Dictionary<string, string> SessionUserPreferences()
         {
             string sessionKey = string.Format( "{0}_{1}",
                 Person.USER_VALUE_ENTITY, CurrentPerson != null ? CurrentPerson.Id : 0 );

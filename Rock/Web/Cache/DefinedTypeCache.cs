@@ -106,6 +106,7 @@ namespace Rock.Web.Cache
                 {
                     return CategoryCache.Read( CategoryId.Value );
                 }
+
                 return null;
             }
         }
@@ -252,7 +253,6 @@ namespace Rock.Web.Cache
 
             if ( definedTypeModel != null )
             {
-                definedTypeModel.LoadAttributes( rockContext );
                 return new DefinedTypeCache( definedTypeModel );
             }
 
@@ -327,6 +327,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
 }

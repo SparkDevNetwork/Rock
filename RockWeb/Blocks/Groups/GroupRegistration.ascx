@@ -52,7 +52,7 @@
             </div>
 
             <div class="actions">
-                <asp:LinkButton ID="btnRegister" runat="server" Text="Register" CssClass="btn btn-primary" OnClick="btnRegister_Click" />
+                <asp:LinkButton ID="btnRegister" runat="server" CssClass="btn btn-primary" OnClick="btnRegister_Click" />
             </div>
 
         </asp:Panel>

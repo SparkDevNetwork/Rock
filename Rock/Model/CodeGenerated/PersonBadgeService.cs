@@ -90,6 +90,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.Description = source.Description;
             target.EntityTypeId = source.EntityTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.Name = source.Name;
             target.Order = source.Order;
             target.CreatedDateTime = source.CreatedDateTime;

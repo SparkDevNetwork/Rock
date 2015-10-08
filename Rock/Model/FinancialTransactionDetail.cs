@@ -71,6 +71,7 @@ namespace Rock.Model
         /// A <see cref="System.Decimal"/> representing the amount of the transaction detail.
         /// </value>
         [DataMember]
+        [BoundFieldTypeAttribute(typeof(Rock.Web.UI.Controls.CurrencyField))]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -111,6 +112,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialTransaction"/> that this detail item belongs to.
         /// </value>
+        [LavaInclude]
         public virtual FinancialTransaction Transaction { get; set; }
 
         /// <summary>
@@ -119,6 +121,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialAccount"/> that is affected by this detail line item.
         /// </value>
+        [LavaInclude]
         public virtual FinancialAccount Account { get; set; }
 
         /// <summary>

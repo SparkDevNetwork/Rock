@@ -64,6 +64,7 @@ namespace Rock.Model
         /// A <see cref="System.String" /> containing the amount of benevolence.
         /// </value>
         [DataMember]
+        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public decimal? Amount { get; set; }
 
         /// <summary>
@@ -113,7 +114,7 @@ namespace Rock.Model
         /// </summary>
         public BenevolenceResultConfiguration()
         {
-            this.HasRequired( p => p.BenevolenceRequest ).WithMany( p => p.BenevolenceResults ).HasForeignKey( p => p.BenevolenceRequestId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.BenevolenceRequest ).WithMany( p => p.BenevolenceResults ).HasForeignKey( p => p.BenevolenceRequestId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.ResultTypeValue ).WithMany().HasForeignKey( p => p.ResultTypeValueId ).WillCascadeOnDelete( false );
 
         }

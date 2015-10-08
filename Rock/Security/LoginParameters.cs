@@ -14,11 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Runtime.Serialization;
+using Rock.Data;
+
 namespace Rock.Security
 {
     /// <summary>
     /// 
     /// </summary>
+    [RockClientInclude("Use this as the Content of a api/Auth/Login POST")]
     public class LoginParameters
     {
         /// <summary>
@@ -27,6 +31,7 @@ namespace Rock.Security
         /// <value>
         /// The username.
         /// </value>
+        [DataMember]
         public string Username { get; set; }
 
         /// <summary>
@@ -35,6 +40,7 @@ namespace Rock.Security
         /// <value>
         /// The password.
         /// </value>
+        [DataMember]
         public string Password { get; set; }
 
         /// <summary>
@@ -43,6 +49,7 @@ namespace Rock.Security
         /// <value>
         ///   <c>true</c> if persisted; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool Persisted { get; set; }
     }
 }

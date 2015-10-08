@@ -37,10 +37,11 @@ namespace Rock.Workflow.Action
 
     [WorkflowTextOrAttribute( "From Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent from (will default to organization email). <span class='tip tip-lava'></span>", false, "", "", 0, "From",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowTextOrAttribute( "Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
+    [WorkflowTextOrAttribute( "Send To Email Addresses", "Attribute Value", "The email addresses or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType" } )]
     [TextField( "Subject", "The subject that should be used when sending email. <span class='tip tip-lava'></span>", false, "", "", 2 )]
     [CodeEditorField( "Body", "The body of the email that should be sent. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 3 )]
+    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 4 )]
     public class SendEmail : ActionComponent
     {
         /// <summary>
@@ -61,6 +62,7 @@ namespace Rock.Workflow.Action
             string fromValue = GetAttributeValue( action, "From" );
             string subject = GetAttributeValue( action, "Subject" );
             string body = GetAttributeValue( action, "Body" );
+            bool createCommunicationRecord = GetAttributeValue( action, "SaveCommunicationHistory" ).AsBoolean();
 
             string from = string.Empty;
             Guid? fromGuid = fromValue.AsGuidOrNull();
@@ -112,7 +114,7 @@ namespace Rock.Workflow.Action
                         {
                             case "Rock.Field.Types.TextFieldType":
                                 {
-                                    Send( toValue, from, subject, body, mergeFields, rockContext );
+                                    Send( toValue, from, subject, body, mergeFields, rockContext, createCommunicationRecord );
                                     break;
                                 }
                             case "Rock.Field.Types.PersonFieldType":
@@ -132,7 +134,7 @@ namespace Rock.Workflow.Action
                                         {
                                             action.AddLogEntry( "Email was not sent: Recipient does not have an email address", true );
                                         }
-                                        else if ( !(person.IsEmailActive ?? true) )
+                                        else if ( !person.IsEmailActive )
                                         {
                                             action.AddLogEntry( "Email was not sent: Recipient email is not active", true );
                                         }
@@ -144,7 +146,7 @@ namespace Rock.Workflow.Action
                                         {
                                             var personDict = new Dictionary<string, object>(mergeFields);
                                             personDict.Add("Person", person);
-                                            Send( person.Email, from, subject, body, personDict, rockContext );
+                                            Send( person.Email, from, subject, body, personDict, rockContext, createCommunicationRecord );
                                         }
                                     }
                                     break;
@@ -176,13 +178,13 @@ namespace Rock.Workflow.Action
                                             .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                                             .Select( m => m.Person ) )
                                         {
-                                            if ( ( person.IsEmailActive ?? true ) &&
+                                            if ( ( person.IsEmailActive ) &&
                                                 person.EmailPreference != EmailPreference.DoNotEmail &&
                                                 !string.IsNullOrWhiteSpace( person.Email ) )
                                             {
                                                 var personDict = new Dictionary<string, object>( mergeFields );
                                                 personDict.Add( "Person", person );
-                                                Send( person.Email, from, subject, body, personDict, rockContext );
+                                                Send( person.Email, from, subject, body, personDict, rockContext, createCommunicationRecord );
                                             }
                                         }
                                     }
@@ -194,16 +196,15 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                Send( to.ResolveMergeFields( mergeFields ), from, subject, body, mergeFields, rockContext );
+                Send( to.ResolveMergeFields( mergeFields ), from, subject, body, mergeFields, rockContext, createCommunicationRecord );
             }
 
             return true;
         }
 
-        private void Send( string recipient, string from, string subject, string body, Dictionary<string, object> mergeFields, RockContext rockContext )
+        private void Send( string recipients, string from, string subject, string body, Dictionary<string, object> mergeFields, RockContext rockContext, bool createCommunicationRecord )
         {
-            var recipients = new List<string>();
-            recipients.Add( recipient );
+            var recipientList = recipients.SplitDelimitedValues().ToList();
              
             var mediumData = new Dictionary<string, string>();
             mediumData.Add( "From", from.ResolveMergeFields( mergeFields ) );
@@ -220,7 +221,15 @@ namespace Rock.Workflow.Action
                     if ( transport != null && transport.IsActive )
                     {
                         var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-                        transport.Send( mediumData, recipients, appRoot, string.Empty );
+
+                        if ( transport is Rock.Communication.Transport.SMTPComponent )
+                        {
+                            ( (Rock.Communication.Transport.SMTPComponent)transport ).Send( mediumData, recipientList, appRoot, string.Empty, createCommunicationRecord );
+                        }
+                        else
+                        {
+                            transport.Send( mediumData, recipientList, appRoot, string.Empty );
+                        }
                     }
                 }
             }

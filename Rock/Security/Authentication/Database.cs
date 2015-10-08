@@ -23,7 +23,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Security.Authentication
@@ -226,26 +226,55 @@ namespace Rock.Security.Authentication
         public override bool ChangePassword( UserLogin user, string oldPassword, string newPassword, out string warningMessage )
         {
             warningMessage = null;
-            AuthenticationComponent authenticationComponent = AuthenticationContainer.GetComponent( user.EntityType.Name );
-            if ( authenticationComponent == null || !authenticationComponent.IsActive )
-            {
-                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.EntityType.FriendlyName ) );
-            }
 
-            if ( authenticationComponent.ServiceType == AuthenticationServiceType.External )
-            {
-                throw new Exception( "Cannot change password on external service type" );
-            }
-
-            if ( !authenticationComponent.Authenticate( user, oldPassword ) )
+            if ( !Authenticate( user, oldPassword ) )
             {
                 return false;
             }
 
-            user.Password = authenticationComponent.EncodePassword( user, newPassword );
-            user.LastPasswordChangedDateTime = RockDateTime.Now;
-
+            SetPassword( user, newPassword );
             return true;
+        }
+
+        /// <summary>
+        /// Sets the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        public override void SetPassword( UserLogin user, string password )
+        {
+            user.Password = EncodePassword( user, password );
+            user.LastPasswordChangedDateTime = RockDateTime.Now;
+        }
+
+        /// <summary>
+        /// Generates the username.
+        /// </summary>
+        /// <param name="firstName">The first name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="tryCount">The try count.</param>
+        /// <returns></returns>
+        public static string GenerateUsername( string firstName, string lastName, int tryCount = 0 )
+        {
+            // create username
+            string username = (firstName.Substring( 0, 1 ) + lastName).ToLower();
+
+            if ( tryCount != 0 )
+            {
+                username = username + tryCount.ToString();
+            }
+
+            // check if username exists
+            UserLoginService userService = new UserLoginService( new RockContext() );
+            var loginExists = userService.Queryable().Where( l => l.UserName == username ).Any();
+            if ( !loginExists )
+            {
+                return username;
+            }
+            else
+            {
+                return Database.GenerateUsername( firstName, lastName, tryCount + 1 );
+            }
         }
 
     }

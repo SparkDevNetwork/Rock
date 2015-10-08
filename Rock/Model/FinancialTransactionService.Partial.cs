@@ -15,10 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
-
-using Rock.Data;
 
 namespace Rock.Model
 {
@@ -27,8 +24,9 @@ namespace Rock.Model
     /// </summary>
     public partial class FinancialTransactionService 
     {
+
         /// <summary>
-        /// Gets a transaction by it's transaction code.
+        /// Gets a transaction by its transaction code.
         /// </summary>
         /// <param name="transactionCode">A <see cref="System.String"/> representing the transaction code for the transaction</param>
         /// <returns>The <see cref="Rock.Model.FinancialTransaction"/> that matches the transaction code, this value will be null if a match is not found.</returns>
@@ -41,6 +39,26 @@ namespace Rock.Model
                     .FirstOrDefault();
             }
             return null;
+        }
+
+        /// <summary>
+        /// Deletes the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
+        public override bool Delete( FinancialTransaction item )
+        {
+            if ( item.FinancialPaymentDetailId.HasValue )
+            {
+                var paymentDetailsService = new FinancialPaymentDetailService( (Rock.Data.RockContext)this.Context );
+                var paymentDetail = paymentDetailsService.Get( item.FinancialPaymentDetailId.Value );
+                if ( paymentDetail != null )
+                {
+                    paymentDetailsService.Delete( paymentDetail );
+                }
+            }
+
+            return base.Delete( item );
         }
     }
 }

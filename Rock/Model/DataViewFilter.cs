@@ -70,7 +70,7 @@ namespace Rock.Model
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the value that the DataViewFitler is filtering by.
+        /// Gets or sets the value that the DataViewFilter is filtering by.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> containing the value to be used as a filter.
@@ -169,6 +169,48 @@ namespace Rock.Model
 
             return authorized;
         }
+
+        /// <summary>
+        /// Determines whether the specified action is authorized but instead of traversing child 
+        /// filters (an expensive query), a list of all filters can be passed in and this will be 
+        /// checked instead ( See DataViewPicker.LoadDropDownItems() for example of use ).
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="allEntityFilters">All entity filters.</param>
+        /// <returns></returns>
+        public bool IsAuthorized( string action, Person person, List<DataViewFilter> allEntityFilters )
+        {
+            // First check if user is authorized for model
+            bool authorized = base.IsAuthorized( action, person );
+
+            // If viewing, make sure user is authorized to view the component that filter is using
+            // and all the child models/components
+            if ( authorized && string.Compare( action, Authorization.VIEW, true ) == 0 )
+            {
+                if ( EntityType != null )
+                {
+                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
+                    if ( filterComponent != null )
+                    {
+                        authorized = filterComponent.IsAuthorized( action, person );
+                    }
+                }
+
+                if ( authorized )
+                {
+                    foreach ( var childFilter in allEntityFilters.Where( f => f.ParentId == Id ) )
+                    {
+                        if ( !childFilter.IsAuthorized( action, person, allEntityFilters ) )
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return authorized;
+        }
         
         /// <summary>
         /// Gets the Linq expression for the DataViewFilter.
@@ -198,6 +240,7 @@ namespace Rock.Model
                                 }
                                 catch (SystemException ex)
                                 {
+                                    ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
                                     errorMessages.Add( string.Format( "{0}: {1}", component.FormatSelection( filteredEntityType, this.Selection ), ex.Message ) );
                                 }
                             }
@@ -206,6 +249,7 @@ namespace Rock.Model
                     return null;
 
                 case FilterExpressionType.GroupAll:
+                case FilterExpressionType.GroupAnyFalse:
 
                     Expression andExp = null;
                     foreach ( var filter in this.ChildFilters )
@@ -225,9 +269,17 @@ namespace Rock.Model
                         }
                     }
 
+                    if ( ExpressionType == FilterExpressionType.GroupAnyFalse
+                         && andExp != null )
+                    {
+                        // If only one of the conditions must be false, invert the expression so that it becomes the logical equivalent of "NOT ALL".
+                        andExp = Expression.Not( andExp );
+                    }
+
                     return andExp;
 
                 case FilterExpressionType.GroupAny:
+                case FilterExpressionType.GroupAllFalse:
 
                     Expression orExp = null;
                     foreach ( var filter in this.ChildFilters )
@@ -246,11 +298,17 @@ namespace Rock.Model
                         }
                     }
 
+                    if ( ExpressionType == FilterExpressionType.GroupAllFalse
+                         && orExp != null )
+                    {
+                        // If all of the conditions must be false, invert the expression so that it becomes the logical equivalent of "NOT ANY".
+                        orExp = Expression.Not( orExp );
+                    }
+
                     return orExp;
             }
 
             return null;
-
         }
 
         /// <summary>
@@ -276,7 +334,18 @@ namespace Rock.Model
             {
                 StringBuilder sb = new StringBuilder();
 
-                string conjuction = this.ExpressionType == FilterExpressionType.GroupAll ? " AND " : " OR ";
+                string conjunction;
+
+                if (this.ExpressionType == FilterExpressionType.GroupAny
+                    || this.ExpressionType == FilterExpressionType.GroupAllFalse)
+                {
+                    // If any of the conditions can be True or all of the conditions must be False, use a logical "OR" operation.
+                    conjunction = " OR ";
+                }
+                else
+                {
+                    conjunction = " AND ";
+                }
 
                 var children = this.ChildFilters.OrderBy( f => f.ExpressionType).ToList();
                 for(int i = 0; i < children.Count; i++)
@@ -284,7 +353,7 @@ namespace Rock.Model
                     string childString = children[i].ToString( filteredEntityType );
                     if ( !string.IsNullOrWhiteSpace( childString ) )
                     {
-                        sb.AppendFormat( "{0}{1}", i > 0 ? conjuction : string.Empty, childString );
+                        sb.AppendFormat( "{0}{1}", i > 0 ? conjunction : string.Empty, childString );
                     }
                 }
 
@@ -292,6 +361,12 @@ namespace Rock.Model
                 {
                     sb.Insert(0, "( ");
                     sb.Append(" )");
+                }
+
+                if (this.ExpressionType == FilterExpressionType.GroupAllFalse
+                    || this.ExpressionType == FilterExpressionType.GroupAnyFalse)
+                {
+                    sb.Insert( 0, "NOT " );
                 }
 
                 return sb.ToString();
@@ -343,7 +418,17 @@ namespace Rock.Model
         /// <summary>
         /// A collection of expressions/conditions where at least one condition/expression must match.  Expressions are "or'd" together.
         /// </summary>
-        GroupAny = 2
+        GroupAny = 2,
+
+        /// <summary>
+        /// A collection of expressions/conditions where all conditions must be false.  Expressions are combined using a logical OR and the group result must be FALSE.
+        /// </summary>
+        GroupAllFalse = 3,
+
+        /// <summary>
+        /// A collection of expressions/conditions where at least one condition must be false.  Expressions are combined using a logical AND and the group result must be FALSE.
+        /// </summary>
+        GroupAnyFalse = 4
     }
 
     /// <summary>
@@ -410,7 +495,12 @@ namespace Rock.Model
         /// <summary>
         /// Ends with
         /// </summary>
-        EndsWith = 0x800
+        EndsWith = 0x800,
+
+        /// <summary>
+        /// Between
+        /// </summary>
+        Between = 0x1000,
 
     }
 

@@ -7,22 +7,30 @@
         var PersonPicker = function (options) {
             this.controlId = options.controlId;
             this.restUrl = options.restUrl;
+            this.restDetailUrl = options.restDetailUrl;
             this.defaultText = options.defaultText || '';
         };
 
         PersonPicker.prototype.initializeEventHandlers = function () {
             var controlId = this.controlId,
                 restUrl = this.restUrl,
+                restDetailUrl = this.restDetailUrl || (Rock.settings.get('baseUrl') + 'api/People/GetSearchDetails'),
                 defaultText = this.defaultText;
 
             var includeBusinesses = $('#' + controlId).find('.js-include-businesses').val() == '1' ? 'true' : 'false';
 
-            // TODO: Can we use TypeHead here (already integrated into BootStrap) instead of jQueryUI?
-            // Might be a good opportunity to break the dependency on jQueryUI.
+            var promise = null;
+
             $('#' + controlId + '_personPicker').autocomplete({
                 source: function (request, response) {
-                    var promise = $.ajax({
-                        url: restUrl + request.term + "/true/" + includeBusinesses,
+
+                    // abort any searches that haven't returned yet, so that we don't get a pile of results in random order
+                    if (promise && promise.state() === 'pending') {
+                        promise.abort();
+                    }
+
+                    promise = $.ajax({
+                        url: restUrl + "?name=" + encodeURIComponent(request.term) + "&includeHtml=false&includeDetails=false&includeBusinesses=" + includeBusinesses + "&includeDeceased=true",
                         dataType: 'json'
                     });
 
@@ -49,8 +57,8 @@
                 appendTo: '#' + controlId + '_personPickerItems',
                 pickerControlId: controlId,
                 messages: {
-                    noResults: function () {},
-                    results: function () {}
+                    noResults: function () { },
+                    results: function () { }
                 }
             });
 
@@ -62,11 +70,13 @@
                 });
             });
 
-            $('#' + controlId + ' .picker-select').on('click', '.picker-select-item', function (e) {
+            $('#' + controlId + ' .picker-select').on('click', '.picker-select-item :input', function (e) {
                 e.stopPropagation();
 
-                var $selectedItem = $(this).attr('data-person-id');
-                var alreadySelected = $(this).find('.picker-select-item-details:hidden').length == 0 && e.target.type != 'radio';
+                var $selectedItem = $(this).closest('.picker-select-item');
+
+                var selectedPersonId = $selectedItem.attr('data-person-id');
+                var alreadySelected = $selectedItem.find('.picker-select-item-details').is(':visible');
                 if (alreadySelected) {
                     $('#' + controlId + '_btnSelect').get(0).click();
                 }
@@ -74,16 +84,37 @@
                 // hide other open details
                 $('#' + controlId + ' .picker-select-item-details').each(function () {
                     var $el = $(this),
-                        $currentItem = $el.closest('.picker-select-item').attr('data-person-id');
+                       currentPersonId = $el.closest('.picker-select-item').attr('data-person-id');
 
-                    if ($currentItem != $selectedItem) {
+                    if (currentPersonId != selectedPersonId) {
                         $el.slideUp();
                     }
                 });
 
-                $(this).find('.picker-select-item-details:hidden').slideDown(function () {
-                    exports.personPickers[controlId].updateScrollbar();
-                });
+                var $itemDetails = $selectedItem.find('.picker-select-item-details');
+
+                if ($itemDetails.attr('data-has-details') == 'false') {
+                    // add a spinner in case we have to wait on the server for a little bit
+                    var $spinner = $selectedItem.find('.loading-notification');
+                    $spinner.fadeIn(800);
+
+                    // fetch the search details from the server
+                    $.get(restDetailUrl + '?Id=' + selectedPersonId, function (responseText, textStatus, jqXHR) {
+                        $itemDetails.attr('data-has-details', true);
+
+                        // hide then set the html so that we can get the slideDown effect
+                        $itemDetails.stop().hide().html(responseText);
+                        $itemDetails.slideDown(function () {
+                            exports.personPickers[controlId].updateScrollbar();
+                        });
+
+                        $spinner.stop().fadeOut(200);
+                    });
+                } else {
+                    $selectedItem.find('.picker-select-item-details:hidden').slideDown(function () {
+                        exports.personPickers[controlId].updateScrollbar();
+                    });
+                }
             });
 
             $('#' + controlId).hover(
@@ -118,14 +149,8 @@
                 $selectedItemLabel.text(selectedText);
             });
 
-            $('#' + controlId + '_btnSelect').click(function () {
-                var radInput = $('#' + controlId).find('input:checked'),
-
-                    selectedValue = radInput.val(),
-                    selectedText = radInput.closest('.picker-select-item').find('label').text(),
-
-                    selectedPersonLabel = $('#' + controlId + '_selectedPersonLabel'),
-
+            var setSelectedPerson = function (selectedValue, selectedText) {
+                var selectedPersonLabel = $('#' + controlId + '_selectedPersonLabel'),
                     hiddenPersonId = $('#' + controlId + '_hfPersonId'),
                     hiddenPersonName = $('#' + controlId + '_hfPersonName');
 
@@ -135,7 +160,28 @@
                 selectedPersonLabel.val(selectedValue);
                 selectedPersonLabel.text(selectedText);
 
-                $(this).closest('.picker-menu').slideUp();
+                $('#' + controlId).find('.picker-menu').slideUp();
+            }
+
+            $('#' + controlId + '_btnSelect').click(function () {
+                var radInput = $('#' + controlId).find('input:checked'),
+                    selectedValue = radInput.val(),
+                    selectedText = radInput.closest('.picker-select-item').find('label').text();
+
+                setSelectedPerson(selectedValue, selectedText);
+            });
+
+            $('#' + controlId + ' .js-select-self').on('click', function () {
+                var selectedValue = $('#' + controlId + ' .js-self-person-id').val(),
+                    selectedText = $('#' + controlId + ' .js-self-person-name').val();
+
+                setSelectedPerson(selectedValue, selectedText);
+
+                // fire the postBack of the btnSelect if there is one
+                var postBackUrl = $('#' + controlId + '_btnSelect').prop('href');
+                if (postBackUrl) {
+                    window.location = postBackUrl;
+                }
             });
         };
 
@@ -154,7 +200,7 @@
                         var $div = $('<div/>').attr('class', 'radio'),
 
                             $label = $('<label/>')
-                                .text(item.Name)
+                                .html(item.Name + ' <i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
                                 .prependTo($div),
 
                             $radio = $('<input type="radio" name="person-id" />')
@@ -169,7 +215,17 @@
 
                             $resultSection = $(this.options.appendTo);
 
-                        $(item.PickerItemDetailsHtml).appendTo($li);
+                        if (item.PickerItemDetailsHtml) {
+                            $(item.PickerItemDetailsHtml).appendTo($li);
+                        }
+                        else {
+                            var $itemDetailsDiv = $('<div/>')
+                                .addClass('picker-select-item-details clearfix')
+                                .attr('data-has-details', false)
+                                .hide();
+
+                            $itemDetailsDiv.appendTo($li);
+                        }
 
                         if (!item.IsActive) {
                             $li.addClass('inactive');
@@ -185,7 +241,7 @@
                     }
                 }
             });
-            
+
             this.initializeEventHandlers();
         };
 
@@ -197,7 +253,7 @@
             initialize: function (options) {
                 if (!options.controlId) throw '`controlId` is required.';
                 if (!options.restUrl) throw '`restUrl` is required.';
-                
+
                 var personPicker = new PersonPicker(options);
                 exports.personPickers[options.controlId] = personPicker;
                 personPicker.initialize();

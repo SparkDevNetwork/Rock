@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>New Test</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">New Test</td></tr>
+</thead><tbody>
+<!--This Test Case adds 5 members to the small group created in the first Test Case .-->
+<!--These tests assume you are logged in to Rock with an account that can perform these functions.-->
+<tr>
+	<td>setSpeed</td>
+	<td>500</td>
+	<td></td>
+</tr>
+<tr>
+	<td>open</td>
+	<td>/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//a[contains(text(),'Group Name')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_searchField]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>sendKeysAndWait</td>
+	<td>css=[id$=_searchField]</td>
+	<td>selenium test${KEY_ENTER}</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_lbAdd]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>sendKeys</td>
+	<td>css=[id$=_personPicker]</td>
+	<td>cindy decker</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[name=person-id]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=GroupMemberPerson_btnSelect]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=[id$=_ddlGroupRole]</td>
+	<td>label=Leader</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_btnSave]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_lbAdd]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>sendKeys</td>
+	<td>css=[id$=_personPicker]</td>
+	<td>sarah simmons</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[name=person-id]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=GroupMemberPerson_btnSelect]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=[id$=_ddlGroupRole]</td>
+	<td>label=Member</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_btnSave]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_lbAdd]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>sendKeys</td>
+	<td>css=[id$=_personPicker]</td>
+	<td>mariah jackson</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[name=person-id]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=GroupMemberPerson_btnSelect]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=[id$=_ddlGroupRole]</td>
+	<td>label=Member</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_btnSave]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_lbAdd]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>sendKeys</td>
+	<td>css=[id$=_personPicker]</td>
+	<td>alisha marble</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[name=person-id]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=GroupMemberPerson_btnSelect]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=[id$=_ddlGroupRole]</td>
+	<td>label=Member</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_btnSave]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_lbAdd]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>sendKeys</td>
+	<td>css=[id$=_personPicker]</td>
+	<td>pamela foster</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[name=person-id]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=GroupMemberPerson_btnSelect]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>css=[id$=_ddlGroupRole]</td>
+	<td>label=Member</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=[id$=_btnSave]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//td[contains(text(),'Cindy Decker')]</td>
+	<td>Cindy Decker</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//td[contains(text(),'Pamela Foster')]</td>
+	<td>Pamela Foster</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//td[contains(text(),'Mariah Jackson')]</td>
+	<td>Mariah Jackson</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//td[contains(text(),'Alisha Marble')]</td>
+	<td>Alisha Marble</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//td[contains(text(),'Sarah Simmons')]</td>
+	<td>Sarah Simmons</td>
+</tr>
+</tbody></table>
+</body>
+</html>

@@ -170,7 +170,8 @@ namespace Rock.Web.UI.Controls
 
                 if ( dataFieldItem.Value.GridField is DefinedValueField )
                 {
-                    dataFieldValue = Rock.Web.Cache.DefinedValueCache.Read( (int)dataFieldValue ).Value;
+                    var definedValue = ( dataFieldItem.Value.GridField as DefinedValueField ).GetDefinedValue( dataFieldValue );
+                    dataFieldValue = definedValue != null ? definedValue.Value : null;
                 }
 
                 dictionary.Add( dataFieldItem.Key, dataFieldValue );

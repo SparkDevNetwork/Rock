@@ -52,5 +52,23 @@ namespace Rock.Model
         {
             return Queryable().FirstOrDefault( t => t.Guid == guid );
         }
+
+
+        /// <summary>
+        /// Gets the Guid for the DefinedType that has the specified Id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Guid? GetGuid( int id )
+        {
+            var cacheItem = Rock.Web.Cache.DefinedTypeCache.Read( id );
+            if ( cacheItem != null )
+            {
+                return cacheItem.Guid;
+            }
+
+            return null;
+
+        }
     }
 }

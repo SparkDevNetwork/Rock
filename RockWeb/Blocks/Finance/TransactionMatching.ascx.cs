@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -40,8 +41,17 @@ namespace RockWeb.Blocks.Finance
 
     [AccountsField( "Accounts", "Select the accounts that transaction amounts can be allocated to.  Leave blank to show all accounts" )]
     [LinkedPage( "Add Family Link", "Select the page where a new family can be added. If specified, a link will be shown which will open in a new window when clicked", DefaultValue = "6a11a13d-05ab-4982-a4c2-67a8b1950c74,af36e4c2-78c6-4737-a983-e7a78137ddc7" )]
+    [LinkedPage( "Add Business Link", "Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked" )]
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
+        #region Properties
+
+        /// <summary>
+        /// The _focus control
+        /// </summary>
+        private Control _focusControl = null;
+
+        #endregion
 
         #region Base Control Methods
 
@@ -81,6 +91,22 @@ namespace RockWeb.Blocks.Finance
                 LoadDropDowns();
                 ShowDetail( PageParameter( "BatchId" ).AsInteger() );
             }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            if ( _focusControl != null )
+            {
+                _focusControl.Focus();
+            }
+
+            //// btnNext.AccessKey = new string(new char[] { (char)39 });
+
+            base.OnPreRender( e );
         }
 
         #endregion
@@ -124,13 +150,20 @@ namespace RockWeb.Blocks.Finance
         public void ShowDetail( int batchId )
         {
             string temp = this.GetAttributeValue( "AddFamilyLink" );
-            string url = this.LinkedPageUrl( "AddFamilyLink" );
+            string addFamilyUrl = this.LinkedPageUrl( "AddFamilyLink" );
+            string addBusinessUrl = this.LinkedPageUrl( "AddBusinessLink" );
 
-            rcwAddNewFamily.Visible = !string.IsNullOrWhiteSpace( url );
+            rcwAddNewFamily.Visible = !string.IsNullOrWhiteSpace( addFamilyUrl );
             if ( rcwAddNewFamily.Visible )
             {
                 // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
-                hlAddNewFamily.Attributes["onclick"] = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", url );
+                hlAddNewFamily.Attributes["onclick"] = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", addFamilyUrl );
+            }
+
+            rcwAddNewBusiness.Visible = !string.IsNullOrWhiteSpace( addBusinessUrl );
+            if ( rcwAddNewBusiness.Visible )
+            {
+                hlAddNewBusiness.Attributes["onclick"] = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", addBusinessUrl );
             }
 
             hfBatchId.Value = batchId.ToString();
@@ -293,14 +326,18 @@ namespace RockWeb.Blocks.Finance
                     ddlIndividual.Items.Clear();
                     ddlIndividual.Items.Add( new ListItem( null, null ) );
 
-                    // if this transaction has a CheckMicrEncrypted, try to find matching person(s)
+                    // clear any previously shown badges
+                    ddlIndividual.Attributes.Remove( "disabled" );
+                    badgeIndividualCount.InnerText = string.Empty;
+
+                    // if this transaction has a CheckMicrParts, try to find matching person(s)
                     string checkMicrHashed = null;
 
-                    if ( !string.IsNullOrWhiteSpace( transactionToMatch.CheckMicrEncrypted ) )
+                    if ( !string.IsNullOrWhiteSpace( transactionToMatch.CheckMicrParts ) )
                     {
                         try
                         {
-                            var checkMicrClearText = Encryption.DecryptString( transactionToMatch.CheckMicrEncrypted );
+                            var checkMicrClearText = Encryption.DecryptString( transactionToMatch.CheckMicrParts );
                             var parts = checkMicrClearText.Split( '_' );
                             if ( parts.Length >= 2 )
                             {
@@ -309,7 +346,7 @@ namespace RockWeb.Blocks.Finance
                         }
                         catch
                         {
-                            // intentionally ignore exception when decripting CheckMicrEncrypted since we'll be checking for null below
+                            // intentionally ignore exception when decripting CheckMicrParts since we'll be checking for null below
                         }
                     }
 
@@ -323,9 +360,6 @@ namespace RockWeb.Blocks.Finance
                             ddlIndividual.Items.Add( new ListItem( person.FullNameReversed, person.Id.ToString() ) );
                         }
                     }
-
-                    bool requiresMicr = transactionToMatch.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
-                    nbNoMicrWarning.Visible = requiresMicr && string.IsNullOrWhiteSpace( checkMicrHashed );
 
                     if ( ddlIndividual.Items.Count == 2 )
                     {
@@ -350,6 +384,16 @@ namespace RockWeb.Blocks.Finance
                         }
 
                         ddlIndividual.SelectedValue = person.Id.ToString();
+                    }
+
+                    if ( ddlIndividual.Items.Count != 1 )
+                    {
+                        badgeIndividualCount.InnerText = ( ddlIndividual.Items.Count - 1 ).ToStringSafe();
+                    }
+                    else
+                    {
+                        ddlIndividual.Attributes["disabled"] = "disabled";
+                        _focusControl = ppSelectNew;
                     }
 
                     ddlIndividual_SelectedIndexChanged( null, null );
@@ -418,17 +462,23 @@ namespace RockWeb.Blocks.Finance
                 int currentTranId = hfTransactionId.Value.AsInteger();
                 int matchedRemainingCount = qryTransactionCount.Count( a => a.AuthorizedPersonAliasId != null && a.Id != currentTranId );
                 int totalBatchItemCount = qryTransactionCount.Count();
-                //hlUnmatchedRemaining.Text = string.Format( "{0} remaining of {1} ", matchedRemainingCount, totalBatchItemCount );
 
-                int percentComplete = (int)Math.Round( (double)(100 * matchedRemainingCount) / totalBatchItemCount );
+                int percentComplete = (int)Math.Round( (double)( 100 * matchedRemainingCount ) / totalBatchItemCount );
 
-                lProgressBar.Text = String.Format( @"<div class='progress'>
-                    <div class='progress-bar progress-bar-info' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%;'>
-                        {0}%
-                    </div>
-                </div>", percentComplete);
+                lProgressBar.Text = string.Format(
+                        @"<div class='progress'>
+                            <div class='progress-bar progress-bar-info' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%;'>
+                                {0}%
+                            </div>
+                        </div>",
+                       percentComplete );
 
                 hfBackNextHistory.Value = historyList.AsDelimited( "," );
+
+                if ( _focusControl == null )
+                {
+                    _focusControl = rptAccounts.ControlsOfTypeRecursive<Rock.Web.UI.Controls.CurrencyBox>().FirstOrDefault();
+                }
             }
         }
 
@@ -510,6 +560,8 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnNext_Click( object sender, EventArgs e )
         {
+            var changes = new List<string>();
+
             var rockContext = new RockContext();
             var financialTransactionService = new FinancialTransactionService( rockContext );
             var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
@@ -539,8 +591,22 @@ namespace RockWeb.Blocks.Finance
                 financialTransaction.AuthorizedPersonAliasId = null;
                 foreach ( var detail in financialTransaction.TransactionDetails )
                 {
+                    History.EvaluateChange( changes, detail.Account != null ? detail.Account.Name : "Unknown", detail.Amount.FormatAsCurrency(), string.Empty );
                     financialTransactionDetailService.Delete( detail );
                 }
+
+                changes.Add( "Unmatched transaction" );
+
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( FinancialBatch ),
+                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                    financialTransaction.BatchId.Value,
+                    changes,
+                    string.Format( "Transaction Id: {0}", financialTransaction.Id ),
+                    typeof( FinancialTransaction ),
+                    financialTransaction.Id,
+                    false );
 
                 rockContext.SaveChanges();
 
@@ -551,14 +617,6 @@ namespace RockWeb.Blocks.Finance
             // if the transaction is matched to somebody, attempt to save it.  Otherwise, if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction
             if ( financialTransaction != null && authorizedPersonId.HasValue )
             {
-                bool requiresMicr = financialTransaction.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
-                if ( requiresMicr && string.IsNullOrWhiteSpace( accountNumberSecured ) )
-                {
-                    // should be showing already, but just in case
-                    nbNoMicrWarning.Visible = true;
-                    return;
-                }
-
                 if ( cbTotalAmount.Text.AsDecimalOrNull() == null )
                 {
                     nbSaveError.Text = "Total amount must be allocated to accounts.";
@@ -566,10 +624,11 @@ namespace RockWeb.Blocks.Finance
                     return;
                 }
 
-                int? personAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( authorizedPersonId.Value );
+                var personAlias = new PersonAliasService( rockContext ).GetPrimaryAlias( authorizedPersonId.Value );
+                int? personAliasId = personAlias != null ? personAlias.Id : (int?)null;
 
-                // if this transaction has an accountnumber associated with it (in other words, it's a scanned check), ensure there is a financialPersonBankAccount record
-                if ( !string.IsNullOrWhiteSpace( accountNumberSecured ) )
+                // if this transaction has an accountnumber associated with it (in other words, it's a valid scanned check), ensure there is a financialPersonBankAccount record
+                if ( financialTransaction.MICRStatus == MICRStatus.Success && !string.IsNullOrWhiteSpace( accountNumberSecured ) )
                 {
                     var financialPersonBankAccount = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == accountNumberSecured && a.PersonAlias.PersonId == authorizedPersonId.Value ).FirstOrDefault();
                     if ( financialPersonBankAccount == null )
@@ -580,7 +639,7 @@ namespace RockWeb.Blocks.Finance
                             financialPersonBankAccount.PersonAliasId = personAliasId.Value;
                             financialPersonBankAccount.AccountNumberSecured = accountNumberSecured;
 
-                            var checkMicrClearText = Encryption.DecryptString( financialTransaction.CheckMicrEncrypted );
+                            var checkMicrClearText = Encryption.DecryptString( financialTransaction.CheckMicrParts );
                             var parts = checkMicrClearText.Split( '_' );
                             if ( parts.Length >= 2 )
                             {
@@ -592,15 +651,22 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
+                string prevPerson = ( financialTransaction.AuthorizedPersonAlias != null && financialTransaction.AuthorizedPersonAlias.Person != null ) ?
+                    financialTransaction.AuthorizedPersonAlias.Person.FullName : string.Empty;
+                string newPerson = string.Empty;
                 if ( personAliasId.HasValue )
                 {
+                    newPerson = personAlias.Person.FullName;
                     financialTransaction.AuthorizedPersonAliasId = personAliasId;
                 }
+
+                History.EvaluateChange( changes, "Person", prevPerson, newPerson );
 
                 // just in case this transaction is getting re-edited either by the same user, or somebody else, clean out any existing TransactionDetail records
                 foreach ( var detail in financialTransaction.TransactionDetails.ToList() )
                 {
                     financialTransactionDetailService.Delete( detail );
+                    History.EvaluateChange( changes, detail.Account != null ? detail.Account.Name : "Unknown", detail.Amount.FormatAsCurrency(), string.Empty );
                 }
 
                 foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
@@ -614,11 +680,26 @@ namespace RockWeb.Blocks.Finance
                         financialTransactionDetail.AccountId = accountBox.Attributes["data-account-id"].AsInteger();
                         financialTransactionDetail.Amount = amount.Value;
                         financialTransactionDetailService.Add( financialTransactionDetail );
+
+                        History.EvaluateChange( changes, accountBox.Label, 0.0M.FormatAsCurrency(), amount.Value.FormatAsCurrency() );
                     }
                 }
 
                 financialTransaction.ProcessedByPersonAliasId = this.CurrentPersonAlias.Id;
                 financialTransaction.ProcessedDateTime = RockDateTime.Now;
+
+                changes.Add( "Matched transaction" );
+
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( FinancialBatch ),
+                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                    financialTransaction.BatchId.Value,
+                    changes,
+                    personAlias != null && personAlias.Person != null ? personAlias.Person.FullName : string.Format( "Transaction Id: {0}", financialTransaction.Id ),
+                    typeof( FinancialTransaction ),
+                    financialTransaction.Id,
+                    false );
 
                 rockContext.SaveChanges();
             }
@@ -641,6 +722,31 @@ namespace RockWeb.Blocks.Finance
             var personId = ddlIndividual.SelectedValue.AsIntegerOrNull();
 
             LoadPersonPreview( personId );
+
+            if ( personId.HasValue )
+            {
+                // if a person was selected using the PersonDropDown, set the PersonPicker to unselected
+                ppSelectNew.SetValue( null );
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectPerson event of the ppSelectNew control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ppSelectNew_SelectPerson( object sender, EventArgs e )
+        {
+            if ( ppSelectNew.PersonId.HasValue )
+            {
+                // if a person was selected using the PersonPicker, set the PersonDropDown to unselected
+                ddlIndividual.SetValue( string.Empty );
+                LoadPersonPreview( ppSelectNew.PersonId.Value );
+                _focusControl = rptAccounts.ControlsOfTypeRecursive<Rock.Web.UI.Controls.CurrencyBox>().FirstOrDefault();
+                
+                nbSaveError.Text = string.Empty;
+                nbSaveError.Visible = false;
+            }
         }
 
         /// <summary>
@@ -656,8 +762,13 @@ namespace RockWeb.Blocks.Finance
             if ( person != null )
             {
                 lPersonName.Text = person.FullName;
+                
                 var spouse = person.GetSpouse( rockContext );
-                lSpouseName.Text = spouse != null ? string.Format( "<strong>Spouse: </strong>{0}", spouse.FullName ) : string.Empty;
+                lSpouseName.Text = spouse != null ? string.Format( "<p><strong>Spouse: </strong>{0}</p>", spouse.FullName ) : string.Empty;
+
+                var campus = person.GetCampus();
+                lCampus.Text = campus != null ? string.Format( "<p><strong>Campus: </strong>{0}</p>", campus.Name ) : string.Empty;
+                
                 rptrAddresses.DataSource = person.GetFamilies().SelectMany( a => a.GroupLocations ).ToList();
                 rptrAddresses.DataBind();
             }

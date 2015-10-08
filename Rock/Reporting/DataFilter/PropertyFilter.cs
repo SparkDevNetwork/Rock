@@ -32,9 +32,9 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataFilter
 {
     /// <summary>
-    /// Filter entities on any of it's property or attribute values
+    /// Filter entities on any of its property or attribute values
     /// </summary>
-    [Description( "Filter entities on any of it's property or attribute values" )]
+    [Description( "Filter entities on any of its property or attribute values" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Property Filter" )]
     public class PropertyFilter : EntityFieldFilter
@@ -114,9 +114,19 @@ namespace Rock.Reporting.DataFilter
         public override string FormatSelection( Type entityType, string selection )
         {
             string result = entityType.Name.SplitCase() + " Property";
+            List<string> values;
 
             // First value is the field id (property of attribute), remaining values are the field type's filter values
-            var values = JsonConvert.DeserializeObject<List<string>>( selection );
+            try
+            {
+                values = JsonConvert.DeserializeObject<List<string>>( selection );
+            }
+            catch (Exception ex)
+            {
+                ExceptionLogService.LogException( ex, null );
+                return "Error";
+            }
+
             if ( values.Count >= 1 )
             {
                 // First value in array is always the name of the entity field being filtered
@@ -126,7 +136,7 @@ namespace Rock.Reporting.DataFilter
                 var entityField = entityFields.FirstOrDefault( p => p.Name == entityFieldName );
                 if ( entityField != null )
                 {
-                    result = entityField.FormattedFilterDescription( FixDelimination( values.Skip( 1 ).ToList() ));
+                    result = entityField.FormattedFilterDescription( FixDelimination( values.Skip( 1 ).ToList() ) );
                 }
             }
 
@@ -137,34 +147,86 @@ namespace Rock.Reporting.DataFilter
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
+        public override Control[] CreateChildControls( Type entityType, FilterField filterControl, FilterMode filterMode )
         {
-            var controls = new List<Control>();
+            var containerControl = new DynamicControlsPanel();
+            containerControl.ID = string.Format( "{0}_containerControl", filterControl.ID );
+            containerControl.CssClass = "js-container-control";
+            filterControl.Controls.Add( containerControl );
 
             // Create the field selection dropdown
-            var ddlProperty = new RockDropDownList();
-            ddlProperty.ID = string.Format( "{0}_ddlProperty", filterControl.ID );
-            filterControl.Controls.Add( ddlProperty );
-            controls.Add( ddlProperty );
+            var ddlEntityField = new RockDropDownList();
+            ddlEntityField.ID = string.Format( "{0}_ddlProperty", filterControl.ID );
+            ddlEntityField.ClientIDMode = ClientIDMode.Predictable;
+            containerControl.Controls.Add( ddlEntityField );
 
             // add Empty option first
-            ddlProperty.Items.Add(new ListItem());
+            ddlEntityField.Items.Add( new ListItem() );
+            var rockBlock = filterControl.RockBlock();
 
-            foreach ( var entityField in EntityHelper.GetEntityFields( entityType ) )
+            this.entityFields = EntityHelper.GetEntityFields( entityType );
+            foreach ( var entityField in this.entityFields )
             {
-                string controlId = string.Format( "{0}_{1}", filterControl.ID, entityField.Name );
-                var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true );
-                if ( control != null )
+                bool isAuthorized = true;
+                if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue)
                 {
-                    // Add the field to the dropdown of availailable fields
-                    ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
-                    filterControl.Controls.Add( control );
-                    controls.Add( control );
+                    var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
+                    if ( attribute != null && rockBlock != null )
+                    {
+                        // only show the Attribute field in the drop down if they have VIEW Auth to it
+                        isAuthorized = attribute.IsAuthorized( Rock.Security.Authorization.VIEW, rockBlock.CurrentPerson );
+                    }
+                }
+
+                if ( isAuthorized )
+                {
+                    ddlEntityField.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
                 }
             }
+            
+            ddlEntityField.AutoPostBack = true;
 
-            return controls.ToArray();
+            // grab the currently selected value off of the request params since we are creating the controls after the Page Init
+            var selectedValue = ddlEntityField.Page.Request.Params[ddlEntityField.UniqueID];
+            if ( selectedValue != null )
+            {
+                ddlEntityField.SelectedValue = selectedValue;
+                ddlEntityField_SelectedIndexChanged( ddlEntityField, new EventArgs() );
+            }
+
+            ddlEntityField.SelectedIndexChanged += ddlEntityField_SelectedIndexChanged;
+
+            return new Control[] { containerControl };
         }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlEntityField control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlEntityField_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var ddlEntityField = sender as RockDropDownList;
+            var containerControl = ddlEntityField.FirstParentControlOfType<DynamicControlsPanel>();
+            FilterField filterControl = ddlEntityField.FirstParentControlOfType<FilterField>();
+            
+            var entityField = this.entityFields.FirstOrDefault( a => a.Name == ddlEntityField.SelectedValue );
+            if ( entityField != null )
+            {
+                string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.Name );
+                if ( !containerControl.Controls.OfType<Control>().Any( a => a.ID == controlId ) )
+                {
+                    var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, filterControl.FilterMode );
+                    if ( control != null )
+                    {
+                        // Add the filter controls of the selected field
+                        containerControl.Controls.Add( control );
+                    }
+                }
+            }
+        }
+
+        private List<EntityField> entityFields = null;
 
         /// <summary>
         /// Renders the controls.
@@ -173,67 +235,90 @@ namespace Rock.Reporting.DataFilter
         /// <param name="filterControl">The filter control.</param>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
+        /// <param name="filterMode"></param>
+        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls, FilterMode filterMode )
         {
             if ( controls.Length > 0 )
             {
-                DropDownList ddlEntityField = controls[0] as DropDownList;
+                var containerControl = controls[0] as DynamicControlsPanel;
+                
+                var ddlEntityField = containerControl.Controls[0] as DropDownList;
                 var entityFields = EntityHelper.GetEntityFields( entityType );
-                RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, controls.ToList(), filterControl.ID );
+                RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, containerControl.Controls.OfType<Control>().ToList(), containerControl.ID, filterMode );
             }
         }
 
         /// <summary>
         /// Gets the selection.
         /// </summary>
-        /// <param name="entityType"></param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
+        /// <param name="filterMode"></param>
         /// <returns></returns>
-        public override string GetSelection( Type entityType, Control[] controls )
+        public override string GetSelection( Type entityType, Control[] controls, FilterMode filterMode )
         {
             var values = new List<string>();
 
             if ( controls.Length > 0 )
             {
-                DropDownList ddlProperty = controls[0] as DropDownList;
+                var containerControl = controls[0] as DynamicControlsPanel;
+                
+                DropDownList ddlProperty = containerControl.Controls[0] as DropDownList;
+                ddlEntityField_SelectedIndexChanged( ddlProperty, new EventArgs() );
 
                 var entityFields = EntityHelper.GetEntityFields( entityType );
                 var entityField = entityFields.FirstOrDefault( f => f.Name == ddlProperty.SelectedValue );
                 if ( entityField != null )
                 {
-                    var control = controls.ToList().FirstOrDefault( c => c.ID.EndsWith( entityField.Name ) );
+                    var control = containerControl.Controls.OfType<Control>().ToList().FirstOrDefault( c => c.ID.EndsWith( entityField.Name ) );
                     if ( control != null )
                     {
                         values.Add( ddlProperty.SelectedValue );
-                        entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig ).ForEach( v => values.Add( v ) );
+                        entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig, filterMode ).ForEach( v => values.Add( v ) );
                     }
                 }
             }
-            return values.ToJson();
+
+            string result = values.ToJson();
+            return result;
         }
 
         /// <summary>
         /// Sets the selection.
         /// </summary>
-        /// <param name="entityType"></param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
-        public override void SetSelection( Type entityType, Control[] controls, string selection )
+        /// <param name="filterMode"></param>
+        public override void SetSelection( Type entityType, Control[] controls, string selection, FilterMode filterMode )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
                 var values = JsonConvert.DeserializeObject<List<string>>( selection );
-
-                DropDownList ddlProperty = controls[0] as DropDownList;
+                var containerControl = controls[0] as DynamicControlsPanel;
+                var ddlEntityField = containerControl.Controls[0] as DropDownList;
+                
                 var entityFields = EntityHelper.GetEntityFields( entityType );
-                SetEntityFieldSelection( entityFields, ddlProperty, values, controls.ToList() );
+
+                // set the selected Field, but not the filter values yet
+                var entityFieldControls = containerControl.Controls.OfType<Control>().ToList();
+                SetEntityFieldSelection( entityFields, ddlEntityField, values, entityFieldControls, false );
+                
+                // build the Field specific filter controls
+                ddlEntityField_SelectedIndexChanged( ddlEntityField, new EventArgs() );
+
+                // update the list of entityFieldControls since ddlEntityField_SelectedIndexChanged added more
+                entityFieldControls = containerControl.Controls.OfType<Control>().ToList();
+
+                // set the selected Field and filter values
+                SetEntityFieldSelection( entityFields, ddlEntityField, values, entityFieldControls, true );
             }
         }
 
         /// <summary>
         /// Gets the expression.
         /// </summary>
-        /// <param name="entityType"></param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>

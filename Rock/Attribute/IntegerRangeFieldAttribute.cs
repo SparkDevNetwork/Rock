@@ -22,7 +22,7 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute for setting a numeric range that allows Integers.  For example, Min and Max, or Between.
+    /// Field Attribute for setting a numeric range that allows Integers.  For example, Min and Max, or Between. Stored as comma-delimited pair of integers.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class IntegerRangeFieldAttribute : FieldAttribute

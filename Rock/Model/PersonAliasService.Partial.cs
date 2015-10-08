@@ -210,5 +210,18 @@ namespace Rock.Model
                 .FirstOrDefault();
         }
 
+        /// <summary>
+        /// Gets the person.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <returns></returns>
+        public Person GetPerson( int personAliasId )
+        {
+            return Queryable()
+                .Where( a => a.Id.Equals( personAliasId ) )
+                .Select( a => a.Person )
+                .FirstOrDefault();
+        }
+
     }
 }

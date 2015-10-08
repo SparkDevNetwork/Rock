@@ -118,11 +118,11 @@ namespace Rock.Apps.CheckScannerUtility
         /// </value>
         [DefaultSettingValueAttribute( "0" )]
         [UserScopedSetting]
-        public ImageColorType ImageColorType
+        public RangerImageColorTypes ImageColorType
         {
             get
             {
-                return (ImageColorType)this["ImageColorType"];
+                return (RangerImageColorTypes)this["ImageColorType"];
             }
 
             set
@@ -197,7 +197,7 @@ namespace Rock.Apps.CheckScannerUtility
                 string result = this["TenderTypeValueGuid"] as string;
                 if ( string.IsNullOrWhiteSpace( result ) )
                 {
-                    result = Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK;
+                    result = Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK;
                 }
 
                 return result;
@@ -224,7 +224,7 @@ namespace Rock.Apps.CheckScannerUtility
                 string result = this["SourceTypeValueGuid"] as string;
                 if ( string.IsNullOrWhiteSpace( result ) )
                 {
-                    result = Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION;
+                    result = Rock.Client.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION;
                 }
 
                 return result;
@@ -248,7 +248,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                return this["EnableRearImage"] as bool? ?? true;
+                return this["EnableRearImage"] as bool? ?? false;
             }
 
             set
@@ -263,13 +263,13 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// <c>true</c> if [prompt to scan rear image]; otherwise, <c>false</c>.
         /// </value>
-        [DefaultSettingValueAttribute( "true" )]
+        [DefaultSettingValueAttribute( "false" )]
         [UserScopedSetting]
         public bool PromptToScanRearImage
         {
             get
             {
-                return this["PromptToScanRearImage"] as bool? ?? true;
+                return this["PromptToScanRearImage"] as bool? ?? false;
             }
 
             set
@@ -296,6 +296,68 @@ namespace Rock.Apps.CheckScannerUtility
             set
             {
                 this["EnableDoubleDocDetection"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether check scanning should warn when a bad MICR is detected. 
+        /// This should normally be set to true, but they might want to set it to false if they are scanning a mixture of checks and envelopes, etc
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable smart scan]; otherwise, <c>false</c>.
+        /// </value>
+        [DefaultSettingValueAttribute( "true" )]
+        [UserScopedSetting]
+        public bool EnableSmartScan
+        {
+            get
+            {
+                return this["EnableSmartScan"] as bool? ?? true;
+            }
+
+            set
+            {
+                this["EnableSmartScan"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the sensitivity.
+        /// </summary>
+        /// <value>
+        /// The sensitivity.
+        /// </value>
+        [UserScopedSetting]
+        public string Sensitivity
+        {
+            get
+            {
+                return this["Sensitivity"] as string ?? "0";
+            }
+
+            set
+            {
+                this["Sensitivity"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the plurality.
+        /// </summary>
+        /// <value>
+        /// The plurality.
+        /// </value>
+        [UserScopedSetting]
+        public string Plurality
+        {
+            get
+            {
+                return this["Plurality"] as string ?? "0";
+            }
+
+            set
+            {
+                this["Plurality"] = value;
             }
         }
 

@@ -130,7 +130,7 @@ namespace Rock.Web.Cache
                 this.ApiId = RestAction.ApiId;
                 this.Path = RestAction.Path;
 
-                SetCache( RestAction.ApiId, new Lazy<int>( () => AsLazy( model.Id ) ), new CacheItemPolicy() );
+                SetCache( RestAction.ApiId, model.Id, new CacheItemPolicy() );
             }
         }
 
@@ -182,11 +182,11 @@ namespace Rock.Web.Cache
 
         private static RestActionCache LoadById2( int id, RockContext rockContext )
         {
-            var RestActionService = new RestActionService( rockContext );
-            var RestActionModel = RestActionService.Get( id );
-            if ( RestActionModel != null )
+            var restActionService = new RestActionService( rockContext );
+            var restActionModel = restActionService.Get( id );
+            if ( restActionModel != null )
             {
-                return new RestActionCache( RestActionModel );
+                return new RestActionCache( restActionModel );
             }
 
             return null;
@@ -303,10 +303,10 @@ namespace Rock.Web.Cache
         {
             if ( id.HasValue )
             {
-                var RestAction = Read( id.Value );
-                if ( RestAction != null )
+                var restAction = Read( id.Value );
+                if ( restAction != null )
                 {
-                    return RestAction.Method;
+                    return restAction.Method;
                 }
             }
 

@@ -33,7 +33,7 @@ namespace Rock.Web.UI.Controls.Communication
         #region UI Controls
 
         private RockTextBox tbFromName;
-        private RockTextBox tbFromAddress;
+        private EmailBox ebFromAddress;
         private RockLiteral lFromName;
         private RockLiteral lFromAddress;
         private RockTextBox tbReplyToAddress;
@@ -72,7 +72,7 @@ namespace Rock.Web.UI.Controls.Communication
                 EnsureChildControls();
                 var data = new Dictionary<string, string>();
                 data.Add( "FromName", tbFromName.Text );
-                data.Add( "FromAddress", tbFromAddress.Text );
+                data.Add( "FromAddress", ebFromAddress.Text );
                 data.Add( "ReplyTo", tbReplyToAddress.Text );
                 data.Add( "Subject", tbSubject.Text );
                 data.Add( "HtmlMessage", htmlMessage.Text );
@@ -85,7 +85,7 @@ namespace Rock.Web.UI.Controls.Communication
             {
                 EnsureChildControls();
                 tbFromName.Text = GetDataValue( value, "FromName" );
-                tbFromAddress.Text = GetDataValue( value, "FromAddress" );
+                ebFromAddress.Text = GetDataValue( value, "FromAddress" );
                 tbReplyToAddress.Text = GetDataValue( value, "ReplyTo" );
                 tbSubject.Text = GetDataValue( value, "Subject" ); ;
                 htmlMessage.Text = GetDataValue( value, "HtmlMessage" );
@@ -168,10 +168,10 @@ namespace Rock.Web.UI.Controls.Communication
             lFromName.Label = "From Name";
             Controls.Add( lFromName );
 
-            tbFromAddress = new RockTextBox();
-            tbFromAddress.ID = string.Format( "tbFromAddress_{0}", this.ID );
-            tbFromAddress.Label = "From Address";
-            Controls.Add( tbFromAddress );
+            ebFromAddress = new EmailBox();
+            ebFromAddress.ID = string.Format( "ebFromAddress_{0}", this.ID );
+            ebFromAddress.Label = "From Address";
+            Controls.Add( ebFromAddress );
 
             lFromAddress = new RockLiteral();
             lFromAddress.ID = string.Format( "lFromAddress_{0}", this.ID );
@@ -234,7 +234,7 @@ namespace Rock.Web.UI.Controls.Communication
             {
                 EnsureChildControls();
                 tbFromName.ValidationGroup = value;
-                tbFromAddress.ValidationGroup = value;
+                ebFromAddress.ValidationGroup = value;
                 tbSubject.ValidationGroup = value;
             }
         }
@@ -253,9 +253,9 @@ namespace Rock.Web.UI.Controls.Communication
                 lFromName.Text = sender.FullName;
             }
 
-            if ( string.IsNullOrEmpty( tbFromAddress.Text ) )
+            if ( string.IsNullOrEmpty( ebFromAddress.Text ) )
             {
-                tbFromAddress.Text = sender.Email;
+                ebFromAddress.Text = sender.Email;
                 lFromAddress.Text = sender.Email;
             }
         }
@@ -267,7 +267,7 @@ namespace Rock.Web.UI.Controls.Communication
         public override void RenderControl( HtmlTextWriter writer )
         {
             tbFromName.Required = !IsTemplate;
-            tbFromAddress.Required = !IsTemplate;
+            ebFromAddress.Required = !IsTemplate;
             tbSubject.Required = !IsTemplate;
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
@@ -279,7 +279,7 @@ namespace Rock.Web.UI.Controls.Communication
             if ( !UseSimpleMode )
             {
                 tbFromName.RenderControl( writer );
-                tbFromAddress.RenderControl( writer );
+                ebFromAddress.RenderControl( writer );
                 tbReplyToAddress.RenderControl( writer );
             }
             else

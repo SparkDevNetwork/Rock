@@ -268,7 +268,13 @@ namespace Rock.Web.UI.Controls
         {
             base.LoadViewState( savedState );
 
-            int? locationId = ViewState["LocationId"] as int?;
+            var currentPickerMode = ViewState["CurrentPickerMode"] as LocationPickerMode?;
+            if (currentPickerMode.HasValue)
+            {
+                this.CurrentPickerMode = currentPickerMode.Value;
+            }
+
+            var locationId = ViewState["LocationId"] as int?;
             if ( locationId.HasValue )
             {
                 var location = new LocationService( new RockContext() ).Get( locationId.Value );
@@ -287,6 +293,8 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override object SaveViewState()
         {
+            ViewState["CurrentPickerMode"] = this.CurrentPickerMode;
+            
             var location = this.Location;
             if ( location != null )
             {
@@ -408,6 +416,7 @@ namespace Rock.Web.UI.Controls
 
             _addressPicker = new LocationAddressPicker();
             _addressPicker.ID = this.ID + "_addressPicker";
+            _addressPicker.SelectGeography += _addressPicker_SelectGeography;
 
             _pointPicker = new GeoPicker();
             _pointPicker.ID = this.ID + "_pointPicker";
@@ -429,6 +438,16 @@ namespace Rock.Web.UI.Controls
             _pickersPanel.Controls.Add( _pointPicker );
             _pickersPanel.Controls.Add( _polygonPicker );
 
+        }
+
+        /// <summary>
+        /// Handles the SelectGeography event of the _addressPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _addressPicker_SelectGeography( object sender, EventArgs e )
+        {
+            Location = _addressPicker.Location;
         }
 
         /// <summary>
@@ -538,6 +557,18 @@ namespace Rock.Web.UI.Controls
                 _pointPicker.Label = value;
                 _polygonPicker.Label = value;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
         }
 
         /// <summary>

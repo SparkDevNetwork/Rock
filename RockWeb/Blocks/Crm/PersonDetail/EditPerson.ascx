@@ -3,7 +3,7 @@
 
 <%--
     ******************************************************************************************************************************
-    * NOTE: The Security/EditMyAccount.ascx block has very similiar functionality.  If updating this block, make sure to check
+    * NOTE: The Security/AccountEdit.ascx block has very similiar functionality.  If updating this block, make sure to check
     * that block also.  It may need the same updates.
     ******************************************************************************************************************************
 --%>
@@ -106,12 +106,12 @@
                             <fieldset>
                             <legend>Contact Info</legend>
 
-                            <div class="form-horizontal">
+                            <div class="row">
                                 <asp:Repeater ID="rContactInfo" runat="server">
                                     <ItemTemplate>
-                                        <div class="form-group">
-                                            <div class="control-label col-sm-2"><%# Rock.Web.Cache.DefinedValueCache.Read( (int)Eval("NumberTypeValueId")).Value  %></div>
-                                            <div class="controls col-sm-10">
+                                        <div class="form-group phonegroup">
+                                            <div class="control-label col-sm-1 phonegroup-label"><%# Rock.Web.Cache.DefinedValueCache.Read( (int)Eval("NumberTypeValueId")).Value  %></div>
+                                            <div class="controls col-sm-11 phonegroup-number">
                                                 <div class="row">
                                                     <div class="col-sm-7">
                                                         <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
@@ -120,10 +120,10 @@
                                                     <div class="col-sm-5">
                                                         <div class="row">
                                                             <div class="col-xs-6">
-                                                                <asp:CheckBox ID="cbSms" runat="server" Text="sms" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' CssClass="js-sms-number" />
+                                                                <asp:CheckBox ID="cbSms" runat="server" Text="SMS" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' CssClass="js-sms-number" />
                                                             </div>
                                                             <div class="col-xs-6">
-                                                                <asp:CheckBox ID="cbUnlisted" runat="server" Text="unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
+                                                                <asp:CheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
                                                             </div>
                                                         </div>
                                                     </div>
@@ -153,12 +153,30 @@
                         </fieldset>
                         </div>
 
-                        <div class="well">
-                            <fieldset>
-                            <legend>Contribution Info</legend>
-                            <Rock:RockDropDownList ID="ddlGivingGroup" runat="server" Label="Combine Giving With" Help="The family that this person's gifts should be combined with for contribution statements and reporting.  If left blank, their contributions will not be grouped with their family" /> 
-                        </fieldset>
-                        </div>
+
+                        <Rock:PanelWidget runat="server" ID="pwAdvanced" Title="Advanced Settings">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlGivingGroup" runat="server" Label="Combine Giving With" Help="The family that this person's gifts should be combined with for contribution statements and reporting.  If left blank, their contributions will not be grouped with their family" /> 
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockControlWrapper ID="rcwPreviousNames" runat="server" Label="Previous Last Names">
+                                        <Rock:Grid ID="grdPreviousNames" runat="server" DisplayType="Light" DataKeyNames="Guid" ShowConfirmDeleteDialog="false" >
+                                            <Columns>
+                                                <Rock:RockBoundField DataField="LastName" />
+                                                <Rock:DeleteField OnClick="grdPreviousNames_Delete" />
+                                            </Columns>
+                                        </Rock:Grid>
+                                    </Rock:RockControlWrapper>
+                                </div>
+                            </div>
+                        </Rock:PanelWidget>
+
+                        <Rock:ModalDialog runat="server" ID="mdPreviousName" Title="Add Previous Last Name" ValidationGroup="vgPreviousName" OnSaveClick="mdPreviousName_SaveClick">
+                            <Content>
+                                <Rock:RockTextBox ID="tbPreviousLastName" runat="server" Required="true" ValidationGroup="vgPreviousName" />
+                            </Content>
+                        </Rock:ModalDialog>
 
                         <div class="actions">
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />

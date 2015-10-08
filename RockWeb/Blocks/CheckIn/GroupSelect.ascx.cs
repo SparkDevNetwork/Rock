@@ -23,7 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.CheckIn;
-using Rock.Model;
+using Rock.Model; 
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.CheckIn
                     ClearSelection();
 
                     CheckInPerson person = null;
-                    CheckInGroupType groupType = null;
+                    List<CheckInGroupType> groupTypes = null;
 
                     person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
                         .SelectMany( f => f.People.Where( p => p.Selected ) )
@@ -58,19 +58,22 @@ namespace RockWeb.Blocks.CheckIn
 
                     if ( person != null )
                     {
-                        groupType = person.GroupTypes.Where( t => t.Selected )
-                                .FirstOrDefault();
+                        groupTypes = person.GroupTypes.Where( t => t.Selected ).ToList();
                     }
 
-                    if ( groupType == null )
+                    if ( groupTypes == null || !groupTypes.Any() )
                     {
                         GoBack();
                     }
 
                     lTitle.Text = person.ToString();
-                    lSubTitle.Text = groupType.ToString();
+                    lSubTitle.Text = groupTypes
+                        .Where( t => t.GroupType != null )
+                        .Select( t => t.GroupType.Name )
+                        .ToList().AsDelimited( ", " );
 
-                    var availGroups = groupType.Groups.Where( g => !g.ExcludedByFilter).ToList();
+                    var availGroups = groupTypes
+                        .SelectMany( t => t.Groups.Where( g => !g.ExcludedByFilter) ).ToList();
                     if ( availGroups.Count == 1 )
                     {
                         if ( UserBackedUp )
@@ -85,7 +88,10 @@ namespace RockWeb.Blocks.CheckIn
                     }
                     else
                     {
-                        rSelection.DataSource = availGroups;
+                        rSelection.DataSource = availGroups
+                            .OrderBy( g => g.Group.Order )
+                            .ToList();
+
                         rSelection.DataBind();
                     }
                 }
@@ -116,15 +122,23 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( KioskCurrentlyActive )
             {
-                var groupType = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                    .SelectMany( f => f.People.Where( p => p.Selected ) 
+                var groupTypes = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                    .SelectMany( f => f.People.Where( p => p.Selected )
                         .SelectMany( p => p.GroupTypes.Where( t => t.Selected ) ) )
-                    .FirstOrDefault();
+                            .ToList();
 
-                if ( groupType != null )
+                if ( groupTypes != null && groupTypes.Any() )
                 {
                     int id = Int32.Parse( e.CommandArgument.ToString() );
-                    var group = groupType.Groups.Where( g => g.Group.Id == id ).FirstOrDefault();
+                    var group = groupTypes.SelectMany( t => t.Groups)
+                        .Where( g => g.Group.Id == id ).FirstOrDefault();
+
+                    // deselect any group types that don't contain the group
+                    foreach ( var groupType in groupTypes )
+                    {
+                        groupType.Selected = groupType.Groups.Contains(group);
+                    }
+
                     if ( group != null )
                     {
                         group.Selected = true;
@@ -152,7 +166,7 @@ namespace RockWeb.Blocks.CheckIn
                         .SelectMany( t => t.Groups.Where( g => g.Selected ) 
                             .SelectMany( g => g.Locations.Where( l => !l.ExcludedByFilter ) ) ) ) )
                 .Count() <= 0,
-                "<ul><li>Sorry, based on your selection, there are currently not any available locations that can be checked into.</li></ul>" );
+                "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>" );
         }
     }
 }

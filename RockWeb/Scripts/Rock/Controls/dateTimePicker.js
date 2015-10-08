@@ -14,29 +14,31 @@
                     dateFormat = options.format;
                 }
 
-                var $dp = $('#' + options.id + " .js-datetime-date");
-                var $tp = $('#' + options.id + " .js-datetime-time");
+                var $dp = $('#' + options.id + " .input-group.date");
 
                 // uses https://github.com/eternicode/bootstrap-datepicker
                 $dp.datepicker({
                     format: dateFormat,
                     autoclose: true,
                     todayBtn: true,
-                    startView: options.startView || 'month'
+                    startView: options.startView || 'month',
+                    todayHighlight: options.todayHighlight || true
+                });
+                
+                // if the guest clicks the addon select all the text in the input
+                $dp.find('.input-group-addon').on('click', function () {
+                    $(this).siblings('.form-control').select();
                 });
 
-                // uses https://github.com/jdewit/bootstrap-timepicker
-                $tp.timepicker({
-                    defaultTime: false,
-                    appendWidgetTo: '.bootstrap-timepicker'
-                });
-
-                $tp.on('show.timepicker', function (e) {
-                    var $scrollcontainer = $tp.closest('.scroll-container');
-                    if ($scrollcontainer.length) {
-                        $scrollcontainer.tinyscrollbar_update('relative');
+                var $tp = $('#' + options.id + " .js-datetime-time");
+                if ($tp) {
+                    var $tpid = $tp.attr('id');
+                    if ($tpid) {
+                        Rock.controls.timePicker.initialize({
+                            id: $tpid
+                        });
                     }
-                });
+                }
 
                 var $dateTimePickerContainer = $dp.closest('.js-datetime-picker-container');
                 

@@ -1,4 +1,13 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupSelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.GroupSelect" %>
+
+<script type="text/javascript">
+    Sys.Application.add_load(function () {
+        $('a.btn-checkin-select').click(function () {
+            $(this).siblings().attr('onclick', 'return false;');
+        });
+    });
+</script>
+
 <asp:UpdatePanel ID="upContent" runat="server">
 <ContentTemplate>
 

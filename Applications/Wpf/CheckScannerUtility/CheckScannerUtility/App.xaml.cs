@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Windows;
+using Rock.Net;
 using Rock.Wpf;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -39,9 +41,29 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="System.Windows.Threading.DispatcherUnhandledExceptionEventArgs"/> instance containing the event data.</param>
         public void App_DispatcherUnhandledException( object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e )
         {
+            LogException( e.Exception );
             ErrorMessageWindow errorMessageWindow = new ErrorMessageWindow(e.Exception);
             errorMessageWindow.ShowDialog();
             e.Handled = true;
+        }
+
+        /// <summary>
+        /// Silently tries to log the exception to the server's exception log service
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        public static void LogException( Exception ex)
+        {
+            try
+            {
+                RockConfig config = RockConfig.Load();
+                RockRestClient client = new RockRestClient( config.RockBaseUrl );
+                client.Login( config.Username, config.Password );
+                client.PostData<Exception>( "api/ExceptionLogs/LogException", ex );
+            }
+            catch
+            {
+                // intentionally ignore if we can't log the exception to the server
+            }
         }
     }
 }

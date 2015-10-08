@@ -35,6 +35,12 @@ namespace Rock.CheckIn
     [TextField( "Workflow Activity", "The name of the workflow activity to run on selection.", false, "" )]
     public abstract class CheckInBlock : RockBlock
     {
+
+        /// <summary>
+        /// The current theme.
+        /// </summary>
+        protected string CurrentTheme { get; set; }
+
         /// <summary>
         /// The current kiosk id
         /// </summary>
@@ -98,6 +104,39 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [manager logged in].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [manager logged in]; otherwise, <c>false</c>.
+        /// </value>
+        protected bool ManagerLoggedIn
+        {
+            get
+            {
+                return this.CurrentCheckInState != null && this.CurrentCheckInState.ManagerLoggedIn;
+            }
+
+            set
+            {
+                if (this.CurrentCheckInState != null)
+                {
+                    this.CurrentCheckInState.ManagerLoggedIn = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the locations for this Kiosk for the configured group types
+        /// </summary>
+        /// <value>
+        /// The locations.
+        /// </value>
+        protected IEnumerable<Location> GetGroupTypesLocations( RockContext rockContext )
+        {
+            return CurrentCheckInState.Kiosk.Locations( CurrentGroupTypeIds, rockContext );
+        }
+
+        /// <summary>
         /// Gets a value indicating whether page was navigated to by user selecting Back.
         /// </summary>
         /// <value>
@@ -141,6 +180,8 @@ namespace Rock.CheckIn
                 using ( var rockContext = new RockContext() )
                 {
                     var workflowTypeService = new WorkflowTypeService( rockContext );
+                    var workflowService = new WorkflowService( rockContext );
+
                     var workflowType = workflowTypeService.Queryable( "ActivityTypes" )
                         .Where( w => w.Guid.Equals( guid.Value ) )
                         .FirstOrDefault();
@@ -150,13 +191,22 @@ namespace Rock.CheckIn
                         if ( CurrentWorkflow == null )
                         {
                             CurrentWorkflow = Rock.Model.Workflow.Activate( workflowType, CurrentCheckInState.Kiosk.Device.Name, rockContext );
+                            
+                            if (Request["Override"] != null)
+                            {
+                                if ( Request["Override"].ToString() == "True" )
+                                {
+                                    CurrentWorkflow.SetAttributeValue( "Override", "True" );
+                                }
+                            }
+                            
                         }
 
                         var activityType = workflowType.ActivityTypes.Where( a => a.Name == activityName ).FirstOrDefault();
                         if ( activityType != null )
                         {
                             WorkflowActivity.Activate( activityType, CurrentWorkflow, rockContext );
-                            if ( CurrentWorkflow.Process( rockContext, CurrentCheckInState, out errorMessages ) )
+                            if ( workflowService.Process( CurrentWorkflow, CurrentCheckInState, out errorMessages ) )
                             {
                                 // Keep workflow active for continued processing
                                 CurrentWorkflow.CompletedDateTime = null;
@@ -184,6 +234,11 @@ namespace Rock.CheckIn
         /// </summary>
         protected void SaveState()
         {
+            if ( !string.IsNullOrWhiteSpace( CurrentTheme))
+            {
+                Session["CheckInTheme"] = CurrentTheme;
+            }
+
             if ( CurrentKioskId.HasValue )
             {
                 Session["CheckInKioskId"] = CurrentKioskId.Value;
@@ -316,6 +371,14 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Navigates to next page.
+        /// </summary>
+        protected void NavigateToNextPage( Dictionary<string, string> queryParams )
+        {
+            NavigateToLinkedPage( "NextPage", queryParams );
+        }
+
+        /// <summary>
         /// Navigates to previous page.
         /// </summary>
         protected void NavigateToPreviousPage()
@@ -327,6 +390,11 @@ namespace Rock.CheckIn
 
         private void GetState()
         {
+            if ( Session["CurrentTheme"] != null )
+            {
+                CurrentTheme = Session["CurrentTheme"].ToString();
+            }
+
             if ( Session["CheckInKioskId"] != null )
             {
                 CurrentKioskId = (int)Session["CheckInKioskId"];

@@ -86,6 +86,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     BindFilter();
                     BindGrid();
+
+                    if ( Person != null )
+                    {
+                        if ( Person.CreatedDateTime.HasValue )
+                        {
+                            hlDateAdded.Text = String.Format( "Date Created: {0}", Person.CreatedDateTime.Value.ToShortDateString() );
+                        }
+                        else
+                        {
+                            hlDateAdded.Visible = false;
+                        }
+                    }
                 }
             }
         }
@@ -299,6 +311,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     PersonName = h.CreatedByPersonAlias != null && h.CreatedByPersonAlias.Person != null ? h.CreatedByPersonAlias.Person.NickName + " " + h.CreatedByPersonAlias.Person.LastName : "",
                     CreatedDateTime = h.CreatedDateTime
                 } ).ToList();
+
+                gHistory.EntityTypeId = EntityTypeCache.Read<History>().Id;
                 gHistory.DataBind();
             }
 

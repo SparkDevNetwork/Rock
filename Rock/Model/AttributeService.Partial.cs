@@ -163,10 +163,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a global <see cref="Rock.Model.Attribute"/> by it's Key.
+        /// Returns a global <see cref="Rock.Model.Attribute"/> by its Key.
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the Attribute key.</param>
-        /// <returns>A global <see cref="Rock.Model.Attribute"/> by it's key.</returns>
+        /// <returns>A global <see cref="Rock.Model.Attribute"/> by its key.</returns>
         public Attribute GetGlobalAttribute( string key )
         {
             return this.Get( null, string.Empty, string.Empty, key );
@@ -183,16 +183,29 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a global <see cref="Rock.Model.Attribute"/> by it's Key.
+        /// Returns a global <see cref="Rock.Model.Attribute"/> by its Key.
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the Attribute key.</param>
-        /// <returns>A global <see cref="Rock.Model.Attribute"/> by it's key.</returns>
+        /// <returns>A global <see cref="Rock.Model.Attribute"/> by its key.</returns>
         public Attribute GetSystemSetting( string key )
         {
             return this.Get( null, Attribute.SYSTEM_SETTING_QUALIFIER, string.Empty, key );
         }
 
-    }
+        /// <summary>
+        /// Gets the Guid for the Attribute that has the specified Id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Guid? GetGuid( int id )
+        {
+            var cacheItem = Rock.Web.Cache.AttributeCache.Read( id );
+            if ( cacheItem != null )
+            {
+                return cacheItem.Guid;
+            }
 
-    
+            return null;
+        }
+    }
 }

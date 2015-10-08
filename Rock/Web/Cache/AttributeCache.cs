@@ -305,7 +305,9 @@ namespace Rock.Web.Cache
 
             this.QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
+            {
                 this.QualifierValues.Add( qualifier.Key, new ConfigurationValue( qualifier.Value ) );
+            }
 
             this.categoryIds = attribute.Categories.Select( c => c.Id ).ToList();
         }
@@ -320,12 +322,18 @@ namespace Rock.Web.Cache
         /// <param name="setId">if set to <c>true</c> [set id].</param>
         /// <param name="required">The required.</param>
         /// <param name="labelText">The label text.</param>
+        /// <param name="helpText">The help text.</param>
         /// <returns></returns>
-        public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null, string labelText = null )
+        public Control AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null, string labelText = null, string helpText = null )
         {
-            if (labelText == null)
+            if ( labelText == null )
             {
                 labelText = this.Name;
+            }
+
+            if ( helpText == null )
+            {
+                helpText = this.Description;
             }
 
             Control attributeControl = this.FieldType.Field.EditControl( QualifierValues, setId ? string.Format( "attribute_field_{0}", this.Id ) : string.Empty );
@@ -343,14 +351,14 @@ namespace Rock.Web.Cache
                     controls.Add( attributeControl );
 
                     rockControl.Label = labelText;
-                    rockControl.Help = this.Description;
+                    rockControl.Help = helpText;
                     rockControl.Required = required.HasValue ? required.Value : this.IsRequired;
                     rockControl.ValidationGroup = validationGroup;
                 }
                 else
                 {
-                    bool renderLabel = ( !string.IsNullOrEmpty( labelText ) );
-                    bool renderHelp = ( !string.IsNullOrWhiteSpace( Description ) );
+                    bool renderLabel = !string.IsNullOrEmpty( labelText );
+                    bool renderHelp = !string.IsNullOrWhiteSpace( helpText );
 
                     if ( renderLabel || renderHelp )
                     {
@@ -363,6 +371,7 @@ namespace Rock.Web.Cache
                         {
                             div.AddCssClass( "required" );
                         }
+
                         div.ClientIDMode = ClientIDMode.AutoID;
 
                         if ( renderLabel )
@@ -374,13 +383,15 @@ namespace Rock.Web.Cache
                             label.CssClass = "control-label";
                             label.AssociatedControlID = attributeControl.ID;
                         }
+
                         if ( renderHelp )
                         {
-                            var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
-                            div.Controls.Add( HelpBlock );
-                            HelpBlock.ClientIDMode = ClientIDMode.AutoID;
-                            HelpBlock.Text = this.Description;
+                            var helpBlock = new Rock.Web.UI.Controls.HelpBlock();
+                            div.Controls.Add( helpBlock );
+                            helpBlock.ClientIDMode = ClientIDMode.AutoID;
+                            helpBlock.Text = helpText;
                         }
+
                         div.Controls.Add( attributeControl );
                     }
                     else
@@ -411,6 +422,7 @@ namespace Rock.Web.Cache
             {
                 return attributeControl;
             }
+
             {
                 return attributeControl.FindControl( id );
             }
@@ -632,5 +644,161 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        #region Entity Attributes Cache
+
+        /// <summary>
+        /// The _lock
+        /// </summary>
+        private static object _lock = new object();
+
+        /// <summary>
+        /// Gets or sets all entity attributes.
+        /// </summary>
+        /// <value>
+        /// All entity attributes.
+        /// </value>
+        private static List<EntityAttributes> AllEntityAttributes { get; set; }
+
+        /// <summary>
+        /// Gets the by entity.
+        /// </summary>
+        /// <param name="entityTypeid">The entity typeid.</param>
+        /// <returns></returns>
+        internal static List<EntityAttributes> GetByEntity( int? entityTypeid )
+        {
+            LoadEntityAttributes();
+
+            return AllEntityAttributes
+                .Where( a => a.EntityTypeId.Equals( entityTypeid ) )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the by entity.
+        /// </summary>
+        /// <param name="entityTypeid">The entity typeid.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <returns></returns>
+        internal static List<int> GetByEntity( int? entityTypeid, string entityTypeQualifierColumn, string entityTypeQualifierValue )
+        {
+            LoadEntityAttributes();
+
+            return AllEntityAttributes
+                .Where( a =>
+                    a.EntityTypeId.Equals( entityTypeid ) &&
+                    a.EntityTypeQualifierColumn.Equals( entityTypeQualifierColumn ) &&
+                    a.EntityTypeQualifierValue.Equals( entityTypeQualifierValue ) )
+                .SelectMany( a => a.AttributeIds )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Loads the entity attributes.
+        /// </summary>
+        private static void LoadEntityAttributes()
+        {
+            lock ( _lock )
+            {
+                if ( AllEntityAttributes == null )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        AllEntityAttributes = QryEntityAttributes( rockContext );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Loads the entity attributes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        public static void LoadEntityAttributes( RockContext rockContext )
+        {
+            lock ( _lock )
+            {
+                if ( AllEntityAttributes == null )
+                {
+                    AllEntityAttributes = QryEntityAttributes( rockContext );
+                }
+            }
+        }
+
+        private static List<EntityAttributes> QryEntityAttributes( RockContext rockContext )
+        {
+            return new AttributeService( rockContext )
+                .Queryable().AsNoTracking()
+                .GroupBy( a => new
+                {
+                    a.EntityTypeId,
+                    a.EntityTypeQualifierColumn,
+                    a.EntityTypeQualifierValue
+                } )
+                .Select( a => new EntityAttributes()
+                {
+                    EntityTypeId = a.Key.EntityTypeId,
+                    EntityTypeQualifierColumn = a.Key.EntityTypeQualifierColumn,
+                    EntityTypeQualifierValue = a.Key.EntityTypeQualifierValue,
+                    AttributeIds = a.Select( v => v.Id ).ToList()
+                } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Flushes the entity attributes.
+        /// </summary>
+        public static void FlushEntityAttributes()
+        {
+            lock ( _lock )
+            {
+                AllEntityAttributes = null;
+            }
+        }
+
+        #endregion
     }
+
+    #region Helper class for entity attributes
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Serializable]
+    internal class EntityAttributes
+    {
+        /// <summary>
+        /// Gets or sets the entity type id.
+        /// </summary>
+        /// <value>
+        /// The entity type id.
+        /// </value>
+        public int? EntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier column.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier column.
+        /// </value>
+        public string EntityTypeQualifierColumn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier value.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier value.
+        /// </value>
+        public string EntityTypeQualifierValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute ids.
+        /// </summary>
+        /// <value>
+        /// The attribute ids.
+        /// </value>
+        public List<int> AttributeIds { get; set; }
+    }
+
+    #endregion
 }

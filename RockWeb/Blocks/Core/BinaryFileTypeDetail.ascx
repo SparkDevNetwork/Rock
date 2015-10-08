@@ -48,8 +48,9 @@
                             </div>
                         </div>
 
+                        <h3>Preferred File Settings</h3>
                         <div class="row">
-                            <h3>Preferred File Settings</h3>
+                            
                             <div class="col-md-6">
                                 <Rock:NumberBox ID="nbMaxWidth" runat="server" Label="Maximum Width" />
                                 <Rock:NumberBox ID="nbMaxHeight" runat="server" Label="Maximum Height" />

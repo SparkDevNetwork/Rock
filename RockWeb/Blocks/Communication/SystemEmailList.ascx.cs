@@ -222,6 +222,7 @@ namespace RockWeb.Blocks.Communication
                 gEmailTemplates.DataSource = systemEmails.OrderBy( a => a.Category.Name ).ThenBy( a => a.Title ).ToList();
             }
 
+            gEmailTemplates.EntityTypeId = EntityTypeCache.Read<Rock.Model.SystemEmail>().Id;
             gEmailTemplates.DataBind();
         }
 

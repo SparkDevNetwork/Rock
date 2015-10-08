@@ -52,13 +52,9 @@ namespace Rock.Workflow.Action.CheckIn
             if ( checkInState != null )
             {
                 AttendanceCode attendanceCode = null;
-                bool reuseCodeForFamily = false;
-                if ( bool.TryParse( GetAttributeValue( action, "ReuseCodeForFamily" ), out reuseCodeForFamily ) && reuseCodeForFamily )
-                {
-                    reuseCodeForFamily = true;
-                }
-
                 DateTime startDateTime = RockDateTime.Now;
+
+                bool reuseCodeForFamily = GetAttributeValue( action, "ReuseCodeForFamily" ).AsBoolean();
 
                 int securityCodeLength = 3;
                 if ( !int.TryParse( GetAttributeValue( action, "SecurityCodeLength" ), out securityCodeLength ) )
@@ -113,7 +109,7 @@ namespace Rock.Workflow.Action.CheckIn
                                             {
                                                 attendance = rockContext.Attendances.Create();
                                                 attendance.LocationId = location.Location.Id;
-                                                attendance.CampusId = location.CampuId;
+                                                attendance.CampusId = location.CampusId;
                                                 attendance.ScheduleId = schedule.Schedule.Id;
                                                 attendance.GroupId = group.Group.Id;
                                                 attendance.PersonAlias = primaryAlias;

@@ -176,12 +176,14 @@ namespace RockWeb.Blocks.Finance
                                             .Where( i => i.Selected == true )
                                             .Select( i => int.Parse( i.Value ) ).ToList();
 
-            var qry = transService.Queryable("TransactionDetails.Account")
+            string currentPersonGivingId = CurrentPerson.GivingId;
+
+            var qry = transService.Queryable( "TransactionDetails.Account,FinancialPaymentDetail" )
                         .Where( t => 
                             t.TransactionDetails.Any( d => selectedAccountIds.Contains( d.AccountId ) ) && 
                             t.AuthorizedPersonAlias != null &&
                             t.AuthorizedPersonAlias.Person != null &&
-                            t.AuthorizedPersonAlias.Person.GivingGroupId == CurrentPerson.GivingGroupId );
+                            t.AuthorizedPersonAlias.Person.GivingId == currentPersonGivingId );
 
             if (drpFilterDates.LowerValue.HasValue) {
                 qry = qry.Where(t => t.TransactionDateTime.Value >= drpFilterDates.LowerValue.Value);
@@ -219,7 +221,7 @@ namespace RockWeb.Blocks.Finance
                 pnlSummary.Visible = true;
                 foreach ( var key in accountTotals.Keys )
                 {
-                    lAccountSummary.Text += String.Format( "<li>{0}: ${1}</li>", key, accountTotals[key] );
+                    lAccountSummary.Text += String.Format( "<li>{0}: {2}{1}</li>", key, accountTotals[key], GlobalAttributesCache.Value( "CurrencySymbol" ) );
                 }
             }
             else
@@ -227,6 +229,7 @@ namespace RockWeb.Blocks.Finance
                 pnlSummary.Visible = false;
             }
 
+            gTransactions.EntityTypeId = EntityTypeCache.Read<FinancialTransaction>().Id;
             gTransactions.DataSource = txns.Select( t => new
             {
                 t.Id,
@@ -244,17 +247,17 @@ namespace RockWeb.Blocks.Finance
             string currencyType = string.Empty;
             string creditCardType = string.Empty;
 
-            if ( txn.CurrencyTypeValueId.HasValue )
+            if ( txn.FinancialPaymentDetail != null && txn.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
             {
-                int currencyTypeId = txn.CurrencyTypeValueId.Value;
+                int currencyTypeId = txn.FinancialPaymentDetail.CurrencyTypeValueId.Value;
 
                 var currencyTypeValue = DefinedValueCache.Read( currencyTypeId );
                 currencyType = currencyTypeValue != null ? currencyTypeValue.Value : string.Empty;
 
 
-                if ( txn.CreditCardTypeValueId.HasValue )
+                if ( txn.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
                 {
-                    int creditCardTypeId = txn.CreditCardTypeValueId.Value;
+                    int creditCardTypeId = txn.FinancialPaymentDetail.CreditCardTypeValueId.Value;
                     var creditCardTypeValue = DefinedValueCache.Read( creditCardTypeId );
                     creditCardType = creditCardTypeValue != null ? creditCardTypeValue.Value : string.Empty;
 
@@ -271,7 +274,7 @@ namespace RockWeb.Blocks.Finance
             var sb = new StringBuilder();
             foreach ( var transactionDetail in txn.TransactionDetails )
             {
-                sb.AppendFormat( "{0} (${1})<br>", transactionDetail.Account, transactionDetail.Amount );
+                sb.AppendFormat( "{0} ({2}{1})<br>", transactionDetail.Account, transactionDetail.Amount, GlobalAttributesCache.Value( "CurrencySymbol" ) );
             }
             return sb.ToString();
         }

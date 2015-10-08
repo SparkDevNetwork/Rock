@@ -329,6 +329,7 @@ namespace RockWeb.Blocks.Core
                         "Organization"
                 } ).ToList();
 
+                rGrid.EntityTypeId = EntityTypeCache.Read<Tag>().Id;
                 rGrid.DataBind();
             }
         }

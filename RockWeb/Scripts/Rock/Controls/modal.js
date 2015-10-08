@@ -109,10 +109,10 @@
                     $modalDialog.modal('hide');
                 }
 
-                // if all modals are closed, remove the modal-open class from body
+                // if all modals are closed, remove all the modal-open class 
                 if (!$('.modal').is(':visible')) {
                     {
-                        $('body').removeClass('modal-open');
+                        $('.modal-open').removeClass('modal-open');
                     }
                 }
             },

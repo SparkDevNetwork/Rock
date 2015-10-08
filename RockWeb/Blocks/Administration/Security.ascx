@@ -34,20 +34,23 @@
 </script>
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
-        <div class="nav navbar nav-pagelist">
-            <ul class="nav nav-pills">
-                <asp:Repeater ID="rptActions" runat="server">
-                    <ItemTemplate>
-                        <li class='<%# GetTabClass( Eval( "Key" ) ) %>'>
-                            <asp:LinkButton ID="lbAction" runat="server" Text='<%# Eval( "Key" ) %>' OnClick="lbAction_Click"></asp:LinkButton>
-                        </li>
-                    </ItemTemplate>
-                </asp:Repeater>
-                <li class="pull-right pill-help"><a data-toggle="collapse" href="#security-details" class=""><i class="fa fa-question-circle"></i></a></li>
-            </ul>
+
+        <div class="well well-pillwrap">
+            <div id="divActions" runat="server">
+                <ul class="nav nav-pills">
+                    <asp:Repeater ID="rptActions" runat="server">
+                        <ItemTemplate>
+                            <li class='<%# GetTabClass( Eval( "Key" ) ) %>'>
+                                <asp:LinkButton ID="lbAction" runat="server" Text='<%# Eval( "Key" ) %>' OnClick="lbAction_Click"></asp:LinkButton>
+                            </li>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                    <li class="pull-right pill-help"><a data-toggle="collapse" href="#security-details" class=""><i class="fa fa-question-circle"></i></a></li>
+                </ul>
+            </div>
         </div>
 
-        <div class="tab-content">
+        <div id="divContent" runat="server" class="tab-content">
 
             <asp:PlaceHolder ID="phList" runat="server">
                 <div id="security-details" class="security-action-description alert alert-info collapse">

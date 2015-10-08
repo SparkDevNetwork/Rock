@@ -27,18 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for UserLogin
+    /// Base client model for UserLogin that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class UserLogin
+    public partial class UserLoginEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
         public string ApiKey { get; set; }
-
-        /// <summary />
-        public EntityType EntityType { get; set; }
 
         /// <summary />
         public int? EntityTypeId { get; set; }
@@ -48,6 +45,12 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? FailedPasswordAttemptWindowStartDateTime { get; set; }
+
+        /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
 
         /// <summary />
         public bool? IsConfirmed { get; set; }
@@ -73,36 +76,97 @@ namespace Rock.Client
         /// <summary />
         public DateTime? LastPasswordExpirationWarningDateTime { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public string Password { get; set; }
+
         /// <summary />
         public int? PersonId { get; set; }
 
         /// <summary />
         public string UserName { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
+        /// </summary>
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source UserLogin object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( UserLogin source )
+        {
+            this.Id = source.Id;
+            this.ApiKey = source.ApiKey;
+            this.EntityTypeId = source.EntityTypeId;
+            this.FailedPasswordAttemptCount = source.FailedPasswordAttemptCount;
+            this.FailedPasswordAttemptWindowStartDateTime = source.FailedPasswordAttemptWindowStartDateTime;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
+            this.IsConfirmed = source.IsConfirmed;
+            this.IsLockedOut = source.IsLockedOut;
+            this.IsOnLine = source.IsOnLine;
+            this.LastActivityDateTime = source.LastActivityDateTime;
+            this.LastLockedOutDateTime = source.LastLockedOutDateTime;
+            this.LastLoginDateTime = source.LastLoginDateTime;
+            this.LastPasswordChangedDateTime = source.LastPasswordChangedDateTime;
+            this.LastPasswordExpirationWarningDateTime = source.LastPasswordExpirationWarningDateTime;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Password = source.Password;
+            this.PersonId = source.PersonId;
+            this.UserName = source.UserName;
+            this.CreatedDateTime = source.CreatedDateTime;
+            this.ModifiedDateTime = source.ModifiedDateTime;
+            this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            this.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
+    }
+
+    /// <summary>
+    /// Client model for UserLogin that includes all the fields that are available for GETs. Use this for GETs (use UserLoginEntity for POST/PUTs)
+    /// </summary>
+    public partial class UserLogin : UserLoginEntity
+    {
         /// <summary />
+        public EntityType EntityType { get; set; }
+
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-
-        /// <summary />
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

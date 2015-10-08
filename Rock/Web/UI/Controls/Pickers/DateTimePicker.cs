@@ -50,6 +50,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the help text.
         /// </summary>
         /// <value>
@@ -74,6 +91,25 @@ namespace Rock.Web.UI.Controls
                 {
                     HelpBlock.Text = value;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [highlight today].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [highlight today]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HighlightToday
+        {
+            get
+            {
+                return ViewState["HighlightToday"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["HighlightToday"] = value;
             }
         }
 
@@ -218,6 +254,41 @@ namespace Rock.Web.UI.Controls
                 {
                     _date.Text = value.Value.ToShortDateString();
                     _time.Text = value.Value.ToShortTimeString();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the selected time, even if Date is not set yet
+        /// </summary>
+        /// <value>
+        /// The selected time.
+        /// </value>
+        public TimeSpan? SelectedTime
+        {
+            get
+            {
+                EnsureChildControls();
+
+                DateTime? timeResult = _time.Text.AsDateTime();
+                if ( timeResult.HasValue )
+                {
+                    return timeResult.Value.TimeOfDay;
+                }
+
+                return null;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                if ( value.HasValue )
+                {
+                    _time.Text = value.Value.ToTimeString();
+                }
+                else
+                {
+                    _time.Text = string.Empty;
                 }
             }
         }
@@ -377,8 +448,8 @@ namespace Rock.Web.UI.Controls
             dateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
             dateFormat = dateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
 
-            var script = string.Format( @"Rock.controls.dateTimePicker.initialize({{ id: '{0}', startView: {1}, format: '{2}' }});",
-                this.ClientID, this.StartView.ConvertToInt(), dateFormat );
+            var script = string.Format( @"Rock.controls.dateTimePicker.initialize({{ id: '{0}', startView: {1}, format: '{2}', todayHighlight: {3} }});",
+                this.ClientID, this.StartView.ConvertToInt(), dateFormat, this.HighlightToday.ToString().ToLower() );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "datetime_picker-" + this.ClientID, script, true );
         }
 
@@ -407,7 +478,7 @@ namespace Rock.Web.UI.Controls
             {
 
                 writer.AddAttribute(HtmlTextWriterAttribute.Id, this.ClientID );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group js-datetime-picker-container" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group js-datetime-picker-container " + this.CssClass );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 if ( IsCurrentTimeOffset )
@@ -424,7 +495,7 @@ namespace Rock.Web.UI.Controls
                     _nbTimeOffset.Enabled = false;
                 }
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group input-width-md" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group input-width-md date" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _date.RenderControl( writer );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-addon" );
@@ -438,7 +509,7 @@ namespace Rock.Web.UI.Controls
                 _time.RenderControl( writer );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-addon" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( "<i class='fa fa-clock-o'></i>" );
+                writer.Write( "<span class='add-on'><i class='fa fa-clock-o'></i></span>" );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 

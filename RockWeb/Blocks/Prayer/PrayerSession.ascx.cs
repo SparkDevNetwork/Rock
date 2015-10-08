@@ -98,7 +98,15 @@ namespace RockWeb.Blocks.Prayer
                 lbFlag.Visible = _enableCommunityFlagging;
             }
 
-            notesComments.NoteTypeId = NoteTypeId;
+            if ( NoteTypeId.HasValue )
+            {
+                var noteType = NoteTypeCache.Read( NoteTypeId.Value );
+                if ( noteType != null )
+                {
+                    notesComments.NoteTypes = new List<NoteTypeCache> { noteType };
+                }
+            }
+
             notesComments.EntityId = CurrentPrayerRequestId;
 
             if ( lbNext.Visible )
@@ -131,11 +139,12 @@ namespace RockWeb.Blocks.Prayer
             }
 
             lbNext.Focus();
+            lbBack.Visible = false;
 
             pnlChooseCategories.Visible = false;
 
             string settingPrefix = string.Format( "prayer-categories-{0}-", this.BlockId );
-            SaveUserPreferences( settingPrefix );
+            SavePreferences( settingPrefix );
 
             SetAndDisplayPrayerRequests( cblCategories );
         }
@@ -170,6 +179,38 @@ namespace RockWeb.Blocks.Prayer
                 pnlPrayer.Visible = false;
                 lbStartAgain.Focus();
             }
+
+            lbBack.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbPrevious control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbBack_Click( object sender, EventArgs e )
+        {
+            int index = hfPrayerIndex.ValueAsInt();
+
+            index--;
+
+            List<int> prayerRequestIds = (List<int>)Session[_sessionKey];
+            int currentNumber = index + 1;
+            if ( currentNumber > 0 )
+            {
+                UpdateSessionCountLabel( currentNumber, prayerRequestIds.Count );
+
+                hfPrayerIndex.Value = index.ToString();
+                var rockContext = new RockContext();
+                PrayerRequestService service = new PrayerRequestService( rockContext );
+                int prayerRequestId = prayerRequestIds[index];
+                PrayerRequest request = service.Queryable( "RequestedByPersonAlias.Person" ).FirstOrDefault( p => p.Id == prayerRequestId );
+                ShowPrayerRequest( request, rockContext );
+            }
+            else
+            {
+                lbBack.Visible = false;
+            }
         }
 
         /// <summary>
@@ -190,6 +231,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e"></param>
         protected void lbStartAgain_Click( object sender, EventArgs e )
         {
+            lbBack.Visible = false;
             pnlChooseCategories.Visible = true;
             pnlFinished.Visible = false;
             pnlNoPrayerRequestsMessage.Visible = false;
@@ -335,7 +377,7 @@ namespace RockWeb.Blocks.Prayer
         /// Saves the users selected prayer categories for use during the next prayer session.
         /// </summary>
         /// <param name="settingPrefix"></param>
-        private void SaveUserPreferences( string settingPrefix )
+        private void SavePreferences( string settingPrefix )
         {
             var previouslyCheckedIds = this.GetUserPreference( settingPrefix ).SplitDelimitedValues();
 
@@ -365,7 +407,7 @@ namespace RockWeb.Blocks.Prayer
         {
             RockContext rockContext = new RockContext();
             PrayerRequestService service = new PrayerRequestService( rockContext );
-            var prayerRequests = service.GetByCategoryIds( categoriesList.SelectedValuesAsInt ).OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount );
+            var prayerRequests = service.GetByCategoryIds( categoriesList.SelectedValuesAsInt ).OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount ).ToList();
             List<int> list = prayerRequests.Select( p => p.Id ).ToList<int>();
 
             Session[_sessionKey] = list;
@@ -407,9 +449,9 @@ namespace RockWeb.Blocks.Prayer
             // put the request's id in the hidden field in case it needs to be flagged.
             hfIdValue.SetValue( prayerRequest.Id );
 
-            lPersonIconHtml.Text = Person.GetPhotoImageTag( prayerRequest.RequestedByPersonAlias, 50, 50 );
+            lPersonIconHtml.Text = Person.GetPhotoImageTag( prayerRequest.RequestedByPersonAlias, 50, 50, "pull-left margin-r-md img-thumbnail" );
 
-            notesComments.Visible = prayerRequest.AllowComments ?? false;
+            pnlPrayerComments.Visible = prayerRequest.AllowComments ?? false;
             if ( notesComments.Visible )
             {
                 notesComments.EntityId = prayerRequest.Id;
@@ -418,11 +460,20 @@ namespace RockWeb.Blocks.Prayer
 
             CurrentPrayerRequestId = prayerRequest.Id;
 
-            // save because the prayer count was just modified.
-            rockContext.SaveChanges();
+            try
+            {
+                // save because the prayer count was just modified.
+                rockContext.SaveChanges();
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
+            }
         }
 
         #endregion
 
-    }
+        
+        
+}
 }

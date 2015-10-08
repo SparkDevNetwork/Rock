@@ -160,7 +160,7 @@ namespace Rock.Reporting.DataSelect.Person
             phoneNumberTypeList.Items.Clear();
             foreach (var value in DefinedTypeCache.Read(Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid()).DefinedValues.OrderBy( a => a.Order).ThenBy(a => a.Value))
             {
-                phoneNumberTypeList.Items.Add( new ListItem( value.Value, value.Guid.ToString() ) );
+                phoneNumberTypeList.Items.Add( new ListItem( value.Value.EndsWith( "Phone" ) ? value.Value : value.Value + " Phone", value.Guid.ToString() ) );
             }
 
             phoneNumberTypeList.ID = parentControl.ID + "_phoneTypeList";

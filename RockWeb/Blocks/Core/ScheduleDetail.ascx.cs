@@ -136,6 +136,7 @@ namespace RockWeb.Blocks.Core
 
             var qryParams = new Dictionary<string, string>();
             qryParams["ScheduleId"] = schedule.Id.ToString();
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
             NavigateToPage( RockPage.Guid, qryParams );
         }
 
@@ -206,6 +207,7 @@ namespace RockWeb.Blocks.Core
                         qryParams["CategoryId"] = categoryId.ToString();
                     }
 
+                    qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
             }
@@ -403,8 +405,15 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
+            var friendlyText = schedule.ToFriendlyScheduleText();
+            if ( schedule.HasScheduleWarning() )
+            {
+                friendlyText = string.Format( "<label class='label label-warning'>{0}</label> <i class='fa fa-exclamation-triangle text-warning'></i>", friendlyText );
+            }
+            
             DescriptionList descriptionList = new DescriptionList()
                 .Add( "Description", schedule.Description ?? string.Empty )
+                .Add( "Schedule", friendlyText )
                 .Add( "Next Occurrence", occurrenceText )
                 .Add( "Category", schedule.Category != null ? schedule.Category.Name : string.Empty );
 

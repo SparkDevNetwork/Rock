@@ -19,12 +19,17 @@ using System;
 namespace Rock.SystemGuid
 {
     /// <summary>
-    /// System file types.  
+    /// System file types.
     /// </summary>
     public class Category
     {
 
         #region History Categories
+
+        /// <summary>
+        /// History changes for an event registration
+        /// </summary>
+        public const string HISTORY_EVENT_REGISTRATION = "813DF1A5-ADBD-481C-AC1D-884F0FA7AE77";
 
         /// <summary>
         /// History changes for person
@@ -55,6 +60,16 @@ namespace Rock.SystemGuid
         /// History of person activity
         /// </summary>
         public const string HISTORY_PERSON_ACTIVITY = "0836845E-5ED8-4ABE-8787-3B61EF2F0FA5";
+
+        /// <summary>
+        /// History of changes to batches
+        /// </summary>
+        public const string HISTORY_FINANCIAL_BATCH = "AF6A8CFF-F24F-4AA8-B126-94B6903961C0";
+
+        /// <summary>
+        /// History of changes to transaction and/or transaction details
+        /// </summary>
+        public const string HISTORY_FINANCIAL_TRANSACTION = "477EE3BE-C68F-48BD-B218-FAFC99AF56B3";
 
         #endregion
 
@@ -89,5 +104,15 @@ namespace Rock.SystemGuid
         public const string SYSTEM_EMAIL_WORKFLOW = "C7B9B5F1-9D90-485F-93E4-5D7D81EC2B12";
 
         #endregion
+
+        #region Merge Template Categories
+
+        /// <summary>
+        /// The Personal Merge Template Category guid
+        /// </summary>
+        public const string PERSONAL_MERGE_TEMPLATE = "A9F2F544-660B-4176-ACAD-88898416A66E";
+        
+        #endregion
+
     }
 }

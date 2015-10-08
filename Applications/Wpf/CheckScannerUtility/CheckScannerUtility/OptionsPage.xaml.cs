@@ -21,7 +21,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Rock.Model;
+using Rock.Client;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -107,12 +107,12 @@ namespace Rock.Apps.CheckScannerUtility
             string feederFriendlyNameType = BatchPage.ScannerFeederType.Equals( FeederType.MultipleItems ) ? "Multiple Items" : "Single Item";
             lblFeederType.Content = string.Format( "Feeder Type: {0}", feederFriendlyNameType );
 
-            switch ( (ImageColorType)rockConfig.ImageColorType )
+            switch ( (RangerImageColorTypes)rockConfig.ImageColorType )
             {
-                case ImageColorType.ImageColorTypeGrayscale:
+                case RangerImageColorTypes.ImageColorTypeGrayscale:
                     cboImageOption.SelectedValue = "Grayscale";
                     break;
-                case ImageColorType.ImageColorTypeColor:
+                case RangerImageColorTypes.ImageColorTypeColor:
                     cboImageOption.SelectedValue = "Color";
                     break;
                 default:
@@ -125,7 +125,23 @@ namespace Rock.Apps.CheckScannerUtility
                 cboMagTekCommPort.SelectedItem = string.Format( "COM{0}", rockConfig.MICRImageComPort );
             }
 
-            cboTransactionSourceType.SelectedItem = ( cboTransactionSourceType.ItemsSource as List<DefinedValue> ).FirstOrDefault( a => a.Guid == rockConfig.SourceTypeValueGuid.AsGuid() );
+            if (rockConfig.Sensitivity.AsInteger() == 0)
+            {
+                txtSensitivity.Text = string.Empty;
+            }
+            else
+            {
+                txtSensitivity.Text = rockConfig.Sensitivity;
+            }
+
+            if ( rockConfig.Plurality.AsInteger() == 0)
+            {
+                txtPlurality.Text = string.Empty;
+            }
+            else
+            {
+                txtPlurality.Text = rockConfig.Plurality;
+            }
         }
 
         /// <summary>
@@ -134,7 +150,7 @@ namespace Rock.Apps.CheckScannerUtility
         private void LoadDropDowns()
         {
             cboImageOption.Items.Clear();
-            cboImageOption.Items.Add( "Black and Whilte" );
+            cboImageOption.Items.Add( "Black and White" );
             cboImageOption.Items.Add( "Grayscale" );
             cboImageOption.Items.Add( "Color" );
 
@@ -161,9 +177,6 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             cboMagTekCommPort.ItemsSource = System.IO.Ports.SerialPort.GetPortNames();
-
-            cboTransactionSourceType.Items.Clear();
-            cboTransactionSourceType.ItemsSource = this.BatchPage.SourceTypeValueList.OrderBy( a => a.Order ).ThenBy( a => a.Value ).ToList();
         }
 
         /// <summary>
@@ -188,7 +201,6 @@ namespace Rock.Apps.CheckScannerUtility
                 RockRestClient client = new RockRestClient( txtRockUrl.Text );
                 client.Login( rockConfig.Username, rockConfig.Password );
                 BatchPage.LoggedInPerson = client.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", rockConfig.Username ) );
-                BatchPage.LoggedInPerson.Aliases = client.GetData<List<PersonAlias>>( "api/PersonAlias/", "PersonId eq " + BatchPage.LoggedInPerson.Id );
             }
             catch ( WebException wex )
             {
@@ -212,6 +224,7 @@ namespace Rock.Apps.CheckScannerUtility
             }
             catch ( Exception ex )
             {
+                App.LogException( ex );
                 lblAlert.Content = ex.Message;
                 lblAlert.Visibility = Visibility.Visible;
                 return;
@@ -230,16 +243,19 @@ namespace Rock.Apps.CheckScannerUtility
 
             string imageOption = cboImageOption.SelectedValue as string;
 
+            rockConfig.Sensitivity = txtSensitivity.Text.Trim().AsInteger().ToString();
+            rockConfig.Plurality = txtPlurality.Text.Trim().AsInteger().ToString();
+
             switch ( imageOption )
             {
                 case "Grayscale":
-                    rockConfig.ImageColorType = ImageColorType.ImageColorTypeGrayscale;
+                    rockConfig.ImageColorType = RangerImageColorTypes.ImageColorTypeGrayscale;
                     break;
                 case "Color":
-                    rockConfig.ImageColorType = ImageColorType.ImageColorTypeColor;
+                    rockConfig.ImageColorType = RangerImageColorTypes.ImageColorTypeColor;
                     break;
                 default:
-                    rockConfig.ImageColorType = ImageColorType.ImageColorTypeBitonal;
+                    rockConfig.ImageColorType = RangerImageColorTypes.ImageColorTypeBitonal;
                     break;
             }
 
@@ -250,8 +266,6 @@ namespace Rock.Apps.CheckScannerUtility
                 rockConfig.MICRImageComPort = short.Parse( comPortName.Replace( "COM", string.Empty ) );
             }
 
-            rockConfig.SourceTypeValueGuid = ( cboTransactionSourceType.SelectedItem as DefinedValue ).Guid.ToString();
-
             rockConfig.Save();
 
             // shutdown the scanner so that options will be reloaded when the batch page loads
@@ -259,6 +273,8 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 BatchPage.rangerScanner.ShutDown();
             }
+
+            BatchPage.ConnectToScanner();
 
             this.NavigationService.GoBack();
         }
@@ -299,6 +315,13 @@ namespace Rock.Apps.CheckScannerUtility
             // show Image Option only for Ranger
             lblImageOption.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
             cboImageOption.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
+
+            // show Sensitivity/Plurality Option only for Ranger
+            lblAdvancedInfo.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
+            lblSensitivity.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
+            txtSensitivity.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
+            lblPlurality.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
+            txtPlurality.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
         }
     }
 }

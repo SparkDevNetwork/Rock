@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Reporting
 
     [BooleanField( "Show Chart", DefaultValue = "true" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
-    [SlidingDateRangeField( "Chart Date Range", Key = "SlidingDateRange", DefaultValue = "-1||||" )]
+    [SlidingDateRangeField( "Chart Date Range", key: "SlidingDateRange", defaultValue: "-1||||", enabledSlidingDateRangeTypes:"Last,Previous,Current,DateRange")]
     [BooleanField( "Combine Chart Series" )]
     public partial class MetricDetail : RockBlock, IDetailBlock
     {
@@ -223,7 +223,8 @@ namespace RockWeb.Blocks.Reporting
                 metric.DataViewId = null;
             }
 
-            if ( rblScheduleSelect.SelectedValueAsEnum<ScheduleSelectionType>() == ScheduleSelectionType.NamedSchedule )
+            var scheduleSelectionType = rblScheduleSelect.SelectedValueAsEnum<ScheduleSelectionType>();
+            if ( scheduleSelectionType == ScheduleSelectionType.NamedSchedule )
             {
                 metric.ScheduleId = ddlSchedule.SelectedValueAsId();
             }
@@ -264,10 +265,15 @@ namespace RockWeb.Blocks.Reporting
                     schedule.CategoryId = metricScheduleCategoryId;
                 }
 
-                schedule.iCalendarContent = sbSchedule.iCalendarContent;
-
-                if ( !schedule.HasSchedule() )
+                // if the schedule was a unique schedule (configured in the Metric UI, set the schedule's ical content to the schedule builder UI's value
+                if ( scheduleSelectionType == ScheduleSelectionType.Unique )
                 {
+                    schedule.iCalendarContent = sbSchedule.iCalendarContent;
+                }
+
+                if ( !schedule.HasSchedule() && scheduleSelectionType == ScheduleSelectionType.Unique )
+                {
+                    // don't save as a unique schedule if the schedule doesn't do anything
                     schedule = null;
                 }
                 else
@@ -358,6 +364,7 @@ namespace RockWeb.Blocks.Reporting
             }
 
             qryParams["MetricCategoryId"] = hfMetricCategoryId.Value;
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
 
             NavigateToPage( RockPage.Guid, qryParams );
         }
@@ -709,8 +716,27 @@ The SQL can include Lava merge fields:";
 
             if (metric.Schedule != null)
             {
-                hlScheduleFriendlyText.LabelType = metric.Schedule.HasSchedule() ? LabelType.Info : LabelType.Danger;
-                hlScheduleFriendlyText.Text = "<i class='fa fa-clock-o'></i> " + metric.Schedule.FriendlyScheduleText;
+                string iconClass;
+                if (metric.Schedule.HasSchedule())
+                {
+                    if (metric.Schedule.HasScheduleWarning()                        )
+                    {
+                        hlScheduleFriendlyText.LabelType = LabelType.Warning;
+                        iconClass = "fa fa-exclamation-triangle";
+                    }
+                    else
+                    {
+                        hlScheduleFriendlyText.LabelType = LabelType.Info;
+                        iconClass = "fa fa-clock-o";
+                    }
+                }
+                else
+                {
+                    hlScheduleFriendlyText.LabelType = LabelType.Danger;
+                    iconClass = "fa fa-exclamation-triangle";
+                }
+
+                hlScheduleFriendlyText.Text = "<i class='" + iconClass + "'></i> " + metric.Schedule.FriendlyScheduleText;
             }
             else
             {

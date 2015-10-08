@@ -15,11 +15,13 @@
 // </copyright>
 //
 
+using System;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// Special CampusController to alias CampusesController for backwords compatibility
     /// </summary>
+    [Obsolete("Use api/Campuses instead")]
     public class CampusController : CampusesController
     {
         

@@ -15,18 +15,31 @@
 // </copyright>
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
+using System.Web.UI.HtmlControls;
+using DDay.iCal;
 using DotLiquid;
 using DotLiquid.Util;
 using Humanizer;
+using Humanizer.Localisation;
+using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Lava
 {
@@ -38,6 +51,32 @@ namespace Rock.Lava
         #region String Filters
 
         /// <summary>
+        /// obfuscate a given email
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string ObfuscateEmail( string input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+            else
+            {
+                string[] emailParts = input.Split('@');
+
+                if ( emailParts.Length != 2 )
+                {
+                    return input;
+                }
+                else
+                {
+                    return string.Format( "{0}xxxxx@{1}", emailParts[0].Substring( 0, 1 ), emailParts[1] );
+                }
+            }
+        }
+
+        /// <summary>
         /// pluralizes string
         /// </summary>
         /// <param name="input"></param>
@@ -47,6 +86,50 @@ namespace Rock.Lava
             return input == null
                 ? input
                 : input.Pluralize();
+        }
+
+        /// <summary>
+        /// Possessives the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string Possessive( string input )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( input.EndsWith( "s" ) )
+            {
+                return input + "'";
+            }
+            else
+            {
+                return input + "'s";
+            }
+        }
+
+        /// <summary>
+        /// pluralizes string based on the value for quantity
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="quantity">The quantity.</param>
+        /// <returns></returns>
+        public static string PluralizeForQuantity( string input, int quantity )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( quantity > 1 )
+            {
+                return input.Pluralize();
+            }
+            else {
+                return input;
+            }
         }
 
         /// <summary>
@@ -239,7 +322,7 @@ namespace Rock.Lava
         /// <param name="string"></param>
         /// <param name="replacement"></param>
         /// <returns></returns>
-        public static string Replace( object input, string @string, string replacement = "" )
+        public static string Replace( object input, object @string, object replacement = null )
         {
             if ( input == null )
             {
@@ -248,19 +331,22 @@ namespace Rock.Lava
             
             string inputAsString = input.ToString();
 
-            // escape common regex meta characters
+            string replacementString = (replacement ?? string.Empty).ToString();
+            string pattern = Regex.Escape( @string.ToString() );
+
+            /*// escape common regex meta characters
             var listOfRegExChars = new List<string> { ".", "$", "{", "}", "^", "[", "]", "*", @"\", "+", "|", "?", "<", ">" };
             if ( listOfRegExChars.Contains( @string ) )
             {
                 @string = @"\" + @string;
-            }
+            }*/
 
-            if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( @string ) )
+            if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( pattern ) )
                 return inputAsString;
 
             return string.IsNullOrEmpty( inputAsString )
                 ? inputAsString
-                : Regex.Replace( inputAsString, @string, replacement );
+                : Regex.Replace( inputAsString, pattern, replacementString );
         }
 
         /// <summary>
@@ -301,6 +387,37 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Replace the last occurence of a string with another - this is a Rock version on this filter which takes any object
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="search">The search.</param>
+        /// <param name="replacement">The replacement.</param>
+        /// <returns></returns>
+        public static string ReplaceLast( object input, string search, string replacement = "" )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+
+            string inputAsString = input.ToString();
+
+            if ( string.IsNullOrEmpty( inputAsString ) || string.IsNullOrEmpty( search ) )
+                return inputAsString;
+
+            int place = inputAsString.LastIndexOf( search );
+            if ( place > 0 )
+            {
+                return inputAsString.Remove( place, search.Length ).Insert( place, replacement );
+            }
+            else
+            {
+                return input.ToString();
+            }
+            
+        }
+
+        /// <summary>
         /// Remove a substring - this is a Rock version on this filter which takes any object
         /// </summary>
         /// <param name="input"></param>
@@ -318,6 +435,21 @@ namespace Rock.Lava
             return string.IsNullOrWhiteSpace( inputAsString )
                 ? inputAsString
                 : inputAsString.Replace( @string, string.Empty );
+        }
+
+        /// <summary>
+        /// Trims the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string Trim( object input )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+
+            return input.ToString().Trim();
         }
 
         /// <summary>
@@ -400,6 +532,23 @@ namespace Rock.Lava
                 : inputAsString;
         }
 
+        /// <summary>
+        /// Decodes an HTML string.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string HtmlDecode( string input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+            else
+            {
+                return HttpUtility.HtmlDecode( input );
+            }
+        }
+
         #endregion
 
         #region DateTime Filters
@@ -436,32 +585,194 @@ namespace Rock.Lava
                 : input.ToString().Trim();
         }
 
+
+        /// <summary>
+        /// Dateses from i cal.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="returnCount">The return count.</param>
+        /// <returns></returns>
+        public static List<DateTime> DatesFromICal( object input, int returnCount = 1 )
+        {
+            List<DateTime> nextOccurrences = new List<DateTime>();
+            
+            if ( input is string )
+            {
+                nextOccurrences = GetOccurrenceDates( (string)input, returnCount );
+            }
+            else if ( input is IList )
+            {
+                foreach ( var item in input as IList )
+                {
+                    if ( item is string )
+                    {
+                        nextOccurrences.AddRange( GetOccurrenceDates( (string)item, returnCount ) );
+                    }
+                }
+            }
+
+            nextOccurrences.Sort((a,b) => a.CompareTo(b));
+
+            return nextOccurrences.Take( returnCount ).ToList();
+        }
+
+        /// <summary>
+        /// Gets the occurrence dates.
+        /// </summary>
+        /// <param name="iCalString">The i cal string.</param>
+        /// <param name="returnCount">The return count.</param>
+        /// <returns></returns>
+        private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount )
+        {
+            iCalendar calendar = iCalendar.LoadFromStream( new StringReader( iCalString ) ).First() as iCalendar;
+            DDay.iCal.Event calendarEvent = calendar.Events[0] as Event;
+
+            if ( calendarEvent.DTStart != null )
+            {
+                List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
+                return dates.Select( d => d.Period.StartTime.Value ).ToList();
+            }
+            else
+            {
+                return new List<DateTime>();
+            }
+        }
+
+        /// <summary>
+        /// Adds a time interval to a date
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="amount">The amount.</param>
+        /// <param name="interval">The interval.</param>
+        /// <returns></returns>
+        public static DateTime? DateAdd( object input, int amount, string interval = "d" )
+        {
+            DateTime? date = null;
+            
+            if ( input == null )
+                return null;
+
+            if ( input.ToString() == "Now" )
+            {
+                date = RockDateTime.Now;
+            }
+            else
+            {
+                DateTime d;
+                bool success = DateTime.TryParse( input.ToString(), out d );
+                if ( success )
+                {
+                    date = d;
+                }
+            }
+
+            if ( date.HasValue )
+            {
+                TimeSpan timeInterval = new TimeSpan();
+                switch ( interval )
+                {
+                    case "d":
+                        timeInterval = new TimeSpan(amount, 0, 0, 0);
+                        break;
+                    case "h":
+                        timeInterval = new TimeSpan( 0, amount, 0, 0 );
+                        break;
+                    case "m":
+                        timeInterval = new TimeSpan(0, 0, amount, 0);
+                        break;
+                    case "s":
+                        timeInterval = new TimeSpan(0, 0, 0, amount);
+                        break;
+                }
+                
+                date = date.Value.Add(timeInterval);
+            }
+
+            return date;
+        }
+
         /// <summary>
         /// takes a date time and compares it to RockDateTime.Now and returns a human friendly string like 'yesterday' or '2 hours ago'
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="input">The input.</param>
+        /// <param name="compareDate">The compare date.</param>
         /// <returns></returns>
-        public static string HumanizeDateTime( object input )
+        public static string HumanizeDateTime( object input, object compareDate = null )
         {
             if ( input == null )
                 return string.Empty;
 
             DateTime dtInput;
+            DateTime dtCompare;
 
-            if ( input is DateTime )
+            if ( input != null && input is DateTime )
             {
                 dtInput = (DateTime)input;
             }
             else
             {
-                if ( !DateTime.TryParse( input.ToString(), out dtInput ) )
+                if ( input == null || !DateTime.TryParse( input.ToString(), out dtInput ) )
                 {
                     return string.Empty;
                 }
             }
 
-            return dtInput.Humanize( false, RockDateTime.Now );
+            if ( compareDate == null || !DateTime.TryParse( compareDate.ToString(), out dtCompare ) )
+            {
+                dtCompare = RockDateTime.Now;
+            }
 
+            return dtInput.Humanize( true, dtCompare );
+
+        }
+
+        /// <summary>
+        /// Dayses from now.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string DaysFromNow( object input )
+        {
+            DateTime dtInputDate = GetDateFromObject( input ).Date;
+            DateTime dtCompareDate = RockDateTime.Now.Date;
+
+            int daysDiff = ( dtInputDate - dtCompareDate ).Days;
+
+            string response = string.Empty;
+
+            switch ( daysDiff )
+            {
+                case -1:
+                    {
+                        response = "yesterday";
+                        break;
+                    }
+                case 0:
+                    {
+                        response = "today";
+                        break;
+                    }
+                case 1: 
+                    {
+                        response = "tomorrow";
+                        break;
+                    }
+                default: 
+                    {
+                        if ( daysDiff > 0 )
+                        {
+                            response = string.Format( "in {0} days", daysDiff );
+                        }
+                        else
+                        {
+                            response = string.Format( "{0} days ago", daysDiff * -1 );
+                        }
+                        
+                        break;
+                    }
+            }
+
+            return response;
         }
 
         /// <summary>
@@ -471,61 +782,123 @@ namespace Rock.Lava
         /// <param name="sEndDate">The s end date.</param>
         /// <param name="precision">The precision.</param>
         /// <returns></returns>
-        public static string HumanizeTimeSpan( object sStartDate, object sEndDate, int precision = 1 )
+        public static string HumanizeTimeSpan( object sStartDate, object sEndDate, object precision )
         {
-            DateTime startDate = DateTime.MinValue;
-            DateTime endDate = DateTime.MinValue;
-
-            // convert start date if string
-            if ( sStartDate is String )
+            if ( precision is String )
             {
-                if ( (string)sStartDate == "Now" )
-                {
-                    startDate = RockDateTime.Now;
-                }
-                else
-                {
-                    if ( !DateTime.TryParse( (string)sStartDate, out startDate ) )
-                    {
-                        return null;
-                    }
-                }
-            }
-            else if ( sStartDate is DateTime )
-            {
-                startDate = (DateTime)sStartDate;
+                return HumanizeTimeSpan( sStartDate, sEndDate, precision.ToString(), "min" );
             }
 
-            // convert end date if string
-            if ( sEndDate is String )
+            int precisionUnit = 1;
+
+            if ( precision is int )
             {
-                if ( (string)sEndDate == "Now" )
-                {
-                    endDate = RockDateTime.Now;
-                }
-                else
-                {
-                    if ( !DateTime.TryParse( (string)sEndDate, out endDate ) )
-                    {
-                        return null;
-                    }
-                }
-            }
-            else if ( sEndDate is DateTime )
-            {
-                endDate = (DateTime)sEndDate;
+                precisionUnit = (int)precision;
             }
 
+            DateTime startDate = GetDateFromObject(sStartDate);
+            DateTime endDate = GetDateFromObject(sEndDate);
 
             if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
                 TimeSpan difference = endDate - startDate;
-                return difference.Humanize( precision );
+                return difference.Humanize( precisionUnit );
             }
             else
             {
                 return "Could not parse one or more of the dates provided into a valid DateTime";
             }
+        }
+
+        /// <summary>
+        /// Humanizes the time span.
+        /// </summary>
+        /// <param name="sStartDate">The s start date.</param>
+        /// <param name="sEndDate">The s end date.</param>
+        /// <param name="unit">The minimum unit.</param>
+        /// <param name="direction">The direction.</param>
+        /// <returns></returns>
+        public static string HumanizeTimeSpan( object sStartDate, object sEndDate, string unit = "Day", string direction = "min" )
+        {
+            DateTime startDate = GetDateFromObject( sStartDate );
+            DateTime endDate = GetDateFromObject( sEndDate );
+
+            TimeUnit unitValue = TimeUnit.Day;
+
+            switch(unit)
+            {
+                case "Year":
+                    unitValue = TimeUnit.Year;
+                    break;
+                case "Month":
+                    unitValue = TimeUnit.Month;
+                    break;
+                case "Week":
+                    unitValue = TimeUnit.Week;
+                    break;
+                case "Day":
+                    unitValue = TimeUnit.Day;
+                    break;
+                case "Hour":
+                    unitValue = TimeUnit.Hour;
+                    break;
+                case "Minute":
+                    unitValue = TimeUnit.Minute;
+                    break;
+                case "Second":
+                    unitValue = TimeUnit.Second;
+                    break;
+            }
+
+            if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
+            {
+                TimeSpan difference = endDate - startDate;
+
+                if (direction.ToLower() == "max") {
+                    return difference.Humanize( maxUnit: unitValue );
+                } else {
+                    return difference.Humanize( minUnit: unitValue );
+                }
+            }
+            else
+            {
+                return "Could not parse one or more of the dates provided into a valid DateTime";
+            }
+        }
+
+        /// <summary>
+        /// Gets the date from object.
+        /// </summary>
+        /// <param name="date">The date.</param>
+        /// <returns></returns>
+        private static DateTime GetDateFromObject( object date )
+        {
+            DateTime oDateTime = DateTime.MinValue;
+            
+            if ( date is String )
+            {
+                if ( (string)date == "Now" )
+                {
+                    return RockDateTime.Now;
+                }
+                else
+                {
+                    if ( DateTime.TryParse( (string)date, out oDateTime ) )
+                    {
+                        return oDateTime;
+                    }
+                    else
+                    {
+                        return DateTime.MinValue;
+                    }
+                }
+            }
+            else if ( date is DateTime )
+            {
+                return (DateTime)date;
+            }
+
+            return DateTime.MinValue;
         }
 
         /// <summary>
@@ -537,51 +910,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Int64? DateDiff( object sStartDate, object sEndDate, string unit )
         {
-
-            DateTime startDate = DateTime.MinValue;
-            DateTime endDate = DateTime.MinValue;
-
-            // convert start date if string
-            if ( sStartDate is String )
-            {
-                if ( (string)sStartDate == "Now" )
-                {
-                    startDate = RockDateTime.Now;
-                }
-                else
-                {
-                    if ( !DateTime.TryParse( (string)sStartDate, out startDate ) )
-                    {
-                        return null;
-                    }
-                }
-            }
-            else if ( sStartDate is DateTime )
-            {
-                startDate = (DateTime)sStartDate;
-            }
-
-            // convert end date if string
-            if ( sEndDate is String )
-            {
-                if ( (string)sEndDate == "Now" )
-                {
-                    endDate = RockDateTime.Now;
-                }
-                else
-                {
-                    if ( !DateTime.TryParse( (string)sEndDate, out endDate ) )
-                    {
-                        return null;
-                    }
-                }
-            }
-            else if ( sEndDate is DateTime )
-            {
-                endDate = (DateTime)sEndDate;
-            }
-
-
+            DateTime startDate = GetDateFromObject( sStartDate );
+            DateTime endDate = GetDateFromObject( sEndDate );
 
             if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
@@ -629,6 +959,209 @@ namespace Rock.Lava
 
         #endregion
 
+        #region Number Filters
+
+        /// <summary>
+        /// Formats the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="format">The format.</param>
+        /// <returns></returns>
+        public static string Format( object input, string format )
+        {
+            if ( input == null )
+                return null;
+            else if ( string.IsNullOrWhiteSpace( format ) )
+                return input.ToString();
+
+            return string.Format( "{0:" + format + "}", input );
+        }
+
+        /// <summary>
+        /// Formats the specified input as currency using the CurrencySymbol from Global Attributes
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string FormatAsCurrency( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            if (input is string)
+            {
+                // if the input is a string, just append the currency symbol to the front, even if it can't be converted to a number
+                var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
+                return string.Format("{0}{1}", currencySymbol, input);
+            }
+            else
+            {
+                // if the input an integer, decimal, double or anything else that can be parsed as a decimal, format that
+                decimal? inputAsDecimal = input.ToString().AsDecimalOrNull();
+                return inputAsDecimal.FormatAsCurrency();
+            }
+        }
+
+        /// <summary>
+        /// Addition - Overriding this to change the logic. The default filter will concat if the type is 
+        /// string. This one does the math if the input can be parsed as a int
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object Plus( object input, object operand )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            decimal iInput = -1;
+            decimal iOperand = -1;
+
+            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            {
+                return iInput + iOperand;
+            }
+            else
+            {
+                return string.Concat( input, operand );
+            }
+        }
+
+        /// <summary>
+        /// Minus - Overriding this to change the logic. This one does the math if the input can be parsed as a int
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object Minus( object input, object operand )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            decimal iInput = -1;
+            decimal iOperand = -1;
+
+            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            {
+                return iInput - iOperand;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Times - Overriding this to change the logic. This one does the math if the input can be parsed as a int
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="operand"></param>
+        /// <returns></returns>
+        public static object Times( object input, object operand )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            decimal iInput = -1;
+            decimal iOperand = -1;
+
+            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            {
+                return iInput * iOperand;
+            }
+            else
+            {
+                return Enumerable.Repeat( (string)input, (int)operand );
+            }
+        }
+
+        /// <summary>
+        /// Divideds the by.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="operand">The operand.</param>
+        /// <param name="precision">The precision.</param>
+        /// <returns></returns>
+        public static object DividedBy( object input, object operand, int precision = 2 )
+        {
+            if ( input == null || operand == null )
+                return null;
+
+            try
+            {
+                decimal dInput = 0;
+                decimal dOperand = 0;
+
+                if ( decimal.TryParse( input.ToString(), out dInput ) && decimal.TryParse( operand.ToString(), out dOperand ) )
+                {
+                    decimal result = ( dInput / dOperand );
+                    return decimal.Round( result, precision );
+                }
+
+                return "Could not convert input to number";
+                
+            } catch (Exception ex){
+                return ex.Message;
+            }
+        }
+
+        /// <summary>
+        /// Floors the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static object Floor( object input)
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            decimal iInput = -1;
+
+            if ( decimal.TryParse( input.ToString(), out iInput ) )
+            {
+                    return decimal.Floor( iInput );                
+            }
+            else
+            {
+                return "Could not convert input to number to round";
+            }
+        }
+
+        /// <summary>
+        /// Ceilings the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static object Ceiling( object input )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            decimal iInput = -1;
+
+            if ( decimal.TryParse( input.ToString(), out iInput ) )
+            {
+                return decimal.Ceiling( iInput );
+            }
+            else
+            {
+                return "Could not convert input to number to round";
+            }
+        }
+
+        #endregion
+
         #region Attribute Filters
 
         /// <summary>
@@ -641,6 +1174,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Attribute( DotLiquid.Context context, object input, string attributeKey, string qualifier = "" )
         {
+            IHasAttributes item = null;
+            
             if ( input == null || attributeKey == null )
             {
                 return string.Empty;
@@ -662,25 +1197,43 @@ namespace Rock.Lava
                 {
                     // Get the value
                     string theValue = globalAttributeCache.GetValue( attributeKey );
-
-                    // Global attributes may reference other global attributes, so try to resolve this value again
-                    rawValue = theValue.ResolveMergeFields( new Dictionary<string, object>() );
+                    if ( theValue.HasMergeFields() )
+                    {
+                        // Global attributes may reference other global attributes, so try to resolve this value again
+                        rawValue = theValue.ResolveMergeFields( new Dictionary<string, object>() );
+                    }
+                    else
+                    {
+                        rawValue = theValue;
+                    }
                 }
             }
 
-            // If input is an object that has attributes, find it's attribute value
-            else if ( input is IHasAttributes)
-            {
-                var item = (IHasAttributes)input;
-                if ( item.Attributes == null)
+            // If input is an object that has attributes, find its attribute value
+            else
+            { 
+                
+                if ( input is IHasAttributes)
                 {
-                    item.LoadAttributes( rockContext );
+                    item = (IHasAttributes)input;
+                }
+                else if ( input is IHasAttributesWrapper )  
+                {
+                    item = ((IHasAttributesWrapper)input).HasAttributesEntity;
                 }
 
-                if ( item.Attributes.ContainsKey(attributeKey))
+                if ( item != null )
                 {
-                    attribute = item.Attributes[attributeKey];
-                    rawValue = item.AttributeValues[attributeKey].Value;
+                    if ( item.Attributes == null )
+                    {
+                        item.LoadAttributes( rockContext );
+                    }
+
+                    if ( item.Attributes.ContainsKey( attributeKey ) )
+                    {
+                        attribute = item.Attributes[attributeKey];
+                        rawValue = item.AttributeValues[attributeKey].Value;
+                    }
                 }
             }
 
@@ -723,6 +1276,14 @@ namespace Rock.Lava
                     if ( qualifier.Equals( "Url", StringComparison.OrdinalIgnoreCase ) && field is Rock.Field.ILinkableFieldType )
                     {
                         return ( (Rock.Field.ILinkableFieldType)field ).UrlLink( rawValue, attribute.QualifierValues );
+                    }
+
+                    // check if attribute is a key value list and return a collection of key/value pairs
+                    if ( field is Rock.Field.Types.KeyValueListFieldType )
+                    {
+                        var keyValueField = (Rock.Field.Types.KeyValueListFieldType)field;
+
+                        return keyValueField.GetValuesFromString( null, rawValue, attribute.QualifierValues, false );
                     }
 
                     // If qualifier was specified, and the attribute field type is an IEntityFieldType, try to find a property on the entity
@@ -772,7 +1333,58 @@ namespace Rock.Lava
         #region Person Filters
 
         /// <summary>
-        /// Addresses the specified context.
+        /// Persons the by identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person PersonById( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            int personId = -1;
+
+            if (! Int32.TryParse(input.ToString(), out personId)) {
+                return null;
+            }
+
+            var rockContext = new RockContext();
+
+            return new PersonService( rockContext ).Get( personId );
+
+        }
+
+        /// <summary>
+        /// Persons the by alias identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person PersonByAliasId( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            int personAliasId = -1;
+
+            if ( !Int32.TryParse( input.ToString(), out personAliasId ) )
+            {
+                return null;
+            }
+
+            var rockContext = new RockContext();
+
+            return new PersonAliasService( rockContext ).Get( personAliasId ).Person;
+
+        }
+
+        /// <summary>
+        /// Gets an address for a person object
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
@@ -781,21 +1393,56 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string Address( DotLiquid.Context context, object input, string addressType, string qualifier = "" )
         {
-            if ( input != null && input is Person )
+            var person = GetPerson( input );
+
+            if ( person != null )
             {
-                var person = (Person)input;
-               
                 Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-                var location = new GroupMemberService( GetRockContext(context) )
-                    .Queryable( "GroupLocations.Location" )
-                    .Where( m => 
-                        m.PersonId == person.Id && 
-                        m.Group.GroupType.Guid == familyGuid )
-                    .SelectMany( m => m.Group.GroupLocations )
-                    .Where( gl => 
-                        gl.GroupLocationTypeValue.Value == addressType )
-                    .Select( gl => gl.Location )
-                    .FirstOrDefault();
+
+                Location location = null;
+
+                switch ( addressType )
+                {
+                    case "Mailing":
+                        location = new GroupMemberService( GetRockContext( context ) )
+                            .Queryable( "GroupLocations.Location" )
+                            .AsNoTracking()
+                            .Where( m =>
+                                m.PersonId == person.Id &&
+                                m.Group.GroupType.Guid == familyGuid )
+                            .SelectMany( m => m.Group.GroupLocations )
+                            .Where( gl =>
+                                gl.IsMailingLocation == true )
+                            .Select( gl => gl.Location )
+                            .FirstOrDefault();
+                        break;
+                    case "MapLocation":
+                        location = new GroupMemberService( GetRockContext( context ) )
+                            .Queryable( "GroupLocations.Location" )
+                            .AsNoTracking()
+                            .Where( m =>
+                                m.PersonId == person.Id &&
+                                m.Group.GroupType.Guid == familyGuid )
+                            .SelectMany( m => m.Group.GroupLocations )
+                            .Where( gl =>
+                                gl.IsMappedLocation == true )
+                            .Select( gl => gl.Location )
+                            .FirstOrDefault();
+                        break;
+                    default:
+                        location = new GroupMemberService( GetRockContext( context ) )
+                            .Queryable( "GroupLocations.Location" )
+                            .AsNoTracking()
+                            .Where( m =>
+                                m.PersonId == person.Id &&
+                                m.Group.GroupType.Guid == familyGuid )
+                            .SelectMany( m => m.Group.GroupLocations )
+                            .Where( gl =>
+                                gl.GroupLocationTypeValue.Value == addressType )
+                            .Select( gl => gl.Location )
+                            .FirstOrDefault();
+                        break;
+                }
 
                 if (location != null)
                 {
@@ -884,6 +1531,315 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input, which is the person.</param>
+        /// <param name="size">The size.</param>
+        /// <returns></returns>
+        public static string ZebraPhoto( DotLiquid.Context context, object input, string size )
+        {
+            var person = GetPerson( input );
+            try
+            {
+                if ( person != null )
+                {
+                    Stream initialPhotoStream;
+                    if ( person.PhotoId.HasValue )
+                    {
+                        initialPhotoStream = new BinaryFileService( GetRockContext( context ) ).Get( person.PhotoId.Value ).ContentStream;
+                    }
+                    else
+                    {
+                        var photoUrl = new StringBuilder();
+                        photoUrl.Append( HttpContext.Current.Server.MapPath( "~/" ) );
+
+                        if ( person.Age.HasValue && person.Age.Value < 18 )
+                        {
+                            // it's a child
+                            if ( person.Gender == Gender.Female )
+                            {
+                                photoUrl.Append( "Assets/FamilyManagerThemes/RockDefault/photo-child-female.png" );
+                            }
+                            else
+                            {
+                                photoUrl.Append( "Assets/FamilyManagerThemes/RockDefault/photo-child-male.png" );
+                            }
+                        }
+                        else
+                        {
+                            // it's an adult
+                            if ( person.Gender == Gender.Female )
+                            {
+                                photoUrl.Append( "Assets/FamilyManagerThemes/RockDefault/photo-adult-female.png" );
+                            }
+                            else
+                            {
+                                photoUrl.Append( "Assets/FamilyManagerThemes/RockDefault/photo-adult-male.png" );
+                            }
+                        }
+
+                        initialPhotoStream = File.Open( photoUrl.ToString(), FileMode.Open );
+                    }
+
+                    Bitmap initialBitmap = new Bitmap( initialPhotoStream );
+
+                    // Calculate rectangle to crop image into
+                    int height = initialBitmap.Height;
+                    int width = initialBitmap.Width;
+                    Rectangle cropSection = new Rectangle( 0, 0, height, width );
+                    if ( height < width )
+                    {
+                        cropSection = new Rectangle( ( width - height ) / 2, 0, ( width + height ) / 2, height ); // (width + height)/2 is a simplified version of the (width - height)/2 + height function
+                    }
+                    else if ( height > width )
+                    {
+                        cropSection = new Rectangle( 0, ( height - width ) / 2, width, ( height + width ) / 2 );
+                    }
+
+                    // Crop and resize image
+                    int pixelSize = size.AsIntegerOrNull() ?? 395;
+                    Bitmap resizedBitmap = new Bitmap( pixelSize, pixelSize );
+                    using ( Graphics g = Graphics.FromImage( resizedBitmap ) )
+                    {
+                        g.DrawImage( initialBitmap, new Rectangle( 0, 0, resizedBitmap.Width, resizedBitmap.Height ), cropSection, GraphicsUnit.Pixel );
+                    }
+
+                    // Grayscale Image
+                    var masks = new byte[] { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
+                    var outputBitmap = new Bitmap( resizedBitmap.Width, resizedBitmap.Height, PixelFormat.Format1bppIndexed );
+                    var data = new sbyte[resizedBitmap.Width, resizedBitmap.Height];
+                    var inputData = resizedBitmap.LockBits( new Rectangle( 0, 0, resizedBitmap.Width, resizedBitmap.Height ), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb );
+                    try
+                    {
+                        var scanLine = inputData.Scan0;
+                        var line = new byte[inputData.Stride];
+                        for ( var y = 0; y < inputData.Height; y++, scanLine += inputData.Stride )
+                        {
+                            Marshal.Copy( scanLine, line, 0, line.Length );
+                            for ( var x = 0; x < resizedBitmap.Width; x++ )
+                            {
+                                // Change to greyscale
+                                data[x, y] = (sbyte)( 64 * ( ( ( line[x * 3 + 2] * 0.299 + line[x * 3 + 1] * 0.587 + line[x * 3 + 0] * 0.114 ) / 255 ) - 0.4 ) );
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        resizedBitmap.UnlockBits( inputData );
+                    }
+
+                    //Dither Image
+                    var outputData = outputBitmap.LockBits( new Rectangle( 0, 0, outputBitmap.Width, outputBitmap.Height ), ImageLockMode.WriteOnly, PixelFormat.Format1bppIndexed );
+                    try
+                    {
+                        var scanLine = outputData.Scan0;
+                        for ( var y = 0; y < outputData.Height; y++, scanLine += outputData.Stride )
+                        {
+                            var line = new byte[outputData.Stride];
+                            for ( var x = 0; x < resizedBitmap.Width; x++ )
+                            {
+                                var j = data[x, y] > 0;
+                                if ( j ) line[x / 8] |= masks[x % 8];
+                                var error = (sbyte)( data[x, y] - ( j ? 32 : -32 ) );
+                                if ( x < resizedBitmap.Width - 1 ) data[x + 1, y] += (sbyte)( 7 * error / 16 );
+                                if ( y < resizedBitmap.Height - 1 )
+                                {
+                                    if ( x > 0 ) data[x - 1, y + 1] += (sbyte)( 3 * error / 16 );
+                                    data[x, y + 1] += (sbyte)( 5 * error / 16 );
+                                    if ( x < resizedBitmap.Width - 1 ) data[x + 1, y + 1] += (sbyte)( 1 * error / 16 );
+                                }
+                            }
+                            Marshal.Copy( line, 0, scanLine, outputData.Stride );
+                        }
+                    }
+                    finally
+                    {
+                        outputBitmap.UnlockBits( outputData );
+                    }
+
+                    // Convert from x to .png
+                    MemoryStream convertedStream = new MemoryStream();
+                    outputBitmap.Save( convertedStream, System.Drawing.Imaging.ImageFormat.Png );
+                    convertedStream.Seek( 0, SeekOrigin.Begin );
+
+                    // Convert the .png stream into a ZPL-readable Hex format
+                    var content = convertedStream.ReadBytesToEnd();
+                    StringBuilder zplImageData = new StringBuilder();
+
+                    foreach ( Byte b in content )
+                    {
+                        string hexRep = String.Format( "{0:X}", b );
+                        if ( hexRep.Length == 1 )
+                            hexRep = "0" + hexRep;
+                        zplImageData.Append( hexRep );
+                    }
+
+                    convertedStream.Dispose();
+                    initialPhotoStream.Dispose();
+
+                    return String.Format( "^FS ~DYE:LOGO,P,P,{0},,{1} ^FD", content.Length, zplImageData.ToString() );
+                }
+            }
+            catch
+            {
+
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the groups of selected type that person is a member of
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="status">The status.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.GroupMember> Groups( DotLiquid.Context context, object input, string groupTypeId, string status = "Active" )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue )
+            {
+                var groupQuery =  new GroupMemberService( GetRockContext( context ) )
+                    .Queryable("Group, GroupRole").AsNoTracking()
+                    .Where( m =>
+                        m.PersonId == person.Id &&
+                        m.Group.GroupTypeId == numericalGroupTypeId.Value &&
+                        m.Group.IsActive );
+                
+                if ( status != "All" )
+                {
+                    GroupMemberStatus queryStatus = GroupMemberStatus.Active;
+                    queryStatus = (GroupMemberStatus)Enum.Parse( typeof( GroupMemberStatus ), status, true );
+
+                    groupQuery = groupQuery.Where( m => m.GroupMemberStatus == queryStatus );
+                }
+
+                return groupQuery.ToList();
+            }
+
+            return new List<Model.GroupMember>();
+        }
+
+        /// <summary>
+        /// Gets the groups of selected type that person is a member of which they have attended at least once
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.Group> GroupsAttended( DotLiquid.Context context, object input, string groupTypeId )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue )
+            {
+                return new AttendanceService( GetRockContext( context ) ).Queryable().AsNoTracking()
+                    .Where(a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id && a.DidAttend == true)
+                    .Select(a => a.Group).Distinct().ToList();
+            }
+
+            return new List<Model.Group>();
+        }
+
+        /// <summary>
+        /// Gets the last attendance item for a given person in a group of type provided
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public static Attendance LastAttendedGroupOfType( DotLiquid.Context context, object input, string groupTypeId )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue )
+            {
+                var attendance =  new AttendanceService( GetRockContext( context ) ).Queryable("Group").AsNoTracking()
+                    .Where( a => a.Group.GroupTypeId == numericalGroupTypeId && a.PersonAlias.PersonId == person.Id && a.DidAttend == true )
+                    .OrderByDescending( a => a.StartDateTime ).FirstOrDefault();
+
+                return attendance;
+            }
+
+            return new Attendance();
+        }
+
+        /// <summary>
+        /// Gets the groups of selected type that geofence the selected person
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.Group> GeofencingGroups( DotLiquid.Context context, object input, string groupTypeId )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue )
+            {
+                return new GroupService( GetRockContext( context ) )
+                    .GetGeofencingGroups( person.Id, numericalGroupTypeId.Value )
+                    .ToList();
+            }
+
+            return new List<Model.Group>();
+        }
+
+        /// <summary>
+        /// Gets the groups of selected type that geofence the selected person 
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="groupTypeRoleId">The group type role identifier.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.Person> GeofencingGroupMembers( DotLiquid.Context context, object input, string groupTypeId, string groupTypeRoleId )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+            int? numericalGroupTypeRoleId = groupTypeRoleId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue && numericalGroupTypeRoleId.HasValue )
+            {
+                return new GroupService( GetRockContext( context ) )
+                    .GetGeofencingGroups( person.Id, numericalGroupTypeId.Value )
+                    .SelectMany( g => g.Members.Where( m => m.GroupRole.Id == numericalGroupTypeRoleId ) )
+                    .Select( m => m.Person )
+                    .ToList();
+            }
+
+            return new List<Model.Person>();
+        }
+
+        /// <summary>
+        /// Returnes the nearest group of a specific type.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public static Rock.Model.Group NearestGroup( DotLiquid.Context context, object input, string groupTypeId )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupTypeId.HasValue )
+            {
+                return new GroupService( GetRockContext( context ) )
+                    .GetNearestGroup( person.Id, numericalGroupTypeId.Value );
+            }
+
+            return null;
+        }
+        
+        /// <summary>
         /// Gets the rock context.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -902,9 +1858,52 @@ namespace Rock.Lava
             }
         }
 
+        private static Person GetPerson( object input )
+        {
+            if ( input != null )
+            {
+                var person = input as Person;
+                if ( person != null )
+                {
+                    return person;
+                }
+                var checkinPerson = input as CheckIn.CheckInPerson;
+                if ( checkinPerson != null )
+                {
+                    return checkinPerson.Person;
+                }
+            }
+            return null;
+        }
+
         #endregion
 
-        #region Object Filters
+        #region Misc Filters
+
+
+        /// <summary>
+        /// Redirects the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string PageRedirect( string input )
+        {            
+            // check for no redirect in query string
+            string redirectValue = HttpContext.Current.Request.QueryString["Redirect"];
+
+            if ( redirectValue != null && redirectValue == "false" )
+            {
+                return string.Format("<p class='alert alert-warning'>Without the redirect query string parameter you would be redirected to: <a href='{0}'>{0}</a>.</p>", input);
+            }
+            
+            if ( input != null )
+            {
+                HttpContext.Current.Response.Redirect( input, true );
+            }
+            
+            return string.Empty;
+        }
+
 
         /// <summary>
         /// creates a postback javascript function
@@ -932,6 +1931,267 @@ namespace Rock.Lava
         public static string ToJSON (object input)
         {
             return input.ToJson();
+        }
+
+        /// <summary>
+        /// adds a meta tag to the head of the document
+        /// </summary>
+        /// <param name="input">The input to use for the content attribute of the tag.</param>
+        /// <param name="attributeName">Name of the attribute.</param>
+        /// <param name="attributeValue">The attribute value.</param>
+        /// <returns></returns>
+        public static string AddMetaTagToHead( string input, string attributeName, string attributeValue )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( page != null )
+            {
+                HtmlMeta metaTag = new HtmlMeta();
+                metaTag.Attributes.Add( attributeName, attributeValue );
+                metaTag.Content = input;
+                page.Header.Controls.Add( metaTag );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// adds a link tag to the head of the document
+        /// </summary>
+        /// <param name="input">The input to use for the href of the tag.</param>
+        /// <param name="attributeName">Name of the attribute.</param>
+        /// <param name="attributeValue">The attribute value.</param>
+        /// <returns></returns>
+        public static string AddLinkTagToHead( string input, string attributeName, string attributeValue )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( page != null )
+            {
+                HtmlLink imageLink = new HtmlLink();
+                imageLink.Attributes.Add( attributeName, attributeValue );
+                imageLink.Attributes.Add( "href", input );
+                page.Header.Controls.Add( imageLink );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// adds a link tag to the head of the document
+        /// </summary>
+        /// <param name="input">The input to use for the href of the tag.</param>
+        /// <returns></returns>
+        public static string SetPageTitle( string input )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( page != null )
+            {
+                page.BrowserTitle = input;
+                page.PageTitle = input;
+                page.Header.Title = input;
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Pages the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="parm">The parm.</param>
+        /// <returns></returns>
+        public static string Page( string input, string parm )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( page != null )
+            {
+                switch ( parm )
+                {
+                    case "Title": 
+                        {
+                            return page.BrowserTitle;
+                        }
+                    case "Url": 
+                        {
+                            return HttpContext.Current.Request.Url.AbsoluteUri;
+                        }
+                    case "Id":
+                        {
+                            return page.PageId.ToString();
+                        }
+                    case "Host":
+                        {
+                            return HttpContext.Current.Request.Url.Host;
+                        }
+                    case "Path":
+                        {
+                            return HttpContext.Current.Request.Url.AbsolutePath;
+                        }
+                    case "SiteName":
+                        {
+                            return page.Site.Name;
+                        }
+                    case "SiteId":
+                        {
+                            return page.Site.Id.ToString();
+                        }
+                    case "Theme":
+                        {
+                            if ( page.Theme != null )
+                            {
+                                return page.Theme;
+                            }
+                            else
+                            {
+                                return page.Site.Theme;
+                            }
+                            
+                        }
+                    case "Layout":
+                        {
+                            return page.Layout.Name;
+                        }
+                    case "Scheme":
+                        {
+                            return HttpContext.Current.Request.Url.Scheme;
+                        }
+                }
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Converts a lava property to a key value pair
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Dictionary<string, object> PropertyToKeyValue(object input)
+        {
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            var type = input.GetType();
+
+            if ( type == typeof(KeyValuePair<string,object>) )
+            {
+                var key = type.GetProperty("Key");
+                var value = type.GetProperty("Value");
+
+                result.Add("Key", key.GetValue(input, null).ToString());
+                result.Add("Value", value.GetValue(input, null));
+            }
+
+            return result;
+        }
+
+        #endregion
+
+        #region Array Filters
+
+        /// <summary>
+        /// Rearranges an array in a random order
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static object Shuffle( object input )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( !(input is IList) )
+            {
+                return input;
+            }
+
+            var inputList = input as IList;
+            Random rng = new Random();
+            int n = inputList.Count;
+            while ( n > 1 )
+            {
+                n--;
+                int k = rng.Next( n + 1 );
+                var value = inputList[k];
+                inputList[k] = inputList[n];
+                inputList[n] = value;
+            }
+
+            return inputList;
+        }
+
+        /// <summary>
+        /// Wheres the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="filterKey">The filter key.</param>
+        /// <param name="filterValue">The filter value.</param>
+        /// <returns></returns>
+        public static object Where( object input, string filterKey, object filterValue )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( input is IEnumerable )
+            {
+                var result = new List<object>();
+                
+                foreach ( var value in ( (IEnumerable)input ) )
+                {
+                    if ( value is ILiquidizable )
+                    {
+                        var liquidObject = value as ILiquidizable;
+                        if (liquidObject.ContainsKey(filterKey) && liquidObject[filterKey].Equals(filterValue)) {
+                            result.Add(liquidObject);
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            return input;
+        }
+
+        /// <summary>
+        /// Selects the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="selectKey">The select key.</param>
+        /// <returns></returns>
+        public static object Select( object input, string selectKey )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            if ( input is IEnumerable )
+            {
+                var result = new List<object>();
+
+                foreach ( var value in ( (IEnumerable)input ) )
+                {
+                    if ( value is ILiquidizable )
+                    {
+                        var liquidObject = value as ILiquidizable;
+                        if ( liquidObject.ContainsKey( selectKey ) )
+                        {
+                            result.Add( liquidObject[selectKey] );
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            return input;
         }
 
         #endregion

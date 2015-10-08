@@ -59,12 +59,16 @@ namespace RockWeb.Blocks.Administration
                     if ( apiDescription != null )
                     {
                         hfUrl.Value = this.ResolveUrl( "~/" + apiDescription.RelativePath );
-                        hbUrlPreview.Text = apiDescription.HttpMethod.ToString().ToUpper() + " " + hfUrl.Value;
+                        lUrlPreview.Text = apiDescription.HttpMethod.ToString().ToUpper() + " " + hfUrl.Value;
                         btnDELETE.Visible = apiDescription.HttpMethod == System.Net.Http.HttpMethod.Delete;
+                        
                         btnGET.Visible = apiDescription.HttpMethod == System.Net.Http.HttpMethod.Get;
+                        rblLoadAttributes.Visible = apiDescription.HttpMethod == System.Net.Http.HttpMethod.Get;
+                        
                         btnPUT.Visible = apiDescription.HttpMethod == System.Net.Http.HttpMethod.Put;
                         btnPOST.Visible = apiDescription.HttpMethod == System.Net.Http.HttpMethod.Post;
                         tbPayload.Visible = apiDescription.HttpMethod == System.Net.Http.HttpMethod.Post || apiDescription.HttpMethod == System.Net.Http.HttpMethod.Put;
+                        
                         foreach ( var param in apiDescription.ParameterDescriptions )
                         {
                             if ( param.Source == System.Web.Http.Description.ApiParameterSource.FromUri )

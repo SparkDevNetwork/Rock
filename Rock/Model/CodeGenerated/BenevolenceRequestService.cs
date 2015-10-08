@@ -89,14 +89,16 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.CaseWorkerPersonAliasId = source.CaseWorkerPersonAliasId;
+            target.CellPhoneNumber = source.CellPhoneNumber;
             target.ConnectionStatusValueId = source.ConnectionStatusValueId;
             target.Email = source.Email;
             target.FirstName = source.FirstName;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GovernmentId = source.GovernmentId;
             target.HomePhoneNumber = source.HomePhoneNumber;
             target.LastName = source.LastName;
             target.LocationId = source.LocationId;
-            target.CellPhoneNumber = source.CellPhoneNumber;
             target.RequestDateTime = source.RequestDateTime;
             target.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
             target.RequestStatusValueId = source.RequestStatusValueId;

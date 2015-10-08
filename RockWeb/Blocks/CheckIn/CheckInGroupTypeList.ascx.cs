@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -101,15 +102,14 @@ namespace RockWeb.Blocks.CheckIn
         {
             using ( var rockContext = new RockContext() )
             {
-                GroupTypeService groupTypeService = new GroupTypeService( rockContext );
-                SortProperty sortProperty = gGroupType.SortProperty;
-
-                var qry = groupTypeService.Queryable();
-
                 // limit to show only GroupTypes that have a group type purpose of Checkin Template
                 int groupTypePurposeCheckInTemplateId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
-                qry = qry.Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId );
 
+                var qry = new GroupTypeService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId );
+
+                SortProperty sortProperty = gGroupType.SortProperty;
                 if ( sortProperty != null )
                 {
                     gGroupType.DataSource = qry.Sort( sortProperty ).ToList();
@@ -206,6 +206,10 @@ namespace RockWeb.Blocks.CheckIn
                     groupType.GroupTypePurposeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ).Id;
                     groupType.ShowInNavigation = false;
                     groupType.ShowInGroupList = false;
+                
+                    var defaultRole = new GroupTypeRole();
+                    defaultRole.Name = "Member";
+                    groupType.Roles.Add( defaultRole );
                 }
                 else
                 {
@@ -216,6 +220,15 @@ namespace RockWeb.Blocks.CheckIn
                 groupType.Description = tbGroupTypeDescription.Text;
 
                 rockContext.SaveChanges();
+
+                // Reload to check for setting default role
+                groupType = groupTypeService.Get( groupType.Id );
+                if ( groupType != null && !groupType.DefaultGroupRoleId.HasValue && groupType.Roles.Any() )
+                {
+                    groupType.DefaultGroupRoleId = groupType.Roles.First().Id;
+                    rockContext.SaveChanges();
+                }
+            
             }
 
             mdAddEditCheckinGroupType.Hide();

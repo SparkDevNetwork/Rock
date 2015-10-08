@@ -154,6 +154,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the CSS class name of a font based icon.
         /// </value>
         [DataMember]
+        [MaxLength( 100 )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -178,7 +179,7 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.AttendanceRule"/> that indicates how attendance is managed a <see cref="Rock.Model.Group"/> of this GroupType
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.AttendanceRule"/> that indicates how attendance is manged for a <see cref="Rock.Model.Group"/> of this GroupType.
+        /// The <see cref="Rock.Model.AttendanceRule"/> that indicates how attendance is managed for a <see cref="Rock.Model.Group"/> of this GroupType.
         /// </value>
         /// <example>
         /// The available options are:
@@ -267,6 +268,18 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.GROUPTYPE_PURPOSE )]
         public int? GroupTypePurposeValueId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to ignore person inactivated.
+        /// By default group members are inactivated in their group whenever the person
+        /// is inactivated. If this value is set to true, members in groups of this type
+        /// will not be marked inactive when the person is inactivated
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [ignore person inactivated]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IgnorePersonInactivated { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -325,6 +338,19 @@ namespace Rock.Model
         }
         private ICollection<GroupTypeRole> _roles;
 
+        /// <summary>
+        /// Gets or sets the group member workflow triggers.
+        /// </summary>
+        /// <value>
+        /// The group member workflow triggers.
+        /// </value>
+        public virtual ICollection<GroupMemberWorkflowTrigger> GroupMemberWorkflowTriggers
+        {
+            get { return _triggers ?? ( _triggers = new Collection<GroupMemberWorkflowTrigger>() ); }
+            set { _triggers = value; }
+        }
+        private ICollection<GroupMemberWorkflowTrigger> _triggers;
+        
         /// <summary>
         /// Gets or sets the group schedule exclusions.
         /// </summary>

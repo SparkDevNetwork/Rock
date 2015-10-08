@@ -76,6 +76,7 @@ namespace Rock.Model
         
         /// <summary>
         /// Gets or sets the Assembly name of the .dll file that contains the job class.
+        /// Set this to null to have Rock figure out the Assembly automatically.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> that contains the Assembly name of the .dll file that contains the job class.

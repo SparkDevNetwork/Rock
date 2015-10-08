@@ -36,7 +36,7 @@ namespace Rock.Web.UI.Controls
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the heading (heading is on it's own line at the top)
+        /// Gets or sets the heading (heading is on its own line at the top)
         /// </summary>
         /// <value>
         /// The heading.
@@ -134,7 +134,7 @@ namespace Rock.Web.UI.Controls
                     if ( !string.IsNullOrWhiteSpace( this.Heading ) )
                     {
                         writer.RenderBeginTag( HtmlTextWriterTag.Strong );
-                        writer.Write( Heading );
+                        writer.Write( Heading + " " );
                         writer.RenderEndTag();
                     }
 
@@ -190,6 +190,11 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Display a success box
         /// </summary>
-        Success
+        Success,
+
+        /// <summary>
+        /// The default
+        /// </summary>
+        Default
     }
 }

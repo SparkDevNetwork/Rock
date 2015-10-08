@@ -30,10 +30,11 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Loads the groups available for each location.
     /// </summary>
-    [Description("Loads the groups available for each selected (or optionally all) location(s)")]
-    [Export(typeof(ActionComponent))]
+    [Description( "Loads the groups available for each selected (or optionally all) location(s)" )]
+    [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Load Groups" )]
-    [BooleanField( "Load All", "By default groups are only loaded for the selected person, group type, and location.  Select this option to load groups for all the loaded people and group types." )]    public class LoadGroups : CheckInActionComponent
+    [BooleanField( "Load All", "By default groups are only loaded for the selected person, group type, and location.  Select this option to load groups for all the loaded people and group types." )]
+    public class LoadGroups : CheckInActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -49,12 +50,7 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
-
-                bool loadAll = false;
-                if ( bool.TryParse( GetAttributeValue( action, "LoadAll" ), out loadAll ) && loadAll )
-                {
-                    loadAll = true;
-                }
+                bool loadAll = GetAttributeValue( action, "LoadAll" ).AsBoolean();
 
                 foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ).ToList() )
                 {
@@ -62,7 +58,7 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var groupType in person.GroupTypes.Where( g => g.Selected || loadAll ).ToList() )
                         {
-                            var kioskGroupType = checkInState.Kiosk.FilteredGroupTypes(checkInState.ConfiguredGroupTypes).Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
+                            var kioskGroupType = checkInState.Kiosk.FilteredGroupTypes( checkInState.ConfiguredGroupTypes ).Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
                             if ( kioskGroupType != null )
                             {
                                 foreach ( var kioskGroup in kioskGroupType.KioskGroups )

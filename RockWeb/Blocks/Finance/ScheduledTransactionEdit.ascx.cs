@@ -40,7 +40,6 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Scheduled Transaction Edit" )]
     [Category( "Finance" )]
     [Description( "Edit an existing scheduled transaction." )]
-
     [BooleanField( "Impersonation", "Allow (only use on an internal page used by staff)", "Don't Allow",
         "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 0 )]
     [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 1 )]
@@ -51,35 +50,31 @@ namespace RockWeb.Blocks.Finance
     // Text Options
 
     [TextField( "Panel Title", "The text to display in panel heading", false, "Scheduled Transaction", "Text Options", 4 )]
-
     [TextField( "Contribution Info Title", "The text to display as heading of section for selecting account and amount.", false, "Contribution Information", "Text Options", 5 )]
     [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "Text Options", 6 )]
-
     [TextField( "Payment Info Title", "The text to display as heading of section for entering credit card or bank account information.", false, "Payment Information", "Text Options", 7 )]
-
     [TextField( "Confirmation Title", "The text to display as heading of section for confirming information entered.", false, "Confirm Information", "Text Options", 8 )]
-    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", 
+    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <p>
-Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction. 
+Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction.
 </p>
 ", "Text Options", 9 )]
-    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", 
+    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <div class='alert alert-info'>
-By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may 
-update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions. 
+By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may
+update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions.
 </div>
 ", "Text Options", 10 )]
-
-    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.", 
+    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 <p>
-Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively 
-achieve our mission.  We are so grateful for your commitment. 
+Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
+achieve our mission.  We are so grateful for your commitment.
 </p>
 ", "Text Options", 11 )]
-    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", 
+    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, true, @"
 ", "Text Options", 12 )]
 
@@ -235,7 +230,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                 if ( scheduledTransaction != null )
                 {
-                    Gateway = GetGateway( scheduledTransaction );
+                    Gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
 
                     GetAccounts( scheduledTransaction );
                     SetFrequency( scheduledTransaction );
@@ -258,10 +253,6 @@ achieve our mission.  We are so grateful for your commitment.
 
                     // Resolve the text field merge fields
                     var configValues = new Dictionary<string, object>();
-                    Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
-                        .Where( v => v.Key.StartsWith( "Organization", StringComparison.CurrentCultureIgnoreCase ) )
-                        .ToList()
-                        .ForEach( v => configValues.Add( v.Key, v.Value ) );
                     lConfirmationHeader.Text = GetAttributeValue( "ConfirmationHeader" ).ResolveMergeFields( configValues );
                     lConfirmationFooter.Text = GetAttributeValue( "ConfirmationFooter" ).ResolveMergeFields( configValues );
                     lSuccessHeader.Text = GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( configValues );
@@ -277,7 +268,7 @@ achieve our mission.  We are so grateful for your commitment.
                     txtBankName.Text = "Test Bank";
                     txtRoutingNumber.Text = "111111118";
                     txtAccountNumber.Text = "1111111111";
-                     */ 
+                     */
                 }
             }
         }
@@ -460,7 +451,7 @@ achieve our mission.  We are so grateful for your commitment.
             var qryParams = new Dictionary<string, string>();
 
             string personParam = PageParameter( "Person" );
-            if (!string.IsNullOrWhiteSpace(personParam))
+            if ( !string.IsNullOrWhiteSpace( personParam ) )
             {
                 qryParams.Add( "Person", personParam );
             }
@@ -522,74 +513,63 @@ achieve our mission.  We are so grateful for your commitment.
         private FinancialScheduledTransaction GetScheduledTransaction( bool refresh = false )
         {
             Person targetPerson = null;
-            var rockContext = new RockContext();
-
-            // If impersonation is allowed, and a valid person key was used, set the target to that person
-            bool allowImpersonation = false;
-            if ( bool.TryParse( GetAttributeValue( "Impersonation" ), out allowImpersonation ) && allowImpersonation )
+            using ( var rockContext = new RockContext() )
             {
-                string personKey = PageParameter( "Person" );
-                if ( !string.IsNullOrWhiteSpace( personKey ) )
+                // If impersonation is allowed, and a valid person key was used, set the target to that person
+                bool allowImpersonation = GetAttributeValue( "Impersonation" ).AsBoolean();
+                if ( allowImpersonation )
                 {
-                    targetPerson = new PersonService( rockContext ).GetByUrlEncodedKey( personKey );
-                }
-            }
-
-            if ( targetPerson == null )
-            {
-                targetPerson = CurrentPerson;
-            }
-
-            // Verify that transaction id is valid for selected person
-            if ( targetPerson != null )
-            {
-                int txnId = int.MinValue;
-                if ( int.TryParse( PageParameter( "ScheduledTransactionId" ), out txnId ) )
-                {
-                    var service = new FinancialScheduledTransactionService( rockContext );
-                    var scheduledTransaction = service.Queryable( "AuthorizedPersonAlias.Person,ScheduledTransactionDetails,GatewayEntityType,CurrencyTypeValue,CreditCardTypeValue" )
-                        .Where( t =>
-                            t.Id == txnId &&
-                            ( t.AuthorizedPersonAlias.PersonId == targetPerson.Id || t.AuthorizedPersonAlias.Person.GivingGroupId == targetPerson.GivingGroupId ) )
-                        .FirstOrDefault();
-
-                    if ( scheduledTransaction != null )
+                    string personKey = PageParameter( "Person" );
+                    if ( !string.IsNullOrWhiteSpace( personKey ) )
                     {
-                        if ( scheduledTransaction.AuthorizedPersonAlias != null )
-                        {
-                            TargetPersonId = scheduledTransaction.AuthorizedPersonAlias.PersonId;
-                        }
-                        ScheduledTransactionId = scheduledTransaction.Id;
-
-                        if ( refresh )
-                        {
-                            string errorMessages = string.Empty;
-                            service.GetStatus( scheduledTransaction, out errorMessages );
-                            rockContext.SaveChanges();
-                        }
-
-                        return scheduledTransaction;
+                        targetPerson = new PersonService( rockContext ).GetByUrlEncodedKey( personKey );
                     }
                 }
-            }
 
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the gateway.
-        /// </summary>
-        /// <param name="scheduledTransaction">The scheduled transaction.</param>
-        /// <returns></returns>
-        private GatewayComponent GetGateway( FinancialScheduledTransaction scheduledTransaction )
-        {
-            if ( scheduledTransaction.GatewayEntityType != null )
-            {
-                Guid gatewayGuid = scheduledTransaction.GatewayEntityType.Guid;
-                var gateway = GatewayContainer.GetComponent( gatewayGuid.ToString() );
-                if ( gateway != null && gateway.IsActive )
+                if ( targetPerson == null )
                 {
-                    return gateway;
+                    targetPerson = CurrentPerson;
+                }
+
+                // Verify that transaction id is valid for selected person
+                if ( targetPerson != null )
+                {
+                    int txnId = int.MinValue;
+                    if ( int.TryParse( PageParameter( "ScheduledTransactionId" ), out txnId ) )
+                    {
+                        var service = new FinancialScheduledTransactionService( rockContext );
+                        var scheduledTransaction = service
+                            .Queryable( "AuthorizedPersonAlias.Person,ScheduledTransactionDetails,FinancialGateway,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
+                            .Where( t => 
+                                t.Id == txnId && 
+                                t.AuthorizedPersonAlias != null &&
+                                t.AuthorizedPersonAlias.Person != null &&
+                                t.AuthorizedPersonAlias.Person.GivingId == targetPerson.GivingId )
+                            .FirstOrDefault();
+
+                        if ( scheduledTransaction != null )
+                        {
+                            if ( scheduledTransaction.AuthorizedPersonAlias != null )
+                            {
+                                TargetPersonId = scheduledTransaction.AuthorizedPersonAlias.PersonId;
+                            }
+                            ScheduledTransactionId = scheduledTransaction.Id;
+
+                            if ( scheduledTransaction.FinancialGateway != null )
+                            {
+                                scheduledTransaction.FinancialGateway.LoadAttributes( rockContext );
+                            }
+
+                            if ( refresh )
+                            {
+                                string errorMessages = string.Empty;
+                                service.GetStatus( scheduledTransaction, out errorMessages );
+                                rockContext.SaveChanges();
+                            }
+
+                            return scheduledTransaction;
+                        }
+                    }
                 }
             }
 
@@ -605,21 +585,17 @@ achieve our mission.  We are so grateful for your commitment.
             var selectedGuids = GetAttributeValues( "Accounts" ).Select( Guid.Parse ).ToList();
             bool showAll = !selectedGuids.Any();
 
-            bool additionalAccounts = true;
-            if ( !bool.TryParse( GetAttributeValue( "AdditionalAccounts" ), out additionalAccounts ) )
-            {
-                additionalAccounts = true;
-            }
+            bool additionalAccounts = GetAttributeValue( "AdditionalAccounts" ).AsBoolean( true );
 
             SelectedAccounts = new List<AccountItem>();
             AvailableAccounts = new List<AccountItem>();
 
-            // Enumerate through all active accounts that have a public name
+            // Enumerate through all active accounts that are public
             foreach ( var account in new FinancialAccountService( new RockContext() ).Queryable()
                 .Where( f =>
                     f.IsActive &&
-                    f.PublicName != null &&
-                    f.PublicName.Trim() != string.Empty &&
+                    f.IsPublic.HasValue &&
+                    f.IsPublic.Value &&
                     ( f.StartDate == null || f.StartDate <= RockDateTime.Today ) &&
                     ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
                 .OrderBy( f => f.Order ) )
@@ -679,7 +655,8 @@ achieve our mission.  We are so grateful for your commitment.
 
             if ( scheduledTransaction != null && Gateway != null )
             {
-                if ( scheduledTransaction.CurrencyTypeValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ).Id )
+                if ( scheduledTransaction.FinancialPaymentDetail != null &&
+                    scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ).Id )
                 {
                     ccEnabled = true;
                     txtCardFirstName.Visible = Gateway.SplitNameOnCard;
@@ -704,7 +681,8 @@ achieve our mission.  We are so grateful for your commitment.
                     mypExpiration.MinimumYear = RockDateTime.Now.Year;
                 }
 
-                if ( scheduledTransaction.CurrencyTypeValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ).Id )
+                if ( scheduledTransaction.FinancialPaymentDetail != null &&
+                    scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ).Id )
                 {
                     achEnabled = true;
                 }
@@ -759,13 +737,14 @@ achieve our mission.  We are so grateful for your commitment.
                     {
                         rblSavedCC.DataSource = savedAccounts
                             .Where( a =>
-                                a.GatewayEntityTypeId == Gateway.TypeId &&
-                                a.CurrencyTypeValueId == ccCurrencyType.Id )
+                                a.FinancialGateway.EntityTypeId == Gateway.TypeId &&
+                                a.FinancialPaymentDetail != null &&
+                                a.FinancialPaymentDetail.CurrencyTypeValueId == ccCurrencyType.Id )
                             .OrderBy( a => a.Name )
                             .Select( a => new
                             {
                                 Id = a.Id,
-                                Name = "Use " + a.Name + " (" + a.MaskedAccountNumber + ")"
+                                Name = "Use " + a.Name + " (" + a.FinancialPaymentDetail.AccountNumberMasked + ")"
                             } ).ToList();
                         rblSavedCC.DataBind();
                         if ( rblSavedCC.Items.Count > 0 )
@@ -779,13 +758,14 @@ achieve our mission.  We are so grateful for your commitment.
                     {
                         rblSavedAch.DataSource = savedAccounts
                             .Where( a =>
-                                a.GatewayEntityTypeId == Gateway.TypeId &&
-                                a.CurrencyTypeValueId == achCurrencyType.Id )
+                                a.FinancialGateway.EntityTypeId == Gateway.TypeId &&
+                                a.FinancialPaymentDetail != null &&
+                                a.FinancialPaymentDetail.CurrencyTypeValueId == achCurrencyType.Id )
                             .OrderBy( a => a.Name )
                             .Select( a => new
                             {
                                 Id = a.Id,
-                                Name = "Use " + a.Name + " (" + a.MaskedAccountNumber + ")"
+                                Name = "Use " + a.Name + " (" + a.FinancialPaymentDetail.AccountNumberMasked + ")"
                             } ).ToList();
                         rblSavedAch.DataBind();
                         if ( rblSavedAch.Items.Count > 0 )
@@ -941,7 +921,7 @@ achieve our mission.  We are so grateful for your commitment.
             if ( ScheduledTransactionId.HasValue )
             {
                 scheduledTransaction = new FinancialScheduledTransactionService( rockContext )
-                    .Queryable("AuthorizedPersonAlias.Person").FirstOrDefault( s => s.Id == ScheduledTransactionId.Value );
+                    .Queryable( "AuthorizedPersonAlias.Person" ).FirstOrDefault( s => s.Id == ScheduledTransactionId.Value );
             }
 
             if ( scheduledTransaction == null )
@@ -1022,7 +1002,8 @@ achieve our mission.  We are so grateful for your commitment.
                 if ( ScheduledTransactionId.HasValue )
                 {
                     scheduledTransaction = transactionService
-                        .Queryable("AuthorizedPersonAlias.Person").FirstOrDefault( s => s.Id == ScheduledTransactionId.Value );
+                        .Queryable( "AuthorizedPersonAlias.Person,FinancialGateway" )
+                        .FirstOrDefault( s => s.Id == ScheduledTransactionId.Value );
                 }
 
                 if ( scheduledTransaction == null )
@@ -1031,7 +1012,17 @@ achieve our mission.  We are so grateful for your commitment.
                     return false;
                 }
 
-                if ( scheduledTransaction.AuthorizedPersonAlias == null || scheduledTransaction.AuthorizedPersonAlias.Person == null)
+                if ( scheduledTransaction.FinancialPaymentDetail == null )
+                {
+                    scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+                }
+
+                if ( scheduledTransaction.FinancialGateway != null )
+                {
+                    scheduledTransaction.FinancialGateway.LoadAttributes();
+                }
+
+                if ( scheduledTransaction.AuthorizedPersonAlias == null || scheduledTransaction.AuthorizedPersonAlias.Person == null )
                 {
                     errorMessage = "There was a problem determining the person associated with the transaction";
                     return false;
@@ -1076,24 +1067,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                 if ( Gateway.UpdateScheduledPayment( scheduledTransaction, paymentInfo, out errorMessage ) )
                 {
-                    if ( paymentInfo.CurrencyTypeValue != null )
-                    {
-                        changeSummary.Append( paymentInfo.CurrencyTypeValue.Value );
-                        scheduledTransaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
-
-                        DefinedValueCache creditCardTypeValue = paymentInfo.CreditCardTypeValue;
-                        if ( creditCardTypeValue != null )
-                        {
-                            changeSummary.AppendFormat( " - {0}", creditCardTypeValue.Value );
-                            scheduledTransaction.CreditCardTypeValueId = creditCardTypeValue.Id;
-                        }
-                        else
-                        {
-                            scheduledTransaction.CreditCardTypeValueId = null;
-                        }
-                        changeSummary.AppendFormat( " {0}", paymentInfo.MaskedNumber );
-                        changeSummary.AppendLine();
-                    }
+                    scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, Gateway, rockContext );
 
                     var selectedAccountIds = SelectedAccounts
                         .Where( a => a.Amount > 0 )
@@ -1108,7 +1082,8 @@ achieve our mission.  We are so grateful for your commitment.
                         transactionDetailService.Delete( deletedAccount );
                     }
 
-                    foreach ( var account in SelectedAccounts )
+                    foreach ( var account in SelectedAccounts
+                        .Where( a => a.Amount > 0 ) )
                     {
                         var detail = scheduledTransaction.ScheduledTransactionDetails
                             .Where( d => d.AccountId == account.Id ).FirstOrDefault();
@@ -1121,30 +1096,30 @@ achieve our mission.  We are so grateful for your commitment.
 
                         detail.Amount = account.Amount;
 
-                        changeSummary.AppendFormat( "{0}: {1:C2}", account.Name, account.Amount );
+                        changeSummary.AppendFormat( "{0}: {1}", account.Name, account.Amount.FormatAsCurrency() );
                         changeSummary.AppendLine();
                     }
 
                     rockContext.SaveChanges();
 
                     // Add a note about the change
-                    var noteTypeService = new NoteTypeService( rockContext );
-                    var noteType = noteTypeService.Get( scheduledTransaction.TypeId, "Note" );
-
-                    var noteService = new NoteService( rockContext );
-                    var note = new Note();
-                    note.NoteTypeId = noteType.Id;
-                    note.EntityId = scheduledTransaction.Id;
-                    note.Caption = "Updated Transaction";
-                    note.Text = changeSummary.ToString();
-                    noteService.Add( note );
-
+                    var noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
+                    if ( noteType != null )
+                    {
+                        var noteService = new NoteService( rockContext );
+                        var note = new Note();
+                        note.NoteTypeId = noteType.Id;
+                        note.EntityId = scheduledTransaction.Id;
+                        note.Caption = "Updated Transaction";
+                        note.Text = changeSummary.ToString();
+                        noteService.Add( note );
+                    }
                     rockContext.SaveChanges();
 
                     ScheduleId = scheduledTransaction.GatewayScheduleId;
                     TransactionCode = scheduledTransaction.TransactionCode;
 
-                    if (transactionService.GetStatus( scheduledTransaction, out errorMessage ))
+                    if ( transactionService.GetStatus( scheduledTransaction, out errorMessage ) )
                     {
                         rockContext.SaveChanges();
                     }
@@ -1215,8 +1190,8 @@ achieve our mission.  We are so grateful for your commitment.
                 paymentInfo.LastName = authorizedPerson.LastName;
                 paymentInfo.Email = authorizedPerson.Email;
 
-                bool displayPhone = false;
-                if ( bool.TryParse( GetAttributeValue( "DisplayPhone" ), out displayPhone ) && displayPhone )
+                bool displayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
+                if ( displayPhone )
                 {
                     var phoneNumber = personService.GetPhoneNumber( authorizedPerson, DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ) );
                     paymentInfo.Phone = phoneNumber != null ? phoneNumber.ToString() : string.Empty;
@@ -1347,6 +1322,16 @@ achieve our mission.  We are so grateful for your commitment.
         }
 
         /// <summary>
+        /// Formats the value as currency (called from markup)
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public string FormatValueAsCurrency( decimal value )
+        {
+            return value.FormatAsCurrency();
+        }
+
+        /// <summary>
         /// Registers the startup script.
         /// </summary>
         private void RegisterScript()
@@ -1357,11 +1342,10 @@ achieve our mission.  We are so grateful for your commitment.
 
             string scriptFormat = @"
     Sys.Application.add_load(function () {{
-
         // As amounts are entered, validate that they are numeric and recalc total
         $('.account-amount').on('change', function() {{
-            var totalAmt = Number(0);   
-                 
+            var totalAmt = Number(0);
+
             $('.account-amount .form-control').each(function (index) {{
                 var itemValue = $(this).val();
                 if (itemValue != null && itemValue != '') {{
@@ -1379,13 +1363,13 @@ achieve our mission.  We are so grateful for your commitment.
                     $(this).parents('div.input-group').removeClass('has-error');
                 }}
             }});
-            $('.total-amount').html('$ ' + totalAmt.toFixed(2));
+            $('.total-amount').html('{4}' + totalAmt.toFixed(2));
             return false;
         }});
 
         // Set the date prompt based on the frequency value entered
         $('#ButtonDropDown_btnFrequency .dropdown-menu a').click( function () {{
-            var $when = $(this).parents('div.form-group:first').next(); 
+            var $when = $(this).parents('div.form-group:first').next();
             if ($(this).attr('data-id') == '{3}') {{
                 $when.find('label:first').html('When');
             }} else {{
@@ -1395,7 +1379,7 @@ achieve our mission.  We are so grateful for your commitment.
                 var $dateInput = $when.find('input');
                 var dt = new Date(Date.parse($dateInput.val()));
                 var curr = new Date();
-                if ( (dt-curr) <= 0 ) {{ 
+                if ( (dt-curr) <= 0 ) {{
                     curr.setDate(curr.getDate() + 1);
                     var dd = curr.getDate();
                     var mm = curr.getMonth()+1;
@@ -1404,10 +1388,9 @@ achieve our mission.  We are so grateful for your commitment.
                     $dateInput.data('datePicker').value(mm+'/'+dd+'/'+yy);
                 }}
             }};
-            
         }});
 
-        // Save the state of the selected payment type pill to a hidden field so that state can 
+        // Save the state of the selected payment type pill to a hidden field so that state can
         // be preserved through postback
         $('a[data-toggle=""pill""]').on('shown.bs.tab', function (e) {{
             var tabHref = $(e.target).attr(""href"");
@@ -1426,14 +1409,14 @@ achieve our mission.  We are so grateful for your commitment.
         // Toggle credit card display if saved card option is available
         $('div.radio-content').prev('.form-group').find('input:radio').unbind('click').on('click', function () {{
             var $content = $(this).parents('div.form-group:first').next('.radio-content')
-            var radioDisplay = $content.css('display');            
+            var radioDisplay = $content.css('display');
             if ($(this).val() == 0 && radioDisplay == 'none') {{
                 $content.slideToggle();
             }}
             else if ($(this).val() != 0 && radioDisplay != 'none') {{
                 $content.slideToggle();
             }}
-        }});      
+        }});
 
         // Hide or show a div based on selection of checkbox
         $('input:checkbox.toggle-input').unbind('click').on('click', function () {{
@@ -1448,11 +1431,17 @@ achieve our mission.  We are so grateful for your commitment.
 				return false;
 			}});
         }});
- 
     }});
 
 ";
-            string script = string.Format( scriptFormat, divCCPaymentInfo.ClientID, divACHPaymentInfo.ClientID, hfPaymentTab.ClientID, oneTimeFrequencyId );
+            string script = string.Format( 
+                scriptFormat, 
+                divCCPaymentInfo.ClientID, // {0}
+                divACHPaymentInfo.ClientID, // {1} 
+                hfPaymentTab.ClientID, // {2} 
+                oneTimeFrequencyId, // {3} 
+                GlobalAttributesCache.Value( "CurrencySymbol") // {4}
+                );
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
         }
 
@@ -1463,7 +1452,7 @@ achieve our mission.  We are so grateful for your commitment.
         #region Helper Classes
 
         /// <summary>
-        /// Lightweight object for each contribution item 
+        /// Lightweight object for each contribution item
         /// </summary>
         [Serializable]
         protected class AccountItem

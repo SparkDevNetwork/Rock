@@ -20,8 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -29,6 +28,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -39,9 +39,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Person biographic/demographic information and picture (Person detail page)." )]
 
-    [PersonBadgesField("Badges", "The label badges to display in this block.", false, "", "", 0)]
-    [WorkflowTypeField("Workflow Actions", "The workflows to make available as actions.", true, false, "", "", 1)]
-    [CodeEditorField("Additional Custom Actions", @"
+    [PersonBadgesField( "Badges", "The label badges to display in this block.", false, "", "", 0 )]
+    [WorkflowTypeField( "Workflow Actions", "The workflows to make available as actions.", true, false, "", "", 1 )]
+    [CodeEditorField( "Additional Custom Actions", @"
 Additional custom actions (will be displayed after the list of workflow actions). Any instance of '{0}' will be replaced with the current person's id.
 Because the contents of this setting will be rendered inside a &lt;ul&gt; element, it is recommended to use an 
 &lt;li&gt; element for each available action.  Example:
@@ -50,7 +50,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 </pre>
 ", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
     [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 3 )]
-    [BooleanField("Display Country Code", "When enabled prepends the country code to all phone numbers.")]
+    [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers." )]
     public partial class Bio : PersonBlock
     {
         #region Base Control Methods
@@ -77,7 +77,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     NavigateToLinkedPage( "BusinessDetailPage", parms );
                 }
 
-                if ( Person.IsDeceased ?? false )
+                if ( Person.IsDeceased )
                 {
                     divBio.AddCssClass( "deceased" );
                 }
@@ -104,38 +104,34 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                 lbEditPerson.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
             }
-
         }
 
-        protected override void OnLoad(EventArgs e)
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
         {
- 	        base.OnLoad(e);
+            base.OnLoad( e );
 
             if ( !Page.IsPostBack )
             {
                 if ( Person != null && Person.Id != 0 )
                 {
-                    if ( Person.NickName == Person.FirstName )
-                    {
-                        lName.Text = Person.FullName.FormatAsHtmlTitle();
-                    }
-                    else
-                    {
-                        lName.Text = String.Format( "{0} {2} <span class='full-name'>({1})</span>", Person.NickName.FormatAsHtmlTitle(), Person.FirstName, Person.LastName );
-                    }
+                    SetPersonName();
 
                     // Setup Image
                     string imgTag = Rock.Model.Person.GetPhotoImageTag( Person.PhotoId, Person.Age, Person.Gender, 200, 200 );
                     if ( Person.PhotoId.HasValue )
                     {
-                        lImage.Text = string.Format("<a href='{0}'>{1}</a>", Person.PhotoUrl, imgTag);
+                        lImage.Text = string.Format( "<a href='{0}'>{1}</a>", Person.PhotoUrl, imgTag );
                     }
                     else
                     {
                         lImage.Text = imgTag;
                     }
 
-                    SetFollowing();
+                    FollowingsHelper.SetFollowing( Person.PrimaryAlias, pnlFollow, this.CurrentPerson );
 
                     var socialCategoryGuid = Rock.SystemGuid.Category.PERSON_ATTRIBUTES_SOCIAL.AsGuid();
                     if ( !socialCategoryGuid.IsEmpty() )
@@ -162,27 +158,33 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     {
                         string ageText = ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ?
                             string.Format( "{0} yrs old ", Person.BirthDate.Value.Age() ) : string.Empty;
-                        lAge.Text = string.Format( "{0}<small>({1})</small><br/>", ageText, Person.BirthDate.Value.ToMonthDayString() );
+                        if (Person.BirthDate.Value.Year != DateTime.MinValue.Year)
+                        {
+                            lAge.Text = string.Format("{0}<small>({1})</small><br/>", ageText, Person.BirthDate.Value.ToShortDateString());
+                        } else
+                        {
+                            lAge.Text = string.Format("{0}<small>({1})</small><br/>", ageText, Person.BirthDate.Value.ToMonthDayString());
+                        }
+                        
                     }
 
                     lGender.Text = Person.Gender.ToString();
 
                     if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
                     {
-                        lGraduation.Text = string.Format( "<small>({0} {1})</small>",
-                            Person.HasGraduated.Value  ? "Graduated " : "Graduates ",
+                        lGraduation.Text = string.Format(
+                            "<small>({0} {1})</small>",
+                            Person.HasGraduated.Value ? "Graduated " : "Graduates ",
                             Person.GraduationYear.Value );
-
-                        string grade = Person.GradeFormatted;
-                        if ( grade != string.Empty )
-                        {
-                            lGrade.Text = string.Format( "{0}", grade );
-                        }
                     }
+
+                    lGrade.Text = Person.GradeFormatted;
 
                     lMaritalStatus.Text = Person.MaritalStatusValueId.DefinedValue();
                     if ( Person.AnniversaryDate.HasValue )
+                    {
                         lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToMonthDayString() );
+                    }
 
                     if ( Person.PhoneNumbers != null )
                     {
@@ -212,8 +214,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                                     if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                                     {
                                         string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
-                                        sbActions.AppendFormat( "<li><a href='{0}'><i class='{1}'></i> {2}</a></li>",
-                                            ResolveRockUrl( url ), workflowType.IconCssClass, workflowType.Name );
+                                        sbActions.AppendFormat(
+                                            "<li><a href='{0}'><i class='icon-fw {1}'></i> {2}</a></li>",
+                                            ResolveRockUrl( url ),
+                                            workflowType.IconCssClass,
+                                            workflowType.Name );
                                         sbActions.AppendLine();
                                     }
                                 }
@@ -233,27 +238,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             actions = string.Format( actions, Person.Id );
                         }
 
-                        sbActions.Append(actions);
+                        sbActions.Append( actions );
                     }
 
                     lActions.Text = sbActions.ToString();
                     ulActions.Visible = !string.IsNullOrWhiteSpace( lActions.Text );
-                  
-                    // Every person should have an alias record with same id.  If it's missing, create it
-                    if ( !Person.Aliases.Any( a => a.AliasPersonId == Person.Id ) )
-                    {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var personService = new PersonService( rockContext );
-                            var person = personService.Get( Person.Id );
-                            if ( person != null )
-                            {
-                                person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
-                                rockContext.SaveChanges();
-                                Person = person;
-                            }
-                        }
-                    }
                 }
                 else
                 {
@@ -263,6 +252,67 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
         }
 
+        private void SetPersonName()
+        {
+            // Check if this record represents a Business.
+            bool isBusiness = false;
+
+            if ( Person.RecordTypeValueId.HasValue )
+            {
+                int recordTypeValueIdBusiness = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+
+                isBusiness = ( Person.RecordTypeValueId.Value == recordTypeValueIdBusiness );
+            }
+
+            // Get the Display Name.
+            string nameText;
+
+            if ( isBusiness )
+            {
+                nameText = Person.LastName;
+            }
+            else
+            {
+                nameText = string.Format( "<span class='first-word'>{0}</span> {1}", Person.NickName, Person.LastName );
+
+                // Add First Name if different from NickName.
+                if ( Person.NickName != Person.FirstName )
+                {
+                    if ( !string.IsNullOrWhiteSpace( Person.FirstName ) )
+                    {
+                        nameText += string.Format( " ({0})", Person.FirstName );
+                    }
+                }
+
+                // Add Suffix.
+                if ( Person.SuffixValueId.HasValue )
+                {
+                    var suffix = DefinedValueCache.Read( Person.SuffixValueId.Value );
+                    if ( suffix != null )
+                    {
+                        nameText += " " + suffix.Value;
+                    }
+                }
+
+                // Add Previous Names. 
+                using ( var rockContext = new RockContext() )
+                {
+                    var previousNames = Person.GetPreviousNames( rockContext ).Select( a => a.LastName );
+
+                    if ( previousNames.Any() )
+                    {
+                        nameText += string.Format( Environment.NewLine + "<span class='previous-names'>(Previous Names: {0})</span>", previousNames.ToList().AsDelimited( ", " ) );
+                    }
+                }
+            }
+
+            lName.Text = nameText;
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
             base.OnPreRender( e );
@@ -272,6 +322,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
         #region Events
 
+        /// <summary>
+        /// Handles the Click event of the lbEditPerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEditPerson_Click( object sender, EventArgs e )
         {
             if ( Person != null )
@@ -319,67 +374,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             return formattedNumber;
         }
 
-        private void SetFollowing()
-        {
-            var personAliasEntityType = EntityTypeCache.Read( "Rock.Model.PersonAlias" );
-            if ( Person != null && CurrentPersonId.HasValue && CurrentPersonAlias != null && personAliasEntityType != null )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var personAliasService = new PersonAliasService( rockContext );
-                    var followingService = new FollowingService( rockContext );
-
-                    var paQry = personAliasService.Queryable()
-                        .Where( p => p.PersonId == Person.Id )
-                        .Select( p => p.Id );
-
-                    if ( followingService.Queryable()
-                        .Where( f =>
-                            f.EntityTypeId == personAliasEntityType.Id &&
-                            paQry.Contains( f.EntityId ) &&
-                            f.PersonAlias.PersonId == CurrentPersonId )
-                        .Any() )
-                    {
-                        pnlFollow.AddCssClass( "following" );
-                    }
-                    else
-                    {
-                        pnlFollow.RemoveCssClass( "following" );
-                    }
-                }
-
-                string script = string.Format( @"
-        $('.following-status').click(function () {{
-            var $followingDiv = $(this);
-            if ($followingDiv.hasClass('following')) {{
-                $.ajax({{
-                    type: 'DELETE',
-                    url: Rock.settings.get('baseUrl') + 'api/followings/{0}/{1}/{2}',
-                    success: function(data, status, xhr){{ 
-                        $followingDiv.removeClass('following');
-                    }},
-                }});
-            }} else {{
-                var following = {{ EntityTypeId:{0}, EntityId:{1}, PersonAliasId:{3} }};
-                $.ajax({{
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(following),
-                    url: Rock.settings.get('baseUrl') + 'api/followings',
-                    statusCode: {{
-                        201: function () {{
-                            $followingDiv.addClass('following');
-                        }}
-                    }}
-                }});
-            }}
-        }});
-    ", personAliasEntityType.Id, Person.PrimaryAliasId, CurrentPersonId.Value, CurrentPersonAlias.Id );
-                ScriptManager.RegisterStartupScript( lImage, lImage.GetType(), "following", script, true );
-            }
-        }
-
         #endregion
-
-}
+    }
 }

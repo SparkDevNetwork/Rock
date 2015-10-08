@@ -39,8 +39,10 @@ namespace RockWeb.Blocks.Finance
     [Description( "Builds a list of all financial transactions which can be filtered by date, account, transaction type, etc." )]
 
     [ContextAware]
-    [LinkedPage( "Detail Page" )]
-    [TextField( "Title", "Title to display above the grid. Leave blank to hide.", false )]
+    [LinkedPage( "Detail Page", order:0 )]
+    [TextField( "Title", "Title to display above the grid. Leave blank to hide.", false, order:1 )]
+    [BooleanField( "Show Only Active Accounts on Filter", "If account filter is displayed, only list active accounts", false, "", 2, "ActiveAccountsOnlyFilter")]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transation types to limit the list to (if none are selected all types will be included).", false, true, "", "", 3 )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler
     {
         #region Fields
@@ -49,6 +51,7 @@ namespace RockWeb.Blocks.Finance
         private FinancialBatch _batch = null;
         private Person _person = null;
         private FinancialScheduledTransaction _scheduledTxn = null;
+        private Registration _registration = null;
 
         private RockDropDownList _ddlMove = new RockDropDownList();
 
@@ -69,6 +72,7 @@ namespace RockWeb.Blocks.Finance
             base.OnInit( e );
 
             gfTransactions.ApplyFilterClick += gfTransactions_ApplyFilterClick;
+            gfTransactions.ClearFilterClick += gfTransactions_ClearFilterClick;
             gfTransactions.DisplayFilterValue += gfTransactions_DisplayFilterValue;
 
             string title = GetAttributeValue( "Title" );
@@ -76,6 +80,7 @@ namespace RockWeb.Blocks.Finance
             {
                 title = "Transaction List";
             }
+
             lTitle.Text = title;
 
             _canEdit = UserCanEdit;
@@ -129,50 +134,52 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the ClearFilterClick event of the gfTransactions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfTransactions_ClearFilterClick( object sender, EventArgs e )
+        {
+            gfTransactions.DeleteUserPreferences();
+            BindFilter();
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            bool promptWithFilter = true;
             var contextEntity = this.ContextEntity();
             if ( contextEntity != null )
             {
                 if ( contextEntity is Person )
                 {
                     _person = contextEntity as Person;
-                    promptWithFilter = false;
                 }
                 else if ( contextEntity is FinancialBatch )
                 {
                     _batch = contextEntity as FinancialBatch;
                     gfTransactions.Visible = false;
-                    promptWithFilter = false;
                 }
                 else if ( contextEntity is FinancialScheduledTransaction )
                 {
                     _scheduledTxn = contextEntity as FinancialScheduledTransaction;
                     gfTransactions.Visible = false;
-                    promptWithFilter = false;
                 }
+                else if ( contextEntity is Registration )
+                {
+                    _registration = contextEntity as Registration;
+                    gfTransactions.Visible = false;
+                }
+
             }
 
             if ( !Page.IsPostBack )
             {
                 BindFilter();
-
-                if ( promptWithFilter && gfTransactions.Visible )
-                {
-                    //// NOTE: Special Case for this List Block since there could be a very large number of transactions:
-                    //// If the filter is shown and we aren't filtering by anything else, don't automatically populate the grid. Wait for them to hit apply on the filter
-                    gfTransactions.Show();
-                }
-                else
-                {
-                    BindGrid();
-                }
+                BindGrid();
             }
 
             if ( _canEdit && _batch != null )
@@ -181,7 +188,7 @@ namespace RockWeb.Blocks.Finance
     $('#{0}').change(function( e ){{
         var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
         if (count == 0) {{
-            eval({2});
+            {2};
         }}
         else
         {{
@@ -189,7 +196,7 @@ namespace RockWeb.Blocks.Finance
             if ($ddl.val() != '') {{
                 Rock.dialogs.confirm('Are you sure you want to move the selected transactions to a new batch (the control amounts on each batch will be updated to reflect the moved transaction\'s amounts)?', function (result) {{
                     if (result) {{
-                        eval({2});
+                        {2};
                     }}
                     $ddl.val('');
                 }});
@@ -220,10 +227,11 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // If the batch is closed, do not allow any editing of the transactions
+                // NOTE that gTransactions_Delete click will also check if the transaction is part of a closed batch
                 if ( _batch.Status != BatchStatus.Closed && _canEdit )
                 {
-                    gTransactions.Actions.ShowAdd = true;
-                    gTransactions.IsDeleteEnabled = true;
+                    gTransactions.Actions.ShowAdd = _canEdit;
+                    gTransactions.IsDeleteEnabled = _canEdit;
                 }
                 else
                 {
@@ -231,22 +239,21 @@ namespace RockWeb.Blocks.Finance
                     gTransactions.IsDeleteEnabled = false;
                 }
             }
-            else if ( _scheduledTxn != null )
+            else 
             {
                 nbClosedWarning.Visible = false;
                 gTransactions.Columns[0].Visible = false;
                 _ddlMove.Visible = false;
 
+                // not in batch mode, so don't allow Add, and don't show the DeleteButton
                 gTransactions.Actions.ShowAdd = false;
-                gTransactions.IsDeleteEnabled = false;
+                var deleteField = gTransactions.ColumnsOfType<DeleteField>().FirstOrDefault();
+                if (deleteField != null)
+                {
+                    deleteField.Visible = false;
+                }
             }
-            else    // Person
-            {
-                nbClosedWarning.Visible = false;
-                gTransactions.Columns[0].Visible = false;
-                _ddlMove.Visible = false;
-            }
-            
+
             base.OnPreRender( e );
         }
 
@@ -269,6 +276,11 @@ namespace RockWeb.Blocks.Finance
         {
             switch ( e.Key )
             {
+                case "Row Limit":
+                    // row limit filter was removed, so hide it just in case
+                    e.Value = null;
+                    break;
+
                 case "Date Range":
                     e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
                     break;
@@ -279,15 +291,16 @@ namespace RockWeb.Blocks.Finance
 
                 case "Account":
 
-                    int accountId = 0;
-                    if ( int.TryParse( e.Value, out accountId ) )
+                    var accountIds = e.Value.SplitDelimitedValues().AsIntegerList().Where(a => a > 0 ).ToList();
+                    if ( accountIds.Any())
                     {
                         var service = new FinancialAccountService( new RockContext() );
-                        var account = service.Get( accountId );
-                        if ( account != null )
-                        {
-                            e.Value = account.Name;
-                        }
+                        var accountNames = service.GetByIds( accountIds ).OrderBy( a => a.Order ).OrderBy( a => a.Name ).Select( a => a.Name ).ToList().AsDelimited( ", ", " or " );
+                        e.Value = accountNames;
+                    }
+                    else
+                    {
+                        e.Value = string.Empty;
                     }
 
                     break;
@@ -319,10 +332,9 @@ namespace RockWeb.Blocks.Finance
         protected void gfTransactions_ApplyFilterClick( object sender, EventArgs e )
         {
             gfTransactions.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
-            gfTransactions.SaveUserPreference( "Row Limit", nbRowLimit.Text );
             gfTransactions.SaveUserPreference( "Amount Range", nreAmount.DelimitedValues );
             gfTransactions.SaveUserPreference( "Transaction Code", tbTransactionCode.Text );
-            gfTransactions.SaveUserPreference( "Account", ddlAccount.SelectedValue != All.Id.ToString() ? ddlAccount.SelectedValue : string.Empty );
+            gfTransactions.SaveUserPreference( "Account", apAccount.SelectedValue != All.Id.ToString() ? apAccount.SelectedValue : string.Empty );
             gfTransactions.SaveUserPreference( "Transaction Type", ddlTransactionType.SelectedValue != All.Id.ToString() ? ddlTransactionType.SelectedValue : string.Empty );
             gfTransactions.SaveUserPreference( "Currency Type", ddlCurrencyType.SelectedValue != All.Id.ToString() ? ddlCurrencyType.SelectedValue : string.Empty );
             gfTransactions.SaveUserPreference( "Credit Card Type", ddlCreditCardType.SelectedValue != All.Id.ToString() ? ddlCreditCardType.SelectedValue : string.Empty );
@@ -342,9 +354,9 @@ namespace RockWeb.Blocks.Finance
                     string currencyType = string.Empty;
                     string creditCardType = string.Empty;
 
-                    if ( txn.CurrencyTypeValueId.HasValue )
+                    if ( txn.FinancialPaymentDetail != null && txn.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
                     {
-                        int currencyTypeId = txn.CurrencyTypeValueId.Value;
+                        int currencyTypeId = txn.FinancialPaymentDetail.CurrencyTypeValueId.Value;
                         if ( _currencyTypes.ContainsKey( currencyTypeId ) )
                         {
                             currencyType = _currencyTypes[currencyTypeId];
@@ -356,9 +368,9 @@ namespace RockWeb.Blocks.Finance
                             _currencyTypes.Add( currencyTypeId, currencyType );
                         }
 
-                        if ( txn.CreditCardTypeValueId.HasValue )
+                        if ( txn.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
                         {
-                            int creditCardTypeId = txn.CreditCardTypeValueId.Value;
+                            int creditCardTypeId = txn.FinancialPaymentDetail.CreditCardTypeValueId.Value;
                             if ( _creditCardTypes.ContainsKey( creditCardTypeId ) )
                             {
                                 creditCardType = _creditCardTypes[creditCardTypeId];
@@ -431,7 +443,37 @@ namespace RockWeb.Blocks.Finance
                     return;
                 }
 
+                // prevent deleting a Transaction that is in closed batch
+                if (transaction.Batch != null )
+                {
+                    if ( transaction.Batch.Status == BatchStatus.Closed )
+                    {
+                        mdGridWarning.Show( string.Format( "This {0} is assigned to a closed {1}", FinancialTransaction.FriendlyTypeName, FinancialBatch.FriendlyTypeName ), ModalAlertType.Information );
+                        return;
+                    }
+                }
+
+                if ( transaction.BatchId.HasValue )
+                {
+                    string caption = ( transaction.AuthorizedPersonAlias != null && transaction.AuthorizedPersonAlias.Person != null ) ?
+                        transaction.AuthorizedPersonAlias.Person.FullName :
+                        string.Format( "Transaction: {0}", transaction.Id );
+
+                    HistoryService.SaveChanges(
+                        rockContext,
+                        typeof( FinancialBatch ),
+                        Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                        transaction.BatchId.Value,
+                        new List<string> { "Deleted transaction" },
+                        caption,
+                        typeof( FinancialTransaction ),
+                        transaction.Id,
+                        false
+                    );
+                }
+
                 transactionService.Delete( transaction );
+
                 rockContext.SaveChanges();
 
                 RockPage.UpdateBlocks( "~/Blocks/Finance/BatchDetail.ascx" );
@@ -461,19 +503,80 @@ namespace RockWeb.Blocks.Finance
                         var newBatch = batchService.Get( _ddlMove.SelectedValue.AsInteger() );
                         var oldBatch = batchService.Get( _batch.Id );
 
-                        if ( newBatch != null && newBatch.Status == BatchStatus.Open )
+                        if ( oldBatch != null && newBatch != null && newBatch.Status == BatchStatus.Open )
                         {
                             var txnService = new FinancialTransactionService( rockContext );
-                            var txnsToUpdate = txnService.Queryable()
+                            var txnsToUpdate = txnService.Queryable( "AuthorizedPersonAlias.Person" )
                                 .Where( t => txnsSelected.Contains( t.Id ) )
                                 .ToList();
 
+                            decimal oldBatchControlAmount = oldBatch.ControlAmount;
+                            decimal newBatchControlAmount = newBatch.ControlAmount;
+
                             foreach ( var txn in txnsToUpdate )
                             {
+                                string caption = ( txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null ) ?
+                                    txn.AuthorizedPersonAlias.Person.FullName :
+                                    string.Format( "Transaction: {0}", txn.Id );
+
+                                var changes = new List<string>();
+                                History.EvaluateChange( changes, "Batch", 
+                                    string.Format( "{0} (Id:{1})", oldBatch.Name, oldBatch.Id ), 
+                                    string.Format( "{0} (Id:{1})", newBatch.Name, newBatch.Id ) );
+
+                                HistoryService.SaveChanges(
+                                    rockContext,
+                                    typeof( FinancialBatch ),
+                                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                                    oldBatch.Id,
+                                    changes,
+                                    caption,
+                                    typeof( FinancialTransaction ),
+                                    txn.Id,
+                                    false
+                                );
+
+                                HistoryService.SaveChanges(
+                                    rockContext,
+                                    typeof( FinancialBatch ),
+                                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                                    newBatch.Id,
+                                    changes,
+                                    caption,
+                                    typeof( FinancialTransaction ),
+                                    txn.Id, false
+                                );
+
                                 txn.BatchId = newBatch.Id;
-                                oldBatch.ControlAmount -= txn.TotalAmount;
-                                newBatch.ControlAmount += txn.TotalAmount;
+                                oldBatchControlAmount -= txn.TotalAmount;
+                                newBatchControlAmount += txn.TotalAmount;
                             }
+
+                            var oldBatchChanges = new List<string>();
+                            History.EvaluateChange( oldBatchChanges, "Control Amount", oldBatch.ControlAmount.FormatAsCurrency(), oldBatchControlAmount.FormatAsCurrency() );
+                            oldBatch.ControlAmount = oldBatchControlAmount;
+
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( FinancialBatch ),
+                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                                oldBatch.Id,
+                                oldBatchChanges,
+                                false
+                            );
+
+                            var newBatchChanges = new List<string>();
+                            History.EvaluateChange( newBatchChanges, "Control Amount", newBatch.ControlAmount.FormatAsCurrency(), newBatchControlAmount.FormatAsCurrency() );
+                            newBatch.ControlAmount = newBatchControlAmount;
+
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( FinancialBatch ),
+                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                                newBatch.Id,
+                                newBatchChanges,
+                                false
+                            );
 
                             rockContext.SaveChanges();
 
@@ -530,19 +633,23 @@ namespace RockWeb.Blocks.Finance
         private void BindFilter()
         {
             drpDates.DelimitedValues = gfTransactions.GetUserPreference( "Date Range" );
-            nbRowLimit.Text = gfTransactions.GetUserPreference( "Row Limit" );
             nreAmount.DelimitedValues = gfTransactions.GetUserPreference( "Amount Range" );
             tbTransactionCode.Text = gfTransactions.GetUserPreference( "Transaction Code" );
 
+            apAccount.DisplayActiveOnly = GetAttributeValue( "ActiveAccountsOnlyFilter" ).AsBoolean();
 
-            var accountService = new FinancialAccountService( new RockContext() );
-            ddlAccount.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( FinancialAccount account in accountService.Queryable() )
+            var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
+            if ( accountIds.Any() )
             {
-                ListItem li = new ListItem( account.Name, account.Id.ToString() );
-                li.Selected = account.Id.ToString() == gfTransactions.GetUserPreference( "Account" );
-                ddlAccount.Items.Add( li );
+                var service = new FinancialAccountService( new RockContext() );
+                var accounts = service.GetByIds( accountIds ).OrderBy( a => a.Order ).OrderBy( a => a.Name ).ToList();
+                apAccount.SetValues(accounts);
             }
+            else
+            {
+                apAccount.SetValue( 0 );
+            }
+            
 
             BindDefinedTypeDropdown( ddlTransactionType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE ), "Transaction Type" );
             BindDefinedTypeDropdown( ddlCurrencyType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE ), "Currency Type" );
@@ -593,6 +700,13 @@ namespace RockWeb.Blocks.Finance
             _currencyTypes = new Dictionary<int,string>();
             _creditCardTypes = new Dictionary<int,string>();
 
+            // If configured for a registration and registration is null, return
+            int registrationEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
+            if ( ContextTypesRequired.Any( e => e.Id == registrationEntityTypeId ) && _registration == null )
+            {
+                return;
+            }
+
             // If configured for a person and person is null, return
             int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
             if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && _person == null )
@@ -615,8 +729,15 @@ namespace RockWeb.Blocks.Finance
             }
 
             // Qry
-            var qry = new FinancialTransactionService( new RockContext() )
-                .Queryable( "AuthorizedPersonAlias.Person,ProcessedByPersonAlias.Person" );
+            var rockContext = new RockContext();
+            var qry = new FinancialTransactionService( rockContext ).Queryable();
+
+            // Transaction Types
+            var txnTypes = GetAttributeValue( "TransactionTypes" ).SplitDelimitedValues().AsGuidList();
+            if ( txnTypes.Any() )
+            {
+                qry = qry.Where( t => txnTypes.Contains( t.TransactionTypeValue.Guid ) );
+            }
 
             // Set up the selection filter
             if ( _batch != null )
@@ -627,7 +748,7 @@ namespace RockWeb.Blocks.Finance
                 // If the batch is closed, do not allow any editing of the transactions
                 if ( _batch.Status != BatchStatus.Closed && _canEdit )
                 {
-                    gTransactions.IsDeleteEnabled = true;
+                    gTransactions.IsDeleteEnabled = _canEdit;
                 }
                 else
                 {
@@ -641,12 +762,25 @@ namespace RockWeb.Blocks.Finance
 
                 gTransactions.IsDeleteEnabled = false;
             }
+            else if ( _registration != null )
+            {
+                qry = qry
+                    .Where( t => t.TransactionDetails
+                        .Any( d =>
+                            d.EntityTypeId.HasValue &&
+                            d.EntityTypeId.Value == registrationEntityTypeId &&
+                            d.EntityId.HasValue &&
+                            d.EntityId.Value == _registration.Id ) );
+
+                gTransactions.IsDeleteEnabled = false;
+            }
             else    // Person
             {
                 // otherwise set the selection based on filter settings
                 if ( _person != null )
                 {
-                    qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == _person.Id );
+                    // get the transactions for the person or all the members in the person's giving group (Family)
+                    qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingId == _person.GivingId );
                 }
 
                 // Date Range
@@ -662,8 +796,6 @@ namespace RockWeb.Blocks.Finance
                     DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
                     qry = qry.Where( t => t.TransactionDateTime < upperDate );
                 }
-
-                
 
                 // Amount Range
                 var nre = new NumberRangeEditor();
@@ -686,10 +818,12 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // Account Id
-                int accountId = int.MinValue;
-                if ( int.TryParse( gfTransactions.GetUserPreference( "Account" ), out accountId ) )
+                var accountIds = (gfTransactions.GetUserPreference( "Account" ) ?? "").SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
                 {
-                    qry = qry.Where( t => t.TransactionDetails.Any( d => d.AccountId == accountId ) );
+                    if ( accountIds.Any() )
+                    {
+                        qry = qry.Where( t => t.TransactionDetails.Any( d => accountIds.Contains( d.AccountId ) || (d.Account.ParentAccountId.HasValue && accountIds.Contains(d.Account.ParentAccountId.Value) ) ) );
+                    }
                 }
 
                 // Transaction Type
@@ -703,14 +837,14 @@ namespace RockWeb.Blocks.Finance
                 int currencyTypeId = int.MinValue;
                 if ( int.TryParse( gfTransactions.GetUserPreference( "Currency Type" ), out currencyTypeId ) )
                 {
-                    qry = qry.Where( t => t.CurrencyTypeValueId == currencyTypeId );
+                    qry = qry.Where( t => t.FinancialPaymentDetail != null && t.FinancialPaymentDetail.CurrencyTypeValueId == currencyTypeId );
                 }
 
                 // Credit Card Type
                 int creditCardTypeId = int.MinValue;
                 if ( int.TryParse( gfTransactions.GetUserPreference( "Credit Card Type" ), out creditCardTypeId ) )
                 {
-                    qry = qry.Where( t => t.CreditCardTypeValueId == creditCardTypeId );
+                    qry = qry.Where( t => t.FinancialPaymentDetail != null && t.FinancialPaymentDetail.CreditCardTypeValueId == creditCardTypeId );
                 }
 
                 // Source Type
@@ -754,15 +888,66 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            // Row Limit
-            int? rowLimit = gfTransactions.GetUserPreference( "Row Limit" ).AsIntegerOrNull();
-            if ( rowLimit.HasValue )
-            {
-                qry = qry.Take( rowLimit.Value );
-            }
-
-            gTransactions.DataSource = qry.AsNoTracking().ToList();
+            gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
+
+            if ( _batch == null &&
+                _scheduledTxn == null &&
+                _registration == null &&
+                _person == null )
+            {
+                pnlSummary.Visible = true;
+
+                // No context - show account summary
+                var qryTransactionDetails = qry.SelectMany( a => a.TransactionDetails );
+                var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.Account ).Select( a => new
+                {
+                    a.Key.Name,
+                    a.Key.Order,
+                    TotalAmount = (decimal?)a.Sum( d => d.Amount )
+                } ).OrderBy( a => a.Order );
+
+                var summaryList = accountSummaryQry.ToList();
+                var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
+                string currencyFormat = GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:n}";
+                lGrandTotal.Text = string.Format( currencyFormat, grandTotalAmount );
+                rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = string.Format( currencyFormat, a.TotalAmount ) } ).ToList();
+                rptAccountSummary.DataBind();
+            }
+            else
+            {
+                pnlSummary.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the accounts.
+        /// </summary>
+        /// <param name="dataItem">The data item.</param>
+        /// <returns></returns>
+        protected string GetAccounts( object dataItem )
+        {
+            var txn = dataItem as FinancialTransaction;
+            if ( txn != null )
+            {
+                var summary = txn.TransactionDetails
+                    .OrderBy( d => d.Account.Order )
+                    .Select( d => string.Format( "{0}: {1}", d.Account.Name, d.Amount.FormatAsCurrency() ) )
+                    .ToList();
+                if ( summary.Any() )
+                {
+                    if ( gTransactions.AllowPaging )
+                    {
+                        return "<small>" + summary.AsDelimited( "<br/>" ) + "</small>";
+                    }
+                    else
+                    {
+                        // Allow paging is turned off when exporting to excel. In this case, do not add the html
+                        return summary.AsDelimited( Environment.NewLine );
+                    }
+                }
+            }
+            return string.Empty;
         }
 
         /// <summary>

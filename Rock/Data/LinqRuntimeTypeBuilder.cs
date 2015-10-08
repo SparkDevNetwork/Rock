@@ -119,7 +119,7 @@ namespace Rock.Data
                     // The property set and property get methods require a special set of attributes.
                     MethodAttributes getSetAttr = MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
 
-                    // Define the "get" accessor method for the property and gen IL code so it's value comes from the field
+                    // Define the "get" accessor method for the property and gen IL code so its value comes from the field
                     MethodBuilder getPropMthdBldr = typeBuilder.DefineMethod( "get_" + field.Key, getSetAttr, field.Value, Type.EmptyTypes );
 
                     ILGenerator fieldGetIL = getPropMthdBldr.GetILGenerator();

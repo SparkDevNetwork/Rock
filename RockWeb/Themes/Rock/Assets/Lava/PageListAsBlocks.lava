@@ -5,7 +5,7 @@
                 <li>
                     <a href="{{ childPage.Id }}" {% if childPage.DisplayDescription != 'true' %} title="{{ childPage.Description }}"{% endif %}>
                         {% if childPage.IconCssClass != '' %}
-                            <i class="{{ childPage.IconCssClass }} fa-lg"></i>
+                            <i class="{{ childPage.IconCssClass }}"></i>
                         {% endif %}
                         <h3>{{ childPage.Title }}</h3>
                     </a>

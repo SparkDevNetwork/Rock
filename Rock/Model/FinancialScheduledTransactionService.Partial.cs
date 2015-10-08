@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
@@ -34,7 +35,7 @@ namespace Rock.Model
     {
         /// <summary>
         /// Gets schedule transactions associated to a person.  Includes any transactions associated to person
-        /// or any other perosn with same giving group id
+        /// or any other person with same giving group id
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="givingGroupId">The giving group identifier.</param>
@@ -44,15 +45,24 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<FinancialScheduledTransaction> Get( int? personId, int? givingGroupId, bool includeInactive )
         {
-            var qry = Queryable( "ScheduledTransactionDetails,CurrencyTypeValue,CreditCardTypeValue" )
-                .Where( t => t.IsActive || includeInactive );
+            var qry = Queryable()
+                .Include( a => a.ScheduledTransactionDetails )
+                .Include( a => a.FinancialPaymentDetail.CurrencyTypeValue )
+                .Include( a => a.FinancialPaymentDetail.CreditCardTypeValue );
+
+            if ( !includeInactive )
+            {
+                qry = qry.Where( t => t.IsActive );
+            }
 
             if ( givingGroupId.HasValue )
             {
-                qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingGroupId == givingGroupId.Value );
+                //  Person contributes with family
+                qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingGroupId == givingGroupId );
             }
             else if ( personId.HasValue )
             {
+                // Person contributes individually
                 qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == personId );
             }
 
@@ -74,6 +84,26 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Deletes the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
+        public override bool Delete( FinancialScheduledTransaction item )
+        {
+            if ( item.FinancialPaymentDetailId.HasValue )
+            {
+                var paymentDetailsService = new FinancialPaymentDetailService( (Rock.Data.RockContext)this.Context );
+                var paymentDetail = paymentDetailsService.Get( item.FinancialPaymentDetailId.Value );
+                if ( paymentDetail != null )
+                {
+                    paymentDetailsService.Delete( paymentDetail );
+                }
+            }
+
+            return base.Delete( item );
+        }
+        
+        /// <summary>
         /// Sets the status.
         /// </summary>
         /// <param name="scheduledTransaction">The scheduled transaction.</param>
@@ -81,10 +111,17 @@ namespace Rock.Model
         /// <returns></returns>
         public bool GetStatus( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
-            if ( scheduledTransaction.GatewayEntityType != null )
+            if ( scheduledTransaction != null && 
+                scheduledTransaction.FinancialGateway != null && 
+                scheduledTransaction.FinancialGateway.IsActive )
             {
-                var gateway = Rock.Financial.GatewayContainer.GetComponent( scheduledTransaction.GatewayEntityType.Guid.ToString() );
-                if ( gateway != null && gateway.IsActive )
+                if ( scheduledTransaction.FinancialGateway.Attributes == null )
+                {
+                    scheduledTransaction.FinancialGateway.LoadAttributes( (RockContext)this.Context );
+                }
+
+                var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
+                if ( gateway != null )
                 {
                     return gateway.GetScheduledPaymentStatus( scheduledTransaction, out errorMessages );
                 }
@@ -102,22 +139,31 @@ namespace Rock.Model
         /// <returns></returns>
         public bool Reactivate( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
-            if ( scheduledTransaction.GatewayEntityType != null )
+            if ( scheduledTransaction != null && 
+                scheduledTransaction.FinancialGateway != null && 
+                scheduledTransaction.FinancialGateway.IsActive )
             {
-                var gateway = Rock.Financial.GatewayContainer.GetComponent( scheduledTransaction.GatewayEntityType.Guid.ToString() );
-                if ( gateway != null && gateway.IsActive )
+                if ( scheduledTransaction.FinancialGateway.Attributes == null )
+                {
+                    scheduledTransaction.FinancialGateway.LoadAttributes( (RockContext)this.Context );
+                }
+
+                var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
+                if ( gateway != null )
                 {
                     if ( gateway.ReactivateScheduledPayment( scheduledTransaction, out errorMessages ) )
                     {
                         var noteTypeService = new NoteTypeService( (RockContext)this.Context );
-                        var noteType = noteTypeService.Get( scheduledTransaction.TypeId, "Note" );
-
-                        var noteService = new NoteService( (RockContext)this.Context );
-                        var note = new Note();
-                        note.NoteTypeId = noteType.Id;
-                        note.EntityId = scheduledTransaction.Id;
-                        note.Caption = "Reactivated Transaction";
-                        noteService.Add( note );
+                        var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
+                        if ( noteType != null )
+                        {
+                            var noteService = new NoteService( (RockContext)this.Context );
+                            var note = new Note();
+                            note.NoteTypeId = noteType.Id;
+                            note.EntityId = scheduledTransaction.Id;
+                            note.Caption = "Reactivated Transaction";
+                            noteService.Add( note );
+                        }
 
                         return true;
                     }
@@ -140,22 +186,31 @@ namespace Rock.Model
         /// <returns></returns>
         public bool Cancel( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
-            if ( scheduledTransaction.GatewayEntityType != null )
+            if ( scheduledTransaction != null && 
+                scheduledTransaction.FinancialGateway != null && 
+                scheduledTransaction.FinancialGateway.IsActive )
             {
-                var gateway = Rock.Financial.GatewayContainer.GetComponent( scheduledTransaction.GatewayEntityType.Guid.ToString() );
-                if ( gateway != null && gateway.IsActive )
+                if ( scheduledTransaction.FinancialGateway.Attributes == null )
+                {
+                    scheduledTransaction.FinancialGateway.LoadAttributes( (RockContext)this.Context );
+                }
+
+                var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
+                if ( gateway != null )
                 {
                     if ( gateway.CancelScheduledPayment( scheduledTransaction, out errorMessages ) )
                     {
                         var noteTypeService = new NoteTypeService( (RockContext)this.Context );
-                        var noteType = noteTypeService.Get( scheduledTransaction.TypeId, "Note" );
-
-                        var noteService = new NoteService( (RockContext)this.Context );
-                        var note = new Note();
-                        note.NoteTypeId = noteType.Id;
-                        note.EntityId = scheduledTransaction.Id;
-                        note.Caption = "Cancelled Transaction";
-                        noteService.Add( note );
+                        var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
+                        if ( noteType != null )
+                        {
+                            var noteService = new NoteService( (RockContext)this.Context );
+                            var note = new Note();
+                            note.NoteTypeId = noteType.Id;
+                            note.EntityId = scheduledTransaction.Id;
+                            note.Caption = "Cancelled Transaction";
+                            noteService.Add( note );
+                        }
 
                         return true;
                     }
@@ -178,7 +233,7 @@ namespace Rock.Model
         /// <param name="payments">The payments.</param>
         /// <param name="batchUrlFormat">The batch URL format.</param>
         /// <returns></returns>
-        public static string ProcessPayments( GatewayComponent gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat = "" )
+        public static string ProcessPayments( FinancialGateway gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat = "" )
         {
             int totalPayments = 0;
             int totalAlreadyDownloaded = 0;
@@ -187,155 +242,191 @@ namespace Rock.Model
 
             var batches = new List<FinancialBatch>();
             var batchSummary = new Dictionary<Guid, List<Payment>>();
+            var initialControlAmounts = new Dictionary<Guid, decimal>();
 
-            var rockContext = new RockContext();
-            var accountService = new FinancialAccountService( rockContext );
-            var txnService = new FinancialTransactionService( rockContext );
-            var batchService = new FinancialBatchService( rockContext );
-            var scheduledTxnService = new FinancialScheduledTransactionService( rockContext );
+            var txnPersonNames = new Dictionary<Guid, string>();
 
-            var contributionTxnTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+            var gatewayComponent = gateway.GetGatewayComponent();
 
-            var defaultAccount = accountService.Queryable()
-                .Where( a =>
-                    a.IsActive &&
-                    !a.ParentAccountId.HasValue &&
-                    ( !a.StartDate.HasValue || a.StartDate.Value <= RockDateTime.Now ) &&
-                    ( !a.EndDate.HasValue || a.EndDate.Value >= RockDateTime.Now )
-                    )
-                .OrderBy( a => a.Order )
-                .FirstOrDefault();
-
-            foreach ( var payment in payments.Where( p => p.Amount > 0.0M ) )
+            using ( var rockContext = new RockContext() )
             {
-                totalPayments++;
+                var accountService = new FinancialAccountService( rockContext );
+                var txnService = new FinancialTransactionService( rockContext );
+                var batchService = new FinancialBatchService( rockContext );
+                var scheduledTxnService = new FinancialScheduledTransactionService( rockContext );
 
-                // Only consider transactions that have not already been added
-                if ( txnService.GetByTransactionCode( payment.TransactionCode ) == null )
+                var contributionTxnType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+
+                var defaultAccount = accountService.Queryable()
+                    .Where( a =>
+                        a.IsActive &&
+                        !a.ParentAccountId.HasValue &&
+                        ( !a.StartDate.HasValue || a.StartDate.Value <= RockDateTime.Now ) &&
+                        ( !a.EndDate.HasValue || a.EndDate.Value >= RockDateTime.Now )
+                        )
+                    .OrderBy( a => a.Order )
+                    .FirstOrDefault();
+
+                var batchTxnChanges = new Dictionary<Guid, List<string>>();
+                var batchBatchChanges = new Dictionary<Guid, List<string>>();
+                var scheduledTransactionIds = new List<int>();
+
+                foreach ( var payment in payments.Where( p => p.Amount > 0.0M ) )
                 {
-                    var scheduledTransaction = scheduledTxnService.GetByScheduleId( payment.GatewayScheduleId );
-                    if ( scheduledTransaction != null )
+                    totalPayments++;
+
+                    // Only consider transactions that have not already been added
+                    if ( !txnService.Queryable().AsNoTracking().Any( p => p.TransactionCode.Equals( payment.TransactionCode ) ) )
                     {
-                        scheduledTransaction.IsActive = payment.ScheduleActive;
-
-                        var transaction = new FinancialTransaction();
-                        transaction.TransactionCode = payment.TransactionCode;
-                        transaction.TransactionDateTime = payment.TransactionDateTime;
-                        transaction.ScheduledTransactionId = scheduledTransaction.Id;
-                        transaction.AuthorizedPersonAliasId = scheduledTransaction.AuthorizedPersonAliasId;
-                        transaction.GatewayEntityTypeId = gateway.TypeId;
-                        transaction.TransactionTypeValueId = contributionTxnTypeId;
-
-                        var currencyTypeValue = payment.CurrencyTypeValue;
-                        if ( currencyTypeValue == null && scheduledTransaction.CurrencyTypeValueId.HasValue )
+                        var scheduledTransaction = scheduledTxnService.GetByScheduleId( payment.GatewayScheduleId );
+                        if ( scheduledTransaction != null )
                         {
-                            currencyTypeValue = DefinedValueCache.Read( scheduledTransaction.CurrencyTypeValueId.Value );
-                        }
-                        if ( currencyTypeValue != null )
-                        {
-                            transaction.CurrencyTypeValueId = currencyTypeValue.Id;
-                        }
+                            scheduledTransactionIds.Add( scheduledTransaction.Id );
 
-                        var creditCardTypevalue = payment.CreditCardTypeValue;
-                        if ( creditCardTypevalue == null && scheduledTransaction.CreditCardTypeValueId.HasValue )
-                        {
-                            creditCardTypevalue = DefinedValueCache.Read( scheduledTransaction.CreditCardTypeValueId.Value );
-                        }
-                        if ( creditCardTypevalue != null )
-                        {
-                            transaction.CreditCardTypeValueId = creditCardTypevalue.Id;
-                        }
+                            scheduledTransaction.IsActive = payment.ScheduleActive;
 
-                        //transaction.SourceTypeValueId = DefinedValueCache.Read( sourceGuid ).Id;
+                            var transaction = new FinancialTransaction();
+                            transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
 
-                        // Try to allocate the amount of the transaction based on the current scheduled transaction accounts
-                        decimal remainingAmount = payment.Amount;
-                        foreach ( var detail in scheduledTransaction.ScheduledTransactionDetails.Where( d => d.Amount != 0.0M ) )
-                        {
-                            var transactionDetail = new FinancialTransactionDetail();
-                            transactionDetail.AccountId = detail.AccountId;
+                            transaction.Guid = Guid.NewGuid();
+                            transaction.TransactionCode = payment.TransactionCode;
+                            transaction.TransactionDateTime = payment.TransactionDateTime;
+                            transaction.ScheduledTransactionId = scheduledTransaction.Id;
+                            transaction.AuthorizedPersonAliasId = scheduledTransaction.AuthorizedPersonAliasId;
+                            txnPersonNames.Add( transaction.Guid, scheduledTransaction.AuthorizedPersonAlias.Person.FullName );
+                            transaction.FinancialGatewayId = gateway.Id;
+                            transaction.TransactionTypeValueId = contributionTxnType.Id;
 
-                            if ( detail.Amount <= remainingAmount )
+                            var currencyTypeValue = payment.CurrencyTypeValue;
+                            var creditCardTypevalue = payment.CreditCardTypeValue;
+
+                            if ( scheduledTransaction.FinancialPaymentDetail != null )
                             {
-                                // If the configured amount for this account is less than or equal to the remaining
-                                // amount, allocate the configured amount
-                                transactionDetail.Amount = detail.Amount;
-                                remainingAmount -= detail.Amount;
-                            }
-                            else
-                            {
-                                // If the configured amount is greater than the remaining amount, only allocate
-                                // the remaining amount
-                                transaction.Summary = "Note: Downloaded transaction amount was less than the configured allocation amounts for the Scheduled Transaction.";
-                                detail.Amount = remainingAmount;
-                                detail.Summary = "Note: The downloaded amount was not enough to apply the configured amount to this account.";
-                                remainingAmount = 0.0M;
+                                if ( currencyTypeValue == null && scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
+                                {
+                                    currencyTypeValue = DefinedValueCache.Read( scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId.Value );
+                                }
+
+                                if ( creditCardTypevalue == null && scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
+                                {
+                                    creditCardTypevalue = DefinedValueCache.Read( scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId.Value );
+                                }
+
+                                transaction.FinancialPaymentDetail.AccountNumberMasked = scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked;
+                                transaction.FinancialPaymentDetail.NameOnCardEncrypted = scheduledTransaction.FinancialPaymentDetail.NameOnCardEncrypted;
+                                transaction.FinancialPaymentDetail.ExpirationMonthEncrypted = scheduledTransaction.FinancialPaymentDetail.ExpirationMonthEncrypted;
+                                transaction.FinancialPaymentDetail.ExpirationYearEncrypted = scheduledTransaction.FinancialPaymentDetail.ExpirationYearEncrypted;
+                                transaction.FinancialPaymentDetail.BillingLocationId = scheduledTransaction.FinancialPaymentDetail.BillingLocationId;
                             }
 
-                            transaction.TransactionDetails.Add( transactionDetail );
-
-                            if ( remainingAmount <= 0.0M )
+                            if ( currencyTypeValue != null )
                             {
-                                // If there's no amount left, break out of details
-                                break;
+                                transaction.FinancialPaymentDetail.CurrencyTypeValueId = currencyTypeValue.Id;
                             }
-                        }
+                            if ( creditCardTypevalue != null )
+                            {
+                                transaction.FinancialPaymentDetail.CreditCardTypeValueId = creditCardTypevalue.Id;
+                            }
 
-                        // If there's still amount left after allocating based on current config, add the remainder
-                        // to the account that was configured for the most amount
-                        if ( remainingAmount > 0.0M )
+                            // Try to allocate the amount of the transaction based on the current scheduled transaction accounts
+                            decimal remainingAmount = payment.Amount;
+                            foreach ( var detail in scheduledTransaction.ScheduledTransactionDetails.Where( d => d.Amount != 0.0M ) )
+                            {
+                                var transactionDetail = new FinancialTransactionDetail();
+                                transactionDetail.AccountId = detail.AccountId;
+
+                                if ( detail.Amount <= remainingAmount )
+                                {
+                                    // If the configured amount for this account is less than or equal to the remaining
+                                    // amount, allocate the configured amount
+                                    transactionDetail.Amount = detail.Amount;
+                                    remainingAmount -= detail.Amount;
+                                }
+                                else
+                                {
+                                    // If the configured amount is greater than the remaining amount, only allocate
+                                    // the remaining amount
+                                    transaction.Summary = "Note: Downloaded transaction amount was less than the configured allocation amounts for the Scheduled Transaction.";
+                                    transactionDetail.Amount = remainingAmount;
+                                    transactionDetail.Summary = "Note: The downloaded amount was not enough to apply the configured amount to this account.";
+                                    remainingAmount = 0.0M;
+                                }
+
+                                transaction.TransactionDetails.Add( transactionDetail );
+
+                                if ( remainingAmount <= 0.0M )
+                                {
+                                    // If there's no amount left, break out of details
+                                    break;
+                                }
+                            }
+
+                            // If there's still amount left after allocating based on current config, add the remainder
+                            // to the account that was configured for the most amount
+                            if ( remainingAmount > 0.0M )
+                            {
+                                transaction.Summary = "Note: Downloaded transaction amount was greater than the configured allocation amounts for the Scheduled Transaction.";
+                                var transactionDetail = transaction.TransactionDetails
+                                    .OrderByDescending( d => d.Amount )
+                                    .First();
+                                if ( transactionDetail == null && defaultAccount != null )
+                                {
+                                    transactionDetail = new FinancialTransactionDetail();
+                                    transactionDetail.AccountId = defaultAccount.Id;
+                                }
+                                if ( transactionDetail != null )
+                                {
+                                    transactionDetail.Amount += remainingAmount;
+                                    transactionDetail.Summary = "Note: Extra amount was applied to this account.";
+                                }
+                            }
+
+                            // Get the batch 
+                            var batch = batchService.Get(
+                                batchNamePrefix,
+                                currencyTypeValue,
+                                creditCardTypevalue,
+                                transaction.TransactionDateTime.Value,
+                                gateway.GetBatchTimeOffset(),
+                                batches );
+
+                            var batchChanges = new List<string>();
+                            if ( batch.Id != 0 )
+                            {
+                                initialControlAmounts.AddOrIgnore( batch.Guid, batch.ControlAmount );
+                            }
+                            batch.ControlAmount += transaction.TotalAmount;
+
+                            batch.Transactions.Add( transaction );
+
+                            // Add summary
+                            if ( !batchSummary.ContainsKey( batch.Guid ) )
+                            {
+                                batchSummary.Add( batch.Guid, new List<Payment>() );
+                            }
+                            batchSummary[batch.Guid].Add( payment );
+
+                            totalAdded++;
+                        }
+                        else
                         {
-                            transaction.Summary = "Note: Downloaded transaction amount was greater than the configured allocation amounts for the Scheduled Transaction.";
-                            var transactionDetail = transaction.TransactionDetails
-                                .OrderByDescending( d => d.Amount )
-                                .First();
-                            if ( transactionDetail == null && defaultAccount != null )
-                            {
-                                transactionDetail = new FinancialTransactionDetail();
-                                transactionDetail.AccountId = defaultAccount.Id;
-                            }
-                            if ( transactionDetail != null )
-                            {
-                                transactionDetail.Amount += remainingAmount;
-                                transactionDetail.Summary = "Note: Extra amount was applied to this account.";
-                            }
-
+                            totalNoScheduledTransaction++;
                         }
-
-                        // Get the batch 
-                        var batch = batchService.Get(
-                            batchNamePrefix,
-                            currencyTypeValue,
-                            creditCardTypevalue,
-                            transaction.TransactionDateTime.Value,
-                            gateway.BatchTimeOffset,
-                            batches );
-
-                        batch.ControlAmount += transaction.TotalAmount;
-                        batch.Transactions.Add( transaction );
-
-                        // Add summary
-                        if ( !batchSummary.ContainsKey( batch.Guid ) )
-                        {
-                            batchSummary.Add( batch.Guid, new List<Payment>() );
-                        }
-                        batchSummary[batch.Guid].Add( payment );
-
-                        totalAdded++;
                     }
                     else
                     {
-                        totalNoScheduledTransaction++;
+                        totalAlreadyDownloaded++;
                     }
                 }
-                else
-                {
-                    totalAlreadyDownloaded++;
-                }
+
+                rockContext.SaveChanges();
+
+                // Queue a transaction to update the status of all affected scheduled transactions
+                var updatePaymentStatusTxn = new Rock.Transactions.UpdatePaymentStatusTransaction( gateway.Id, scheduledTransactionIds );
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( updatePaymentStatusTxn );
+
             }
-
-            rockContext.SaveChanges();
-
+             
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat( "<li>{0} {1} downloaded.</li>", totalPayments.ToString( "N0" ), 
                 ( totalPayments == 1 ? "payment" : "payments" ) );
@@ -378,7 +469,7 @@ namespace Rock.Model
                         "<li>{0} transaction of {1} was added to the {2} batch.</li>" :
                         "<li>{0} transactions totaling {1} were added to the {2} batch</li>";
 
-                    sb.AppendFormat( summaryformat, items.ToString( "N0" ), sum.ToString( "C2" ), batchName );
+                    sb.AppendFormat( summaryformat, items.ToString( "N0" ), sum.FormatAsCurrency(), batchName );
                 }
             }
 

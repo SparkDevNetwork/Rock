@@ -6,7 +6,7 @@ declare
     --@maxPersonId int = (select min(id), max(id) from (select top 1000 id  from Person order by Id) x),  /* limit to first 4000 persons in the database */ 
     @LocationId int,
     @ScheduleId int,
-    @PersonId int,
+    @PersonAliasId int,
     @GroupId int,
     @DeviceId int,
     @SearchTypeValueId int,
@@ -17,13 +17,17 @@ declare
     @DidAttend int,
     @CampusId int,
     @categoryServiceTimes int = (select id from Category where [Guid] = '4FECC91B-83F9-4269-AE03-A006F401C47E'),
-    @randomDateInc decimal = 0.5
+    @randomDateInc decimal = 0.5,
+	@yearsBack int = 10
+
+declare
+  @daysBack int = @yearsBack * 366
 
 declare
     @attendanceGroupIds table ( id Int );
 
 declare
-    @personIds table ( id Int );
+    @personAliasIds table ( id Int );
 
 declare
     @attendanceCodeIds table ( id Int );
@@ -33,7 +37,7 @@ declare
    	    [LocationId] [int] NULL,
 	    [ScheduleId] [int] NULL,
 	    [GroupId] [int] NULL,
-	    [PersonId] [int] NULL,
+	    [PersonAliasId] [int] NULL,
 	    [DeviceId] [int] NULL,
 	    [SearchTypeValueId] [int] NULL,
 	    [AttendanceCodeId] [int] NULL,
@@ -54,17 +58,16 @@ declare
 begin
 
     insert into @attendanceGroupIds select Id from [Group] where GroupTypeId in (select Id from GroupType where TakesAttendance = 1);
-    insert into @personIds select top 50 Id from Person
+    insert into @personAliasIds select top 10000 Id from PersonAlias
     insert into @attendanceCodeIds select top 10 id from AttendanceCode
-
-    set @StartDateTime = SYSDATETIME()
+	set @StartDateTime = DATEADD(DAY, -@daysBack, SYSDATETIME())
 
     while @attendanceCounter < @maxAttendanceCount
     begin
 
         if (@attendanceCounter % 100 = 0) begin
             set @GroupId = (select top 1 Id from @attendanceGroupIds order by newid()) 
-            set @PersonId =  (select top 1 Id from @personIds order by newid())
+            set @PersonAliasId =  (select top 1 Id from @personAliasIds order by newid())
             set @DeviceId =  (select top 1 Id from Device where DeviceTypeValueId = 41 order by newid())
             set @LocationId = (select top 1 Id from Location where ParentLocationId = 3 order by newid())
         end
@@ -74,16 +77,21 @@ begin
             set @ScheduleId = (select top 1 Id from Schedule where CategoryId = @categoryServiceTimes order by newid()) 
         end
 
-        set @StartDateTime = DATEADD(ss, -((86000*365/@maxAttendanceCount) * @randomDateInc), @StartDateTime);
+		set @StartDateTime = DATEADD(ss, (86000*@daysBack/@maxAttendanceCount), @StartDateTime);
         set @DidAttend = (select case when FLOOR(rand() * 50) > 10 then 1 else 0 end) -- select random didattend with ~80% true
         set @CampusId = (select top 1 Id from Campus order by newid()) 
         set @AttendanceCodeId = (select top 1 Id from @attendanceCodeIds order by newid())
+
+		if ( FLOOR(rand() * 10) = 5) begin
+			-- randomly set CampusId to null since some types of attendance don't have a campus (like neighborhood groups )
+			set @CampusId = null
+		end
 
         INSERT INTO @attendanceTable
                    ([LocationId]
                     ,[ScheduleId]
                     ,[GroupId]
-                    ,[PersonId]
+                    ,[PersonAliasId]
                     ,[DeviceId] 
                     --,[SearchTypeValueId]
                     ,[AttendanceCodeId]
@@ -97,7 +105,7 @@ begin
                    (@LocationId
                     ,@ScheduleId
                     ,@GroupId
-                    ,@PersonId
+                    ,@PersonAliasId
                     ,@DeviceId
                     --,@SearchTypeValueId
                     ,@AttendanceCodeId
@@ -113,9 +121,10 @@ begin
         
     end
 
-    truncate table Attendance    
-    insert into Attendance select * from @attendanceTable order by StartDateTime
-
+    --truncate table Attendance    
+    insert into Attendance 
+        ( LocationId, ScheduleId, GroupId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] ) 
+    select LocationId, ScheduleId, GroupId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] from @attendanceTable order by StartDateTime
 end;
 
 

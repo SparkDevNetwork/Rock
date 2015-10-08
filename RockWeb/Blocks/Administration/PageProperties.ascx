@@ -11,7 +11,7 @@
 
     <asp:PlaceHolder ID="phContent" runat="server">
 
-        <ul class="nav nav-pills" >
+        <ul class="nav nav-pills margin-b-md" >
             <asp:Repeater ID="rptProperties" runat="server" >
                 <ItemTemplate >
                     <li class='<%# GetTabClass(Container.DataItem) %>'>

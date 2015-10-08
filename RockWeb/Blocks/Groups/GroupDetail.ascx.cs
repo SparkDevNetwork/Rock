@@ -45,8 +45,11 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Limit to Security Role Groups", "", false, "", 3 )]
     [BooleanField( "Limit to Group Types that are shown in navigation", "", false, "", 4, "LimitToShowInNavigationGroupTypes" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The style of maps to use", false, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK, "", 5 )]
-    [LinkedPage("Group Map Page", "The page to display detailed group map.", true, "", "", 6)]
-    [LinkedPage( "Attendance Page", "The page to display attendance list.", false, "", "", 7)]
+    [LinkedPage( "Group Map Page", "The page to display detailed group map.", true, "", "", 6 )]
+    [LinkedPage( "Attendance Page", "The page to display attendance list.", false, "", "", 7 )]
+    [LinkedPage( "Registration Instance Page", "The page to display registration details.", false, "", "", 7 )]
+    [LinkedPage( "Event Item Occurrence Page", "The page to display event item occurrence details.", false, "", "", 8 )]
+    [LinkedPage( "Content Item Page", "The page to display registration details.", false, "", "", 9 )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -60,28 +63,38 @@ namespace RockWeb.Blocks.Groups
 
         private readonly List<string> _tabs = new List<string> { MEMBER_LOCATION_TAB_TITLE, OTHER_LOCATION_TAB_TITLE };
 
-        private string LocationTypeTab
-        {
-            get
-            {
-                object currentProperty = ViewState["LocationTypeTab"];
-                return currentProperty != null ? currentProperty.ToString() : MEMBER_LOCATION_TAB_TITLE;
-            }
-
-            set
-            {
-                ViewState["LocationTypeTab"] = value;
-            }
-        }
-
         #endregion
 
         #region Properties
 
+        private string LocationTypeTab { get; set; }
+
+        private int CurrentGroupTypeId { get; set; }
+
         private List<GroupLocation> GroupLocationsState { get; set; }
+
         private List<InheritedAttribute> GroupMemberAttributesInheritedState { get; set; }
+
         private List<Attribute> GroupMemberAttributesState { get; set; }
+
+        private List<GroupRequirement> GroupRequirementsState { get; set; }
+
         private bool AllowMultipleLocations { get; set; }
+
+        private List<GroupMemberWorkflowTrigger> MemberWorkflowTriggersState { get; set; }
+
+        private GroupTypeCache CurrentGroupTypeCache
+        {
+            get
+            {
+                return GroupTypeCache.Read( CurrentGroupTypeId );
+            }
+
+            set
+            {
+                CurrentGroupTypeId = value != null ? value.Id : 0;
+            }
+        }
 
         #endregion
 
@@ -95,6 +108,10 @@ namespace RockWeb.Blocks.Groups
         {
             base.LoadViewState( savedState );
 
+            LocationTypeTab = ViewState["LocationTypeTab"] as string ?? MEMBER_LOCATION_TAB_TITLE;
+            CurrentGroupTypeId = ViewState["CurrentGroupTypeId"] as int? ?? 0;
+
+            // NOTE: These things are converted to JSON prior to going into ViewState, so the json variable could be null or the string "null"!
             string json = ViewState["GroupLocationsState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
@@ -125,7 +142,41 @@ namespace RockWeb.Blocks.Groups
                 GroupMemberAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
             }
 
+            json = ViewState["GroupRequirementsState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupRequirementsState = new List<GroupRequirement>();
+            }
+            else
+            {
+                GroupRequirementsState = JsonConvert.DeserializeObject<List<GroupRequirement>>( json ) ?? new List<GroupRequirement>();
+            }
+
+            // get the GroupRole for each GroupRequirement from the database it case it isn't serialized, and we'll need it
+            var groupRoleIds = GroupRequirementsState.Where( a => a.GroupRoleId.HasValue && a.GroupRole == null ).Select( a => a.GroupRoleId.Value ).Distinct().ToList();
+            if ( groupRoleIds.Any() )
+            {
+                var groupRoles = new GroupTypeRoleService( new RockContext() ).GetByIds( groupRoleIds );
+                GroupRequirementsState.ForEach( a =>
+                {
+                    if ( a.GroupRoleId.HasValue )
+                    {
+                        a.GroupRole = groupRoles.FirstOrDefault( b => b.Id == a.GroupRoleId );
+                    }
+                } );
+            }
+
             AllowMultipleLocations = ViewState["AllowMultipleLocations"] as bool? ?? false;
+
+            json = ViewState["MemberWorkflowTriggersState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                MemberWorkflowTriggersState = new List<GroupMemberWorkflowTrigger>();
+            }
+            else
+            {
+                MemberWorkflowTriggersState = JsonConvert.DeserializeObject<List<GroupMemberWorkflowTrigger>>( json );
+            }
         }
 
         /// <summary>
@@ -151,6 +202,19 @@ namespace RockWeb.Blocks.Groups
             gGroupMemberAttributes.GridRebind += gGroupMemberAttributes_GridRebind;
             gGroupMemberAttributes.GridReorder += gGroupMemberAttributes_GridReorder;
 
+            gGroupRequirements.DataKeyNames = new string[] { "Guid" };
+            gGroupRequirements.Actions.ShowAdd = true;
+            gGroupRequirements.Actions.AddClick += gGroupRequirements_Add;
+            gGroupRequirements.EmptyDataText = Server.HtmlEncode( None.Text );
+            gGroupRequirements.GridRebind += gGroupRequirements_GridRebind;
+
+            gMemberWorkflowTriggers.DataKeyNames = new string[] { "Guid" };
+            gMemberWorkflowTriggers.Actions.ShowAdd = true;
+            gMemberWorkflowTriggers.Actions.AddClick += gMemberWorkflowTriggers_Add;
+            gMemberWorkflowTriggers.EmptyDataText = Server.HtmlEncode( None.Text );
+            gMemberWorkflowTriggers.GridRebind += gMemberWorkflowTriggers_GridRebind;
+            gMemberWorkflowTriggers.GridReorder += gMemberWorkflowTriggers_GridReorder;
+
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Group ) ).Id;
 
@@ -158,7 +222,7 @@ namespace RockWeb.Blocks.Groups
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlGroupList );
+            this.AddConfigurationUpdateTrigger( upnlGroupDetail );
         }
 
         /// <summary>
@@ -172,7 +236,7 @@ namespace RockWeb.Blocks.Groups
             if ( !Page.IsPostBack )
             {
                 string groupId = PageParameter( "GroupId" );
-                if (!string.IsNullOrWhiteSpace(groupId))
+                if ( !string.IsNullOrWhiteSpace( groupId ) )
                 {
                     ShowDetail( groupId.AsInteger(), PageParameter( "ParentGroupId" ).AsIntegerOrNull() );
                 }
@@ -184,17 +248,18 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 nbNotAllowedToEdit.Visible = false;
-                
+                nbInvalidWorkflowType.Visible = false;
+                nbInvalidParentGroup.Visible = false;
                 ShowDialog();
             }
 
             // Rebuild the attribute controls on postback based on group type
             if ( pnlDetails.Visible )
             {
-                var group = new Group { GroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0 };
-                if ( group.GroupTypeId > 0 )
+                if ( CurrentGroupTypeId > 0 )
                 {
-                    ShowGroupTypeEditDetails( GroupTypeCache.Read( group.GroupTypeId ), group, false );
+                    var group = new Group { GroupTypeId = CurrentGroupTypeId };
+                    ShowGroupTypeEditDetails( CurrentGroupTypeCache, group, false );
                 }
             }
         }
@@ -213,10 +278,14 @@ namespace RockWeb.Blocks.Groups
                 ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
             };
 
+            ViewState["LocationTypeTab"] = LocationTypeTab;
+            ViewState["CurrentGroupTypeId"] = CurrentGroupTypeId;
             ViewState["GroupLocationsState"] = JsonConvert.SerializeObject( GroupLocationsState, Formatting.None, jsonSetting );
             ViewState["GroupMemberAttributesInheritedState"] = JsonConvert.SerializeObject( GroupMemberAttributesInheritedState, Formatting.None, jsonSetting );
             ViewState["GroupMemberAttributesState"] = JsonConvert.SerializeObject( GroupMemberAttributesState, Formatting.None, jsonSetting );
+            ViewState["GroupRequirementsState"] = JsonConvert.SerializeObject( GroupRequirementsState, Formatting.None, jsonSetting );
             ViewState["AllowMultipleLocations"] = AllowMultipleLocations;
+            ViewState["MemberWorkflowTriggersState"] = JsonConvert.SerializeObject( MemberWorkflowTriggersState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -281,7 +350,7 @@ namespace RockWeb.Blocks.Groups
 
             GroupService groupService = new GroupService( rockContext );
             AuthService authService = new AuthService( rockContext );
-            Group group = groupService.Get( int.Parse( hfGroupId.Value ) );
+            Group group = groupService.Get( hfGroupId.Value.AsInteger() );
 
             if ( group != null )
             {
@@ -316,7 +385,7 @@ namespace RockWeb.Blocks.Groups
                     var schedule = scheduleService.Get( group.ScheduleId.Value );
                     if ( schedule != null && schedule.ScheduleType != ScheduleType.Named )
                     {
-                        scheduleService.Delete(schedule);
+                        scheduleService.Delete( schedule );
                     }
                 }
 
@@ -351,23 +420,26 @@ namespace RockWeb.Blocks.Groups
         {
             Group group;
             bool wasSecurityRole = false;
+            bool triggersUpdated = false;
 
             RockContext rockContext = new RockContext();
 
             GroupService groupService = new GroupService( rockContext );
             GroupLocationService groupLocationService = new GroupLocationService( rockContext );
+            GroupRequirementService groupRequirementService = new GroupRequirementService( rockContext );
+            GroupMemberWorkflowTriggerService groupMemberWorkflowTriggerService = new GroupMemberWorkflowTriggerService( rockContext );
             ScheduleService scheduleService = new ScheduleService( rockContext );
             AttributeService attributeService = new AttributeService( rockContext );
             AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
             CategoryService categoryService = new CategoryService( rockContext );
 
-            if ( ( ddlGroupType.SelectedValueAsInt() ?? 0 ) == 0 )
+            if ( CurrentGroupTypeId == 0 )
             {
                 ddlGroupType.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( GroupType.FriendlyTypeName ) );
                 return;
             }
 
-            int groupId = int.Parse( hfGroupId.Value );
+            int groupId = hfGroupId.Value.AsInteger();
 
             if ( groupId == 0 )
             {
@@ -380,14 +452,46 @@ namespace RockWeb.Blocks.Groups
                 group = groupService.Queryable( "Schedule,GroupLocations.Schedules" ).Where( g => g.Id == groupId ).FirstOrDefault();
                 wasSecurityRole = group.IsSecurityRole;
 
+                // remove any locations that removed in the UI
                 var selectedLocations = GroupLocationsState.Select( l => l.Guid );
                 foreach ( var groupLocation in group.GroupLocations.Where( l => !selectedLocations.Contains( l.Guid ) ).ToList() )
                 {
                     group.GroupLocations.Remove( groupLocation );
                     groupLocationService.Delete( groupLocation );
                 }
+
+                // remove any group requirements that removed in the UI
+                var selectedGroupRequirements = GroupRequirementsState.Select( a => a.Guid );
+                foreach ( var groupRequirement in group.GroupRequirements.Where( a => !selectedGroupRequirements.Contains( a.Guid ) ).ToList() )
+                {
+                    group.GroupRequirements.Remove( groupRequirement );
+                    groupRequirementService.Delete( groupRequirement );
+                }
+
+                // Remove any triggers that were removed in the UI
+                var selectedTriggerGuids = MemberWorkflowTriggersState.Select( r => r.Guid );
+                foreach ( var trigger in group.GroupMemberWorkflowTriggers.Where( r => !selectedTriggerGuids.Contains( r.Guid ) ).ToList() )
+                {
+                    group.GroupMemberWorkflowTriggers.Remove( trigger );
+                    groupMemberWorkflowTriggerService.Delete( trigger );
+                    triggersUpdated = true;
+                }
             }
 
+            // add/update any group requirements that were added or changed in the UI (we already removed the ones that were removed above)
+            foreach ( var groupRequirementState in GroupRequirementsState )
+            {
+                GroupRequirement groupRequirement = group.GroupRequirements.Where( a => a.Guid == groupRequirementState.Guid ).FirstOrDefault();
+                if ( groupRequirement == null )
+                {
+                    groupRequirement = new GroupRequirement();
+                    group.GroupRequirements.Add( groupRequirement );
+                }
+
+                groupRequirement.CopyPropertiesFrom( groupRequirementState );
+            }
+
+            // add/update any group locations that were added or changed in the UI (we already removed the ones that were removed above)
             foreach ( var groupLocationState in GroupLocationsState )
             {
                 GroupLocation groupLocation = group.GroupLocations.Where( l => l.Guid == groupLocationState.Guid ).FirstOrDefault();
@@ -402,7 +506,7 @@ namespace RockWeb.Blocks.Groups
                     groupLocationState.Guid = groupLocation.Guid;
 
                     var selectedSchedules = groupLocationState.Schedules.Select( s => s.Guid ).ToList();
-                    foreach( var schedule in groupLocation.Schedules.Where( s => !selectedSchedules.Contains( s.Guid)).ToList())
+                    foreach ( var schedule in groupLocation.Schedules.Where( s => !selectedSchedules.Contains( s.Guid ) ).ToList() )
                     {
                         groupLocation.Schedules.Remove( schedule );
                     }
@@ -411,7 +515,7 @@ namespace RockWeb.Blocks.Groups
                 groupLocation.CopyPropertiesFrom( groupLocationState );
 
                 var existingSchedules = groupLocation.Schedules.Select( s => s.Guid ).ToList();
-                foreach ( var scheduleState in groupLocationState.Schedules.Where( s => !existingSchedules.Contains( s.Guid )).ToList())
+                foreach ( var scheduleState in groupLocationState.Schedules.Where( s => !existingSchedules.Contains( s.Guid ) ).ToList() )
                 {
                     var schedule = scheduleService.Get( scheduleState.Guid );
                     if ( schedule != null )
@@ -421,13 +525,40 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            foreach ( var triggerState in MemberWorkflowTriggersState )
+            {
+                GroupMemberWorkflowTrigger trigger = group.GroupMemberWorkflowTriggers.Where( r => r.Guid == triggerState.Guid ).FirstOrDefault();
+                if ( trigger == null )
+                {
+                    trigger = new GroupMemberWorkflowTrigger();
+                    group.GroupMemberWorkflowTriggers.Add( trigger );
+                }
+                else
+                {
+                    triggerState.Id = trigger.Id;
+                    triggerState.Guid = trigger.Guid;
+                }
+
+                trigger.CopyPropertiesFrom( triggerState );
+
+                triggersUpdated = true;
+            }
+
             group.Name = tbName.Text;
             group.Description = tbDescription.Text;
-            group.CampusId = ddlCampus.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlCampus.SelectedValue );
-            group.GroupTypeId = int.Parse( ddlGroupType.SelectedValue );
-            group.ParentGroupId = gpParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( gpParentGroup.SelectedValue );
+            group.CampusId = ddlCampus.SelectedValueAsInt();
+            group.GroupTypeId = CurrentGroupTypeId;
+            group.ParentGroupId = gpParentGroup.SelectedValueAsInt();
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
+            group.IsPublic = cbIsPublic.Checked;
+            group.MustMeetRequirementsToAddMember = cbMembersMustMeetRequirementsOnAdd.Checked;
+
+            // save sync settings
+            group.SyncDataViewId = dvpSyncDataview.SelectedValue.AsIntegerOrNull();
+            group.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedValue.AsIntegerOrNull();
+            group.ExitSystemEmailId = ddlExitEmail.SelectedValue.AsIntegerOrNull();
+            group.AddUserAccountsDuringSync = rbCreateLoginDuringSync.Checked;
 
             string iCalendarContent = string.Empty;
 
@@ -464,7 +595,7 @@ namespace RockWeb.Blocks.Groups
                     group.Schedule.iCalendarContent = iCalendarContent;
                     group.Schedule.WeeklyDayOfWeek = null;
                     group.Schedule.WeeklyTimeOfDay = null;
-                } 
+                }
                 else
                 {
                     group.Schedule.iCalendarContent = null;
@@ -478,9 +609,9 @@ namespace RockWeb.Blocks.Groups
                 if ( oldScheduleId.HasValue )
                 {
                     var schedule = scheduleService.Get( oldScheduleId.Value );
-                    if ( schedule != null && string.IsNullOrEmpty(schedule.Name) )
+                    if ( schedule != null && string.IsNullOrEmpty( schedule.Name ) )
                     {
-                        scheduleService.Delete(schedule);
+                        scheduleService.Delete( schedule );
                     }
                 }
 
@@ -510,8 +641,21 @@ namespace RockWeb.Blocks.Groups
                 group.ParentGroup = groupService.Get( group.ParentGroupId.Value );
             }
 
+            // Check to see if group type is allowed as a child of new parent group.
+            if ( group.ParentGroup != null )
+            {
+                var allowedGroupTypeIds = GetAllowedGroupTypes( group.ParentGroup, rockContext ).Select( t => t.Id ).ToList();
+                if ( !allowedGroupTypeIds.Contains( group.GroupTypeId ) )
+                {
+                    var groupType = CurrentGroupTypeCache;
+                    nbInvalidParentGroup.Text = string.Format( "The '{0}' group does not allow child groups with a '{1}' group type.", group.ParentGroup.Name, groupType != null ? groupType.Name : string.Empty );
+                    nbInvalidParentGroup.Visible = true;
+                    return;
+                }
+            }
+
             // Check to see if user is still allowed to edit with selected group type and parent group
-            if ( !group.IsAuthorized( Authorization.EDIT, CurrentPerson ))
+            if ( !group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 nbNotAllowedToEdit.Visible = true;
                 return;
@@ -539,7 +683,7 @@ namespace RockWeb.Blocks.Groups
 
                 rockContext.SaveChanges();
 
-                if (adding)
+                if ( adding )
                 {
                     // add ADMINISTRATE to the person who added the group 
                     Rock.Security.Authorization.AllowPerson( group, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
@@ -591,6 +735,13 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            AttributeCache.FlushEntityAttributes();
+
+            if ( triggersUpdated )
+            {
+                GroupMemberWorkflowTriggerService.FlushCachedTriggers();
+            }
+
             var qryParams = new Dictionary<string, string>();
             qryParams["GroupId"] = group.Id.ToString();
             qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
@@ -624,7 +775,7 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     // Cancelling on Add.  Return to Grid
-                    NavigateToParentPage();
+                    NavigateToPage( RockPage.Guid, null );
                 }
             }
             else
@@ -646,11 +797,12 @@ namespace RockWeb.Blocks.Groups
         protected void ddlGroupType_SelectedIndexChanged( object sender, EventArgs e )
         {
             // grouptype changed, so load up the new attributes and set controls to the default attribute values
-            var group = new Group { GroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0 };
-            if ( group.GroupTypeId > 0 )
+            CurrentGroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0;
+            if ( CurrentGroupTypeId > 0 )
             {
-                var groupType = GroupTypeCache.Read( group.GroupTypeId );
-                SetScheduleControls( groupType, null);
+                var group = new Group { GroupTypeId = CurrentGroupTypeId };
+                var groupType = CurrentGroupTypeCache;
+                SetScheduleControls( groupType, null );
                 ShowGroupTypeEditDetails( groupType, group, true );
             }
         }
@@ -671,7 +823,8 @@ namespace RockWeb.Blocks.Groups
                     .Where( g => g.Id == parentGroupId.Value )
                     .FirstOrDefault();
             }
-            var groupTypeQry = GetAllowedGroupTypes(parentGroup, rockContext);
+
+            var groupTypeQry = GetAllowedGroupTypes( parentGroup, rockContext );
 
             List<GroupType> groupTypes = groupTypeQry.OrderBy( a => a.Name ).ToList();
             if ( groupTypes.Count() > 1 )
@@ -681,25 +834,30 @@ namespace RockWeb.Blocks.Groups
             }
 
             // If the currently selected GroupType isn't an option anymore, set selected GroupType to null
-            int? selectedGroupTypeId = ddlGroupType.SelectedValueAsInt();
-            if ( ddlGroupType.SelectedValue != null )
+            if ( ddlGroupType.Visible )
             {
-                if ( !groupTypes.Any( a => a.Id.Equals( selectedGroupTypeId ?? 0 ) ) )
+                int? selectedGroupTypeId = ddlGroupType.SelectedValueAsInt();
+                if ( ddlGroupType.SelectedValue != null )
                 {
-                    selectedGroupTypeId = null;
+                    if ( !groupTypes.Any( a => a.Id.Equals( selectedGroupTypeId ?? 0 ) ) )
+                    {
+                        selectedGroupTypeId = null;
+                    }
                 }
-            }
 
-            ddlGroupType.DataSource = groupTypes;
-            ddlGroupType.DataBind();
+                ddlGroupType.DataSource = groupTypes;
+                ddlGroupType.DataBind();
 
-            if ( selectedGroupTypeId.HasValue )
-            {
-                ddlGroupType.SelectedValue = selectedGroupTypeId.ToString();
-            }
-            else
-            {
-                ddlGroupType.SelectedValue = null;
+                if ( selectedGroupTypeId.HasValue )
+                {
+                    CurrentGroupTypeId = selectedGroupTypeId.Value;
+                    ddlGroupType.SelectedValue = selectedGroupTypeId.ToString();
+                }
+                else
+                {
+                    CurrentGroupTypeId = 0;
+                    ddlGroupType.SelectedValue = null;
+                }
             }
         }
 
@@ -783,7 +941,7 @@ namespace RockWeb.Blocks.Groups
             bool viewAllowed = false;
             bool editAllowed = IsUserAuthorized( Authorization.EDIT );
 
-            RockContext rockContext = null;
+            RockContext rockContext = new RockContext();
 
             if ( !groupId.Equals( 0 ) )
             {
@@ -792,42 +950,42 @@ namespace RockWeb.Blocks.Groups
 
             if ( group == null )
             {
-                group = new Group { Id = 0, IsActive = true, ParentGroupId = parentGroupId, Name = "" };
+                group = new Group { Id = 0, IsActive = true, IsPublic = true, ParentGroupId = parentGroupId, Name = string.Empty };
                 wpGeneral.Expanded = true;
 
                 if ( parentGroupId.HasValue )
                 {
-                    rockContext = rockContext ?? new RockContext();
-
                     // Set the new group's parent group (so security checks work)
-                    var parentGroup = new GroupService( rockContext ).Get(parentGroupId.Value);
+                    var parentGroup = new GroupService( rockContext ).Get( parentGroupId.Value );
                     if ( parentGroup != null )
                     {
                         // Start by setting the group type to the same as the parent
                         group.ParentGroup = parentGroup;
-                        group.GroupTypeId = parentGroup.GroupTypeId;
-                        group.GroupType = parentGroup.GroupType;
 
-                        if ( !editAllowed )
+                        // If the parent group type is allowed, first set that as the selected group type and check security
+                        var allowedGroupTypes = GetAllowedGroupTypes( parentGroup, rockContext ).ToList();
+                        if ( allowedGroupTypes.Any( t => t.Id == parentGroup.Id ) )
                         {
-                            // If user is not allowed to edit this new group (with paren't group type),
-                            // check to see if they'd be allowed to edit any other of the allowed
-                            // child group types
-                            editAllowed = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                            if ( !editAllowed )
+                            group.GroupTypeId = parentGroup.GroupTypeId;
+                            group.GroupType = parentGroup.GroupType;
+
+                            editAllowed = editAllowed || group.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                        }
+
+                        // parent group type was not allowed, or user is not allowed to edit
+                        if ( !editAllowed || group.GroupType == null )
+                        {
+                            // Loop through the other allowed group types to determine if user is allowed to edit any
+                            foreach ( var groupType in allowedGroupTypes.Where( g => g.Id != parentGroup.GroupTypeId ) )
                             {
-                                foreach( var groupType in GetAllowedGroupTypes( parentGroup, rockContext )
-                                    .Where( g => g.Id != parentGroup.GroupTypeId ) )
+                                group.GroupTypeId = groupType.Id;
+                                group.GroupType = groupType;
+                                if ( group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                                 {
-                                    group.GroupTypeId = groupType.Id;
-                                    group.GroupType = groupType;
-                                    if ( group.IsAuthorized(Authorization.EDIT, CurrentPerson))
-                                    {
-                                        // Once a group type is found that allows user to edit, keep that
-                                        // group type by default
-                                        editAllowed = true;
-                                        break;
-                                    }
+                                    // Once a group type is found that allows user to edit, keep that
+                                    // group type by default
+                                    editAllowed = true;
+                                    break;
                                 }
                             }
                         }
@@ -846,7 +1004,7 @@ namespace RockWeb.Blocks.Groups
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed  )
+            if ( !editAllowed )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
@@ -863,13 +1021,8 @@ namespace RockWeb.Blocks.Groups
             {
                 foreach ( var role in group.GroupType.Roles )
                 {
-                    int curCount = 0;
-                    if ( group.Members != null )
-                    {
-                        curCount = group.Members
-                            .Where( m => m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active )
-                            .Count();
-                    }
+                    var groupMemberService = new GroupMemberService( rockContext );
+                    int curCount = groupMemberService.Queryable().Where( m => m.GroupId == group.Id && m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
 
                     if ( role.MinCount.HasValue && role.MinCount.Value > curCount )
                     {
@@ -887,6 +1040,8 @@ namespace RockWeb.Blocks.Groups
 
             nbRoleLimitWarning.Text = roleLimitWarnings.ToString();
             nbRoleLimitWarning.Visible = roleLimitWarnings.Length > 0;
+
+            FollowingsHelper.SetFollowing( group, pnlFollowing, this.CurrentPerson );
 
             if ( readOnly )
             {
@@ -934,6 +1089,7 @@ namespace RockWeb.Blocks.Groups
             tbDescription.Text = group.Description;
             cbIsSecurityRole.Checked = group.IsSecurityRole;
             cbIsActive.Checked = group.IsActive;
+            cbIsPublic.Checked = group.IsPublic;
 
             var rockContext = new RockContext();
 
@@ -943,6 +1099,45 @@ namespace RockWeb.Blocks.Groups
             LoadDropDowns();
 
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
+
+            // hide sync and requirements panel if no admin access
+            wpGroupSync.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            wpGroupRequirements.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            wpGroupMemberAttributes.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+
+            var systemEmails = new SystemEmailService( new RockContext() ).Queryable().OrderBy( e => e.Title );
+
+            // add a blank for the first option
+            ddlWelcomeEmail.Items.Add( new ListItem() );
+            ddlExitEmail.Items.Add( new ListItem() );
+
+            if ( systemEmails.Any() )
+            {
+                foreach ( var systemEmail in systemEmails )
+                {
+                    ddlWelcomeEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
+                    ddlExitEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
+                }
+            }
+
+            // set dataview
+            dvpSyncDataview.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+            dvpSyncDataview.SetValue( group.SyncDataViewId );
+
+            if ( group.AddUserAccountsDuringSync.HasValue )
+            {
+                rbCreateLoginDuringSync.Checked = group.AddUserAccountsDuringSync.Value;
+            }
+
+            if ( group.WelcomeSystemEmailId.HasValue )
+            {
+                ddlWelcomeEmail.SetValue( group.WelcomeSystemEmailId );
+            }
+
+            if ( group.ExitSystemEmailId.HasValue )
+            {
+                ddlExitEmail.SetValue( group.ExitSystemEmailId );
+            }
 
             // GroupType depends on Selected ParentGroup
             ddlParentGroup_SelectedIndexChanged( null, null );
@@ -956,6 +1151,7 @@ namespace RockWeb.Blocks.Groups
                     var securityRoleGroupType = GroupTypeCache.GetSecurityRoleGroupType();
                     if ( securityRoleGroupType != null )
                     {
+                        CurrentGroupTypeId = securityRoleGroupType.Id;
                         ddlGroupType.SetValue( securityRoleGroupType.Id );
                     }
                     else
@@ -971,17 +1167,22 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                ddlGroupType.SetValue( group.GroupTypeId );
-                var groupType = GroupTypeCache.Read( group.GroupTypeId, rockContext );
-                lGroupType.Text = groupType != null ? groupType.Name : "";
+                CurrentGroupTypeId = group.GroupTypeId;
+                if ( CurrentGroupTypeId == 0 )
+                {
+                    CurrentGroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0;
+                }
+
+                var groupType = GroupTypeCache.Read( CurrentGroupTypeId, rockContext );
+                lGroupType.Text = groupType != null ? groupType.Name : string.Empty;
             }
 
             ddlCampus.SetValue( group.CampusId );
 
-            //GroupLocationsState = groupLocations;
+            GroupRequirementsState = group.GroupRequirements.ToList();
             GroupLocationsState = group.GroupLocations.ToList();
 
-            var groupTypeCache = GroupTypeCache.Read( group.GroupTypeId );
+            var groupTypeCache = CurrentGroupTypeCache;
             SetScheduleControls( groupTypeCache, group );
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
 
@@ -1003,6 +1204,18 @@ namespace RockWeb.Blocks.Groups
             BindGroupMemberAttributesGrid();
 
             BindInheritedAttributes( group.GroupTypeId, attributeService );
+
+            cbMembersMustMeetRequirementsOnAdd.Checked = group.MustMeetRequirementsToAddMember ?? false;
+
+            BindGroupRequirementsGrid();
+
+            MemberWorkflowTriggersState = new List<GroupMemberWorkflowTrigger>();
+            foreach ( var trigger in group.GroupMemberWorkflowTriggers )
+            {
+                MemberWorkflowTriggersState.Add( trigger );
+            }
+
+            BindMemberWorkflowTriggersGrid();
         }
 
         /// <summary>
@@ -1017,6 +1230,19 @@ namespace RockWeb.Blocks.Groups
             {
                 // Save value to viewstate for use later when binding location grid
                 AllowMultipleLocations = groupType != null && groupType.AllowMultipleLocations;
+
+                // show/hide group sync panel based on permissions from the group type
+                if ( group.GroupTypeId != 0 )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        GroupType selectedGroupType = new GroupTypeService( rockContext ).Get( group.GroupTypeId );
+                        if ( selectedGroupType != null )
+                        {
+                            wpGroupSync.Visible = selectedGroupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                        }
+                    }
+                }
 
                 if ( groupType != null && groupType.LocationSelectionMode != GroupLocationPickerMode.None )
                 {
@@ -1091,6 +1317,7 @@ namespace RockWeb.Blocks.Groups
                 rblScheduleSelect.Items.Add( li );
                 pnlSchedule.Visible = true;
             }
+
             if ( groupType != null && ( groupType.AllowedScheduleTypes & ScheduleType.Custom ) == ScheduleType.Custom )
             {
                 ListItem li = new ListItem( "Custom", "2" );
@@ -1098,6 +1325,7 @@ namespace RockWeb.Blocks.Groups
                 rblScheduleSelect.Items.Add( li );
                 pnlSchedule.Visible = true;
             }
+
             if ( groupType != null && ( groupType.AllowedScheduleTypes & ScheduleType.Named ) == ScheduleType.Named )
             {
                 ListItem li = new ListItem( "Named", "4" );
@@ -1131,8 +1359,12 @@ namespace RockWeb.Blocks.Groups
             lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
 
             hlInactive.Visible = !group.IsActive;
+            hlIsPrivate.Visible = !group.IsPublic;
 
-            lGroupDescription.Text = group.Description;
+            if (!string.IsNullOrWhiteSpace(group.Description)) {
+                lGroupDescription.Text = string.Format("<p class='description'>{0}</p>", group.Description);
+            }
+            
 
             DescriptionList descriptionList = new DescriptionList();
 
@@ -1158,28 +1390,68 @@ namespace RockWeb.Blocks.Groups
 
             lblMainDetails.Text = descriptionList.Html;
 
-            var attributes = new List<Rock.Web.Cache.AttributeCache>();
-
-            // Get the attributes inherited from group type
-            GroupType groupType = new GroupTypeService( rockContext ).Get( group.GroupTypeId );
-            groupType.LoadAttributes();
-            attributes = groupType.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-
-            // Combine with the group attributes
             group.LoadAttributes();
-            attributes.AddRange( group.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) );
+            var attributes = group.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
 
-            // display attribute values
             var attributeCategories = Helper.GetAttributeCategories( attributes );
+
             Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes, null, false );
 
             var pageParams = new Dictionary<string, string>();
-            pageParams.Add("GroupId", group.Id.ToString());
+            pageParams.Add( "GroupId", group.Id.ToString() );
 
-            hlAttendance.Visible = groupType.TakesAttendance;
+            hlAttendance.Visible = group.GroupType != null && group.GroupType.TakesAttendance;
             hlAttendance.NavigateUrl = LinkedPageUrl( "AttendancePage", pageParams );
 
-            string groupMapUrl = LinkedPageUrl("GroupMapPage", pageParams);
+            string groupMapUrl = LinkedPageUrl( "GroupMapPage", pageParams );
+
+            var registrations = new Dictionary<int, string>();
+            var eventItemOccurrences = new Dictionary<int, string>();
+            var contentItems = new Dictionary<int, string>();
+
+            var linkages = group.Linkages.ToList();
+            if ( linkages.Any() )
+            {
+                linkages
+                    .Where( l => 
+                        l.RegistrationInstanceId.HasValue )
+                    .ToList()
+                    .ForEach( l => registrations
+                        .AddOrIgnore( l.RegistrationInstanceId.Value, l.ToString( true, true, false ) ) );
+
+                linkages
+                    .Where( l => 
+                        l.EventItemOccurrence != null && 
+                        l.EventItemOccurrence.EventItem != null )
+                    .ToList()
+                    .ForEach( l => eventItemOccurrences
+                        .AddOrIgnore( l.EventItemOccurrence.Id, string.Format( "{0} - {1}",
+                            l.EventItemOccurrence.EventItem.Name,
+                            l.EventItemOccurrence.Campus != null ? l.EventItemOccurrence.Campus.Name : "All Campuses" ) ) );
+
+                linkages
+                    .Where( l => 
+                        l.EventItemOccurrence != null && 
+                        l.EventItemOccurrence.EventItem != null && 
+                        l.EventItemOccurrence.ContentChannelItems.Any() )
+                    .SelectMany( l => l.EventItemOccurrence.ContentChannelItems.Where( i => i.ContentChannelItem != null ) )
+                    .ToList()
+                    .ForEach( i => contentItems
+                        .AddOrIgnore( i.ContentChannelItem.Id, string.Format("{0} <small>({1})</small>", i.ContentChannelItem.Title, i.ContentChannelItem.ContentChannelType.Name ) ) );
+
+                rptLinkedRegistrations.DataSource = registrations;
+                rptLinkedRegistrations.DataBind();
+
+                rptEventItemOccurrences.DataSource = eventItemOccurrences;
+                rptEventItemOccurrences.DataBind();
+
+                rptContentItems.DataSource = contentItems;
+                rptContentItems.DataBind();
+            }
+
+            rcwLinkedRegistrations.Visible = registrations.Any();
+            rcwEventItemOccurrences.Visible = eventItemOccurrences.Any();
+            rcwContentItems.Visible = contentItems.Any();
 
             // Get Map Style
             phMaps.Controls.Clear();
@@ -1194,7 +1466,7 @@ namespace RockWeb.Blocks.Groups
                 string mapStyle = mapStyleValue.GetAttributeValue( "StaticMapStyle" );
                 if ( !string.IsNullOrWhiteSpace( mapStyle ) )
                 {
-                    foreach ( GroupLocation groupLocation in group.GroupLocations.OrderBy( gl => (gl.GroupLocationTypeValue != null) ? gl.GroupLocationTypeValue.Order : int.MaxValue) )
+                    foreach ( GroupLocation groupLocation in group.GroupLocations.OrderBy( gl => ( gl.GroupLocationTypeValue != null ) ? gl.GroupLocationTypeValue.Order : int.MaxValue ) )
                     {
                         if ( groupLocation.Location != null )
                         {
@@ -1203,11 +1475,11 @@ namespace RockWeb.Blocks.Groups
                                 string markerPoints = string.Format( "{0},{1}", groupLocation.Location.GeoPoint.Latitude, groupLocation.Location.GeoPoint.Longitude );
                                 string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
                                 mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
-                                mapLink += "&sensor=false&size=350x200&zoom=13&format=png";
+                                mapLink += "&sensor=false&size=450x250&zoom=13&format=png";
                                 var literalcontrol = new Literal()
                                 {
                                     Text = string.Format(
-                                    "<div class='group-location-map'>{0}<a href='{1}'><img src='{2}'/></a></div>",
+                                    "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a></div>",
                                     groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Value + "</h4>" ) : string.Empty,
                                     groupMapUrl,
                                     mapLink ),
@@ -1223,7 +1495,7 @@ namespace RockWeb.Blocks.Groups
                                 mapLink += "&sensor=false&size=350x200&format=png";
                                 phMaps.Controls.Add(
                                     new LiteralControl( string.Format(
-                                        "<div class='group-location-map'>{0}<a href='{1}'><img src='{2}'/></a></div>",
+                                        "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a></div>",
                                         groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Value + "</h4>" ) : string.Empty,
                                         groupMapUrl,
                                         mapLink ) ) );
@@ -1235,7 +1507,7 @@ namespace RockWeb.Blocks.Groups
 
             hlMap.Visible = !string.IsNullOrWhiteSpace( groupMapUrl );
             hlMap.NavigateUrl = groupMapUrl;
-            
+
             btnSecurity.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.EntityId = group.Id;
         }
@@ -1279,7 +1551,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="parentGroup">The parent group.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private IQueryable<GroupType> GetAllowedGroupTypes ( Group parentGroup, RockContext rockContext )
+        private IQueryable<GroupType> GetAllowedGroupTypes( Group parentGroup, RockContext rockContext )
         {
             rockContext = rockContext ?? new RockContext();
 
@@ -1294,7 +1566,7 @@ namespace RockWeb.Blocks.Groups
             {
                 groupTypeQry = groupTypeQry.Where( a => groupTypeIncludeGuids.Contains( a.Guid ) );
             }
-            else if (groupTypeExcludeGuids.Any())
+            else if ( groupTypeExcludeGuids.Any() )
             {
                 groupTypeQry = groupTypeQry.Where( a => !groupTypeExcludeGuids.Contains( a.Guid ) );
             }
@@ -1313,6 +1585,32 @@ namespace RockWeb.Blocks.Groups
             }
 
             return groupTypeQry;
+        }
+
+        /// <summary>
+        /// Registrations the instance URL.
+        /// </summary>
+        /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <returns></returns>
+        protected string RegistrationInstanceUrl( int registrationInstanceId )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "RegistrationInstanceId", registrationInstanceId.ToString() );
+            return LinkedPageUrl( "RegistrationInstancePage", qryParams );
+        }
+
+        protected string EventItemOccurrenceUrl( int eventItemOccurrenceId )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "EventItemOccurrenceId", eventItemOccurrenceId.ToString() );
+            return LinkedPageUrl( "EventItemOccurrencePage", qryParams );
+        }
+
+        protected string ContentItemUrl( int contentItemId )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "ContentItemId", contentItemId.ToString() );
+            return LinkedPageUrl( "ContentItemPage", qryParams );
         }
 
         /// <summary>
@@ -1350,6 +1648,12 @@ namespace RockWeb.Blocks.Groups
                 case "GROUPMEMBERATTRIBUTES":
                     dlgGroupMemberAttribute.Show();
                     break;
+                case "GROUPREQUIREMENTS":
+                    mdGroupRequirement.Show();
+                    break;
+                case "MEMBERWORKFLOWTRIGGERS":
+                    dlgMemberWorkflowTriggers.Show();
+                    break;
             }
         }
 
@@ -1365,6 +1669,12 @@ namespace RockWeb.Blocks.Groups
                     break;
                 case "GROUPMEMBERATTRIBUTES":
                     dlgGroupMemberAttribute.Hide();
+                    break;
+                case "GROUPREQUIREMENTS":
+                    mdGroupRequirement.Hide();
+                    break;
+                case "MEMBERWORKFLOWTRIGGERS":
+                    dlgMemberWorkflowTriggers.Hide();
                     break;
             }
 
@@ -1488,6 +1798,48 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        /// <summary>
+        /// Sets the group type role list order.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
+        private void SetMemberWorkflowTriggerListOrder( List<GroupMemberWorkflowTrigger> itemList )
+        {
+            int order = 0;
+            itemList.OrderBy( a => a.Order ).ToList().ForEach( a => a.Order = order++ );
+        }
+
+        /// <summary>
+        /// Reorders the group type role list.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        private void ReorderMemberWorkflowTriggerList( List<GroupMemberWorkflowTrigger> itemList, int oldIndex, int newIndex )
+        {
+            var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
+            if ( movedItem != null )
+            {
+                if ( newIndex < oldIndex )
+                {
+                    // Moved up
+                    foreach ( var otherItem in itemList.Where( a => a.Order < oldIndex && a.Order >= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order + 1;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherItem in itemList.Where( a => a.Order > oldIndex && a.Order <= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order - 1;
+                    }
+                }
+
+                movedItem.Order = newIndex;
+            }
+        }
+
         #endregion
 
         #region Location Grid and Picker
@@ -1521,8 +1873,7 @@ namespace RockWeb.Blocks.Groups
         {
             var rockContext = new RockContext();
             ddlMember.Items.Clear();
-
-            int? groupTypeId = ddlGroupType.SelectedValueAsId();
+            int? groupTypeId = this.CurrentGroupTypeId;
             if ( groupTypeId.HasValue )
             {
                 var groupType = GroupTypeCache.Read( groupTypeId.Value );
@@ -1684,17 +2035,19 @@ namespace RockWeb.Blocks.Groups
             {
                 if ( ddlMember.SelectedValue != null )
                 {
-                    var ids = ddlMember.SelectedValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                    var ids = ddlMember.SelectedValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList().ToArray();
                     if ( ids.Length == 2 )
                     {
-                        var dbLocation = new LocationService( rockContext ).Get( int.Parse( ids[0] ) );
+                        int locationId = ids[0];
+                        int primaryAliasId = ids[1];
+                        var dbLocation = new LocationService( rockContext ).Get( locationId );
                         if ( dbLocation != null )
                         {
                             location = new Location();
                             location.CopyPropertiesFrom( dbLocation );
                         }
 
-                        memberPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( int.Parse( ids[1] ) );
+                        memberPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( primaryAliasId );
                     }
                 }
             }
@@ -1760,13 +2113,150 @@ namespace RockWeb.Blocks.Groups
                 {
                     gl.Guid,
                     gl.Location,
-                    Type = gl.GroupLocationTypeValue != null ? gl.GroupLocationTypeValue.Value : "",
+                    Type = gl.GroupLocationTypeValue != null ? gl.GroupLocationTypeValue.Value : string.Empty,
                     Order = gl.GroupLocationTypeValue != null ? gl.GroupLocationTypeValue.Order : 0,
-                    Schedules = gl.Schedules != null ? gl.Schedules.Select( s => s.Name).ToList().AsDelimited(", ") : ""
+                    Schedules = gl.Schedules != null ? gl.Schedules.Select( s => s.Name ).ToList().AsDelimited( ", " ) : string.Empty
                 } )
-                .OrderBy( i => i.Order)
+                .OrderBy( i => i.Order )
                 .ToList();
             gLocations.DataBind();
+        }
+
+        #endregion
+
+        #region GroupRequirements Grid and Picker
+
+        /// <summary>
+        /// Handles the Add event of the gGroupRequirements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gGroupRequirements_Add( object sender, EventArgs e )
+        {
+            gGroupRequirements_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gGroupRequirements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gGroupRequirements_Edit( object sender, RowEventArgs e )
+        {
+            Guid groupRequirementGuid = (Guid)e.RowKeyValue;
+            gGroupRequirements_ShowEdit( groupRequirementGuid );
+        }
+
+        /// <summary>
+        /// Shows the modal dialog to add/edit a Group Requirement
+        /// </summary>
+        /// <param name="groupRequirementGuid">The group requirement unique identifier.</param>
+        protected void gGroupRequirements_ShowEdit( Guid groupRequirementGuid )
+        {
+            var rockContext = new RockContext();
+
+            var groupRequirementTypeService = new GroupRequirementTypeService( rockContext );
+            var list = groupRequirementTypeService.Queryable().OrderBy( a => a.Name ).ToList();
+            ddlGroupRequirementType.Items.Clear();
+            ddlGroupRequirementType.Items.Add( new ListItem() );
+            foreach ( var item in list )
+            {
+                ddlGroupRequirementType.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+            }
+
+            var selectedGroupRequirement = this.GroupRequirementsState.FirstOrDefault( a => a.Guid == groupRequirementGuid );
+            grpGroupRequirementGroupRole.GroupTypeId = this.CurrentGroupTypeId;
+            if ( selectedGroupRequirement != null )
+            {
+                ddlGroupRequirementType.SelectedValue = selectedGroupRequirement.GroupRequirementTypeId.ToString();
+                grpGroupRequirementGroupRole.GroupRoleId = selectedGroupRequirement.GroupRoleId;
+            }
+            else
+            {
+                ddlGroupRequirementType.SelectedIndex = 0;
+                grpGroupRequirementGroupRole.GroupRoleId = null;
+            }
+
+            nbDuplicateGroupRequirement.Visible = false;
+
+            ShowDialog( "GroupRequirements", true );
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdGroupRequirement control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdGroupRequirement_SaveClick( object sender, EventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            Guid groupRequirementGuid = hfGroupRequirementGuid.Value.AsGuid();
+
+            var groupRequirement = this.GroupRequirementsState.FirstOrDefault( a => a.Guid == groupRequirementGuid );
+            if ( groupRequirement == null )
+            {
+                groupRequirement = new GroupRequirement();
+                groupRequirement.Guid = Guid.NewGuid();
+                this.GroupRequirementsState.Add( groupRequirement );
+            }
+
+            groupRequirement.GroupRequirementTypeId = ddlGroupRequirementType.SelectedValue.AsInteger();
+            groupRequirement.GroupRequirementType = new GroupRequirementTypeService( rockContext ).Get( groupRequirement.GroupRequirementTypeId );
+            groupRequirement.GroupRoleId = grpGroupRequirementGroupRole.GroupRoleId;
+            if ( groupRequirement.GroupRoleId.HasValue )
+            {
+                groupRequirement.GroupRole = new GroupTypeRoleService( rockContext ).Get( groupRequirement.GroupRoleId.Value );
+            }
+            else
+            {
+                groupRequirement.GroupRole = null;
+            }
+
+            // make sure we aren't adding a duplicate group requirement (same group requirement type and role)
+            var duplicateGroupRequirement = this.GroupRequirementsState.Any( a =>
+                a.GroupRequirementTypeId == groupRequirement.GroupRequirementTypeId
+                && a.GroupRoleId == groupRequirement.GroupRoleId
+                && a.Guid != groupRequirement.Guid );
+
+            if ( duplicateGroupRequirement )
+            {
+                nbDuplicateGroupRequirement.Text = string.Format(
+                    "This group already has a group requirement of {0} {1}",
+                    groupRequirement.GroupRequirementType.Name,
+                    groupRequirement.GroupRoleId.HasValue ? "for group role " + groupRequirement.GroupRole.Name : string.Empty );
+                nbDuplicateGroupRequirement.Visible = true;
+                this.GroupRequirementsState.Remove( groupRequirement );
+                return;
+            }
+            else
+            {
+                nbDuplicateGroupRequirement.Visible = false;
+                BindGroupRequirementsGrid();
+                HideDialog();
+            }
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gGroupRequirements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gGroupRequirements_Delete( object sender, RowEventArgs e )
+        {
+            Guid rowGuid = (Guid)e.RowKeyValue;
+            GroupRequirementsState.RemoveEntity( rowGuid );
+
+            BindGroupRequirementsGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gGroupRequirements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gGroupRequirements_GridRebind( object sender, EventArgs e )
+        {
+            BindGroupRequirementsGrid();
         }
 
         #endregion
@@ -1892,6 +2382,7 @@ namespace RockWeb.Blocks.Groups
             {
                 attribute.Order = GroupMemberAttributesState.Any() ? GroupMemberAttributesState.Max( a => a.Order ) + 1 : 0;
             }
+
             GroupMemberAttributesState.Add( attribute );
 
             BindGroupMemberAttributesGrid();
@@ -1921,6 +2412,16 @@ namespace RockWeb.Blocks.Groups
             gGroupMemberAttributes.DataBind();
         }
 
+        /// <summary>
+        /// Binds the group requirements grid.
+        /// </summary>
+        private void BindGroupRequirementsGrid()
+        {
+            gGroupRequirements.AddCssClass( "group-requirements-grid" );
+            gGroupRequirements.DataSource = GroupRequirementsState.OrderBy( a => a.GroupRequirementType.Name ).ToList();
+            gGroupRequirements.DataBind();
+        }
+
         private void SetScheduleDisplay()
         {
             dowWeekly.Visible = false;
@@ -1936,17 +2437,20 @@ namespace RockWeb.Blocks.Groups
                         {
                             break;
                         }
+
                     case ScheduleType.Weekly:
                         {
                             dowWeekly.Visible = true;
                             timeWeekly.Visible = true;
                             break;
                         }
+
                     case ScheduleType.Custom:
                         {
                             sbSchedule.Visible = true;
                             break;
                         }
+
                     case ScheduleType.Named:
                         {
                             spSchedule.Visible = true;
@@ -1958,5 +2462,394 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
+        #region Group Member Workflow Trigger Grid and Picker
+
+        /// <summary>
+        /// Handles the Add event of the gMemberWorkflowTriggers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gMemberWorkflowTriggers_Add( object sender, EventArgs e )
+        {
+            gMemberWorkflowTriggers_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gMemberWorkflowTriggers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gMemberWorkflowTriggers_Edit( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            gMemberWorkflowTriggers_ShowEdit( attributeGuid );
+        }
+
+        /// <summary>
+        /// Gs the group attributes_ show edit.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute GUID.</param>
+        protected void gMemberWorkflowTriggers_ShowEdit( Guid memberWorkflowTriggersGuid )
+        {
+            ddlTriggerType.BindToEnum<GroupMemberWorkflowTriggerType>( false );
+
+            ddlTriggerFromStatus.BindToEnum<GroupMemberStatus>( false );
+            ddlTriggerFromStatus.Items.Insert( 0, new ListItem( "Any", string.Empty ) );
+
+            ddlTriggerToStatus.BindToEnum<GroupMemberStatus>( false );
+            ddlTriggerToStatus.Items.Insert( 0, new ListItem( "Any", string.Empty ) );
+
+            ddlTriggerFromRole.Items.Clear();
+            ddlTriggerToRole.Items.Clear();
+            var groupType = CurrentGroupTypeCache;
+            if ( groupType != null )
+            {
+                ddlTriggerFromRole.DataSource = groupType.Roles;
+                ddlTriggerFromRole.DataBind();
+
+                ddlTriggerToRole.DataSource = groupType.Roles;
+                ddlTriggerToRole.DataBind();
+            }
+
+            ddlTriggerFromRole.Items.Insert( 0, new ListItem( "Any", string.Empty ) );
+            ddlTriggerToRole.Items.Insert( 0, new ListItem( "Any", string.Empty ) );
+
+            GroupMemberWorkflowTrigger memberWorkflowTrigger = MemberWorkflowTriggersState.FirstOrDefault( a => a.Guid.Equals( memberWorkflowTriggersGuid ) );
+            if ( memberWorkflowTrigger == null )
+            {
+                memberWorkflowTrigger = new GroupMemberWorkflowTrigger { IsActive = true };
+                dlgMemberWorkflowTriggers.Title = "Add Trigger";
+            }
+            else
+            {
+                dlgMemberWorkflowTriggers.Title = "Edit Trigger";
+            }
+
+            hfTriggerGuid.Value = memberWorkflowTrigger.Guid.ToString();
+            tbTriggerName.Text = memberWorkflowTrigger.Name;
+            cbTriggerIsActive.Checked = memberWorkflowTrigger.IsActive;
+
+            if ( memberWorkflowTrigger.WorkflowTypeId != 0 )
+            {
+                var workflowType = new WorkflowTypeService( new RockContext() ).Queryable().FirstOrDefault( a => a.Id == memberWorkflowTrigger.WorkflowTypeId );
+                wtpWorkflowType.SetValue( workflowType );
+            }
+            else
+            {
+                wtpWorkflowType.SetValue( null );
+            }
+
+            ddlTriggerType.SetValue( memberWorkflowTrigger.TriggerType.ConvertToInt() );
+
+            var qualifierParts = ( memberWorkflowTrigger.TypeQualifier ?? string.Empty ).Split( new char[] { '|' } );
+            ddlTriggerToStatus.SetValue( qualifierParts.Length > 0 ? qualifierParts[0] : string.Empty );
+            ddlTriggerToRole.SetValue( qualifierParts.Length > 1 ? qualifierParts[1] : string.Empty );
+            ddlTriggerFromStatus.SetValue( qualifierParts.Length > 2 ? qualifierParts[2] : string.Empty );
+            ddlTriggerFromRole.SetValue( qualifierParts.Length > 3 ? qualifierParts[3] : string.Empty );
+            cbTriggerFirstTime.Checked = qualifierParts.Length > 4 ? qualifierParts[4].AsBoolean() : false;
+            cbTriggerPlacedElsewhereShowNote.Checked = qualifierParts.Length > 5 ? qualifierParts[5].AsBoolean() : false;
+            cbTriggerPlacedElsewhereRequireNote.Checked = qualifierParts.Length > 6 ? qualifierParts[6].AsBoolean() : false;
+
+            ShowTriggerQualifierControls();
+            ShowDialog( "MemberWorkflowTriggers", true );
+        }
+
+        /// <summary>
+        /// Shows the trigger qualifier controls.
+        /// </summary>
+        protected void ShowTriggerQualifierControls()
+        {
+            var triggerType = ddlTriggerType.SelectedValueAsEnum<GroupMemberWorkflowTriggerType>();
+            switch ( triggerType )
+            {
+                case GroupMemberWorkflowTriggerType.MemberAddedToGroup:
+                case GroupMemberWorkflowTriggerType.MemberRemovedFromGroup:
+                    {
+                        ddlTriggerFromStatus.Visible = false;
+                        ddlTriggerToStatus.Label = "With Status of";
+                        ddlTriggerToStatus.Visible = true;
+
+                        ddlTriggerFromRole.Visible = false;
+                        ddlTriggerToRole.Label = "With Role of";
+                        ddlTriggerToRole.Visible = true;
+
+                        cbTriggerFirstTime.Visible = false;
+
+                        cbTriggerPlacedElsewhereShowNote.Visible = false;
+                        cbTriggerPlacedElsewhereRequireNote.Visible = false;
+
+                        break;
+                    }
+
+                case GroupMemberWorkflowTriggerType.MemberAttendedGroup:
+                    {
+                        ddlTriggerFromStatus.Visible = false;
+                        ddlTriggerToStatus.Visible = false;
+
+                        ddlTriggerFromRole.Visible = false;
+                        ddlTriggerToRole.Visible = false;
+
+                        cbTriggerFirstTime.Visible = true;
+
+                        cbTriggerPlacedElsewhereShowNote.Visible = false;
+                        cbTriggerPlacedElsewhereRequireNote.Visible = false;
+
+                        break;
+                    }
+
+                case GroupMemberWorkflowTriggerType.MemberPlacedElsewhere:
+                    {
+                        ddlTriggerFromStatus.Visible = false;
+                        ddlTriggerToStatus.Visible = false;
+
+                        ddlTriggerFromRole.Visible = false;
+                        ddlTriggerToRole.Visible = false;
+
+                        cbTriggerFirstTime.Visible = false;
+
+                        cbTriggerPlacedElsewhereShowNote.Visible = true;
+                        cbTriggerPlacedElsewhereRequireNote.Visible = true;
+
+                        break;
+                    }
+
+                case GroupMemberWorkflowTriggerType.MemberRoleChanged:
+                    {
+                        ddlTriggerFromStatus.Visible = false;
+                        ddlTriggerToStatus.Visible = false;
+
+                        ddlTriggerFromRole.Visible = true;
+                        ddlTriggerToRole.Label = "To Role of";
+                        ddlTriggerToRole.Visible = true;
+
+                        cbTriggerFirstTime.Visible = false;
+
+                        cbTriggerPlacedElsewhereShowNote.Visible = false;
+                        cbTriggerPlacedElsewhereRequireNote.Visible = false;
+
+                        break;
+                    }
+
+                case GroupMemberWorkflowTriggerType.MemberStatusChanged:
+                    {
+                        ddlTriggerFromStatus.Visible = true;
+                        ddlTriggerToStatus.Label = "To Status of";
+                        ddlTriggerToStatus.Visible = true;
+
+                        ddlTriggerFromRole.Visible = false;
+                        ddlTriggerToRole.Visible = false;
+
+                        cbTriggerFirstTime.Visible = false;
+
+                        cbTriggerPlacedElsewhereShowNote.Visible = false;
+                        cbTriggerPlacedElsewhereRequireNote.Visible = false;
+
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gMemberWorkflowTriggers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gMemberWorkflowTriggers_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            ReorderMemberWorkflowTriggerList( MemberWorkflowTriggersState, e.OldIndex, e.NewIndex );
+            BindMemberWorkflowTriggersGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gMemberWorkflowTriggers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gMemberWorkflowTriggers_Delete( object sender, RowEventArgs e )
+        {
+            Guid rowGuid = (Guid)e.RowKeyValue;
+            MemberWorkflowTriggersState.RemoveEntity( rowGuid );
+
+            BindMemberWorkflowTriggersGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gMemberWorkflowTriggers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gMemberWorkflowTriggers_GridRebind( object sender, EventArgs e )
+        {
+            BindMemberWorkflowTriggersGrid();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlTriggerType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlTriggerType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ShowTriggerQualifierControls();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgGroupMemberAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgMemberWorkflowTriggers_SaveClick( object sender, EventArgs e )
+        {
+            var memberWorkflowTrigger = new GroupMemberWorkflowTrigger();
+
+            var existingMemberWorkflowTrigger = MemberWorkflowTriggersState.FirstOrDefault( r => r.Guid.Equals( hfTriggerGuid.Value.AsGuid() ) );
+            if ( existingMemberWorkflowTrigger != null )
+            {
+                memberWorkflowTrigger.CopyPropertiesFrom( existingMemberWorkflowTrigger );
+            }
+            else
+            {
+                memberWorkflowTrigger.Order = MemberWorkflowTriggersState.Any() ? MemberWorkflowTriggersState.Max( a => a.Order ) + 1 : 0;
+                memberWorkflowTrigger.GroupId = hfGroupId.ValueAsInt();
+            }
+
+            memberWorkflowTrigger.Name = tbTriggerName.Text;
+            memberWorkflowTrigger.IsActive = cbTriggerIsActive.Checked;
+
+            var workflowTypeId = wtpWorkflowType.SelectedValueAsInt();
+            if ( workflowTypeId.HasValue )
+            {
+                var workflowType = new WorkflowTypeService( new RockContext() ).Queryable().FirstOrDefault( a => a.Id == workflowTypeId.Value );
+                if ( workflowType != null )
+                {
+                    memberWorkflowTrigger.WorkflowType = workflowType;
+                    memberWorkflowTrigger.WorkflowTypeId = workflowType.Id;
+                }
+                else
+                {
+                    memberWorkflowTrigger.WorkflowType = null;
+                    memberWorkflowTrigger.WorkflowTypeId = 0;
+                }
+            }
+            else
+            {
+                memberWorkflowTrigger.WorkflowTypeId = 0;
+            }
+
+            if ( memberWorkflowTrigger.WorkflowTypeId == 0 )
+            {
+                nbInvalidWorkflowType.Visible = true;
+                return;
+            }
+
+            memberWorkflowTrigger.TriggerType = ddlTriggerType.SelectedValueAsEnum<GroupMemberWorkflowTriggerType>();
+
+            memberWorkflowTrigger.TypeQualifier = string.Format(
+                "{0}|{1}|{2}|{3}|{4}|{5}|{6}",
+                ddlTriggerToStatus.SelectedValue,
+                ddlTriggerToRole.SelectedValue,
+                ddlTriggerFromStatus.SelectedValue,
+                ddlTriggerFromRole.SelectedValue,
+                cbTriggerFirstTime.Checked.ToString(),
+                cbTriggerPlacedElsewhereShowNote.Checked.ToString(), 
+                cbTriggerPlacedElsewhereRequireNote.Checked.ToString());
+
+            // Controls will show warnings
+            if ( !memberWorkflowTrigger.IsValid )
+            {
+                return;
+            }
+
+            MemberWorkflowTriggersState.RemoveEntity( memberWorkflowTrigger.Guid );
+            MemberWorkflowTriggersState.Add( memberWorkflowTrigger );
+
+            BindMemberWorkflowTriggersGrid();
+            HideDialog();
+        }
+
+        /// <summary>
+        /// Binds the group type attributes grid.
+        /// </summary>
+        private void BindMemberWorkflowTriggersGrid()
+        {
+            SetMemberWorkflowTriggerListOrder( MemberWorkflowTriggersState );
+            gMemberWorkflowTriggers.DataSource = MemberWorkflowTriggersState.OrderBy( a => a.Order ).ToList();
+            gMemberWorkflowTriggers.DataBind();
+        }
+
+        /// <summary>
+        /// Formats the type of the trigger.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="qualifier">The qualifier.</param>
+        /// <returns></returns>
+        protected string FormatTriggerType( object type, object qualifier )
+        {
+            var triggerType = type.ToString().ConvertToEnum<GroupMemberWorkflowTriggerType>();
+            var typeQualifer = qualifier.ToString();
+
+            var qualiferText = new List<string>();
+            var qualifierParts = ( typeQualifer ?? string.Empty ).Split( new char[] { '|' } );
+
+            if ( qualifierParts.Length > 2 && !string.IsNullOrWhiteSpace( qualifierParts[2] ) )
+            {
+                var status = qualifierParts[2].ConvertToEnum<GroupMemberStatus>();
+                qualiferText.Add( string.Format( " from status of <strong>{0}</strong>", status.ConvertToString() ) );
+            }
+
+            if ( qualifierParts.Length > 0 && !string.IsNullOrWhiteSpace( qualifierParts[0] ) )
+            {
+                var status = qualifierParts[0].ConvertToEnum<GroupMemberStatus>();
+                if ( triggerType == GroupMemberWorkflowTriggerType.MemberStatusChanged )
+                {
+                    qualiferText.Add( string.Format( " to status of <strong>{0}</strong>", status.ConvertToString() ) );
+                }
+                else
+                {
+                    qualiferText.Add( string.Format( " with status of <strong>{0}</strong>", status.ConvertToString() ) );
+                }
+            }
+
+            var groupType = CurrentGroupTypeCache;
+            if ( groupType != null )
+            {
+                if ( qualifierParts.Length > 3 && !string.IsNullOrWhiteSpace( qualifierParts[3] ) )
+                {
+                    Guid roleGuid = qualifierParts[3].AsGuid();
+                    var role = groupType.Roles.FirstOrDefault( r => r.Guid.Equals( roleGuid ) );
+                    if ( role != null )
+                    {
+                        qualiferText.Add( string.Format( " from role of <strong>{0}</strong>", role.Name ) );
+                    }
+                }
+
+                if ( qualifierParts.Length > 1 && !string.IsNullOrWhiteSpace( qualifierParts[1] ) )
+                {
+                    Guid roleGuid = qualifierParts[1].AsGuid();
+                    var role = groupType.Roles.FirstOrDefault( r => r.Guid.Equals( roleGuid ) );
+                    if ( role != null )
+                    {
+                        if ( triggerType == GroupMemberWorkflowTriggerType.MemberRoleChanged )
+                        {
+                            qualiferText.Add( string.Format( " to role of <strong>{0}</strong>", role.Name ) );
+                        }
+                        else
+                        {
+                            qualiferText.Add( string.Format( " with role of <strong>{0}</strong>", role.Name ) );
+                        }
+                    }
+                }
+            }
+
+            if ( qualifierParts.Length > 4 && qualifierParts[4].AsBoolean() )
+            {
+                qualiferText.Add( " for the first time" );
+            }
+
+            return triggerType.ConvertToString() + qualiferText.AsDelimited( " and " );
+        }
+
+        #endregion
     }
 }

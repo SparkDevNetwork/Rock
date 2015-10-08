@@ -124,42 +124,42 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            PersonBadge PersonBadge = null;
+            PersonBadge personBadge = null;
             var rockContext = new RockContext();
-            PersonBadgeService PersonBadgeService = new PersonBadgeService( rockContext );
+            PersonBadgeService personBadgeService = new PersonBadgeService( rockContext );
 
             if ( PersonBadgeId != 0 )
             {
-                PersonBadge = PersonBadgeService.Get( PersonBadgeId );
+                personBadge = personBadgeService.Get( PersonBadgeId );
             }
 
-            if (PersonBadge == null)
+            if ( personBadge == null )
             {
-                PersonBadge = new PersonBadge();
-                PersonBadgeService.Add( PersonBadge );
+                personBadge = new PersonBadge();
+                personBadgeService.Add( personBadge );
             }
 
-            PersonBadge.Name = tbName.Text;
-            PersonBadge.Description = tbDescription.Text;
+            personBadge.Name = tbName.Text;
+            personBadge.Description = tbDescription.Text;
 
             if ( !string.IsNullOrWhiteSpace( compBadgeType.SelectedValue ) )
             {
                 var badgeType = EntityTypeCache.Read( compBadgeType.SelectedValue.AsGuid() );
                 if ( badgeType != null )
                 {
-                    PersonBadge.EntityTypeId = badgeType.Id;
+                    personBadge.EntityTypeId = badgeType.Id;
                 }
             }
 
-            PersonBadge.LoadAttributes( rockContext );
-            Rock.Attribute.Helper.GetEditValues( phAttributes, PersonBadge );
+            personBadge.LoadAttributes( rockContext );
+            Rock.Attribute.Helper.GetEditValues( phAttributes, personBadge );
 
             if ( !Page.IsValid )
             {
                 return;
             }
 
-            if ( !PersonBadge.IsValid )
+            if ( !personBadge.IsValid )
             {
                 return;
             }
@@ -167,10 +167,10 @@ namespace RockWeb.Blocks.Crm
             rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
-                PersonBadge.SaveAttributeValues( rockContext );
+                personBadge.SaveAttributeValues( rockContext );
             } );
 
-            PersonBadgeCache.Flush( PersonBadge.Id );
+            PersonBadgeCache.Flush( personBadge.Id );
 
             NavigateToParentPage();
         }

@@ -17,10 +17,15 @@
             <RowDefinition Height="*" />
             <RowDefinition Style="{StaticResource rowDefinitionActions}" />
         </Grid.RowDefinitions>
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="5">
-            <Label Name="lblErrorMessage" Style="{StaticResource labelStyleAlertError}" Content="An error has occurred while processing your request" VerticalAlignment="Stretch"/>
-        </ScrollViewer> 
-        <Button Grid.Row="2" Name="OK"
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      Margin="5">
+            <Label Name="lblErrorMessage"
+                   Style="{StaticResource labelStyleAlertError}"
+                   Content="An error has occurred while processing your request"
+                   VerticalAlignment="Stretch" />
+        </ScrollViewer>
+        <Button Grid.Row="2"
+                Name="OK"
                 Margin="8"
                 Style="{StaticResource buttonStylePrimary}"
                 Content="OK"

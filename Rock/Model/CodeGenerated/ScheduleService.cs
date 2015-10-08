@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<EventItemOccurrence>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, EventItemOccurrence.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Group>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, Group.FriendlyTypeName );
@@ -104,6 +110,10 @@ namespace Rock.Model
             target.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
             target.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;
             target.Description = source.Description;
+            target.EffectiveEndDate = source.EffectiveEndDate;
+            target.EffectiveStartDate = source.EffectiveStartDate;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.iCalendarContent = source.iCalendarContent;
             target.Name = source.Name;
             target.WeeklyDayOfWeek = source.WeeklyDayOfWeek;

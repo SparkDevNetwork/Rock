@@ -185,10 +185,10 @@ namespace RockWeb
                 string physCachedFilePath = context.Request.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
                 if ( binaryFileMetaData.BinaryFileType_AllowCaching && File.Exists( physCachedFilePath ) )
                 {
-                    //// Compare the File's Creation DateTime (which comes from the OS's clock), adjust it for the Rock OrgTimeZone, then compare to BinaryFile's ModifiedDateTime (which is already in OrgTimeZone).
+                    //// Compare the File's LastWrite DateTime (which comes from the OS's clock), adjust it for the Rock OrgTimeZone, then compare to BinaryFile's ModifiedDateTime (which is already in OrgTimeZone).
                     //// If the BinaryFile record in the database is less recent than the last time this was cached, it is safe to use the Cached version.
                     //// NOTE: A BinaryFile record is typically just added and never modified (a modify is just creating a new BinaryFile record and deleting the old one), so the cached version will probably always be the correct choice.
-                    DateTime cachedFileDateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime( File.GetCreationTime( physCachedFilePath ) );
+                    DateTime cachedFileDateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime( File.GetLastWriteTime( physCachedFilePath ) );
                     if ( binaryFileMetaData.ModifiedDateTime < cachedFileDateTime )
                     {
                         // NOTE: the cached file has already been resized (the size is part of the cached file's filename), so we don't need to resize it again
@@ -209,8 +209,9 @@ namespace RockWeb
                     // If we got the image from the binaryFileService, it might need to be resized and cached
                     if ( fileContent != null )
                     {
-                        // If more than 1 query string param is passed in, assume resize is needed
-                        if ( context.Request.QueryString.Count > 1 )
+                        // If more than 1 query string param is passed in, or the mime type is TIFF, assume resize is needed
+                        // Note: we force "image/tiff" to get resized so that it gets converted into a jpg (browsers don't like tiffs)
+                        if ( context.Request.QueryString.Count > 1 || binaryFile.MimeType == "image/tiff" )
                         {
                             // if it isn't an SVG file, do a Resize
                             if ( binaryFile.MimeType != "image/svg+xml" )
@@ -241,7 +242,7 @@ namespace RockWeb
                     context.Response.Cache.SetMaxAge( new TimeSpan( 365, 0, 0, 0 ) );
                 }
 
-                context.Response.ContentType = binaryFileMetaData.MimeType;
+                context.Response.ContentType = binaryFileMetaData.MimeType != "image/tiff" ? binaryFileMetaData.MimeType : "image/jpg";
 
                 using ( var responseStream = fileContent )
                 {
@@ -291,7 +292,7 @@ namespace RockWeb
                 string[] mimeParts = mimeType.Split( new char[] { '/' } );
                 if ( mimeParts.Length >= 2 )
                 {
-                    fileName += "." + mimeParts[1].Replace( "jpeg", "jpg" ).Replace( "svg+xml", "svg" );
+                    fileName += "." + mimeParts[1].Replace( "jpeg", "jpg" ).Replace( "svg+xml", "svg" ).Replace( "tiff", "jpg" );
                 }
             }
 
@@ -345,10 +346,19 @@ namespace RockWeb
         /// <returns></returns>
         private Stream GetResized( NameValueCollection queryString, Stream fileContent )
         {
-            ResizeSettings settings = new ResizeSettings( queryString );
-            MemoryStream resizedStream = new MemoryStream();
-            ImageBuilder.Current.Build( fileContent, resizedStream, settings );
-            return resizedStream;
+            try
+            {
+                ResizeSettings settings = new ResizeSettings( queryString );
+                MemoryStream resizedStream = new MemoryStream();
+
+                ImageBuilder.Current.Build( fileContent, resizedStream, settings );
+                return resizedStream;
+            }
+            catch
+            {
+                // if resize failed, just return original content
+                return fileContent;
+            }
         }
 
         /// <summary>

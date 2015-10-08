@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Campus>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Campus.FriendlyTypeName );
@@ -61,6 +67,12 @@ namespace Rock.Model
             if ( new Service<Device>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Device.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialPaymentDetail>( Context ).Queryable().Any( a => a.BillingLocationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, FinancialPaymentDetail.FriendlyTypeName );
                 return false;
             }  
  
@@ -109,6 +121,8 @@ namespace Rock.Model
             target.AssessorParcelId = source.AssessorParcelId;
             target.City = source.City;
             target.Country = source.Country;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GeocodeAttemptedDateTime = source.GeocodeAttemptedDateTime;
             target.GeocodeAttemptedResult = source.GeocodeAttemptedResult;
             target.GeocodeAttemptedServiceType = source.GeocodeAttemptedServiceType;

@@ -19,13 +19,8 @@
                     </Rock:GridFilter>
                     <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true" AllowPaging="false" OnRowDataBound="gGroupLocationSchedule_RowDataBound" >
                         <Columns>
-		                    <Rock:RockTemplateField HeaderText="Group" SortExpression="Group.Name">
-		                        <ItemTemplate>
-		                            <%#Eval("GroupName")%><br />
-		                            <small><%#Eval("Path")%></small>
-		                        </ItemTemplate>
-		                    </Rock:RockTemplateField>
-                            <Rock:RockBoundField DataField="LocationName" HeaderText="Location" SortExpression="Location.Name" />
+		                    <Rock:RockLiteralField ID="lGroupName" HeaderText="Group" SortExpression="Group.Name" />
+		                    <Rock:RockLiteralField ID="lLocationName" HeaderText="Location" SortExpression="Location.Name" />
                         </Columns>
                     </Rock:Grid>
                 </div>

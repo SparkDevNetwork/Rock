@@ -133,6 +133,28 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
+        /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field
+        /// </summary>
+        /// <param name="selection"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The sort expression.
+        /// </value>
+        public override string SortProperties( string selection )
+        {
+            int displayOrder = this.GetAttributeValueFromSelection( "DisplayOrder", selection ).AsIntegerOrNull() ?? 0;
+
+            if ( displayOrder == 0 )
+            {
+                return "NickName,LastName";
+            }
+            else
+            {
+                return "LastName,NickName";
+            }
+        }
+
+        /// <summary>
         /// Gets the expression.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -145,18 +167,19 @@ namespace Rock.Reporting.DataSelect.Person
             int displayOrder = this.GetAttributeValueFromSelection( "DisplayOrder", selection ).AsIntegerOrNull() ?? 0;
             var personQry = new PersonService( context ).Queryable();
             IQueryable<string> personLinkQuery;
-            
+
+            string basePersonUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/Person/" );
+
             if ( showAsLink )
             {
                 // return string in format: <a href='/person/{personId}'>LastName, NickName</a>
-                // prepend it with <!--LastName, NickName--> so that Sorting Works as expected
                 if ( displayOrder == 0 )
                 {
-                    personLinkQuery = personQry.Select( p => "<!--" + p.NickName + " " + p.LastName + "--><a href='/person/" + p.Id.ToString() + "'>" + p.NickName + " " + p.LastName + "</a>" );
+                    personLinkQuery = personQry.Select( p => "<a href='" + basePersonUrl + p.Id.ToString() + "'>" + p.NickName + " " + p.LastName + "</a>" );
                 }
                 else
                 {
-                    personLinkQuery = personQry.Select( p => "<!--" + p.LastName + ", " + p.NickName + "--><a href='/person/" + p.Id.ToString() + "'>" + p.LastName + ", " + p.NickName + "</a>" );
+                    personLinkQuery = personQry.Select( p => "<a href='" + basePersonUrl + p.Id.ToString() + "'>" + p.LastName + ", " + p.NickName + "</a>" );
                 }
             }
             else

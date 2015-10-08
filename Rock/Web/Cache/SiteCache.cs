@@ -113,6 +113,7 @@ namespace Rock.Web.Cache
                                     {
                                         cookie.Value = theme;
                                     }
+
                                     httpContext.Response.SetCookie( cookie );
 
                                     return theme;
@@ -147,13 +148,13 @@ namespace Rock.Web.Cache
                                 cookie.Value = null;
                                 httpContext.Response.SetCookie( cookie );
                             }
-
                         }
                     }
                 }
 
                 return _theme;
             }
+
             set
             {
                 _theme = value;
@@ -328,11 +329,60 @@ namespace Rock.Web.Cache
         public string GoogleAnalyticsCode { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable mobile redirect].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable mobile redirect]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableMobileRedirect { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mobile page identifier.
+        /// </summary>
+        /// <value>
+        /// The mobile page identifier.
+        /// </value>
+        public int? MobilePageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the external URL.
+        /// </summary>
+        /// <value>
+        /// The external URL.
+        /// </value>
+        public string ExternalUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [redirect tablets].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [redirect tablets]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RedirectTablets { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable page views].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable page views]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnablePageViews { get; set; }
+
+        /// <summary>
+        /// Gets or sets the page view retention period days.
+        /// </summary>
+        /// <value>
+        /// The page view retention period days.
+        /// </value>
+        public int? PageViewRetentionPeriodDays { get; set; }
+
+        /// <summary>
         /// Gets or sets the facebook app id.
         /// </summary>
         /// <value>
         /// The facebook app id.
         /// </value>
+        [Obsolete( "Attribute value of Facebook Authentication provider are used instead." )]
         public string FacebookAppId { get; set; }
 
         /// <summary>
@@ -341,6 +391,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The facebook app secret.
         /// </value>
+        [Obsolete( "Attribute value of Facebook Authentication provider are used instead." )]
         public string FacebookAppSecret { get; set; }
 
         /// <summary>
@@ -354,7 +405,7 @@ namespace Rock.Web.Cache
                 {
                     return PageCache.Read( DefaultPageId.Value );
                 }
-                
+
                 return null;
             }
         }
@@ -388,10 +439,14 @@ namespace Rock.Web.Cache
                 this.RegistrationPageRouteId = site.RegistrationPageRouteId;
                 this.ErrorPage = site.ErrorPage;
                 this.GoogleAnalyticsCode = site.GoogleAnalyticsCode;
-                this.FacebookAppId = site.FacebookAppId;
-                this.FacebookAppSecret = site.FacebookAppSecret;
                 this.PageNotFoundPageId = site.PageNotFoundPageId;
                 this.PageNotFoundPageRouteId = site.PageNotFoundPageRouteId;
+                this.EnableMobileRedirect = site.EnableMobileRedirect;
+                this.MobilePageId = site.MobilePageId;
+                this.ExternalUrl = site.ExternalUrl;
+                this.RedirectTablets = site.RedirectTablets;
+                this.EnablePageViews = site.EnablePageViews;
+                this.PageViewRetentionPeriodDays = site.PageViewRetentionPeriodDays;
 
                 foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
                 {
@@ -512,7 +567,6 @@ namespace Rock.Web.Cache
             var siteModel = siteService.Get( id );
             if ( siteModel != null )
             {
-                siteModel.LoadAttributes( rockContext );
                 return new SiteCache( siteModel );
             }
 
@@ -619,6 +673,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
     }
 }

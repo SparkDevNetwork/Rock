@@ -55,11 +55,13 @@ namespace Rock.Web.Cache
             var attributeModel = model as Rock.Attribute.IHasAttributes;
             if ( attributeModel != null )
             {
-                if ( attributeModel.Attributes != null )
+                if ( attributeModel.Attributes == null )
                 {
-                    this.Attributes = attributeModel.Attributes;
-                    this.AttributeValues = attributeModel.AttributeValues;
+                    attributeModel.LoadAttributes();
                 }
+
+                this.Attributes = attributeModel.Attributes;
+                this.AttributeValues = attributeModel.AttributeValues;
             }
         }
 
@@ -192,7 +194,7 @@ namespace Rock.Web.Cache
         /// The attributes.
         /// </value>
         [LavaIgnore]
-        public Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes
+        public Dictionary<string, AttributeCache> Attributes
         {
             get
             {
@@ -219,6 +221,7 @@ namespace Rock.Web.Cache
                 }
             }
         }
+
         /// <summary>
         /// The attribute ids
         /// </summary>
@@ -231,7 +234,7 @@ namespace Rock.Web.Cache
         /// </summary>
         [DataMember]
         [LavaIgnore]
-        public virtual Dictionary<string, Rock.Model.AttributeValue> AttributeValues { get; set; }
+        public virtual Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.
@@ -320,7 +323,7 @@ namespace Rock.Web.Cache
                 }
                 else if ( this.Attributes.ContainsKey( key ) )
                 {
-                    var attributeValue = new AttributeValue();
+                    var attributeValue = new AttributeValueCache();
                     attributeValue.AttributeId = this.Attributes[key].Id;
                     attributeValue.Value = value;
                     this.AttributeValues.Add( key, attributeValue );
@@ -434,12 +437,12 @@ namespace Rock.Web.Cache
                     string attributeKey = key.ToStringSafe();
                     if ( attributeKey.EndsWith( "_unformatted" ) )
                     {
-                        attributeKey = attributeKey.Replace( "_unformatted", "" );
+                        attributeKey = attributeKey.Replace( "_unformatted", string.Empty );
                         unformatted = true;
                     }
                     else if ( attributeKey.EndsWith( "_url" ) )
                     {
-                        attributeKey = attributeKey.Replace( "_url", "" );
+                        attributeKey = attributeKey.Replace( "_url", string.Empty );
                         url = true;
                     }
 
@@ -499,11 +502,11 @@ namespace Rock.Web.Cache
 
             if ( attributeKey.EndsWith( "_unformatted" ) )
             {
-                attributeKey = attributeKey.Replace( "_unformatted", "" );
+                attributeKey = attributeKey.Replace( "_unformatted", string.Empty );
             }
             else if ( attributeKey.EndsWith( "_url" ) )
             {
-                attributeKey = attributeKey.Replace( "_url", "" );
+                attributeKey = attributeKey.Replace( "_url", string.Empty );
             }
 
             if ( this.Attributes != null && this.Attributes.ContainsKey( attributeKey ) )
@@ -516,10 +519,8 @@ namespace Rock.Web.Cache
             }
 
             return false;
-
         }
 
         #endregion
-
     }
 }

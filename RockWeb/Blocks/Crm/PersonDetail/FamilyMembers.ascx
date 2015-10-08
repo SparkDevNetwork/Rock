@@ -22,7 +22,7 @@
 
                                 <asp:Repeater ID="rptrMembers" runat="server">
                                     <ItemTemplate>
-                                        <li class='<%# FormatPersonCssClass( (bool?)Eval("Person.IsDeceased") ) %>'>
+                                        <li class='<%# FormatPersonCssClass( (bool)Eval("Person.IsDeceased") ) %>'>
                                             <a href='<%# FormatPersonLink(Eval("PersonId").ToString()) %>'>
                                                 <div class="person-image" id="divPersonImage" runat="server"></div>
                                                 <div class="person-info">

@@ -121,17 +121,6 @@ namespace Rock.Migrations
 
             RockMigrationHelper.UpdateBlockType( "Benevolence Request Detail", "Block for users to create, edit, and view benevolence requests.", "~/Blocks/Finance/BenevolenceRequestDetail.ascx", "Finance", "34275D0E-BC7E-4A9C-913E-623D086159A1" );
             RockMigrationHelper.AddBlockTypeAttribute( "34275D0E-BC7E-4A9C-913E-623D086159A1", "F4399CEF-827B-48B2-A735-F7806FCFE8E8", "Case Worker Group", "CaseWorkerGroup", "", "The group to draw case workers from", 0, @"26E7148C-2059-4F45-BCFE-32230A12F0DC", "89EA176C-2CEB-46F4-AACC-6AF55F5C42B0" );
-
-            // Page: Benevolence Detail
-            //RockMigrationHelper.AddPage( "D893CCCC-368A-42CF-B36E-69991128F016", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Benevolence Detail", "", "6DC7BAED-CA01-4703-B679-EC81143CDEDD", "" ); // Site:Rock RMS
-            //RockMigrationHelper.AddBlock( "6DC7BAED-CA01-4703-B679-EC81143CDEDD", "", "34275D0E-BC7E-4A9C-913E-623D086159A1", "Benevolence Request Detail", "Main", "", "", 0, "596CE410-99BF-420F-A86E-CFFDF0BB45F3" );
-
-
-            // Page: Benevolence List
-            //RockMigrationHelper.AddPage( "142627AE-6590-48E3-BFCA-3669260B8CF2", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Benevolence", "", "D893CCCC-368A-42CF-B36E-69991128F016", "" ); // Site:Rock RMS
-            //RockMigrationHelper.AddBlock( "D893CCCC-368A-42CF-B36E-69991128F016", "", "3131C55A-8753-435F-85F3-DF777EFBD1C8", "Benevolence Request List", "Main", "", "", 0, "76519A99-2E29-4481-95B8-DCFF8E3225A1" );
-            //RockMigrationHelper.AddBlockAttributeValue( "76519A99-2E29-4481-95B8-DCFF8E3225A1", "E2C90243-A79A-4DAD-9301-07F6DF095CDB", @"6dc7baed-ca01-4703-b679-ec81143cdedd" ); // Detail Page
-            //RockMigrationHelper.AddBlockAttributeValue( "76519A99-2E29-4481-95B8-DCFF8E3225A1", "576E31E0-EE40-4A89-93AE-5CCF1F45D21F", @"26e7148c-2059-4f45-bcfe-32230a12f0dc" ); // Case Worker Group
         }
 
         /// <summary>
@@ -140,15 +129,10 @@ namespace Rock.Migrations
         public override void Down()
         {
             RockMigrationHelper.DeleteAttribute( "89EA176C-2CEB-46F4-AACC-6AF55F5C42B0" );
-            //RockMigrationHelper.DeleteBlock( "596CE410-99BF-420F-A86E-CFFDF0BB45F3" );
             RockMigrationHelper.DeleteBlockType( "34275D0E-BC7E-4A9C-913E-623D086159A1" );
-            //RockMigrationHelper.DeletePage( "6DC7BAED-CA01-4703-B679-EC81143CDEDD" ); //  Page: Benevolence Detail
-
             RockMigrationHelper.DeleteAttribute( "576E31E0-EE40-4A89-93AE-5CCF1F45D21F" );
             RockMigrationHelper.DeleteAttribute( "E2C90243-A79A-4DAD-9301-07F6DF095CDB" );
-            //RockMigrationHelper.DeleteBlock( "76519A99-2E29-4481-95B8-DCFF8E3225A1" );
             RockMigrationHelper.DeleteBlockType( "3131C55A-8753-435F-85F3-DF777EFBD1C8" );
-            //RockMigrationHelper.DeletePage( "D893CCCC-368A-42CF-B36E-69991128F016" ); //  Page: Benevolence
 
             DropForeignKey( "dbo.BenevolenceRequest", "RequestStatusValueId", "dbo.DefinedValue" );
             DropForeignKey( "dbo.BenevolenceRequest", "RequestedByPersonAliasId", "dbo.PersonAlias" );

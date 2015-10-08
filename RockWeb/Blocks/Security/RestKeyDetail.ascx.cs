@@ -87,7 +87,6 @@ namespace RockWeb.Blocks.Security
                 {
                     personService.Add( restUser );
                     rockContext.SaveChanges();
-                    restUser.Aliases.Add( new PersonAlias { AliasPersonId = restUser.Id, AliasPersonGuid = restUser.Guid } );
                 }
 
                 // the rest user name gets saved as the last name on a person
@@ -120,19 +119,20 @@ namespace RockWeb.Blocks.Security
                 }
 
                 // the description gets saved as a system note for the person
-                var noteType = new NoteTypeService( rockContext )
-                    .Get( Rock.SystemGuid.NoteType.PERSON_TIMELINE.AsGuid() );
-                var noteService = new NoteService( rockContext );
-                var note = noteService.Get( noteType.Id, restUser.Id ).FirstOrDefault();
-                if ( note == null )
+                var noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE.AsGuid() );
+                if ( noteType != null )
                 {
-                    note = new Note();
-                    noteService.Add( note );
+                    var noteService = new NoteService( rockContext );
+                    var note = noteService.Get( noteType.Id, restUser.Id ).FirstOrDefault();
+                    if ( note == null )
+                    {
+                        note = new Note();
+                        noteService.Add( note );
+                    }
+                    note.NoteTypeId = noteType.Id;
+                    note.EntityId = restUser.Id;
+                    note.Text = tbDescription.Text;
                 }
-
-                note.NoteTypeId = noteType.Id;
-                note.EntityId = restUser.Id;
-                note.Text = tbDescription.Text;
                 rockContext.SaveChanges();
 
                 // the key gets saved in the api key field of a user login (which you have to create if needed)

@@ -39,7 +39,6 @@ namespace RockWeb.Blocks.WorkFlow
     [Description( "Displays the details of the given workflow trigger." )]
     public partial class WorkflowTriggerDetail : RockBlock, IDetailBlock
     {
-
         #region Control Methods
 
         /// <summary>
@@ -96,31 +95,31 @@ namespace RockWeb.Blocks.WorkFlow
         public void ShowDetail( int workflowTriggerId )
         {
             pnlDetails.Visible = true;
-            WorkflowTrigger WorkflowTrigger = null;
+            WorkflowTrigger workflowTrigger = null;
 
             if ( !workflowTriggerId.Equals( 0 ) )
             {
-                WorkflowTrigger = new WorkflowTriggerService( new RockContext() ).Get( workflowTriggerId );
+                workflowTrigger = new WorkflowTriggerService( new RockContext() ).Get( workflowTriggerId );
                 lActionTitle.Text = ActionTitle.Edit( WorkflowTrigger.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
-            if ( WorkflowTrigger == null )
+            if ( workflowTrigger == null )
             {
-                WorkflowTrigger = new WorkflowTrigger { Id = 0, WorkflowTriggerType = WorkflowTriggerType.PostSave, IsActive = true };
+                workflowTrigger = new WorkflowTrigger { Id = 0, WorkflowTriggerType = WorkflowTriggerType.PostSave, IsActive = true };
                 lActionTitle.Text = ActionTitle.Add( WorkflowTrigger.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             LoadDropDowns();
 
-            hfWorkflowTriggerId.Value = WorkflowTrigger.Id.ToString(); 
-            ddlEntityType.SetValue( WorkflowTrigger.EntityTypeId );
+            hfWorkflowTriggerId.Value = workflowTrigger.Id.ToString(); 
+            ddlEntityType.SetValue( workflowTrigger.EntityTypeId );
             LoadColumnNames();
-            ddlQualifierColumn.SetValue( WorkflowTrigger.EntityTypeQualifierColumn );
-            tbQualifierValue.Text = WorkflowTrigger.EntityTypeQualifierValue;
-            ddlWorkflowType.SetValue( WorkflowTrigger.WorkflowTypeId );
-            rblTriggerType.SelectedValue = WorkflowTrigger.WorkflowTriggerType.ConvertToInt().ToString();
-            tbWorkflowName.Text = WorkflowTrigger.WorkflowName ?? string.Empty;
-            cbIsActive.Checked = WorkflowTrigger.IsActive ?? false;
+            ddlQualifierColumn.SetValue( workflowTrigger.EntityTypeQualifierColumn );
+            ShowQualifierValues( workflowTrigger );
+            ddlWorkflowType.SetValue( workflowTrigger.WorkflowTypeId );
+            rblTriggerType.SelectedValue = workflowTrigger.WorkflowTriggerType.ConvertToInt().ToString();
+            tbWorkflowName.Text = workflowTrigger.WorkflowName ?? string.Empty;
+            cbIsActive.Checked = workflowTrigger.IsActive ?? false;
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -132,7 +131,7 @@ namespace RockWeb.Blocks.WorkFlow
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( WorkflowTrigger.FriendlyTypeName );
             }
 
-            if ( WorkflowTrigger.IsSystem )
+            if ( workflowTrigger.IsSystem )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( WorkflowTrigger.FriendlyTypeName );
@@ -153,7 +152,6 @@ namespace RockWeb.Blocks.WorkFlow
             cbIsActive.Enabled = !readOnly;
 
             btnSave.Visible = !readOnly;
-
         }
 
         /// <summary>
@@ -207,7 +205,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            WorkflowTrigger WorkflowTrigger;
+            WorkflowTrigger workflowTrigger;
             var rockContext = new RockContext();
             WorkflowTriggerService WorkflowTriggerService = new WorkflowTriggerService( rockContext );
             AttributeService attributeService = new AttributeService( rockContext );
@@ -216,30 +214,54 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( WorkflowTriggerId == 0 )
             {
-                WorkflowTrigger = new WorkflowTrigger();
-                WorkflowTriggerService.Add( WorkflowTrigger );
+                workflowTrigger = new WorkflowTrigger();
+                WorkflowTriggerService.Add( workflowTrigger );
             }
             else
             {
-                WorkflowTrigger = WorkflowTriggerService.Get( WorkflowTriggerId );
+                workflowTrigger = WorkflowTriggerService.Get( WorkflowTriggerId );
             }
 
-            WorkflowTrigger.EntityTypeId = ddlEntityType.SelectedValueAsInt().Value;
-            WorkflowTrigger.EntityTypeQualifierColumn = ddlQualifierColumn.SelectedValue;
-            WorkflowTrigger.EntityTypeQualifierValue = tbQualifierValue.Text;
-            WorkflowTrigger.WorkflowTypeId = ddlWorkflowType.SelectedValueAsInt().Value;
-            WorkflowTrigger.WorkflowTriggerType = (WorkflowTriggerType)System.Enum.Parse( typeof( WorkflowTriggerType ), rblTriggerType.SelectedValue );
-            WorkflowTrigger.IsActive = cbIsActive.Checked;
+            workflowTrigger.WorkflowTypeId = ddlWorkflowType.SelectedValueAsInt().Value;
+            workflowTrigger.WorkflowTriggerType = (WorkflowTriggerType)System.Enum.Parse( typeof( WorkflowTriggerType ), rblTriggerType.SelectedValue );
+
+            workflowTrigger.EntityTypeId = ddlEntityType.SelectedValueAsInt().Value;
+            workflowTrigger.EntityTypeQualifierColumn = ddlQualifierColumn.SelectedValue;
+
+            // If the trigger type is PreSave and the tbQualifierValue does not exist,
+            // use the previous and alt qualifier value
+            if ( workflowTrigger.WorkflowTriggerType == WorkflowTriggerType.PreSave ) 
+            {
+                if ( !string.IsNullOrEmpty( tbQualifierValue.Text ) )
+                {
+                    // in this case, use the same value as the previous and current qualifier value
+                    workflowTrigger.EntityTypeQualifierValue = tbQualifierValue.Text;
+                    workflowTrigger.EntityTypeQualifierValuePrevious = tbQualifierValue.Text;
+                }
+                else
+                {
+                    workflowTrigger.EntityTypeQualifierValue = tbQualifierValueAlt.Text;
+                    workflowTrigger.EntityTypeQualifierValuePrevious = tbPreviousQualifierValue.Text;
+                }
+            }
+            else
+            {
+                // use the regular qualifier and clear the previous value qualifier since it does not apply.
+                workflowTrigger.EntityTypeQualifierValue = tbQualifierValue.Text;
+                workflowTrigger.EntityTypeQualifierValuePrevious = string.Empty;
+            }
+
+            workflowTrigger.IsActive = cbIsActive.Checked;
             if ( string.IsNullOrWhiteSpace( tbWorkflowName.Text ) )
             {
-                WorkflowTrigger.WorkflowName = null;
+                workflowTrigger.WorkflowName = null;
             }
             else
             {
-                WorkflowTrigger.WorkflowName = tbWorkflowName.Text;
+                workflowTrigger.WorkflowName = tbWorkflowName.Text;
             }
 
-            if ( !WorkflowTrigger.IsValid )
+            if ( !workflowTrigger.IsValid )
             {
                 // Controls will render the error messages                    
                 return;
@@ -264,6 +286,54 @@ namespace RockWeb.Blocks.WorkFlow
         protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
         {
             LoadColumnNames();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the rblTriggerType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rblTriggerType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ShowQualifierValues(null);
+        }
+
+        /// <summary>
+        /// Shows the qualifier values in the correct fields using the given 
+        /// workflow trigger if available.
+        /// </summary>
+        /// <param name="workflowTrigger">The workflow trigger.</param>
+        private void ShowQualifierValues( WorkflowTrigger workflowTrigger )
+        {
+            bool showPreSave = false;
+            if ( workflowTrigger != null )
+            {
+                showPreSave = ( workflowTrigger.WorkflowTriggerType == WorkflowTriggerType.PreSave );
+                if ( showPreSave
+                    && ! string.IsNullOrEmpty( workflowTrigger.EntityTypeQualifierValue )
+                    && workflowTrigger.EntityTypeQualifierValue != workflowTrigger.EntityTypeQualifierValuePrevious )
+                {
+                    tbQualifierValueAlt.Text = workflowTrigger.EntityTypeQualifierValue;
+                    tbPreviousQualifierValue.Text = workflowTrigger.EntityTypeQualifierValuePrevious;
+                }
+                else
+                {
+                    tbQualifierValue.Text = workflowTrigger.EntityTypeQualifierValue;
+                }
+            }
+
+            if ( rblTriggerType.SelectedValue == ( (int)WorkflowTriggerType.PreSave ).ToStringSafe() || showPreSave )
+            {
+                tbQualifierValue.Label = "Or value is";
+                tbPreviousQualifierValue.Visible = true;
+                tbQualifierValueAlt.Visible = true;
+            }
+            else
+            {
+                tbQualifierValue.Label = "Value is";
+                tbPreviousQualifierValue.Visible = false;
+                tbQualifierValueAlt.Visible = false;
+            }
         }
 
         #endregion

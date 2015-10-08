@@ -73,16 +73,16 @@ namespace Rock.Web.UI.Controls
             if ( renderLabel )
             {
                 var cssClass = new StringBuilder();
-                cssClass.AppendFormat( "form-group {0}", rockControl.GetType().Name.SplitCase().Replace( ' ', '-' ).ToLower() );
+                cssClass.AppendFormat( "form-group {0} {1}", rockControl.GetType().Name.SplitCase().Replace( ' ', '-' ).ToLower(), rockControl.FormGroupCssClass );
                 if ( ( (Control)rockControl ).Page.IsPostBack && !rockControl.IsValid )
                 {
                     cssClass.Append( " has-error" );
                 }
                 if ( rockControl.Required )
                 {
-                    if ( ( rockControl is RockTextBox ) && !( rockControl as RockTextBox ).DisplayRequiredIndicator )
+                    if ( ( rockControl is IDisplayRequiredIndicator ) && !( rockControl as IDisplayRequiredIndicator ).DisplayRequiredIndicator )
                     {
-                        // if this is a RockTextBox and DisplayRequiredIndicator is false, don't add the " required " cssclass
+                        // if this is a rock control that implements IDisplayRequiredIndicator and DisplayRequiredIndicator is false, don't add the " required " cssclass
                     }
                     else
                     {
@@ -102,6 +102,22 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
                     writer.AddAttribute( HtmlTextWriterAttribute.For, rockControl.ClientID );
                 }
+
+                if ( rockControl is WebControl )
+                {
+                    // if the control has a Display Style, make sure the Label and Help also get the same Display style
+                    // For example, you might have rockControl.Style["Display"] = "none", so you probably want the label and help to also get not displayed
+                    var rockControlDisplayStyle = ( rockControl as WebControl ).Style[HtmlTextWriterStyle.Display];
+                    if ( rockControlDisplayStyle != null )
+                    {
+                        writer.AddStyleAttribute( HtmlTextWriterStyle.Display, rockControlDisplayStyle );
+                        if (rockControl.HelpBlock != null)
+                        {
+                            rockControl.HelpBlock.Style[HtmlTextWriterStyle.Display] = rockControlDisplayStyle;
+                        }
+                    }
+                }
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 writer.Write( rockControl.Label );
 

@@ -36,12 +36,9 @@ namespace Rock.Communication.Medium
     [Export( typeof( MediumComponent ) )]
     [ExportMetadata( "ComponentName", "Email" )]
 
-    [CodeEditorField( "Unsubscribe HTML", "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubcribe HTML' merge field is used, or if not used, at the end of the email in email contents.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
-<p style='float: right;'>
-    <small><a href='{{ GlobalAttribute.PublicApplicationRoot }}Unsubscribe/{{ Person.UrlEncodedKey }}'>Unsubscribe</a></small>
-</p>
-", "", 2 )]
-    [CodeEditorField( "Default Plain Text", "The text to use when the plain text field is left blank.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
+    [CodeEditorField( "Unsubscribe HTML", "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubcribe HTML' merge field is used, or if not used, at the end of the email in email contents.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
+<a href='{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person.UrlEncodedKey }}'>Unsubscribe</a>", "", 2 )]
+    [CodeEditorField( "Default Plain Text", "The text to use when the plain text field is left blank.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
 Unfortunately, you cannot view the contents of this email as it contains formatting that is not supported 
 by your email client.  
 
@@ -245,12 +242,12 @@ You can view an online version of this email here:
                     .ToList() )
                 {
                     var person = recipient.PersonAlias.Person;
-                    if ( !(person.IsEmailActive ?? true))
+                    if ( !person.IsEmailActive)
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
                         recipient.StatusNote = "Email is not active!";
                     }
-                    if ( person.IsDeceased ?? false )
+                    if ( person.IsDeceased )
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
                         recipient.StatusNote = "Person is deceased!";
@@ -267,7 +264,7 @@ You can view an online version of this email here:
                     }
                 }
 
-                // If an unbsubcribe value has been entered, and this is a bulk email, add the text
+                // If an unsubscribe value has been entered, and this is a bulk email, add the text
                 if ( communication.IsBulkCommunication )
                 {
                     string unsubscribeHtml = GetAttributeValue( "UnsubscribeHTML" );

@@ -1,5 +1,4 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BatchDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.BatchDetail" %>
-<%@ Reference Control="~/Blocks/Finance/TransactionList.ascx" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -13,6 +12,7 @@
                     <asp:Literal ID="lTitle" runat="server" />
                 </h1>
                 <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlBatchId" runat="server" LabelType="Info" />
                     <Rock:HighlightLabel ID="hlStatus" runat="server" />
                     <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                 </div>
@@ -24,6 +24,7 @@
 
                 <div id="pnlEditDetails" runat="server">
                     <asp:ValidationSummary ID="valSummaryBatch" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:CustomValidator ID="cvBatch" runat="server" />
 
                     <div class="row">
                         <div class="col-md-6">
@@ -37,6 +38,7 @@
                             <Rock:CampusPicker ID="campCampus" runat="server" Label="Campus" />
                             <Rock:DataTextBox ID="tbAccountingCode" runat="server" Label="Accounting Code" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="AccountingSystemCode"
                                 Help="Optional id or code from an external accounting system." />
+                            <Rock:DataTextBox ID="tbNote" runat="server" Label="Notes" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="Note" TextMode="MultiLine" Rows="4"/>
                         </div>
                     </div>
 
@@ -57,7 +59,7 @@
                                 <Rock:Grid ID="gAccounts" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Account" AllowSorting="false">
                                     <Columns>
                                         <Rock:RockBoundField DataField="Name" HeaderText="Account Totals" />
-                                        <Rock:RockBoundField DataField="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:CurrencyField DataField="Amount" ItemStyle-HorizontalAlign="Right" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -65,7 +67,7 @@
                                 <Rock:Grid ID="gCurrencyTypes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="CurrencyType" AllowSorting="false">
                                     <Columns>
                                         <Rock:RockBoundField DataField="Name" HeaderText="Currency Totals" />
-                                        <Rock:RockBoundField DataField="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:CurrencyField DataField="Amount" ItemStyle-HorizontalAlign="Right" />
                                     </Columns>
                                 </Rock:Grid>
                             </div>
@@ -73,7 +75,10 @@
                     </div>
                     <div class="actions">
                         <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
-                        <asp:LinkButton ID="lbMatch" runat="server" CssClass="btn btn-default pull-right" CausesValidation="false" OnClick="lbMatch_Click"><i class="fa fa-money"></i> Match Transactions</asp:LinkButton>
+                        <div class="pull-right">
+                            <asp:LinkButton ID="lbMatch" runat="server" CssClass="btn btn-default" CausesValidation="false" OnClick="lbMatch_Click"><i class="fa fa-money"></i> Match Transactions</asp:LinkButton>
+                            <asp:LinkButton ID="lbHistory" runat="server" CssClass="btn btn-default" CausesValidation="false" OnClick="lbHistory_Click"><i class="fa fa-file-text-o"></i> Audit Log</asp:LinkButton>
+                        </div>
                     </div>
                 </fieldset>
 

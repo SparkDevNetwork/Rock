@@ -115,5 +115,21 @@ namespace Rock.Model
                 
             return order.HasValue ? order.Value + 1 : 0;
         }
+
+        /// <summary>
+        /// Gets the Guid for the Block that has the specified Id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Guid? GetGuid( int id )
+        {
+            var cacheItem = Rock.Web.Cache.BlockCache.Read( id );
+            if ( cacheItem != null )
+            {
+                return cacheItem.Guid;
+            }
+
+            return null;
+        }
     }
 }

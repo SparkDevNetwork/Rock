@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -25,16 +24,23 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Site Model Entity. A Site in Rock is a collection of <see cref="Page">pages</see> and usually 
-    /// associated with one or more <see cref="SiteDomain">SiteDomains </see>.
+    /// PageView Model Entity. A PageView in Rock is a log of each time a page was visited
     /// </summary>
     [Table( "PageView" )]
     [DataContract]
     [NotAudited]
     public partial class PageView : Entity<PageView>
     {
-
         #region Entity Properties
+
+        /// <summary>
+        /// Gets or sets the page view session identifier.
+        /// </summary>
+        /// <value>
+        /// The page view session identifier.
+        /// </value>
+        [DataMember]
+        public int PageViewSessionId { get; set; }
 
         /// <summary>
         /// Gets or sets the page id of the page viewed.
@@ -73,28 +79,8 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember]
+        [Index( "IX_DateTimeViewed", IsUnique = false )]
         public DateTime? DateTimeViewed { get; set; }
-
-
-        /// <summary>
-        /// Gets or sets the user-agent of the browser.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> of the user-agent of the browser.
-        /// </value>
-        [DataMember]
-        [MaxLength( 500 )]
-        public string UserAgent { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of client.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> client type.
-        /// </value>
-        [DataMember]
-        [MaxLength( 25 )]
-        public string ClientType { get; set; }
 
         /// <summary>
         /// Gets or sets the query string of the request.
@@ -116,29 +102,18 @@ namespace Rock.Model
         [MaxLength( 500 )]
         public string PageTitle { get; set; }
 
-        /// <summary>
-        /// Gets or sets the session id of the request.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> of the session id of the request.
-        /// </value>
-        [DataMember]
-        public Guid? SessionId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the IP address of the request.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> of the IP address of the request.
-        /// </value>
-        [DataMember]
-        [MaxLength( 45 )]
-        public string IpAddress { get; set; }
-
         #endregion
 
         #region Virtual Properties
-        
+
+        /// <summary>
+        /// Gets or sets the page view session.
+        /// </summary>
+        /// <value>
+        /// The page view session.
+        /// </value>
+        public virtual PageViewSession PageViewSession { get; set; }
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Page"/> page that was viewed.
         /// </summary>
@@ -169,13 +144,12 @@ namespace Rock.Model
         #region Methods
 
         #endregion
-
     }
 
     #region Entity Configuration
 
     /// <summary>
-    /// Site Configuration class.
+    /// PageView Configuration class.
     /// </summary>
     public partial class PageViewConfiguration : EntityTypeConfiguration<PageView>
     {
@@ -184,6 +158,7 @@ namespace Rock.Model
         /// </summary>
         public PageViewConfiguration()
         {
+            this.HasRequired( p => p.PageViewSession ).WithMany().HasForeignKey( p => p.PageViewSessionId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Page ).WithMany().HasForeignKey( p => p.PageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Site ).WithMany().HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( false );

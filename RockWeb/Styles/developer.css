@@ -9,37 +9,6 @@
     */
 
 
-/*
-    NA - This is used to style a checkboxlist grouping as seen (in the DefaultValues
-        of the DefinedValue editor) when editing something like the AbilityLevel person
-        attribute and changing it to 'allow multiple values'.  Added around 2/1/2013
-
-    JME - Not sure we need this with the new theme. Let me know if you see any
-          area that is in need of this still.
-
-.checkboxlist-group {
-    width: 196px;
-    padding: 6px 11px 0px 11px;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
-    background-color: white;
-    border: 1px solid #cccccc;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-    -webkit-transition: border linear .2s, box-shadow linear .2s;
-    -moz-transition: border linear .2s, box-shadow linear .2s;
-    -o-transition: border linear .2s, box-shadow linear .2s;
-    transition: border linear .2s, box-shadow linear .2s;
-}*/
-
-
-
-
-
-
-
 /*CSF - right align the "Clear Exceptions" link on the Exceptions List Page*/
 .clearExceptionsLink
 {
@@ -156,13 +125,6 @@ span.data-view-filter-label {
 }
 
 
-
-div.toggle-container {   /* ???? JME */
-    display: inline-block;
-}
-
-
-
 /* DT If th has a required class, render the required field indicator after the column heading */
 .table thead th.required:after {
   font-family: FontAwesome;
@@ -173,4 +135,11 @@ div.toggle-container {   /* ???? JME */
   vertical-align: super;
 }
 
+/* Website calendar */
 
+
+
+/* DT 2015-07-06 Fee grid on registration */
+table th[align='right'] {
+    text-align: right;
+}

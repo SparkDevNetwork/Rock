@@ -73,7 +73,13 @@ namespace RockWeb.Blocks.CheckIn
                     }
                     else
                     {
-                        rSelection.DataSource = family.People;
+                        rSelection.DataSource = family.People
+                            .OrderByDescending( p => p.FamilyMember )
+                            .ThenBy( p => p.Person.BirthYear )
+                            .ThenBy( p => p.Person.BirthMonth )
+                            .ThenBy( p => p.Person.BirthDay )
+                            .ToList();
+
                         rSelection.DataBind();
                     }
 
@@ -140,7 +146,7 @@ namespace RockWeb.Blocks.CheckIn
                 .SelectMany( f => f.People.Where( p => p.Selected )
                     .SelectMany( p => p.GroupTypes.Where( t => !t.ExcludedByFilter ) ) )
                 .Count() <= 0,
-                "<ul><li>Sorry, based on your selection, there are currently not any available locations that can be checked into.</li></ul>" );
+                "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>" );
         }
 
     }

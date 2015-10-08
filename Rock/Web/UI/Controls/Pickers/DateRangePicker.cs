@@ -48,6 +48,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the help text.
         /// </summary>
         /// <value>
@@ -169,6 +186,27 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private DatePicker _tbUpperValue;
 
+
+        /// <summary>
+        /// Gets or sets the class that should be applied to the div that wraps the two date pickers
+        /// default is "form-control-group"
+        /// </summary>
+        /// <value>
+        /// The inputs class.
+        /// </value>
+        public string InputsClass
+        {
+            get
+            {
+                return ( ViewState["InputsClass"] as string ) ?? "form-control-group";
+            }
+
+            set
+            {
+                ViewState["InputsClass"] = value;
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -183,7 +221,7 @@ namespace Rock.Web.UI.Controls
 
             // a little javascript to make the daterange picker behave similar to the bootstrap-datepicker demo site's date range picker
             var scriptFormat = @"
-$('#{0}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
+$('#{0}').datepicker({{ format: '{2}', todayHighlight: true }}).on('changeDate', function (ev) {{
         
     if (ev.date.valueOf() > $('#{1}').data('datepicker').dates[0]) {{
         var newDate = new Date(ev.date)
@@ -194,18 +232,33 @@ $('#{0}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
         $('#{1}').datepicker('setStartDate', ev.date);
     }}
     
-    // close the start date picker and set focus to the end date
-    $('#{0}').data('datepicker').hide();
-    $('#{1}')[0].focus();
+    if (event && event.type == 'click') {{
+        // close the start date picker and set focus to the end date
+        $('#{0}').data('datepicker').hide();
+        $('#{1}')[0].focus();
+    }}
 }});
 
-$('#{1}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
+$('#{1}').datepicker({{ format: '{2}', todayHighlight: true }}).on('changeDate', function (ev) {{
     // close the enddate picker immediately after selecting an end date
     $('#{1}').data('datepicker').hide();
 }});
 
+// if the guest clicks the addon select all the text in the input
+$('#{3}').find('.input-group-lower .input-group-addon').on('click', function () {{
+    $(this).siblings('.form-control').select();
+}});
+
+// if the guest clicks the addon select all the text in the input
+$('#{3}').find('.input-group-upper .input-group-addon').on('click', function () {{
+    $(this).siblings('.form-control').select();
+}});
+
 ";
-            var script = string.Format( scriptFormat, _tbLowerValue.ClientID, _tbUpperValue.ClientID, dateFormat );
+            string lowerSelector = string.Format( "{0} .input-group-lower.date", this.ClientID );
+            string upperSelector = string.Format( "{0} .input-group-upper.date", this.ClientID );
+
+            var script = string.Format( scriptFormat, lowerSelector, upperSelector, dateFormat, this.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "daterange_picker-" + this.ClientID, script, true );
         }
 
@@ -221,12 +274,12 @@ $('#{1}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
 
             _tbLowerValue = new DatePicker();
             _tbLowerValue.ID = this.ID + "_lower";
-            _tbLowerValue.CssClass = "input-width-md";
+            _tbLowerValue.CssClass = "input-width-md date input-group-lower";
             Controls.Add( _tbLowerValue );
 
             _tbUpperValue = new DatePicker();
             _tbUpperValue.ID = this.ID + "_upper";
-            _tbUpperValue.CssClass = "input-width-md";
+            _tbUpperValue.CssClass = "input-width-md date input-group-upper";
             Controls.Add( _tbUpperValue );
         }
 
@@ -265,11 +318,11 @@ $('#{1}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( "class", "form-control-group" );
+            writer.AddAttribute( "class", this.InputsClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _tbLowerValue.RenderControl( writer );
-            writer.Write( "<span class='to'> to </span>" );
+            writer.Write( "<div class='input-group form-control-static'> to </div>" );
             _tbUpperValue.RenderControl( writer );
 
             writer.RenderEndTag(); // form-control-group
@@ -425,6 +478,25 @@ $('#{1}').datepicker({{ format: '{2}' }}).on('changeDate', function (ev) {{
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Calculates the date range from delimited values.
+        /// </summary>
+        /// <param name="delimitedValues">The delimited values.</param>
+        /// <returns></returns>
+        public static DateRange CalculateDateRangeFromDelimitedValues( string delimitedValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( delimitedValues ) && delimitedValues.Contains( "," ) )
+            {
+                var dates = delimitedValues.Split( ',' );
+                if ( dates.Length == 2 )
+                {
+                    return new DateRange( dates[0].AsDateTime(), dates[1].AsDateTime() );
+                }
+            }
+            
+            return new DateRange(null, null);
         }
     }
 }

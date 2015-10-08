@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( Workflow item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<ConnectionRequestWorkflow>( Context ).Queryable().Any( a => a.WorkflowId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Workflow.FriendlyTypeName, ConnectionRequestWorkflow.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -91,6 +97,8 @@ namespace Rock.Model
             target.ActivatedDateTime = source.ActivatedDateTime;
             target.CompletedDateTime = source.CompletedDateTime;
             target.Description = source.Description;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.InitiatorPersonAliasId = source.InitiatorPersonAliasId;
             target.IsProcessing = source.IsProcessing;
             target.LastProcessedDateTime = source.LastProcessedDateTime;

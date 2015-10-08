@@ -77,6 +77,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the help text.
         /// </summary>
         /// <value>
@@ -545,6 +562,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _fileUpload );
 
             _mdImageDialog = new ModalDialog();
+            _mdImageDialog.ValidationGroup = "vg_mdImageDialog";
             _mdImageDialog.ID = this.ID + "_mdImageDialog";
             _mdImageDialog.Title = "Image";
             _mdImageDialog.SaveButtonText = "Crop";
@@ -727,10 +745,11 @@ namespace Rock.Web.UI.Controls
             }
 
             _nbImageWarning.Visible = false;
-            _imgCropSource.ImageUrl = "~/GetImage.ashx?id=" + CropBinaryFileId;
+            
             var binaryFile = new BinaryFileService( new RockContext() ).Get( CropBinaryFileId ?? 0 );
             if ( binaryFile != null )
             {
+                _imgCropSource.ImageUrl = "~/GetImage.ashx?guid=" + binaryFile.Guid;
                 if ( binaryFile.MimeType != "image/svg+xml" )
                 {
                     using ( var stream = binaryFile.ContentStream )
@@ -750,6 +769,10 @@ namespace Rock.Web.UI.Controls
                     _nbImageWarning.Visible = true;
                     _nbImageWarning.Text = "SVG image cropping is not supported.";
                 }
+            }
+            else
+            {
+                _imgCropSource.ImageUrl = "";
             }
 
             _mdImageDialog.Show();

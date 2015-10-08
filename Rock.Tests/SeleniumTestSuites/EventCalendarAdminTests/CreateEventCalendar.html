@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost:6229/" />
+<title>CreateEventCalendar</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">CreateEventCalendar</td></tr>
+</thead><tbody>
+<tr>
+	<td>storeEval</td>
+	<td>new Date().getTime()</td>
+	<td>x</td>
+</tr>
+<tr>
+	<td>open</td>
+	<td>/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Calendars</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=i.fa.fa-plus</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=input[id$='_tbName']</td>
+	<td>${x}</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=input[id$='_cbActive']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=textarea[id$='_tbDescription']</td>
+	<td>This is a private calendar.</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=input[id$='_tbIconCssClass']</td>
+	<td>fa fa-eye</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=a[id$='_btnSave']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'Calendars')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//h3[contains(text(), '${x}')]</td>
+	<td>*</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//h3[contains(text(), '${x}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//span[contains(text(), '${x}')]</td>
+	<td>*</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//p[contains(text(), 'This is a private calendar.')]</td>
+	<td>*</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=a[id$='_btnDelete']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertNotText</td>
+	<td>//h3[contains(text(), '${x}')]</td>
+	<td>false</td>
+</tr>
+</tbody></table>
+</body>
+</html>

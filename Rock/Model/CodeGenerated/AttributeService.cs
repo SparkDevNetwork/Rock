@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( Attribute item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<RegistrationTemplateFormField>( Context ).Queryable().Any( a => a.AttributeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Attribute.FriendlyTypeName, RegistrationTemplateFormField.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -88,12 +94,15 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Attribute target, Attribute source )
         {
             target.Id = source.Id;
+            target.AllowSearch = source.AllowSearch;
             target.DefaultValue = source.DefaultValue;
             target.Description = source.Description;
             target.EntityTypeId = source.EntityTypeId;
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
             target.FieldTypeId = source.FieldTypeId;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
             target.IsGridColumn = source.IsGridColumn;
             target.IsMultiValue = source.IsMultiValue;

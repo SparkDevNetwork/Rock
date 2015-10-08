@@ -212,7 +212,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.Workflow;
+                return this.Workflow != null ? this.Workflow : base.ParentAuthority;
             }
         }
 

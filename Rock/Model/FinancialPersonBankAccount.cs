@@ -104,7 +104,7 @@ namespace Rock.Model
         /// <exception cref="System.Configuration.ConfigurationErrorsException">Account encoding requires a 'PasswordKey' app setting</exception>
         public static string EncodeAccountNumber( string routingNumber, string accountNumber )
         {
-            string toHash = string.Format( "{0}|{1}", routingNumber, accountNumber );
+            string toHash = string.Format( "{0}|{1}", routingNumber.Trim(), accountNumber.Trim() );
             return Rock.Security.Encryption.GetSHA1Hash( toHash );
         }
 

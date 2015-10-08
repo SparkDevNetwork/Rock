@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Configuration;
 using System.Data.Entity;
 using System.Data.SqlClient;
@@ -29,13 +30,10 @@ using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
-
 using DotLiquid;
-
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
-
 using Rock;
 using Rock.Communication;
 using Rock.Data;
@@ -100,9 +98,9 @@ namespace RockWeb
         {
             try
             {
-                LogMessage( APP_LOG_FILENAME, "Application Starting..." );
-
-                DateTime startDateTime = RockDateTime.Now;
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                LogMessage( APP_LOG_FILENAME, "Application Starting..." ); 
+                
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
@@ -114,40 +112,46 @@ namespace RockWeb
                 // Get a db context
                 using ( var rockContext = new RockContext() )
                 {
-                    //// Run any needed Rock and/or plugin migrations
-                    //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
-                    MigrateDatabase( rockContext );
-
-                    // Preload the commonly used objects
-                    LoadCacheObjects( rockContext );
-                     
-
-                    // Run any plugin migrations
-                    MigratePlugins( rockContext );
-
                     if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
                         try
                         {
+                            // default Initializer is CreateDatabaseIfNotExists, so set it to NULL so that nothing happens if there isn't a database yet
+                            Database.SetInitializer<Rock.Data.RockContext>( null );
                             new AttributeService( rockContext ).Get( 0 );
-                            System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", ( RockDateTime.Now - startDateTime ).TotalMilliseconds ) );
-                            startDateTime = RockDateTime.Now;
+                            System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase {2}/{1} - {0} ms", stopwatch.Elapsed.TotalMilliseconds, rockContext.Database.Connection.Database, rockContext.Database.Connection.DataSource ) );
                         }
                         catch
                         {
                             // Intentionally Blank
                         }
                     }
+                    
+                    //// Run any needed Rock and/or plugin migrations
+                    //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
+                    MigrateDatabase( rockContext );
+                    
+                    // Preload the commonly used objects
+                    stopwatch.Restart();
+                    LoadCacheObjects( rockContext );
+
+                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                    {
+                        System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                    }
+
+                    // Run any plugin migrations
+                    MigratePlugins( rockContext );
 
                     RegisterRoutes( rockContext, RouteTable.Routes );
 
                     // Configure Rock Rest API
+                    stopwatch.Restart();
                     GlobalConfiguration.Configure( Rock.Rest.WebApiConfig.Register );
-
                     if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
-                        System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", ( RockDateTime.Now - startDateTime ).TotalMilliseconds ) );
-                        startDateTime = RockDateTime.Now;
+                        System.Diagnostics.Debug.WriteLine( string.Format( "Configure WebApiConfig - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                        stopwatch.Restart();
                     }
 
                     // setup and launch the jobs infrastructure if running under IIS
@@ -165,19 +169,32 @@ namespace RockWeb
                         ServiceJobService jobService = new ServiceJobService( rockContext );
                         foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
                         {
-                            try
+                            const string errorLoadingStatus = "Error Loading Job";
+                            try  
                             {
                                 IJobDetail jobDetail = jobService.BuildQuartzJob( job );
                                 ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
                                 sched.ScheduleJob( jobDetail, jobTrigger );
+
+                                //// if the last status was an error, but we now loaded successful, clear the error
+                                // also, if the last status was 'Running', clear that status because it would have stopped if the app restarted
+                                if ( job.LastStatus == errorLoadingStatus || job.LastStatus == "Running" )
+                                {
+                                    job.LastStatusMessage = string.Empty;
+                                    job.LastStatus = string.Empty;
+                                    rockContext.SaveChanges();
+                                }
                             }
                             catch ( Exception ex )
                             {
+                                // log the error
+                                LogError( ex, null );
+
                                 // create a friendly error message
-                                string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assembly, ex.Message );
+                                string message = string.Format( "Error loading the job: {0}.\n\n{2}", job.Name, job.Assembly, ex.Message );
                                 job.LastStatusMessage = message;
-                                job.LastStatus = "Error Loading Job";
+                                job.LastStatus = errorLoadingStatus;
                                 rockContext.SaveChanges();
                             }
                         }
@@ -206,7 +223,7 @@ namespace RockWeb
 
                     // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                     AddCallBack();
-
+                    
                     Rock.Security.Authorization.Load();
                 }
 
@@ -220,7 +237,11 @@ namespace RockWeb
 
                 SqlServerTypes.Utilities.LoadNativeAssemblies( Server.MapPath( "~" ) );
 
-                LogMessage( APP_LOG_FILENAME, "Application Started Succesfully" );
+                LogMessage( APP_LOG_FILENAME, "Application Started Successfully" );
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    System.Diagnostics.Debug.WriteLine( string.Format( "Application_Started_Successfully: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                }
             }
             catch (Exception ex)
             {
@@ -281,13 +302,15 @@ namespace RockWeb
         {
             if ( string.IsNullOrWhiteSpace( Global.BaseUrl ) )
             {
-                if ( Context.Request.Url != null )
+                var uri = GetPublicFacingUrl( Context.Request );
+                if ( uri != null )
                 {
-                    Global.BaseUrl = string.Format( "{0}://{1}/", Context.Request.Url.Scheme, Context.Request.Url.Authority );
+                    Global.BaseUrl = string.Format( "{0}://{1}/", uri.Scheme, uri.Authority );
                 }
             }
 
             Context.Items.Add( "Request_Start_Time", RockDateTime.Now );
+            Context.Items.Add( "Cache_Hits", new Dictionary<string, bool>() );
         }
 
         /// <summary>
@@ -313,6 +336,26 @@ namespace RockWeb
                 if ( context != null )
                 {
                     var ex = context.Server.GetLastError();
+
+                    try
+                    {
+                        HttpException httpEx = ex as HttpException;
+                        if ( httpEx != null )
+                        {
+                            int statusCode = httpEx.GetHttpCode();
+                            if (!GlobalAttributesCache.Read().GetValue( "Log404AsException" ).AsBoolean())
+                            {
+                                context.ClearError();
+                                context.Response.StatusCode = 404;
+                                return;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        //
+                    }
+
 
                     SendNotification( ex );
 
@@ -400,37 +443,27 @@ namespace RockWeb
         {
             bool result = false;
 
+            // default Initializer is CreateDatabaseIfNotExists, so set it to NULL so it doesn't try to do anything special
+            Database.SetInitializer<Rock.Data.RockContext>( null );
+
             var fileInfo = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
             if ( fileInfo.Exists )
             {
-                Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
-
-                // explictly check if the database exists, and force create it if doesn't exist
-                if ( !rockContext.Database.Exists() )
+                // get the pendingmigrations sorted by name (in the order that they run), then run to the latest migration
+                var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
+                var pendingMigrations = migrator.GetPendingMigrations().OrderBy(a => a);
+                if ( pendingMigrations.Any() )
                 {
-                    // If database did not exist, initialize a database (which runs existing Rock migrations)
-                    rockContext.Database.Initialize( true );
+                    LogMessage( APP_LOG_FILENAME, "Migrating Database..." );
+                    
+                    var lastMigration = pendingMigrations.Last();
+                    
+                    // NOTE: we need to specify the last migration vs null so it won't detect/complain about pending changes
+                    migrator.Update( lastMigration );
                     result = true;
-                }
-                else
-                {
-                    // If database does exist, run any pending Rock migrations
-                    var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
-                    if ( migrator.GetPendingMigrations().Any() )
-                    {
-                        LogMessage( APP_LOG_FILENAME, "Migrating Database..." );
-
-                        migrator.Update();
-                        result = true;
-                    }
                 }
 
                 fileInfo.Delete();
-            }
-            else
-            {
-                // default Initializer is CreateDatabaseIfNotExists, but we don't want that to happen if automigrate is false, so set it to NULL so that nothing happens
-                Database.SetInitializer<Rock.Data.RockContext>( null );
             }
 
             return result;
@@ -479,6 +512,12 @@ namespace RockWeb
                             if ( !assemblies.ContainsKey( assemblyName ) )
                             {
                                 assemblies.Add( assemblyName, new Dictionary<int, Type>() );
+                            }
+
+                            // Check to make sure no another migration has same number
+                            if ( assemblies[assemblyName].ContainsKey( migrationNumberAttr.Number ) )
+                            {
+                                throw new Exception( string.Format( "The '{0}' plugin assembly contains duplicate migration numbers ({1}).", assemblyName, migrationNumberAttr.Number ) );
                             }
                             assemblies[assemblyName].Add( migrationNumberAttr.Number, migrationType );
                         }
@@ -596,6 +635,10 @@ namespace RockWeb
 
             PageRouteService pageRouteService = new PageRouteService( rockContext );
 
+            //Add ingore rule for asp.net ScriptManager files. 
+            routes.Ignore("{resource}.axd/{*pathInfo}");
+
+
             // find each page that has defined a custom routes.
             foreach ( PageRoute pageRoute in pageRouteService.Queryable() )
             {
@@ -652,6 +695,11 @@ namespace RockWeb
                     Rock.Web.Cache.AttributeCache.Read( attribute, new Dictionary<string, string>() );
             }
 
+            // cache all the Country Defined Values since those can be loaded in just a few millisecond here, but take around 1-2 seconds if first loaded when formatting an address
+            foreach (var definedValue in new Rock.Model.DefinedValueService(rockContext).GetByDefinedTypeGuid(Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid()))
+            {
+                DefinedValueCache.Read( definedValue, rockContext );
+            }
         }
 
 
@@ -684,12 +732,14 @@ namespace RockWeb
             int? pageId = ( Context.Items["Rock:PageId"] ?? "" ).ToString().AsIntegerOrNull(); ;
             int? siteId = ( Context.Items["Rock:SiteId"] ?? "" ).ToString().AsIntegerOrNull();;
             PersonAlias personAlias = null;
+            Person person = null;
 
             try
             {
                 var user = UserLoginService.GetCurrentUser();
                 if ( user != null && user.Person != null )
                 {
+                    person = user.Person;
                     personAlias = user.Person.PrimaryAlias;
                 }
             }
@@ -715,7 +765,19 @@ namespace RockWeb
 
                 // setup merge codes for email
                 var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
-                mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + Context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
+                mergeObjects.Add( "ExceptionDetails", string.Format( "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
+                    person != null ? " for " + person.FullName : "", siteName, Context.Request.Url.OriginalString, FormatException( ex, "" ) ) );
+
+                try
+                {
+                    mergeObjects.Add( "Exception", Hash.FromAnonymousObject( ex ) );
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                mergeObjects.Add( "Person", person );
 
                 // get email addresses to send to
                 var globalAttributesCache = GlobalAttributesCache.Read();
@@ -760,7 +822,7 @@ namespace RockWeb
 
                         if ( sendNotification )
                         {
-                            Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                            Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients, string.Empty, string.Empty, false );
                         }
                     }
                 }
@@ -792,6 +854,56 @@ namespace RockWeb
         } 
 
         #region Static Methods
+
+        /// <summary>
+        /// Gets the public facing URL.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        internal static Uri GetPublicFacingUrl( HttpRequest request )
+        {
+            if ( request.Url != null )
+            {
+                // http://stackoverflow.com/questions/7795910/how-do-i-get-url-action-to-use-the-right-port-number
+                // Due to URL rewriting, cloud computing (i.e. Azure)
+                // and web farms, etc., we have to be VERY careful about what
+                // we consider the incoming URL.  We want to see the URL as it would
+                // appear on the public-facing side of the hosting web site.
+                // HttpRequest.Url gives us the internal URL in a cloud environment,
+                // So we use a variable that gives us the public URL:
+                var serverVariables = request.ServerVariables;
+                if ( serverVariables != null && serverVariables["HTTP_HOST"] != null )
+                {
+                    //ErrorUtilities.VerifySupported(request.Url.Scheme == Uri.UriSchemeHttps || request.Url.Scheme == Uri.UriSchemeHttp, "Only HTTP and HTTPS are supported protocols.");
+                    string scheme = serverVariables["HTTP_X_FORWARDED_PROTO"] ?? request.Url.Scheme;
+                    Uri hostAndPort = new Uri( scheme + Uri.SchemeDelimiter + serverVariables["HTTP_HOST"] );
+
+                    // If host is local (occurs with Azure hosting), ignore this request
+                    if ( hostAndPort.Host == "127.0.0.1" || hostAndPort.Host.ToLower() == "localhost" )
+                    {
+                        return null;
+                    }
+
+                    UriBuilder publicRequestUri = new UriBuilder( request.Url );
+                    publicRequestUri.Scheme = scheme;
+                    publicRequestUri.Host = hostAndPort.Host;
+                    publicRequestUri.Port = hostAndPort.Port; 
+                    return publicRequestUri.Uri;
+                }
+
+                // Failover to the method that works for non-web farm enviroments.
+                // We use Request.Url for the full path to the server, and modify it
+                // with Request.RawUrl to capture both the cookieless session "directory" if it exists
+                // and the original path in case URL rewriting is going on.  We don't want to be
+                // fooled by URL rewriting because we're comparing the actual URL with what's in
+                // the return_to parameter in some cases.
+                // Response.ApplyAppPathModifier(builder.Path) would have worked for the cookieless
+                // session, but not the URL rewriting problem.
+                return new Uri( request.Url, request.RawUrl );
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Adds the call back.

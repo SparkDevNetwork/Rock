@@ -76,16 +76,41 @@ namespace Rock.Data
         private Guid _guid = Guid.NewGuid();
 
         /// <summary>
-        /// Gets or sets an optional foreign identifier.  This can be used for importing or syncing data to a foreign system
+        /// Gets or sets an optional int foreign identifier.  This can be used for importing or syncing data to a foreign system
         /// </summary>
         /// <value>
         /// The foreign identifier.
         /// </value>
-        [MaxLength( 50 )]
+        [Index]
         [DataMember]
         [LavaIgnore]
         [HideFromReporting]
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
+
+        /// <summary>
+        /// Gets or sets an optional Guid foreign identifier.  This can be used for importing or syncing data to a foreign system
+        /// </summary>
+        /// <value>
+        /// The foreign identifier.
+        /// </value>
+        [Index]
+        [DataMember]
+        [LavaIgnore]
+        [HideFromReporting]
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets an optional string foreign identifier.  This can be used for importing or syncing data to a foreign system
+        /// </summary>
+        /// <value>
+        /// The foreign identifier.
+        /// </value>
+        [MaxLength( 100 )]
+        [Index]
+        [DataMember]
+        [LavaIgnore]
+        [HideFromReporting]
+        public string ForeignKey { get; set; }
 
         #endregion
 
@@ -315,9 +340,20 @@ namespace Rock.Data
 
                 foreach ( var propInfo in GetBaseType().GetProperties() )
                 {
-                    if ( propInfo != null && LiquidizableProperty(propInfo) )
+                    if ( propInfo != null && LiquidizableProperty( propInfo ) )
                     {
                         availableKeys.Add( propInfo.Name );
+                    }
+                }
+
+                if ( this.AdditionalLavaFields != null )
+                {
+                    foreach ( var field in AdditionalLavaFields.Keys )
+                    {
+                        if ( !availableKeys.Contains( field ) )
+                        {
+                            availableKeys.Add( field );
+                        }
                     }
                 }
 
@@ -336,29 +372,50 @@ namespace Rock.Data
         [LavaIgnore]
         public virtual object this[object key]
         {
-            get 
+            get
             {
-                var propInfo = GetBaseType().GetProperty( key.ToStringSafe() );
-                if ( propInfo != null && LiquidizableProperty(propInfo))
+                string propertyKey = key.ToStringSafe();
+                var propInfo = GetBaseType().GetProperty( propertyKey );
+
+                try
                 {
-                    try
+                    object propValue = null;
+                    if ( propInfo != null && LiquidizableProperty( propInfo ) )
                     {
-                        object propValue = propInfo.GetValue( this, null );
-                        if ( propValue is Guid )
-                        {
-                            return ( (Guid)propValue ).ToString();
-                        }
-                        else
-                        {
-                            return propValue;
-                        }
+                        propValue = propInfo.GetValue( this, null );
                     }
-                    catch { }
+                    else if ( this.AdditionalLavaFields != null && this.AdditionalLavaFields.ContainsKey( propertyKey ) )
+                    {
+                        propValue = this.AdditionalLavaFields[propertyKey];
+                    }
+
+                    if ( propValue is Guid )
+                    {
+                        return ( (Guid)propValue ).ToString();
+                    }
+                    else
+                    {
+                        return propValue;
+                    }
+                }
+                catch
+                {
+                    // intentionally ignore
                 }
 
                 return null;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the additional fields that can be added as fields to this object for Lava
+        /// </summary>
+        /// <value>
+        /// The additional Lava fields.
+        /// </value>
+        //[LavaIgnore]
+        [LavaIgnore]
+        public virtual Dictionary<string, object> AdditionalLavaFields { get; set; }
 
         /// <summary>
         /// Determines whether the specified key contains key.
@@ -367,8 +424,13 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool ContainsKey( object key )
         {
-            var propInfo = GetBaseType().GetProperty( key.ToStringSafe() );
+            string propertyKey = key.ToStringSafe();
+            var propInfo = GetBaseType().GetProperty( propertyKey );
             if ( propInfo != null && LiquidizableProperty( propInfo ) )
+            {
+                return true;
+            }
+            else if ( this.AdditionalLavaFields != null && this.AdditionalLavaFields.ContainsKey( propertyKey ) )
             {
                 return true;
             }
@@ -379,14 +441,15 @@ namespace Rock.Data
         private Type GetBaseType()
         {
             Type entityType = this.GetType();
-            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+            if ( entityType.IsDynamicProxyType() )
             {
                 entityType = entityType.BaseType;
             }
+
             return entityType;
         }
 
-        private bool LiquidizableProperty ( PropertyInfo propInfo )
+        private bool LiquidizableProperty( PropertyInfo propInfo )
         {
             // If property has a [LavaIgnore] attribute return false
             if ( propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() > 0 )
@@ -415,13 +478,25 @@ namespace Rock.Data
         #region Static Methods
 
         /// <summary>
-        /// Returns an instance of the  entity based on a JSON represented of the entity object.
+        /// Returns an instance of the  entity based on a JSON representation of the entity object.
         /// </summary>
         /// <param name="json">A <see cref="System.String"/> containing a JSON formatted representation of the object.</param>
         /// <returns>An instance of the entity object based on the provided JSON string.</returns>
+        [System.Diagnostics.DebuggerStepThrough()] 
         public static T FromJson( string json )
         {
             return JsonConvert.DeserializeObject( json, typeof( T ) ) as T;
+        }
+
+        /// <summary>
+        /// Returns a list instance of the entity based on a JSON representation of a list of the entity object.
+        /// </summary>
+        /// <param name="json">A <see cref="System.String"/> containing a JSON formatted representation of a list of the object.</param>
+        /// <returns>A list of the entity object based on the provided JSON string.</returns>
+        [System.Diagnostics.DebuggerStepThrough()]
+        public static List<T> FromJsonAsList( string json )
+        {
+            return JsonConvert.DeserializeObject<List<T>>( json ); ;
         }
 
         #endregion

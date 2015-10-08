@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Core
                     }
                     campus.LoadAttributes();
                     phAttributes.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( campus, phAttributes, false );
+                    Rock.Attribute.Helper.AddEditControls( campus, phAttributes, false, BlockValidationGroup );
                 }
             }
         }
@@ -210,7 +210,7 @@ namespace RockWeb.Blocks.Core
 
             campus.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( campus, phAttributes, true );
+            Rock.Attribute.Helper.AddEditControls( campus, phAttributes, true, BlockValidationGroup );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;

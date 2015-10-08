@@ -94,9 +94,13 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this EntitySet target, EntitySet source )
         {
             target.Id = source.Id;
+            target.EntitySetPurposeValueId = source.EntitySetPurposeValueId;
             target.EntityTypeId = source.EntityTypeId;
             target.ExpireDateTime = source.ExpireDateTime;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.Name = source.Name;
+            target.Note = source.Note;
             target.Order = source.Order;
             target.ParentEntitySetId = source.ParentEntitySetId;
             target.CreatedDateTime = source.CreatedDateTime;

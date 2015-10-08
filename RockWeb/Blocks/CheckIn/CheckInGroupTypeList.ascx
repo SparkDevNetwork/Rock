@@ -34,7 +34,7 @@
             <Content>
                 <asp:HiddenField runat="server" ID="hfGroupTypeId" />
                 <Rock:RockTextBox runat="server" ID="tbGroupTypeName" Label="Name" Required="true" ValidationGroup="CheckinGroupTypeListAdd" />
-                <Rock:RockTextBox runat="server" ID="tbGroupTypeDescription" Label="Description" Required="true" ValidationGroup="CheckinGroupTypeListAdd" TextMode="MultiLine" Rows="4" />
+                <Rock:RockTextBox runat="server" ID="tbGroupTypeDescription" Label="Description" ValidationGroup="CheckinGroupTypeListAdd" TextMode="MultiLine" Rows="4" />
             </Content>
         </Rock:ModalDialog>
     </ContentTemplate>

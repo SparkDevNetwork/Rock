@@ -27,33 +27,21 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for Site
+    /// Base client model for Site that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class Site
+    public partial class SiteEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public Page CommunicationPage { get; set; }
-
-        /// <summary />
         public int? CommunicationPageId { get; set; }
-
-        /// <summary />
-        public PageRoute CommunicationPageRoute { get; set; }
 
         /// <summary />
         public int? CommunicationPageRouteId { get; set; }
 
         /// <summary />
-        public Page DefaultPage { get; set; }
-
-        /// <summary />
         public int? DefaultPageId { get; set; }
-
-        /// <summary />
-        public PageRoute DefaultPageRoute { get; set; }
 
         /// <summary />
         public int? DefaultPageRouteId { get; set; }
@@ -62,13 +50,27 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool EnableMobileRedirect { get; set; }
+
+        /// <summary />
+        public bool EnablePageViews
+        {
+            get { return _EnablePageViews; }
+            set { _EnablePageViews = value; }
+        }
+        private bool _EnablePageViews = true;
+
+        /// <summary />
         public string ErrorPage { get; set; }
 
         /// <summary />
-        public string FacebookAppId { get; set; }
+        public string ExternalUrl { get; set; }
 
         /// <summary />
-        public string FacebookAppSecret { get; set; }
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
 
         /// <summary />
         public string GoogleAnalyticsCode { get; set; }
@@ -77,77 +79,163 @@ namespace Rock.Client
         public bool IsSystem { get; set; }
 
         /// <summary />
-        public ICollection<Layout> Layouts { get; set; }
-
-        /// <summary />
-        public Page LoginPage { get; set; }
-
-        /// <summary />
         public int? LoginPageId { get; set; }
-
-        /// <summary />
-        public PageRoute LoginPageRoute { get; set; }
 
         /// <summary />
         public int? LoginPageRouteId { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public int? MobilePageId { get; set; }
+
+        /// <summary>
+        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public Page PageNotFoundPage { get; set; }
+        public string Name { get; set; }
 
         /// <summary />
         public int? PageNotFoundPageId { get; set; }
 
         /// <summary />
-        public PageRoute PageNotFoundPageRoute { get; set; }
-
-        /// <summary />
         public int? PageNotFoundPageRouteId { get; set; }
 
         /// <summary />
-        public Page RegistrationPage { get; set; }
+        public int? PageViewRetentionPeriodDays { get; set; }
+
+        /// <summary />
+        public bool RedirectTablets { get; set; }
 
         /// <summary />
         public int? RegistrationPageId { get; set; }
 
         /// <summary />
-        public PageRoute RegistrationPageRoute { get; set; }
-
-        /// <summary />
         public int? RegistrationPageRouteId { get; set; }
-
-        /// <summary />
-        public ICollection<SiteDomain> SiteDomains { get; set; }
 
         /// <summary />
         public string Theme { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
+        /// </summary>
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source Site object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Site source )
+        {
+            this.Id = source.Id;
+            this.CommunicationPageId = source.CommunicationPageId;
+            this.CommunicationPageRouteId = source.CommunicationPageRouteId;
+            this.DefaultPageId = source.DefaultPageId;
+            this.DefaultPageRouteId = source.DefaultPageRouteId;
+            this.Description = source.Description;
+            this.EnableMobileRedirect = source.EnableMobileRedirect;
+            this.EnablePageViews = source.EnablePageViews;
+            this.ErrorPage = source.ErrorPage;
+            this.ExternalUrl = source.ExternalUrl;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
+            this.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
+            this.IsSystem = source.IsSystem;
+            this.LoginPageId = source.LoginPageId;
+            this.LoginPageRouteId = source.LoginPageRouteId;
+            this.MobilePageId = source.MobilePageId;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Name = source.Name;
+            this.PageNotFoundPageId = source.PageNotFoundPageId;
+            this.PageNotFoundPageRouteId = source.PageNotFoundPageRouteId;
+            this.PageViewRetentionPeriodDays = source.PageViewRetentionPeriodDays;
+            this.RedirectTablets = source.RedirectTablets;
+            this.RegistrationPageId = source.RegistrationPageId;
+            this.RegistrationPageRouteId = source.RegistrationPageRouteId;
+            this.Theme = source.Theme;
+            this.CreatedDateTime = source.CreatedDateTime;
+            this.ModifiedDateTime = source.ModifiedDateTime;
+            this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            this.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
+    }
+
+    /// <summary>
+    /// Client model for Site that includes all the fields that are available for GETs. Use this for GETs (use SiteEntity for POST/PUTs)
+    /// </summary>
+    public partial class Site : SiteEntity
+    {
+        /// <summary />
+        public Page CommunicationPage { get; set; }
 
         /// <summary />
+        public PageRoute CommunicationPageRoute { get; set; }
+
+        /// <summary />
+        public Page DefaultPage { get; set; }
+
+        /// <summary />
+        public PageRoute DefaultPageRoute { get; set; }
+
+        /// <summary />
+        public ICollection<Layout> Layouts { get; set; }
+
+        /// <summary />
+        public Page LoginPage { get; set; }
+
+        /// <summary />
+        public PageRoute LoginPageRoute { get; set; }
+
+        /// <summary />
+        public Page MobilePage { get; set; }
+
+        /// <summary />
+        public Page PageNotFoundPage { get; set; }
+
+        /// <summary />
+        public PageRoute PageNotFoundPageRoute { get; set; }
+
+        /// <summary />
+        public Page RegistrationPage { get; set; }
+
+        /// <summary />
+        public PageRoute RegistrationPageRoute { get; set; }
+
+        /// <summary />
+        public ICollection<SiteDomain> SiteDomains { get; set; }
+
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-
-        /// <summary />
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

@@ -29,8 +29,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Rock.Model;
-using Rock.Net;
+using Rock.Client;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -71,8 +70,10 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 btnToggle.IsChecked = btnToggle == btnToggleSelected;
             }
-
-            chkDoubleDocDetection.IsChecked = (Guid)btnToggleSelected.Tag == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            
+            var scanningChecks = (Guid)btnToggleSelected.Tag == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            chkDoubleDocDetection.IsChecked = scanningChecks;
+            chkEnableSmartScan.Visibility = scanningChecks ? Visibility.Visible : Visibility.Collapsed;
         }
 
         /// <summary>
@@ -93,6 +94,19 @@ namespace Rock.Apps.CheckScannerUtility
             rockConfig.EnableRearImage = radDoubleSided.IsChecked == true;
             rockConfig.PromptToScanRearImage = chkPromptToScanRearImage.IsChecked == true;
             rockConfig.EnableDoubleDocDetection = chkDoubleDocDetection.IsChecked == true;
+            rockConfig.EnableSmartScan = chkEnableSmartScan.IsChecked == true;
+
+            if (cboTransactionSourceType.SelectedItem == null)
+            {
+                lblTransactionSourceType.Style = this.FindResource( "labelStyleError" ) as Style;
+                return;
+            }
+            else
+            {
+                lblTransactionSourceType.Style = this.FindResource( "labelStyle" ) as Style;
+            }
+
+            rockConfig.SourceTypeValueGuid = ( cboTransactionSourceType.SelectedItem as DefinedValue ).Guid.ToString();
 
             rockConfig.Save();
 
@@ -103,8 +117,6 @@ namespace Rock.Apps.CheckScannerUtility
                 {
                     this.BatchPage.rangerScanner.ShutDown();
                     this.BatchPage.rangerScanner.StartUp();
-
-                    this.BatchPage.rangerScanner.TransportReadyToFeedState += rangerScanner_TransportReadyToFeedState;
                 }
                 else
                 {
@@ -122,19 +134,6 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             this.NavigationService.Navigate( this.BatchPage.ScanningPage );
-        }
-
-        /// <summary>
-        /// Rangers the state of the scanner_ transport ready to feed.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        public void rangerScanner_TransportReadyToFeedState( object sender, AxRANGERLib._DRangerEvents_TransportReadyToFeedStateEvent e )
-        {
-            // remove so we just fire this event once
-            this.BatchPage.rangerScanner.TransportReadyToFeedState -= rangerScanner_TransportReadyToFeedState;
-
-            this.BatchPage.ScanningPage.StartScanningRanger();
         }
 
         /// <summary>
@@ -172,7 +171,10 @@ namespace Rock.Apps.CheckScannerUtility
                 spTenderButtons.Children.Add( btnToggle );
             }
 
-            chkDoubleDocDetection.IsChecked = rockConfig.TenderTypeValueGuid.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            var scanningChecks = rockConfig.TenderTypeValueGuid.AsGuid() == Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid();
+            chkDoubleDocDetection.IsChecked = scanningChecks;
+            chkEnableSmartScan.Visibility = scanningChecks ? Visibility.Visible : Visibility.Collapsed;
+
             radDoubleSided.IsChecked = rockConfig.EnableRearImage;
             radSingleSided.IsChecked = !rockConfig.EnableRearImage;
             chkPromptToScanRearImage.IsChecked = rockConfig.PromptToScanRearImage;
@@ -186,6 +188,10 @@ namespace Rock.Apps.CheckScannerUtility
                 spRangerScanSettings.Visibility = Visibility.Collapsed;
                 spMagTekScanSettings.Visibility = Visibility.Visible;
             }
+
+            cboTransactionSourceType.DisplayMemberPath = "Value";
+            cboTransactionSourceType.ItemsSource = this.BatchPage.SourceTypeValueListSelectable.OrderBy( a => a.Order ).ThenBy( a => a.Value ).ToList();
+            cboTransactionSourceType.SelectedItem = ( cboTransactionSourceType.ItemsSource as List<DefinedValue> ).FirstOrDefault( a => a.Guid == rockConfig.SourceTypeValueGuid.AsGuid() );
         }
     }
 }

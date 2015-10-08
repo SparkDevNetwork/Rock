@@ -27,15 +27,12 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for AttributeValue
+    /// Base client model for AttributeValue that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class AttributeValue
+    public partial class AttributeValueEntity
     {
         /// <summary />
         public int Id { get; set; }
-
-        /// <summary />
-        public Attribute Attribute { get; set; }
 
         /// <summary />
         public int AttributeId { get; set; }
@@ -44,10 +41,79 @@ namespace Rock.Client
         public int? EntityId { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
         public string Value { get; set; }
+
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
+        public DateTime? CreatedDateTime { get; set; }
+
+        /// <summary>
+        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
+        /// </summary>
+        public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
+        public int? ModifiedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public int? ForeignId { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source AttributeValue object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( AttributeValue source )
+        {
+            this.Id = source.Id;
+            this.AttributeId = source.AttributeId;
+            this.EntityId = source.EntityId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
+            this.IsSystem = source.IsSystem;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Value = source.Value;
+            this.CreatedDateTime = source.CreatedDateTime;
+            this.ModifiedDateTime = source.ModifiedDateTime;
+            this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            this.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
+    }
+
+    /// <summary>
+    /// Client model for AttributeValue that includes all the fields that are available for GETs. Use this for GETs (use AttributeValueEntity for POST/PUTs)
+    /// </summary>
+    public partial class AttributeValue : AttributeValueEntity
+    {
+        /// <summary />
+        public Attribute Attribute { get; set; }
 
         /// <summary />
         public DateTime? ValueAsDateTime { get; set; }
@@ -56,29 +122,16 @@ namespace Rock.Client
         public decimal? ValueAsNumeric { get; set; }
 
         /// <summary />
-        public DateTime? CreatedDateTime { get; set; }
+        public int? ValueAsPersonId { get; set; }
 
-        /// <summary />
-        public DateTime? ModifiedDateTime { get; set; }
-
-        /// <summary />
-        public int? CreatedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public Guid Guid { get; set; }
-
-        /// <summary />
-        public string ForeignId { get; set; }
-
-        /// <summary />
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-
-        /// <summary />
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

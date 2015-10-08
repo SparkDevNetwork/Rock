@@ -16,6 +16,7 @@
 //
 using System;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -31,7 +32,7 @@ using Rock.Web.Cache;
 using System.Collections.Generic;
 using Rock.Security;
 
-namespace RockWeb.Blocks.Finance
+namespace RockWeb.Blocks.Finance 
 {
     /// <summary>
     /// Lists scheduled transactions either for current person (Person Detail Page) or all scheduled transactions.
@@ -90,8 +91,7 @@ namespace RockWeb.Blocks.Finance
         {
             if ( !Page.IsPostBack )
             {
-                cbIncludeInactive.Checked = !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Include Inactive" ) );
-
+                BindFilter();
                 BindGrid();
             }
         }
@@ -107,6 +107,10 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
+            gfSettings.SaveUserPreference( "Amount", nreAmount.DelimitedValues );
+            gfSettings.SaveUserPreference( "Frequency", ddlFrequency.SelectedValue != All.Id.ToString() ? ddlFrequency.SelectedValue : string.Empty );
+            gfSettings.SaveUserPreference( "Created", drpDates.DelimitedValues );
+            gfSettings.SaveUserPreference( "Account", ddlAccount.SelectedValue != All.Id.ToString() ? ddlAccount.SelectedValue : string.Empty );
             gfSettings.SaveUserPreference( "Include Inactive", cbIncludeInactive.Checked ? "Yes" : string.Empty );
             BindGrid();
         }
@@ -118,9 +122,50 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The e.</param>
         protected void gfSettings_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            if ( e.Key != "Include Inactive" )
+            switch ( e.Key )
             {
-                e.Value = string.Empty;
+                case "Amount":
+                    e.Value = NumberRangeEditor.FormatDelimitedValues( e.Value, "N2" );
+                    break;
+
+                case "Frequency":
+                    int definedValueId = 0;
+                    if ( int.TryParse( e.Value, out definedValueId ) )
+                    {
+                        var definedValue = DefinedValueCache.Read( definedValueId );
+                        if ( definedValue != null )
+                        {
+                            e.Value = definedValue.Value;
+                        }
+                    }
+
+                    break;
+
+                case "Created":
+                    e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                    break;
+
+                case "Account":
+
+                    int accountId = 0;
+                    if ( int.TryParse( e.Value, out accountId ) )
+                    {
+                        var service = new FinancialAccountService( new RockContext() );
+                        var account = service.Get( accountId );
+                        if ( account != null )
+                        {
+                            e.Value = account.Name;
+                        }
+                    }
+
+                    break;
+
+                case "Include Inactive":
+                    break;
+
+                default:
+                    e.Value = string.Empty;
+                    break;
             }
         }
 
@@ -163,11 +208,43 @@ namespace RockWeb.Blocks.Finance
         #region Methods
 
         /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void BindFilter()
+        {
+            nreAmount.DelimitedValues = gfSettings.GetUserPreference( "Amount" );
+
+            ddlFrequency.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ) );
+            ddlFrequency.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+            string freqPreference = gfSettings.GetUserPreference( "Frequency" );
+            if ( !string.IsNullOrWhiteSpace( freqPreference ))
+            {
+                ddlFrequency.SetValue( freqPreference );
+            }
+
+            drpDates.DelimitedValues = gfSettings.GetUserPreference( "Created" );
+
+            var accountService = new FinancialAccountService( new RockContext() );
+            var accounts = accountService
+                .Queryable().AsNoTracking()
+                .Where( a => a.IsActive );
+
+            ddlAccount.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            foreach ( FinancialAccount account in accounts.OrderBy( a => a.Order ) )
+            {
+                ListItem li = new ListItem( account.Name, account.Id.ToString() );
+                li.Selected = account.Id.ToString() == gfSettings.GetUserPreference( "Account" );
+                ddlAccount.Items.Add( li );
+            }
+
+            cbIncludeInactive.Checked = !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Include Inactive" ) );
+        }
+
+        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
         {
-            bool includeInactive = !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Include Inactive" ) );
             int? personId = null;
             int? givingGroupId = null;
 
@@ -190,10 +267,130 @@ namespace RockWeb.Blocks.Finance
 
             if ( validRequest )
             {
-                gList.DataSource = new FinancialScheduledTransactionService( new RockContext() )
-                    .Get( personId, givingGroupId, includeInactive ).ToList();
+                var rockContext = new RockContext();
+                var qry = new FinancialScheduledTransactionService( rockContext )
+                    .Queryable( "ScheduledTransactionDetails,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
+                    .AsNoTracking();
+
+                // Amount Range
+                var nre = new NumberRangeEditor();
+                nre.DelimitedValues = gfSettings.GetUserPreference( "Amount" );
+                if ( nre.LowerValue.HasValue )
+                {
+                    qry = qry.Where( t => t.ScheduledTransactionDetails.Sum( d => d.Amount ) >= nre.LowerValue.Value );
+                }
+
+                if ( nre.UpperValue.HasValue )
+                {
+                    qry = qry.Where( t => t.ScheduledTransactionDetails.Sum( d => d.Amount ) <= nre.UpperValue.Value );
+                }
+
+                // Frequency
+                int? frequencyTypeId = gfSettings.GetUserPreference( "Frequency" ).AsIntegerOrNull();
+                if ( frequencyTypeId.HasValue )
+                {
+                    qry = qry.Where( t => t.TransactionFrequencyValueId == frequencyTypeId.Value );
+                }
+
+                // Date Range
+                var drp = new DateRangePicker();
+                drp.DelimitedValues = gfSettings.GetUserPreference( "Created" );
+                if ( drp.LowerValue.HasValue )
+                {
+                    qry = qry.Where( t => t.CreatedDateTime >= drp.LowerValue.Value );
+                }
+
+                if ( drp.UpperValue.HasValue )
+                {
+                    DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                    qry = qry.Where( t => t.CreatedDateTime < upperDate );
+                }
+
+                // Account Id
+                int accountId = int.MinValue;
+                if ( int.TryParse( gfSettings.GetUserPreference( "Account" ), out accountId ) )
+                {
+                    qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => d.AccountId == accountId ) );
+                }
+
+                // Active only (no filter)
+                if ( string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Include Inactive" ) ) )
+                {
+                    qry = qry.Where( t => t.IsActive );
+                }
+
+                if ( givingGroupId.HasValue )
+                {
+                    //  Person contributes with family
+                    qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingGroupId == givingGroupId );
+                }
+                else if ( personId.HasValue )
+                {
+                    // Person contributes individually
+                    qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == personId );
+                }
+
+                SortProperty sortProperty = gList.SortProperty;
+                if ( sortProperty != null )
+                {
+                    if ( sortProperty.Property == "Amount" )
+                    {
+                        if ( sortProperty.Direction == SortDirection.Ascending )
+                        {
+                            qry = qry.OrderBy( t => t.ScheduledTransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.00M );
+                        }
+                        else
+                        {
+                            qry = qry.OrderByDescending( t => t.ScheduledTransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M );
+                        }
+                    }
+                    else
+                    {
+                        qry = qry.Sort( sortProperty );
+                    }
+                }
+                else
+                {
+                    qry = qry
+                        .OrderBy( t => t.AuthorizedPersonAlias.Person.LastName )
+                        .ThenBy( t => t.AuthorizedPersonAlias.Person.NickName )
+                        .ThenByDescending( t => t.IsActive )
+                        .ThenByDescending( t => t.StartDate );
+                }
+
+                gList.SetLinqDataSource<FinancialScheduledTransaction>( qry );
                 gList.DataBind();
             }
+        }
+
+        /// <summary>
+        /// Gets the accounts.
+        /// </summary>
+        /// <param name="dataItem">The data item.</param>
+        /// <returns></returns>
+        protected string GetAccounts( object dataItem )
+        {
+            var txn = dataItem as FinancialScheduledTransaction;
+            if ( txn != null )
+            {
+                var summary  = txn.ScheduledTransactionDetails
+                    .OrderBy( d => d.Account.Order )
+                    .Select( d => string.Format( "{0}: {1}", d.Account.Name, d.Amount.FormatAsCurrency() ) )
+                    .ToList();
+                if ( summary.Any() )
+                {
+                    if ( gList.AllowPaging )
+                    {
+                        return "<small>" + summary.AsDelimited( "<br/>" ) + "</small>";
+                    }
+                    else
+                    {
+                        // Allow paging is turned off when exporting to excel. In this case, do not add the html
+                        return summary.AsDelimited( Environment.NewLine );
+                    }
+                }
+            }
+            return string.Empty;
         }
 
         /// <summary>

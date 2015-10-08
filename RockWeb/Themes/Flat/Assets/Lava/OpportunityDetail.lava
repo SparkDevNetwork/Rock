@@ -1,0 +1,16 @@
+<h3><i class='{{Opportunity.IconCssClass}}'></i> {{ Opportunity.Name }}</h3>
+
+{{ Opportunity.Description }}
+
+<h4>Opportunity Details:</h4>
+{% for attribute in Opportunity.AttributeValues %}
+	<strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+{% endfor %}
+
+<p class="margin-t-lg">
+	{% if LinkedPages.SignupPage != '' %}
+		<a href="{{ LinkedPages.SignupPage }}?OpportunityId={{ Opportunity.Id }}" class="btn btn-primary">Connect</a>
+	{% endif %}
+</p>
+
+	

@@ -1,0 +1,220 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="_201311251734059_CreateDatabase_PopulateData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Version 0.0 (Pre Beta)\Version 0.0.2\201311251734059_CreateDatabase_PopulateData.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506051749054_AddSampleMergeDocs" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506051749054_AddSampleMergeDocs.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506112030400_PersonDaysUntilBirthday" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506112030400_PersonDaysUntilBirthday.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506121300596_FinancialAnalyticsProcs_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506121300596_financialanalyticsprocs_1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506121300596_FinancialAnalyticsProcs_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506121300596_financialanalyticsprocs_2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506130028565_AttributeValueAsDateTimeIndex_CreateColumns" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506130028565_attributevalueasdatetimeindex_createcolumns.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201506130028565_AttributeValueAsDateTimeIndex_CreateTrigger" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506130028565_attributevalueasdatetimeindex_createtrigger.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506130028565_AttributeValueAsDateTimeIndex_UpdateValues" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506130028565_attributevalueasdatetimeindex_updatevalues.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506162223455_EnsurePersonAlias_UpdateCheckinLabels" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506162223455_ensurepersonalias_updatecheckinlabels.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201506170003272_UpdateCalendarBlocks" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506170003272_updatecalendarblocks.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506242325188_GeoSpatialIndexes_AddSystemEmail" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506242325188_geospatialindexes_addsystememail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201506281615197_GivingAnalyticsEmail_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506281615197_givinganalyticsemail_1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201506281615197_GivingAnalyticsEmail_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201506281615197_givinganalyticsemail_2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201507062330051_GroupRequirementsNotificationEmail" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201507062330051_GroupRequirementsNotificationEmail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201507081827047_SampleCalendarEvents" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201507081827047_samplecalendarevents.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201507121943445_RegistrationEmails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201507121943445_registrationemails.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201507171137229_RegistrationInstanceContactPhone" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201507171137229_registrationinstancecontactphone.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201507181918494_ConnectionChangesAndSampleData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201507181918494_connectionchangesandsampledata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201507281546100_CalendarContentChannel" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201507281546100_calendarcontentchannel.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201508010008536_BackgroundCheckExpiringSoon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201508010008536_backgroundcheckexpiringsoon.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201508041124356_RegistrationContact" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201508041124356_registrationcontact.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201508111253454_SiteMobilePage" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201508111253454_sitemobilepage.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201508111636214_FinancialPaymentDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201508111636214_financialpaymentdetails.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201508162108504_FollowingEventsSuggestions" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201508162108504_followingeventssuggestions.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201508171751190_FollowingEventNotification" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201508171751190_followingeventnotification.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201508241735382_RegistrationPersonNote" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201508241735382_registrationpersonnote.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201509022116398_EntitySetPurpose" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201509022116398_entitysetpurpose.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201509022116398_EntitySetPurpose_spFinance_ContributionStatementQuery" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201509022116398_entitysetpurpose_spfinance_contributionstatementquery.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201509022116398_EntitySetPurpose_ufnCrm_GetFamilyTitle" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201509022116398_entitysetpurpose_ufncrm_getfamilytitle.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201509032145388_PersonMergeRequests" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201509032145388_personmergerequests.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201509242206062_GroupAttendanceRoster_AddGroupRosterMergeTemplate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201509242206062_groupattendanceroster_addgrouprostermergetemplate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201509242206062_GroupAttendanceRoster_SecondaryAudience" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201509242206062_groupattendanceroster_secondaryaudience.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201509242206062_GroupAttendanceRoster_spCrm_PersonDuplicateFinder" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201509242206062_groupattendanceroster_spcrm_personduplicatefinder.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+</root>

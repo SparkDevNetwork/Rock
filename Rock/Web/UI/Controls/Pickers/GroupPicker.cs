@@ -39,7 +39,7 @@ namespace Rock.Web.UI.Controls
             this.IconCssClass = "fa fa-users";
             base.OnInit( e );
         }
-        
+
         /// <summary>
         /// Sets the value.
         /// </summary>
@@ -49,16 +49,9 @@ namespace Rock.Web.UI.Controls
             if ( group != null )
             {
                 ItemId = group.Id.ToString();
-                
-                string parentGroupIds = string.Empty;
-                var parentGroup = group.ParentGroup;
-                while ( parentGroup != null )
-                {
-                    parentGroupIds = parentGroup.Id + "," + parentGroupIds;
-                    parentGroup = parentGroup.ParentGroup;
-                }
 
-                InitialItemParentIds = parentGroupIds.TrimEnd( new[] { ',' } );
+                var parentIds = GetGroupAncestorsIdList( group.ParentGroup );
+                InitialItemParentIds = parentIds.AsDelimited( "," );
                 ItemName = group.Name;
             }
             else
@@ -66,6 +59,39 @@ namespace Rock.Web.UI.Controls
                 ItemId = Constants.None.IdValue;
                 ItemName = Constants.None.TextHtml;
             }
+        }
+
+        /// <summary>
+        /// Returns a list of the ancestor Groups of the specified Group.
+        /// If the ParentGroup property of the Group is not populated, it is assumed to be a top-level node.
+        /// </summary>
+        /// <param name="group"></param>
+        /// <param name="ancestorGroupIds"></param>
+        /// <returns></returns>
+        private List<int> GetGroupAncestorsIdList( Group group, List<int> ancestorGroupIds = null )
+        {
+            if ( ancestorGroupIds == null )
+            {
+                ancestorGroupIds = new List<int>();
+            }
+
+            if ( group == null )
+            {
+                return ancestorGroupIds;
+            }
+
+            // If we have encountered this node previously in our tree walk, there is a recursive loop in the tree.
+            if ( ancestorGroupIds.Contains( group.Id ) )
+            {
+                return ancestorGroupIds;
+            }
+
+            // Create or add this node to the history stack for this tree walk.
+            ancestorGroupIds.Insert(0, group.Id );
+
+            ancestorGroupIds = this.GetGroupAncestorsIdList( group.ParentGroup, ancestorGroupIds );
+
+            return ancestorGroupIds;
         }
 
         /// <summary>
@@ -80,7 +106,7 @@ namespace Rock.Web.UI.Controls
             {
                 var ids = new List<string>();
                 var names = new List<string>();
-                var parentGroupIds = string.Empty;
+                var parentIds = new List<int>();
 
                 foreach ( var group in theGroups )
                 {
@@ -89,16 +115,12 @@ namespace Rock.Web.UI.Controls
                         ids.Add( group.Id.ToString() );
                         names.Add( group.Name );
                         var parentGroup = group.ParentGroup;
-
-                        while ( parentGroup != null )
-                        {
-                            parentGroupIds += parentGroup.Id.ToString() + ",";
-                            parentGroup = parentGroup.ParentGroup;
-                        }
+                        var groupParentIds = GetGroupAncestorsIdList( parentGroup );
+                        parentIds.AddRange( groupParentIds );
                     }
                 }
 
-                InitialItemParentIds = parentGroupIds.TrimEnd( new[] { ',' } );
+                InitialItemParentIds = parentIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;
             }

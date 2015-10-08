@@ -18,7 +18,6 @@
                             <Rock:RockBoundField DataField="Category" HeaderText="Category" SortExpression="Category.Name" />
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
-                            <Rock:RockBoundField DataField="FieldTypeName" HeaderText="Field Type" SortExpression="FieldTypeName" />
                             <Rock:DeleteField OnClick="gDefinedType_Delete" />
                         </Columns>
                     </Rock:Grid>

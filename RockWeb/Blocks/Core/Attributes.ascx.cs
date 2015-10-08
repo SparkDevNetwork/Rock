@@ -308,6 +308,8 @@ namespace RockWeb.Blocks.Core
                 rockContext.SaveChanges();
             }
 
+            AttributeCache.FlushEntityAttributes();
+
             BindGrid();
         }
 
@@ -381,11 +383,11 @@ namespace RockWeb.Blocks.Core
                         var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId );
                         if ( attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) )
                         {
-                            lValue.Text = WebUtility.HtmlEncode(fieldType.Field.FormatValueAsHtml( lValue, attributeValue.Value, attribute.QualifierValues, true ));
+                            lValue.Text = fieldType.Field.FormatValueAsHtml( lValue, attributeValue.Value, attribute.QualifierValues, true );
                         }
                         else
                         {
-                            lValue.Text = string.Format( "<span class='text-muted'>{0}</span>", WebUtility.HtmlEncode( fieldType.Field.FormatValueAsHtml( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) ) );
+                            lValue.Text = string.Format( "<span class='text-muted'>{0}</span>", fieldType.Field.FormatValueAsHtml( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) );
                         }
                     }
                 }
@@ -434,6 +436,8 @@ namespace RockWeb.Blocks.Core
             {
                 return;
             }
+
+            AttributeCache.FlushEntityAttributes();
 
             HideDialog();
 

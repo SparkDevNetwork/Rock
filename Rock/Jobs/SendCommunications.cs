@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using System.IO;
@@ -51,24 +52,43 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var beginWindow = RockDateTime.Now.AddDays( 0 - dataMap.GetInt( "ExpirationPeriod" ));
-            var endWindow = RockDateTime.Now.AddMinutes( 0 - dataMap.GetInt( "DelayPeriod" ));
+            var beginWindow = RockDateTime.Now.AddDays( 0 - dataMap.GetInt( "ExpirationPeriod" ) );
+            var endWindow = RockDateTime.Now.AddMinutes( 0 - dataMap.GetInt( "DelayPeriod" ) );
 
-            foreach ( var comm in new CommunicationService( new RockContext() ).Queryable()
-                .Where( c => 
+            var qry = new CommunicationService( new RockContext() ).Queryable()
+                .Where( c =>
                     c.Status == CommunicationStatus.Approved &&
-                    c.Recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending).Any() &&
+                    c.Recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending ).Any() &&
                     (
-                        ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo(beginWindow) >= 0 && c.CreatedDateTime.Value.CompareTo(endWindow) <= 0 ) ||
-                        ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo(beginWindow) >= 0 && c.FutureSendDateTime.Value.CompareTo(endWindow) <= 0 )
-                    ) ).ToList() )
+                        ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo( beginWindow ) >= 0 && c.CreatedDateTime.Value.CompareTo( endWindow ) <= 0 ) ||
+                        ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) >= 0 && c.FutureSendDateTime.Value.CompareTo( endWindow ) <= 0 )
+                    ) );
+
+            var exceptionMsgs = new List<string>();
+
+            foreach ( var comm in qry.AsNoTracking().ToList() )
             {
-                var medium = comm.Medium;
-                if ( medium != null )
+                try 
+                { 
+                    var medium = comm.Medium;
+                    if ( medium != null )
+                    {
+                        medium.Send( comm );
+                    }
+                }
+
+                catch ( Exception ex )
                 {
-                    medium.Send( comm );
+                    exceptionMsgs.Add( string.Format( "Exception occurred sending communication ID:{0}:{1}    {2}", comm.Id, Environment.NewLine, ex.Messages().AsDelimited( Environment.NewLine + "   " ) ) );
+                    ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
                 }
             }
+
+            if ( exceptionMsgs.Any() )
+            {
+                throw new Exception( "One or more exceptions occurred sending communications..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
+            }
+
         }
     }
 }

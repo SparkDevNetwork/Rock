@@ -91,6 +91,9 @@ namespace Rock.Model
             target.EntityTypeId = source.EntityTypeId;
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            target.EntityTypeQualifierValuePrevious = source.EntityTypeQualifierValuePrevious;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.IsSystem = source.IsSystem;
             target.WorkflowName = source.WorkflowName;

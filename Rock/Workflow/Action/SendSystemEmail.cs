@@ -35,9 +35,10 @@ namespace Rock.Workflow.Action
     [Export(typeof(ActionComponent))]
     [ExportMetadata("ComponentName", "Send System Email")]
 
-    [SystemEmailField( "System Email", "A system email to send.")]
-    [WorkflowTextOrAttribute( "Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "Recipient",
+    [SystemEmailField( "System Email", "A system email to send.", true, "", "", 0 )]
+    [WorkflowTextOrAttribute( "Send To Email Addresses", "Attribute Value", "The email addresses or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "Recipient",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType" } )]
+    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 2 )]
     public class SendSystemEmail : ActionComponent
     {
         /// <summary>
@@ -70,7 +71,11 @@ namespace Rock.Workflow.Action
                         {
                             case "Rock.Field.Types.TextFieldType":
                                 {
-                                    recipients.Add( new RecipientData( toValue, mergeFields ) );
+                                    var recipientList = toValue.SplitDelimitedValues().ToList();
+                                    foreach ( string recipient in recipientList )
+                                    {
+                                        recipients.Add( new RecipientData( recipient, mergeFields ) );
+                                    }
                                     break;
                                 }
                             case "Rock.Field.Types.PersonFieldType":
@@ -90,7 +95,7 @@ namespace Rock.Workflow.Action
                                         {
                                             action.AddLogEntry( "Email was not sent: Recipient does not have an email address", true );
                                         }
-                                        else if ( !( person.IsEmailActive ?? true ) )
+                                        else if ( !( person.IsEmailActive ) )
                                         {
                                             action.AddLogEntry( "Email was not sent: Recipient email is not active", true );
                                         }
@@ -117,7 +122,7 @@ namespace Rock.Workflow.Action
                                             .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                                             .Select( m => m.Person ) )
                                         {
-                                            if ( ( person.IsEmailActive ?? true ) &&
+                                            if ( person.IsEmailActive &&
                                                 person.EmailPreference != EmailPreference.DoNotEmail &&
                                                 !string.IsNullOrWhiteSpace( person.Email ) )
                                             {
@@ -135,12 +140,16 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                recipients.Add( new RecipientData( to.ResolveMergeFields( mergeFields ), mergeFields ) );
+                var recipientList = to.SplitDelimitedValues().ToList();
+                foreach ( string recipient in recipientList )
+                {
+                    recipients.Add( new RecipientData( recipient, mergeFields ) );
+                }
             }
 
             if ( recipients.Any() )
             {
-                Email.Send( GetAttributeValue( action, "SystemEmail" ).AsGuid(), recipients );
+                Email.Send( GetAttributeValue( action, "SystemEmail" ).AsGuid(), recipients, string.Empty, string.Empty, GetAttributeValue( action, "SaveCommunicationHistory" ).AsBoolean() );
             }
 
             return true;

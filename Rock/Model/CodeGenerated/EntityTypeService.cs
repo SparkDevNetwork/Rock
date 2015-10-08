@@ -118,15 +118,9 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<FinancialPersonSavedAccount>( Context ).Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
+            if ( new Service<FinancialGateway>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialPersonSavedAccount.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialGateway.FriendlyTypeName );
                 return false;
             }  
  
@@ -136,15 +130,27 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<FinancialTransactionDetail>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialTransactionDetail.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FollowingEventType>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FollowingEventType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FollowingEventType>( Context ).Queryable().Any( a => a.FollowedEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FollowingEventType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FollowingSuggestionType>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FollowingSuggestionType.FriendlyTypeName );
                 return false;
             }  
  
@@ -157,6 +163,12 @@ namespace Rock.Model
             if ( new Service<History>( Context ).Queryable().Any( a => a.RelatedEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, History.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.MergeTemplateTypeEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
                 return false;
             }  
  
@@ -239,6 +251,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AssemblyName = source.AssemblyName;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.FriendlyName = source.FriendlyName;
             target.IsCommon = source.IsCommon;
             target.IsEntity = source.IsEntity;

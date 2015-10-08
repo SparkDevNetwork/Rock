@@ -47,8 +47,8 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( this.Page, "~/Scripts/CheckinClient/cordova-2.4.0.js", false );
-            RockPage.AddScriptLink( this.Page, "~/Scripts/CheckinClient/ZebraPrint.js", false );
+            RockPage.AddScriptLink( "~/Scripts/CheckinClient/cordova-2.4.0.js", false );
+            RockPage.AddScriptLink( "~/Scripts/CheckinClient/ZebraPrint.js" );
 
             RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.CheckIn
                                                     {
                                                         if ( !string.IsNullOrWhiteSpace( mergeField.Value ) )
                                                         {
-                                                            printContent = Regex.Replace( printContent, string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ), mergeField.Value );
+                                                            printContent = Regex.Replace( printContent, string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ), ZebraFormatString( mergeField.Value ) );
                                                         }
                                                         else
                                                         {
@@ -191,6 +191,18 @@ namespace RockWeb.Blocks.CheckIn
             NavigateToHomePage();
         }
 
+        private string ZebraFormatString( string input, bool isJson = false )
+        {
+            if ( isJson )
+            {
+                return input.Replace( "é", @"\\82" );  // fix acute e
+            }
+            else
+            {
+                return input.Replace( "é", @"\82" );  // fix acute e
+            }
+        }
+
         /// <summary>
         /// Handles the Click event of the lbAnother control.
         /// </summary>
@@ -209,7 +221,6 @@ namespace RockWeb.Blocks.CheckIn
                         foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                         {
                             groupType.Selected = false;
-                            groupType.Groups = new List<CheckInGroup>();
                         }
                     }
                 }
@@ -272,7 +283,7 @@ namespace RockWeb.Blocks.CheckIn
 			    }}
             );
 	    }}
-", jsonObject );
+", ZebraFormatString( jsonObject, true ) );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "addLabelScript", script, true );
         }
 

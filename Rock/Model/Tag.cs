@@ -152,6 +152,25 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
+        /// Determines whether the specified action is authorized.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            if ( this.OwnerPersonAlias != null && this.OwnerPersonAlias.Person != null && person != null && this.OwnerPersonAlias.PersonId == person.Id )
+            {
+                // always allow people to delete their own tags
+                return true;
+            }
+            else
+            {
+                return base.IsAuthorized( action, person );
+            }
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this Tag.
         /// </summary>
         /// <returns>

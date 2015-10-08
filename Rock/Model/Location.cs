@@ -26,6 +26,7 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -458,6 +459,92 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the campus that is at this location, or one of this location's parent location
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
+        [LavaInclude]
+        public virtual int? CampusId
+        {
+            get
+            {
+                var campuses = CampusCache.All();
+
+                int? campusId = null;
+                Location loc = this;
+
+                while ( !campusId.HasValue && loc != null )
+                {
+                    var campus = campuses.Where( c => c.LocationId != null && c.LocationId == loc.Id ).FirstOrDefault();
+                    if ( campus != null )
+                    {
+                        campusId = campus.Id;
+                    }
+                    else
+                    {
+                        loc = loc.ParentLocation;
+                    }
+                }
+
+                return campusId;
+            }
+        }
+
+        /// <summary>
+        /// Gets the distance.
+        /// </summary>
+        /// <value>
+        /// The distance.
+        /// </value>
+        [DataMember]
+        public virtual double Distance
+        {
+            get { return _distance; }
+        }
+        private double _distance = 0.0D;
+
+        #endregion
+
+        #region overrides
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                var result = base.IsValid;
+                if ( result )
+                {
+                    // make sure it isn't getting saved with a recursive parent hierarchy
+                    var parentIds = new List<int>();
+                    parentIds.Add( this.Id );
+                    var parent = this.ParentLocationId.HasValue ? ( this.ParentLocation ?? new LocationService( new RockContext() ).Get( this.ParentLocationId.Value ) ) : null;
+                    while ( parent != null )
+                    {
+                        if ( parentIds.Contains( parent.Id ) )
+                        {
+                            this.ValidationResults.Add( new ValidationResult( "Parent Location cannot be a child of this Location (recursion)" ) );
+                            return false;
+                        }
+                        else
+                        {
+                            parentIds.Add( parent.Id );
+                            parent = parent.ParentLocation;
+                        }
+                    }
+                }
+
+                return result;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -479,7 +566,7 @@ namespace Rock.Model
         /// <returns>A <see cref="System.String"/> containing the link to Google Maps for this location.</returns>
         public virtual string GoogleMapLink( string title )
         {
-            string qParm = this.ToString();
+            string qParm = this.GetFullStreetAddress();
             if ( !string.IsNullOrWhiteSpace( title ) )
             {
                 qParm += " (" + title + ")";
@@ -615,23 +702,30 @@ namespace Rock.Model
                 int lastLat = 0;
                 int lastLng = 0;
 
-                // AsText() returns coordinates as Well-Known-Text format (WKT).  Strip leading and closing text
-                string coordinates = this.GeoFence.AsText().Replace( "POLYGON ((", "" ).Replace( "))", "" );
-                string[] longSpaceLat = coordinates.Split( ',' );
-
-                for ( int i = 0; i < longSpaceLat.Length; i++ )
+                foreach ( var coordinate in this.GeoFence.Coordinates() )
                 {
-                    string[] longLat = longSpaceLat[i].Trim().Split( ' ' );
-                    int lat = (int)Math.Round( double.Parse( longLat[1] ) * 1E5 );
-                    int lng = (int)Math.Round( double.Parse( longLat[0] ) * 1E5 );
-                    encodeDiff( lat - lastLat );
-                    encodeDiff( lng - lastLng );
-                    lastLat = lat;
-                    lastLng = lng;
+                    if ( coordinate.Longitude.HasValue && coordinate.Latitude.HasValue )
+                    {
+                        int lat = (int)Math.Round( coordinate.Latitude.Value * 1E5 );
+                        int lng = (int)Math.Round( coordinate.Longitude.Value * 1E5 );
+                        encodeDiff( lat - lastLat );
+                        encodeDiff( lng - lastLng );
+                        lastLat = lat;
+                        lastLng = lng;
+                    }
                 }
             }
 
             return str.ToString();
+        }
+
+        /// <summary>
+        /// Sets the distance.
+        /// </summary>
+        /// <param name="distance">The distance.</param>
+        public void SetDistance( double distance )
+        {
+            _distance = distance;
         }
 
         /// <summary>
@@ -677,7 +771,26 @@ namespace Rock.Model
                 return string.Empty;
             }
         }
+        
         #endregion
+
+        #region constants
+
+        /// <summary>
+        /// Meters per mile (1609.344)
+        /// NOTE: Geo Spatial distances are in meters
+        /// </summary>
+        public const double MetersPerMile = 1609.344;
+
+
+        /// <summary>
+        /// Miles per meter 1/1609.344 (0.00062137505)
+        /// NOTE: Geo Spatial distances are in meters
+        /// </summary>
+        public const double MilesPerMeter = 1 / MetersPerMile;
+
+        #endregion
+
 
     }
 

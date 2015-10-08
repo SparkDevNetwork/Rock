@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// Control for capturing a rating on a scale of 1-?
     /// </summary>
     [ToolboxData( "<{0}:RockRating runat=server></{0}:RockRating>" )]
-    public class RockRating : TextBox, IRockControl
+    public class RockRating : TextBox, IRockControl, IDisplayRequiredIndicator
     {
         #region IRockControl implementation
 
@@ -44,6 +44,23 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["Label"] as string ?? string.Empty; }
             set { ViewState["Label"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
         }
 
         /// <summary>

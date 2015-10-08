@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Finance
     [Description( "Displays the details of the given financial batch." )]
 
     [LinkedPage( "Transaction Matching Page", "Page used to match transactions for a batch." )]
+    [LinkedPage( "Audit Page", "Page used to display the history of changes to a batch." )]
     public partial class BatchDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -131,6 +132,18 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the Click event of the lbHistory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbHistory_Click( object sender, EventArgs e )
+        {
+            var qryParam = new Dictionary<string, string>();
+            qryParam.Add( "BatchId", hfBatchId.Value );
+            NavigateToLinkedPage( "AuditPage", qryParam );
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -141,11 +154,14 @@ namespace RockWeb.Blocks.Finance
             var batchService = new FinancialBatchService( rockContext );
             FinancialBatch batch = null;
 
+            var changes = new List<string>();
+
             int batchId = hfBatchId.Value.AsInteger();
             if ( batchId == 0 )
             {
                 batch = new FinancialBatch();
                 batchService.Add( batch );
+                changes.Add( "Created the batch" );
             }
             else
             {
@@ -154,28 +170,74 @@ namespace RockWeb.Blocks.Finance
 
             if ( batch != null )
             {
+                History.EvaluateChange( changes, "Batch Name", batch.Name, tbName.Text );
                 batch.Name = tbName.Text;
-                batch.Status = (BatchStatus)ddlStatus.SelectedIndex;
+
+                BatchStatus batchStatus = (BatchStatus)ddlStatus.SelectedIndex;
+                History.EvaluateChange( changes, "Status", batch.Status, batchStatus );
+                batch.Status = batchStatus;
+
+                CampusCache oldCampus = null;
+                if ( batch.CampusId.HasValue )
+                {
+                    oldCampus = CampusCache.Read( batch.CampusId.Value );
+                }
+                CampusCache newCampus = null;
+                if ( campCampus.SelectedCampusId.HasValue )
+                {
+                    newCampus = CampusCache.Read( campCampus.SelectedCampusId.Value );
+                }
+                History.EvaluateChange( changes, "Campus", oldCampus != null ? oldCampus.Name : "None", newCampus != null ? newCampus.Name : "None" );
                 batch.CampusId = campCampus.SelectedCampusId;
-                batch.BatchStartDateTime = dtpStart.SelectedDateTimeIsBlank ? null : dtpStart.SelectedDateTime;
+
+                DateTime? startDateTime = dtpStart.SelectedDateTimeIsBlank ? null : dtpStart.SelectedDateTime;
+                History.EvaluateChange( changes, "Start Date/Time", batch.BatchStartDateTime, startDateTime );
+                batch.BatchStartDateTime = startDateTime;
+
+                DateTime? endDateTime;
                 if ( dtpEnd.SelectedDateTimeIsBlank && batch.BatchStartDateTime.HasValue )
                 {
-                    batch.BatchEndDateTime = batch.BatchStartDateTime.Value.AddDays( 1 );
+                    endDateTime = batch.BatchStartDateTime.Value.AddDays( 1 );
                 }
                 else
                 {
-                    batch.BatchEndDateTime = dtpEnd.SelectedDateTimeIsBlank ? null : dtpEnd.SelectedDateTime;
+                    endDateTime = dtpEnd.SelectedDateTimeIsBlank ? null : dtpEnd.SelectedDateTime;
                 }
-                batch.ControlAmount = tbControlAmount.Text.AsDecimal();
+                History.EvaluateChange( changes, "End Date/Time", batch.BatchEndDateTime, endDateTime );
+                batch.BatchEndDateTime = endDateTime;
+
+                decimal controlAmount = tbControlAmount.Text.AsDecimal(); 
+                History.EvaluateChange( changes, "Control Amount", batch.ControlAmount.FormatAsCurrency(), controlAmount.FormatAsCurrency() );
+                batch.ControlAmount = controlAmount;
+
+                History.EvaluateChange( changes, "Accounting System Code", batch.AccountingSystemCode, tbAccountingCode.Text );
                 batch.AccountingSystemCode = tbAccountingCode.Text;
 
+                History.EvaluateChange( changes, "Notes", batch.Note, tbNote.Text );
+                batch.Note = tbNote.Text;
+
+                cvBatch.IsValid = batch.IsValid;
                 if ( !Page.IsValid || !batch.IsValid )
                 {
-                    // Controls will render the error messages                    
+                    cvBatch.ErrorMessage = batch.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                     return;
                 }
 
-                rockContext.SaveChanges();
+                rockContext.WrapTransaction( () =>
+                {
+                    if ( rockContext.SaveChanges() > 0 )
+                    {
+                        if ( changes.Any() )
+                        {
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( FinancialBatch ),
+                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                                batch.Id,
+                                changes );
+                        }
+                    }
+                } );
 
                 if ( batchId == 0 )
                 {
@@ -327,12 +389,13 @@ namespace RockWeb.Blocks.Finance
                 decimal txnTotal = batch.Transactions.Sum( t => (decimal?)( t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ) ) ?? 0.0M;
                 decimal variance = txnTotal - batch.ControlAmount;
                 string amountFormat = string.Format( "{0} / {1} / " + ( variance == 0.0M ? "{2}" : "<span class='label label-danger'>{2}</span>" ),
-                    txnTotal.ToString( "C2" ), batch.ControlAmount.ToString( "C2" ), variance.ToString( "C2" ) );
+                    txnTotal.FormatAsCurrency(), batch.ControlAmount.FormatAsCurrency(), variance.FormatAsCurrency() );
 
                 lDetails.Text = new DescriptionList()
                     .Add( "Date Range", new DateRange( batch.BatchStartDateTime, batch.BatchEndDateTime ).ToString( "g" ) )
                     .Add( "Transaction / Control / Variance", amountFormat )
                     .Add( "Accounting Code", batch.AccountingSystemCode )
+                    .Add( "Notes", batch.Note )
                     .Html;
                 //Account Summary
                 gAccounts.DataSource = batch.Transactions
@@ -356,8 +419,8 @@ namespace RockWeb.Blocks.Finance
                 gCurrencyTypes.DataSource = batch.Transactions
                     .Select( t => new
                     {
-                        CurrencyId = t.CurrencyTypeValue != null ? t.CurrencyTypeValue.Id : 0,
-                        CurrencyName = t.CurrencyTypeValue != null ? t.CurrencyTypeValue.Value : "None",
+                        CurrencyId = t.FinancialPaymentDetail != null && t.FinancialPaymentDetail.CurrencyTypeValue != null ? t.FinancialPaymentDetail.CurrencyTypeValue.Id : 0,
+                        CurrencyName = t.FinancialPaymentDetail != null && t.FinancialPaymentDetail.CurrencyTypeValue != null ? t.FinancialPaymentDetail.CurrencyTypeValue.Value : "None",
                         TotalAmount = t.TotalAmount
                     } )
                     .GroupBy( c => new
@@ -411,6 +474,7 @@ namespace RockWeb.Blocks.Finance
                 dtpEnd.SelectedDateTime = batch.BatchEndDateTime;
 
                 tbAccountingCode.Text = batch.AccountingSystemCode;
+                tbNote.Text = batch.Note;
             }
         }
 
@@ -421,8 +485,8 @@ namespace RockWeb.Blocks.Finance
             hlStatus.Text = batch.Status.ConvertToString();
             switch ( batch.Status )
             {
-                case BatchStatus.Pending: hlStatus.LabelType = LabelType.Warning; break;
-                case BatchStatus.Open: hlStatus.LabelType = LabelType.Info; break;
+                case BatchStatus.Pending: hlStatus.LabelType = LabelType.Danger; break;
+                case BatchStatus.Open: hlStatus.LabelType = LabelType.Warning; break;
                 case BatchStatus.Closed: hlStatus.LabelType = LabelType.Default; break;
             }
 
@@ -436,6 +500,8 @@ namespace RockWeb.Blocks.Finance
                 hlCampus.Visible = false;
             }
 
+            hlBatchId.Text = string.Format("Id: {0}", batch.Id.ToString());
+            hlBatchId.Visible = (batch.Id != 0);
         }
 
         /// <summary>

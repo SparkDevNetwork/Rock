@@ -116,14 +116,14 @@ Pastor:Talk to a Pastor'
 
             // Migration Rollups
 
-            Sql(@"
-    UPDATE [HtmlContent]
+            Sql( @"
+      UPDATE [HtmlContent]
     SET [Content] = '<ul class=""list-group list-group-panel"">
 <li class=""list-group-item""><a href=""http://www.rockrms.com/"">Rock RMS Website</a></li>
 <li class=""list-group-item""><a href=""~/page/1"">External Website</a></li>
 </ul>'
-    WHERE [Guid] = '007EA905-D5D3-4DC5-AD0B-2C1E3935E452'
-");
+    WHERE [Guid] = '007EA905-D5D3-4DC5-AD0B-2C1E3935E452' AND [ModifiedDateTime] IS NULL
+" );
 
             Sql( @"
 UPDATE [SystemEmail]

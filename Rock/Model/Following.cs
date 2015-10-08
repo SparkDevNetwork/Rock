@@ -53,7 +53,7 @@ namespace Rock.Model
         public int EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the person alias identifier.
+        /// Gets or sets the PersonAliasId of the person that is following the Entity
         /// </summary>
         /// <value>
         /// The person alias identifier.

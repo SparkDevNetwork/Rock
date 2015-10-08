@@ -26,6 +26,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -160,6 +161,7 @@ namespace RockWeb.Blocks.Cms
         {
             PageRouteService pageRouteService = new PageRouteService( new RockContext() );
             SortProperty sortProperty = gPageRoutes.SortProperty;
+            gPageRoutes.EntityTypeId = EntityTypeCache.Read<PageRoute>().Id;
 
             var qry = pageRouteService.Queryable().Select( a =>
                 new

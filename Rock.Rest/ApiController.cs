@@ -16,13 +16,17 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection;
 using System.ServiceModel.Channels;
 using System.Web.Http;
 using System.Web.Http.OData;
 
+using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -48,6 +52,7 @@ namespace Rock.Rest
             get { return _service; }
             set { _service = value; }
         }
+
         private Service<T> _service;
 
         /// <summary>
@@ -122,10 +127,13 @@ namespace Rock.Rest
                     string.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
             }
 
-            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+            if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            {
+                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+            }
             Service.Context.SaveChanges();
 
-            var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+            var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created, value.Id );
 
             // TODO set response.Headers.Location as per REST POST convention
             //response.Headers.Location = new Uri( Request.RequestUri, "/api/pages/" + page.Id.ToString() );
@@ -136,7 +144,7 @@ namespace Rock.Rest
         [Authenticate, Secured]
         public virtual void Put( int id, [FromBody]T value )
         {
-            if (value == null)
+            if ( value == null )
             {
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
@@ -155,7 +163,129 @@ namespace Rock.Rest
 
             if ( targetModel.IsValid )
             {
-                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+                if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+                {
+                    System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+                }
+                Service.Context.SaveChanges();
+            }
+            else
+            {
+                var response = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    string.Join( ",", targetModel.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                throw new HttpResponseException( response );
+            }
+        }
+
+        // PATCH api/<controller>/5  (update subset of atttributes)
+        [Authenticate, Secured]
+        public virtual void Patch( int id, [FromBody]Dictionary<string, object> values )
+        {
+            // Check that something was sent in the body
+            if ( values == null || !values.Keys.Any() )
+            {
+                var response = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest, "No values were sent in the body" );
+                throw new HttpResponseException( response );
+            }
+            else if ( values.ContainsKey( "Id" ) )
+            {
+                var response = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest, "Cannot set Id" );
+                throw new HttpResponseException( response );
+            }
+
+            SetProxyCreation( true );
+
+            T targetModel;
+            if ( !Service.TryGet( id, out targetModel ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            CheckCanEdit( targetModel );
+            var type = targetModel.GetType();
+            var properties = type.GetProperties().ToList();
+
+            // Same functionality as Service.SetValues but for a subset of properties
+            foreach ( var key in values.Keys )
+            {
+                if ( properties.Any( p => p.Name.Equals( key ) ) )
+                {
+                    var property = type.GetProperty( key, BindingFlags.Public | BindingFlags.Instance );
+                    var propertyType = Nullable.GetUnderlyingType( property.PropertyType ) ?? property.PropertyType;
+                    var currentValue = values[key];
+
+                    if ( property != null )
+                    {
+                        if ( property.GetValue( targetModel ) == currentValue )
+                        {
+                            continue;
+                        }
+                        else if ( property.CanWrite )
+                        {
+                            if ( currentValue == null )
+                            {
+                                // No need to parse anything
+                                property.SetValue( targetModel, null );
+                            }
+                            else if ( propertyType == typeof( int ) || propertyType == typeof( int? ) || propertyType.IsEnum )
+                            {
+                                // By default, objects that hold integer values, hold int64, so coerce to int32
+                                try
+                                {
+                                    var int32 = Convert.ToInt32( currentValue );
+                                    property.SetValue( targetModel, int32 );
+                                }
+                                catch ( OverflowException )
+                                {
+                                    var response = ControllerContext.Request.CreateErrorResponse(
+                                        HttpStatusCode.BadRequest,
+                                        string.Format( "Cannot cast {0} to int32", key ) );
+                                    throw new HttpResponseException( response );
+                                }
+                            }
+                            else
+                            {
+                                var castedValue = Convert.ChangeType( currentValue, propertyType );
+                                property.SetValue( targetModel, castedValue );
+                            }
+                        }
+                        else
+                        {
+                            var response = ControllerContext.Request.CreateErrorResponse(
+                                HttpStatusCode.BadRequest,
+                                string.Format( "Cannot write {0}", key ) );
+                            throw new HttpResponseException( response );
+                        }
+                    }
+                    else
+                    {
+                        // This shouldn't happen because we are checking that the property exists.
+                        // Just to make sure reflection doesn't fail
+                        var response = ControllerContext.Request.CreateErrorResponse(
+                            HttpStatusCode.BadRequest,
+                            string.Format( "Cannot find property {0}", key ) );
+                        throw new HttpResponseException( response );
+                    }
+                }
+                else
+                {
+                    var response = ControllerContext.Request.CreateErrorResponse(
+                        HttpStatusCode.BadRequest,
+                        string.Format( "{0} does not have attribute {1}", type.BaseType.Name, key ) );
+                    throw new HttpResponseException( response );
+                }
+            }
+
+            // Verify model is valid before saving
+            if ( targetModel.IsValid )
+            {
+                if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+                {
+                    System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+                }
                 Service.Context.SaveChanges();
             }
             else
@@ -196,8 +326,10 @@ namespace Rock.Rest
         public IQueryable<T> GetDataView( int id )
         {
             var dataView = new DataViewService( new RockContext() ).Get( id );
-
-            CheckCanEdit( dataView );
+            
+            // since DataViews can be secured at the Dataview or Category level, specifically check for CanView
+            CheckCanView( dataView, GetPerson() );
+            
             SetProxyCreation( false );
 
             if ( dataView != null && dataView.EntityType.Name == typeof( T ).FullName )
@@ -214,6 +346,102 @@ namespace Rock.Rest
             }
 
             return null;
+        }
+
+        // DELETE api/<controller>/AttributeValue 
+        [Authenticate, Secured]
+        [HttpDelete]
+        public virtual HttpResponseMessage DeleteAttributeValue( int id, string attributeKey )
+        {
+            return SetAttributeValue( id, attributeKey, string.Empty );
+        }
+
+        // POST api/<controller>/AttributeValue 
+        [Authenticate, Secured]
+        [HttpPost]
+        public virtual HttpResponseMessage SetAttributeValue( int id, string attributeKey, string attributeValue )
+        {
+            T model;
+            if ( !Service.TryGet( id, out model ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            CheckCanEdit( model );
+
+            Rock.Attribute.IHasAttributes modelWithAttributes = model as Rock.Attribute.IHasAttributes;
+            if ( modelWithAttributes != null )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    modelWithAttributes.LoadAttributes( rockContext );
+                    Rock.Web.Cache.AttributeCache attributeCache = modelWithAttributes.Attributes.ContainsKey( attributeKey ) ? modelWithAttributes.Attributes[attributeKey] : null;
+
+                    if ( attributeCache != null )
+                    {
+                        if ( !attributeCache.IsAuthorized( Rock.Security.Authorization.EDIT, this.GetPerson() ) )
+                        {
+                            throw new HttpResponseException( new HttpResponseMessage( HttpStatusCode.Forbidden ) { ReasonPhrase = string.Format( "Not authorized to edit {0} on {1}", modelWithAttributes.GetType().GetFriendlyTypeName(), attributeKey ) } );
+                        }
+
+                        Rock.Attribute.Helper.SaveAttributeValue( modelWithAttributes, attributeCache, attributeValue, rockContext );
+                        var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Accepted, modelWithAttributes.Id );
+                        return response;
+                    }
+                    else
+                    {
+                        throw new HttpResponseException( new HttpResponseMessage( HttpStatusCode.BadRequest ) { ReasonPhrase = string.Format( "{0} does not have a {1} attribute", modelWithAttributes.GetType().GetFriendlyTypeName(), attributeKey ) } );
+                    }
+                }
+            }
+            else
+            {
+                throw new HttpResponseException( new HttpResponseMessage( HttpStatusCode.BadRequest ) { ReasonPhrase = "specified item does not have attributes" } );
+            }
+        }
+
+        /// <summary>
+        /// Gets the encrypted context key for an entity.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpPut, HttpOptions]
+        [ActionName( "SetContext" )]
+        public virtual HttpResponseMessage SetContext( int id )
+        {
+            Guid? guid = Service.GetGuid( id );
+            if ( !guid.HasValue )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            string cookieName = "Rock_Context";
+            string typeName = typeof( T ).FullName;
+
+            string identifier =
+                typeName + "|" +
+                id.ToString() + ">" +
+                guid.ToString();
+            string contextValue = Rock.Security.Encryption.EncryptString( identifier );
+
+            var httpContext = System.Web.HttpContext.Current;
+            if ( httpContext == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+
+            var contextCookie = httpContext.Request.Cookies[cookieName];
+            if ( contextCookie == null )
+            {
+                contextCookie = new System.Web.HttpCookie( cookieName );
+            }
+            contextCookie.Values[typeName] = contextValue;
+            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+            httpContext.Response.Cookies.Add( contextCookie );
+
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
         }
 
         /// <summary>
@@ -270,6 +498,38 @@ namespace Rock.Rest
         }
 
         /// <summary>
+        /// Checks to see if the person is authorized to VIEW
+        /// </summary>
+        /// <param name="securedModel">The secured model.</param>
+        /// <param name="person">The person.</param>
+        /// <exception cref="System.Web.Http.HttpResponseException">
+        /// </exception>
+        protected virtual void CheckCanView( ISecured securedModel, Person person )
+        {
+            if ( securedModel != null )
+            {
+                if ( IsProxy( securedModel ) )
+                {
+                    if ( !securedModel.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                    {
+                        throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                    }
+                }
+                else
+                {
+                    // Need to reload using service with a proxy enabled so that if model has custom
+                    // parent authorities, those properties can be lazy-loaded and checked for authorization
+                    SetProxyCreation( true );
+                    ISecured reloadedModel = (ISecured)Service.Get( securedModel.Id );
+                    if ( reloadedModel != null && !reloadedModel.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                    {
+                        throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [enable proxy creation].
         /// </summary>
         /// <value>
@@ -289,6 +549,5 @@ namespace Rock.Rest
         {
             return type != null && System.Data.Entity.Core.Objects.ObjectContext.GetObjectType( type.GetType() ) != type.GetType();
         }
-
     }
 }

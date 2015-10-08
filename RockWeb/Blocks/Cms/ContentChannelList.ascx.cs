@@ -274,6 +274,8 @@ namespace RockWeb.Blocks.Cms
                     ).Count()
             } ).AsQueryable();
 
+            gContentChannels.EntityTypeId = EntityTypeCache.Read<ContentChannel>().Id;
+
             if ( sortProperty != null )
             {
                 gContentChannels.DataSource = items.Sort( sortProperty ).ToList();

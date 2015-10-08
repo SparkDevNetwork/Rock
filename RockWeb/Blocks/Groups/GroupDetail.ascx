@@ -4,9 +4,13 @@
     function clearActiveDialog() {
         $('#<%=hfActiveDialog.ClientID %>').val('');
     }
+
+    Sys.Application.add_load( function () {
+        $('.js-follow-status').tooltip();
+    });
 </script>
 
-<asp:UpdatePanel ID="upnlGroupList" runat="server">
+<asp:UpdatePanel ID="upnlGroupDetail" runat="server">
     <ContentTemplate>
 
         <asp:Panel ID="pnlDetails" runat="server">
@@ -14,24 +18,29 @@
 
             <div class="panel panel-block">
 
-                <div class="panel-heading clearfix">
+                <div class="panel-heading panel-follow clearfix">
                     <h1 class="panel-title pull-left">
                         <asp:Literal ID="lGroupIconHtml" runat="server" />
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />
                     </h1>
 
-                    <div class="panel-labels">
+                    <div class="panel-labels"> 
                         <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                        <Rock:HighlightLabel ID="hlIsPrivate" runat="server" LabelType="Default" Text="Private" />
                         <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                         <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                     </div>
-                </div>
 
+                    <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" data-toggle="tooltip" data-placement="top" title="Click to Follow"></asp:Panel>
+                </div>
+                
                 <div class="panel-body">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     <Rock:NotificationBox ID="nbRoleLimitWarning" runat="server" NotificationBoxType="Warning" Heading="Role Limit Warning" />
                     <Rock:NotificationBox ID="nbNotAllowedToEdit" runat="server" NotificationBoxType="Danger" Visible="false"
                         Text="You are not authorized to save group with the selected group type and/or parent group." />
+                    <Rock:NotificationBox ID="nbInvalidParentGroup" runat="server" NotificationBoxType="Danger" Visible="false"
+                        Text="The selected parent group does not allow child groups of the selected group type." />
                     <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                     <div id="pnlEditDetails" runat="server">
@@ -42,6 +51,7 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                                <Rock:RockCheckBox ID="cbIsPublic" runat="server" Text="Public" />
                             </div>
                         </div>
 
@@ -78,10 +88,10 @@
                                 </Rock:Grid>
                             </div>
                             <asp:Panel ID="pnlSchedule" runat="server" Visible="false">
-                                
+
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" Label="Group Schedule" CssClass="margin-b-sm" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" /> 
+                                        <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" Label="Group Schedule" CssClass="margin-b-sm" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" />
                                     </div>
                                     <div class="col-md-6">
                                         <div class="row">
@@ -135,6 +145,63 @@
                             </div>
                         </Rock:PanelWidget>
 
+                        <Rock:PanelWidget ID="wpGroupRequirements" runat="server" Title="Group Requirements">
+                            <Rock:RockCheckBox ID="cbMembersMustMeetRequirementsOnAdd" runat="server" Text="Members must meet all requirements before adding" Help="If this is enabled, a person can only become a group member if all the requirements are met. If this is left as disabled, requirements won't be checked when adding. Note: only Data View and SQL type requirements need to be met since manual ones can't be checked until after the person is added." />
+                            <div class="grid">
+                                <Rock:Grid ID="gGroupRequirements" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group Requirement" ShowConfirmDeleteDialog="false">
+                                    <Columns>
+                                        <Rock:RockBoundField DataField="GroupRequirementType.Name" HeaderText="Name" />
+                                        <Rock:RockBoundField DataField="GroupRole" HeaderText="Group Role" />
+                                        <Rock:BoolField DataField="GroupRequirementType.CanExpire" HeaderText="Can Expire" />
+                                        <Rock:EnumField DataField="GroupRequirementType.RequirementCheckType" HeaderText="Type" />
+                                        <Rock:EditField OnClick="gGroupRequirements_Edit" />
+                                        <Rock:DeleteField OnClick="gGroupRequirements_Delete" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </div>
+                        </Rock:PanelWidget>
+
+                        <Rock:PanelWidget ID="wpGroupSync" runat="server" Title="Group Sync Settings">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:DataViewPicker ID="dvpSyncDataview" Label="Sync Data View" runat="server"></Rock:DataViewPicker>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="rbCreateLoginDuringSync" runat="server" Label="Create Login During Sync" Help="If the individual does not have a login should one be created during the sync process?" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlWelcomeEmail" runat="server" Label="Welcome Email"></Rock:RockDropDownList>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlExitEmail" runat="server" Label="Exit Email"></Rock:RockDropDownList>
+                                </div>
+                            </div>
+                        </Rock:PanelWidget>
+
+                        <Rock:PanelWidget ID="wpMemberWorkflowTriggers" runat="server" Title="Group Member Workflows" >
+                            <Rock:NotificationBox ID="NotificationBox3" runat="server" NotificationBoxType="Info" 
+                            Text="The workflow(s) that should be launched when group members are changed in this group." />
+                            <div class="grid">
+                                <Rock:Grid ID="gMemberWorkflowTriggers" runat="server" EnableResponsiveTable="false" AllowPaging="false" DisplayType="Light" RowItemText="Workflow">
+                                    <Columns>
+                                        <Rock:ReorderField />
+                                        <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                                        <Rock:RockBoundField DataField="WorkflowType.Name" HeaderText="Workflow" />
+                                        <Rock:RockTemplateField HeaderText="When">
+                                            <ItemTemplate>
+                                                <%# FormatTriggerType( Eval("TriggerType"), Eval("TypeQualifier") ) %>
+                                            </ItemTemplate>
+                                        </Rock:RockTemplateField>
+                                        <Rock:BoolField DataField="IsActive" HeaderText="Active" />
+                                        <Rock:EditField OnClick="gMemberWorkflowTriggers_Edit" />
+                                        <Rock:DeleteField OnClick="gMemberWorkflowTriggers_Delete" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </div>
+                        </Rock:PanelWidget>
+
                         <div class="actions">
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                             <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
@@ -144,23 +211,45 @@
 
                     <fieldset id="fieldsetViewDetails" runat="server">
 
-                        <p class="description">
-                            <asp:Literal ID="lGroupDescription" runat="server"></asp:Literal>
-                        </p>
+                        <asp:Literal ID="lGroupDescription" runat="server"></asp:Literal>
 
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <asp:Literal ID="lblMainDetails" runat="server" />
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
-                                    </div>
-                                </div>
+                                <asp:Literal ID="lblMainDetails" runat="server" />
+
+                                <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
+                                
                             </div>
                             <div class="col-md-6 location-maps">
                                 <asp:PlaceHolder ID="phMaps" runat="server" />
+
+                                <Rock:RockControlWrapper id="rcwLinkedRegistrations" runat="server" Label="Registrations">
+                                    <ul class="list-unstyled">
+                                        <asp:Repeater ID="rptLinkedRegistrations" runat="server">
+                                            <ItemTemplate>
+                                                <li><a href='<%# RegistrationInstanceUrl( (int)Eval("Key" ) ) %>'><%# Eval("Value") %></a></li>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </ul>
+                                </Rock:RockControlWrapper>
+                                <Rock:RockControlWrapper id="rcwEventItemOccurrences" runat="server" Label="Event Item Occurrences">
+                                    <ul class="list-unstyled">
+                                        <asp:Repeater ID="rptEventItemOccurrences" runat="server">
+                                            <ItemTemplate>
+                                                <li><a href='<%# EventItemOccurrenceUrl( (int)Eval("Key" ) ) %>'><%# Eval("Value") %></a></li>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </ul>
+                                </Rock:RockControlWrapper>
+                                <Rock:RockControlWrapper id="rcwContentItems" runat="server" Label="Content Items">
+                                    <ul class="list-unstyled">
+                                        <asp:Repeater ID="rptContentItems" runat="server">
+                                            <ItemTemplate>
+                                                <li><a href='<%# ContentItemUrl( (int)Eval("Key" ) ) %>'><%# Eval("Value") %></a></li>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </ul>
+                                </Rock:RockControlWrapper>
                             </div>
                         </div>
 
@@ -184,12 +273,14 @@
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
+        <!-- Group Member Attribute Modal Dialog -->
         <Rock:ModalDialog ID="dlgGroupMemberAttribute" runat="server" Title="Group Member Attributes" OnSaveClick="dlgGroupMemberAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupMemberAttribute">
             <Content>
                 <Rock:AttributeEditor ID="edtGroupMemberAttributes" runat="server" ShowActions="false" ValidationGroup="GroupMemberAttribute" />
             </Content>
         </Rock:ModalDialog>
 
+        <!-- Locations Modal Dialog -->
         <Rock:ModalDialog ID="dlgLocations" runat="server" Title="Group Location" OnSaveClick="dlgLocations_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Location">
             <Content>
 
@@ -221,6 +312,57 @@
 
                 <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedule(s)" ValidationGroup="Location" AllowMultiSelect="true" />
 
+            </Content>
+        </Rock:ModalDialog>
+
+        <!-- Group Requirements Modal Dialog -->
+        <Rock:ModalDialog ID="mdGroupRequirement" runat="server" Title="Group Requirement" OnSaveClick="mdGroupRequirement_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="vg_GroupRequirement">
+            <Content>
+                <asp:HiddenField ID="hfGroupRequirementGuid" runat="server" />
+
+                <Rock:NotificationBox id="nbDuplicateGroupRequirement" runat="server" NotificationBoxType="Warning" />
+
+                <asp:ValidationSummary ID="vsGroupRequirement" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vg_GroupRequirement" />
+
+                <Rock:RockDropDownList ID="ddlGroupRequirementType" runat="server" Label="Group Requirement Type" Required="true" ValidationGroup="vg_GroupRequirement"/>
+
+                <Rock:GroupRolePicker ID="grpGroupRequirementGroupRole" runat="server" Label="Group Role" Help="Select the group role that this requirement applies to. Leave blank if it applies to all group roles." ValidationGroup="vg_GroupRequirement" />
+            </Content>
+        </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="dlgMemberWorkflowTriggers" runat="server" OnSaveClick="dlgMemberWorkflowTriggers_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Trigger">
+            <Content>
+                <asp:HiddenField ID="hfTriggerGuid" runat="server" />
+                <asp:ValidationSummary ID="vsTrigger" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Trigger" />
+                <Rock:NotificationBox ID="nbInvalidWorkflowType" runat="server" NotificationBoxType="Danger" Visible="false"
+                    Text="The Workflow Type is missing or invalid. Make sure you selected a valid Workflow Type (and not a category)." />
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbTriggerName" runat="server" Label="Name" Required="true" ValidationGroup="Trigger" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbTriggerIsActive" runat="server" Text="Active" ValidationGroup="Trigger"  />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Start Workflow" Required="true" ValidationGroup="Trigger"
+                            Help="The workflow type to start." />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="When" Required="true" ValidationGroup="Trigger" AutoPostBack="true" OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" />
+                        <Rock:RockDropDownList ID="ddlTriggerFromStatus" runat="server" Label="From Status of" ValidationGroup="Trigger" />
+                        <Rock:RockDropDownList ID="ddlTriggerToStatus" runat="server" Label="To Status of" ValidationGroup="Trigger" />
+                        <Rock:RockDropDownList ID="ddlTriggerFromRole" runat="server" Label="From Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
+                        <Rock:RockDropDownList ID="ddlTriggerToRole" runat="server" Label="To Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
+                        <Rock:RockCheckBox ID="cbTriggerFirstTime" runat="server" Label="First Time" Text="Yes" ValidationGroup="Trigger"
+                            Help="Select this option if workflow should only be started when person attends the group for the first time. Leave this option unselected if the workflow should be started whenever a person attends the group." />
+                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereShowNote" runat="server" Label="Show Note" Text="Yes" ValidationGroup="Trigger"
+                            Help="Select this option if workflow should show UI for entering a note when the member is placed." />
+                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereRequireNote" runat="server" Label="Require Note" Text="Yes" ValidationGroup="Trigger"
+                            Help="Select this option if workflow should show UI for entering a note and make it required when the member is placed." />
+                    </div>
+                </div>
             </Content>
         </Rock:ModalDialog>
 

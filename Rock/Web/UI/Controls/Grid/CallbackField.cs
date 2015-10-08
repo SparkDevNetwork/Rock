@@ -36,11 +36,11 @@ namespace Rock.Web.UI.Controls
         /// <returns>
         /// The field value converted to the format specified by <see cref="P:System.Web.UI.WebControls.BoundField.DataFormatString" />.
         /// </returns>
-        protected override string FormatDataValue(object dataValue, bool encode)
+        protected override string FormatDataValue( object dataValue, bool encode )
         {
             if ( OnFormatDataValue != null )
             {
-                CallbackEventArgs args = new CallbackEventArgs { DataValue = dataValue};
+                CallbackEventArgs args = new CallbackEventArgs { DataValue = dataValue, CallbackField = this };
                 OnFormatDataValue( this, args );
                 return args.FormattedValue;
             }
@@ -51,11 +51,20 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the defined type GUID.
+        /// Gets the value that should be exported to Excel
         /// </summary>
-        /// <value>
-        /// The defined type unique identifier.
-        /// </value>
+        /// <param name="row">The row.</param>
+        /// <returns></returns>
+        public override object GetExportValue( GridViewRow row )
+        {
+            var dataValue = base.GetExportValue( row );
+            return FormatDataValue( dataValue, false );
+        }
+
+        /// <summary>
+        /// Occurs when [on format data value].
+        /// This is the callback event that you can use to use custom logic to set the formatted value
+        /// </summary>
         public event EventHandler<CallbackEventArgs> OnFormatDataValue;
 
         /// <summary>
@@ -64,7 +73,7 @@ namespace Rock.Web.UI.Controls
         public class CallbackEventArgs : EventArgs
         {
             /// <summary>
-            /// Gets or sets the data value.
+            /// This is the DataValue. Use this to set the Formatted Value in the OnFormatDataValue callback
             /// </summary>
             /// <value>
             /// The data value.
@@ -72,12 +81,20 @@ namespace Rock.Web.UI.Controls
             public object DataValue { get; set; }
 
             /// <summary>
-            /// Gets or sets the formatted value.
+            /// Set the formatted value in the OnFormatDataValue callback
             /// </summary>
             /// <value>
             /// The formatted value.
             /// </value>
             public string FormattedValue { get; set; }
+
+            /// <summary>
+            /// Gets or sets the callback field.
+            /// </summary>
+            /// <value>
+            /// The callback field.
+            /// </value>
+            public CallbackField CallbackField { get; set; }
         }
     }
 }

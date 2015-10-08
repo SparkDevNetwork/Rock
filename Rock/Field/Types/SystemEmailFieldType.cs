@@ -27,7 +27,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type to select a system email
+    /// Field Type to select a system email. Stored as SystemEmail.Guid
     /// </summary>
     public class SystemEmailFieldType : FieldType
     {

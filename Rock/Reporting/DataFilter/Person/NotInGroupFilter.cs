@@ -27,9 +27,9 @@ namespace Rock.Reporting.DataFilter.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter people on whether they are in not the specified group" )]
+    [Description( "Filter people on whether they are in not the specified group or groups" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Person Not In Group Filter" )]
+    [ExportMetadata( "ComponentName", "Person Not In Group(s) Filter" )]
     public class NotInGroupFilter : InGroupFilter
     {
         #region Public Methods
@@ -44,7 +44,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Not In Group";
+            return "Not In Group(s)";
         }
 
         /// <summary>
@@ -60,19 +60,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return @"
-function() {
-  var groupName = $('.group-picker', $content).find('.selected-names').text();
-  var checkedRoles = $('.rock-check-box-list', $content).find(':checked').closest('label');
-  var result = 'Not in group: ' + groupName;
-  if (checkedRoles.length > 0) {
-     var roleCommaList = checkedRoles.map(function() { return $(this).text() }).get().join(',');
-     result = result + ', with role(s): ' + roleCommaList;
-  }
-
-  return result;
-}
-";
+            return GetGroupFilterClientSelection( true );
         }
 
         /// <summary>
@@ -83,28 +71,7 @@ function() {
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
-            string result = "Group Member";
-            string[] selectionValues = selection.Split( '|' );
-            if ( selectionValues.Length >= 2 )
-            {
-                var rockContext = new RockContext();
-                var group = new GroupService( rockContext ).Get( selectionValues[0].AsGuid() );
-
-                var groupTypeRoleGuidList = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsGuid() ).ToList();
-
-                var groupTypeRoles = new GroupTypeRoleService( rockContext ).Queryable().Where( a => groupTypeRoleGuidList.Contains( a.Guid ) ).ToList();
-
-                if ( group != null )
-                {
-                    result = string.Format( "Not in group: {0}", group.Name );
-                    if ( groupTypeRoles.Count() > 0 )
-                    {
-                        result += string.Format( ", with role(s): {0}", groupTypeRoles.Select( a => a.Name ).ToList().AsDelimited( "," ) );
-                    }
-                }
-            }
-
-            return result;
+            return GroupFilterFormatSelection( selection, true );
         }
 
         /// <summary>

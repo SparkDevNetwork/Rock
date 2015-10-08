@@ -63,6 +63,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public override void RenderBaseControl( HtmlTextWriter writer )
+        {
+            writer.WriteLine( "<div class='timepicker-input js-timepicker-input'>" );
+            base.RenderBaseControl( writer );
+            writer.WriteLine( "  <i class='fa fa-times js-timepicker-clear'></i>");
+            writer.WriteLine( " </div>" );
+        }
+
+        /// <summary>
         /// Gets or sets the selected time.
         /// </summary>
         /// <value>

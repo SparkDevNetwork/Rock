@@ -66,7 +66,7 @@ namespace Rock.Extension
         /// <value>
         /// The attributes.
         /// </value>
-        public Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes { get; set; }
+        public Dictionary<string, AttributeCache> Attributes { get; set; }
 
         /// <summary>
         /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the associated attribute value
@@ -74,7 +74,7 @@ namespace Rock.Extension
         /// <value>
         /// The attribute values.
         /// </value>
-        public Dictionary<string, Rock.Model.AttributeValue> AttributeValues { get; set; }
+        public Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.

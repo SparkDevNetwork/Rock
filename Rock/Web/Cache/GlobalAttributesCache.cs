@@ -35,14 +35,13 @@ namespace Rock.Web.Cache
     [Serializable]
     public class GlobalAttributesCache
     {
-
         #region Contants
 
         /// <summary>
         /// This setting is the guid for the organization's location record.
         /// </summary>
         private static readonly string ORG_LOC_GUID = "com.rockrms.orgLocationGuid";
-        
+
         /// <summary>
         /// This setting is the state for the organization's location record.
         /// </summary>
@@ -60,7 +59,9 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Use Static Read() method to instantiate a new Global Attributes object
         /// </summary>
-        private GlobalAttributesCache() { }
+        private GlobalAttributesCache()
+        {
+        }
 
         #endregion
 
@@ -133,7 +134,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute values.
         /// </value>
-        public ConcurrentDictionary<string, string> AttributeValues { get; set; }
+        private ConcurrentDictionary<string, string> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets or sets the attribute values formatted.
@@ -141,7 +142,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute values formatted.
         /// </value>
-        public ConcurrentDictionary<string, string> AttributeValuesFormatted { get; set; }
+        private ConcurrentDictionary<string, string> AttributeValuesFormatted { get; set; }
 
         #endregion
 
@@ -310,17 +311,18 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GlobalAttributesCache GetOrAddExisting( string key, Func<GlobalAttributesCache> valueFactory )
         {
-            var newValue = new Lazy<GlobalAttributesCache>( valueFactory );
-            var oldValue = _cache.AddOrGetExisting( key, newValue, new CacheItemPolicy() ) as Lazy<GlobalAttributesCache>;
-            try
+            var value = _cache.Get( key ) as GlobalAttributesCache;
+            if ( value != null )
             {
-                return ( oldValue ?? newValue ).Value;
+                return value;
             }
-            catch
+
+            value = valueFactory();
+            if ( value != null )
             {
-                _cache.Remove( key );
-                throw;
+                _cache.Set( key, value, new CacheItemPolicy() );
             }
+            return value;
         }
 
         /// <summary>
@@ -412,6 +414,7 @@ namespace Rock.Web.Cache
                     globalAttributeValues.Add( attributeCache.Key, globalAttributes.GetValueFormatted( attributeCache.Key ) );
                 }
             }
+
             configValues.Add( "GlobalAttribute", globalAttributeValues );
 
             // Recursively resolve any of the config values that may have other merge codes as part of their value
@@ -425,7 +428,6 @@ namespace Rock.Web.Cache
             }
 
             return configValues;
-
         }
 
         /// <summary>
@@ -457,7 +459,7 @@ namespace Rock.Web.Cache
         /// </value>
         public Location OrganizationLocation
         {
-            get 
+            get
             {
                 Guid? locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
                 if ( locGuid.HasValue )
@@ -467,6 +469,7 @@ namespace Rock.Web.Cache
                         return new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
                     }
                 }
+
                 return null;
             }
         }
@@ -528,7 +531,6 @@ namespace Rock.Web.Cache
                 return string.Empty;
             }
         }
-
 
         /// <summary>
         /// Gets the organization country.

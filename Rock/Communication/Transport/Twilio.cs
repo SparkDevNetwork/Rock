@@ -86,7 +86,7 @@ namespace Rock.Communication.Transport
                     bool recipientFound = true;
                     while ( recipientFound )
                     {
-                        var recipient = recipientService.Get( communication.Id, CommunicationRecipientStatus.Pending ).FirstOrDefault();
+                        var recipient = Rock.Model.Communication.GetNextPending( communication.Id, rockContext );
                         if ( recipient != null )
                         {
                             try
@@ -100,6 +100,9 @@ namespace Rock.Communication.Transport
                                     // Create merge field dictionary
                                     var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
                                     string message = communication.GetMediumDataValue( "Message" );
+
+                                    // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
+                                    message = message.ReplaceWordChars();
                                     message = message.ResolveMergeFields( mergeObjects );
  
                                     string twilioNumber = phoneNumber.Number;
@@ -275,6 +278,39 @@ namespace Rock.Communication.Transport
             {
                 ExceptionLogService.LogException( ex, null );
             }
+        }
+
+        /// <summary>
+        /// Sends the specified recipients.
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="from">From.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="attachments">Attachments.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Sends the specified recipients.
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="from">From.</param>
+        /// <param name="fromName">From name.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="attachments">The attachments.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
+        {
+            throw new NotImplementedException();
         }
     }
 }

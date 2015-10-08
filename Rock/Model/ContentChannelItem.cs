@@ -15,11 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -41,6 +42,7 @@ namespace Rock.Model
         /// The content channel identifier.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public int ContentChannelId { get; set; }
 
         /// <summary>
@@ -50,6 +52,7 @@ namespace Rock.Model
         /// The content channel type identifier.
         /// </value>
         [DataMember]
+        [HideFromReporting]
         public int ContentChannelTypeId { get; set; }
 
         /// <summary>
@@ -108,7 +111,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? ApprovedDateTime { get; set; }
-
 
         /// <summary>
         /// Gets or sets the start date time.
@@ -169,6 +171,19 @@ namespace Rock.Model
         public virtual PersonAlias ApprovedByPersonAlias { get; set; }
 
         /// <summary>
+        /// Gets or sets the content channel items.
+        /// </summary>
+        /// <value>
+        /// The content channel items.
+        /// </value>
+        public virtual ICollection<EventItemOccurrenceChannelItem> EventItemOccurrences
+        {
+            get { return _eventItemOccurrences ?? ( _eventItemOccurrences = new Collection<EventItemOccurrenceChannelItem>() ); }
+            set { _eventItemOccurrences = value; }
+        }
+        private ICollection<EventItemOccurrenceChannelItem> _eventItemOccurrences;
+
+        /// <summary>
         /// Gets the parent authority.
         /// </summary>
         /// <value>
@@ -179,7 +194,7 @@ namespace Rock.Model
         {
             get
             {
-                return ContentChannel;
+                return ContentChannel != null ? ContentChannel : base.ParentAuthority;
             }
         }
 

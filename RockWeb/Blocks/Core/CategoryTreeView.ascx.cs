@@ -41,10 +41,14 @@ namespace RockWeb.Blocks.Core
     [TextField( "Entity type Qualifier Value", "", false )]
     [BooleanField( "Show Unnamed Entity Items", "Set to false to hide any EntityType items that have a blank name.", true )]
     [TextField( "Page Parameter Key", "The page parameter to look for" )]
+    [TextField("Default Icon CSS Class", "The icon CSS class to use when the treeview displays items that do not have an IconCSSClass property", false, "fa fa-list-ol" )]
 
     [CategoryField( "Root Category", "Select the root category to use as a starting point for the tree view.", false, Category = "CustomSetting" )]
+    [CategoryField( "Exclude Categories", "Select any category that you need to exclude from the tree view", true, Category = "CustomSetting" )]
     public partial class CategoryTreeView : RockBlockCustomSettings
     {
+        public const string CategoryNodePrefix = "C";
+
         /// <summary>
         /// Gets the settings tool tip.
         /// </summary>
@@ -55,7 +59,7 @@ namespace RockWeb.Blocks.Core
         {
             get
             {
-                return "Set Root Category";
+                return "Set Category Options";
             }
         }
 
@@ -108,11 +112,36 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+            mdCategoryTreeConfig.Visible = false;
+
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
 
             // hide all the actions if user doesn't have EDIT to the block
             divTreeviewActions.Visible = canEditBlock;
-            hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
+
+            var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( "DetailPage" ) );
+            
+            // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavior)
+            if ( detailPageReference == null || detailPageReference.PageId == this.RockPage.PageId )
+            {
+                hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
+                hfDetailPageUrl.Value = new Rock.Web.PageReference( this.RockPage.PageId ).BuildUrl().RemoveLeadingForwardslash();
+            }
+            else
+            {
+                hfPageRouteTemplate.Value = string.Empty;
+                var pageCache = PageCache.Read( detailPageReference.PageId );
+                if ( pageCache != null )
+                {
+                    var route = pageCache.PageRoutes.FirstOrDefault( a => a.Id == detailPageReference.RouteId );
+                    if ( route != null )
+                    {
+                        hfPageRouteTemplate.Value = route.Route;
+                    }
+                }
+
+                hfDetailPageUrl.Value = detailPageReference.BuildUrl().RemoveLeadingForwardslash();
+            }
 
             // Get EntityTypeName
             Guid? entityTypeGuid = GetAttributeValue( "EntityType" ).AsGuidOrNull();
@@ -146,6 +175,28 @@ namespace RockWeb.Blocks.Core
                     }
                 }
 
+                var excludeCategoriesGuids = this.GetAttributeValue( "ExcludeCategories" ).SplitDelimitedValues().AsGuidList();
+                List<int> excludedCategoriesIds = new List<int>();
+                if ( excludeCategoriesGuids != null && excludeCategoriesGuids.Any() )
+                {
+                    foreach ( var excludeCategoryGuid in excludeCategoriesGuids )
+                    {
+                        var excludedCategory = CategoryCache.Read( excludeCategoryGuid );
+                        if (excludedCategory != null)
+                        {
+                            excludedCategoriesIds.Add( excludedCategory.Id );
+                        }
+                    }
+                    
+                    parms += string.Format( "&excludedCategoryIds={0}", excludedCategoriesIds.AsDelimited(",") );
+                }
+
+                string defaultIconCssClass = GetAttributeValue("DefaultIconCSSClass");
+                if ( !string.IsNullOrWhiteSpace( defaultIconCssClass ) )
+                {
+                    parms += string.Format( "&defaultIconCssClass={0}", defaultIconCssClass );
+                }
+
                 RestParms = parms;
 
                 var cachedEntityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeId );
@@ -161,12 +212,24 @@ namespace RockWeb.Blocks.Core
                     lAddItem.Text = entityTypeFriendlyName;
                 }
 
+                // Attempt to retrieve an EntityId from the Page URL parameters.
                 PageParameterName = GetAttributeValue( "PageParameterKey" );
+
+                string selectedNodeId = null;
+                
                 int? itemId = PageParameter( PageParameterName ).AsIntegerOrNull();
-                string selectedEntityType = cachedEntityType.Name;
-                if ( !itemId.HasValue )
+                string selectedEntityType;
+                if (itemId.HasValue)
                 {
+                    selectedNodeId = itemId.ToString();
+                    selectedEntityType = (cachedEntityType != null) ? cachedEntityType.Name : string.Empty;
+                }
+                else
+                {
+                    // If an EntityId was not specified, check for a CategoryId.
                     itemId = PageParameter( "CategoryId" ).AsIntegerOrNull();
+
+                    selectedNodeId = CategoryNodePrefix + itemId;
                     selectedEntityType = "category";
                 }
 
@@ -176,14 +239,14 @@ namespace RockWeb.Blocks.Core
 
                 CategoryCache selectedCategory = null;
 
-                if ( itemId.HasValue )
+                if ( !string.IsNullOrEmpty( selectedNodeId ) )
                 {
-                    hfSelectedItemId.Value = itemId.Value.ToString();
+                    hfSelectedItemId.Value = selectedNodeId;
                     List<string> parentIdList = new List<string>();
 
                     if ( selectedEntityType.Equals( "category" ) )
                     {
-                        selectedCategory = CategoryCache.Read( itemId.Value );
+                        selectedCategory = CategoryCache.Read( itemId.GetValueOrDefault() );
                     }
                     else
                     {
@@ -207,7 +270,8 @@ namespace RockWeb.Blocks.Core
                                         selectedCategory = CategoryCache.Read( entity.CategoryId.Value );
                                         if ( selectedCategory != null )
                                         {
-                                            parentIdList.Insert( 0, selectedCategory.Id.ToString() );
+                                            string categoryExpandedID = CategoryNodePrefix + selectedCategory.Id.ToString();
+                                            parentIdList.Insert( 0, CategoryNodePrefix + categoryExpandedID );
                                         }
                                     }
                                 }
@@ -222,7 +286,16 @@ namespace RockWeb.Blocks.Core
                         category = category.ParentCategory;
                         if ( category != null )
                         {
-                            parentIdList.Insert( 0, category.Id.ToString() );
+                            string categoryExpandedID = CategoryNodePrefix + category.Id.ToString();
+                            if ( !parentIdList.Contains( categoryExpandedID ) )
+                            {
+                                parentIdList.Insert( 0, categoryExpandedID );
+                            }
+                            else
+                            {
+                                // infinite recursion
+                                break;
+                            }
                         }
 
                     }
@@ -325,10 +398,13 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         protected override void ShowSettings()
         {
+            mdCategoryTreeConfig.Visible = true;
             var entityType = EntityTypeCache.Read( this.GetAttributeValue( "EntityType" ).AsGuid() );
             var rootCategory = new CategoryService( new RockContext() ).Get( this.GetAttributeValue( "RootCategory" ).AsGuid() );
+            
 
             cpRootCategory.EntityTypeId = entityType != null ? entityType.Id : 0;
+            
 
             // make sure the rootCategory matches the EntityTypeId (just in case they changed the EntityType after setting RootCategory
             if ( rootCategory != null && cpRootCategory.EntityTypeId == rootCategory.EntityTypeId )
@@ -343,6 +419,19 @@ namespace RockWeb.Blocks.Core
             cpRootCategory.Enabled = entityType != null;
             nbRootCategoryEntityTypeWarning.Visible = entityType == null;
 
+            var excludedCategories = new CategoryService( new RockContext() ).GetByGuids( this.GetAttributeValue( "ExcludeCategories" ).SplitDelimitedValues().AsGuidList() );
+            cpExcludeCategories.EntityTypeId = entityType != null ? entityType.Id : 0;
+
+            // make sure the excluded categories matches the EntityTypeId (just in case they changed the EntityType after setting excluded categories
+            if ( excludedCategories != null && excludedCategories.All( a => a.EntityTypeId == cpExcludeCategories.EntityTypeId)  )
+            {
+                cpExcludeCategories.SetValues( excludedCategories );
+            }
+            else
+            {
+                cpExcludeCategories.SetValue( null );
+            }
+
             mdCategoryTreeConfig.Show();
         }
 
@@ -355,10 +444,26 @@ namespace RockWeb.Blocks.Core
         {
             var selectedCategory = CategoryCache.Read( cpRootCategory.SelectedValue.AsInteger() );
             this.SetAttributeValue( "RootCategory", selectedCategory != null ? selectedCategory.Guid.ToString() : string.Empty );
+
+            var excludedCategoryIds = cpExcludeCategories.SelectedValuesAsInt();
+            var excludedCategoryGuids = new List<Guid>();
+            foreach (int excludedCategoryId in excludedCategoryIds)
+            {
+                var excludedCategory = CategoryCache.Read( excludedCategoryId );
+                if (excludedCategory != null)
+                {
+                    excludedCategoryGuids.Add( excludedCategory.Guid );
+                }
+            }
+
+            this.SetAttributeValue( "ExcludeCategories", excludedCategoryGuids.AsDelimited( "," ) );
+
             this.SaveAttributeValues();
 
             mdCategoryTreeConfig.Hide();
             Block_BlockUpdated( sender, e );
+
+            mdCategoryTreeConfig.Visible = false;
         }
     }
 }

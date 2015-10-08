@@ -1,0 +1,22 @@
+<html>
+<head></head>
+<body>
+
+<h1>Attendees Data JSON</h1>
+
+{% for row in Rows %}
+<pre>	
+	{{ row | ToJSON }}
+	
+	Parent: {{ row.Parent | ToJSON}}
+	Person: {{ row.Person | ToJSON}}
+	FirstVisits: {{ row.FirstVisits  | ToJSON}}
+	LastVisit: {{ row.LastVisit | ToJSON}}
+	AttendedSummaryDates: {{ row.AttendanceSummary | ToJSON }}
+</pre>	
+{% endfor %}
+
+</body>
+</html>
+
+

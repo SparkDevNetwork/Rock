@@ -271,6 +271,29 @@ namespace Rock.Security
 
             var entityTypeId = entity.TypeId;
 
+            // check for infinite recursion
+            var parentHistory = new List<ISecured>();
+            parentHistory.Add( entity );
+            foreach ( var parentAuth in new ISecured[] { entity.ParentAuthority, entity.ParentAuthorityPre } )
+            {
+                var parentAuthEntity = parentAuth;
+                while ( parentAuthEntity != null )
+                {
+                    // check if the exact same instance of an entity is already a parent (indicating we are spinning around recursively)
+                    if ( parentHistory.Any( a => a.TypeId  == parentAuthEntity.TypeId && a.Id == parentAuthEntity.Id && parentAuthEntity.Id > 0 ) )
+                    {
+                        // infinite recursion situation, so threat as if no rules were found and return NULL
+                        return null;
+                    }
+                    else
+                    {
+                        parentHistory.Add( parentAuthEntity );
+                    }
+
+                    parentAuthEntity = parentAuthEntity.ParentAuthority;
+                }
+            }
+
             // If there are entries in the Authorizations object for this entity type and entity instance, evaluate each 
                 // one to find the first one specific to the selected user or a role that the selected user belongs 
                 // to.  If a match is found return whether the user is allowed (true) or denied (false) access
@@ -329,12 +352,12 @@ namespace Rock.Security
 
             if ( entity.ParentAuthorityPre != null )
             {
-                parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, person );
+                parentAuthorized = entity.ParentAuthorityPre.IsAuthorized( action, person );
             }
 
             if ( !parentAuthorized.HasValue && entity.ParentAuthority != null )
             {
-                parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, person );
+                parentAuthorized = entity.ParentAuthority.IsAuthorized( action, person );
             }
 
             return parentAuthorized;

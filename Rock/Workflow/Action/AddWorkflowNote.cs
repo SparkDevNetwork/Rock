@@ -33,9 +33,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Add Workflow Note" )]
     [MemoField( "Note", "The note to add <span class='tip tip-lava'></span>", true, "", "", 0 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.WORKFLOW_NOTE_TYPE, "Note Type",
-        "The type of the note. The type determines the icon to display with note.",
-        true, false, Rock.SystemGuid.DefinedValue.WORKFLOW_NOTE_TYPE_SYSTEM_NOTE, "", 1 )]
+    [NoteTypeField( "Note Type", "The type of note to add.", false, "Rock.Model.Workflow", "", "", true, Rock.SystemGuid.NoteType.WORKFLOW_NOTE, "", 1 )]
     [BooleanField( "Is Alert", "Should this note be flagged as an alert", false, "", 2 )]
     public class AddWorkflowNote : ActionComponent
     {
@@ -54,22 +52,19 @@ namespace Rock.Workflow.Action
             if ( action != null && action.Activity != null &&
                 action.Activity.Workflow != null && action.Activity.Workflow.Id > 0 )
             {
-                var noteType = new NoteTypeService( rockContext ).Get( Rock.SystemGuid.NoteType.WORKFLOW_NOTE.AsGuid() );
-
                 var text = GetAttributeValue( action, "Note" ).ResolveMergeFields( GetMergeFields( action ) );
 
                 var note = new Note();
                 note.IsSystem = false;
                 note.IsAlert = GetAttributeValue( action, "IsAlert" ).AsBoolean();
-                note.NoteTypeId = noteType.Id;
                 note.EntityId = action.Activity.Workflow.Id;
                 note.Caption = string.Empty;
                 note.Text = text;
 
-                var  sourceType = DefinedValueCache.Read( GetAttributeValue( action, "NoteType" ) );
-                if ( sourceType != null )
+                var noteType = NoteTypeCache.Read( GetAttributeValue( action, "NoteType" ).AsGuid() );
+                if ( noteType != null )
                 {
-                    note.SourceTypeValueId = sourceType.Id;
+                    note.NoteTypeId = noteType.Id;
                 }
 
                 new NoteService( rockContext ).Add( note );

@@ -271,51 +271,95 @@ namespace Rock.Field.Types
         #region Filter Control
 
         /// <summary>
-        /// Gets the filter compare control.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <returns></returns>
-        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
-        {
-            var lbl = new Label();
-            lbl.ID = string.Format( "{0}_lIs", id );
-            lbl.AddCssClass( "data-view-filter-label" );
-            lbl.Text = "Is";
-            return lbl;
-        }
-
-        /// <summary>
         /// Gets the filter value control.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
-            var ddl = new RockDropDownList();
-            ddl.ID = string.Format( "{0}_ctlCompareValue", id );
-            ddl.AddCssClass( "js-filter-control" );
+            string yesText = "Yes";
+            string noText = "No";
+
+            if ( configurationValues != null )
+            {
+                if ( configurationValues.ContainsKey( "truetext" ) )
+                {
+                    yesText = configurationValues["truetext"].Value;
+                }
+                if ( configurationValues.ContainsKey( "falsetext" ) )
+                {
+                    noText = configurationValues["falsetext"].Value;
+                }
+            }
+
+            ListControl filterValueControl = new RockDropDownList();
+
+            filterValueControl.ID = string.Format( "{0}_ctlCompareValue", id );
+            filterValueControl.AddCssClass( "js-filter-control" );
 
             if ( !required )
             {
-                ddl.Items.Add( new ListItem() );
+                filterValueControl.Items.Add( new ListItem() );
             }
-            ddl.Items.Add( new ListItem( "True", "True" ) );
-            ddl.Items.Add( new ListItem( "False", "False" ) );
-            return ddl;
+            filterValueControl.Items.Add( new ListItem( yesText, "True" ) );
+            filterValueControl.Items.Add( new ListItem( noText, "False" ) );
+            return filterValueControl;
+        }
+
+        /// <summary>
+        /// Gets the filter compare control with the specified FilterMode
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
+        {
+            if ( filterMode == FilterMode.SimpleFilter )
+            {
+                // hide the compare control for SimpleFilter mode
+                RockDropDownList ddlCompare = ComparisonHelper.ComparisonControl( FilterComparisonType, required );
+                ddlCompare.ID = string.Format( "{0}_ddlCompare", id );
+                ddlCompare.AddCssClass( "js-filter-compare" );
+                ddlCompare.Visible = false;
+                return ddlCompare;
+            }
+            else
+            {
+                return base.FilterCompareControl( configurationValues, id, required, filterMode );
+            }
+        }
+    
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return true;
         }
 
         /// <summary>
         /// Gets the filter compare value.
         /// </summary>
         /// <param name="control">The control.</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override string GetFilterCompareValue( Control control )
+        public override string GetFilterCompareValue( Control control, FilterMode filterMode )
         {
-            return null;
+            if ( filterMode == FilterMode.SimpleFilter )
+            {
+                // hard code to EqualTo when in SimpleFilter mode (the comparison control is not visible)
+                return ComparisonType.EqualTo.ConvertToInt().ToString();
+            }
+            else
+            {
+                return base.GetFilterCompareValue( control, filterMode );
+            }
         }
 
         /// <summary>
@@ -326,23 +370,58 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            var ddl = control as DropDownList;
-            if (ddl != null )
+            var filterValueControl = control as ListControl;
+            if ( filterValueControl != null )
             {
-                return ddl.SelectedValue;
+                // Return the filter value only if a value has been selected.
+                return string.IsNullOrEmpty( filterValueControl.SelectedValue ) ? null : filterValueControl.SelectedValue;
             }
 
             return string.Empty;
         }
 
         /// <summary>
-        /// Sets the filter compare value.
+        /// Gets the filter value.
         /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="value">The value.</param>
-        public override void SetFilterCompareValue( Control control, string value )
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode )
         {
+            if (filterMode == FilterMode.SimpleFilter)
+            {
+                var values = new List<string>();
+
+                if ( filterControl != null )
+                {
+                    try
+                    {
+                        // hard code to EqualTo when in SimpleFilter mode (the comparison control is not visible)
+                        string compare = ComparisonType.EqualTo.ConvertToInt().ToString();
+                        string value = GetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues );
+
+                        if ( value != null )
+                        {
+                            // since SimpleFilter is limit to just IsEqual, only return FilterValues if they actually picked something
+                            values.Add( compare );
+                            values.Add( value );
+                        }
+                    }
+                    catch
+                    {
+                        // intentionally ignore error
+                    }
+                }
+
+                return values;
+            }
+            else
+            {
+                return base.GetFilterValues( filterControl, configurationValues, filterMode );
+            }
         }
+
 
         /// <summary>
         /// Sets the filter value value.
@@ -352,10 +431,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var ddl = control as DropDownList;
-            if ( ddl != null )
+            var filterValueControl = control as ListControl;
+            if ( filterValueControl != null )
             {
-                ddl.SetValue( value );
+                filterValueControl.SetValue( value );
             }
         }
 
@@ -371,22 +450,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Gets the filter format script.
-        /// </summary>
-        /// <param name="configurationValues"></param>
-        /// <param name="title">The title.</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// This script must set a javascript variable named 'result' to a friendly string indicating value of filter controls
-        /// a '$selectedContent' should be used to limit script to currently selected filter fields
-        /// </remarks>
-        public override string GetFilterFormatScript( Dictionary<string, ConfigurationValue> configurationValues, string title )
-        {
-            string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
-            return string.Format( "result = '{0} is ' + $('select', $selectedContent).find(':selected').text()", titleJs );
-        }
-
-        /// <summary>
         /// Gets a filter expression for an entity property value.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
@@ -399,17 +462,34 @@ namespace Rock.Field.Types
         {
             if ( filterValues.Count == 1 )
             {
+                // NOTE: this is for backwords compatility for filters that were saved when Boolean DataFilters didn't have a Compare Option
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
                 ConstantExpression constantExpression = Expression.Constant( bool.Parse( filterValues[0] ) );
                 ComparisonType comparisonType = ComparisonType.EqualTo;
                 return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
             }
-
-            return null;
+            else
+            {
+                return base.PropertyFilterExpression( configurationValues, filterValues, parameterExpression, propertyName, propertyType );
+            }
         }
 
         /// <summary>
-        /// Geta a filter expression for an attribute value.
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get
+            {
+                return ComparisonType.EqualTo | ComparisonType.NotEqualTo;
+            }
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an attribute value.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="filterValues">The filter values.</param>
@@ -419,13 +499,17 @@ namespace Rock.Field.Types
         {
             if ( filterValues.Count == 1 )
             {
+                // NOTE: this is for backwords compatility for filters that were saved when Boolean DataFilters didn't have a Compare Option
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
                 ConstantExpression constantExpression = Expression.Constant( filterValues[0] );
                 ComparisonType comparisonType = ComparisonType.EqualTo;
                 return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
             }
-
-            return null;
+            else
+            {
+                return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
+            }
+            
         }
 
         #endregion

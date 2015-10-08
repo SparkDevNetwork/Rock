@@ -46,6 +46,10 @@
         <asp:Literal ID="lResetSuccess" runat="server"></asp:Literal>
     </asp:Panel>
 
+    <asp:Panel ID="pnlResetUnavailable" runat="server" CssClass="alert alert-danger error">
+        <asp:Literal ID="lResetUnavailable" runat="server" ></asp:Literal> 
+    </asp:Panel>
+
     <asp:Panel ID="pnlDelete" runat="server" Visible="false">
 
         <asp:Literal ID="lDelete" runat="server"></asp:Literal>

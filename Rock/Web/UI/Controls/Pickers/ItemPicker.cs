@@ -50,6 +50,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the CSS Icon text.
         /// </summary>
         /// <value>
@@ -308,7 +325,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the selected value.
+        /// Gets the selected value.
         /// </summary>
         /// <value>
         /// The selected value.  NOTE: If nothing was previously set, it will return <see cref="Rock.Constants.None.IdValue"/>.
@@ -599,7 +616,7 @@ namespace Rock.Web.UI.Controls
                 {
                     string pickerLabelHtmlFormat = @"
                     <a class='picker-label' href='#'>
-                        <i class='{2}'></i>
+                        <i class='{2} icon-fw'></i>
                         <span id='selectedItemLabel_{0}' class='selected-names'>{1}</span>
                         <b class='fa fa-caret-down pull-right'></b>
                     </a>";
@@ -676,7 +693,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the selected value as int.
+        /// Gets the selected value as an integer, returning NULL if the selected value is "0"
         /// </summary>
         /// <param name="noneAsNull">if set to <c>true</c> [none as null].</param>
         /// <returns></returns>
@@ -762,7 +779,15 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSelect_Click( object sender, EventArgs e )
         {
-            SetValueOnSelect();
+            if ( this.AllowMultiSelect )
+            {
+                SetValuesOnSelect();
+            }
+            else
+            {
+                SetValueOnSelect();
+            }
+
             if ( SelectItem != null )
             {
                 SelectItem( sender, e );

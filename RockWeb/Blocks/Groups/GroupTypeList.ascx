@@ -25,6 +25,7 @@
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="Purpose" HeaderText="Purpose" SortExpression="Purpose" />
                             <Rock:RockBoundField DataField="GroupsCount" HeaderText="Group Count" SortExpression="GroupsCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:BoolField DataField="ShowInNavigation" HeaderText="Show in Navigation" SortExpression="ShowInNavigation" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gGroupType_Delete" />

@@ -87,7 +87,34 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof( IEnumerable<Rock.Model.Person> ); }
+            get { return typeof( IEnumerable<KidInfo> ); }
+        }
+
+        /// <summary>
+        /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field
+        /// To disable sorting for this field, return string.Empty;
+        /// </summary>
+        /// <param name="selection"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The sort expression.
+        /// </value>
+        public override string SortProperties( string selection )
+        {
+            // disable sorting on this column since it is an IEnumerable
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// little class so that we only need to fetch the columns that we need from Person
+        /// </summary>
+        private class KidInfo
+        {
+            public string NickName { get; set; }
+            public string LastName { get; set; }
+            public int? SuffixValueId { get; set; }
+            public Gender Gender { get; set; }
+            public DateTime? BirthDate { get; set; }
         }
 
         /// <summary>
@@ -98,7 +125,58 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
         {
-            return new ListDelimitedField();
+            var callbackField = new CallbackField();
+            var selectionParts = selection.Split( '|' );
+            bool includeGender = selectionParts.Length > 0 && selectionParts[0].AsBoolean();
+            bool includeAge = selectionParts.Length > 1 && selectionParts[1].AsBoolean();
+            callbackField.OnFormatDataValue += ( sender, e ) =>
+            {
+                var personList = e.DataValue as IEnumerable<KidInfo>;
+                if ( personList != null )
+                {
+                    var formattedList = new List<string>();
+                    foreach ( var person in personList )
+                    {
+                        var formattedPerson = Rock.Model.Person.FormatFullName( person.NickName, person.LastName, person.SuffixValueId );
+                        var formattedGenderAge = string.Empty;
+
+                        if ( includeGender && person.Gender != Gender.Unknown )
+                        {
+                            // return F for Female, M for Male
+                            if ( person.Gender == Gender.Female )
+                            {
+                                formattedGenderAge += "F";
+                            }
+                            else if ( person.Gender == Gender.Male )
+                            {
+                                formattedGenderAge += "M";
+                            }
+                        }
+
+                        int? age = Rock.Model.Person.GetAge( person.BirthDate );
+
+                        if ( includeAge && age.HasValue )
+                        {
+                            formattedGenderAge += " " + age.Value.ToString();
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( formattedGenderAge ) )
+                        {
+                            formattedPerson += " (" + formattedGenderAge.Trim() + ")";
+                        }
+
+                        formattedList.Add( formattedPerson );
+                    }
+
+                    e.FormattedValue = formattedList.AsDelimited( ", " );
+                }
+                else
+                {
+                    e.FormattedValue = string.Empty;
+                }
+            };
+
+            return callbackField;
         }
 
         /// <summary>
@@ -148,14 +226,20 @@ namespace Rock.Reporting.DataSelect.Person
             var familyGroupMembers = new GroupMemberService( context ).Queryable()
                 .Where( m => m.Group.GroupType.Guid == familyGuid );
 
-            // this returns Enumerable of Person for Children per row. The Grid then uses ListDelimiterField to convert the list into Children's Names
-            // sorted from oldest to youngest
+            // this returns Enumerable of KidInfo per row. See this.GetGridField to see how it is processed 
             var personChildrenQuery = new PersonService( context ).Queryable()
                 .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == adultGuid )
                     .SelectMany( m => m.Group.Members )
                     .Where( m => m.GroupRole.Guid == childGuid )
                     .OrderBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay )
-                    .Select( m => m.Person ).AsEnumerable() );
+                    .Select( m => new KidInfo 
+                    {
+                        NickName = m.Person.NickName,
+                        LastName = m.Person.LastName,
+                        SuffixValueId = m.Person.SuffixValueId,
+                        Gender = m.Person.Gender,
+                        BirthDate = m.Person.BirthDate
+                    }).AsEnumerable() );
 
             var selectChildrenExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personChildrenQuery, entityIdProperty, "p" );
 
@@ -169,7 +253,17 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
-            return new System.Web.UI.Control[] { };
+            RockCheckBox cbIncludeGender = new RockCheckBox();
+            cbIncludeGender.ID = parentControl.ID + "_cbIncludeGender";
+            cbIncludeGender.Text = "Include Gender";
+            parentControl.Controls.Add( cbIncludeGender );
+
+            RockCheckBox cbIncludeAge = new RockCheckBox();
+            cbIncludeAge.ID = parentControl.ID + "_cbIncludeAge";
+            cbIncludeAge.Text = "Include Age";
+            parentControl.Controls.Add( cbIncludeAge );
+
+            return new System.Web.UI.Control[] { cbIncludeGender, cbIncludeAge };
         }
 
         /// <summary>
@@ -190,7 +284,17 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
-            return null;
+            if ( controls.Count() == 2 )
+            {
+                RockCheckBox cbIncludeGender = controls[0] as RockCheckBox;
+                RockCheckBox cbIncludeAge = controls[1] as RockCheckBox;
+                if ( cbIncludeGender != null && cbIncludeAge != null )
+                {
+                    return string.Format( "{0}|{1}", cbIncludeGender.Checked.ToTrueFalse(), cbIncludeAge.Checked.ToTrueFalse() );
+                }
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -200,7 +304,20 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
-            // nothing to do
+            if ( controls.Count() == 2 )
+            {
+                string[] selectionValues = selection.Split( '|' );
+                if ( selectionValues.Length >= 2 )
+                {
+                    RockCheckBox cbIncludeGender = controls[0] as RockCheckBox;
+                    RockCheckBox cbIncludeAge = controls[1] as RockCheckBox;
+                    if ( cbIncludeGender != null && cbIncludeAge != null )
+                    {
+                        cbIncludeGender.Checked = selectionValues[0].AsBoolean();
+                        cbIncludeAge.Checked = selectionValues[1].AsBoolean();
+                    }
+                }
+            }
         }
 
         #endregion

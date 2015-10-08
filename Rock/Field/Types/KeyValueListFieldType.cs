@@ -39,6 +39,7 @@ namespace Rock.Field.Types
         {
             var configKeys = base.ConfigurationKeys();
             configKeys.Insert(0, "keyprompt" );
+            configKeys.Insert( 0, "displayvaluefirst" );
             return configKeys;
         }
 
@@ -57,6 +58,11 @@ namespace Rock.Field.Types
             tbKeyPrompt.Label = "Key Prompt";
             tbKeyPrompt.Help = "The text to display as a prompt in the key textbox.";
 
+            var cbDisplayValueFirst = new RockCheckBox();
+            controls.Insert( 4, cbDisplayValueFirst );
+            cbDisplayValueFirst.Label = "Display Value First";
+            cbDisplayValueFirst.Help = "Reverses the display order of the key and the value.";
+
             return controls;
         }
 
@@ -72,6 +78,7 @@ namespace Rock.Field.Types
             configurationValues.Add( "valueprompt", new ConfigurationValue( "Label Prompt", "The text to display as a prompt in the label textbox.", "" ) );
             configurationValues.Add( "definedtype", new ConfigurationValue( "Defined Type", "Optional Defined Type to select values from, otherwise values will be free-form text fields", "" ) );
             configurationValues.Add( "customvalues", new ConfigurationValue( "Custom Values", "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1:text1,value2:text2,value3:text3,...'.", "" ) );
+            configurationValues.Add( "displayvaluefirst", new ConfigurationValue( "Display Value First", "Reverses the display order of the key and the value.", "" ) );
 
             if ( controls != null )
             {
@@ -90,6 +97,10 @@ namespace Rock.Field.Types
                 if ( controls.Count > 3 && controls[3] != null && controls[3] is RockTextBox )
                 {
                     configurationValues["customvalues"].Value = ( (RockTextBox)controls[3] ).Text;
+                }
+                if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox )
+                {
+                    configurationValues["displayvaluefirst"].Value = ( (RockCheckBox)controls[4] ).Checked.ToString();
                 }
             }
 
@@ -122,6 +133,10 @@ namespace Rock.Field.Types
                 {
                    ( (RockTextBox)controls[3] ).Text = configurationValues["customvalues"].Value;
                 }
+                if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox && configurationValues.ContainsKey( "displayvaluefirst" ) )
+                {
+                    ( (RockCheckBox)controls[4] ).Checked = configurationValues["displayvaluefirst"].Value.AsBoolean();
+                }
             }
         }
 
@@ -145,7 +160,7 @@ namespace Rock.Field.Types
             string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
             foreach ( string nameValue in nameValues )
             {
-                string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                string[] nameAndValue = nameValue.Split( new char[] { '^' } );
                 if ( nameAndValue.Length == 2 && isDefinedType )
                 {
                     var definedValue = DefinedValueCache.Read( nameAndValue[1].AsInteger() );
@@ -153,9 +168,9 @@ namespace Rock.Field.Types
                     {
                         nameAndValue[1] = definedValue.Value;
                     }
-                }
 
-                values.Add( string.Format( "{0}: {1}", nameAndValue[0], nameAndValue[1] ) );
+                    values.Add( string.Format( "{0}: {1}", nameAndValue[0], nameAndValue[1] ) );
+                }
             }
 
             return values.AsDelimited( ", " );
@@ -192,6 +207,11 @@ namespace Rock.Field.Types
                 if ( configurationValues.ContainsKey( "keyprompt" ) )
                 {
                     control.KeyPrompt = configurationValues["keyprompt"].Value;
+                }
+
+                if ( configurationValues.ContainsKey( "displayvaluefirst" ) )
+                {
+                    control.DisplayValueFirst = configurationValues["displayvaluefirst"].Value.AsBoolean();
                 }
             }
 
@@ -237,14 +257,59 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
-        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required )
+        public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
         {
-            // This fieldtype does not support filtering
+            // This field type does not support filtering
             return null;
         }
 
+        /// <summary>
+        /// Determines whether this filter has a filter control
+        /// </summary>
+        /// <returns></returns>
+        public override bool HasFilterControl()
+        {
+            return false;
+        }
+
         #endregion
+
+        /// <summary>
+        /// Gets the values from string.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public List<KeyValuePair<string, object>> GetValuesFromString( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            List<KeyValuePair<string, object>> values = new List<KeyValuePair<string, object>>();
+
+            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" );
+
+            string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            foreach ( string nameValue in nameValues )
+            {
+                string[] nameAndValue = nameValue.Split( new char[] { '^' } );
+                if ( nameAndValue.Length == 2 && isDefinedType )
+                {
+                    var definedValue = DefinedValueCache.Read( nameAndValue[1].AsInteger() );
+                    if ( definedValue != null )
+                    {
+                        values.Add( new KeyValuePair<string, object>(nameAndValue[0], definedValue));
+                    }
+                    else
+                    {
+                        values.Add(  new KeyValuePair<string, object>(nameAndValue[0], nameAndValue[1]) );
+                    }
+                }
+            }
+
+            return values;
+        }
       
     }
 }

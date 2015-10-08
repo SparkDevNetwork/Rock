@@ -48,6 +48,16 @@ namespace Rock.Migrations
             CreateIndex( "dbo.PersonAlias", "Guid", true );
             DropTable( "dbo.PersonMerged" );
 
+            try
+            {
+                // shift the starting Id for PersonAlias so minimize issues when PersonAliasId is confused with PersonId
+                Sql( "DBCC CHECKIDENT (PersonAlias, RESEED, 10) " );
+            }
+            catch
+            {
+                // ignore if the database doesn't support that command (SQL Azure)
+            }
+
             Sql( @"
     INSERT INTO [PersonAlias] ([PersonId],[AliasPersonId],[AliasPersonGuid],[Guid])
     SELECT [Id], [Id], [Guid], NEWID() FROM [Person]

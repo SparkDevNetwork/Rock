@@ -82,6 +82,7 @@ namespace Rock.Model
         /// The icon CSS class.
         /// </value>
         [DataMember]
+        [MaxLength( 100 )]
         public string IconCssClass { get; set; }
 
         /// <summary>

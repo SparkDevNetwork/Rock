@@ -21,7 +21,7 @@
                     <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                     <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Path" CssClass="input-xlarge" />
                     <Rock:RockLiteral ID="lblStatus" runat="server" Label="Status" />
-                    <Rock:RockBulletedList ID="lstPages" runat="server" Label="Pages that use this block type"/>
+                    <Rock:RockLiteral ID="lPages" runat="server" Label="Pages that use this block type" />
                 </fieldset>
 
                 <div class="actions">

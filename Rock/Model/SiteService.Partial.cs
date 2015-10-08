@@ -65,5 +65,21 @@ namespace Rock.Model
 
             return canDelete;
         }
+
+        /// <summary>
+        /// Gets the Guid for the Site that has the specified Id
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Guid? GetGuid( int id )
+        {
+            var cacheItem = Rock.Web.Cache.SiteCache.Read( id );
+            if ( cacheItem != null )
+            {
+                return cacheItem.Guid;
+            }
+
+            return null;
+        }
     }
 }

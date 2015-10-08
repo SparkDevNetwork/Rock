@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Core
         /// </value>
         public EntityTypeCache TagEntityType { get; set; }
 
-        #endregion 
+        #endregion
 
         #region Control Methods
 
@@ -96,11 +96,22 @@ namespace RockWeb.Blocks.Core
                             if ( TagEntityType.Name == "Rock.Model.Person" )
                             {
                                 gReport.PersonIdField = "Id";
-                            }                            
-                            
+                            }
+
                             foreach ( var column in gReport.GetPreviewColumns( modelType ) )
                             {
                                 gReport.Columns.Add( column );
+                            }
+
+                            // Add a CreatedDateTime if one does not exist
+                            var gridBoundColumns = gReport.Columns.OfType<BoundField>();
+                            if ( gridBoundColumns.Any( c => c.DataField.Equals( "CreatedDateTime" ) ) == false )
+                            {
+                                BoundField addedDateTime = new DateField();
+                                addedDateTime.DataField = "CreatedDateTime";
+                                addedDateTime.SortExpression = "CreatedDateTime";
+                                addedDateTime.HeaderText = "Date Tagged";
+                                gReport.Columns.Add( addedDateTime );
                             }
 
                             // Add delete column
@@ -187,9 +198,43 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            var guids = new TaggedItemService( new RockContext() ).Queryable().Where( t => t.TagId == TagId.Value ).Select( t => t.EntityGuid ).ToList();
+            var guids = new TaggedItemService( new RockContext() ).Queryable().Where( t => t.TagId == TagId.Value )
+                .Select( t => new { t.EntityGuid, t.CreatedDateTime } )
+                .ToDictionary( o => o.EntityGuid, o => o.CreatedDateTime );
 
-            gReport.DataSource = InvokeServiceMethod( "GetListByGuids", new Type[] { typeof( List<Guid> ) }, new object[] { guids } );
+            var enumerable = InvokeServiceMethod( "GetListByGuids", new Type[] { typeof( List<Guid> ) }, new object[] { guids.Keys.ToList() } ) as System.Collections.IEnumerable;
+
+            // Since we don't really know what is in the "obj" that was returned, we check if it's
+            // enumerable then reuse the CreatedDateTime property of the DataSource if it has one.
+            // In the future, perhaps consider creating a merged data source so the CreatedDateTime
+            // property/column doesn't have to be hijacked.
+            if ( enumerable != null )
+            {
+                if ( enumerable is IEnumerable<Person> )
+                {
+                    enumerable = ( enumerable as IEnumerable<Person> ).AsQueryable().Sort( gReport.SortProperty ?? new SortProperty { Property = "Id" } ).ToList();
+                    gReport.AllowSorting = true;
+                }
+                else
+                {
+                    gReport.AllowSorting = false;
+                }
+
+                foreach ( var entity in enumerable )
+                {
+                    var property = entity.GetType().GetProperty( "CreatedDateTime" );
+                    var guid = entity.GetType().GetProperty( "Guid" );
+                    // Now re-set the CreatedDateTime with the tag's CreatedDateTime (if that property is in the entity)
+                    if ( property != null && guid != null )
+                    {
+                        var val = (Guid)guid.GetValue( entity, null );
+                        property.SetValue( entity, guids[val], null );
+                    }
+                }
+            }
+
+            gReport.DataSource = enumerable;
+
             gReport.DataBind();
         }
 
@@ -197,12 +242,12 @@ namespace RockWeb.Blocks.Core
         /// Sets the visible.
         /// </summary>
         /// <param name="visible">if set to <c>true</c> [visible].</param>
-        public void SetVisible( bool visible)
+        public void SetVisible( bool visible )
         {
             pnlContent.Visible = visible;
         }
-        
-        private object InvokeServiceMethod(string methodName, Type[] types, object[] parameters)
+
+        private object InvokeServiceMethod( string methodName, Type[] types, object[] parameters )
         {
             Type modelType = TagEntityType.GetEntityType();
 
@@ -228,7 +273,7 @@ namespace RockWeb.Blocks.Core
                 if ( serviceInstance != null )
                 {
                     MethodInfo method = serviceInstance.GetType().GetMethod( methodName, types );
-                    if (method != null)
+                    if ( method != null )
                     {
                         return method.Invoke( serviceInstance, parameters );
                     }
@@ -240,5 +285,5 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
-}
+    }
 }

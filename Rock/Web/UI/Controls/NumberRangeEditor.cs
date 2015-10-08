@@ -48,6 +48,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the help text.
         /// </summary>
         /// <value>
@@ -220,6 +237,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the range label (the label between the two number boxes). Defaults to "to"
+        /// </summary>
+        /// <value>
+        /// The range label.
+        /// </value>
+        public string RangeLabel
+        {
+            get
+            {
+                return (ViewState["RangeLabel"] as string ) ?? "to";
+            }
+
+            set
+            {
+                ViewState["RangeLabel"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the minimum value that either number can be
         /// </summary>
         /// <value>
@@ -271,7 +307,6 @@ namespace Rock.Web.UI.Controls
                 _tbLowerValue.MaximumValue = value;
                 _tbUpperValue.MaximumValue = value;
             }
-
         }
 
         #endregion
@@ -301,14 +336,13 @@ namespace Rock.Web.UI.Controls
 
             _tbLowerValue = new NumberBox();
             _tbLowerValue.ID = this.ID + "_lower";
-            _tbLowerValue.CssClass = "input-width-md";
+            _tbLowerValue.CssClass = "input-width-md js-number-range-lower";
             Controls.Add( _tbLowerValue );
 
             _tbUpperValue = new NumberBox();
             _tbUpperValue.ID = this.ID + "_upper";
-            _tbUpperValue.CssClass = "input-width-md";
+            _tbUpperValue.CssClass = "input-width-md js-number-range-upper";
             Controls.Add( _tbUpperValue );
-
         }
 
         /// <summary>
@@ -324,17 +358,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// This is where you implement the simple aspects of rendering your control.  The rest
         /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl(HtmlTextWriter writer)
         {
-            writer.AddAttribute( "class", "form-control-group" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control-group " + this.CssClass );
+            writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _tbLowerValue.RenderControl( writer );
-            writer.Write( "<span class='to'> to </span>" );
+            writer.Write( "<span class='to'> " + this.RangeLabel + " </span>" );
             _tbUpperValue.RenderControl( writer );
 
             writer.RenderEndTag();
@@ -396,7 +431,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the delimited values.
+        /// Gets or sets the comma-delimited values.
         /// </summary>
         /// <value>
         /// The delimited values.

@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// <see cref="Grid"/> Column to display a boolean value.
     /// </summary>
     [ToolboxData( "<{0}:RockBoundField runat=server></{0}:RockBoundField>" )]
-    public class RockBoundField : BoundField, IPriorityColumn
+    public class RockBoundField : BoundField, IPriorityColumn, IRockGridField
     {
         /// <summary>
         /// Gets or sets the length of the truncate.
@@ -54,6 +54,17 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// When exporting a grid with an Export source of ColumnOutput, this property controls whether a column is included
+        /// in the export or not
+        /// </summary>
+        public virtual ExcelExportBehavior ExcelExportBehavior
+        {
+            get { return _excelExportBehavior; }
+            set { _excelExportBehavior = value; }
+        }
+        private ExcelExportBehavior _excelExportBehavior = ExcelExportBehavior.IncludeIfVisible;
+
+        /// <summary>
         /// Formats the specified field value for a cell in the <see cref="T:System.Web.UI.WebControls.BoundField" /> object.
         /// </summary>
         /// <param name="dataValue">The field value to format.</param>
@@ -72,6 +83,22 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the value that should be exported to Excel
+        /// </summary>
+        /// <param name="row">The row.</param>
+        /// <returns></returns>
+        public virtual object GetExportValue( GridViewRow row )
+        {
+            if ( row.DataItem is System.Data.DataRowView )
+            {
+                var dataRow = ( (System.Data.DataRowView)row.DataItem ).Row;
+                return dataRow[this.DataField];
+            }
+
+            return row.DataItem.GetPropertyValue( this.DataField );
+        }
+
+        /// <summary>
         /// Performs basic instance initialization for a data control field.
         /// </summary>
         /// <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
@@ -84,5 +111,6 @@ namespace Rock.Web.UI.Controls
             
             return base.Initialize( sortingEnabled, control );
         }
+
     }
 }

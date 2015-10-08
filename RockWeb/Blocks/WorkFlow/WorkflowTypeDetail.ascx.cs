@@ -618,6 +618,11 @@ namespace RockWeb.Blocks.WorkFlow
                         SaveAttributes( new WorkflowActivity().TypeId, "ActivityTypeId", workflowActivityType.Id.ToString(), ActivityAttributesState[workflowActivityType.Guid], rockContext );
                     }
 
+                    // Because the SaveAttributes above may have flushed the cached entity attribute cache, and it would get loaded again with
+                    // a different context, manually reload the cache now with our context to prevent a database lock conflict (when database is 
+                    // configured without snapshot isolation turned on)
+                    AttributeCache.LoadEntityAttributes( rockContext );
+
                     int workflowActionTypeOrder = 0;
                     foreach ( var editorWorkflowActionType in editorWorkflowActivityType.ActionTypes )
                     {
@@ -1811,6 +1816,7 @@ namespace RockWeb.Blocks.WorkFlow
                     a.Guid,
                     a.Name,
                     a.Description,
+                    a.Key,
                     FieldType = FieldTypeCache.GetName(a.FieldTypeId),
                     a.IsRequired
                 } )
@@ -1874,6 +1880,8 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 Helper.SaveAttributeEdits( attribute, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
+
+            AttributeCache.FlushEntityAttributes();
         }
 
         #endregion

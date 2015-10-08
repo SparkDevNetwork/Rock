@@ -36,11 +36,12 @@ namespace RockWeb.Blocks.Groups
     [Description( "Creates a navigation tree for groups of the configured group type(s)." )]
 
     [TextField( "Treeview Title", "Group Tree View", false, order: 1 )]
-    [GroupTypesField( "Group Types Include", "Select group types to show in this block.  Leave all unchecked to show all but the excluded group types.", false, key: "GroupTypes", order: 2 )]
-    [GroupTypesField( "Group Types Exclude", "Select group types to exclude from this block.", false, key: "GroupTypesExclude", order: 3 )]
+    [GroupTypesField( "Group Types Include", "Select any specific group types to show in this block. Leave all unchecked to show all group types where 'Show in Navigation' is enabled ( except for excluded group types )", false, key: "GroupTypes", order: 2 )]
+    [GroupTypesField( "Group Types Exclude", "Select group types to exclude from this block. Note that this setting is only effective if 'Group Types Include' has no specific group types selected.", false, key: "GroupTypesExclude", order: 3 )]
     [GroupField( "Root Group", "Select the root group to use as a starting point for the tree view.", false, order: 4 )]
     [BooleanField( "Limit to Security Role Groups", order: 5 )]
-    [LinkedPage( "Detail Page", order: 6 )]
+    [BooleanField( "Show Filter Option to include Inactive Groups", defaultValue: true, key: "ShowFilterOption", order: 6 )]
+    [LinkedPage( "Detail Page", order: 7 )]
     public partial class GroupTreeView : RockBlock
     {
         #region Fields
@@ -61,7 +62,30 @@ namespace RockWeb.Blocks.Groups
 
             _groupId = PageParameter( "GroupId" );
 
-            hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
+            var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( "DetailPage" ) );
+            
+            // NOTE: if the detail page is the current page, use the current route instead of route specified in the DetailPage (to preserve old behavoir)
+            if ( detailPageReference == null || detailPageReference.PageId == this.RockPage.PageId )
+            {
+                hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
+                hfDetailPageUrl.Value = new Rock.Web.PageReference( this.RockPage.PageId ).BuildUrl().RemoveLeadingForwardslash();
+            }
+            else
+            {
+                hfPageRouteTemplate.Value = string.Empty;
+                var pageCache = PageCache.Read( detailPageReference.PageId );
+                if ( pageCache != null )
+                {
+                    var route = pageCache.PageRoutes.FirstOrDefault( a => a.Id == detailPageReference.RouteId );
+                    if ( route != null )
+                    {
+                        hfPageRouteTemplate.Value = route.Route;
+                    }
+                }
+
+                hfDetailPageUrl.Value = detailPageReference.BuildUrl().RemoveLeadingForwardslash();
+            }
+
             hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
             Guid? rootGroupGuid = GetAttributeValue( "RootGroup" ).AsGuidOrNull();
             if ( rootGroupGuid.HasValue )
@@ -76,6 +100,17 @@ namespace RockWeb.Blocks.Groups
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upGroupType );
+
+            tglHideInactiveGroups.Visible = this.GetAttributeValue( "ShowFilterOption" ).AsBooleanOrNull() ?? true;
+            if ( tglHideInactiveGroups.Visible )
+            {
+                tglHideInactiveGroups.Checked = this.GetUserPreference( "HideInactiveGroups" ).AsBooleanOrNull() ?? true;
+            }
+            else
+            {
+                // if the filter is hidden, don't show inactive groups
+                tglHideInactiveGroups.Checked = true;
+            }
         }
 
         /// <summary>
@@ -85,7 +120,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            NavigateToPage( this.RockPage.Guid, new Dictionary<string,string>() );
+            NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
         }
 
         /// <summary>
@@ -140,8 +175,6 @@ namespace RockWeb.Blocks.Groups
 
             if ( !string.IsNullOrWhiteSpace( _groupId ) )
             {
-                
-
                 string key = string.Format( "Group:{0}", _groupId );
                 var rockContext = new RockContext();
                 Group selectedGroup = RockPage.GetSharedItem( key ) as Group;
@@ -177,7 +210,14 @@ namespace RockWeb.Blocks.Groups
 
                     if ( group != null )
                     {
-                        parentIdList.Insert( 0, group.Id.ToString() );
+                        if ( !parentIdList.Contains( group.Id.ToString() ) )
+                            parentIdList.Insert( 0, group.Id.ToString() );
+                        else
+                        {
+                            // The parent list already contains this node, so we have encountered a recursive loop.
+                            // Stop here and make the current node the root of the tree.
+                            group = null;
+                        }
                     }
                 }
 
@@ -202,7 +242,7 @@ namespace RockWeb.Blocks.Groups
 
                     // show the Add button if the selected Group's GroupType can have children and one or more of those child group types is allowed
                     if ( selectedGroup.GroupType.ChildGroupTypes.Count > 0 &&
-                        ( selectedGroup.GroupType.ChildGroupTypes.Any( c => IsGroupTypeIncluded(c.Id) ) ) )
+                        ( selectedGroup.GroupType.ChildGroupTypes.Any( c => IsGroupTypeIncluded( c.Id ) ) ) )
                     {
                         canAddChildGroup = canEditBlock;
 
@@ -245,6 +285,8 @@ namespace RockWeb.Blocks.Groups
             {
                 lbAddGroupChild.Enabled = false;
             }
+
+            hfIncludeInactiveGroups.Value = ( !tglHideInactiveGroups.Checked ).ToTrueFalse();
         }
 
         /// <summary>
@@ -256,12 +298,12 @@ namespace RockWeb.Blocks.Groups
         {
             List<int> includeGroupTypes = hfGroupTypesInclude.Value.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
             List<int> excludeGroupTypes = hfGroupTypesExclude.Value.SplitDelimitedValues().AsIntegerList();
-            if (includeGroupTypes.Any())
+            if ( includeGroupTypes.Any() )
             {
                 //// if includedGroupTypes has values, only include groupTypes from the includedGroupTypes list
-                return ( includeGroupTypes.Contains( groupTypeId ) ) ;
+                return ( includeGroupTypes.Contains( groupTypeId ) );
             }
-            else if ( excludeGroupTypes.Any())
+            else if ( excludeGroupTypes.Any() )
             {
                 //// if includedGroupTypes doesn't have anything, exclude groupTypes that are in the excludeGroupTypes list
                 return !excludeGroupTypes.Contains( groupTypeId );
@@ -318,10 +360,10 @@ namespace RockWeb.Blocks.Groups
         private void SetAllowedGroupTypes()
         {
             // limit GroupType selection to what Block Attributes allow
-            
+
             hfGroupTypesInclude.Value = string.Empty;
             List<Guid> groupTypeIncludeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().AsGuidList();
-            
+
             if ( groupTypeIncludeGuids.Any() )
             {
                 var groupTypeIdIncludeList = new List<int>();
@@ -356,6 +398,19 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Handles the CheckedChanged event of the tglHideInactiveGroups control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglHideInactiveGroups_CheckedChanged( object sender, EventArgs e )
+        {
+            this.SetUserPreference( "HideInactiveGroups", tglHideInactiveGroups.Checked.ToTrueFalse() );
+
+            // reload the whole page
+            NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
+        }
+
+        /// <summary>
         /// Finds the first group.
         /// </summary>
         /// <returns></returns>
@@ -364,7 +419,11 @@ namespace RockWeb.Blocks.Groups
             var groupService = new GroupService( new RockContext() );
             var includedGroupTypeIds = hfGroupTypesInclude.Value.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
             var excludedGroupTypeIds = hfGroupTypesExclude.Value.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
-            var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), includedGroupTypeIds, excludedGroupTypeIds );
+
+            // if specific group types are specified, show the groups regardless of ShowInNavigation
+            bool limitToShowInNavigation = !includedGroupTypeIds.Any();
+
+            var qry = groupService.GetChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), includedGroupTypeIds, excludedGroupTypeIds, !tglHideInactiveGroups.Checked, limitToShowInNavigation );
 
             foreach ( var group in qry.OrderBy( g => g.Name ) )
             {

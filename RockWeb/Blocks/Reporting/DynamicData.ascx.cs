@@ -52,16 +52,26 @@ namespace RockWeb.Blocks.Reporting
     [BooleanField( "Show Columns", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)", false, "CustomSetting" )]
     [TextField( "Columns", "The columns to hide or show", false, "", "CustomSetting" )]
     [CodeEditorField( "Formatted Output", "Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }}<br/> {% endfor %}",
-        CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
-    [BooleanField( "Person Report", "Is this report a list of people.?", false, "CustomSetting" )]
-    [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false, "", "CustomSetting" )]
+        CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
+    [BooleanField( "Person Report", "Is this report a list of people?", false, "CustomSetting" )]
 
+    [BooleanField( "Show Communicate", "Show Communicate button in grid footer?", true, "CustomSetting" )]
+    [BooleanField( "Show Merge Person", "Show Merge Person button in grid footer?", true, "CustomSetting" )]
+    [BooleanField( "Show Bulk Update", "Show Bulk Update button in grid footer?", true, "CustomSetting" )]
+    [BooleanField( "Show Excel Export", "Show Export to Excel button in grid footer?", true, "CustomSetting" )]
+    [BooleanField( "Show Merge Template", "Show Export to Merge Template button in grid footer?", true, "CustomSetting" )]
+
+    [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false, "", "CustomSetting" )]
+    [CodeEditorField( "Page Title Lava", "Optional Lava for setting the page title. If nothing is provided then the page's title will be used.",
+        CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
+
+    [BooleanField( "Paneled Grid", "Add the 'grid-panel' class to the grid to allow it to fit nicely in a block.", false, "Advanced" )]
     public partial class DynamicData : RockBlockCustomSettings
     {
         #region Fields
 
-        Dictionary<int, string> _sortExpressions = new Dictionary<int, string>();
-        bool _updatePage = true;
+        private Dictionary<int, string> _sortExpressions = new Dictionary<int, string>();
+        private bool _updatePage = true;
 
         #endregion
 
@@ -105,7 +115,7 @@ namespace RockWeb.Blocks.Reporting
 
         #region Events
 
-        void DynamicData_BlockUpdated( object sender, EventArgs e )
+        protected void DynamicData_BlockUpdated( object sender, EventArgs e )
         {
             BuildControls( true );
         }
@@ -145,7 +155,15 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( "Columns", tbColumns.Text );
             SetAttributeValue( "ShowColumns", ddlHideShow.SelectedValue );
             SetAttributeValue( "FormattedOutput", ceFormattedOutput.Text );
+            SetAttributeValue( "PageTitleLava", cePageTitleLava.Text );
             SetAttributeValue( "PersonReport", cbPersonReport.Checked.ToString() );
+
+            SetAttributeValue( "ShowCommunicate", ( cbPersonReport.Checked && cbShowCommunicate.Checked ).ToString() );
+            SetAttributeValue( "ShowMergePerson", ( cbPersonReport.Checked && cbShowMergePerson.Checked ).ToString() );
+            SetAttributeValue( "ShowBulkUpdate", ( cbPersonReport.Checked && cbShowBulkUpdate.Checked ).ToString() );
+            SetAttributeValue( "ShowExcelExport", cbShowExcelExport.Checked.ToString() );
+            SetAttributeValue( "ShowMergeTemplate", cbShowMergeTemplate.Checked.ToString() );
+
             SetAttributeValue( "MergeFields", tbMergeFields.Text );
             SaveAttributeValues();
 
@@ -226,9 +244,8 @@ namespace RockWeb.Blocks.Reporting
                     query = query.ResolveMergeFields( PageParameters() );
 
                     var parameters = GetParameters();
-                    return DbService.GetDataSet( query, GetAttributeValue("StoredProcedure").AsBoolean(false) ? CommandType.StoredProcedure : CommandType.Text, parameters );
+                    return DbService.GetDataSet( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters );
                 }
-
                 catch ( System.Exception ex )
                 {
                     errorMessage = ex.Message;
@@ -261,7 +278,15 @@ namespace RockWeb.Blocks.Reporting
             ddlHideShow.SelectedValue = GetAttributeValue( "ShowColumns" );
             tbColumns.Text = GetAttributeValue( "Columns" );
             ceFormattedOutput.Text = GetAttributeValue( "FormattedOutput" );
+            cePageTitleLava.Text = GetAttributeValue( "PageTitleLava" );
             cbPersonReport.Checked = GetAttributeValue( "PersonReport" ).AsBoolean();
+
+            cbShowCommunicate.Checked = GetAttributeValue( "ShowCommunicate" ).AsBoolean();
+            cbShowMergePerson.Checked = GetAttributeValue( "ShowMergePerson" ).AsBoolean();
+            cbShowBulkUpdate.Checked = GetAttributeValue( "ShowBulkUpdate" ).AsBoolean();
+            cbShowExcelExport.Checked = GetAttributeValue( "ShowExcelExport" ).AsBoolean();
+            cbShowMergeTemplate.Checked = GetAttributeValue( "ShowMergeTemplate" ).AsBoolean();
+
             tbMergeFields.Text = GetAttributeValue( "MergeFields" );
         }
 
@@ -284,10 +309,59 @@ namespace RockWeb.Blocks.Reporting
             else
             {
                 phContent.Controls.Clear();
+                var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
 
                 if ( dataSet != null )
                 {
                     string formattedOutput = GetAttributeValue( "FormattedOutput" );
+
+                    // load merge objects if needed by either for formatted output OR page title
+                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PageTitleLava" ) ) || !string.IsNullOrWhiteSpace( formattedOutput ) )
+                    {
+                        if ( CurrentPerson != null )
+                        {
+                            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                            mergeFields.Add( "Person", CurrentPerson );
+                            mergeFields.Add( "CurrentPerson", CurrentPerson );
+                        }
+
+                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                        mergeFields.Add( "Campuses", CampusCache.All() );
+                        mergeFields.Add( "PageParameter", PageParameters() );
+
+                        int i = 1;
+                        foreach ( DataTable dataTable in dataSet.Tables )
+                        {
+                            var dropRows = new List<DataRowDrop>();
+                            foreach ( DataRow row in dataTable.Rows )
+                            {
+                                dropRows.Add( new DataRowDrop( row ) );
+                            }
+
+                            if ( dataSet.Tables.Count > 1 )
+                            {
+                                var tableField = new Dictionary<string, object>();
+                                tableField.Add( "rows", dropRows );
+                                mergeFields.Add( "table" + i.ToString(), tableField );
+                            }
+                            else
+                            {
+                                mergeFields.Add( "rows", dropRows );
+                            }
+                            i++;
+                        }
+                    }
+
+                    // set page title
+                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PageTitleLava" ) ) )
+                    {
+                        string title = GetAttributeValue( "PageTitleLava" ).ResolveMergeFields( mergeFields );
+
+                        RockPage.BrowserTitle = title;
+                        RockPage.PageTitle = title;
+                        RockPage.Header.Title = title;
+                    }
+
                     if ( string.IsNullOrWhiteSpace( formattedOutput ) )
                     {
                         bool personReport = GetAttributeValue( "PersonReport" ).AsBoolean();
@@ -297,6 +371,12 @@ namespace RockWeb.Blocks.Reporting
                         {
                             var div = new HtmlGenericControl( "div" );
                             div.AddCssClass( "grid" );
+
+                            if ( GetAttributeValue( "PaneledGrid" ).AsBoolean() )
+                            {
+                                div.AddCssClass( "grid-panel" );
+                            }
+
                             phContent.Controls.Add( div );
 
                             var grid = new Grid();
@@ -304,6 +384,12 @@ namespace RockWeb.Blocks.Reporting
                             grid.ID = string.Format( "dynamic_data_{0}", tableId++ );
                             grid.AllowSorting = true;
                             grid.EmptyDataText = "No Results";
+                            grid.Actions.ShowCommunicate = GetAttributeValue( "ShowCommunicate" ).AsBoolean();
+                            grid.Actions.ShowMergePerson = GetAttributeValue( "ShowMergePerson" ).AsBoolean();
+                            grid.Actions.ShowBulkUpdate = GetAttributeValue( "ShowBulkUpdate" ).AsBoolean();
+                            grid.Actions.ShowExcelExport = GetAttributeValue( "ShowExcelExport" ).AsBoolean();
+                            grid.Actions.ShowMergeTemplate = GetAttributeValue( "ShowMergeTemplate" ).AsBoolean();
+
                             grid.GridRebind += gReport_GridRebind;
                             grid.RowSelected += gReport_RowSelected;
                             if ( personReport )
@@ -329,39 +415,6 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else
                     {
-                        var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                        if ( CurrentPerson != null )
-                        {
-                            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                            mergeFields.Add( "Person", CurrentPerson );
-                            mergeFields.Add( "CurrentPerson", CurrentPerson );
-                        }
-
-                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-                        mergeFields.Add( "Campuses", CampusCache.All() );
-
-                        int i = 1;
-                        foreach ( DataTable dataTable in dataSet.Tables )
-                        {
-                            var dropRows = new List<DataRowDrop>();
-                            foreach ( DataRow row in dataTable.Rows )
-                            {
-                                dropRows.Add( new DataRowDrop( row ) );
-                            }
-
-                            if ( dataSet.Tables.Count > 1 )
-                            {
-                                var tableField = new Dictionary<string, object>();
-                                tableField.Add( "rows", dropRows );
-                                mergeFields.Add( "table" + i.ToString(), tableField );
-                            }
-                            else
-                            {
-                                mergeFields.Add( "rows", dropRows );
-                            }
-                            i++;
-                        }
-
                         phContent.Controls.Add( new LiteralControl( formattedOutput.ResolveMergeFields( mergeFields ) ) );
                     }
                 }
@@ -369,18 +422,17 @@ namespace RockWeb.Blocks.Reporting
                 phContent.Visible = true;
                 nbError.Visible = false;
             }
-
         }
 
         /// <summary>
         /// Sets the data key names.
         /// </summary>
-        private void SetDataKeyNames(Grid grid, DataTable dataTable )
+        private void SetDataKeyNames( Grid grid, DataTable dataTable )
         {
             string urlMask = GetAttributeValue( "UrlMask" );
             if ( !string.IsNullOrWhiteSpace( urlMask ) )
             {
-                Regex pattern = new Regex( @"\{.+\}" );
+                Regex pattern = new Regex( @"\{[\w\s]+\}" );
                 var matches = pattern.Matches( urlMask );
                 if ( matches.Count > 0 )
                 {
@@ -399,7 +451,7 @@ namespace RockWeb.Blocks.Reporting
             }
             else
             {
-                if (dataTable.Columns.Contains("Id"))
+                if ( dataTable.Columns.Contains( "Id" ) )
                 {
                     grid.DataKeyNames = new string[1] { "Id" };
                 }
@@ -458,7 +510,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="dataTable">The data table.</param>
         private void AddGridColumns( Grid grid, DataTable dataTable )
         {
-            bool showColumns = bool.Parse( GetAttributeValue( "ShowColumns" ) );
+            bool showColumns = GetAttributeValue( "ShowColumns" ).AsBoolean();
             var columnList = GetAttributeValue( "Columns" ).SplitDelimitedValues().ToList();
 
             int rowsToEval = 10;
@@ -489,7 +541,6 @@ namespace RockWeb.Blocks.Reporting
                 {
                     bf = new BoolField();
                 }
-
                 else if ( dataTableColumn.DataType == typeof( DateTime ) )
                 {
                     bf = new DateField();
@@ -525,7 +576,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         /// <param name="dataTable">The data table.</param>
         /// <returns></returns>
-        private void SortTable( Grid grid, DataTable dataTable)
+        private void SortTable( Grid grid, DataTable dataTable )
         {
             System.Data.DataView dataView = dataTable.DefaultView;
 
@@ -539,7 +590,7 @@ namespace RockWeb.Blocks.Reporting
         #endregion
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class DataRowDrop : DotLiquid.Drop
         {

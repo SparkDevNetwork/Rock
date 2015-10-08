@@ -1,4 +1,9 @@
 /*
+----------------  Set Rock Instance Id  ----------------------
+*/
+UPDATE [Attribute] SET [Guid] = NEWID() WHERE [Key] = 'RockInstanceId'
+
+/*
 ----------------  Set Admin Passwd  ----------------------
 */
 

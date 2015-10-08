@@ -17,10 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Web;
-
 using Humanizer;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -40,7 +39,11 @@ namespace Rock.Communication
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        public static void Send( Guid emailTemplateGuid, List<RecipientData> recipients, string appRoot = "", string themeRoot = "" )
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        /// <exception cref="System.Exception">
+        /// Error sending System Email: Could not read Email Medium Entity Type
+        /// </exception>
+        public static void Send( Guid emailTemplateGuid, List<RecipientData> recipients, string appRoot = "", string themeRoot = "", bool createCommunicationHistory = true )
         {
             try
             {
@@ -63,7 +66,14 @@ namespace Rock.Communication
                                     {
                                         try
                                         {
-                                            transport.Send( template, recipients, appRoot, themeRoot );
+                                            if ( transport is Rock.Communication.Transport.SMTPComponent )
+                                            {
+                                                ( (Rock.Communication.Transport.SMTPComponent)transport ).Send( template, recipients, appRoot, themeRoot, createCommunicationHistory );
+                                            }
+                                            else
+                                            {
+                                                transport.Send( template, recipients, appRoot, themeRoot );
+                                            }
                                         }
                                         catch ( Exception ex1 )
                                         {
@@ -95,6 +105,91 @@ namespace Rock.Communication
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, HttpContext.Current );
+            }
+        }
+
+
+        /// <summary>
+        /// Sends the specified from email.
+        /// </summary>
+        /// <param name="fromEmail">From email.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="attachments">The attachments.</param>
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        public static void Send( string fromEmail, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "", List<Attachment> attachments = null, bool createCommunicationHistory = true )
+        {
+            Send( fromEmail, string.Empty, subject, recipients, message, appRoot, themeRoot, attachments, createCommunicationHistory );
+        }
+
+
+        /// <summary>
+        /// Sends the specified from email.
+        /// </summary>
+        /// <param name="fromEmail">From email.</param>
+        /// <param name="fromName">From name.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="attachments">The attachments.</param>
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        /// <exception cref="System.Exception">Error sending System Email: Could not read Email Medium Entity Type</exception>
+        public static void Send(string fromEmail, string fromName, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "", List<Attachment> attachments = null, bool createCommunicationHistory = true )
+        {
+            try
+            {
+                if ( recipients != null && recipients.Any() )
+                {
+                    var mediumEntity = EntityTypeCache.Read(Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid());
+                    if ( mediumEntity != null )
+                    {
+                        var medium = MediumContainer.GetComponent(mediumEntity.Name);
+                        if ( medium != null && medium.IsActive )
+                        {
+                            var transport = medium.Transport;
+                            if ( transport != null && transport.IsActive )
+                            {
+                                try
+                                {
+                                    if ( transport is Rock.Communication.Transport.SMTPComponent )
+                                    {
+                                        ( (Rock.Communication.Transport.SMTPComponent)transport ).Send( recipients, fromEmail, fromName ?? string.Empty, subject, message, appRoot, themeRoot, attachments, createCommunicationHistory );
+                                    }
+                                    else
+                                    {
+                                        transport.Send( recipients, fromEmail, fromName ?? string.Empty, subject, message, appRoot, themeRoot, attachments );
+                                    }
+
+                                }
+                                catch ( Exception ex1 )
+                                {
+                                    throw new Exception(string.Format("Error sending System Email ({0}).", subject), ex1);
+                                }
+                            }
+                            else
+                            {
+                                throw new Exception(string.Format("Error sending System Email: The '{0}' medium does not have a valid transport, or the transport is not active.", mediumEntity.FriendlyName));
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception(string.Format("Error sending System Email: The '{0}' medium does not exist, or is not active (type: {1}).", mediumEntity.FriendlyName, mediumEntity.Name));
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Error sending System Email: Could not read Email Medium Entity Type");
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException(ex, HttpContext.Current);
             }
         }
 
@@ -135,10 +230,9 @@ namespace Rock.Communication
         /// <param name="message">The message.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        /// <exception cref="System.Exception">
-        /// Error sending System Email: Could not read Email Medium Entity Type
-        /// </exception>
-        public static void NotifyAdmins( string subject, string message, string appRoot = "", string themeRoot = "" )
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        /// <exception cref="System.Exception">Error sending System Email: Could not read Email Medium Entity Type</exception>
+        public static void NotifyAdmins( string subject, string message, string appRoot = "", string themeRoot = "", bool createCommunicationHistory = true  )
         {
             try
             {
@@ -157,41 +251,7 @@ namespace Rock.Communication
                         .ToList();
                 }
 
-                if ( recipients != null && recipients.Any() )
-                {
-                    var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
-                    if ( mediumEntity != null )
-                    {
-                        var medium = MediumContainer.GetComponent( mediumEntity.Name );
-                        if ( medium != null && medium.IsActive )
-                        {
-                            var transport = medium.Transport;
-                            if ( transport != null && transport.IsActive )
-                            {
-                                try
-                                {
-                                    transport.Send( recipients, null, subject, message, appRoot, themeRoot );
-                                }
-                                catch ( Exception ex1 )
-                                {
-                                    throw new Exception( string.Format( "Error sending System Email ({0}).", subject ), ex1 );
-                                }
-                            }
-                            else
-                            {
-                                throw new Exception( string.Format( "Error sending System Email: The '{0}' medium does not have a valid transport, or the transport is not active.", mediumEntity.FriendlyName ) );
-                            }
-                        }
-                        else
-                        {
-                            throw new Exception( string.Format( "Error sending System Email: The '{0}' medium does not exist, or is not active (type: {1}).", mediumEntity.FriendlyName, mediumEntity.Name ) );
-                        }
-                    }
-                    else
-                    {
-                        throw new Exception( "Error sending System Email: Could not read Email Medium Entity Type" );
-                    }
-                }
+                Email.Send(GlobalAttributesCache.Value("OrganizationEmail"), subject, recipients, message, appRoot, themeRoot, null, createCommunicationHistory );
             }
             catch ( Exception ex )
             {

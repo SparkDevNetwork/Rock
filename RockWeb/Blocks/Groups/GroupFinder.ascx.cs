@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Groups
     [IntegerField( "Map Height", "", false, 600, "CustomSetting" )]
     [BooleanField( "Show Fence", "", false, "CustomSetting" )]
     [ValueListField( "Polygon Colors", "", false, "#f37833|#446f7a|#afd074|#649dac|#f8eba2|#92d0df|#eaf7fc", "#ffffff", null, null, "CustomSetting" )]
-    [CodeEditorField( "Map Info", "", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
+    [CodeEditorField( "Map Info", "", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
 <h4 class='margin-t-none'>{{ Group.Name }}</h4> 
 
 <div class='margin-b-sm'>
@@ -85,14 +85,18 @@ namespace RockWeb.Blocks.Groups
 {% endif %}
 
 {% if LinkedPages.RegisterPage != '' %}
-    <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}?GroupId={{ Group.Id }}'>Register</a>
+    {% if LinkedPages.RegisterPage contains '?' %}
+        <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}&GroupId={{ Group.Id }}'>Register</a>
+    {% else %}
+        <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}?GroupId={{ Group.Id }}'>Register</a>
+    {% endif %}
 {% endif %}
 ", "CustomSetting" )]
     [BooleanField( "Map Info Debug", "", false, "CustomSetting" )]
 
     // Lava Output Settings
     [BooleanField( "Show Lava Output", "", false, "CustomSetting" )]
-    [CodeEditorField( "Lava Output", "", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
+    [CodeEditorField( "Lava Output", "", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
 ", "CustomSetting" )]
     [BooleanField( "Lava Output Debug", "", false, "CustomSetting" )]
 
@@ -102,10 +106,16 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Proximity", "", false, "CustomSetting" )]
     [BooleanField( "Show Count", "", false, "CustomSetting" )]
     [BooleanField( "Show Age", "", false, "CustomSetting" )]
+    [BooleanField( "Show Description", "", true, "CustomSetting" )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Attribute Columns", "", false, true, "", "CustomSetting" )]
 
     public partial class GroupFinder : RockBlockCustomSettings
     {
+
+        #region Private Variables
+        private Guid _targetPersonGuid = Guid.Empty;
+        Dictionary<string, string> _urlParms = new Dictionary<string, string>();
+        #endregion
 
         #region Properties
 
@@ -188,11 +198,26 @@ namespace RockWeb.Blocks.Groups
 
             nbNotice.Visible = false;
 
+            if ( Request["PersonGuid"] != null )
+            {
+                Guid.TryParse( Request["PersonGuid"].ToString(), out _targetPersonGuid );
+                _urlParms.Add( "PersonGuid", _targetPersonGuid.ToString() );
+            }
+
             if ( !Page.IsPostBack )
             {
                 BindAttributes();
                 BuildDynamicControls();
-                ShowView();
+
+                if ( _targetPersonGuid != Guid.Empty )
+                {
+                    ShowViewForPerson( _targetPersonGuid );
+                }
+                else
+                {
+                    ShowView();
+                }
+                
             }
         }
 
@@ -273,6 +298,7 @@ namespace RockWeb.Blocks.Groups
 
             SetAttributeValue( "ShowGrid", cbShowGrid.Checked.ToString() );
             SetAttributeValue( "ShowSchedule", cbShowSchedule.Checked.ToString() );
+            SetAttributeValue( "ShowDescription", cbShowDescription.Checked.ToString() );
             SetAttributeValue( "ShowProximity", cbProximity.Checked.ToString() );
             SetAttributeValue( "ShowCount", cbShowCount.Checked.ToString() );
             SetAttributeValue( "ShowAge", cbShowAge.Checked.ToString() );
@@ -334,7 +360,8 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         void registerColumn_Click( object sender, RowEventArgs e )
         {
-            if ( !NavigateToLinkedPage( "RegisterPage", "GroupId", e.RowKeyId ) )
+            _urlParms.Add( "GroupId", e.RowKeyId.ToString() );
+            if ( !NavigateToLinkedPage( "RegisterPage", _urlParms ) )
             {
                 ShowResults();
             }
@@ -409,6 +436,7 @@ namespace RockWeb.Blocks.Groups
 
             cbShowGrid.Checked = GetAttributeValue( "ShowMap" ).AsBoolean();
             cbShowSchedule.Checked = GetAttributeValue( "ShowSchedule" ).AsBoolean();
+            cbShowDescription.Checked = GetAttributeValue( "ShowDescription" ).AsBoolean();
             cbProximity.Checked = GetAttributeValue( "ShowProximity" ).AsBoolean();
             cbShowCount.Checked = GetAttributeValue( "ShowCount" ).AsBoolean();
             cbShowAge.Checked = GetAttributeValue( "ShowAge" ).AsBoolean();
@@ -458,17 +486,50 @@ namespace RockWeb.Blocks.Groups
             cblGridAttributes.Visible = cblAttributes.Items.Count > 0;
         }
 
+        private void ShowViewForPerson(Guid targetPersonGuid)
+        {
+            // check for a specific person in the query string
+            Person targetPerson = null;
+            Location targetPersonLocation = null;
+
+            targetPerson = new PersonService( new RockContext() ).Queryable().Where( p => p.Guid == targetPersonGuid ).FirstOrDefault();
+            targetPersonLocation = targetPerson.GetHomeLocation();
+
+            if ( targetPerson != null )
+            {
+                lTitle.Text = String.Format( "<h4 class='margin-t-none'>Groups for {0}</h4>", targetPerson.FullName );
+                acAddress.SetValues( targetPersonLocation );
+                acAddress.Visible = false;
+                btnSearch.Visible = false;
+                btnClear.Visible = false;
+
+                if ( targetPersonLocation.GeoPoint != null )
+                {
+                    lTitle.Text += String.Format( "<p>Search based on: {0}</p>", targetPersonLocation.ToString() );
+
+                    ShowResults();
+                }
+                else
+                {
+                    lTitle.Text += String.Format( "<p>The position of the address on file ({0}) could not be determined.</p>", targetPersonLocation.ToString() );
+                }
+            }
+            
+        }
+
+
         /// <summary>
         /// Shows the view.
         /// </summary>
         private void ShowView()
-        {
+        {            
             // If the groups should be limited by geofence, or the distance should be displayed,
             // then we need to capture the person's address
             Guid? fenceTypeGuid = GetAttributeValue( "GeofencedGroupType" ).AsGuidOrNull();
             if ( fenceTypeGuid.HasValue || GetAttributeValue( "ShowProximity" ).AsBoolean() )
             {
                 acAddress.Visible = true;
+               
                 if ( CurrentPerson != null )
                 {
                     acAddress.SetValues( CurrentPerson.GetHomeLocation() );
@@ -552,13 +613,13 @@ namespace RockWeb.Blocks.Groups
             {
                 if ( ScheduleFilters.Contains( "Day" ) )
                 {
-                    var control = FieldTypeCache.Read( Rock.SystemGuid.FieldType.DAY_OF_WEEK ).Field.FilterControl( null, "filter_dow", false );
+                    var control = FieldTypeCache.Read( Rock.SystemGuid.FieldType.DAY_OF_WEEK ).Field.FilterControl( null, "filter_dow", false, Rock.Reporting.FilterMode.SimpleFilter );
                     AddFilterControl( control, "Day of Week", "The day of week that group meets on." );
                 }
 
                 if ( ScheduleFilters.Contains( "Time" ) )
                 {
-                    var control = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TIME ).Field.FilterControl( null, "filter_time", false );
+                    var control = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TIME ).Field.FilterControl( null, "filter_time", false, Rock.Reporting.FilterMode.SimpleFilter );
                     AddFilterControl( control, "Time of Day", "The time of day that group meets." );
                 }
             }
@@ -567,7 +628,7 @@ namespace RockWeb.Blocks.Groups
             {
                 foreach ( var attribute in AttributeFilters )
                 {
-                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false );
+                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
                     AddFilterControl( control, attribute.Name, attribute.Description );
                 }
             }
@@ -608,6 +669,12 @@ namespace RockWeb.Blocks.Groups
             }
 
             var registerPage = new PageReference( GetAttributeValue( "RegisterPage" ) );
+
+            if ( _targetPersonGuid != Guid.Empty )
+            {
+                registerPage.Parameters = _urlParms;
+            }
+
             if ( registerPage.PageId > 0 )
             {
                 var registerColumn = new EditField();
@@ -650,6 +717,7 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
+            gGroups.Columns[1].Visible = GetAttributeValue( "ShowDescription" ).AsBoolean();
             gGroups.Columns[2].Visible = GetAttributeValue( "ShowSchedule" ).AsBoolean();
             gGroups.Columns[3].Visible = GetAttributeValue( "ShowCount" ).AsBoolean();
             gGroups.Columns[4].Visible = GetAttributeValue( "ShowAge" ).AsBoolean();
@@ -662,7 +730,7 @@ namespace RockWeb.Blocks.Groups
             var groupService = new GroupService( rockContext );
             var groupQry = groupService
                 .Queryable( "GroupLocations.Location" )
-                .Where( g => g.IsActive && g.GroupType.Guid.Equals( groupTypeGuid.Value ) );
+                .Where( g => g.IsActive && g.GroupType.Guid.Equals( groupTypeGuid.Value ) && g.IsPublic);
 
             var groupParameterExpression = groupService.ParameterExpression;
             var schedulePropertyExpression = Expression.Property( groupParameterExpression, "Schedule" );
@@ -672,7 +740,7 @@ namespace RockWeb.Blocks.Groups
             {
                 var field = FieldTypeCache.Read( Rock.SystemGuid.FieldType.DAY_OF_WEEK ).Field;
 
-                var filterValues = field.GetFilterValues( dowFilterControl, null );
+                var filterValues = field.GetFilterValues( dowFilterControl, null, Rock.Reporting.FilterMode.SimpleFilter );
                 var expression = field.PropertyFilterExpression( null, filterValues, schedulePropertyExpression, "WeeklyDayOfWeek", typeof( DayOfWeek? ) );
                 groupQry = groupQry.Where( groupParameterExpression, expression, null );
             }
@@ -682,7 +750,7 @@ namespace RockWeb.Blocks.Groups
             {
                 var field = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TIME ).Field;
 
-                var filterValues = field.GetFilterValues( timeFilterControl, null );
+                var filterValues = field.GetFilterValues( timeFilterControl, null, Rock.Reporting.FilterMode.SimpleFilter );
                 var expression = field.PropertyFilterExpression( null, filterValues, schedulePropertyExpression, "WeeklyTimeOfDay", typeof( TimeSpan? ) );
                 groupQry = groupQry.Where( groupParameterExpression, expression, null );
             }
@@ -698,7 +766,7 @@ namespace RockWeb.Blocks.Groups
                     var filterControl = phFilterControls.FindControl( "filter_" + attribute.Id.ToString() );
                     if ( filterControl != null )
                     {
-                        var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues );
+                        var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                         var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
                         if ( expression != null )
                         {
@@ -776,7 +844,7 @@ namespace RockWeb.Blocks.Groups
                         if ( showProximity && personLocation != null && personLocation.GeoPoint != null )
                         {
                             double meters = groupLocation.Location.GeoPoint.Distance( personLocation.GeoPoint ) ?? 0.0D;
-                            double miles = meters / 1609.344;
+                            double miles = meters * Location.MilesPerMeter;
 
                             // If this group already has a distance calculated, see if this location is closer and if so, use it instead
                             if ( distances.ContainsKey( group.Id ) )
@@ -862,7 +930,17 @@ namespace RockWeb.Blocks.Groups
 
                             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
                             linkedPages.Add( "GroupDetailPage", LinkedPageUrl( "GroupDetailPage", null ) );
-                            linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", null ) );
+
+                            if ( _targetPersonGuid != Guid.Empty )
+                            {
+                                linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", _urlParms) );
+                            }
+                            else
+                            {
+                                linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", null ) );
+                            }
+                            
+                            
                             mergeFields.Add( "LinkedPages", linkedPages );
 
                             // add collection of allowed security actions
@@ -1101,7 +1179,7 @@ namespace RockWeb.Blocks.Groups
 
         var mapStyle = {3};
 
-        var pinShadow = new google.maps.MarkerImage('//chart.apis.google.com/chart?chst=d_map_pin_shadow',
+        var pinShadow = new google.maps.MarkerImage('//chart.googleapis.com/chart?chst=d_map_pin_shadow',
             new google.maps.Size(40, 37),
             new google.maps.Point(0, 0),
             new google.maps.Point(12, 35));
@@ -1176,7 +1254,7 @@ namespace RockWeb.Blocks.Groups
                     color = 'FE7569'
                 }}
 
-                var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + color,
+                var pinImage = new google.maps.MarkerImage('//chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + color,
                     new google.maps.Size(21, 34),
                     new google.maps.Point(0,0),
                     new google.maps.Point(10, 34));

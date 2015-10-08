@@ -277,19 +277,7 @@ namespace Rock.Model
         {
             get
             {
-                if ( !string.IsNullOrWhiteSpace( StorageEntitySettings ) )
-                {
-                    try
-                    {
-                        return Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>( StorageEntitySettings );
-                    }
-                    catch
-                    {
-                        // intentionally ignore error and just let it return an empty dictionary
-                    }
-                }
-
-                return new Dictionary<string, string>();
+                return StorageEntitySettings.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
             }
         }
 
@@ -366,7 +354,7 @@ namespace Rock.Model
                     // it should use the StorageEntityType that is associated with the BinaryFileType
                     if ( BinaryFileType != null )
                     {
-                        // if the storage provider changed, or any of it's settings specific 
+                        // if the storage provider changed, or any of its settings specific 
                         // to the binary file type changed, delete the original provider's content
                         if ( StorageEntityTypeId.HasValue && BinaryFileType.StorageEntityTypeId.HasValue )
                         {
@@ -388,7 +376,7 @@ namespace Rock.Model
                                 // Delete the current provider's storage
                                 StorageProvider.DeleteContent( this );
 
-                                // Set the new storage provider with it's settings
+                                // Set the new storage provider with its settings
                                 StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
                                 StorageEntitySettings = settingsJson;
                             }
@@ -416,7 +404,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Reads the file's content stream and conversts to a string.
+        /// Reads the file's content stream and converts to a string.
         /// </summary>
         /// <returns></returns>
         public string ContentsToString()
@@ -444,7 +432,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.BinaryFileType;
+                return this.BinaryFileType != null ? this.BinaryFileType : base.ParentAuthority;
             }
         }
 

@@ -49,7 +49,7 @@ namespace Rock.Reporting
         /// </value>
         public virtual string Section
         {
-            get { return "Other"; }
+            get { return "Advanced"; }
         }
 
         /// <summary>
@@ -75,6 +75,30 @@ namespace Rock.Reporting
         /// The name of the column property.
         /// </value>
         public abstract string ColumnPropertyName { get; }
+
+        /// <summary>
+        /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field 
+        /// To disable sorting for this field, return string.Empty;
+        /// </summary>
+        /// <value>
+        /// The sort expression.
+        /// </value>
+        public virtual string SortProperties ( string selection )
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Override this and set to true to have this field sort in the opposite direction
+        /// Normally this should be left as false unless there is a special case where it makes sense have it sort reversed
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        /// <value></value>
+        public virtual bool SortReversed( string selection )
+        {
+            return false;
+        }
 
         /// <summary>
         /// Gets the type of the column field.
@@ -280,6 +304,34 @@ namespace Rock.Reporting
         public virtual Expression GetExpression( System.Data.Entity.DbContext context, MemberExpression entityIdProperty, string selection )
         {
             return GetExpression( context as RockContext, entityIdProperty, selection );
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            string title = null;
+            try
+            {
+                title = this.GetTitle( null );
+            }
+            catch
+            {
+                //
+            }
+            
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                return title;
+            }
+            else
+            { 
+                return base.ToString();
+            }
         }
 
         #endregion

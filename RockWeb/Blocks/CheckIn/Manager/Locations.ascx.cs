@@ -268,7 +268,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         PhotoId = null,
                         LastCheckin = g.Max( a => a.StartDateTime ),
                         CheckedInNow = false,
-                        GroupName = ""
+                        ScheduleGroupNames = ""
                     } );
 
                 // Do the person search
@@ -293,7 +293,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                     Age = p.Age.ToString() ?? "",
                                     LastCheckin = c.LastCheckin,
                                     CheckedInNow = currentAttendeeIds.Contains( p.Id ),
-                                    GroupName = ""
+                                    ScheduleGroupNames = ""
                                 } )
                             .DefaultIfEmpty(
                                 new PersonResult
@@ -307,7 +307,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                     Age = p.Age.ToString() ?? "",
                                     LastCheckin = null,
                                     CheckedInNow = false,
-                                    GroupName = ""
+                                    ScheduleGroupNames = ""
                                 } ) )
                     .SelectMany( a => a )
                     .Distinct()
@@ -404,11 +404,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     {
                         if (person.CheckedInNow)
                         {
-                            lStatus.Text = "<span class='badge badge-success'>Checked In</span>";
+                            lStatus.Text = "<span class='badge badge-success'>Checked In</span><br/>";
                         }
                         else
                         {
-                            lStatus.Text = person.LastCheckin.Value.ToShortDateString();
+                            lStatus.Text = person.LastCheckin.Value.ToShortDateString() + "<br/>";
                         }
                     }
                     else
@@ -1072,15 +1072,22 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     CurrentNavPath = _configuredMode;
                 }
 
-                SetUserPreference( "CurrentNavPath", CurrentNavPath );
-
                 var pathParts = CurrentNavPath.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                int numParts = pathParts.Length - 1;
+                int numParts = pathParts.Length;
 
-                string itemKey = pathParts[numParts];
+                NavigationItem item = NavData.GetItem( pathParts[numParts-1] );
+                while (item == null && numParts > 1)
+                {
+                    numParts--;
+                    item = NavData.GetItem( pathParts[numParts-1] );
+                }
+                CurrentNavPath = pathParts.Take( numParts ).ToList().AsDelimited( "|" );
+
+                string itemKey = pathParts[numParts - 1];
                 string itemType = itemKey.Left( 1 );
                 int? itemId = itemKey.Length > 1 ? itemKey.Substring( 1 ).AsIntegerOrNull() : null;
-                NavigationItem item = NavData.GetItem( pathParts[numParts] );
+
+                SetUserPreference( "CurrentNavPath", CurrentNavPath );
 
                 var navItems = new List<NavigationItem>();
 
@@ -1184,8 +1191,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 pnlNavHeading.Visible = item != null;
                 if ( item != null )
                 {
-                    pnlNavHeading.Attributes["onClick"] = upnlContent.GetPostBackEventReference(
-                        pathParts.ToList().Take( numParts ).ToList().AsDelimited( "|" ) );
+                    if ( numParts > 0 )
+                    {
+                        pnlNavHeading.Attributes["onClick"] = upnlContent.GetPostBackEventReference(
+                            pathParts.ToList().Take( numParts - 1 ).ToList().AsDelimited( "|" ) );
+                    }
                     lNavHeading.Text = item.Name;
 
                     var locationItem = item as NavigationLocation;
@@ -1210,7 +1220,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         var dayStart = RockDateTime.Today;
                         var now = RockDateTime.Now;
                         var attendees = new AttendanceService( rockContext )
-                            .Queryable( "Group,PersonAlias.Person" ).AsNoTracking()
+                            .Queryable( "Group,PersonAlias.Person,Schedule" )
+                            .AsNoTracking()
                             .Where( a =>
                                 a.StartDateTime > dayStart &&
                                 a.StartDateTime < now &&
@@ -1220,31 +1231,24 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                 a.DidAttend.Value &&
                                 a.ScheduleId.HasValue &&
                                 activeSchedules.Contains( a.ScheduleId.Value ) )
-                            .Distinct()
-                            .OrderBy( a => a.PersonAlias.Person.NickName )
-                            .ThenBy( a => a.PersonAlias.Person.LastName )
                             .ToList();
 
-                        var results = attendees
-                            .Select( a => new
-                            {
-                                Person = a.PersonAlias.Person,
-                                Group = a.Group
-                            } )
-                            .Distinct()
-                            .Select( a => new PersonResult
-                            {
-                                Id = a.Person.Id,
-                                Guid = a.Person.Guid,
-                                Name = a.Person.FullName,
-                                Gender = a.Person.Gender,
-                                Age = a.Person.Age.ToString() ?? "",
-                                PhotoId = a.Person.PhotoId,
-                                GroupName = a.Group.Name
-                            } );
+                        var people = new List<PersonResult>();
+                        foreach ( var personId in attendees
+                            .OrderBy( a => a.PersonAlias.Person.NickName )
+                            .ThenBy( a => a.PersonAlias.Person.LastName )
+                            .Select( a => a.PersonAlias.PersonId )
+                            .Distinct() )
+                        {
+                            var matchingAttendees = attendees
+                                .Where( a => a.PersonAlias.PersonId == personId )
+                                .ToList();
+
+                            people.Add( new PersonResult( matchingAttendees ) );
+                        }
 
                         rptPeople.Visible = true;
-                        rptPeople.DataSource = results;
+                        rptPeople.DataSource = people;
                         rptPeople.DataBind();
                     }
                     else
@@ -1409,8 +1413,36 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public int? PhotoId { get; set; }
             public DateTime? LastCheckin { get; set; }
             public bool CheckedInNow { get; set; }
-            public string GroupName { get; set; }
+            public string ScheduleGroupNames { get; set; }
             public string Age { get; set; }
+            public bool ShowCancel { get; set; }
+
+            public PersonResult()
+            {
+                ShowCancel = false;
+            }
+
+            public PersonResult( List<Attendance> attendances )
+            {
+                ShowCancel = true;
+                if ( attendances.Any() )
+                {
+                    var person = attendances.First().PersonAlias.Person;
+                    Id = person.Id;
+                    Guid = person.Guid;
+                    Name = person.FullName;
+                    Gender = person.Gender;
+                    Age = person.Age.ToString() ?? "";
+                    PhotoId = person.PhotoId;
+
+                    ScheduleGroupNames = attendances
+                        .Select( a => a.Group.Name + " <small>(" + a.Schedule.Name + ")</small>" )
+                        .Distinct()
+                        .ToList()
+                        .AsDelimited( "<br/>" ) + "<br/>";
+
+                }
+            }
         }
 
         #endregion

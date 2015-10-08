@@ -27,30 +27,30 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for Audit
+    /// Base client model for Audit that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class Audit
+    public partial class AuditEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int /* AuditType*/ AuditType { get; set; }
+        public Rock.Client.Enums.AuditType AuditType { get; set; }
 
         /// <summary />
         public DateTime? DateTime { get; set; }
 
         /// <summary />
-        public ICollection<AuditDetail> Details { get; set; }
-
-        /// <summary />
         public int EntityId { get; set; }
 
         /// <summary />
-        public EntityType EntityType { get; set; }
+        public int EntityTypeId { get; set; }
 
         /// <summary />
-        public int EntityTypeId { get; set; }
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
 
         /// <summary />
         public int? PersonAliasId { get; set; }
@@ -62,7 +62,39 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source Audit object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Audit source )
+        {
+            this.Id = source.Id;
+            this.AuditType = source.AuditType;
+            this.DateTime = source.DateTime;
+            this.EntityId = source.EntityId;
+            this.EntityTypeId = source.EntityTypeId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
+            this.PersonAliasId = source.PersonAliasId;
+            this.Title = source.Title;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
+    }
+
+    /// <summary>
+    /// Client model for Audit that includes all the fields that are available for GETs. Use this for GETs (use AuditEntity for POST/PUTs)
+    /// </summary>
+    public partial class Audit : AuditEntity
+    {
+        /// <summary />
+        public ICollection<AuditDetail> Details { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
 
     }
 }

@@ -46,12 +46,15 @@ namespace RockWeb.Blocks.Cms
     {
         #region Fields
 
+        private const string STATUS_FILTER_SETTING = "ContentChannelItemView_StatusFilter";
+        private const string SELECTED_CHANNEL_SETTING = "ContentChannelItemView_SelectedChannelId";
+
         #endregion
 
         #region Properties
 
-        protected bool? StatusFilter { get; set; }
         protected int? SelectedChannelId { get; set; }
+        public List<AttributeCache> AvailableAttributes { get; set; }
 
         #endregion
 
@@ -65,10 +68,14 @@ namespace RockWeb.Blocks.Cms
         {
             base.LoadViewState( savedState );
 
-            StatusFilter = ViewState["StatusFilter"] as bool?;
             SelectedChannelId = ViewState["SelectedChannelId"] as int?;
 
-            //GetData();
+            if ( SelectedChannelId.HasValue )
+            {
+                var channel = new ContentChannelService( new RockContext() ).Get( SelectedChannelId.Value );
+                BindAttributes( channel );
+                AddDynamicControls( channel );
+            }
         }
 
         protected override void OnInit( EventArgs e )
@@ -99,7 +106,14 @@ namespace RockWeb.Blocks.Cms
             {
                 BindFilter();
 
+                tglStatus.Checked = GetUserPreference( STATUS_FILTER_SETTING ).AsBoolean();
+
                 SelectedChannelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
+                if ( !SelectedChannelId.HasValue )
+                {
+                    SelectedChannelId = GetUserPreference( SELECTED_CHANNEL_SETTING ).AsIntegerOrNull();
+                }
+
                 GetData();
             }
             else if ( eventTarget.StartsWith( gContentChannelItems.UniqueID ) )
@@ -117,7 +131,6 @@ namespace RockWeb.Blocks.Cms
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["StatusFilter"] = StatusFilter;
             ViewState["SelectedChannelId"] = SelectedChannelId;
             return base.SaveViewState();
         }
@@ -143,7 +156,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tgl_CheckedChanged( object sender, EventArgs e )
         {
-            StatusFilter = tglStatus.Checked;
+            SetUserPreference( STATUS_FILTER_SETTING, tglStatus.Checked.ToString() );
             GetData();
         }
 
@@ -154,11 +167,10 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptChannels_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            int? channelId = e.CommandArgument.ToString().AsIntegerOrNull();
-            if (channelId.HasValue)
-            {
-                SelectedChannelId = channelId.Value;
-            }
+            string selectedChannelValue = e.CommandArgument.ToString();
+            SetUserPreference( SELECTED_CHANNEL_SETTING, selectedChannelValue );
+
+            SelectedChannelId = selectedChannelValue.AsIntegerOrNull();
 
             GetData();
         }
@@ -170,34 +182,47 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The e.</param>
         void gfFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            switch ( e.Key )
+            if ( AvailableAttributes != null && SelectedChannelId.HasValue )
             {
-                case "Date Range":
+                var attribute = AvailableAttributes.FirstOrDefault( a => MakeKeyUniqueToChannel( SelectedChannelId.Value, a.Key ) == e.Key );
+                if ( attribute != null )
+                {
+                    try
                     {
-                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
-                        break;
+                        var values = JsonConvert.DeserializeObject<List<string>>( e.Value );
+                        e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
+                        return;
                     }
-                case "Status":
+                    catch
                     {
-                        var status = e.Value.ConvertToEnumOrNull<ContentChannelItemStatus>();
-                        if (status.HasValue)
-                        {
-                            {
-                                e.Value = status.ConvertToString();
-                            }
-                        }
-                        break;
+                        // intentionally ignore
                     }
-                case "Title":
-                    {
-                        break;
-                    }
-                default:
-                    {
-                        e.Value = string.Empty;
-                        break;
-                    }
+                }
             }
+
+            if ( e.Key == "Date Range" )
+            {
+                e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+            }
+            else if ( e.Key == "Status" )
+            {
+                var status = e.Value.ConvertToEnumOrNull<ContentChannelItemStatus>();
+                if ( status.HasValue )
+                {
+                    {
+                        e.Value = status.ConvertToString();
+                    }
+                }
+            }
+            else if ( e.Key == "Title" )
+            {
+                return;
+            }
+            else
+            {
+                e.Value = string.Empty;
+            }
+
         }
 
         /// <summary>
@@ -210,6 +235,26 @@ namespace RockWeb.Blocks.Cms
             gfFilter.SaveUserPreference( "Date Range", drpDateRange.DelimitedValues );
             gfFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             gfFilter.SaveUserPreference( "Title", tbTitle.Text );
+
+            if ( SelectedChannelId.HasValue && AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                    if ( filterControl != null )
+                    {
+                        try
+                        {
+                            var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                            gfFilter.SaveUserPreference( MakeKeyUniqueToChannel( SelectedChannelId.Value, attribute.Key ), attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                        }
+                        catch
+                        {
+                            // intentionally ignore
+                        }
+                    }
+                }
+            }
 
             GetData();
         }
@@ -342,7 +387,7 @@ namespace RockWeb.Blocks.Cms
                 } );
 
             // If displaying active only, update query to exclude those content channels without any items
-            if ( StatusFilter.HasValue && StatusFilter.Value )
+            if ( tglStatus.Checked )
             {
                 qry = qry.Where( c => c.Count > 0 );
             }
@@ -366,8 +411,9 @@ namespace RockWeb.Blocks.Cms
             {
                 // show the content item panel
                 divItemPanel.Visible = true;
-                
-                AddColumns( selectedChannel );
+
+                BindAttributes( selectedChannel );
+                AddDynamicControls( selectedChannel );
 
                 var itemQry = itemService.Queryable()
                     .Where( i => i.ContentChannelId == selectedChannel.Id );
@@ -388,7 +434,7 @@ namespace RockWeb.Blocks.Cms
                 if ( drp.UpperValue.HasValue )
                 {
                     DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-                    itemQry = itemQry.Where( i => i.StartDateTime < upperDate );
+                    itemQry = itemQry.Where( i => i.StartDateTime <= upperDate );
                 }
 
                 var status = gfFilter.GetUserPreference( "Status" ).ConvertToEnumOrNull<ContentChannelItemStatus>();
@@ -401,6 +447,33 @@ namespace RockWeb.Blocks.Cms
                 if (!string.IsNullOrWhiteSpace(title))
                 {
                     itemQry = itemQry.Where( i => i.Title.Contains( title ) );
+                }
+
+                // Filter query by any configured attribute filters
+                if ( AvailableAttributes != null && AvailableAttributes.Any() )
+                {
+                    var attributeValueService = new AttributeValueService( rockContext );
+                    var parameterExpression = attributeValueService.ParameterExpression;
+
+                    foreach ( var attribute in AvailableAttributes )
+                    {
+                        var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                        if ( filterControl != null )
+                        {
+                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                            var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
+                            if ( expression != null )
+                            {
+                                var attributeValues = attributeValueService
+                                    .Queryable()
+                                    .Where( v => v.Attribute.Id == attribute.Id );
+
+                                attributeValues = attributeValues.Where( parameterExpression, expression, null );
+
+                                itemQry = itemQry.Where( w => attributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
+                            }
+                        }
+                    }
                 }
 
                 var items = new List<ContentChannelItem>();
@@ -433,7 +506,8 @@ namespace RockWeb.Blocks.Cms
                     i.StartDateTime,
                     i.ExpireDateTime,
                     i.Priority,
-                    Status = DisplayStatus( i.Status )
+                    Status = DisplayStatus( i.Status ),
+                    Occurrences = i.EventItemOccurrences.Any()
                 } ).ToList();
                 gContentChannelItems.DataBind();
 
@@ -443,13 +517,36 @@ namespace RockWeb.Blocks.Cms
             {
                 divItemPanel.Visible = false;
             }
-
         }
 
-        protected void AddColumns( ContentChannel channel)
+        protected void BindAttributes( ContentChannel channel )
+        {
+            AvailableAttributes = new List<AttributeCache>();
+            int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
+            string channelId = channel.Id.ToString();
+            string channelTypeId = channel.ContentChannelTypeId.ToString();
+            foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
+                .Where( a =>
+                    a.EntityTypeId == entityTypeId &&
+                    a.IsGridColumn && ( (
+                        a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( channelTypeId )
+                    ) || (
+                        a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( channelId )
+                    ) ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
+            {
+                AvailableAttributes.Add( Rock.Web.Cache.AttributeCache.Read( attributeModel ) );       
+            }
+        }
+
+        protected void AddDynamicControls ( ContentChannel channel)
         {
             // Remove all columns
             gContentChannelItems.Columns.Clear();
+            phAttributeFilters.Controls.Clear();
 
             if ( channel != null )
             {
@@ -464,19 +561,42 @@ namespace RockWeb.Blocks.Cms
                 int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
                 string channelId = channel.Id.ToString();
                 string channelTypeId = channel.ContentChannelTypeId.ToString();
-                foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
-                    .Where( a =>
-                        a.EntityTypeId == entityTypeId &&
-                        a.IsGridColumn && ( (
-                            a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                            a.EntityTypeQualifierValue.Equals( channelTypeId )
-                        ) || (
-                            a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
-                            a.EntityTypeQualifierValue.Equals( channelId )
-                        ) ) )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name ) )
+                foreach ( var attribute in AvailableAttributes )
                 {
+                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
+                    if ( control != null )
+                    {
+                        if ( control is IRockControl )
+                        {
+                            var rockControl = (IRockControl)control;
+                            rockControl.Label = attribute.Name;
+                            rockControl.Help = attribute.Description;
+                            phAttributeFilters.Controls.Add( control );
+                        }
+                        else
+                        {
+                            var wrapper = new RockControlWrapper();
+                            wrapper.ID = control.ID + "_wrapper";
+                            wrapper.Label = attribute.Name;
+                            wrapper.Controls.Add( control );
+                            phAttributeFilters.Controls.Add( wrapper );
+                        }
+
+                        string savedValue = gfFilter.GetUserPreference( MakeKeyUniqueToChannel( channel.Id, attribute.Key ) );
+                        if ( !string.IsNullOrWhiteSpace( savedValue ) )
+                        {
+                            try
+                            {
+                                var values = JsonConvert.DeserializeObject<List<string>>( savedValue );
+                                attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, values );
+                            }
+                            catch
+                            {
+                                // intentionally ignore
+                            }
+                        }
+                    }
+
                     string dataFieldExpression = attribute.Key;
                     bool columnExists = gContentChannelItems.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
                     if ( !columnExists )
@@ -485,32 +605,48 @@ namespace RockWeb.Blocks.Cms
                         boundField.DataField = dataFieldExpression;
                         boundField.HeaderText = attribute.Name;
                         boundField.SortExpression = string.Empty;
-
-                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
-                        if ( attributeCache != null )
-                        {
-                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
-                        }
-
+                        boundField.ItemStyle.HorizontalAlign = attribute.FieldType.Field.AlignValue;
                         gContentChannelItems.Columns.Add( boundField );
                     }
                 }
 
-                // Add Start column
-                var startField = new DateTimeField();
-                startField.DataField = "StartDateTime";
-                startField.HeaderText = channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
-                startField.SortExpression = "StartDateTime";
-                gContentChannelItems.Columns.Add( startField );
-
-                // Expire column
-                if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                if ( channel.ContentChannelType.IncludeTime )
                 {
-                    var expireField = new DateTimeField();
-                    expireField.DataField = "ExpireDateTime";
-                    expireField.HeaderText = "Expire";
-                    expireField.SortExpression = "ExpireDateTime";
-                    gContentChannelItems.Columns.Add( expireField );
+                    // Add Start column
+                    var startField = new DateTimeField();
+                    startField.DataField = "StartDateTime";
+                    startField.HeaderText = channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
+                    startField.SortExpression = "StartDateTime";
+                    gContentChannelItems.Columns.Add( startField );
+
+                    // Expire column
+                    if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                    {
+                        var expireField = new DateTimeField();
+                        expireField.DataField = "ExpireDateTime";
+                        expireField.HeaderText = "Expire";
+                        expireField.SortExpression = "ExpireDateTime";
+                        gContentChannelItems.Columns.Add( expireField );
+                    }
+                }
+                else
+                {
+                    // Add Start column
+                    var startField = new DateField();
+                    startField.DataField = "StartDateTime";
+                    startField.HeaderText = channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
+                    startField.SortExpression = "StartDateTime";
+                    gContentChannelItems.Columns.Add( startField );
+
+                    // Expire column
+                    if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                    {
+                        var expireField = new DateField();
+                        expireField.DataField = "ExpireDateTime";
+                        expireField.HeaderText = "Expire";
+                        expireField.SortExpression = "ExpireDateTime";
+                        gContentChannelItems.Columns.Add( expireField );
+                    }
                 }
 
                 // Priority column
@@ -521,6 +657,7 @@ namespace RockWeb.Blocks.Cms
                 priorityField.DataFormatString = "{0:N0}";
                 priorityField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
                 gContentChannelItems.Columns.Add( priorityField );
+
 
                 // Status column
                 if ( channel.RequiresApproval )
@@ -533,6 +670,12 @@ namespace RockWeb.Blocks.Cms
                     statusField.HtmlEncode = false;
                 }
 
+                // Add Occurences Count column
+                var occurrencesField = new BoolField();
+                occurrencesField.DataField = "Occurrences";
+                occurrencesField.HeaderText = "Event Occurrences";
+                gContentChannelItems.Columns.Add( occurrencesField );
+                
                 bool canEditChannel = channel.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
                 gContentChannelItems.Actions.ShowAdd = canEditChannel;
                 gContentChannelItems.IsDeleteEnabled = canEditChannel;
@@ -545,6 +688,11 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
+        }
+
+        private string MakeKeyUniqueToChannel( int channelId, string key )
+        {
+            return string.Format( "{0}-{1}", channelId, key );
         }
 
         protected string DisplayStatus (ContentChannelItemStatus contentItemStatus)

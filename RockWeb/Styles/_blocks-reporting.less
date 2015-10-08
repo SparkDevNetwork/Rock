@@ -3,7 +3,7 @@
 
     1. SQL Command - block to query database directly
     2. Data Views - block for creating data views
-
+    3. Dynamic Report - block for making reports dynamically updated
 */
 
 
@@ -28,10 +28,6 @@
 
     & > span {
         float: left;
-    }
-
-    .panel-title {
-        margin-top: 4px;
     }
 
     .btn-toggle {
@@ -65,9 +61,28 @@
 }
 
 
+
+
 // Medium devices (desktops, 992px and up) 
 @media (min-width: @screen-md-min) {
     .filter-item div[class*='col']{
         margin-bottom: 0;
     }
+}
+
+// 3. Dynamic Report
+// -------------------------
+
+.filterfield {
+    margin-bottom: 12px;
+}
+
+.filterfield-label {
+    font-weight: @font-weight-semibold;
+    margin-top: 8px;
+    display: block;
+}
+
+.filterfield-checkbox label {
+
 }

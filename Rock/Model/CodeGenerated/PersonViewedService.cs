@@ -88,6 +88,8 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this PersonViewed target, PersonViewed source )
         {
             target.Id = source.Id;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IpAddress = source.IpAddress;
             target.Source = source.Source;
             target.TargetPersonAliasId = source.TargetPersonAliasId;

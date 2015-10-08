@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<ConnectionOpportunity>( Context ).Queryable().Any( a => a.GroupMemberRoleId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupTypeRole.FriendlyTypeName, ConnectionOpportunity.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<GroupMember>( Context ).Queryable().Any( a => a.GroupRoleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupTypeRole.FriendlyTypeName, GroupMember.FriendlyTypeName );
@@ -103,6 +109,8 @@ namespace Rock.Model
             target.CanEdit = source.CanEdit;
             target.CanView = source.CanView;
             target.Description = source.Description;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.GroupTypeId = source.GroupTypeId;
             target.IsLeader = source.IsLeader;
             target.IsSystem = source.IsSystem;
@@ -110,6 +118,7 @@ namespace Rock.Model
             target.MinCount = source.MinCount;
             target.Name = source.Name;
             target.Order = source.Order;
+            target.ReceiveRequirementsNotifications = source.ReceiveRequirementsNotifications;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

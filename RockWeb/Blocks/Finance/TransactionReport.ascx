@@ -35,7 +35,7 @@
                             <Rock:RockBoundField DataField="TransactionDateTime" DataFormatString="{0:d}" HeaderText="Date" />
                             <Rock:RockBoundField DataField="CurrencyType" HeaderText="Currency Type" HtmlEncode="false" />
                             <Rock:RockBoundField DataField="Summary" HeaderText="Summary" HtmlEncode="false" />
-                            <Rock:RockBoundField DataField="TotalAmount" DataFormatString="{0:C}" HeaderText="Amount" />
+                            <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" />
                         </Columns>
                     </Rock:Grid>
                 </div>

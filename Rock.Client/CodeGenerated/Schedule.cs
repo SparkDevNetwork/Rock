@@ -27,15 +27,12 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for Schedule
+    /// Base client model for Schedule that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class Schedule
+    public partial class ScheduleEntity
     {
         /// <summary />
         public int Id { get; set; }
-
-        /// <summary />
-        public Category Category { get; set; }
 
         /// <summary />
         public int? CategoryId { get; set; }
@@ -56,7 +53,18 @@ namespace Rock.Client
         public DateTime? EffectiveStartDate { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string iCalendarContent { get; set; }
+
+        /// <summary>
+        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
         public string Name { get; set; }
@@ -67,30 +75,81 @@ namespace Rock.Client
         /// <summary />
         public TimeSpan? WeeklyTimeOfDay { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public DateTime? CreatedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
+        /// </summary>
         public DateTime? ModifiedDateTime { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
         public int? CreatedByPersonAliasId { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source Schedule object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Schedule source )
+        {
+            this.Id = source.Id;
+            this.CategoryId = source.CategoryId;
+            this.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
+            this.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;
+            this.Description = source.Description;
+            this.EffectiveEndDate = source.EffectiveEndDate;
+            this.EffectiveStartDate = source.EffectiveStartDate;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
+            this.iCalendarContent = source.iCalendarContent;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Name = source.Name;
+            this.WeeklyDayOfWeek = source.WeeklyDayOfWeek;
+            this.WeeklyTimeOfDay = source.WeeklyTimeOfDay;
+            this.CreatedDateTime = source.CreatedDateTime;
+            this.ModifiedDateTime = source.ModifiedDateTime;
+            this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            this.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
+    }
+
+    /// <summary>
+    /// Client model for Schedule that includes all the fields that are available for GETs. Use this for GETs (use ScheduleEntity for POST/PUTs)
+    /// </summary>
+    public partial class Schedule : ScheduleEntity
+    {
+        /// <summary />
+        public Category Category { get; set; }
 
         /// <summary />
+        public string FriendlyScheduleText { get; set; }
+
+        /// <summary>
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
-
-        /// <summary />
+        /// <summary>
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
-
     }
 }

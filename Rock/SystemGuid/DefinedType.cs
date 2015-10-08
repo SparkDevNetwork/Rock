@@ -70,6 +70,11 @@ namespace Rock.SystemGuid
         public const string DISC_RESULTS_TYPE = "F06DDAD8-6058-4182-AD0A-B523BB7A2D78";
 
         /// <summary>
+        /// Guid for Entity Set Purpose
+        /// </summary>
+        public const string ENTITY_SET_PURPOSE = "618BBF3F-794F-4FF9-9615-9211CDBAF723";
+
+        /// <summary>
         /// Guid for External Application
         /// </summary>
         public const string EXTERNAL_APPLICATION = "1FAC459C-5F62-4E7C-8933-61FF9FE2DFEF";
@@ -213,11 +218,6 @@ namespace Rock.SystemGuid
         /// The REST allowed domains
         /// </summary>
         public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
-
-        /// <summary>
-        /// The workflow note type
-        /// </summary>
-        public const string WORKFLOW_NOTE_TYPE = "FDC7A191-717E-4CA6-9DCF-A2B5BB09C782";
 
         /// <summary>
         /// The school grades defined type which has values that determine which grade gext to display

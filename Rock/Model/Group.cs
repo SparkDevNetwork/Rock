@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
@@ -39,7 +40,6 @@ namespace Rock.Model
     [DataContract]
     public partial class Group : Model<Group>, IOrdered
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -81,6 +81,7 @@ namespace Rock.Model
         /// </value>
         [HideFromReporting]
         [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
         public int? CampusId { get; set; }
 
         /// <summary>
@@ -135,13 +136,12 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [Previewable]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
+        public bool IsActive		
+        {		
+            get { return _isActive; }		
+            set { _isActive = value; }		
+        }		
         private bool _isActive = true;
-        
 
         /// <summary>
         /// Gets or sets the display order of the group in the group list and group hierarchy. The lower the number the higher the 
@@ -154,7 +154,6 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
-
         /// <summary>
         /// Gets or sets whether group allows members to specify additional "guests" that will be part of the group (i.e. attend event)
         /// </summary>
@@ -163,6 +162,70 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool? AllowGuests { get; set; }
+
+        /// <summary>
+        /// Gets or sets the welcome system email template.
+        /// </summary>
+        /// <value>
+        /// The welcome system email.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        public int? WelcomeSystemEmailId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the exit system email template.
+        /// </summary>
+        /// <value>
+        /// The exit system email.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        public int? ExitSystemEmailId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data view to sync with.
+        /// </summary>
+        /// <value>
+        /// The sync data view.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        public int? SyncDataViewId { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether a user account should be generated when a person is added through the sync.
+        /// </summary>
+        /// <value>
+        /// The add user accounts through sync.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        public bool? AddUserAccountsDuringSync { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether a group member can only be added if all the GroupRequirements have been met
+        /// </summary>
+        /// <value>
+        /// The must meet requirements to add member.
+        /// </value>
+        [DataMember]
+        public bool? MustMeetRequirementsToAddMember { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the group should be shown in group finders
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is public; otherwise, <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public bool IsPublic
+        {
+            get { return _isPublic; }
+            set { _isPublic = value; }
+        }
+        private bool _isPublic = true;
 
         #endregion
 
@@ -202,6 +265,33 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Rock.Model.Schedule Schedule { get; set; }
+
+        /// <summary>
+        /// Gets or sets the welcome system email.
+        /// </summary>
+        /// <value>
+        /// The welcome system email.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.SystemEmail WelcomeSystemEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the exit system email.
+        /// </summary>
+        /// <value>
+        /// The exit system email.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.SystemEmail ExitSystemEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data view to sync with.
+        /// </summary>
+        /// <value>
+        /// The sync data view.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.DataView SyncDataView { get; set; }
 
         /// <summary>
         /// Gets or sets a collection the Groups that are children of this group.
@@ -246,6 +336,46 @@ namespace Rock.Model
         private ICollection<GroupLocation> _groupLocations;
 
         /// <summary>
+        /// Gets or sets the group requirements.
+        /// </summary>
+        /// <value>
+        /// The group requirements.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<GroupRequirement> GroupRequirements
+        {
+            get { return _groupsRequirements ?? ( _groupsRequirements = new Collection<GroupRequirement>() ); }
+            set { _groupsRequirements = value; }
+        }
+        private ICollection<GroupRequirement> _groupsRequirements;
+
+        /// <summary>
+        /// Gets or sets the group member workflow triggers.
+        /// </summary>
+        /// <value>
+        /// The group member workflow triggers.
+        /// </value>
+        public virtual ICollection<GroupMemberWorkflowTrigger> GroupMemberWorkflowTriggers
+        {
+            get { return _triggers ?? ( _triggers = new Collection<GroupMemberWorkflowTrigger>() ); }
+            set { _triggers = value; }
+        }
+        private ICollection<GroupMemberWorkflowTrigger> _triggers;
+
+        /// <summary>
+        /// Gets or sets the linkages.
+        /// </summary>
+        /// <value>
+        /// The linkages.
+        /// </value>
+        public virtual ICollection<EventItemOccurrenceGroupMap> Linkages
+        {
+            get { return _linkages ?? ( _linkages = new Collection<EventItemOccurrenceGroupMap>() ); }
+            set { _linkages = value; }
+        }
+        private ICollection<EventItemOccurrenceGroupMap> _linkages;
+        
+        /// <summary>
         /// Gets the securable object that security permissions should be inherited from.  If block is located on a page
         /// security will be inherited from the page, otherwise it will be inherited from the site.
         /// </summary>
@@ -257,7 +387,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.ParentGroup;
+                return this.ParentGroup != null ? this.ParentGroup : base.ParentAuthority;
             }
         }
 
@@ -278,6 +408,16 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Gets all the group member workflow triggers from the group and the group type sorted by order
+        /// </summary>
+        /// <param name="includeGroupTypeTriggers">if set to <c>true</c> [include group type triggers].</param>
+        /// <returns></returns>
+        public IOrderedEnumerable<GroupMemberWorkflowTrigger> GetGroupMemberWorkflowTriggers( bool includeGroupTypeTriggers = true )
+        {
+            return this.GroupMemberWorkflowTriggers.Union( this.GroupType.GroupMemberWorkflowTriggers ).OrderBy( a => a.Order ).ThenBy( a => a.Name );
+        }
 
         /// <summary>
         /// Determines whether the specified action is authorized.
@@ -320,6 +460,7 @@ namespace Rock.Model
                                 {
                                     return true;
                                 }
+
                                 if ( action == Authorization.EDIT && role.CanEdit )
                                 {
                                     return true;
@@ -334,6 +475,24 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns a list of the Group Requirements for this Group along with the status ordered by GroupRequirement Name
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <returns></returns>
+        public IEnumerable<PersonGroupRequirementStatus> PersonMeetsGroupRequirements( int personId, int? groupRoleId )
+        {
+            var result = new List<PersonGroupRequirementStatus>();
+            foreach ( var groupRequirement in this.GroupRequirements.OrderBy( a => a.GroupRequirementType.Name ) )
+            {
+                var requirementStatus = groupRequirement.PersonMeetsGroupRequirement( personId, groupRoleId );
+                result.Add( requirementStatus );
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the Group that represents this instance.
         /// </summary>
         /// <returns>
@@ -345,7 +504,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -364,6 +522,9 @@ namespace Rock.Model
             this.HasRequired( p => p.GroupType ).WithMany( p => p.Groups ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.WelcomeSystemEmail ).WithMany().HasForeignKey( p => p.WelcomeSystemEmailId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ExitSystemEmail ).WithMany().HasForeignKey( p => p.ExitSystemEmailId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.SyncDataView ).WithMany().HasForeignKey( p => p.SyncDataViewId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -375,7 +536,7 @@ namespace Rock.Model
     /// Represents a circular reference exception. This occurs when a group is set as a parent of a group that is higher in the group hierarchy. 
     /// </summary>
     /// <remarks>
-    ///  An example of this is when a child group is set as the parent of it's parent group.
+    ///  An example of this is when a child group is set as the parent of its parent group.
     /// </remarks>
     public class GroupParentCircularReferenceException : Exception
     {
@@ -389,5 +550,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

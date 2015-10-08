@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.btnLoad = new System.Windows.Forms.Button();
             this.btnGenerate = new System.Windows.Forms.Button();
@@ -40,12 +41,16 @@
             this.fbdRestOutput = new System.Windows.Forms.FolderBrowserDialog();
             this.cbClient = new System.Windows.Forms.CheckBox();
             this.lblAssemblyPath = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
+            this.lblAssembly = new System.Windows.Forms.Label();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.tbServiceFolder = new System.Windows.Forms.TextBox();
             this.tbRestFolder = new System.Windows.Forms.TextBox();
             this.tbClientFolder = new System.Windows.Forms.TextBox();
             this.fdbRockClient = new System.Windows.Forms.FolderBrowserDialog();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.lblAssemblyDateTime = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.lblDatabase = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnLoad
@@ -75,9 +80,9 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cblModels.FormattingEnabled = true;
-            this.cblModels.Location = new System.Drawing.Point(15, 54);
+            this.cblModels.Location = new System.Drawing.Point(15, 70);
             this.cblModels.Name = "cblModels";
-            this.cblModels.Size = new System.Drawing.Size(587, 292);
+            this.cblModels.Size = new System.Drawing.Size(587, 276);
             this.cblModels.TabIndex = 3;
             // 
             // cbSelectAll
@@ -155,17 +160,18 @@
             this.lblAssemblyPath.AutoSize = true;
             this.lblAssemblyPath.Location = new System.Drawing.Point(66, 38);
             this.lblAssemblyPath.Name = "lblAssemblyPath";
-            this.lblAssemblyPath.Size = new System.Drawing.Size(0, 13);
+            this.lblAssemblyPath.Size = new System.Drawing.Size(31, 13);
             this.lblAssemblyPath.TabIndex = 9;
+            this.lblAssemblyPath.Text = "none";
             // 
-            // label1
+            // lblAssembly
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 38);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(56, 13);
-            this.label1.TabIndex = 10;
-            this.label1.Text = "Assembly:";
+            this.lblAssembly.AutoSize = true;
+            this.lblAssembly.Location = new System.Drawing.Point(12, 38);
+            this.lblAssembly.Name = "lblAssembly";
+            this.lblAssembly.Size = new System.Drawing.Size(56, 13);
+            this.lblAssembly.TabIndex = 10;
+            this.lblAssembly.Text = "Assembly:";
             // 
             // progressBar1
             // 
@@ -212,16 +218,47 @@
             this.fdbRockClient.RootFolder = System.Environment.SpecialFolder.MyComputer;
             this.fdbRockClient.ShowNewFolderButton = false;
             // 
+            // lblAssemblyDateTime
+            // 
+            this.lblAssemblyDateTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblAssemblyDateTime.Location = new System.Drawing.Point(419, 38);
+            this.lblAssemblyDateTime.Name = "lblAssemblyDateTime";
+            this.lblAssemblyDateTime.Size = new System.Drawing.Size(183, 13);
+            this.lblAssemblyDateTime.TabIndex = 15;
+            this.lblAssemblyDateTime.Text = "unknown";
+            this.lblAssemblyDateTime.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(12, 54);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(57, 13);
+            this.label1.TabIndex = 16;
+            this.label1.Text = "Database:";
+            // 
+            // lblDatabase
+            // 
+            this.lblDatabase.AutoSize = true;
+            this.lblDatabase.Location = new System.Drawing.Point(66, 54);
+            this.lblDatabase.Name = "lblDatabase";
+            this.lblDatabase.Size = new System.Drawing.Size(31, 13);
+            this.lblDatabase.TabIndex = 17;
+            this.lblDatabase.Text = "none";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(614, 483);
+            this.Controls.Add(this.lblDatabase);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.lblAssemblyDateTime);
             this.Controls.Add(this.tbClientFolder);
             this.Controls.Add(this.tbRestFolder);
             this.Controls.Add(this.tbServiceFolder);
             this.Controls.Add(this.progressBar1);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.lblAssembly);
             this.Controls.Add(this.lblAssemblyPath);
             this.Controls.Add(this.cbClient);
             this.Controls.Add(this.cbService);
@@ -253,12 +290,16 @@
         private System.Windows.Forms.FolderBrowserDialog fbdRestOutput;
         private System.Windows.Forms.CheckBox cbClient;
         private System.Windows.Forms.Label lblAssemblyPath;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lblAssembly;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.TextBox tbServiceFolder;
         private System.Windows.Forms.TextBox tbRestFolder;
         private System.Windows.Forms.TextBox tbClientFolder;
         private System.Windows.Forms.FolderBrowserDialog fdbRockClient;
+        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.Label lblAssemblyDateTime;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lblDatabase;
     }
 }
 

@@ -244,18 +244,21 @@ namespace RockWeb.Blocks.WorkFlow
             // Set the note type if this is first request
             if ( !Page.IsPostBack )
             {
-                var noteType = new NoteTypeService( _rockContext ).Get( Rock.SystemGuid.NoteType.WORKFLOW_NOTE.AsGuid() );
-                ncWorkflowNotes.NoteTypeId = noteType.Id;
+                var entityType = EntityTypeCache.Read( typeof( Rock.Model.Workflow ) );
+                var noteTypes = NoteTypeCache.GetByEntity( entityType.Id, string.Empty, string.Empty );
+                ncWorkflowNotes.NoteTypes = noteTypes;
             }
 
             if ( _workflowType == null )
             {
+                ShowNotes( false );
                 ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Workflow type was not configured or specified correctly." );
                 return false;
             }
 
             if ( !_workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
+                ShowNotes( false );
                 ShowMessage( NotificationBoxType.Warning, "Sorry", "You are not authorized to view this type of workflow." );
                 return false;
             }
@@ -336,34 +339,23 @@ namespace RockWeb.Blocks.WorkFlow
                     }
 
                     List<string> errorMessages;
-                    if ( _workflow.Process( _rockContext, entity, out errorMessages ) )
+                    if ( !_workflowService.Process( _workflow, entity, out errorMessages ) )
                     {
-                        // If the workflow type is persisted, save the workflow
-                        if ( _workflow.IsPersisted || _workflowType.IsPersisted )
-                        {
-                            if ( _workflow.Id == 0 )
-                            {
-                                _workflowService.Add( _workflow );
-                            }
-
-                            _rockContext.WrapTransaction( () =>
-                            {
-                                _rockContext.SaveChanges();
-                                _workflow.SaveAttributeValues( _rockContext );
-                                foreach ( var activity in _workflow.Activities )
-                                {
-                                    activity.SaveAttributeValues( _rockContext );
-                                }
-                            } );
-
-                            WorkflowId = _workflow.Id;
-                        }
+                        ShowNotes( false );
+                        ShowMessage( NotificationBoxType.Danger, "Workflow Processing Error(s):",
+                            "<ul><li>" + errorMessages.AsDelimited( "</li><li>" ) + "</li></ul>" );
+                        return false;
+                    }
+                    if ( _workflow.Id != 0 )
+                    {
+                        WorkflowId = _workflow.Id;
                     }
                 }
             }
 
             if ( _workflow == null )
             {
+                ShowNotes( false );
                 ShowMessage( NotificationBoxType.Danger, "Workflow Activation Error", "Workflow could not be activated." );
                 return false;
             }
@@ -382,12 +374,12 @@ namespace RockWeb.Blocks.WorkFlow
 
                             _actionType = _action.ActionType;
                             ActionTypeId = _actionType.Id;
-                            return true;
+                            return true; 
                         }
                     }
                 }
 
-                var canEdit = IsUserAuthorized( Authorization.EDIT );
+                var canEdit = UserCanEdit || _workflow.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                 // Find first active action form
                 int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
@@ -395,6 +387,7 @@ namespace RockWeb.Blocks.WorkFlow
                     .Where( a =>
                         a.IsActive &&
                         (
+                            ( canEdit ) ||
                             ( !a.AssignedGroupId.HasValue && !a.AssignedPersonAliasId.HasValue ) ||
                             ( a.AssignedPersonAlias != null && a.AssignedPersonAlias.PersonId == personId ) ||
                             ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == personId ) )
@@ -523,7 +516,18 @@ namespace RockWeb.Blocks.WorkFlow
                     if ( formAttribute.IsReadOnly )
                     {
                         var field = attribute.FieldType.Field;
-                        string formattedValue = field.FormatValueAsHtml( phAttributes, value, attribute.QualifierValues );
+
+                        string formattedValue = null;
+
+                        // get formatted value 
+                        if ( attribute.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
+                        {
+                            formattedValue = attribute.FieldType.Field.FormatValueAsHtml( phAttributes, value, attribute.QualifierValues, true );
+                        }
+                        else
+                        {
+                            formattedValue = field.FormatValueAsHtml( phAttributes, value, attribute.QualifierValues );
+                        }
 
                         if ( formAttribute.HideLabel )
                         {
@@ -745,29 +749,10 @@ namespace RockWeb.Blocks.WorkFlow
                 }
 
                 List<string> errorMessages;
-                if ( _workflow.Process( _rockContext, out errorMessages ) )
+                if ( _workflowService.Process( _workflow, out errorMessages ) )
                 {
-                    if ( _workflow.IsPersisted || _workflowType.IsPersisted )
-                    {
-                        if ( _workflow.Id == 0 )
-                        {
-                            _workflowService.Add( _workflow );
-                        }
-
-                        _rockContext.WrapTransaction( () =>
-                        {
-                            _rockContext.SaveChanges();
-                            _workflow.SaveAttributeValues( _rockContext );
-                            foreach ( var activity in _workflow.Activities )
-                            {
-                                activity.SaveAttributeValues( _rockContext );
-                            }
-                        } );
-
-                        WorkflowId = _workflow.Id;
-                    }
-
                     int? previousActionId = null;
+                    
                     if ( _action != null )
                     {
                         previousActionId = _action.Id;
@@ -791,6 +776,10 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     ShowMessage( NotificationBoxType.Danger, "Workflow Processing Error(s):", 
                         "<ul><li>" + errorMessages.AsDelimited( "</li><li>" ) + "</li></ul>" );
+                }
+                if ( _workflow.Id != 0 )
+                {
+                    WorkflowId = _workflow.Id;
                 }
             }
         }

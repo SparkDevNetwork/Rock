@@ -114,7 +114,7 @@ namespace Rock.Web.UI.Controls
                 string workingPath = nodePath;
 
                 // Check to see if the nodepath starts with one of the prefixedMergeFields.  If so
-                // the node path should not split it's items on the first pipe character
+                // the node path should not split its items on the first pipe character
                 foreach ( string fieldId in prefixedMergeFieldIds )
                 {
                     if ( nodePath.StartsWith( fieldId ) )
@@ -169,7 +169,7 @@ namespace Rock.Web.UI.Controls
                     string workingPath = nodePath;
 
                     // Check to see if the nodepath starts with one of the prefixedMergeFields.  If so
-                    // the node path should not split it's items on the first pipe character
+                    // the node path should not split its items on the first pipe character
                     foreach ( string fieldId in prefixedMergeFieldIds )
                     {
                         if ( nodePath.StartsWith( fieldId ) )

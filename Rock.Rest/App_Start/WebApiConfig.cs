@@ -30,7 +30,7 @@ using Rock;
 namespace Rock.Rest
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class WebApiConfig
     {
@@ -46,6 +46,10 @@ namespace Rock.Rest
             config.Services.Replace( typeof( IExceptionHandler ), new RockApiExceptionHandler() );
             config.Formatters.Insert( 0, new Rock.Utility.RockJsonMediaTypeFormatter() );
 
+            // Change DateTimeZoneHandling to Unspecified instead of the default of RoundTripKind since Rock doesn't store dates in a timezone aware format
+            // So, since Rock doesn't do TimeZones, we don't want Transmission of DateTimes to specify TimeZone either.
+            config.Formatters.JsonFormatter.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Unspecified;
+
             // Add API route for dataviews
             config.Routes.MapHttpRoute(
                 name: "DataViewApi",
@@ -55,7 +59,46 @@ namespace Rock.Rest
                     action = "DataView"
                 } );
 
-            // finds all [Route] attributes on REST controllers and creates the routes 
+            // Add API route for DeleteAttributeValue
+            config.Routes.MapHttpRoute(
+                name: "DeleteAttributeValueApi",
+                routeTemplate: "api/{controller}/AttributeValue/{id}",
+                defaults: new
+                {
+                    action = "DeleteAttributeValue"
+                },
+                constraints: new
+                {
+                    httpMethod = new HttpMethodConstraint( new string[] { "DELETE" } ),
+                } );
+
+            // Add API route for SetAttributeValue
+            config.Routes.MapHttpRoute(
+                name: "SetAttributeValueApi",
+                routeTemplate: "api/{controller}/AttributeValue/{id}",
+                defaults: new
+                {
+                    action = "SetAttributeValue"
+                },
+                constraints: new
+                {
+                    httpMethod = new HttpMethodConstraint( new string[] { "POST" } ),
+                } );
+
+            // Add API route for setting context
+            config.Routes.MapHttpRoute(
+                name: "SetContextApi",
+                routeTemplate: "api/{controller}/SetContext/{id}",
+                defaults: new
+                {
+                    action = "SetContext"
+                },
+                constraints: new
+                {
+                    httpMethod = new HttpMethodConstraint( new string[] { "PUT", "OPTIONS" } ),
+                } );
+
+            // finds all [Route] attributes on REST controllers and creates the routes
             config.MapHttpAttributeRoutes();
 
             // Add any custom api routes
@@ -77,7 +120,7 @@ namespace Rock.Rest
             }
 
             //// Add Default API Service routes
-            //// Instead of being able to use one default route that gets action from http method, have to 
+            //// Instead of being able to use one default route that gets action from http method, have to
             //// have a default route for each method so that other actions do not match the default (i.e. DataViews).
             //// Also, this will make controller routes case-insensitive (vs the odata routing)
             config.Routes.MapHttpRoute(
@@ -134,6 +177,20 @@ namespace Rock.Rest
                } );
 
             config.Routes.MapHttpRoute(
+               name: "DefaultApiPatch",
+               routeTemplate: "api/{controller}/{id}",
+               defaults: new
+               {
+                   action = "PATCH",
+                   id = System.Web.Http.RouteParameter.Optional
+               },
+               constraints: new
+               {
+                   httpMethod = new HttpMethodConstraint( new string[] { "PATCH", "OPTIONS" } ),
+                   controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
+               } );
+
+            config.Routes.MapHttpRoute(
                 name: "DefaultApiPost",
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new
@@ -165,13 +222,25 @@ namespace Rock.Rest
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
 
             var entityTypeList = Reflection.FindTypes( typeof( Rock.Data.IEntity ) )
-                .Where( a => !a.Value.IsAbstract && ( a.Value.GetCustomAttribute<NotMappedAttribute>() == null ) && (a.Value.GetCustomAttribute<DataContractAttribute>() != null) )
+                .Where( a => !a.Value.IsAbstract && ( a.Value.GetCustomAttribute<NotMappedAttribute>() == null ) && ( a.Value.GetCustomAttribute<DataContractAttribute>() != null ) )
                 .OrderBy( a => a.Key ).Select( a => a.Value );
 
             foreach ( var entityType in entityTypeList )
             {
                 var entityTypeConfig = builder.AddEntity( entityType );
-                var entitySetConfig = builder.AddEntitySet( entityType.Name.Pluralize(), entityTypeConfig );
+                
+                var tableAttribute = entityType.GetCustomAttribute<TableAttribute>();
+                string name;
+                if ( tableAttribute != null )
+                {
+                    name = tableAttribute.Name.Pluralize();
+                }
+                else
+                {
+                    name = entityType.Name.Pluralize();
+                }
+
+                var entitySetConfig = builder.AddEntitySet( name, entityTypeConfig );
             }
 
             config.Routes.MapODataServiceRoute( "api", "api", builder.GetEdmModel() );

@@ -27,9 +27,9 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Simple Client Model for AuditDetail
+    /// Base client model for AuditDetail that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class AuditDetail
+    public partial class AuditDetailEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -41,6 +41,12 @@ namespace Rock.Client
         public string CurrentValue { get; set; }
 
         /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
         public string OriginalValue { get; set; }
 
         /// <summary />
@@ -50,7 +56,31 @@ namespace Rock.Client
         public Guid Guid { get; set; }
 
         /// <summary />
-        public string ForeignId { get; set; }
+        public int? ForeignId { get; set; }
 
+        /// <summary>
+        /// Copies the base properties from a source AuditDetail object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( AuditDetail source )
+        {
+            this.Id = source.Id;
+            this.AuditId = source.AuditId;
+            this.CurrentValue = source.CurrentValue;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
+            this.OriginalValue = source.OriginalValue;
+            this.Property = source.Property;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
+    }
+
+    /// <summary>
+    /// Client model for AuditDetail that includes all the fields that are available for GETs. Use this for GETs (use AuditDetailEntity for POST/PUTs)
+    /// </summary>
+    public partial class AuditDetail : AuditDetailEntity
+    {
     }
 }

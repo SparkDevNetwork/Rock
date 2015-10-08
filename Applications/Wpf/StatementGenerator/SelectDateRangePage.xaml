@@ -12,88 +12,93 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}" />
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Style="{StaticResource gridPanelBorderRow}"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Style="{StaticResource gridPanelBorderRow}"/>
+            <RowDefinition Style="{StaticResource gridPanelBorderRow}" />
+            <RowDefinition Height="*" />
+            <RowDefinition Style="{StaticResource gridPanelBorderRow}" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Column="1" Grid.Row="1" Style="{StaticResource gridPanel}">
+        <Grid Grid.Column="1"
+              Grid.Row="1"
+              Style="{StaticResource gridPanel}">
             <Grid.RowDefinitions>
-                <RowDefinition Style="{StaticResource rowDefinitionPanelTitle}"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Style="{StaticResource rowDefinitionActions}"/>
+                <RowDefinition Style="{StaticResource rowDefinitionPanelTitle}" />
+                <RowDefinition Height="*" />
+                <RowDefinition Style="{StaticResource rowDefinitionActions}" />
             </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0" Style="{StaticResource panelBanner}" >
-                <Label Content="STEP 3:" Style="{StaticResource labelStyleBannerTitle}" />
-                <Label Content="Statement Date Range" Style="{StaticResource labelStyleBannerText}"/>
+            <StackPanel Grid.Row="0"
+                        Style="{StaticResource panelBanner}">
+                <Label Content="STEP 3:"
+                       Style="{StaticResource labelStyleBannerTitle}" />
+                <Label Content="Statement Date Range"
+                       Style="{StaticResource labelStyleBannerText}" />
             </StackPanel>
             <StackPanel VerticalAlignment="Center"
-                    HorizontalAlignment="Center" Grid.Column="1" Grid.Row="1">
+                        HorizontalAlignment="Center"
+                        Grid.Column="1"
+                        Grid.Row="1">
 
                 <Label Style="{StaticResource labelStyleLegend}"
-                   Content="Date Range" />
+                       Content="Date Range" />
                 <StackPanel Orientation="Horizontal">
                     <StackPanel>
                         <Label Content="Start Date"
-                           Style="{StaticResource labelStyle}" />
+                               Style="{StaticResource labelStyle}" />
                         <DatePicker Grid.Row="3"
-                                Grid.Column="0"
-                                x:Name="dpStartDate"
-                                Style="{StaticResource datePickerStyle}" />
+                                    Grid.Column="0"
+                                    x:Name="dpStartDate"
+                                    Style="{StaticResource datePickerStyle}" />
                     </StackPanel>
                     <StackPanel>
                         <Label Content="End Date"
-                           Style="{StaticResource labelStyle}" />
+                               Style="{StaticResource labelStyle}" />
                         <DatePicker Grid.Row="3"
-                                Grid.Column="0"
-                                x:Name="dpEndDate"
-                                Style="{StaticResource datePickerStyle}" />
+                                    Grid.Column="0"
+                                    x:Name="dpEndDate"
+                                    Style="{StaticResource datePickerStyle}" />
                     </StackPanel>
 
                 </StackPanel>
                 <Label Name="lblWarning"
-                   Style="{StaticResource labelStyleAlert}"
-                   Content="Please select a Date Range"
-                   Visibility="Hidden">
+                       Style="{StaticResource labelStyleAlert}"
+                       Content="Please select a Date Range"
+                       Visibility="Hidden">
                 </Label>
             </StackPanel>
             <Button x:Name="btnPrev"
-                Grid.Row="2"
-                HorizontalAlignment="Left"
-                Style="{StaticResource buttonStyle}"
-                Margin="8,8,8,8"
-                Click="btnPrev_Click">
+                    Grid.Row="2"
+                    HorizontalAlignment="Left"
+                    Style="{StaticResource buttonStyle}"
+                    Margin="8,8,8,8"
+                    Click="btnPrev_Click">
                 <StackPanel Orientation="Horizontal">
                     <Label Style="{StaticResource labelStyleIconLeft}"
-                       Content="&#xf053;" />
+                           Content="&#xf053;" />
                     <Label Style="{StaticResource labelStyleButtonText}"
-                       Content="Prev" />
+                           Content="Prev" />
                 </StackPanel>
             </Button>
             <Button x:Name="btnNext"
-                Grid.Row="2"
-                HorizontalAlignment="Right"
-                Style="{StaticResource buttonStylePrimary}"
-                Margin="8,8,8,8"
-                Click="btnNext_Click">
+                    Grid.Row="2"
+                    HorizontalAlignment="Right"
+                    Style="{StaticResource buttonStylePrimary}"
+                    Margin="8,8,8,8"
+                    Click="btnNext_Click">
                 <StackPanel Orientation="Horizontal">
                     <Label Style="{StaticResource labelStyleButtonTextPrimary}"
-                       Content="Next" />
+                           Content="Next" />
                     <Label Style="{StaticResource labelStyleIconPrimaryRight}"
-                       Content="&#xf054;" />
+                           Content="&#xf054;" />
                 </StackPanel>
             </Button>
         </Grid>
 
-        <Frame
-            Grid.Row="3"
-            Grid.Column="2"
-            Source="images/statement-generator.xaml"
-            Style="{StaticResource logoStyleBottomRight}"
-            />
+        <Frame Grid.Row="3"
+               Grid.Column="2"
+               Source="images/statement-generator.xaml"
+               Style="{StaticResource logoStyleBottomRight}" />
     </Grid>
 </Page>

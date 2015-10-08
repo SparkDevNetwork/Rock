@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:RockTextBox runat=server></{0}:RockTextBox>" )]
-    public class RockTextBox : TextBox, IRockControl
+    public class RockTextBox : TextBox, IRockControl, IDisplayRequiredIndicator
     {
         #region IRockControl implementation
 
@@ -44,6 +44,23 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["Label"] as string ?? string.Empty; }
             set { ViewState["Label"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
         }
 
         /// <summary>
@@ -408,6 +425,16 @@ namespace Rock.Web.UI.Controls
         {
             RequiredFieldValidator.ErrorMessage = errorMessage;
             RequiredFieldValidator.IsValid = false;
+        }
+
+        /// <summary>
+        /// Clears the password.
+        /// </summary>
+        public void ClearPassword()
+        {
+            Password = string.Empty;
+            this.Text = string.Empty;
+            ViewState["Password"] = null;
         }
 
         /// <summary>

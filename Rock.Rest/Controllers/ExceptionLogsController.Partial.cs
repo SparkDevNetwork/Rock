@@ -20,14 +20,12 @@
 // limitations under the License.
 // </copyright>
 //
-
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.Http;
-using System.Web.Routing;
-
-using Rock.Data;
+using Rock.Chart;
 using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
@@ -71,6 +69,19 @@ namespace Rock.Rest.Controllers
 
             var result = allCountsQry.Union( uniqueCountsQry );
             return result;
+        }
+
+        /// <summary>
+        /// Logs the exception.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/ExceptionLogs/LogException" )]
+        [HttpPost]
+        public void LogException( Exception ex)
+        {
+            var personAlias = this.GetPersonAlias();
+            Rock.Model.ExceptionLogService.LogException( ex, System.Web.HttpContext.Current, null, null, personAlias );
         }
 
         /// <summary>

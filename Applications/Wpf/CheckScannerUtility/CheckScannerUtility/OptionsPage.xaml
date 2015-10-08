@@ -51,10 +51,39 @@
                        Style="{StaticResource labelStyle}">Scan Image Color Type</Label>
                 <ComboBox Name="cboImageOption"
                           Style="{StaticResource textboxStyle}" />
-                <Label Name="lblTransactionSourceType"
-                       Style="{StaticResource labelStyle}">Transaction Source Type</Label>
-                <ComboBox Name="cboTransactionSourceType"
-                          Style="{StaticResource textboxStyle}" />
+                
+
+                
+                <Label Name="lblAdvancedInfo"
+                       Style="{StaticResource labelStyleAlertInfo}">
+                    Advanced: Sensitivity and Plurality can be tuned from 1-255. Increase sensitivity and/or lower plurality if you are getting too many bad reads.  Normally these can be left blank which will use the default of 128.
+                </Label>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0"
+                                Orientation="Vertical">
+                        <Label Name="lblSensitivity"
+                               Style="{StaticResource labelStyle}">Sensitivity</Label>
+                        <TextBox Name="txtSensitivity"
+                                 Style="{StaticResource textboxStyle}"
+                                 Width="120" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1"
+                                Orientation="Vertical">
+                        <Label Name="lblPlurality"
+                               Grid.Column="1"
+                               Style="{StaticResource labelStyle}">Plurality</Label>
+                        <TextBox Name="txtPlurality"
+                                 Grid.Column="1"
+                                 Style="{StaticResource textboxStyle}" Width="120" />
+                    </StackPanel>
+                </Grid>
+
                 <Label Name="lblAlert"
                        Style="{StaticResource labelStyleAlert}"
                        Content="ERROR: ">
@@ -71,6 +100,7 @@
                             Name="btnCancel"
                             Margin="4,4,0,0"
                             Content="Cancel"
+                            IsCancel="True"
                             HorizontalAlignment="Left"
                             Click="btnCancel_Click" />
                 </StackPanel>

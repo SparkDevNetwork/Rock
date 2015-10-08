@@ -1,9 +1,12 @@
 ﻿
 // Load Master Styles
 // -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
 @import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
 @import "../../../Styles/_rock-variables.less";
 @import "_variables.less";
+@import "_variable-overrides.less";
 @import "_print.less";
 
 
@@ -13,12 +16,17 @@
     1. HTML Overrides
     2. Bootstrap Overides
     3. Theme Styling
-    4. Responsive Overrides 
+    4. Responsive Overrides
 
 */
 
 // 1. HTML Overrides
 // -------------------------
+
+html {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+}
 
 main {
     display: block;
@@ -46,6 +54,10 @@ a:hover i.fs {
 // 3. Theme Styling
 // -------------------------
 
+.page-icon {
+    display: none;
+}
+
 header {
     .page-menu,
     .login-status {
@@ -54,6 +66,7 @@ header {
 
     .navbar {
         background-color: @header-bg;
+        border: 0;
     }
 }
 
@@ -93,10 +106,6 @@ header {
     li {
         border: 1px solid @gray-lighter;
         border-radius: @border-radius-base;
-
-        a:hover {
-            background-color: @gray-lighter;
-        }
     }
 }
 

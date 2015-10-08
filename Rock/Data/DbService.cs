@@ -87,8 +87,9 @@ namespace Rock.Data
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
+        /// <param name="timeOut">The time out.</param>
         /// <returns></returns>
-        public static DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters )
+        public static DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null )
         {
             string connectionString = GetConnectionString();
             if ( !string.IsNullOrWhiteSpace( connectionString ) )
@@ -99,6 +100,10 @@ namespace Rock.Data
 
                     using ( SqlCommand sqlCommand = new SqlCommand( query, con ) )
                     {
+                        if ( timeOut.HasValue )
+                        {
+                            sqlCommand.CommandTimeout = timeOut.Value;
+                        }
                         sqlCommand.CommandType = commandType;
 
                         if ( parameters != null )

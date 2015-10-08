@@ -209,7 +209,7 @@ $('.js-stop-immediate-propagation').click(function (event) {
 });
 
 ";
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "RockPanelWidgetScript", script, true );
+            ScriptManager.RegisterStartupScript( this, typeof( PanelWidget ), "RockPanelWidgetScript", script, true );
         }
 
         /// <summary>
@@ -353,6 +353,8 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+                RenderLabels( writer );
+
                 if ( ShowReorderIcon )
                 {
                     // Reorder Icon
@@ -395,32 +397,49 @@ $('.js-stop-immediate-propagation').click(function (event) {
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                // Render placeholder's child controls
-                if ( this.Controls != null )
-                {
-                    List<Control> alreadyRenderedControls = new List<Control>();
-                    alreadyRenderedControls.Add( _hfExpanded );
-                    alreadyRenderedControls.Add( _hfTitle );
-                    alreadyRenderedControls.Add( _hfTitleDisableVrm );
-                    alreadyRenderedControls.Add( _lbDelete );
-                    if ( this.HeaderControls != null )
-                    {
-                        alreadyRenderedControls.AddRange( HeaderControls );
-                    }
-
-                    foreach ( Control child in this.Controls )
-                    {
-                        if ( !alreadyRenderedControls.Contains( child ) )
-                        {
-                            child.RenderControl( writer );
-                        }
-                    }
-                }
+                RenderChildControls( writer );
 
                 writer.RenderEndTag();
 
                 writer.RenderEndTag();  // Section
             }
+        }
+
+        /// <summary>
+        /// Renders the child controls.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        protected virtual void RenderChildControls( HtmlTextWriter writer )
+        {
+            // Render placeholder's child controls
+            if ( this.Controls != null )
+            {
+                List<Control> alreadyRenderedControls = new List<Control>();
+                alreadyRenderedControls.Add( _hfExpanded );
+                alreadyRenderedControls.Add( _hfTitle );
+                alreadyRenderedControls.Add( _hfTitleDisableVrm );
+                alreadyRenderedControls.Add( _lbDelete );
+                if ( this.HeaderControls != null )
+                {
+                    alreadyRenderedControls.AddRange( HeaderControls );
+                }
+
+                foreach ( Control child in this.Controls )
+                {
+                    if ( !alreadyRenderedControls.Contains( child ) )
+                    {
+                        child.RenderControl( writer );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Renders the labels.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        protected virtual void RenderLabels( HtmlTextWriter writer)
+        {
         }
     }
 }

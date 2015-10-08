@@ -34,14 +34,18 @@
                 <div id="pnlEditDetails" runat="server">
 
                     <asp:ValidationSummary ID="valAccountDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:CustomValidator ID="cvAccount" runat="server" Display="None" />
 
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <Rock:DataTextBox ID="tbName" runat="server"
                                 SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Name" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
+                        </div>
+                        <div class="col-md-4">
+                            <Rock:RockCheckBox ID="cbIsPublic" runat="server" Label="Is Public" />
                         </div>
                     </div>
 
@@ -53,12 +57,21 @@
                     </div>
 
                     <div class="row">
+                        <div class="col-md-12">
+                            <Rock:CodeEditor ID="cePublicDescription" runat="server" Label="Public description HTML" EditorMode="Html" EditorTheme="Rock" EditorHeight="250"
+                                Help="Additional HTML content to include with the account." />
+                        </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-md-6"> 
                             <Rock:AccountPicker ID="apParentAccount" runat="server" Label="Parent Account" />
                             <Rock:RockDropDownList ID="ddlAccountType" runat="server" Label="Account Type" />
                             <Rock:DataTextBox ID="tbPublicName" runat="server"
                                 SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="PublicName" />
                             <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
+                            <Rock:DataTextBox ID="tbUrl" runat="server"
+                                SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Url" />
                         </div>
                         <div class="col-md-6">                
                             <Rock:DataTextBox ID="tbGLCode" runat="server"

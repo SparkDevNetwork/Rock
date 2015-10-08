@@ -51,6 +51,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the help text.
         /// </summary>
         /// <value>
@@ -489,8 +506,14 @@ namespace Rock.Web.UI.Controls
 
             if ( BinaryFileId != null )
             {
-                thumbnailImage = System.Web.VirtualPathUtility.ToAbsolute( "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width=500" );
+                thumbnailImage = System.Web.VirtualPathUtility.ToAbsolute( "~/GetImage.ashx?id=" + BinaryFileId.ToString() );
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "block";
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Href, thumbnailImage );
+                writer.AddAttribute( HtmlTextWriterAttribute.Target, "_blank" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+
+                thumbnailImage += "&width=500";
             }
             else
             {
@@ -502,6 +525,11 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "id", this.ClientID + "-thumbnail" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderEndTag();
+
+            if ( BinaryFileId != null )
+            {
+                writer.RenderEndTag();
+            }
 
             _hfBinaryFileId.RenderControl( writer );
             _hfBinaryFileTypeGuid.RenderControl( writer );
@@ -585,20 +613,21 @@ Rock.controls.imageUploader.initialize({{
     postbackRemovedScript: '{12}',
     maxUploadBytes: {13}
 }});",
-                _fileUpload.ClientID,
-                this.BinaryFileId,
-                this.BinaryFileTypeGuid,
-                _hfBinaryFileId.ClientID,
-                this.ClientID + "-thumbnail",
-                _aRemove.ClientID,
-                postBackScript,
-                this.IsBinaryFile ? "T" : "F",
-                Rock.Security.Encryption.EncryptString( this.RootFolder ),
-                this.SubmitFunctionClientScript,
-                this.DoneFunctionClientScript,
-                this.NoPictureUrl,
-                postBackRemovedScript,
-                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null" );
+                _fileUpload.ClientID, // {0}
+                this.BinaryFileId, // {1}
+                this.BinaryFileTypeGuid, // {2}
+                _hfBinaryFileId.ClientID, // {3}
+                this.ClientID + "-thumbnail", // {4}
+                _aRemove.ClientID, // {5}
+                postBackScript, // {6}
+                this.IsBinaryFile ? "T" : "F", // {7}
+                Rock.Security.Encryption.EncryptString( this.RootFolder ), // {8}
+                this.SubmitFunctionClientScript, // {9}
+                this.DoneFunctionClientScript, // {10}
+                this.NoPictureUrl, // {11}
+                postBackRemovedScript, // {12}
+                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null" // {13} 
+                ); 
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ClientID, script, true );
         }
 
@@ -616,6 +645,7 @@ Rock.controls.imageUploader.initialize({{
             set
             {
                 base.Enabled = value;
+                EnsureChildControls();
                 _fileUpload.Visible = value;
                 _aRemove.Visible = value;
             }

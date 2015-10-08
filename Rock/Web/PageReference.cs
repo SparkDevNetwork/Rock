@@ -202,6 +202,36 @@ namespace Rock.Web
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageReference"/> class from a url.
+        /// </summary>
+        /// <param name="uri">The URI e.g.: new Uri( ResolveRockUrlIncludeRoot("~/Person/5")</param>
+        /// <param name="applicationPath">The application path e.g.: HttpContext.Current.Request.ApplicationPath</param>
+        public PageReference( Uri uri, string applicationPath )
+        {
+            Parameters = new Dictionary<string, string>();
+
+            var routeInfo = new Rock.Web.RouteInfo( uri, applicationPath );
+            if ( routeInfo != null )
+            {
+                if ( routeInfo.RouteData.Values["PageId"] != null )
+                {
+                    PageId = routeInfo.RouteData.Values["PageId"].ToString().AsInteger();
+                }
+                else if ( routeInfo.RouteData.DataTokens["PageId"] != null )
+                {
+                    PageId = routeInfo.RouteData.DataTokens["PageId"].ToString().AsInteger();
+                    RouteId = routeInfo.RouteData.DataTokens["RouteId"].ToString().AsInteger();
+
+                    foreach ( var routeParm in routeInfo.RouteData.Values )
+                    {
+                        Parameters.Add( routeParm.Key, (string)routeParm.Value );
+                    }
+                }
+            }
+        }
+
+
         #endregion
 
         #region Public Methods
@@ -263,7 +293,7 @@ namespace Rock.Web
                     string delimitor = "?";
                     foreach ( KeyValuePair<string, string> parm in parms )
                     {
-                        url += delimitor + parm.Key + "=" + HttpUtility.UrlEncode( parm.Value );
+                        url += delimitor + HttpUtility.UrlEncode(parm.Key) + "=" + HttpUtility.UrlEncode( parm.Value );
                         delimitor = "&";
                     }
                 }
@@ -385,6 +415,31 @@ namespace Rock.Web
             }
             else
                 return string.Empty;
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            var pageCache = PageCache.Read( this.PageId );
+            if (pageCache != null)
+            {
+                var pageRoute = pageCache.PageRoutes.FirstOrDefault( a=> a.Id == this.RouteId);
+                if (pageRoute != null)
+                {
+                    return pageRoute.Route;
+                }
+                else
+                {
+                    return pageCache.InternalName;
+                }
+            }
+
+            return base.ToString();
         }
 
         #endregion

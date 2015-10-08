@@ -432,7 +432,7 @@ namespace RockWeb.Blocks.Core
 
             definedValue.LoadAttributes();
             phDefinedValueAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( definedValue, phDefinedValueAttributes, setValues );
+            Rock.Attribute.Helper.AddEditControls( definedValue, phDefinedValueAttributes, setValues, BlockValidationGroup );
 
             SetValidationGroup( phDefinedValueAttributes.Controls, modalValue.ValidationGroup );
 

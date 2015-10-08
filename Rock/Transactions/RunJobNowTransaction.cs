@@ -66,10 +66,17 @@ namespace Rock.Transactions
                 {
                     try
                     {
-                        // create a scheduler
+                        // create a scheduler specific for the job
                         var scheduleConfig = new System.Collections.Specialized.NameValueCollection();
-                        scheduleConfig.Add( "org.quartz.scheduler.instanceName", "RunNow" );
+                        var runNowSchedulerName = ( "RunNow:" + job.Guid.ToString( "N" ) ).Truncate( 40 );
+                        scheduleConfig.Add( StdSchedulerFactory.PropertySchedulerInstanceName, runNowSchedulerName );
+                        var schedulerFactory = new StdSchedulerFactory( scheduleConfig );
                         var sched = new StdSchedulerFactory( scheduleConfig ).GetScheduler();
+                        if (sched.IsStarted)
+                        {
+                            // the job is currently running as a RunNow job
+                            return;
+                        }
 
                         // create the quartz job and trigger
                         IJobDetail jobDetail = jobService.BuildQuartzJob( job );
@@ -97,7 +104,8 @@ namespace Rock.Transactions
                     catch ( Exception ex )
                     {
                         // create a friendly error message
-                        string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assembly, ex.Message );
+                        ExceptionLogService.LogException( ex, null );
+                        string message = string.Format( "Error doing a 'Run Now' on job: {0}. \n\n{2}", job.Name, job.Assembly, ex.Message );
                         job.LastStatusMessage = message;
                         job.LastStatus = "Error Loading Job";
                         rockContext.SaveChanges();

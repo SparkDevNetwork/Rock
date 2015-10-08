@@ -116,8 +116,27 @@
                 $.ajax({
                     type: 'DELETE',
                     url: restUrl,
+                    context: {
+                        tagName: tagName,
+                        tagsInput: this
+                    },
                     error: function (xhr, status, error) {
-                        console.log('RemoveTag() status: ' + status + ' [' + error + ']: ' + xhr.responseText);
+                        if (xhr && xhr.status == 404) {
+                            // already deleted
+                            return;
+                        }
+
+                        Rock.dialogs.alert("Unable to remove tag: " + error);
+
+                        // put the tag back in (in alpha order, case-insensitive)
+                        var tagsCommaList = $(this.tagsInput).val() + ',' + this.tagName
+
+                        tagsCommaList = tagsCommaList.split(",").sort(function (a, b) {
+                            return a.toLowerCase().localeCompare(b.toLowerCase());
+                        }).join(",");
+
+                        $(this.tagsInput).importTags(tagsCommaList);
+                        return false;
                     }
                 });
             }
@@ -182,6 +201,7 @@
                 if (!options.entityGuid) throw 'entityGuid must be set';
                 
                 var tagList = new TagList(options);
+                tagList.options = options;
                 exports.tagLists[options.controlId] = tagList;
                 tagList.initialize();
             }

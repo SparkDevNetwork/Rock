@@ -78,6 +78,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.MobilePageId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Site>( Context ).Queryable().Any( a => a.PageNotFoundPageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
@@ -132,6 +138,8 @@ namespace Rock.Model
             target.Description = source.Description;
             target.DisplayInNavWhen = source.DisplayInNavWhen;
             target.EnableViewState = source.EnableViewState;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.HeaderContent = source.HeaderContent;
             target.IconCssClass = source.IconCssClass;
             target.IncludeAdminFooter = source.IncludeAdminFooter;

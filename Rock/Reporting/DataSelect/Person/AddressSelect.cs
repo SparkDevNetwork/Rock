@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -133,7 +134,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             string[] values = selection.Split( '|' );
             Guid groupLocationTypeValueGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
-            AddressNamePart addressNamePart = AddressNamePart.Full;
+            RockUdfHelper.AddressNamePart addressNamePart = RockUdfHelper.AddressNamePart.Full;
 
             if ( values.Length >= 1 )
             {
@@ -142,7 +143,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             if ( values.Length >= 2 )
             {
-                addressNamePart = values[1].ConvertToEnumOrNull<AddressNamePart>() ?? AddressNamePart.Full;
+                addressNamePart = values[1].ConvertToEnumOrNull<RockUdfHelper.AddressNamePart>() ?? RockUdfHelper.AddressNamePart.Full;
             }
 
             string addressTypeId = DefinedValueCache.Read( groupLocationTypeValueGuid ).Id.ToString();
@@ -151,20 +152,6 @@ namespace Rock.Reporting.DataSelect.Person
                 .Select( p => RockUdfHelper.ufnCrm_GetAddress( p.Id, addressTypeId, addressComponent ) );
 
             return SelectExpressionExtractor.Extract<Rock.Model.Person>( personLocationQuery, entityIdProperty, "p" );
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private enum AddressNamePart
-        {
-            Full,
-            Street1,
-            Street2,
-            City,
-            State,
-            PostalCode,
-            Country
         }
 
         /// <summary>
@@ -181,15 +168,52 @@ namespace Rock.Reporting.DataSelect.Person
                 locationTypeList.Items.Add( new ListItem( value.Value, value.Guid.ToString() ) );
             }
 
-            locationTypeList.Items.Insert( 0, Rock.Constants.None.ListItem );
-
             locationTypeList.ID = parentControl.ID + "_grouplocationType";
             locationTypeList.Label = "Address Type";
+            locationTypeList.SelectedIndex = 0;
             parentControl.Controls.Add( locationTypeList );
 
             RockRadioButtonList addressPartRadioButtonList = new RockRadioButtonList();
             addressPartRadioButtonList.Items.Clear();
-            addressPartRadioButtonList.BindToEnum<AddressNamePart>( false );
+            addressPartRadioButtonList.BindToEnum<RockUdfHelper.AddressNamePart>( false );
+
+            // Localises the radio button list by modifying the text Value of radio buttons
+            Dictionary<string, string> newLabels = new Dictionary<string, string>();
+            var globalAttributesCache = GlobalAttributesCache.Read();
+            var defaultCountry = ( !string.IsNullOrWhiteSpace( globalAttributesCache.OrganizationCountry ) ) ? globalAttributesCache.OrganizationCountry : "US";
+            var countryValue = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+                    .DefinedValues
+                    .Where( v => v.Value.Equals( defaultCountry, StringComparison.OrdinalIgnoreCase ) )
+                    .FirstOrDefault();
+            
+            if ( countryValue != null )
+            {
+                if ( !newLabels.ContainsKey( "City" ) )
+                {
+                    newLabels.Add( "City", countryValue.GetAttributeValue( "CityLabel" ) );
+                }
+
+                if ( !newLabels.ContainsKey( "Region" ) )
+                {
+                    newLabels.Add( "Region", countryValue.GetAttributeValue( "StateLabel" ) );
+                }
+
+                if ( !newLabels.ContainsKey( "PostalCode" ) )
+                {
+                    newLabels.Add( "PostalCode", countryValue.GetAttributeValue( "PostalCodeLabel" ) );
+                }
+            }
+
+            foreach ( KeyValuePair<string, string> pair in newLabels )
+            {
+                string oldValue = pair.Key.SplitCase();
+                string newValue = pair.Value.SplitCase();
+                var listItem = addressPartRadioButtonList.Items.FindByText( oldValue );
+                if ( listItem != null )
+                {
+                    listItem.Text = newValue;
+                }
+            }
 
             // default to first one
             addressPartRadioButtonList.SelectedIndex = 0;

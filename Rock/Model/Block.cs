@@ -242,11 +242,11 @@ namespace Rock.Model
             {
                 if ( this.BlockLocation == Model.BlockLocation.Page )
                 {
-                    return this.Page;
+                    return this.Page != null ? this.Page : base.ParentAuthority;
                 }
                 else
                 {
-                    return this.Layout;
+                    return this.Layout != null ? this.Layout : base.ParentAuthority;
                 }
             }
         }

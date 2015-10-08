@@ -106,7 +106,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            this.AddCssClass( "input-width-md" );
+            this.AddCssClass( "input-width-md js-date-picker date" );
             this.AppendText = "<i class='fa fa-calendar'></i>";
 
             if ( string.IsNullOrWhiteSpace( this.SourceTypeName ) )
@@ -115,6 +115,18 @@ namespace Rock.Web.UI.Controls
                 this.SourceTypeName = "Rock.Web.UI.Controls.DatePicker, Rock";
                 this.PropertyName = "SelectedDate";
             }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            // make sure the input's value matches the text on PostBack (DatePicker relies on "value" of input and text)
+            this.Attributes["value"] = this.Text;
         }
 
         /// <summary>
@@ -137,8 +149,8 @@ namespace Rock.Web.UI.Controls
             dateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
             dateFormat = dateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
 
-            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1}, format: '{2}' }});", 
-                this.ClientID, this.StartView.ConvertToInt(), dateFormat );
+            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1}, format: '{2}', todayHighlight: {3} }});", 
+                this.ClientID, this.StartView.ConvertToInt(), dateFormat, this.HighlightToday.ToString().ToLower() );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "date_picker-" + this.ClientID, script, true );
         }
 
@@ -158,6 +170,26 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["StartView"] = value;
+            }
+        }
+
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [highlight today].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [highlight today]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HighlightToday
+        {
+            get
+            {
+                return ViewState["HighlightToday"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["HighlightToday"] = value;
             }
         }
 
@@ -219,6 +251,7 @@ namespace Rock.Web.UI.Controls
                     this.Text = string.Empty;
                 }
 
+                // set value to equal text when date is set (DatePicker relies on "value" of input and text)
                 this.Attributes["value"] = this.Text;
             }
         }
@@ -259,11 +292,11 @@ namespace Rock.Web.UI.Controls
                 {
                     // set this.Attributes["disabled"] instead of this.Enabled so that our child controls don't get disabled
                     this.Attributes["disabled"] = "true";
-                    _nbDayOffset.Enabled = true;
+                    _nbDayOffset.Style[HtmlTextWriterStyle.Display] = "";
                 }
                 else
                 {
-                    _nbDayOffset.Enabled = false;
+                    _nbDayOffset.Style[HtmlTextWriterStyle.Display] = "none";
                 }
             }
 
