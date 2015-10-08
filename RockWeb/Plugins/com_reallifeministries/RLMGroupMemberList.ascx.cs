@@ -153,7 +153,7 @@ namespace com.reallifeministries
                         e.Row.ToolTip = "Inactive member";
                     }
 
-                    if ( groupMember.Person.IsDeceased ?? false )
+                    if ( groupMember.Person.IsDeceased )
                     {
                         e.Row.AddCssClass( "deceased" );
                         e.Row.ToolTip = "Deceased";
