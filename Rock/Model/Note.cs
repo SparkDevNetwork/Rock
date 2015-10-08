@@ -84,6 +84,15 @@ namespace Rock.Model
         public bool? IsAlert { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this note is viewable to only the person that created the note
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is private note; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsPrivateNote { get; set; }
+
+        /// <summary>
         /// Gets or sets the text/body of the note.
         /// </summary>
         /// <value>

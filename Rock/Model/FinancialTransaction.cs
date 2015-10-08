@@ -202,6 +202,17 @@ namespace Rock.Model
         /// </value>
         public DateTime? ProcessedDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets the sunday date.
+        /// </summary>
+        /// <value>
+        /// The sunday date.
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [Column( TypeName = "Date" )]
+        public DateTime SundayDate { get; set; }
+
         #endregion Entity Properties
 
         #region Virtual Properties
