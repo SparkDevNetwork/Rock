@@ -39,7 +39,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [Category( "NewSpring" )]
     [Description( "Custom church metrics block using the Chart.js library" )]
     [CustomDropdownListField( "Number of Columns", "", "1,2,3,4,5,6,7,8,9,10,11,12", false, DefaultValue = "12", Order = 1 )]
-    [CustomDropdownListField( "Metric Display Type", "", "Text,Line,Donut", Order = 2 )]
+    [CustomDropdownListField( "Metric Display Type", "",  "Text,Line,Donut", false, "Text", Order = 2 )]
     [TextField( "Metric Key", "If this is used, do not select a metric source", Order = 3 )]
     [MetricCategoriesField( "Primary Metric Source", "Select the metric to include in this chart.", Order = 4 )]
     [CustomRadioListField( "Metric Comparison", "Is this metric a sum of the selected sources, or a percentage?", "Sum,Percentage", false, "Sum", Order = 5 )]
@@ -157,12 +157,12 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
             if ( numberFormat == "Percentage")
             {
-                decimal priamryMetricValue = MetricQuery( primaryMetricSource, dateRange );
+                decimal primaryMetricValue = MetricQuery( primaryMetricSource, dateRange );
                 decimal secondaryMetricValue = MetricQuery( secondaryMetricSource, dateRange );
 
-                if ( priamryMetricValue != 0 && secondaryMetricValue != 0 )
+                if ( primaryMetricValue != 0 && secondaryMetricValue != 0 )
                 {
-                    decimal percentage = priamryMetricValue / secondaryMetricValue;
+                    decimal percentage = primaryMetricValue / secondaryMetricValue;
                     return percentage * 100;
                 }
                 else
