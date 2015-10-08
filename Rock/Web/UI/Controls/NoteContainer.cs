@@ -744,7 +744,7 @@ namespace Rock.Web.UI.Controls
                             noteEditor.NoteTypes = EditableNoteTypes;
                             noteEditor.ID = string.Format( "note_{0}", note.Guid.ToString().Replace( "-", "_" ) );
                             noteEditor.Note = note;
-                            noteEditor.IsPrivate = note.IsPrivate( Authorization.VIEW, currentPerson );
+                            noteEditor.IsPrivate = note.IsPrivateNote;
                             noteEditor.CanEdit = NoteTypeCache.Read( note.NoteTypeId ).UserSelectable && note.IsAuthorized( Authorization.ADMINISTRATE, currentPerson );
                             noteEditor.SaveButtonClick += note_Updated;
                             noteEditor.DeleteButtonClick += note_Updated;

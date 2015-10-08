@@ -141,10 +141,13 @@ namespace Rock.Model
             {
                 return true;
             }
-            else
+
+            if ( IsPrivateNote )
             {
-                return base.IsAuthorized( action, person );
+                return false;
             }
+
+            return base.IsAuthorized( action, person );
         }
 
         #endregion

@@ -1028,24 +1028,13 @@ namespace RockWeb.Blocks.Crm
                             note.Caption = isPrivate ? "You - Personal Note" : string.Empty;
                             note.Text = tbNote.Text;
                             note.IsAlert = cbIsAlert.Checked;
+                            note.IsPrivateNote = isPrivate;
                             note.NoteTypeId = noteType.Id;
                             notes.Add( note );
                             noteService.Add( note );
                         }
 
-                        rockContext.WrapTransaction( () =>
-                        {
-                            rockContext.SaveChanges();
-                            foreach ( var note in notes )
-                            {
-                                note.AllowPerson( Authorization.EDIT, CurrentPerson, rockContext );
-                                if ( isPrivate )
-                                {
-                                    note.MakePrivate( Authorization.VIEW, CurrentPerson, rockContext );
-                                }
-                            }
-                        } );
-
+                        rockContext.SaveChanges();
                     }
                 }
 
