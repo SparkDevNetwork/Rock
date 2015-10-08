@@ -184,18 +184,12 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
             if ( GetAttributeValue( "ScheduleGroup" ) != null )
             {
                 var selectedSchedule = GetAttributeValue( "ScheduleGroup" );
-                var selectedScheduleList = selectedSchedule.Split( ',' ).ToList();
+                var selectedScheduleList = selectedSchedule.Split( ',' ).AsGuidList();
 
-                foreach ( var selectedScheduleItem in selectedScheduleList )
-                {
-
-                    var scheduleItem = new ScheduleService( new RockContext() ).Queryable()
-                        .Where( a => a.Guid.ToString() == selectedScheduleItem )
-                        .Select( a => new { a.Name, a.Id, a.Guid } )
-                        .ToArray();
-
-                    schedules.Add( new ScheduleItem { Name = scheduleItem[0].Name, Id = scheduleItem[0].Id } );
-                }
+                schedules.AddRange( new ScheduleService( new RockContext() ).Queryable()
+                    .Where( a => selectedScheduleList.Contains( a.Guid ) )
+                    .Select( a => new ScheduleItem { Name = a.Name, Id = a.Id } )
+                );
             }
 
             var formattedSchedule = new Dictionary<int, string>();
