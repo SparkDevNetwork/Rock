@@ -763,5 +763,102 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201509242206062_GroupAttendanceRoster_spCrm_PersonDuplicateFinder", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @NoteEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Model.Note&apos; )
+        ///
+        ///;WITH CTE
+        ///AS
+        ///( 
+        ///                SELECT [EntityId], COUNT(*) AS [AuthCount]
+        ///                FROM [Auth]
+        ///                WHERE [EntityTypeId] = @NoteEntityTypeId
+        ///                AND [Action] = &apos;View&apos;
+        ///                GROUP BY [EntityId]
+        ///)
+        ///
+        ///UPDATE [Note]
+        ///SET [IsPrivateNote] = 1
+        ///WHERE [Id] IN (
+        ///                SELECT A1.[EntityId]
+        ///                FROM [Auth] A1
+        ///                INNER JOIN [Au [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201510082215386_ComputedSundayDate_PrivateNoteMigration {
+            get {
+                return ResourceManager.GetString("_201510082215386_ComputedSundayDate_PrivateNoteMigration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @NoteTypeEntityTypeId int = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = &apos;337EED57-D4AB-4EED-BBDB-0CB3A467DBCC&apos;)
+        ///DECLARE @GroupMemberNoteTypeId int = (SELECT TOP 1 [Id] FROM [NoteType] WHERE [Guid] = &apos;FFFC3644-60CD-4D14-A714-E8DCC202A0E1&apos;)
+        ///
+        ///DECLARE @StaffGroupId int = (SELECT TOP 1 [Id] FROM [Group] WHERE [Guid] = &apos;2C112948-FF4C-46E7-981A-0257681EADF4&apos;)
+        ///DECLARE @StaffLikeGroupId int = (SELECT TOP 1 [Id] FROM [Group] WHERE [Guid] = &apos;300BA2C8-49A3-44BA-A82A-82E3FD8C3745&apos;)
+        ///
+        ///IF NOT EXISTS ( [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201510082215386_ComputedSundayDate_SecurityForGroupMemberNotes {
+            get {
+                return ResourceManager.GetString("_201510082215386_ComputedSundayDate_SecurityForGroupMemberNotes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 	/*
+        ///	&lt;doc&gt;
+        ///		&lt;summary&gt;
+        /// 			This procedure merges the data from the non-primary person to the primary person.  It
+        ///			is used when merging people in Rock and should never be used outside of that process. 
+        ///		&lt;/summary&gt;
+        ///
+        ///		&lt;returns&gt;
+        ///		&lt;/returns&gt;
+        ///		&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///		&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///		&lt;remarks&gt;	
+        ///			Uses the following constants:
+        ///				* Group Type  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201510082215386_ComputedSundayDate_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_201510082215386_ComputedSundayDate_spCrm_PersonMerge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the Sunday date of a given date.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		The Sunday of the date given with Sunday being the last day of the week.
+        ///	&lt;/returns&gt;
+        ///	&lt;remarks&gt;
+        ///		
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		SELECT [dbo].[ufnUtility_GetSundayDate](getdate())
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///
+        ///ALTER FUNCTION [dbo].[ufnUtility_GetSundayDate](@InputDate datetime) 
+        ///
+        ///RETURNS DATE WITH SCHEMABINDING AS
+        ///
+        ///BEGIN
+        ///	DECLARE @DayOfWeek int
+        ///	DECLARE @DaysToAdd int
+        ///	DECLARE @SundayDate datetime        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201510082215386_ComputedSundayDate_ufnUtility_GetSundayDate {
+            get {
+                return ResourceManager.GetString("_201510082215386_ComputedSundayDate_ufnUtility_GetSundayDate", resourceCulture);
+            }
+        }
     }
 }
