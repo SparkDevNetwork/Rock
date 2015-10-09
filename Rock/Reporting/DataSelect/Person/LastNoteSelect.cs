@@ -140,16 +140,12 @@ namespace Rock.Reporting.DataSelect.Person
             }
 
             var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
-            var entityTypeIdNote = EntityTypeCache.GetId<Rock.Model.Note>();
-            var qryNotes = new NoteService( context ).Queryable().Where( a => a.NoteType.EntityTypeId == entityTypeIdPerson );
-            var actionView = Rock.Security.Authorization.VIEW;
-            var qryNoteAuthDeny = new AuthService( context ).Queryable().Where( a => a.EntityTypeId == entityTypeIdNote && a.AllowOrDeny == "D" && a.Action == actionView );
 
-            qryNotes = qryNotes.Where( n => !qryNoteAuthDeny.Any( a => a.EntityId == n.Id ) );
+            // only get PersonNotes that are not Private
+            var qryNotes = new NoteService( context ).Queryable().Where( a => a.NoteType.EntityTypeId == entityTypeIdPerson && a.IsPrivateNote == false );
 
             if ( noteTypeId.HasValue )
             {
-                // only include Notes that are public (don't have any "D" auth records)
                 qryNotes = qryNotes.Where( n => n.NoteTypeId == noteTypeId.Value );
             }
 
