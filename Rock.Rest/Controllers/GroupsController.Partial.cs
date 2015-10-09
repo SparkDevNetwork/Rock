@@ -93,6 +93,7 @@ namespace Rock.Rest.Controllers
                     var treeViewItem = new TreeViewItem();
                     treeViewItem.Id = group.Id.ToString();
                     treeViewItem.Name = group.Name;
+                    treeViewItem.IsActive = group.IsActive;
 
                     // if there a IconCssClass is assigned, use that as the Icon.
                     var groupType = Rock.Web.Cache.GroupTypeCache.Read( group.GroupTypeId );
