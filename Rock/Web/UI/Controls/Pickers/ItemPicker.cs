@@ -508,8 +508,8 @@ namespace Rock.Web.UI.Controls
     expandedIds: [{5}]
 }});
 ";
-            string treeViewScript = string.Format( treeViewScriptFormat, this.ID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower(), this.DefaultText, _hfItemRestUrlExtraParams.ClientID, this.InitialItemParentIds );
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ID, treeViewScript, true );
+            string treeViewScript = string.Format( treeViewScriptFormat, this.ClientID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower(), this.DefaultText, _hfItemRestUrlExtraParams.ClientID, this.InitialItemParentIds );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ClientID, treeViewScript, true );
         }
 
         /// <summary>
@@ -603,7 +603,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Enabled )
             {
-                writer.AddAttribute( "id", this.ID.ToString() );
+                writer.AddAttribute( "id", this.ClientID.ToString() );
                 writer.AddAttribute( "class", "picker picker-select rollover-container " + this.CssClass );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
