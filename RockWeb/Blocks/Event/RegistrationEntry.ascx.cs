@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Event
     /// </summary>
     [DisplayName( "Registration Entry" )]
     [Category( "Event" )]
-    [Description( "Block used to register for registration instance." )]
+    [Description( "Block used to amou for registration instance." )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 0 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING, "", 1 )]
@@ -3376,12 +3376,12 @@ namespace RockWeb.Blocks.Event
                     rptFeeSummary.DataBind();
 
                     // Set the total cost
-                    hfTotalCost.Value = RegistrationState.DiscountedCost.ToString( "N2" );
+                    hfTotalCost.Value = RegistrationState.DiscountedCost.ToString();
                     lTotalCost.Text = RegistrationState.DiscountedCost.FormatAsCurrency();
 
                     // Check for previous payments
                     lPreviouslyPaid.Visible = RegistrationState.PreviousPaymentTotal != 0.0m;
-                    hfPreviouslyPaid.Value = RegistrationState.PreviousPaymentTotal.ToString( "N2" );
+                    hfPreviouslyPaid.Value = RegistrationState.PreviousPaymentTotal.ToString();
                     lPreviouslyPaid.Text = RegistrationState.PreviousPaymentTotal.FormatAsCurrency();
                     minPayment = minPayment - RegistrationState.PreviousPaymentTotal;
 
@@ -3394,7 +3394,7 @@ namespace RockWeb.Blocks.Event
 
                     // If partial payment is allowed, show the minimum payment due
                     lMinimumDue.Visible = allowPartialPayment;
-                    hfMinimumDue.Value = minPayment.ToString( "N2" );
+                    hfMinimumDue.Value = minPayment.ToString();
                     lMinimumDue.Text = minPayment.FormatAsCurrency();
 
                     // Make sure payment amount is within minumum due and balance due. If not, set to balance due
