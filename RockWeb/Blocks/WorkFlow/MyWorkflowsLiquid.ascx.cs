@@ -287,7 +287,7 @@ as fields on the workflow or activity)...
 
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Role", role );
-                mergeFields.Add( "Actions", actions.OrderBy( a => a.CreatedDateTime ) );
+                mergeFields.Add( "Actions", actions.OrderByDescending( a => a.CreatedDateTime ) );
 
                 lContents.Text = contents.ResolveMergeFields( mergeFields );
             }

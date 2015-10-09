@@ -373,7 +373,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
             }
 
             var qryParams = new Dictionary<string, string> { { "GroupId", group.Id.ToString() }};
-            var pageRef = new PageReference( "ApplicationGroupDetailPage", qryParams );
+            var pageRef = new PageReference( GetAttributeValue( "ApplicationGroupDetailPage" ), qryParams );
             string url = pageRef.BuildUrl();
             return string.Format( "<a href='{0}'>{1}</a>", url, group.Name );
         }

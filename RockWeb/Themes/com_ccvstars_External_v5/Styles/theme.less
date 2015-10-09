@@ -115,29 +115,36 @@ h2 {
     margin-bottom: @module-spacing*2;
   }
 }
-  .module-red {
-    background: @red;
-    color: #fff;
-  }
-    .module-red .nav-pills {
-      li {
-        margin-bottom: @grid-gutter-width/4;
-        &:last-child {
-          margin-bottom: 0;
-        }
-        a {
-          font-weight: bold;
-          background: #fff;
-          color: @text-color;
-          &:hover {
-            .box-shadow(0 0px 10px rgba(255,255,255,1));
-          }
+.module-graylight {
+  background: @gray-lighter;
+}
+.module-gray {
+  background: @gray-light;
+  color: #fff;
+}
+.module-red {
+  background: @red;
+  color: #fff;
+}
+  .module-red .nav-pills {
+    li {
+      margin-bottom: @grid-gutter-width/4;
+      &:last-child {
+        margin-bottom: 0;
+      }
+      a {
+        font-weight: bold;
+        background: #fff;
+        color: @text-color;
+        &:hover {
+          .box-shadow(0 0px 10px rgba(255,255,255,1));
         }
       }
     }
-  .module-with-footer {
-    .border-bottom-radius(@border-radius-large + 10px);
   }
+.module-with-footer {
+  .border-bottom-radius(@border-radius-large + 10px);
+}
   .module-body {
     padding: @module-spacing;
   }

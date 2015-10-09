@@ -183,9 +183,12 @@ th[align=center] {
 
 // add alternate popover title style that exists inside of the popover-content to use ajax updates
 .popover-content {
+  
+  overflow: hidden;
+
   header {
     .clearfix();
-    margin: -9px -14px 8px -14px;
+    margin: -9px -14px 8px;
     padding: 8px 14px;
     font-size: @font-size-base;
     font-weight: normal;
@@ -203,13 +206,23 @@ th[align=center] {
     h3 {
       float: left;
       font-size: 18px;
-      margin-top: 2px;
+      margin: 0 0 0 6px;
+      font-weight: normal;
 
       small {
         display: block;
       }
     }
   }
+
+   .body div {
+        margin-bottom: 2px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
 }
 
 // list group additions
@@ -492,7 +505,7 @@ th[align=center] {
 }
 
 .alert-info {
-  a {
+  a:not([class]) {
     color: @alert-info-text;
     border-bottom: @alert-info-link-border-bottom;
   }

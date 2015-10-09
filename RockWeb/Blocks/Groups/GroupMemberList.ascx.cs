@@ -86,6 +86,46 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnInit( e );
 
+            string script = @"
+    $('.js-person-popover').popover({
+        placement: 'right', 
+        trigger: 'manual',
+        delay: 500,
+        html: true,
+        content: function() {
+            var dataUrl = Rock.settings.get('baseUrl') + 'api/People/PopupHtml/' +  $(this).attr('personid') + '/false';
+
+            var result = $.ajax({ 
+                                type: 'GET', 
+                                url: dataUrl, 
+                                dataType: 'json', 
+                                contentType: 'application/json; charset=utf-8',
+                                async: false }).responseText;
+            
+            var resultObject = jQuery.parseJSON(result);
+
+            return resultObject.PickerItemDetailsHtml;
+
+        }
+    }).on('mouseenter', function () {
+        var _this = this;
+        $(this).popover('show');
+        $(this).siblings('.popover').on('mouseleave', function () {
+            $(_this).popover('hide');
+        });
+    }).on('mouseleave', function () {
+        var _this = this;
+        setTimeout(function () {
+            if (!$('.popover:hover').length) {
+                $(_this).popover('hide')
+            }
+        }, 100);
+    });
+
+   // $('.js-person-popover').popover('show'); // uncomment for styling
+";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "person-link-popover", script, true);
+
             // if this block has a specific GroupId set, use that, otherwise, determine it from the PageParameters
             Guid groupGuid = GetAttributeValue( "Group" ).AsGuid();
             int groupId = 0;
@@ -899,7 +939,9 @@ namespace RockWeb.Blocks.Groups
                         m.Id,
                         m.Guid,
                         m.PersonId,
-                        Name = m.Person.NickName + " " + m.Person.LastName
+                        Name = 
+                        (m.Person.PhotoId.HasValue ? "<i class='fa fa-fw fa-user photo-icon has-photo js-person-popover' personid=" + m.PersonId.ToString() + "></i> " : "<i class='fa fa-fw photo-icon js-person-popover' personid=" + m.PersonId.ToString() + "></i> ") +
+                        m.Person.NickName + " " + m.Person.LastName
                             + ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id )
                                 ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
                                 : string.Empty )

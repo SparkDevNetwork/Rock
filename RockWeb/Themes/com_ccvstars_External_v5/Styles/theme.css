@@ -5922,6 +5922,13 @@ h2 {
     margin-bottom: 30px;
   }
 }
+.module-graylight {
+  background: #eeeeee;
+}
+.module-gray {
+  background: #777777;
+  color: #fff;
+}
 .module-red {
   background: #9d261d;
   color: #fff;

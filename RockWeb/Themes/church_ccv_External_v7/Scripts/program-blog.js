@@ -10,7 +10,7 @@ var programBlog = {
   },
   loadFirstPost: function(){
     var _this = this
-    var url = 'http://ccvprogramblog.dreamhosters.com/?json=get_recent_posts&count=1&callback=?'
+    var url = '//ccvprogramblog.dreamhosters.com/?json=get_recent_posts&count=1&callback=?'
     $.getJSON(url, function(data){
       var formatted = _this.formatPost(data.posts[0])
       $('.js-wp-container').prepend(formatted)
@@ -19,7 +19,7 @@ var programBlog = {
   },
   loadAllPosts: function(){
     var _this = this
-    var url = 'http://ccvprogramblog.dreamhosters.com/?json=get_recent_posts&callback=?'
+    var url = '//ccvprogramblog.dreamhosters.com/?json=get_recent_posts&callback=?'
     var formattedPosts = ''
     $.getJSON(url, function(data){
       // starting with one to skip the first post that was already loaded

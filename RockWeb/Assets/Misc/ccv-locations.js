@@ -43,8 +43,8 @@ CCV.locations = [
     city: 'Avondale',
     state: 'AZ',
     zip: '85392-3935',
-    photo: 'http://rock.ccvonline.com:80/GetImage.ashx?guid=47fbd2ae-42b5-4569-967e-090fe5013014',
-    url: 'http://ccv.church/avondale',
+    photo: 'http://rock.ccvonline.com:80/GetImage.ashx?guid=87998e74-12d1-4a6b-9176-0f88917216e6',
+    url: 'http://rock.ccv.church/avondale',
     vimeoid: '132734895',
     facebook: 'ccvavondale',
     serviceTimes: {
@@ -65,12 +65,12 @@ CCV.locations = [
     city: 'Mesa',
     state: 'AZ',
     zip: '85209-3767',
-    photo: 'http://rock.ccv.church:80/GetImage.ashx?guid=abfd309d-cc0f-4803-9ca7-80e9aaa47a7d',
+    photo: 'http://rock.ccvonline.com:80/GetImage.ashx?guid=abfd309d-cc0f-4803-9ca7-80e9aaa47a7d',
     url: 'http://ccv.church/eastvalley',
     vimeoid: '76072274',
     facebook: 'ccveastvalley',
     serviceTimes: {
-      sunday: ['9:30 am','11:00 am',]
+      saturday: ['5:00 pm',],sunday: ['9:30 am','11:00 am',]
     },
   },
 
@@ -131,7 +131,7 @@ CCV.locations = [
     city: 'Surprise',
     state: 'AZ',
     zip: '85379-4418',
-    photo: 'http://rock.ccv.church:80/GetImage.ashx?guid=76f4ce45-0446-4103-b4ed-cf84d8c509c4',
+    photo: 'http://rock.ccvonline.com:80/GetImage.ashx?guid=76f4ce45-0446-4103-b4ed-cf84d8c509c4',
     url: 'http://ccv.church/surprise',
     vimeoid: '64237450',
     facebook: 'ccvsurprise',
