@@ -666,6 +666,10 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _btnSelect.RenderControl( writer );
                 writer.Write( "<a class='btn btn-xs btn-link picker-cancel' id='btnCancel_{0}'>Cancel</a>", this.ID );
+
+                // render any additional picker actions that a child class if ItemPicker implements
+                RenderCustomPickerActions( writer );
+                
                 writer.WriteLine();
                 writer.RenderEndTag();
 
@@ -690,6 +694,15 @@ namespace Rock.Web.UI.Controls
                 writer.WriteLine();
                 writer.RenderEndTag();
             }
+        }
+
+        /// <summary>
+        /// Render any additional picker actions
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public virtual void RenderCustomPickerActions( HtmlTextWriter writer )
+        {
+            //
         }
 
         /// <summary>
