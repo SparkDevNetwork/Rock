@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.OData;
 using Rock.Data;
@@ -653,6 +654,20 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/People/PopupHtml/{personId}" )]
         public PersonSearchResult GetPopupHtml( int personId )
         {
+            return GetPopupHtml( personId, true );
+        }
+
+        /// <summary>
+        /// Gets the popup html for the selected person
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <param name="emailAsLink">Determines if the email address should be formatted as a link.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/PopupHtml/{personId}/{emailAsLink}" )]
+        public PersonSearchResult GetPopupHtml( int personId, bool emailAsLink )
+        {
             var result = new PersonSearchResult();
             result.Id = personId;
             result.PickerItemDetailsHtml = "No Details Available";
@@ -680,31 +695,40 @@ namespace Rock.Rest.Controllers
                     person.FullName,
                     person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
 
+                html.Append( "<div class='body'>" );
+
                 var spouse = person.GetSpouse( rockContext );
                 if ( spouse != null )
                 {
                     html.AppendFormat(
-                        "<strong>Spouse</strong> {0}",
+                        "<div><strong>Spouse</strong> {0}</div>",
                         spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
                 }
 
                 int? age = person.Age;
                 if ( age.HasValue )
                 {
-                    html.AppendFormat( "<br/><strong>Age</strong> {0}", age );
+                    html.AppendFormat( "<div><strong>Age</strong> {0}</div>" , age );
                 }
 
                 if ( !string.IsNullOrWhiteSpace( person.Email ) )
                 {
-                    html.AppendFormat( "<br/><strong>Email</strong> <a href='mailto:{0}'>{0}</a>", person.Email );
+                    if ( emailAsLink )
+                    {
+                        html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.GetEmailTag( VirtualPathUtility.ToAbsolute( "~/" ) ) );
+                    }
+                    else
+                    {
+                        html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.Email );
+                    }
                 }
 
                 foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false ).OrderBy( n => n.NumberTypeValue.Order ) )
                 {
-                    html.AppendFormat( "<br/><strong>{0}</strong> {1}", phoneNumber.NumberTypeValue.Value, phoneNumber.ToString() );
+                    html.AppendFormat( "<div><strong>{0}</strong> {1}</div>", phoneNumber.NumberTypeValue.Value, phoneNumber.ToString() );
                 }
 
-                // TODO: Should also show area: <br /><strong>Area</strong> WestwingS
+                html.Append( "</div>" );
 
                 result.PickerItemDetailsHtml = html.ToString();
             }
