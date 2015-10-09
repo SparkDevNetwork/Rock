@@ -32,6 +32,9 @@
             <td>{{ action.Activity.Workflow.CreatedDateTime | Date:'MM/d/yy' }}</td>
             <td>
               <a href='/{% if Role == '0' %}WorkflowEntry/{{ action.Activity.Workflow.WorkflowTypeId }}{% else %}Workflow{% endif %}/{{ action.Activity.Workflow.Id }}'>{{ action.Activity.Workflow.Name }}{% if role == '0' %} ({{ action.Activity.ActivityType.Name }}){% endif %}</a>
+              {% if action.Activity.Workflow.Status != 'Active' %}
+                <span class='label label-info'>{{ action.Activity.Workflow.Status }}</span>
+              {% endif %}
             </td>
             <td><i class='fa-fw {{ action.Activity.Workflow.WorkflowType.IconCssClass }}'></i> {{ action.Activity.Workflow.WorkflowType.Name }}</td>
             <td>{{ action.Activity.Workflow.DueDate }}</td>
