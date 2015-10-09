@@ -330,19 +330,15 @@ namespace Rock.Model
                     }
 
                     userLoginService.Add( user );
+                    rockContext.SaveChanges();
 
                     var historyCategory = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), rockContext );
-                    rockContext.WrapTransaction( () =>
+                    if ( historyCategory != null )
                     {
-                        rockContext.SaveChanges();
-
-                        if ( historyCategory != null )
-                        {
-                            var changes = new List<string>();
-                            History.EvaluateChange( changes, "User Login", string.Empty, username );
-                            HistoryService.SaveChanges( rockContext, typeof( Person ), historyCategory.Guid, person.Id, changes );
-                        }
-                    } );
+                        var changes = new List<string>();
+                        History.EvaluateChange( changes, "User Login", string.Empty, username );
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), historyCategory.Guid, person.Id, changes );
+                    }
 
                     return user;
                 }

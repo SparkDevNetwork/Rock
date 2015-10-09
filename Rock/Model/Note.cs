@@ -84,6 +84,15 @@ namespace Rock.Model
         public bool? IsAlert { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this note is viewable to only the person that created the note
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is private note; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsPrivateNote { get; set; }
+
+        /// <summary>
         /// Gets or sets the text/body of the note.
         /// </summary>
         /// <value>
@@ -117,6 +126,28 @@ namespace Rock.Model
             {
                 return this.NoteType != null ? this.NoteType : base.ParentAuthority;
             }
+        }
+
+        /// <summary>
+        /// Determines whether the specified action is authorized.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            if ( CreatedByPersonAlias != null && person != null &&
+                CreatedByPersonAlias.PersonId == person.Id )
+            {
+                return true;
+            }
+
+            if ( IsPrivateNote )
+            {
+                return false;
+            }
+
+            return base.IsAuthorized( action, person );
         }
 
         #endregion

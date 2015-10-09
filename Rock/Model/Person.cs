@@ -1297,7 +1297,7 @@ namespace Rock.Model
         /// <value>
         /// The email tag.
         /// </value>
-        public string GetEmailTag( string rockUrlRoot, string cssClass = "", string preText = "", string postText = "" )
+        public string GetEmailTag( string rockUrlRoot, string cssClass = "", string preText = "", string postText = "", string styles = "" )
         {
             if ( !string.IsNullOrWhiteSpace( Email ) )
             {
@@ -1310,8 +1310,9 @@ namespace Rock.Model
                         case EmailPreference.EmailAllowed:
                             {
                                 return string.Format(
-                                    "<a class='{0}' href='{1}Communication?person={2}'>{3} {4} {5}</a>",
+                                    "<a class='{0}' style='{1}' href='{2}Communication?person={3}'>{4} {5} {6}</a>",
                                     cssClass,
+                                    styles,
                                     rockUrlRoot,
                                     Id,
                                     preText,
