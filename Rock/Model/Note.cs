@@ -150,6 +150,18 @@ namespace Rock.Model
             return base.IsAuthorized( action, person );
         }
 
+        public override bool IsPrivate( string action, Person person )
+        {
+            if ( CreatedByPersonAlias != null && person != null &&
+                CreatedByPersonAlias.PersonId == person.Id &&
+                IsPrivateNote )
+            {
+                return true;
+            }
+
+            return base.IsPrivate( action, person );
+        }
+
         #endregion
 
         #region Public Methods
