@@ -1151,73 +1151,77 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
+                bool existingRegistration = RegistrationState.RegistrationId.HasValue;
+
                 try
                 {
                     if ( RegistrationState != null && RegistrationState.Registrants.Any() && RegistrationTemplate != null )
                     {
                         var rockContext = new RockContext();
+                        var registrationService = new RegistrationService( rockContext );
 
-                        rockContext.WrapTransaction( () =>
+                        bool hasPayment = ( RegistrationState.PaymentAmount ?? 0.0m ) > 0.0m;
+
+                        if ( existingRegistration )
                         {
-                            bool hasPayment = ( RegistrationState.PaymentAmount ?? 0.0m ) > 0.0m;
-
-                            if ( RegistrationState.RegistrationId.HasValue )
-                            {
-                                registration = new RegistrationService( rockContext ).Get( RegistrationState.RegistrationId.Value );
-                            }
-                            else
-                            {
-                                registration = SaveRegistration( rockContext, hasPayment );
-                            }
-
-                            if ( registration != null )
-                            {
-                                if ( hasPayment )
-                                {
-                                    string errorMessage = string.Empty;
-                                    if ( !ProcessPayment( rockContext, registration, out errorMessage ) )
-                                    {
-                                        registration = null;
-                                        throw new Exception( errorMessage );
-                                    }
-                                }
-
-                                if ( registration != null )
-                                {
-                                    string appRoot = ResolveRockUrl( "~/" );
-                                    string themeRoot = ResolveRockUrl( "~~/" );
-                                     
-                                    var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
-                                    confirmation.RegistrationId = registration.Id;
-                                    confirmation.AppRoot = appRoot;
-                                    confirmation.ThemeRoot = themeRoot;
-                                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
-
-                                    var notification = new Rock.Transactions.SendRegistrationNotificationTransaction();
-                                    notification.RegistrationId = registration.Id;
-                                    notification.AppRoot = appRoot;
-                                    notification.ThemeRoot = themeRoot;
-                                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( notification );
-                                }
-                            }
-                        } );
-
-                        // Re-create State
-                        if ( registration != null )
+                            // Get the existing registration
+                            registration = registrationService.Get( RegistrationState.RegistrationId.Value );
+                        }
+                        else
                         {
-                            var registrationService = new RegistrationService( rockContext );
-                            var newRegistration = registrationService
-                                .Queryable( "Registrants.PersonAlias.Person,Registrants.GroupMember,RegistrationInstance.Account,RegistrationInstance.RegistrationTemplate.Fees,RegistrationInstance.RegistrationTemplate.Discounts,RegistrationInstance.RegistrationTemplate.Forms.Fields.Attribute,RegistrationInstance.RegistrationTemplate.FinancialGateway" )
-                                .Where( r => r.Id == registration.Id )
-                                .FirstOrDefault();
-                            if ( newRegistration != null )
-                            {
-                                RegistrationInstanceState = newRegistration.RegistrationInstance;
-                                RegistrationState = new RegistrationInfo( newRegistration, rockContext );
-                                RegistrationState.PreviousPaymentTotal = registrationService.GetTotalPayments( registration.Id );
-                            }
+                            // Create a new registration
+                            registration = SaveRegistration( rockContext, hasPayment );
                         }
 
+                        if ( registration != null )
+                        {
+                            // If there is a payment being made, process the payment
+                            if ( hasPayment )
+                            {
+                                string errorMessage = string.Empty;
+                                if ( !ProcessPayment( rockContext, registration, out errorMessage ) )
+                                {
+                                    if ( !existingRegistration )
+                                    {
+                                        registrationService.Delete( registration );
+                                        rockContext.SaveChanges();
+                                    }
+
+                                    registration = null;
+                                    throw new Exception( errorMessage );
+                                }
+                            }
+
+                            // If there is a valid registration, and nothing went wrong processing the payment, send the notifications
+                            if ( registration != null )
+                            {
+                                string appRoot = ResolveRockUrl( "~/" );
+                                string themeRoot = ResolveRockUrl( "~~/" );
+
+                                var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
+                                confirmation.RegistrationId = registration.Id;
+                                confirmation.AppRoot = appRoot;
+                                confirmation.ThemeRoot = themeRoot;
+                                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
+
+                                var notification = new Rock.Transactions.SendRegistrationNotificationTransaction();
+                                notification.RegistrationId = registration.Id;
+                                notification.AppRoot = appRoot;
+                                notification.ThemeRoot = themeRoot;
+                                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( notification );
+
+                                var newRegistration = registrationService
+                                    .Queryable( "Registrants.PersonAlias.Person,Registrants.GroupMember,RegistrationInstance.Account,RegistrationInstance.RegistrationTemplate.Fees,RegistrationInstance.RegistrationTemplate.Discounts,RegistrationInstance.RegistrationTemplate.Forms.Fields.Attribute,RegistrationInstance.RegistrationTemplate.FinancialGateway" )
+                                    .Where( r => r.Id == registration.Id )
+                                    .FirstOrDefault();
+                                if ( newRegistration != null )
+                                {
+                                    RegistrationInstanceState = newRegistration.RegistrationInstance;
+                                    RegistrationState = new RegistrationInfo( newRegistration, rockContext );
+                                    RegistrationState.PreviousPaymentTotal = registrationService.GetTotalPayments( registration.Id );
+                                }
+                            }
+                        }
                     }
                 }
                 catch ( Exception ex )
@@ -1226,6 +1230,7 @@ namespace RockWeb.Blocks.Event
                     ShowError( "An Error Occurred Processing Your " + RegistrationTerm, ex.Message );
                     return (int?)null;
                 }
+
             }
 
             return registration != null ? registration.Id : (int?)null;
@@ -1951,6 +1956,7 @@ namespace RockWeb.Blocks.Event
                 if ( savedAccount != null )
                 {
                     paymentInfo = savedAccount.GetReferencePayment();
+                    paymentInfo.Amount = RegistrationState.PaymentAmount ?? 0.0m;
                 }
                 else
                 {
