@@ -51,7 +51,8 @@
 		            name: item.Name || item.Title,
 		            iconCssClass: item.IconCssClass,
 		            parentId: item.ParentId,
-		            hasChildren: item.HasChildren
+		            hasChildren: item.HasChildren,
+                    isActive: item.IsActive
 		        };
 
 		        if (item.Children && typeof item.Children.length === 'number') {
@@ -295,6 +296,7 @@
 
 				    $li.addClass('rocktree-item')
 						.addClass(node.hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
+                        .addClass(node.isActive ? '' : 'is-inactive')
 						.attr('data-id', node.id)
 						.attr('data-parent-id', node.parentId);
 
