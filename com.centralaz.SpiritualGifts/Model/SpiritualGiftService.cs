@@ -56,7 +56,7 @@ namespace com.centralaz.SpiritualGifts.Model
             {"I see most people in the light of their potential and offer words of encouragement.","E"},
             {"I give money and I don't want others to know.","G"},
             {"I gravitate to the leardership position. People naturally look to me.","L"},
-            {"I go out of my way to visit the sick or lonely, and feel terribly sorry them.","M"},
+            {"I go out of my way to visit the sick or lonely, and feel terribly sorry for them.","M"},
             {"I speak frankly; others incorrectly think me to be  judgmental.","P"},
             {"I consider myself to be optimistic.","N"},
             {"I administrate projects: I enjoy working hard and delegating responsibility.","S"},
