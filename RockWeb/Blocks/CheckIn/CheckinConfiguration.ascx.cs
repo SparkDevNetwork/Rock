@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -43,10 +44,54 @@ namespace RockWeb.Blocks.CheckIn
 
         private List<Guid> ProcessedGroupTypeIds = new List<Guid>();
         private List<Guid> ProcessedGroupIds = new List<Guid>();
+        private List<GroupType> GroupTypesState = new List<GroupType>();
+        private List<Group> CheckinGroupsState = new List<Group>();
+        private Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>> GroupTypeCheckinLabelAttributesState = new Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>>();
 
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            string json = ViewState["GroupTypesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupTypesState = new List<GroupType>();
+            }
+            else
+            {
+                GroupTypesState = JsonConvert.DeserializeObject<List<GroupType>>( json );
+            }
+
+            json = ViewState["CheckinGroupsState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                CheckinGroupsState = new List<Group>();
+            }
+            else
+            {
+                CheckinGroupsState = JsonConvert.DeserializeObject<List<Group>>( json );
+            }
+
+            json = ViewState["GroupTypeCheckinLabelAttributesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupTypeCheckinLabelAttributesState = new Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>>();
+            }
+            else
+            {
+                GroupTypeCheckinLabelAttributesState = JsonConvert.DeserializeObject<Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>>>( json );
+            }
+
+            BuildGroupTypeEditorControls();
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -97,6 +142,29 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            SaveGroupTypeControls();
+
+            var jsonSetting = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
+
+            ViewState["GroupTypesState"] = JsonConvert.SerializeObject( GroupTypesState, Formatting.None, jsonSetting );
+            ViewState["CheckinGroupsState"] = JsonConvert.SerializeObject( CheckinGroupsState, Formatting.None, jsonSetting );
+            ViewState["GroupTypeCheckinLabelAttributesState"] = JsonConvert.SerializeObject( GroupTypeCheckinLabelAttributesState, Formatting.None, jsonSetting );
+
+            return base.SaveViewState();
         }
 
         /// <summary>
@@ -174,79 +242,33 @@ namespace RockWeb.Blocks.CheckIn
 
         #endregion Control Methods
 
-        #region ViewState and Dynamic Controls
-
-        /// <summary>
-        /// ViewState of CheckinLabels per GroupType
-        /// </summary>
-        /// <value>
-        /// The state of the group type checkin label attributes.
-        /// </value>
-        public Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>> GroupTypeCheckinLabelAttributesState
-        {
-            get
-            {
-                Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>> result = ViewState["GroupTypeCheckinLabelAttributes"] as Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>>;
-                if ( result == null )
-                {
-                    result = new Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>>();
-                }
-
-                return result;
-            }
-
-            set
-            {
-                ViewState["GroupTypeCheckinLabelAttributes"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Saves any user control view-state changes that have occurred since the last page postback.
-        /// </summary>
-        /// <returns>
-        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
-        /// </returns>
-        protected override object SaveViewState()
-        {
-            SaveGroupTypeControlsToViewState();
-
-            return base.SaveViewState();
-        }
+        #region Dynamic Controls
 
         /// <summary>
         /// Saves the state of the group type controls to viewstate.
         /// </summary>
-        private void SaveGroupTypeControlsToViewState()
+        private void SaveGroupTypeControls()
         {
             var rockContext = new RockContext();
 
             // save all the base grouptypes (along with their children) to viewstate
-            var groupTypeList = new List<GroupType>();
+            GroupTypesState = new List<GroupType>();
             foreach ( var checkinGroupTypeEditor in phCheckinGroupTypes.Controls.OfType<CheckinGroupTypeEditor>() )
             {
                 var groupType = checkinGroupTypeEditor.GetCheckinGroupType( rockContext );
-                groupTypeList.Add( groupType );
+                GroupTypesState.Add( groupType );
             }
-
-            ViewStateList<GroupType> groupTypeViewStateList = new ViewStateList<GroupType>();
-            groupTypeViewStateList.AddAll( groupTypeList );
-            ViewState["CheckinGroupTypes"] = groupTypeViewStateList;
 
             // get all GroupTypes' editors to save groups and labels
             var recursiveGroupTypeEditors = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().ToList();
 
             // save each GroupTypes' Groups to ViewState (since GroupType.Groups are not Serialized)
-            var groupTypeGroupsList = new List<Group>();
+            CheckinGroupsState = new List<Group>();
             foreach ( var editor in recursiveGroupTypeEditors )
             {
                 var groupType = editor.GetCheckinGroupType( rockContext );
-                groupTypeGroupsList.AddRange( groupType.Groups );
+                CheckinGroupsState.AddRange( groupType.Groups );
             }
-
-            ViewStateList<Group> checkinGroupTypesGroups = new ViewStateList<Group>();
-            checkinGroupTypesGroups.AddAll( groupTypeGroupsList );
-            ViewState["CheckinGroupTypesGroups"] = checkinGroupTypesGroups;
 
             // save all the checkinlabels for all the grouptypes (recursively) to viewstate
             GroupTypeCheckinLabelAttributesState = new Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>>();
@@ -256,31 +278,20 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        /// <summary>
-        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
-        /// </summary>
-        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
-        protected override void LoadViewState( object savedState )
-        {
-            base.LoadViewState( savedState );
-            BuildGroupTypeEditorControlsFromViewState();
-        }
 
         /// <summary>
         /// Builds the state of the group type editor controls from view.
         /// </summary>
-        private void BuildGroupTypeEditorControlsFromViewState()
+        private void BuildGroupTypeEditorControls()
         {
             phCheckinGroupTypes.Controls.Clear();
             var rockContext = new RockContext();
 
             // GroupTypeViewStateList only contains parent GroupTypes, so get all the child GroupTypes and assign their groups
-            ViewStateList<GroupType> groupTypeViewStateList = ViewState["CheckinGroupTypes"] as ViewStateList<GroupType>;
-            var allGroupTypesList = groupTypeViewStateList.Flatten<GroupType>( gt => gt.ChildGroupTypes );
+            var allGroupTypesList = GroupTypesState.Flatten<GroupType>( gt => gt.ChildGroupTypes );
 
             // load each GroupTypes' Groups from ViewState (since GroupType.Groups are not Serialized)
-            ViewStateList<Group> checkinGroupTypesGroups = ViewState["CheckinGroupTypesGroups"] as ViewStateList<Group>;
-            foreach ( var groupTypeGroups in checkinGroupTypesGroups.GroupBy( g => g.GroupType.Guid ) )
+            foreach ( var groupTypeGroups in CheckinGroupsState.GroupBy( g => g.GroupType.Guid ) )
             {
                 var groupType = allGroupTypesList.FirstOrDefault( a => a.Guid == groupTypeGroups.Key );
 
@@ -296,7 +307,7 @@ namespace RockWeb.Blocks.CheckIn
 
             // Build out Parent GroupTypes controls (Child GroupTypes controls are built recursively)
             ProcessedGroupTypeIds = new List<Guid>();
-            foreach ( var groupType in groupTypeViewStateList )
+            foreach ( var groupType in GroupTypesState )
             {
                 CreateGroupTypeEditorControls( groupType, phCheckinGroupTypes, rockContext );
             }
@@ -506,6 +517,7 @@ namespace RockWeb.Blocks.CheckIn
             checkinGroup.IsActive = true;
             checkinGroup.IsPublic = true;
             checkinGroup.IsSystem = false;
+            checkinGroup.Order = parentGroupTypeEditor.Controls.OfType<CheckinGroupEditor>().Count();
 
             // set GroupType by Guid (just in case the parent groupType hasn't been added to the database yet)
             checkinGroup.GroupType = new GroupType { Guid = parentGroupTypeEditor.GroupTypeGuid };
