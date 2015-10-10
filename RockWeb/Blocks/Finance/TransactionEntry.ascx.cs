@@ -30,6 +30,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Communication;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -98,6 +99,8 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Save Account Title", "The text to display as heading of section for saving payment information.", false, "Make Giving Even Easier", "Text Options", 24 )]
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 25 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 26 )]
+
+    [SystemEmailField( "Receipt Email", "The system email to use to send the receipt.", false, "", "Email Templates", 27 )]
 
     #endregion
 
@@ -1639,29 +1642,28 @@ namespace RockWeb.Blocks.Finance
                         transaction.BatchId = batch.Id;
                         batch.Transactions.Add( transaction );
 
-                        rockContext.WrapTransaction( () =>
-                        {
-                            rockContext.SaveChanges();
+                        rockContext.SaveChanges();
 
-                            HistoryService.SaveChanges(
-                                rockContext,
-                                typeof( FinancialBatch ),
-                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
-                                batch.Id,
-                                batchChanges
-                            );
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( FinancialBatch ),
+                            Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                            batch.Id,
+                            batchChanges
+                        );
 
-                            HistoryService.SaveChanges(
-                                rockContext,
-                                typeof( FinancialBatch ),
-                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                                batch.Id,
-                                txnChanges,
-                                person.FullName,
-                                typeof( FinancialTransaction ),
-                                transaction.Id
-                            );
-                        } );
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( FinancialBatch ),
+                            Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                            batch.Id,
+                            txnChanges,
+                            person.FullName,
+                            typeof( FinancialTransaction ),
+                            transaction.Id
+                        );
+
+                        SendReceipt( transaction.Id );
 
                         TransactionCode = transaction.TransactionCode;
                     }
@@ -1715,6 +1717,18 @@ namespace RockWeb.Blocks.Finance
                 divActions.Visible = false;
                 errorMessage = string.Empty;
                 return false;
+            }
+        }
+
+        private void SendReceipt( int transactionId )
+        {
+            Guid? recieptEmail = GetAttributeValue( "ReceiptEmail" ).AsGuidOrNull();
+            if ( recieptEmail.HasValue )
+            {
+                // Queue a transaction to send reciepts
+                var newTransactionIds = new List<int> { transactionId };
+                var sendPaymentRecieptsTxn = new Rock.Transactions.SendPaymentReciepts( recieptEmail.Value, newTransactionIds );
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentRecieptsTxn );
             }
         }
 

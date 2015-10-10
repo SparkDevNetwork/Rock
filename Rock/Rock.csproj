@@ -512,6 +512,7 @@
     <Compile Include="Reporting\DataSelect\Person\GroupParticipationSelect.cs" />
     <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
+    <Compile Include="Transactions\SendPaymentReciepts.cs" />
     <Compile Include="Transactions\UpdatePaymentStatusTransaction.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\NotNullJsonConverter.cs" />
