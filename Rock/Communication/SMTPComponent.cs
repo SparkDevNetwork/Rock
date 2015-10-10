@@ -155,11 +155,15 @@ namespace Rock.Communication.Transport
                     message.From = new MailAddress( fromAddress, fromName );
 
                     // Reply To
-                    string replyTo = communication.GetMediumDataValue( "ReplyTo" );
-                    if ( !string.IsNullOrWhiteSpace( replyTo ) )
+                    try
                     {
-                        message.ReplyToList.Add( new MailAddress( replyTo ) );
+                        string replyTo = communication.GetMediumDataValue( "ReplyTo" );
+                        if ( !string.IsNullOrWhiteSpace( replyTo ) )
+                        {
+                            message.ReplyToList.Add( new MailAddress( replyTo ) );
+                        }
                     }
+                    catch { }
 
                     CheckSafeSender( message, globalAttributes );
 
