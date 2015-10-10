@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Cms
             {
                 authHtml += string.Format(
                     "&nbsp<i class=\"fa fa-lock\">&nbsp;</i>{0}",
-                    authRoles.Select( a => "<span class=\"badge badge-" + (a.AllowOrDeny == "A" ? "success" : "danger")  + "\">" + a.DisplayName + "</span>"  ).ToList().AsDelimited( " " ) );
+                    authRoles.Select( a => "<span class=\"badge badge-" + (a.AllowOrDeny == 'A' ? "success" : "danger")  + "\">" + a.DisplayName + "</span>"  ).ToList().AsDelimited( " " ) );
             }
 
             sb.AppendFormat(
