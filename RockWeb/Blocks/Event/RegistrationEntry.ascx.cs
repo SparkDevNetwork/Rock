@@ -38,11 +38,11 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Block used to register for registration instance.
+    /// Block used to register for a registration instance.
     /// </summary>
     [DisplayName( "Registration Entry" )]
     [Category( "Event" )]
-    [Description( "Block used to amou for registration instance." )]
+    [Description( "Block used to register for a registration instance." )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 0 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING, "", 1 )]
