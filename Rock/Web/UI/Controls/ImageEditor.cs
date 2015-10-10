@@ -904,7 +904,8 @@ namespace Rock.Web.UI.Controls
             {
                 // intentionally ignore and don't tell the fileUploader the limit
             }
-            
+
+            var jsDoneFunction = string.Format("window.location = $('#{0}').prop('href');", _lbUploadImage.ClientID);
             
             var script = string.Format(
 @"
@@ -935,7 +936,7 @@ $('#{6}').Jcrop({{
     boxWidth:480,
     boxHeight:480,
     onSelect: function(c) {{
-        $('#{7}').val(c.x + ',' + c.y + ',' + c.w + ',' +c.h + ',');
+        $('#{7}').val(c.x.toFixed() + ',' + c.y.toFixed() + ',' + c.w.toFixed() + ',' + c.h.toFixed() + ',');
     }}
 }});
 
@@ -951,19 +952,20 @@ $('#{5}').click(function () {{
 }});
 
 ",
-                _fileUpload.ClientID,
-                this.BinaryFileId,
-                this.BinaryFileTypeGuid,
-                _hfBinaryFileId.ClientID,
-                this.ClientID + "_divPhoto",
-                _aRemove.ClientID,
-                _imgCropSource.ClientID,
-                _hfCropCoords.ClientID,
-                _lbUploadImage.ClientID,
-                _lbShowModal.ClientID,
-                Page.ClientScript.GetPostBackEventReference( _lbUploadImage, string.Empty ),
-                this.NoPictureUrl,
-                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null" );
+                _fileUpload.ClientID, // {0}
+                this.BinaryFileId, // {1}
+                this.BinaryFileTypeGuid, // {2}
+                _hfBinaryFileId.ClientID, // {3}
+                this.ClientID + "_divPhoto", // {4}
+                _aRemove.ClientID, // {5}
+                _imgCropSource.ClientID, // {6}
+                _hfCropCoords.ClientID, // {7}
+                _lbUploadImage.ClientID, // {8}
+                _lbShowModal.ClientID, // {9}
+                jsDoneFunction, // {10}
+                this.NoPictureUrl, // {11}
+                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null"  // {12}
+                );
 
 
             _lbUploadImage.Enabled = false;
