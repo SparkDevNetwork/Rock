@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Administration
                     PageCache.Flush( page.Id );
                     if ( _page != null )
                     {
-                        Rock.Security.Authorization.CopyAuthorization( _page, page );
+                        Rock.Security.Authorization.CopyAuthorization( _page, page, rockContext );
                         _page.FlushChildPages();
                     }
 
