@@ -149,12 +149,10 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 queryable = queryable.Where( a => DbFunctions.CreateTime( a.MetricValueDateTime.Value.Hour, a.MetricValueDateTime.Value.Minute, a.MetricValueDateTime.Value.Second ) == scheduleTime );
             }
 
-            // Subsequent task will add group context to the query
-            // ---------------------------------------------------
-            //if ( groupContext != null )
-            //{
-            //    // queryable = queryable.Where( a => )
-            //}
+            if ( groupContext != null )
+            {
+                queryable = queryable.Where( a => a.ForeignId == groupContext.Id );
+            }
 
             var executeQuery = queryable.ToList();
 
