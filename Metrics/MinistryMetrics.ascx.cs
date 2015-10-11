@@ -117,7 +117,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             )
         {
 
-            // if a key is entered, we need to check the metric table for the key, get the id and then filter by that id in the query
             var metricData = new MetricService( new RockContext() ).Queryable();
 
             if ( metricKey != "" )
