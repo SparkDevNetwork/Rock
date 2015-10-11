@@ -39,7 +39,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [Category( "NewSpring" )]
     [Description( "Custom church metrics block using the Chart.js library" )]
     [CustomDropdownListField( "Number of Columns", "", "1,2,3,4,5,6,7,8,9,10,11,12", false, DefaultValue = "12", Order = 1 )]
-    [CustomDropdownListField( "Metric Display Type", "",  "Text,Line,Donut", false, "Text", Order = 2 )]
+    [CustomDropdownListField( "Metric Display Type", "", "Text,Line,Donut", false, "Text", Order = 2 )]
     [TextField( "Metric Key", "If this is used, do not select a metric source", Order = 3 )]
     [MetricCategoriesField( "Primary Metric Source", "Select the metric to include in this chart.", Order = 4 )]
     [CustomRadioListField( "Metric Comparison", "Is this metric a sum of the selected sources, or a percentage?", "Sum,Percentage", false, "Sum", Order = 5 )]
@@ -48,8 +48,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", Order = 8 )]
     [CustomRadioListField( "Custom Dates", "If not using date range, please select a custom date from here", "This Week Last Year", Order = 9 )]
     [CustomCheckboxListField( "Compare Against Last Year", "", "Yes", Order = 10 )]
-    
-
     public partial class MinistryMetrics : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -95,9 +93,10 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         #endregion
 
         // Let's create null context values so they are available
-        IEntity campusContext = new List<IEntity>() as IEntity;
-        IEntity scheduleContext = new List<IEntity>() as IEntity;
-        IEntity groupContext = new List<IEntity>() as IEntity;
+        private IEntity campusContext = new List<IEntity>() as IEntity;
+
+        private IEntity scheduleContext = new List<IEntity>() as IEntity;
+        private IEntity groupContext = new List<IEntity>() as IEntity;
 
         string metricKey = string.Empty;
 
@@ -111,7 +110,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             return ts.Days + 1;
         }
 
-        private decimal MetricQuery( 
+        private decimal MetricQuery(
                 List<int> metricSource,
                 Rock.DateRange dateRange
             )
@@ -159,15 +158,14 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         }
 
         private decimal
-            MetricValueFunction( 
+            MetricValueFunction(
                 List<int> primaryMetricSource,
                 List<int> secondaryMetricSource,
                 Rock.DateRange dateRange,
-                string numberFormat="sum"
+                string numberFormat = "sum"
             )
         {
-
-            if ( numberFormat == "Percentage")
+            if ( numberFormat == "Percentage" )
             {
                 decimal primaryMetricValue = MetricQuery( primaryMetricSource, dateRange );
                 decimal secondaryMetricValue = MetricQuery( secondaryMetricSource, dateRange );
@@ -187,7 +185,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             {
                 return MetricQuery( primaryMetricSource, dateRange);
             }
-
         }
 
         #region Control Methods
@@ -206,14 +203,16 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             // If the blocks respect page context let's set those vars
             if ( pageContext.HasValue )
             {
+                var list = Response.Cookies;
+
                 // Get Current Campus Context
-                campusContext = RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) );
+                campusContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Campus ) ) );
 
                 // Get Current Schedule Context
-                scheduleContext = RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Schedule" ) );
+                scheduleContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Schedule ) ) );
 
                 // Get Current Group Context
-                groupContext = RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Group" ) );
+                groupContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Group ) ) );
             }
 
             // Let's Set Some Globally Used Vars
@@ -245,7 +244,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             if ( primaryMetricSource.Any() )
             {
                 churchMetricWarning.Visible = false;
-            } else if ( metricKey.ToString() != "" ) {
+            }
+            else if ( metricKey.ToString() != "" )
+            {
                 churchMetricWarning.Visible = false;
             }
 
@@ -260,7 +261,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     // This is using the date range picker
                     if ( dateRange.Start.HasValue && dateRange.End.HasValue )
                     {
-
                         var differenceInDays = TimeSpanDifference( dateRange );
 
                         var compareMetricValue = new DateRange
@@ -274,7 +274,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                         decimal? currentRangeMetricValue = MetricValueFunction( primaryMetricSource, secondaryMetricSource, dateRange, metricComparison );
 
                         decimal? previousRangeMetricValue = MetricValueFunction( primaryMetricSource, secondaryMetricSource, compareMetricValue, metricComparison );
-
 
                         if ( currentRangeMetricValue == 0 && metricComparison == "Percentage" )
                         {
@@ -325,7 +324,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                         //.Select( a => a.YValue )
                         //.Sum()
                         //);
-
                     }
                 }
                 else if ( GetAttributeValue( "MetricDisplayType" ) == "Line" && newMetric != null )
@@ -564,6 +562,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         public class MetricValueList
         {
             public string Name { get; set; }
+
             public decimal Value { get; set; }
         }
 
