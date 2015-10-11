@@ -99,6 +99,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         IEntity scheduleContext = new List<IEntity>() as IEntity;
         IEntity groupContext = new List<IEntity>() as IEntity;
 
+        string metricKey = string.Empty;
+
         private int TimeSpanDifference( Rock.DateRange dateRange )
         {
             DateTime dateRangeStart = dateRange.Start ?? DateTime.Now;
@@ -114,7 +116,20 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 Rock.DateRange dateRange
             )
         {
-            var metricData = new MetricService( new RockContext() ).GetByIds( metricSource );
+
+            // if a key is entered, we need to check the metric table for the key, get the id and then filter by that id in the query
+            var metricData = new MetricService( new RockContext() ).Queryable();
+
+            if ( metricKey != "" )
+            {
+                var metricKeyData = new MetricService( new RockContext() ).Queryable();
+                var metricKeyIds = metricKeyData.Where( a => a.Title.Contains( metricKey ) ).Select( a => a.Id ).ToList() as List<int>;
+
+                metricData = new MetricService( new RockContext() ).GetByIds( metricKeyIds );
+
+            } else {
+                metricData = new MetricService( new RockContext() ).GetByIds( metricSource );
+            }
 
             var queryable = metricData.SelectMany( a => a.MetricValues ).AsQueryable().AsNoTracking();
 
@@ -173,7 +188,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             // This is the default function, which is a sum of all the values
             else
             {
-                return MetricQuery( primaryMetricSource, dateRange );
+                return MetricQuery( primaryMetricSource, dateRange);
             }
 
         }
@@ -219,7 +234,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
             var metricCustomDates = GetAttributeValue( "CustomDates" );
 
-            var metricKey = GetAttributeValue( "MetricKey" );
+            metricKey = GetAttributeValue( "MetricKey" );
 
             List<int> primaryMetricSource = GetMetricIds( "PrimaryMetricSource" );
             List<int> secondaryMetricSource = GetMetricIds( "SecondaryMetricSource" );
@@ -241,9 +256,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             var calendar = DateTimeFormatInfo.CurrentInfo.Calendar;
 
             // Show data if metric source is selected
-            if ( newMetric != null )
+            if ( newMetric != null || metricKey != "" )
             {
-                if ( GetAttributeValue( "MetricDisplayType" ) == "Text" && newMetric != null )
+                if ( GetAttributeValue( "MetricDisplayType" ) == "Text" )
                 {
                     // This is using the date range picker
                     if ( dateRange.Start.HasValue && dateRange.End.HasValue )
@@ -256,6 +271,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                             Start = dateRange.Start.Value.AddDays( -differenceInDays ),
                             End = dateRange.End.Value.AddDays( -differenceInDays )
                         };
+
+                        metricKey = GetAttributeValue( "MetricKey" );
 
                         decimal? currentRangeMetricValue = MetricValueFunction( primaryMetricSource, secondaryMetricSource, dateRange, metricComparison );
 
