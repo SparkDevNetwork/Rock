@@ -1138,8 +1138,6 @@ namespace Rock.Security
         /// Initializes a new instance of the <see cref="AuthRule" /> class.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="action">The action.</param>
         /// <param name="entityId">The entity id.</param>
         /// <param name="allowOrDeny">Allow or Deny ("A" or "D").</param>
         /// <param name="specialRole">The special role.</param>

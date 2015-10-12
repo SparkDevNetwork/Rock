@@ -232,6 +232,7 @@ namespace Rock.Model
         /// <param name="batchNamePrefix">The batch name prefix.</param>
         /// <param name="payments">The payments.</param>
         /// <param name="batchUrlFormat">The batch URL format.</param>
+        /// <param name="recieptEmail">The reciept email.</param>
         /// <returns></returns>
         public static string ProcessPayments( FinancialGateway gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat = "", Guid? recieptEmail = null )
         {
