@@ -57,7 +57,14 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex, context );
+                if ( !context.Response.IsClientConnected )
+                {
+                    // if client disconnected, ignore
+                }
+                else
+                {
+                    ExceptionLogService.LogException( ex, context );
+                }
             }
         }
 
