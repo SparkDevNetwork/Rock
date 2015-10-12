@@ -35,7 +35,6 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Group Context Setter" )]
     [Category( "Core" )]
     [Description( "Block that can be used to set the default group context for the site." )]
-
     [GroupTypeGroupField( "Group Filter", "Select group type and root group to filter groups by root group. Leave root group blank to filter by group type.", "Root Group" )]
     [CustomRadioListField( "Context Scope", "The scope of context to set", "Site,Page", true, "Site" )]
     public partial class GroupContextSetter : RockBlock
