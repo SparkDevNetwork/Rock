@@ -1,11 +1,9 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupContextSetter.ascx.cs" Inherits="RockWeb.Blocks.Core.GroupContextSetter" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ScheduleContextSetter.ascx.cs" Inherits="RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter.ScheduleContextSetter" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <Rock:NotificationBox runat="server" ID="nbSelectGroupTypeWarning" NotificationBoxType="Warning" Text="Select a group type or root group from the block settings" />
-
-        <ul class="nav navbar-nav group-context-setter">
+        <ul class="nav navbar-nav contextsetter contextsetter-schedule">
             <li class="dropdown">
 
                 <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
@@ -14,10 +12,10 @@
                 </a>
 
                 <ul class="dropdown-menu">
-                    <asp:Repeater runat="server" ID="rptGroups" OnItemCommand="rptGroups_ItemCommand">
+                    <asp:Repeater runat="server" ID="rptSchedules" OnItemCommand="rptSchedules_ItemCommand">
                         <ItemTemplate>
                             <li>
-                                <asp:LinkButton ID="btnGroup" runat="server" Text='<%# Eval("Name") %>' CommandArgument='<%# Eval("Id") %>' />
+                                <asp:LinkButton ID="btnSchedule" runat="server" Text='<%# Eval("Name") %>' CommandArgument='<%# Eval("Id") %>' />
                             </li>
                         </ItemTemplate>
                     </asp:Repeater>
