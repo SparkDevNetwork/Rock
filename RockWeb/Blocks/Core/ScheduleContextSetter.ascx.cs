@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Web;
@@ -25,24 +26,28 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
 {
     /// <summary>
     /// Block that can be used to set the default campus context for the site
     /// </summary>
-    [DisplayName( "Campus Context Setter" )]
+    [DisplayName( "Schedule Context Setter" )]
     [Category( "Core" )]
-    [Description( "Block that can be used to set the default campus context for the site." )]
+    [Description( "Block that can be used to set the default schedule context for the site." )]
     [CustomRadioListField( "Context Scope", "The scope of context to set", "Site,Page", true, "Site", order: 0 )]
-    [TextField( "Current Item Template", "Lava template for the current item. The only merge field is {{ CampusName }}.", true, "{{ CampusName }}", order: 1 )]
-    [TextField( "Dropdown Item Template", "Lava template for items in the dropdown. The only merge field is {{ CampusName }}.", true, "{{ CampusName }}", order: 2 )]
-    [TextField( "No Campus Text", "The text displayed when no campus context is selected.", true, "Select Campus", order: 3 )]
-    public partial class CampusContextSetter : RockBlock
+    [SchedulesField( "Schedule Group", "Choose a schedule group to populate the dropdown", order: 1 )]
+    [TextField( "Current Item Template", "Lava template for the current item. The only merge field is {{ ScheduleName }}.", true, "{{ ScheduleName }}", order: 2 )]
+    [TextField( "Dropdown Item Template", "Lava template for items in the dropdown. The only merge field is {{ ScheduleName }}.", true, "{{ ScheduleName }}", order: 2 )]
+    [TextField( "No Schedule Text", "The text to show when there is no schedule in the context.", true, "Select Schedule", order: 3 )]
+    public partial class ScheduleContextSetter : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
 
@@ -80,123 +85,126 @@ namespace RockWeb.Blocks.Core
             LoadDropdowns();
         }
 
-        #endregion
-
-        #region Methods
-
         /// <summary>
-        /// Loads the campuses
+        /// Loads the schedules
         /// </summary>
-        protected void LoadDropdowns()
+        private void LoadDropdowns()
         {
-            var campusEntityType = EntityTypeCache.Read( typeof( Campus ) );
-            var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+            var scheduleEntityType = EntityTypeCache.Read( typeof( Schedule ) );
+            var currentSchedule = RockPage.GetCurrentContext( scheduleEntityType ) as Schedule;
 
-            var campusIdString = Request.QueryString["campusId"];
-            if ( campusIdString != null )
+            var scheduleIdString = Request.QueryString["scheduleId"];
+            if ( scheduleIdString != null )
             {
-                var campusId = campusIdString.AsInteger();
+                var scheduleId = scheduleIdString.AsInteger();
 
-                if ( currentCampus == null || currentCampus.Id != campusId )
+                if ( currentSchedule == null || currentSchedule.Id != scheduleId )
                 {
-                    currentCampus = SetCampusContext( campusId, false );
+                    currentSchedule = SetScheduleContext( scheduleId, false );
                 }
             }
 
             var mergeObjects = new Dictionary<string, object>();
-            if ( currentCampus != null )
+            if ( currentSchedule != null )
             {
-                mergeObjects.Add( "CampusName", currentCampus.Name );
+                mergeObjects.Add( "ScheduleName", currentSchedule.Name );
                 lCurrentSelection.Text = GetAttributeValue( "CurrentItemTemplate" ).ResolveMergeFields( mergeObjects );
             }
             else
             {
-                lCurrentSelection.Text = GetAttributeValue( "NoCampusText" );
+                lCurrentSelection.Text = GetAttributeValue( "NoScheduleText" );
             }
 
-            var campusList = new List<CampusItem>();
-            campusList.Add( new CampusItem
+            var schedules = new List<ScheduleItem>();
+            schedules.Add( new ScheduleItem
             {
-                Name = GetAttributeValue( "NoCampusText" ),
+                Name = GetAttributeValue( "NoScheduleText" ),
                 Id = Rock.Constants.All.Id
             } );
 
-            campusList.AddRange( CampusCache.All()
-                .Select( a => new CampusItem { Name = a.Name, Id = a.Id } )
-            );
-
-            var formattedCampuses = new Dictionary<int, string>();
-            // run lava on each campus
-            foreach ( var campus in campusList )
+            if ( GetAttributeValue( "ScheduleGroup" ) != null )
             {
-                mergeObjects.Clear();
-                mergeObjects.Add( "CampusName", campus.Name );
-                campus.Name = GetAttributeValue( "DropdownItemTemplate" ).ResolveMergeFields( mergeObjects );
+                var selectedSchedule = GetAttributeValue( "ScheduleGroup" );
+                var selectedScheduleList = selectedSchedule.Split( ',' ).AsGuidList();
+
+                schedules.AddRange( new ScheduleService( new RockContext() ).Queryable()
+                    .Where( a => selectedScheduleList.Contains( a.Guid ) )
+                    .Select( a => new ScheduleItem { Name = a.Name, Id = a.Id } )
+                );
             }
 
-            rptCampuses.DataSource = campusList;
-            rptCampuses.DataBind();
+            var formattedSchedule = new Dictionary<int, string>();
+            // run lava on each campus
+            foreach ( var schedule in schedules )
+            {
+                mergeObjects.Clear();
+                mergeObjects.Add( "ScheduleName", schedule.Name );
+                schedule.Name = GetAttributeValue( "DropdownItemTemplate" ).ResolveMergeFields( mergeObjects );
+            }
+
+            rptSchedules.DataSource = schedules;
+            rptSchedules.DataBind();
         }
 
         /// <summary>
-        /// Sets the campus context.
+        /// Sets the schedule context.
         /// </summary>
-        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="refreshPage">if set to <c>true</c> [refresh page].</param>
         /// <returns></returns>
-        protected Campus SetCampusContext( int campusId, bool refreshPage = false )
+        protected Schedule SetScheduleContext( int scheduleId, bool refreshPage = false )
         {
             var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
-            queryString.Set( "campusId", campusId.ToString() );
+            queryString.Set( "scheduleId", scheduleId.ToString() );
 
             bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
-            var campus = new CampusService( new RockContext() ).Get( campusId );
-            if ( campus == null )
+            var schedule = new ScheduleService( new RockContext() ).Get( scheduleId );
+            if ( schedule == null )
             {
-                // clear the current campus context
-                campus = new Campus()
+                // clear the current schedule context
+                schedule = new Schedule()
                 {
-                    Name = GetAttributeValue( "NoCampusText" ),
+                    Name = GetAttributeValue( "NoScheduleText" ),
                     Guid = Guid.Empty
                 };
             }
 
             // set context and refresh below with the correct query string if needed
-            RockPage.SetContextCookie( campus, pageScope, false );
+            RockPage.SetContextCookie( schedule, pageScope, false );
 
             if ( refreshPage )
             {
                 Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ) );
             }
 
-            return campus;
+            return schedule;
         }
 
         #endregion
 
-        #region Events
+        #region Methods
 
         /// <summary>
         /// Handles the ItemCommand event of the rptCampuses control.
         /// </summary>
         /// <param name="source">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void rptCampuses_ItemCommand( object source, RepeaterCommandEventArgs e )
+        protected void rptSchedules_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            var campusId = e.CommandArgument.ToString();
+            var scheduleId = e.CommandArgument.ToString();
 
-            if ( campusId != null )
+            if ( scheduleId != null )
             {
-                SetCampusContext( campusId.AsInteger(), true );
+                SetScheduleContext( scheduleId.AsInteger(), true );
             }
         }
 
         #endregion
 
         /// <summary>
-        /// Campus Item
+        /// Schedule Item
         /// </summary>
-        public class CampusItem
+        public class ScheduleItem
         {
             /// <summary>
             /// Gets or sets the name.
