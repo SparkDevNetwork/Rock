@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BaptismLocationList.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.Baptism.BaptismLocationList" %>
 
-<asp:UpdatePanel ID="upnlGroupList" runat="server">
+<asp:UpdatePanel ID="upnlBaptismLocationList" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlUpdate" runat="server" Visible="false">
             <div class="panel panel-block">

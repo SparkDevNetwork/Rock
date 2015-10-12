@@ -52,8 +52,8 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             gBaptismLocations.DataKeyNames = new string[] { "Id" };
             gBaptismLocations.GridRebind += gBaptismLocations_GridRebind;
 
-            this.BlockUpdated += GroupList_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlGroupList );
+            this.BlockUpdated += BaptismLocationList_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlBaptismLocationList );
         }
 
         /// <summary>
@@ -75,11 +75,11 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         #region Events
 
         /// <summary>
-        /// Handles the BlockUpdated event of the GroupList control.
+        /// Handles the BlockUpdated event of the BaptismLocationList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void GroupList_BlockUpdated( object sender, EventArgs e )
+        protected void BaptismLocationList_BlockUpdated( object sender, EventArgs e )
         {
             BindGrid();
         }
