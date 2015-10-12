@@ -36,11 +36,10 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Campus Context Setter" )]
     [Category( "Core" )]
     [Description( "Block that can be used to set the default campus context for the site." )]
-
-    [CustomRadioListField("Context Scope", "The scope of context to set", "Site,Page", true, "Site", order: 0)]
-    [TextField( "Current Item Template", "Lava template for the current item. The only merge field is {{ CampusName }}.", true, "{{ CampusName }}", order: 1)]
+    [CustomRadioListField( "Context Scope", "The scope of context to set", "Site,Page", true, "Site", order: 0 )]
+    [TextField( "Current Item Template", "Lava template for the current item. The only merge field is {{ CampusName }}.", true, "{{ CampusName }}", order: 1 )]
     [TextField( "Dropdown Item Template", "Lava template for items in the dropdown. The only merge field is {{ CampusName }}.", true, "{{ CampusName }}", order: 1 )]
-    [TextField( "No Campus Text", "The text to show when there is no campus in the context.", true, "Select Campus", order: 2)]
+    [TextField( "No Campus Text", "The text to show when there is no campus in the context.", true, "Select Campus", order: 2 )]
     public partial class CampusContextSetter : RockBlock
     {
         #region Base Control Methods
@@ -65,7 +64,7 @@ namespace RockWeb.Blocks.Core
         private void LoadDropDowns()
         {
             Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
-            
+
             var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
             var defaultCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
@@ -120,7 +119,8 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Campus Item
         /// </summary>
-        public class CampusItem {
+        public class CampusItem
+        {
             /// <summary>
             /// Gets or sets the name.
             /// </summary>

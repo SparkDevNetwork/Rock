@@ -22,9 +22,7 @@
                         </ItemTemplate>
                     </asp:Repeater>
                 </ul>
-
             </li>
         </ul>
-
     </ContentTemplate>
 </asp:UpdatePanel>
