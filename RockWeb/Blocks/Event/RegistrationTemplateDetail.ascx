@@ -185,9 +185,9 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <Rock:RockTextBox ID="tbSuccessTitle" runat="server" Label="Success Title" Placeholder="Congratulations"
-                                    Help="The heading to display to user after succesfully completing a registration of this type." />
+                                    Help="The heading to display to user after successfully completing a registration of this type." />
                                 <Rock:CodeEditor ID="ceSuccessText" runat="server" Label="Success Text" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" 
-                                    Help="The text to display to user after succesfully completing a registration of this type. If there are costs or fees for this registration, a summary of those will be displayed after this text." />
+                                    Help="The text to display to user after successfully completing a registration of this type. If there are costs or fees for this registration, a summary of those will be displayed after this text." />
                             </div>
                         </div>
                     </Rock:PanelWidget>

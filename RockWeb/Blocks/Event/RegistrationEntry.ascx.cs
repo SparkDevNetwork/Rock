@@ -2188,7 +2188,7 @@ namespace RockWeb.Blocks.Event
         private void ShowSuccess( int registrationId )
         {
             lSuccessTitle.Text = "Congratulations";
-            lSuccess.Text = "You have succesfully completed this registration.";
+            lSuccess.Text = "You have successfully completed this registration.";
 
             try
             {
@@ -2224,7 +2224,7 @@ namespace RockWeb.Blocks.Event
                         }
                         else
                         {
-                            lSuccess.Text = "You have succesfully completed this " + RegistrationTerm.ToLower();
+                            lSuccess.Text = "You have successfully completed this " + RegistrationTerm.ToLower();
                         }
 
                         // show debug info
