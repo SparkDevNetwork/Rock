@@ -347,7 +347,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// <param name="number">The number.</param>
         /// <param name="phoneNumberTypeId">The phone number type identifier.</param>
         /// <returns></returns>
-        protected string FormatPhoneNumber( bool unlisted, object countryCode, object number, int phoneNumberTypeId )
+        protected string
+        FormatPhoneNumber( bool unlisted, object countryCode, object number, int phoneNumberTypeId, bool smsEnabled = false )
         {
             string formattedNumber = "Unlisted";
             if ( !unlisted )
@@ -368,7 +369,14 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             var phoneType = DefinedValueCache.Read( phoneNumberTypeId );
             if ( phoneType != null )
             {
-                return string.Format( "{0} <small>{1}</small>", formattedNumber, phoneType.Value );
+                if ( smsEnabled )
+                {
+                    return string.Format( "{0} <small>{1} <i class='fa fa-comments'></i></small>", formattedNumber, phoneType.Value );
+                }
+                else
+                {
+                    return string.Format( "{0} <small>{1}</small>", formattedNumber, phoneType.Value );
+                }
             }
 
             return formattedNumber;

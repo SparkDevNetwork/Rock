@@ -71,7 +71,7 @@
                         <ul class="list-unstyled phonenumbers">
                             <asp:Repeater ID="rptPhones" runat="server">
                                 <ItemTemplate>
-                                    <li data-value="<%# Eval("Number") %>"><%# FormatPhoneNumber( (bool)Eval("IsUnlisted"), Eval("CountryCode"), Eval("Number"), (int?)Eval("NumberTypeValueId") ?? 0 ) %></li>
+                                    <li data-value="<%# Eval("Number") %>"><%# FormatPhoneNumber( (bool)Eval("IsUnlisted"), Eval("CountryCode"), Eval("Number"), (int?)Eval("NumberTypeValueId") ?? 0, (bool)Eval("IsMessagingEnabled") ) %></li>
                                 </ItemTemplate>
                             </asp:Repeater>
                         </ul>
