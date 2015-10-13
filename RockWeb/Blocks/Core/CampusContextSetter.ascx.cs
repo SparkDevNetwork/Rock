@@ -141,9 +141,6 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         protected Campus SetCampusContext( int campusId, bool refreshPage = false )
         {
-            var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
-            queryString.Set( "campusId", campusId.ToString() );
-
             bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
             var campus = new CampusService( new RockContext() ).Get( campusId );
             if ( campus == null )
@@ -159,9 +156,21 @@ namespace RockWeb.Blocks.Core
             // set context and refresh below with the correct query string if needed
             RockPage.SetContextCookie( campus, pageScope, false );
 
+            // Only redirect if refreshPage is true, and there already is a query string parameter for campus id
             if ( refreshPage )
             {
-                Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ) );
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "campusId" ) ) )
+                {
+                    var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
+                    queryString.Set( "campusId", campusId.ToString() );
+                    Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ), false );
+                }
+                else
+                {
+                    Response.Redirect( Request.RawUrl, false );
+                }
+
+                Context.ApplicationInstance.CompleteRequest();
             }
 
             return campus;
