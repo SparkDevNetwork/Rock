@@ -296,7 +296,7 @@
 
 				    $li.addClass('rocktree-item')
 						.addClass(node.hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
-                        .addClass(node.isActive ? '' : 'is-inactive')
+                        .addClass( ( !node.hasOwnProperty('isActive') || node.isActive )? '' : 'is-inactive')
 						.attr('data-id', node.id)
 						.attr('data-parent-id', node.parentId);
 
