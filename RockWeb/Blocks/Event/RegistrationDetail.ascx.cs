@@ -1113,6 +1113,8 @@ namespace RockWeb.Blocks.Event
             paymentInfo.FirstName = registration.FirstName;
             paymentInfo.LastName = registration.LastName;
 
+            paymentInfo.Comment1 = string.Format( "{0} ({1})", registration.RegistrationInstance.Name, registration.RegistrationInstance.Account.GlCode );
+
             var transaction = gateway.Charge( RegistrationTemplateState.FinancialGateway, paymentInfo, out errorMessage );
             if ( transaction != null )
             {
