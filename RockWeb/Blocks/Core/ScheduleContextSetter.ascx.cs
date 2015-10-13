@@ -41,6 +41,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
     [TextField( "Current Item Template", "Lava template for the current item. The only merge field is {{ ScheduleName }}.", true, "{{ ScheduleName }}", order: 2 )]
     [TextField( "Dropdown Item Template", "Lava template for items in the dropdown. The only merge field is {{ ScheduleName }}.", true, "{{ ScheduleName }}", order: 2 )]
     [TextField( "No Schedule Text", "The text to show when there is no schedule in the context.", true, "Select Schedule", order: 3 )]
+    [TextField( "Clear Selection Text", "The text displayed when a schedule can be unselected. This will not display when the text is empty.", true, "", order: 4 )]
     public partial class ScheduleContextSetter : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -131,6 +132,18 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
                 mergeObjects.Clear();
                 mergeObjects.Add( "ScheduleName", schedule.Name );
                 schedule.Name = GetAttributeValue( "DropdownItemTemplate" ).ResolveMergeFields( mergeObjects );
+            }
+
+            // check if the schedule can be unselected
+            if ( !string.IsNullOrEmpty( GetAttributeValue( "ClearSelectionText" ) ) )
+            {
+                var blankCampus = new ScheduleItem
+                {
+                    Name = GetAttributeValue( "ClearSelectionText" ),
+                    Id = Rock.Constants.All.Id
+                };
+
+                schedules.Insert( 0, blankCampus );
             }
 
             rptSchedules.DataSource = schedules;
