@@ -336,7 +336,7 @@ namespace Rock.Rest.Controllers
             var rockContext = (RockContext)Service.Context;
             var location = new LocationService( rockContext ).Get( locationId );
 
-            // If location was valid and address was geocoded succesfully
+            // If location was valid and address was geocoded successfully
             if ( location != null && location.GeoPoint != null )
             {
                 // Find all the groupLocation records ( belonging to groups of the "geofenceGroupType" )

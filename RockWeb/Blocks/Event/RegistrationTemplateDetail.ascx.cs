@@ -154,7 +154,7 @@ namespace RockWeb.Blocks.Event
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% assign registrantCount = Registration.Registrants | Size %}
 <p>
-    You have succesfully registered the following 
+    You have successfully registered the following 
     {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
     for {{ RegistrationInstance.Name }}:
 </p>
