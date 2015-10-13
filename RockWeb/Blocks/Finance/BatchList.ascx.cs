@@ -187,6 +187,22 @@ namespace RockWeb.Blocks.Finance
                         break;
                     }
 
+                case "Contains Transaction Type":
+                    {
+                        var transactionTypeValueId = e.Value.AsIntegerOrNull();
+                        if ( transactionTypeValueId.HasValue )
+                        {
+                            var transactionTypeValue = DefinedValueCache.Read( transactionTypeValueId.Value );
+                            e.Value = transactionTypeValue != null ? transactionTypeValue.ToString() : string.Empty;
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+
+                        break;
+                    }
+
                 case "Campus":
                     {
                         var campus = CampusCache.Read( e.Value.AsInteger() );
@@ -220,6 +236,7 @@ namespace RockWeb.Blocks.Finance
 
             gfBatchFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             gfBatchFilter.SaveUserPreference( "Campus", campCampus.SelectedValue );
+            gfBatchFilter.SaveUserPreference( "Contains Transaction Type", ddlTransactionType.SelectedValue );
 
             BindGrid();
         }
@@ -427,6 +444,10 @@ namespace RockWeb.Blocks.Finance
 
             ddlStatus.SetValue( statusFilter );
 
+            var definedTypeTransactionTypes = DefinedTypeCache.Read(Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid());
+            ddlTransactionType.BindToDefinedType( definedTypeTransactionTypes, true );
+            ddlTransactionType.SetValue( gfBatchFilter.GetUserPreference( "Contains Transaction Type" ) );
+
             var campusi = CampusCache.All();
             campCampus.Campuses = campusi;
             campCampus.Visible = campusi.Any();
@@ -533,6 +554,13 @@ namespace RockWeb.Blocks.Finance
             if ( status.HasValue )
             {
                 qry = qry.Where( b => b.Status == status );
+            }
+
+            // filter by batches that contain transactions of the specified transaction type
+            var transactionTypeValueId = gfBatchFilter.GetUserPreference( "Contains Transaction Type" ).AsIntegerOrNull();
+            if ( transactionTypeValueId.HasValue )
+            {
+                qry = qry.Where( a => a.Transactions.Any( t => t.TransactionTypeValueId == transactionTypeValueId.Value ) );
             }
 
             // filter by title
