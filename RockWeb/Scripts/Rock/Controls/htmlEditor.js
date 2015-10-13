@@ -12,6 +12,7 @@
                     ['Source'],
                     ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'Undo', 'Redo', '-', 'RemoveFormat'],
                     ['Format'],
+                    ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
                     ['rockmergefield', '-', 'rockimagebrowser', 'rockdocumentbrowser']
 	            ],
 
