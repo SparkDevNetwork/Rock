@@ -343,7 +343,7 @@ namespace RockWeb
                         if ( httpEx != null )
                         {
                             int statusCode = httpEx.GetHttpCode();
-                            if (!GlobalAttributesCache.Read().GetValue( "Log404AsException" ).AsBoolean())
+                            if ( ( statusCode == 404 ) && !GlobalAttributesCache.Read().GetValue( "Log404AsException" ).AsBoolean())
                             {
                                 context.ClearError();
                                 context.Response.StatusCode = 404;
