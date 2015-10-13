@@ -43,9 +43,15 @@
 
                     <asp:HiddenField ID="hfPrayerIndex" runat="server"/>
 
-
-                        <strong>Prayer Request</strong>
-                        <br />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Prayer Request</strong>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <asp:Literal ID="lPrayerRequestDate" runat="server" />
+                            </div>
+                        </div>
+                                                
                         <asp:Literal ID="lPrayerText" runat="server" />
 
                         <div id="divPrayerAnswer" runat="server" class="margin-t-lg">
