@@ -1887,6 +1887,7 @@ namespace Rock.Data
         /// <param name="description">The description.</param>
         /// <param name="guid">The GUID.</param>
         /// <param name="isSystem">if set to <c>true</c> [is system].</param>
+        /// <param name="foreignId">The foreign identifier.</param>
         public void UpdateDefinedValue( string definedTypeGuid, string value, string description, string guid, bool isSystem = true,  int? foreignId = null)
         {
             Migration.Sql( string.Format( @"
