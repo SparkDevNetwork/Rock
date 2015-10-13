@@ -10,7 +10,7 @@
             toolbar_RockCustomConfigLight:
 	            [
                     ['Source'],
-                    ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'RemoveFormat'],
+                    ['Bold', 'Italic', 'Underline', 'Strike', 'NumberedList', 'BulletedList', 'Link', 'Image', 'PasteFromWord', '-', 'Undo', 'Redo', '-', 'RemoveFormat'],
                     ['Format'],
                     ['rockmergefield', '-', 'rockimagebrowser', 'rockdocumentbrowser']
 	            ],
