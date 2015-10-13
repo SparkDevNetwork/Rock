@@ -103,9 +103,9 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            var mergeObjects = new Dictionary<string, object>();
             if ( currentCampus != null )
             {
+                var mergeObjects = new Dictionary<string, object>();
                 mergeObjects.Add( "CampusName", currentCampus.Name );
                 lCurrentSelection.Text = GetAttributeValue( "CurrentItemTemplate" ).ResolveMergeFields( mergeObjects );
             }
@@ -114,26 +114,21 @@ namespace RockWeb.Blocks.Core
                 lCurrentSelection.Text = GetAttributeValue( "NoCampusText" );
             }
 
-            var campusList = new List<CampusItem>();
-            campusList.Add( new CampusItem
-            {
-                Name = GetAttributeValue( "NoCampusText" ),
-                Id = Rock.Constants.All.Id
-            } );
-
-            campusList.AddRange( CampusCache.All()
+            var campusList = CampusCache.All()
                 .Select( a => new CampusItem { Name = a.Name, Id = a.Id } )
-            );
+                .ToList();
 
-            var formattedCampuses = new Dictionary<int, string>();
             // run lava on each campus
-            foreach ( var campus in campusList )
+            string dropdownItemTemplate = GetAttributeValue( "DropdownItemTemplate" );
+            if ( !string.IsNullOrWhiteSpace( dropdownItemTemplate ) )
             {
-                mergeObjects.Clear();
-                mergeObjects.Add( "CampusName", campus.Name );
-                campus.Name = GetAttributeValue( "DropdownItemTemplate" ).ResolveMergeFields( mergeObjects );
+                foreach ( var campus in campusList )
+                {
+                    var mergeObjects = new Dictionary<string, object>();
+                    mergeObjects.Add( "CampusName", campus.Name );
+                    campus.Name = dropdownItemTemplate.ResolveMergeFields( mergeObjects );
+                }
             }
-
             rptCampuses.DataSource = campusList;
             rptCampuses.DataBind();
         }
