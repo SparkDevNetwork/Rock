@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
 
+using Rock;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -315,10 +316,11 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased, bool includeBusinesses, bool allowFirstNameOnly, out bool reversed )
         {
-            fullName = fullName.Trim();
-            string firstName = string.Empty;
-            string lastName = string.Empty;
+            var firstNames = new List<string>();
+            var lastNames = new List<string>();
             string singleName = string.Empty;
+
+            fullName = fullName.Trim();
 
             if ( fullName.Contains( ',' ) )
             {
@@ -326,29 +328,51 @@ namespace Rock.Model
 
                 // only split by comma if there is a comma present (for example if 'Smith Jones, Sally' is the search, last name would be 'Smith Jones')
                 var nameParts = fullName.Split( ',' );
-                lastName = nameParts.Length >= 1 ? nameParts[0].Trim() : string.Empty;
-                firstName = nameParts.Length >= 2 ? nameParts[1].Trim() : string.Empty;
+                if ( nameParts.Length >= 1 )
+                {
+                    lastNames.Add( nameParts[0].Trim() );
+                }
+                if ( nameParts.Length >= 2 )
+                {
+                    firstNames.Add( nameParts[1].Trim() );
+                }
             }
-            else if ( fullName.Trim().Contains( ' ' ) )
+            else if ( fullName.Contains( ' ' ) )
             {
                 reversed = false;
 
-                // if no comma, assume the search is in 'firstname lastname' format (note: 'firstname lastname1 lastname2' isn't supported yet)
-                var names = fullName.Trim().Split( new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries );
-                firstName = names.Length >= 1 ? names[0].Trim() : string.Empty;
-                lastName = names.Length >= 2 ? names[1].Trim() : string.Empty;
+                var nameParts = fullName.Trim().Split( new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                for ( int i = 1; i < nameParts.Count; i++ )
+                {
+                    firstNames.Add( nameParts.Take( i ).ToList().AsDelimited( " " ) );
+                    lastNames.Add( nameParts.Skip( i ).ToList().AsDelimited( " " ) );
+                }
             }
             else
             {
                 // no spaces, no commas
                 reversed = true;
-                singleName = fullName.Trim();
+                singleName = fullName;
             }
-
-            var previousNamesQry = new PersonPreviousNameService( this.Context as RockContext ).Queryable();
 
             if ( !string.IsNullOrWhiteSpace( singleName ) )
             {
+                int? personId = singleName.AsIntegerOrNull();
+                if ( personId.HasValue )
+                {
+                    return Queryable()
+                        .Where( p => p.Aliases.Any( a => a.AliasPersonId == personId.Value ) );
+                }
+
+                Guid? personGuid = singleName.AsGuidOrNull();
+                if ( personGuid.HasValue )
+                {
+                    return Queryable()
+                        .Where( p => p.Aliases.Any( a => a.AliasPersonGuid == personGuid.Value ) );
+                }
+
+                var previousNamesQry = new PersonPreviousNameService( this.Context as RockContext ).Queryable();
+
                 if ( allowFirstNameOnly )
                 {
                     return Queryable( includeDeceased, includeBusinesses )
@@ -368,29 +392,52 @@ namespace Rock.Model
             }
             else
             {
-                var qry = Queryable( includeDeceased, includeBusinesses );
-                if ( includeBusinesses )
+                var qry = GetByFirstLastName( firstNames[0], lastNames[0], includeDeceased, includeBusinesses );
+                for ( var i = 1; i < firstNames.Count; i++ )
                 {
-                    int recordTypeBusinessId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
-                    
-                    // if a we are including businesses, compare fullname against the Business Name (Person.LastName)
-                    qry = qry.Where( p =>
-                        ( p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.Contains( fullName ) )
-                        ||
-                        ( ( p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( lastName ) ) ) &&
-                        ( p.FirstName.StartsWith( firstName ) ||
-                        p.NickName.StartsWith( firstName ) ) ) );
+                    qry = qry.Concat( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ) );
                 }
-                else
-                {
-                    qry = qry.Where( p =>
-                        ( ( p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( lastName ) ) ) &&
-                        ( p.FirstName.StartsWith( firstName ) ||
-                        p.NickName.StartsWith( firstName ) ) ) );
-                }
-
                 return qry;
             }
+        }
+
+        /// <summary>
+        /// Gets the last name of the by first.
+        /// </summary>
+        /// <param name="firstName">The first name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
+        /// <returns></returns>
+        public IQueryable<Person> GetByFirstLastName( string firstName, string lastName, bool includeDeceased, bool includeBusinesses )
+        {
+            string fullname = string.IsNullOrWhiteSpace( firstName ) ? firstName + " " + lastName : lastName;
+
+            var previousNamesQry = new PersonPreviousNameService( this.Context as RockContext ).Queryable();
+
+            var qry = Queryable( includeDeceased, includeBusinesses );
+            if ( includeBusinesses )
+            {
+                int recordTypeBusinessId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+
+
+                // if a we are including businesses, compare fullname against the Business Name (Person.LastName)
+                qry = qry.Where( p =>
+                    ( p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.Contains( fullname ) )
+                    ||
+                    ( ( p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( lastName ) ) ) &&
+                    ( p.FirstName.StartsWith( firstName ) ||
+                    p.NickName.StartsWith( firstName ) ) ) );
+            }
+            else
+            {
+                qry = qry.Where( p =>
+                    ( ( p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( lastName ) ) ) &&
+                    ( p.FirstName.StartsWith( firstName ) ||
+                    p.NickName.StartsWith( firstName ) ) ) );
+            }
+
+            return qry;
         }
 
         /// <summary>
