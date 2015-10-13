@@ -101,6 +101,7 @@ namespace RockWeb.Blocks.Finance
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 26 )]
 
     [SystemEmailField( "Receipt Email", "The system email to use to send the receipt.", false, "", "Email Templates", 27 )]
+    [TextField( "Payment Comment", "The comment to include with the payment transaction when sending to Gateway", false, "Online Contribution", "", 28 )]
 
     #endregion
 
@@ -1499,6 +1500,8 @@ namespace RockWeb.Blocks.Finance
                 {
                     CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
                 }
+
+                paymentInfo.Comment1 = GetAttributeValue( "PaymentComment" );
 
                 PaymentSchedule schedule = GetSchedule();
                 if ( schedule != null )
