@@ -74,7 +74,6 @@ public partial class Arena_Default : System.Web.UI.Page
         _redirectRules.Add( new RedirectRule( "/Arena/default.aspx?page=17609&item=", "/watch/fullservice?MessageId=", true ) );
         _redirectRules.Add( new RedirectRule( "/Arena/default.aspx?page=18604&topic=", "/watch/series?SeriesId=", true ) );
         _redirectRules.Add( new RedirectRule( "/Arena/default.aspx?page=18735", "/youngadults", false ) );
-        _redirectRules.Add( new RedirectRule( "/Arena/default.aspx?page=19623", "http://fast.wistia.net/embed/playlists/07j0sklap4?media_0_0%5BautoPlay%5D=false&media_0_0%5BcontrolsVisibleOnLoad%5D=false&popover=true&theme=bento&version=v1&videoOptions%5BautoPlay%5D=true&videoOptions%5BvideoHeight%5D=360&videoOptions%5BvideoWidth%5D=640&videoOptions%5BvolumeControl%5D=true", false ) );
 
         // get the current request
         var requestPath = Request.Url.PathAndQuery;
