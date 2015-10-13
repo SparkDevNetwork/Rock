@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Core
     [TextField( "Current Item Template", "Lava template for the current item. The only merge field is {{ CampusName }}.", true, "{{ CampusName }}", order: 1 )]
     [TextField( "Dropdown Item Template", "Lava template for items in the dropdown. The only merge field is {{ CampusName }}.", true, "{{ CampusName }}", order: 2 )]
     [TextField( "No Campus Text", "The text displayed when no campus context is selected.", true, "Select Campus", order: 3 )]
+    [TextField( "Clear Selection Text", "The text displayed when a campus can be unselected. This will not display when the text is empty.", true, "", order: 4 )]
     public partial class CampusContextSetter : RockBlock
     {
         #region Base Control Methods
@@ -127,6 +128,19 @@ namespace RockWeb.Blocks.Core
                     campus.Name = dropdownItemTemplate.ResolveMergeFields( mergeObjects );
                 }
             }
+
+            // check if the campus can be unselected
+            if ( !string.IsNullOrEmpty( GetAttributeValue( "ClearSelectionText" ) ) )
+            {
+                var blankCampus = new CampusItem
+                {
+                    Name = GetAttributeValue( "ClearSelectionText" ),
+                    Id = Rock.Constants.All.Id
+                };
+
+                campusList.Insert( 0, blankCampus );
+            }
+
             rptCampuses.DataSource = campusList;
             rptCampuses.DataBind();
         }

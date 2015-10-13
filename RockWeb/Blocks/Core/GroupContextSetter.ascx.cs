@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Core
     [GroupTypeGroupField( "Group Filter", "Select group type and root group to filter groups by root group. Leave root group blank to filter by group type.", "Root Group", order: 0 )]
     [CustomRadioListField( "Context Scope", "The scope of context to set", "Site,Page", true, "Site", order: 1 )]
     [TextField( "No Group Text", "The text to show when there is no group in the context.", true, "Select Group", order: 2 )]
+    [TextField( "Clear Selection Text", "The text displayed when a group can be unselected. This will not display when the text is empty.", true, "", order: 3 )]
     public partial class GroupContextSetter : RockBlock
     {
         #region Base Control Methods
@@ -144,6 +145,18 @@ namespace RockWeb.Blocks.Core
                     .Select( a => new GroupItem() { Name = a.Name, Id = a.Id } )
                     .ToList();
 
+                // check if the group can be unselected
+                if ( !string.IsNullOrEmpty( GetAttributeValue( "ClearSelectionText" ) ) )
+                {
+                    var blankCampus = new GroupItem
+                    {
+                        Name = GetAttributeValue( "ClearSelectionText" ),
+                        Id = Rock.Constants.All.Id
+                    };
+
+                    groupList.Insert( 0, blankCampus );
+                }
+
                 rptGroups.DataSource = groupList;
                 rptGroups.DataBind();
             }
@@ -174,7 +187,7 @@ namespace RockWeb.Blocks.Core
 
             if ( refreshPage )
             {
-                // Only redirect if refreshPage is true, and there already is a query string parameter for schedule id
+                // Only redirect if refreshPage is true, and there already is a query string parameter for group id
                 if ( !string.IsNullOrWhiteSpace( PageParameter( "groupId" ) ) )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
