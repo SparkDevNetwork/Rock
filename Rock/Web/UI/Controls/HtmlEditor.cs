@@ -555,6 +555,7 @@ CKEDITOR.replace('{0}', {{
             }
 
             List<string> enabledPlugins = new List<string>();
+            enabledPlugins.Add( "justify" );
             if ( MergeFields.Any() )
             {
                 enabledPlugins.Add( "rockmergefield" );
