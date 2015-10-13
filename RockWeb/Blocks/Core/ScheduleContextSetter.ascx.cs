@@ -98,9 +98,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
                 }
             }
 
-            var mergeObjects = new Dictionary<string, object>();
             if ( currentSchedule != null )
             {
+                var mergeObjects = new Dictionary<string, object>();
                 mergeObjects.Add( "ScheduleName", currentSchedule.Name );
                 lCurrentSelection.Text = GetAttributeValue( "CurrentItemTemplate" ).ResolveMergeFields( mergeObjects );
             }
@@ -110,11 +110,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
             }
 
             var schedules = new List<ScheduleItem>();
-            schedules.Add( new ScheduleItem
-            {
-                Name = GetAttributeValue( "NoScheduleText" ),
-                Id = Rock.Constants.All.Id
-            } );
 
             if ( GetAttributeValue( "ScheduleGroup" ) != null )
             {
@@ -124,6 +119,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
                 schedules.AddRange( new ScheduleService( new RockContext() ).Queryable()
                     .Where( a => selectedScheduleList.Contains( a.Guid ) )
                     .Select( a => new ScheduleItem { Name = a.Name, Id = a.Id } )
+                    .ToList()
                 );
             }
 
@@ -131,6 +127,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
             // run lava on each campus
             foreach ( var schedule in schedules )
             {
+                var mergeObjects = new Dictionary<string, object>();
                 mergeObjects.Clear();
                 mergeObjects.Add( "ScheduleName", schedule.Name );
                 schedule.Name = GetAttributeValue( "DropdownItemTemplate" ).ResolveMergeFields( mergeObjects );
@@ -148,9 +145,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
         /// <returns></returns>
         protected Schedule SetScheduleContext( int scheduleId, bool refreshPage = false )
         {
-            var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
-            queryString.Set( "scheduleId", scheduleId.ToString() );
-
             bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
             var schedule = new ScheduleService( new RockContext() ).Get( scheduleId );
             if ( schedule == null )
@@ -168,7 +162,19 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
 
             if ( refreshPage )
             {
-                Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ) );
+                // Only redirect if refreshPage is true, and there already is a query string parameter for schedule id
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "scheduleId" ) ) )
+                {
+                    var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
+                    queryString.Set( "scheduleId", scheduleId.ToString() );
+                    Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ), false );
+                }
+                else
+                {
+                    Response.Redirect( Request.RawUrl, false );
+                }
+
+                Context.ApplicationInstance.CompleteRequest();
             }
 
             return schedule;

@@ -139,17 +139,10 @@ namespace RockWeb.Blocks.Core
 
                 lCurrentSelection.Text = currentGroup != null ? currentGroup.ToString() : GetAttributeValue( "NoGroupText" );
 
-                var groupList = new List<GroupItem>();
-                groupList.Add( new GroupItem
-                {
-                    Name = GetAttributeValue( "NoGroupText" ),
-                    Id = Rock.Constants.All.Id
-                } );
-
-                groupList.AddRange( qryGroups.OrderBy( a => a.Order )
+                var groupList = qryGroups.OrderBy( a => a.Order )
                     .ThenBy( a => a.Name ).ToList()
                     .Select( a => new GroupItem() { Name = a.Name, Id = a.Id } )
-                );
+                    .ToList();
 
                 rptGroups.DataSource = groupList;
                 rptGroups.DataBind();
@@ -164,9 +157,6 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         protected Group SetGroupContext( int groupId, bool refreshPage = false )
         {
-            var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
-            queryString.Set( "groupId", groupId.ToString() );
-
             bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
             var group = new GroupService( new RockContext() ).Get( groupId );
             if ( group == null )
@@ -184,7 +174,19 @@ namespace RockWeb.Blocks.Core
 
             if ( refreshPage )
             {
-                Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ) );
+                // Only redirect if refreshPage is true, and there already is a query string parameter for schedule id
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "groupId" ) ) )
+                {
+                    var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
+                    queryString.Set( "groupId", groupId.ToString() );
+                    Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ), false );
+                }
+                else
+                {
+                    Response.Redirect( Request.RawUrl, false );
+                }
+
+                Context.ApplicationInstance.CompleteRequest();
             }
 
             return group;
