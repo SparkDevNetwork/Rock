@@ -2203,7 +2203,7 @@ namespace RockWeb.Blocks.Event
                                     attributeValues
                                         .Where( v =>
                                             registrantAttributeIds.Contains( v.AttributeId ) &&
-                                            v.EntityId.Value == registrant.PersonAlias.PersonId )
+                                            v.EntityId.Value == registrant.Id )
                                         .ToList()
                                         .ForEach( v => attributeFieldObject.AttributeValues
                                             .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
