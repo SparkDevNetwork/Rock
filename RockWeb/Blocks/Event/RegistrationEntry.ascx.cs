@@ -1151,18 +1151,18 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                bool existingRegistration = RegistrationState.RegistrationId.HasValue;
+                var rockContext = new RockContext();
+                var registrationService = new RegistrationService( rockContext );
+                
+                bool registrationCreated = false;
 
                 try
                 {
                     if ( RegistrationState != null && RegistrationState.Registrants.Any() && RegistrationTemplate != null )
                     {
-                        var rockContext = new RockContext();
-                        var registrationService = new RegistrationService( rockContext );
-
                         bool hasPayment = ( RegistrationState.PaymentAmount ?? 0.0m ) > 0.0m;
 
-                        if ( existingRegistration )
+                        if ( RegistrationState.RegistrationId.HasValue )
                         {
                             // Get the existing registration
                             registration = registrationService.Get( RegistrationState.RegistrationId.Value );
@@ -1171,6 +1171,10 @@ namespace RockWeb.Blocks.Event
                         {
                             // Create a new registration
                             registration = SaveRegistration( rockContext, hasPayment );
+                            if ( registration != null )
+                            {
+                                registrationCreated = true;
+                            }
                         }
 
                         if ( registration != null )
@@ -1181,13 +1185,6 @@ namespace RockWeb.Blocks.Event
                                 string errorMessage = string.Empty;
                                 if ( !ProcessPayment( rockContext, registration, out errorMessage ) )
                                 {
-                                    if ( !existingRegistration )
-                                    {
-                                        registrationService.Delete( registration );
-                                        rockContext.SaveChanges();
-                                    }
-
-                                    registration = null;
                                     throw new Exception( errorMessage );
                                 }
                             }
@@ -1228,6 +1225,23 @@ namespace RockWeb.Blocks.Event
                 {
                     ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
                     ShowError( "An Error Occurred Processing Your " + RegistrationTerm, ex.Message );
+
+                    // Try to delete the registration if it was just created
+                    try
+                    {
+                        if ( registrationCreated && registration != null && registration.Id > 0 )
+                        {
+                            RegistrationState.RegistrationId = null;
+                            var newRegistration = registrationService.Get( registration.Id );
+                            if ( newRegistration != null )
+                            {
+                                registrationService.Delete( registration );
+                                rockContext.SaveChanges();
+                            }
+                        }
+                    }
+                    catch { }
+
                     return (int?)null;
                 }
 
