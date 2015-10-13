@@ -1198,7 +1198,6 @@ tr.row-highlight td {
   color: #d9534f;
 }
 .table-responsive {
-  position: relative;
   width: 100%;
   overflow-y: hidden;
   overflow-x: auto;
@@ -1250,6 +1249,10 @@ tr.row-highlight td {
   border-radius: 0;
   margin-bottom: 15px;
 }
+td .photo-icon {
+  opacity: 0.6;
+  min-height: 16px;
+}
 /*
     Used to manage styles for specific blocks.
 
@@ -1266,9 +1269,9 @@ tr.row-highlight td {
   margin-top: 4px;
 }
 .codeeditor-header {
-  position: absolute;
-  top: -4px;
-  right: 0;
+  /*position: absolute;
+    top: -4px;
+    right: 0;*/
 }
 .codeeditor-header .picker-mergefield {
   float: right;
@@ -3089,6 +3092,9 @@ ul.rocktree ul {
 .rocktree .rocktree-item {
   white-space: nowrap;
 }
+.rocktree .rocktree-item.is-inactive {
+  opacity: .6;
+}
 .rocktree .rocktree-item > i {
   cursor: pointer;
   padding: 4px;
@@ -4691,6 +4697,7 @@ ul.list-group-panel .list-group-item:first-child,
   2. Spacing - provides utility classes for spacing based off of the themes gutter widths
   3. Even Height Columns - provides classes for making columns even heights
   4. Breakpoint Specific Alignment - provides classes for alignment changes at specific breakpoints
+  5. Utilities
 
 */
 .accent-color {
@@ -5312,8 +5319,11 @@ th[align=center] {
   background-color: #5bc0de !important;
   color: #fff !important;
 }
+.popover-content {
+  overflow: hidden;
+}
 .popover-content header {
-  margin: -9px -14px 8px -14px;
+  margin: -9px -14px 8px;
   padding: 8px 14px;
   font-size: 14px;
   font-weight: normal;
@@ -5338,10 +5348,17 @@ th[align=center] {
 .popover-content header h3 {
   float: left;
   font-size: 18px;
-  margin-top: 2px;
+  margin: 0 0 0 6px;
+  font-weight: normal;
 }
 .popover-content header h3 small {
   display: block;
+}
+.popover-content .body div {
+  margin-bottom: 2px;
+}
+.popover-content .body div:last-child {
+  margin-bottom: 0;
 }
 .list-group-item:before,
 .list-group-item:after {
@@ -5709,7 +5726,7 @@ fieldset[disabled] .btn-authenication.active {
 .alert-success a.help {
   border-bottom: 0;
 }
-.alert-info a {
+.alert-info a:not([class]) {
   color: #3a87ad;
   border-bottom: 1px dotted #3a87ad;
 }
