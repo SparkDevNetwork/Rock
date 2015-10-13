@@ -61,6 +61,7 @@ namespace RockWeb.Blocks.Finance
     [CodeEditorField( "Receipt Lava", "Lava to display for the receipt panel.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, "{% include '~~/Assets/Lava/KioskGivingReceipt.lava' %}", "", 9 )]
     [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 10 )]
     [SystemEmailField( "Receipt Email", "The system email to use to send the receipt.", false, "", "", 11 )]
+    [TextField( "Payment Comment", "The comment to include with the payment transaction when sending to Gateway", false, "Kiosk", "", 12 )]
     #endregion
 
     public partial class TransactionEntryKiosk : Rock.Web.UI.RockBlock
@@ -393,7 +394,7 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     // add comment to the transation
-                    swipeInfo.Comment1 = DefinedValueCache.Read( GetAttributeValue( "Source" ) ).Value;
+                    swipeInfo.Comment1 = GetAttributeValue( "PaymentComment" );
 
                     // get gateway
                     FinancialGateway financialGateway = null;
