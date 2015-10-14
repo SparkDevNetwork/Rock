@@ -67,7 +67,9 @@ namespace RockWeb.Blocks.Finance
             gBatchList.Actions.ShowAdd = UserCanEdit;
             gBatchList.Actions.AddClick += gBatchList_Add;
             gBatchList.GridRebind += gBatchList_GridRebind;
+            gBatchList.RowDataBound += gBatchList_RowDataBound;
             gBatchList.IsDeleteEnabled = UserCanEdit;
+            gBatchList.ShowConfirmDeleteDialog = false;
 
             ddlAction = new RockDropDownList();
             ddlAction.ID = "ddlAction";
@@ -75,6 +77,26 @@ namespace RockWeb.Blocks.Finance
             ddlAction.Items.Add( new ListItem( "-- Select Action --", string.Empty ) );
             ddlAction.Items.Add( new ListItem( "Open Selected Batches", "OPEN" ) );
             ddlAction.Items.Add( new ListItem( "Close Selected Batches", "CLOSE" ) );
+            string deleteScript = @"
+    $('table.js-grid-batch-list a.grid-delete-button').click(function( e ){
+        var $btn = $(this);
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this batch?', function (result) {
+            if (result) {
+                if ( $btn.closest('tr').hasClass('js-has-transactions') ) {
+                    Rock.dialogs.confirm('This batch has transactions. Are you sure that you want to delete this batch and all of it\'s transactions?', function (result) {
+                        if (result) {
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                        }
+                    });
+                } else {
+                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                }
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( gBatchList, gBatchList.GetType(), "deleteBatchScript", deleteScript, true );
 
             gBatchList.Actions.AddCustomActionControl( ddlAction );
         }
@@ -250,6 +272,7 @@ namespace RockWeb.Blocks.Finance
         {
             var rockContext = new RockContext();
             var batchService = new FinancialBatchService( rockContext );
+            var transactionService = new FinancialTransactionService( rockContext );
             var batch = batchService.Get( e.RowKeyId );
             if ( batch != null )
             {
@@ -264,6 +287,11 @@ namespace RockWeb.Blocks.Finance
 
                     rockContext.WrapTransaction( () =>
                     {
+                        foreach( var txn in transactionService.Queryable()
+                            .Where( t => t.BatchId == batch.Id ))
+                        {
+                            transactionService.Delete( txn );
+                        }
                         HistoryService.SaveChanges(
                             rockContext,
                             typeof( FinancialBatch ),
@@ -294,10 +322,18 @@ namespace RockWeb.Blocks.Finance
                 var deleteField = gBatchList.Columns.OfType<DeleteField>().First();
                 var cell = ( e.Row.Cells[gBatchList.Columns.IndexOf( deleteField )] as DataControlFieldCell ).Controls[0];
 
-                // Hide delete button if the batch is closed.
-                if ( batchRow != null && batchRow.Status == BatchStatus.Closed && cell != null )
+                if ( batchRow != null )
                 {
+                    if ( batchRow.TransactionCount > 0 )
+                    {
+                        e.Row.AddCssClass( "js-has-transactions" );
+                    }
+
+                    // Hide delete button if the batch is closed.
+                    if ( batchRow.Status == BatchStatus.Closed && cell != null )
+                    {
                     cell.Visible = false;
+                    }
                 }
             }
         }

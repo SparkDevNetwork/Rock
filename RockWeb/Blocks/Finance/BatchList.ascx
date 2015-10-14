@@ -23,7 +23,7 @@
                         </Rock:GridFilter>
 
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-                        <Rock:Grid ID="gBatchList" runat="server" RowItemText="Batch" OnRowSelected="gBatchList_Edit" AllowSorting="true" OnRowDataBound="gBatchList_RowDataBound">
+                        <Rock:Grid ID="gBatchList" runat="server" RowItemText="Batch" OnRowSelected="gBatchList_Edit" AllowSorting="true" CssClass="js-grid-batch-list">
                             <Columns>
                                 <Rock:SelectField />
                                 <Rock:RockBoundField DataField="Id" HeaderText="Id" SortExpression="Id" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
