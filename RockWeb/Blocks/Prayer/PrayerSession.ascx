@@ -42,6 +42,13 @@
                 <div class="panel-body">
 
                     <asp:HiddenField ID="hfPrayerIndex" runat="server"/>
+                         <div class="row margin-b-md">
+                            <div class="col-md-12">
+                                <asp:LinkButton ID="lbBack" runat="server" CssClass="btn btn-default" OnClick="lbBack_Click" ><i class="fa fa-chevron-left"></i> Back</asp:LinkButton>
+                                <asp:LinkButton ID="lbNext" TabIndex="1" runat="server" CssClass="btn btn-default pull-right" OnClick="lbNext_Click" >Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                                
+                            </div>
+                        </div>
 
                         <div class="row">
                             <div class="col-md-6">
@@ -62,13 +69,7 @@
 
 
                     <div class="actions margin-t-lg margin-b-md">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <asp:LinkButton ID="lbBack" runat="server" CssClass="btn btn-primary" OnClick="lbBack_Click" ><i class="fa fa-chevron-left"></i> Back</asp:LinkButton>
-                                <asp:LinkButton ID="lbNext" TabIndex="1" runat="server" CssClass="btn btn-primary pull-right" OnClick="lbNext_Click" >Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
-                                
-                            </div>
-                        </div>
+                       
                         
                         <div class="row margin-t-md">
                             <div class="col-md-12">
