@@ -91,102 +91,15 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             }
         }
 
-        #endregion
-
         // Let's create null context values so they are available
         private IEntity campusContext = new List<IEntity>() as IEntity;
 
         private IEntity scheduleContext = new List<IEntity>() as IEntity;
         private IEntity groupContext = new List<IEntity>() as IEntity;
 
-        string metricKey = string.Empty;
+        private string metricKey = string.Empty;
 
-        private int TimeSpanDifference( Rock.DateRange dateRange )
-        {
-            DateTime dateRangeStart = dateRange.Start ?? DateTime.Now;
-            DateTime dateRangeEnd = dateRange.End ?? DateTime.Now;
-
-            TimeSpan ts = dateRangeEnd - dateRangeStart;
-
-            return ts.Days + 1;
-        }
-
-        private decimal MetricQuery(
-                List<int> metricSource,
-                Rock.DateRange dateRange
-            )
-        {
-
-            var metricData = new MetricService( new RockContext() ).Queryable();
-
-            if ( metricKey != "" )
-            {
-                var metricKeyData = new MetricService( new RockContext() ).Queryable();
-                var metricKeyIds = metricKeyData.Where( a => a.Title.Contains( metricKey ) ).Select( a => a.Id ).ToList() as List<int>;
-
-                metricData = new MetricService( new RockContext() ).GetByIds( metricKeyIds );
-
-            } else {
-                metricData = new MetricService( new RockContext() ).GetByIds( metricSource );
-            }
-
-            var queryable = metricData.SelectMany( a => a.MetricValues ).AsQueryable().AsNoTracking();
-
-            if ( dateRange != null )
-            {
-                queryable = queryable.Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End );
-            }
-
-            if ( campusContext != null )
-            {
-                queryable = queryable.Where( a => a.EntityId == campusContext.Id );
-            }
-
-            if ( scheduleContext != null )
-            {
-                var scheduleTime = new ScheduleService( new RockContext() ).Get( scheduleContext.Guid ).StartTimeOfDay;
-                queryable = queryable.Where( a => DbFunctions.CreateTime( a.MetricValueDateTime.Value.Hour, a.MetricValueDateTime.Value.Minute, a.MetricValueDateTime.Value.Second ) == scheduleTime );
-            }
-
-            if ( groupContext != null )
-            {
-                queryable = queryable.Where( a => a.ForeignId == groupContext.Id );
-            }
-
-            var executeQuery = queryable.ToList();
-
-            return executeQuery.Select( a => a.YValue ).Sum() ?? 0;
-        }
-
-        private decimal
-            MetricValueFunction(
-                List<int> primaryMetricSource,
-                List<int> secondaryMetricSource,
-                Rock.DateRange dateRange,
-                string numberFormat = "sum"
-            )
-        {
-            if ( numberFormat == "Percentage" )
-            {
-                decimal primaryMetricValue = MetricQuery( primaryMetricSource, dateRange );
-                decimal secondaryMetricValue = MetricQuery( secondaryMetricSource, dateRange );
-
-                if ( primaryMetricValue != 0 && secondaryMetricValue != 0 )
-                {
-                    decimal percentage = primaryMetricValue / secondaryMetricValue;
-                    return percentage * 100;
-                }
-                else
-                {
-                    return 0.0M;
-                }
-            }
-            // This is the default function, which is a sum of all the values
-            else
-            {
-                return MetricQuery( primaryMetricSource, dateRange);
-            }
-        }
+        #endregion
 
         #region Control Methods
 
@@ -526,6 +439,123 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
         #endregion
 
+        #region Internal Methods
+
+        /// <summary>
+        /// Times the span difference.
+        /// </summary>
+        /// <param name="dateRange">The date range.</param>
+        /// <returns></returns>
+        private int TimeSpanDifference( Rock.DateRange dateRange )
+        {
+            DateTime dateRangeStart = dateRange.Start ?? DateTime.Now;
+            DateTime dateRangeEnd = dateRange.End ?? DateTime.Now;
+
+            TimeSpan ts = dateRangeEnd - dateRangeStart;
+
+            return ts.Days + 1;
+        }
+
+        /// <summary>
+        /// Metrics the query.
+        /// </summary>
+        /// <param name="metricSource">The metric source.</param>
+        /// <param name="dateRange">The date range.</param>
+        /// <returns></returns>
+        private decimal MetricQuery(
+                List<int> metricSource,
+                Rock.DateRange dateRange
+            )
+        {
+            var metricData = new MetricService( new RockContext() ).Queryable();
+
+            if ( metricKey != "" )
+            {
+                var metricKeyData = new MetricService( new RockContext() ).Queryable();
+                var metricKeyIds = metricKeyData.Where( a => a.Title.Contains( metricKey ) ).Select( a => a.Id ).ToList() as List<int>;
+
+                metricData = new MetricService( new RockContext() ).GetByIds( metricKeyIds );
+            }
+            else
+            {
+                metricData = new MetricService( new RockContext() ).GetByIds( metricSource );
+            }
+
+            var queryable = metricData.SelectMany( a => a.MetricValues ).AsQueryable().AsNoTracking();
+
+            if ( dateRange != null )
+            {
+                queryable = queryable.Where( a => a.MetricValueDateTime >= dateRange.Start && a.MetricValueDateTime <= dateRange.End );
+            }
+
+            if ( campusContext != null )
+            {
+                queryable = queryable.Where( a => a.EntityId == campusContext.Id );
+            }
+
+            if ( scheduleContext != null )
+            {
+                var scheduleTime = new ScheduleService( new RockContext() ).Get( scheduleContext.Guid ).StartTimeOfDay;
+                queryable = queryable.Where( a => DbFunctions.CreateTime( a.MetricValueDateTime.Value.Hour, a.MetricValueDateTime.Value.Minute, a.MetricValueDateTime.Value.Second ) == scheduleTime );
+            }
+
+            if ( groupContext != null )
+            {
+                queryable = queryable.Where( a => a.ForeignId == groupContext.Id );
+            }
+
+            var executeQuery = queryable.ToList();
+
+            return executeQuery.Select( a => a.YValue ).Sum() ?? 0;
+        }
+
+        /// <summary>
+        /// Gets the metric ids.
+        /// </summary>
+        /// <param name="metricAttribute">The metric attribute.</param>
+        /// <returns></returns>
+        public List<int> GetMetricIds( string metricAttribute )
+        {
+            var metricCategories = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( GetAttributeValue( metricAttribute ) );
+
+            var metricGuids = metricCategories.Select( a => a.MetricGuid ).ToList();
+            return new MetricService( new Rock.Data.RockContext() ).GetByGuids( metricGuids ).Select( a => a.Id ).ToList();
+        }
+
+        /// <summary>
+        /// Metrics the value function.
+        /// </summary>
+        /// <param name="primaryMetricSource">The primary metric source.</param>
+        /// <param name="secondaryMetricSource">The secondary metric source.</param>
+        /// <param name="dateRange">The date range.</param>
+        /// <param name="numberFormat">The number format.</param>
+        /// <returns></returns>
+        private decimal MetricValueFunction( List<int> primaryMetricSource, List<int> secondaryMetricSource, Rock.DateRange dateRange, string numberFormat = "sum" )
+        {
+            if ( numberFormat == "Percentage" )
+            {
+                decimal primaryMetricValue = MetricQuery( primaryMetricSource, dateRange );
+                decimal secondaryMetricValue = MetricQuery( secondaryMetricSource, dateRange );
+
+                if ( primaryMetricValue != 0 && secondaryMetricValue != 0 )
+                {
+                    decimal percentage = primaryMetricValue / secondaryMetricValue;
+                    return percentage * 100;
+                }
+                else
+                {
+                    return 0.0M;
+                }
+            }
+            // This is the default function, which is a sum of all the values
+            else
+            {
+                return MetricQuery( primaryMetricSource, dateRange );
+            }
+        }
+
+        #endregion
+
         #region Classes
 
         /// <summary>
@@ -568,22 +598,5 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         }
 
         #endregion Classes
-
-        #region Internal Methods
-
-        /// <summary>
-        /// Gets the metric ids.
-        /// </summary>
-        /// <param name="metricAttribute">The metric attribute.</param>
-        /// <returns></returns>
-        public List<int> GetMetricIds( string metricAttribute )
-        {
-            var metricCategories = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( GetAttributeValue( metricAttribute ) );
-
-            var metricGuids = metricCategories.Select( a => a.MetricGuid ).ToList();
-            return new MetricService( new Rock.Data.RockContext() ).GetByGuids( metricGuids ).Select( a => a.Id ).ToList();
-        }
-
-        #endregion
     }
 }
