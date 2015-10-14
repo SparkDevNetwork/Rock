@@ -1,4 +1,4 @@
-<div class="panel panel-block">
+<div class="panel panel-default">
   <div class="panel-heading">
     <h4 class="panel-title">
       <i class="fa fa-users"></i> Followed {{ EntityType | Pluralize }}
