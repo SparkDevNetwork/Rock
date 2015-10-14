@@ -1169,20 +1169,7 @@ namespace Rock.Model
 
             set
             {
-                if ( value.HasValue && value >= 0 )
-                {
-                    var globalAttributes = GlobalAttributesCache.Read();
-                    var transitionDate = globalAttributes.GetValue( "GradeTransitionDate" ).AsDateTime();
-                    if ( transitionDate.HasValue )
-                    {
-                        int gradeOffsetAdjustment = ( RockDateTime.Now < transitionDate.Value ) ? value.Value : value.Value + 1;
-                        GraduationYear = transitionDate.Value.Year + gradeOffsetAdjustment;
-                    }
-                }
-                else
-                {
-                    GraduationYear = null;
-                }
+                GraduationYear = GraduationYearFromGradeOffset(value);
             }
         }
 
@@ -1838,6 +1825,27 @@ namespace Rock.Model
             }
 
             return FormatFullName( nickName, lastName, string.Empty );
+        }
+
+        /// <summary>
+        /// Given a grade offset, returns the graduation year
+        /// </summary>
+        /// <param name="gradeOffset"></param>
+        /// <returns></returns>
+        public static int? GraduationYearFromGradeOffset(int? gradeOffset)
+        {
+            if (gradeOffset.HasValue && gradeOffset.Value >= 0)
+            {
+                var globalAttributes = GlobalAttributesCache.Read();
+                var transitionDate = globalAttributes.GetValue("GradeTransitionDate").AsDateTime();
+                if (transitionDate.HasValue)
+                {
+                    int gradeOffsetAdjustment = (RockDateTime.Now < transitionDate.Value) ? gradeOffset.Value : gradeOffset.Value + 1;
+                    return transitionDate.Value.Year + gradeOffsetAdjustment;
+                }
+            }
+
+            return null;
         }
 
         #endregion
