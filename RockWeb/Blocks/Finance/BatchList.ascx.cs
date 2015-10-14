@@ -575,13 +575,13 @@ namespace RockWeb.Blocks.Finance
                 drp.DelimitedValues = dateRangeValue;
                 if ( drp.LowerValue.HasValue )
                 {
-                    qry = qry.Where( b => b.BatchStartDateTime >= drp.LowerValue );
+                    qry = qry.Where( b => b.BatchStartDateTime >= drp.LowerValue.Value );
                 }
 
                 if ( drp.UpperValue.HasValue )
                 {
                     var endOfDay = drp.UpperValue.Value.AddDays( 1 );
-                    qry = qry.Where( b => b.BatchStartDateTime < drp.UpperValue );
+                    qry = qry.Where( b => b.BatchStartDateTime < endOfDay );
                 }
             }
 
