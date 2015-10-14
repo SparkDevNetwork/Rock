@@ -435,6 +435,12 @@ namespace Rock
         }
 
         /// <summary>
+        /// Thread Static variable to help make sure that only the desired thread is doing the encodeString thing
+        /// </summary>
+        [ThreadStatic]
+        private static bool _mergeFieldsEncodeStrings = false;
+
+        /// <summary>
         /// Use DotLiquid to resolve any merge codes within the content using the values
         /// in the mergeObjects.
         /// </summary>
@@ -453,39 +459,51 @@ namespace Rock
                 }
 
                 Template template = Template.Parse( content );
+                _mergeFieldsEncodeStrings = encodeStrings;
 
                 // if encodeStrings = true, we want any string values to be XML Encoded ( 
-                var stringTransformer = Template.GetValueTypeTransformer( typeof( string ) );
                 if ( encodeStrings )
                 {
-                    // if the stringTransformer hasn't been registered yet, register it
-                    if ( stringTransformer == null )
+                    string result = string.Empty;  
+                    
+                    try
                     {
                         Template.RegisterValueTypeTransformer( typeof( string ), ( s ) =>
                         {
                             string val = ( s as string );
                             if ( val != null )
                             {
-                                // we techically want to XML encode, but Html Encode does the trick
-                                return val.EncodeHtml();
+                                // just in-case another thread is calling this function while this transformer is registered, double-check if this thread should encode strings
+                                if ( _mergeFieldsEncodeStrings )
+                                {
+                                    // we techically want to XML encode, but Html Encode does the trick
+                                    return val.EncodeHtml();
+                                }
+                                else
+                                {
+                                    return s;
+                                }
                             }
                             else
                             {
                                 return s;
                             }
                         } );
+
+                        result = template.Render( Hash.FromDictionary( mergeObjects ) );
                     }
-                }
-                else
-                {
-                    // if the stringTransformer is registered, un-register it
-                    if ( stringTransformer != null )
+                    finally
                     {
                         Template.RegisterValueTypeTransformer( typeof( string ), null );
                     }
+
+                    return result;
+                }
+                else
+                {
+                    return template.Render( Hash.FromDictionary( mergeObjects ) );
                 }
 
-                return template.Render( Hash.FromDictionary( mergeObjects ) );
             }
             catch ( Exception ex )
             {

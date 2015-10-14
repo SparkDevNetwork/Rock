@@ -580,7 +580,7 @@ namespace RockWeb.Blocks.Finance
 
                 // If account is associated with an entity (i.e. registration), or this is the total row do not allow it to be deleted
                 if ( account.EntityTypeId.HasValue || account.AccountId == int.MinValue )
-                { 
+                {
                     // Hide the delete button
                     var ctrls = e.Row.Cells[3].ControlsOfTypeRecursive<LinkButton>();
                     if ( ctrls.Any() && ctrls.Count() == 1 )
@@ -665,7 +665,7 @@ namespace RockWeb.Blocks.Finance
                     txnDetail = new FinancialTransactionDetail();
                     TransactionDetailsState.Add( txnDetail );
                 }
-                txnDetail.AccountId = ddlAccount.SelectedValue.AsInteger();
+                txnDetail.AccountId = apAccount.SelectedValue.AsInteger();
                 txnDetail.Amount = tbAccountAmount.Text.AsDecimal();
                 txnDetail.Summary = tbAccountSummary.Text;
 
@@ -1098,9 +1098,6 @@ namespace RockWeb.Blocks.Finance
             ddlSourceType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid(), rockContext ), true );
             ddlCurrencyType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid(), rockContext ), true );
             ddlCreditCardType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid(), rockContext ), true );
-
-            ddlAccount.DataSource = AccountNames;
-            ddlAccount.DataBind();
         }
 
         /// <summary>
@@ -1158,14 +1155,14 @@ namespace RockWeb.Blocks.Finance
             var txnDetail = TransactionDetailsState.Where( d => d.Guid.Equals( guid ) ).FirstOrDefault();
             if ( txnDetail != null )
             {
-                ddlAccount.SetValue( txnDetail.AccountId );
+                apAccount.SetValue( txnDetail.AccountId );
                 tbAccountAmount.Text = txnDetail.Amount.ToString( "N2" );
                 tbAccountSummary.Text = txnDetail.Summary;
             }
             else
             {
-                ddlAccount.SelectedIndex = -1;
-                tbAccountSummary.Text = string.Empty;
+                apAccount.SetValue( null );
+                tbAccountAmount.Text = string.Empty;
                 tbAccountSummary.Text = string.Empty;
             }
 

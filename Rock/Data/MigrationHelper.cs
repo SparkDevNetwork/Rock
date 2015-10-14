@@ -1888,7 +1888,8 @@ namespace Rock.Data
         /// <param name="guid">The GUID.</param>
         /// <param name="isSystem">if set to <c>true</c> [is system].</param>
         /// <param name="foreignId">The foreign identifier.</param>
-        public void UpdateDefinedValue( string definedTypeGuid, string value, string description, string guid, bool isSystem = true,  int? foreignId = null)
+        /// <param name="foreignKey">The foreign key.</param>
+        public void UpdateDefinedValue( string definedTypeGuid, string value, string description, string guid, bool isSystem = true,  int? foreignId = null, string foreignKey = "")
         {
             Migration.Sql( string.Format( @"
 
@@ -1903,7 +1904,8 @@ namespace Rock.Data
                         ,[DefinedTypeId] = @DefinedTypeId
                         ,[Value] = '{1}'
                         ,[Description] = '{2}'
-                        , [ForeignId] = {5}
+                        ,[ForeignId] = {5}
+                        ,[ForeignKey] = '{6}'
                     WHERE
                         [Guid] = '{3}'
                 END
@@ -1918,14 +1920,18 @@ namespace Rock.Data
                         ,[Order]
                         ,[Value]
                         ,[Description]
-                        ,[Guid])
+                        ,[Guid]
+                        ,[ForeignId]
+                        ,[ForeignKey])
                     VALUES
                         ({4}
                         ,@DefinedTypeId
                         ,@Order
                         ,'{1}'
                         ,'{2}'
-                        ,'{3}')
+                        ,'{3}'
+                        ,{5}
+                        ,'{6}')
                 END
 ",
                     definedTypeGuid,
@@ -1933,7 +1939,8 @@ namespace Rock.Data
                     description.Replace( "'", "''" ),
                     guid,
                     ( isSystem ? "1" : "0" ),
-                    foreignId
+                    foreignId.HasValue ? foreignId.ToString() : "null",
+                    foreignKey
                     ) );
         }
 
