@@ -53,6 +53,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the BatchId of the <see cref="Rock.Model.FinancialBatch"/> that contains the transaction.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int? BatchId { get; set; }
 
         /// <summary>
