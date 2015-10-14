@@ -18,6 +18,28 @@ namespace DotLiquid
 		public List<Hash> Scopes { get; private set; }
 		public Hash Registers { get; private set; }
 		public List<Exception> Errors { get; private set; }
+        public Dictionary<Type, Func<object, object>> ValueTypeTransformers;
+
+        public Func<object, object> GetValueTypeTransformer( Type type )
+        {
+            if (ValueTypeTransformers == null)
+            {
+                return null;
+            }
+            
+            // Check for concrete types
+            if ( ValueTypeTransformers.ContainsKey( type ) )
+                return ValueTypeTransformers[type];
+
+            // Check for interfaces
+            foreach ( var interfaceType in ValueTypeTransformers.Where( x => x.Key.IsInterface ) )
+            {
+                if ( type.GetInterfaces().Contains( interfaceType.Key ) )
+                    return interfaceType.Value;
+            }
+
+            return null;
+        }
 
 		public Context(List<Hash> environments, Hash outerScope, Hash registers, bool rethrowErrors)
 		{
