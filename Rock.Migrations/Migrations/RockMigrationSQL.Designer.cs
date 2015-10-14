@@ -860,5 +860,66 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201510082215386_ComputedSundayDate_ufnUtility_GetSundayDate", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @PageEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Model.Page&apos; ) 
+        ///DECLARE @FinancePageId int = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = &apos;7BEB7569-C485-40A0-A609-B0678F6F7240&apos; ) 
+        ///DECLARE @FinanceFunctionsPageId int = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = &apos;142627AE-6590-48E3-BFCA-3669260B8CF2&apos; ) 
+        ///DECLARE @FinanceAdminPageId int = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = &apos;18C9E5C3-3E28-4AA3-84F6-78CD4EA2DD3C&apos; ) 
+        ///DECLARE @BenevolenceGroupId int =  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201510141725294_GroupTypeShowConnectionStatus_BenevolenceSecurity {
+            get {
+                return ResourceManager.GetString("_201510141725294_GroupTypeShowConnectionStatus_BenevolenceSecurity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the attendance data needed for the Attendance Badge. If no family role (adult/child)
+        ///		is given it is looked up.  If the individual is an adult it will return family attendance if it&apos;s a child
+        ///		it will return the individual&apos;s attendance. If a person is in two families once as a child once as an
+        ///		adult it will pick the first role it finds.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* AttendanceCount
+        ///		* SundaysInMonth
+        ///		* Month
+        ///		* Year
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;P [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201510141725294_GroupTypeShowConnectionStatus_spCheckin_BadgeAttendance {
+            get {
+                return ResourceManager.GetString("_201510141725294_GroupTypeShowConnectionStatus_spCheckin_BadgeAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  /*
+        ///    &lt;doc&gt;
+        ///	    &lt;summary&gt;
+        /// 		    This function returns the number of weekends a member of a family has attended a weekend service
+        ///		    in the last X weeks.
+        ///	    &lt;/summary&gt;
+        ///
+        ///	    &lt;returns&gt;
+        ///		    * Number of weeks
+        ///	    &lt;/returns&gt;
+        ///	    &lt;param name=&quot;&quot;PersonId&quot;&quot; datatype=&quot;&quot;int&quot;&quot;&gt;The person id to use&lt;/param&gt;
+        ///	    &lt;param name=&quot;&quot;WeekDuration&quot;&quot; datatype=&quot;&quot;int&quot;&quot;&gt;The number of weeks to use as the duration (default 16)&lt;/param&gt;
+        ///	    &lt;remarks&gt;	
+        ///	    &lt;/remarks&gt;
+        ///	    &lt;code&gt;
+        ///		    EXEC [dbo].[spCheckin_We [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201510141725294_GroupTypeShowConnectionStatus_spCheckin_WeeksAttendedInDuration {
+            get {
+                return ResourceManager.GetString("_201510141725294_GroupTypeShowConnectionStatus_spCheckin_WeeksAttendedInDuration", resourceCulture);
+            }
+        }
     }
 }

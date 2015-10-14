@@ -84,6 +84,15 @@ namespace Rock.Model
         public bool IsSharedValue { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this field is only for administrative, and not shown in the public form
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is internal; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsInternal { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show current value].
         /// </summary>
         /// <value>
