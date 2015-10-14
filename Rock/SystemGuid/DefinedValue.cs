@@ -365,6 +365,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_PARTICIPANT = "8EBC0CEB-474D-4C1B-A6BA-734C3A9AB061";
 
+        /// <summary>
+        /// Web Prospect Connection Status
+        /// </summary>
+        public const string PERSON_CONNECTION_STATUS_WEB_PROSPECT = "368DD475-242C-49C4-A42C-7278BE690CC2";
+
         #endregion
 
         #region Person Review Reason
