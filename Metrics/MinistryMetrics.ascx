@@ -9,7 +9,7 @@
                { %>
 
             <Rock:NotificationBox ID="churchMetricWarning" runat="server" NotificationBoxType="Warning" Visible="false"
-                Text="Please select a <b>metric</b> or a <b>key</b> in the block settings." />
+                Text="Please select a metric source or key in the block settings." />
 
             <% }
                else

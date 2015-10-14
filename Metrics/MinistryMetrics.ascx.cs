@@ -92,11 +92,13 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         //}
 
         // Let's create null context values so they are available
-        protected IEntity CampusContext = new List<IEntity>() as IEntity;
+        protected IEntity CampusContext = null;
 
-        protected IEntity ScheduleContext = new List<IEntity>() as IEntity;
+        protected IEntity ScheduleContext = null;
 
-        protected IEntity GroupContext = new List<IEntity>() as IEntity;
+        protected IEntity GroupContext = null;
+
+        protected IEntity DateContext = null;
 
         protected string PrimaryMetricKey = string.Empty;
 
@@ -130,8 +132,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 GroupContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Group ) ) );
             }
 
-            //var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( this.GetAttributeValue( "SlidingDateRange" ) ?? string.Empty );
-
             // Output variables direct to the ascx
             metricBlockNumber.Value = BlockId.ToString();
             metricBlockId.Value = BlockName.Replace( " ", "" ).ToString();
@@ -139,19 +139,35 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             metricDisplay.Value = GetAttributeValue( "MetricDisplayType" );
             metricWidth.Value = GetAttributeValue( "NumberofColumns" );
 
-            var metricComparison = GetAttributeValue( "MetricComparison" );
+            var churchMetricPeriod = GetAttributeValue( "MetricPeriod" );
 
-            var metricCustomDates = GetAttributeValue( "CustomDates" );
+            var metricComparison = GetAttributeValue( "MetricComparison" );
 
             PrimaryMetricKey = GetAttributeValue( "PrimaryMetricKey" );
 
             SecondaryMetricKey = GetAttributeValue( "SecondaryMetricKey" );
 
-            List<int> primaryMetricSource = GetMetricIds( "PrimaryMetricSource" );
-            List<int> secondaryMetricSource = GetMetricIds( "SecondaryMetricSource" );
-            var churchMetricPeriod = GetAttributeValue( "MetricPeriod" );
+            var rockContext = new RockContext();
+            var metricService = new MetricService( rockContext );
 
-            var newMetric = new MetricService( new RockContext() ).GetByIds( primaryMetricSource ).FirstOrDefault();
+            var test = MetricCategoriesFieldAttribute.GetValueAsGuidPairs( "PrimaryMetricSource" );
+
+            var primarySourceGuids = GetAttributeValue( "PrimaryMetricSource" )
+                .SplitDelimitedValues()
+                .AsGuidList();
+
+            var secondarySourceGuids = GetAttributeValue( "SecondaryMetricSource" )
+                .SplitDelimitedValues()
+                .AsGuidList();
+
+            // lookup the metric sources
+            List<int> primaryMetricSource = metricService.GetByGuids( primarySourceGuids )
+                .Select( a => a.Id ).ToList();
+
+            List<int> secondaryMetricSource = metricService.GetByGuids( secondarySourceGuids )
+                .Select( a => a.Id ).ToList();
+
+            var newMetric = new MetricService( rockContext ).GetByIds( primaryMetricSource ).FirstOrDefault();
 
             // Show the warning if metric source or a metric key is not selected
             if ( !primaryMetricSource.Any() || string.IsNullOrEmpty( PrimaryMetricKey ) )
@@ -163,12 +179,15 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             var calendar = DateTimeFormatInfo.CurrentInfo.Calendar;
 
             // Show data if metric source is selected
-            if ( newMetric != null || PrimaryMetricKey != "" )
+            if ( newMetric != null || !string.IsNullOrEmpty( PrimaryMetricKey ) )
             {
-                GetMetricData( pageContext, metricComparison, metricCustomDates, primaryMetricSource, secondaryMetricSource, newMetric, calendar );
+                GetMetricData( pageContext, metricComparison, null, primaryMetricSource, secondaryMetricSource, newMetric, calendar );
             }
 
-            //MetricCompareLastYear = GetAttributeValue( "CompareAgainstLastYear" ).ToString();
+            // unused variables
+            // var metricCustomDates = GetAttributeValue( "CustomDates" );
+            // MetricCompareLastYear = GetAttributeValue( "CompareAgainstLastYear" ).ToString();
+            // var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( this.GetAttributeValue( "SlidingDateRange" ) ?? string.Empty );
         }
 
         #endregion
@@ -244,19 +263,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         }
 
         /// <summary>
-        /// Gets the metric ids.
-        /// </summary>
-        /// <param name="metricAttribute">The metric attribute.</param>
-        /// <returns></returns>
-        protected List<int> GetMetricIds( string metricAttribute )
-        {
-            var metricCategories = MetricCategoriesFieldAttribute.GetValueAsGuidPairs( GetAttributeValue( metricAttribute ) );
-
-            var metricGuids = metricCategories.Select( a => a.MetricGuid ).ToList();
-            return new MetricService( new RockContext() ).GetByGuids( metricGuids ).Select( a => a.Id ).ToList();
-        }
-
-        /// <summary>
         /// Computes the metric values.
         /// </summary>
         /// <param name="primaryMetricSource">The primary metric source.</param>
@@ -292,8 +298,20 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
         #region Data Calculation
 
+        /// <summary>
+        /// Gets the metric data.
+        /// </summary>
+        /// <param name="pageContext">The page context.</param>
+        /// <param name="metricComparison">The metric comparison.</param>
+        /// <param name="metricCustomDates">The metric custom dates.</param>
+        /// <param name="primaryMetricSource">The primary metric source.</param>
+        /// <param name="secondaryMetricSource">The secondary metric source.</param>
+        /// <param name="newMetric">The new metric.</param>
+        /// <param name="calendar">The calendar.</param>
         private void GetMetricData( bool? pageContext, string metricComparison, string metricCustomDates, List<int> primaryMetricSource, List<int> secondaryMetricSource, Metric newMetric, Calendar calendar )
         {
+            DateRange dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( string.Empty );
+
             if ( GetAttributeValue( "MetricDisplayType" ) == "Text" )
             {
                 // This is using the date range picker
