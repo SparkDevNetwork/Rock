@@ -171,15 +171,15 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             var newMetric = new MetricService( rockContext ).GetByIds( primaryMetricSource ).FirstOrDefault();
 
             // Show the warning if metric source or a metric key is not selected
-            if ( !primaryMetricSource.Any() || string.IsNullOrEmpty( PrimaryMetricKey ) )
-            {
-                churchMetricWarning.Visible = true;
-            }
+            //if ( !primaryMetricSource.Any() || string.IsNullOrEmpty( PrimaryMetricKey ) )
+            //{
+            //    churchMetricWarning.Visible = true;
+            //}
 
             // This sets the var to do a Week of Year calculation
             var calendar = DateTimeFormatInfo.CurrentInfo.Calendar;
 
-            DateRange dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( string.Empty );
+            DateRange dateRange = new DateRange( DateTime.Now.AddMonths( -6 ), DateTime.Now );
 
             // Show data if metric source is selected
             if ( newMetric != null || !string.IsNullOrEmpty( PrimaryMetricKey ) )
@@ -326,7 +326,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                         End = dateRange.End.Value.AddDays( -differenceInDays )
                     };
 
-                    PrimaryMetricKey = GetAttributeValue( "MetricKey" );
+                    PrimaryMetricKey = GetAttributeValue( "PrimaryMetricKey" );
+                    SecondaryMetricKey = GetAttributeValue( "SecondaryMetricKey" );
 
                     decimal? currentRangeMetricValue = ComputeMetricValues( primaryMetricSource, secondaryMetricSource, dateRange, metricComparison );
 
