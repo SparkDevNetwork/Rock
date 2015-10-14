@@ -73,7 +73,7 @@
                         <div class="row margin-t-md">
                             <div class="col-md-12">
                                 <asp:LinkButton ID="lbFlag" runat="server" Text="<i class='fa fa-flag'></i> Flag" CssClass="btn btn-warning" ToolTip="Flag as inappropriate so that an administrator can review the content." CausesValidation="false" OnClick="lbFlag_Click" />
-                                <asp:LinkButton ID="lbStop" runat="server" Text="End Session" CssClass="btn btn-link pull-right" CausesValidation="false" OnClick="lbStop_Click" />
+                                <asp:LinkButton ID="lbStop" runat="server" Text="End Session" CssClass="btn btn-link" CausesValidation="false" OnClick="lbStop_Click" />
                             </div>
                         </div>
                     </div>
