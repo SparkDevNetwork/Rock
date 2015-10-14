@@ -175,7 +175,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route("api/People/GetGraduationYear/{gradeOffset}")]
-        public int? GetGraduationYear( int gradeOffset )
+        public int GetGraduationYear( int gradeOffset )
         {
             int? graduationYear = Person.GraduationYearFromGradeOffset( gradeOffset );
             if( graduationYear.HasValue )
