@@ -426,6 +426,7 @@ namespace Rock
 
                 Template template = Template.Parse( content );
                 template.InstanceAssigns.Add( "CurrentPerson", currentPersonOverride );
+                _mergeFieldsEncodeStrings = false;
                 return template.Render( Hash.FromDictionary( mergeObjects ) );
             }
             catch ( Exception ex )
@@ -494,6 +495,7 @@ namespace Rock
                     }
                     finally
                     {
+                        _mergeFieldsEncodeStrings = false;
                         Template.RegisterValueTypeTransformer( typeof( string ), null );
                     }
 
