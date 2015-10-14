@@ -40,14 +40,15 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [Description( "Custom church metrics block using the Chart.js library" )]
     [CustomDropdownListField( "Number of Columns", "", "1,2,3,4,5,6,7,8,9,10,11,12", false, DefaultValue = "12", Order = 1 )]
     [CustomDropdownListField( "Metric Display Type", "", "Text,Line,Donut", false, "Text", Order = 2 )]
-    [TextField( "Metric Key", "If this is used, do not select a metric source", Order = 3 )]
+    [TextField( "Primary Metric Key", "If this is used, do not select a metric source", Order = 3 )]
     [MetricCategoriesField( "Primary Metric Source", "Select the metric to include in this chart.", Order = 4 )]
     [CustomRadioListField( "Metric Comparison", "Is this metric a sum of the selected sources, or a percentage?", "Sum,Percentage", false, "Sum", Order = 5 )]
-    [MetricCategoriesField( "Secondary Metric Source", "This should only be used if you are creating a Percentage comparison.", Order = 6 )]
-    [CustomCheckboxListField( "Respect Page Context", "", "Yes", Order = 7 )]
-    [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", Order = 8 )]
-    [CustomRadioListField( "Custom Dates", "If not using date range, please select a custom date from here", "This Week Last Year", Order = 9 )]
-    [CustomCheckboxListField( "Compare Against Last Year", "", "Yes", Order = 10 )]
+    [TextField( "Secondary Metric Key", "If this is used, do not select a metric source", Order = 6 )]
+    [MetricCategoriesField( "Secondary Metric Source", "This should only be used if you are creating a Percentage comparison.", Order = 7 )]
+    [CustomCheckboxListField( "Respect Page Context", "", "Yes", Order = 8 )]
+    //[SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", Order = 9 )]
+    //[CustomRadioListField( "Custom Dates", "If not using date range, please select a custom date from here", "This Week Last Year", Order = 9 )]
+    //[CustomCheckboxListField( "Compare Against Last Year", "", "Yes", Order = 10 )]
     public partial class MinistryMetrics : Rock.Web.UI.RockBlock
     {
         #region Fields
