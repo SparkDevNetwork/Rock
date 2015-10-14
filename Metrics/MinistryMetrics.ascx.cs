@@ -152,6 +152,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
             var test = MetricCategoriesFieldAttribute.GetValueAsGuidPairs( "PrimaryMetricSource" );
 
+            // test that this returns the same line as above
             var primarySourceGuids = GetAttributeValue( "PrimaryMetricSource" )
                 .SplitDelimitedValues()
                 .AsGuidList();
@@ -178,10 +179,12 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             // This sets the var to do a Week of Year calculation
             var calendar = DateTimeFormatInfo.CurrentInfo.Calendar;
 
+            DateRange dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( string.Empty );
+
             // Show data if metric source is selected
             if ( newMetric != null || !string.IsNullOrEmpty( PrimaryMetricKey ) )
             {
-                GetMetricData( pageContext, metricComparison, null, primaryMetricSource, secondaryMetricSource, newMetric, calendar );
+                GetMetricData( pageContext, metricComparison, dateRange, primaryMetricSource, secondaryMetricSource, newMetric, calendar );
             }
 
             // unused variables
@@ -308,10 +311,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         /// <param name="secondaryMetricSource">The secondary metric source.</param>
         /// <param name="newMetric">The new metric.</param>
         /// <param name="calendar">The calendar.</param>
-        private void GetMetricData( bool? pageContext, string metricComparison, string metricCustomDates, List<int> primaryMetricSource, List<int> secondaryMetricSource, Metric newMetric, Calendar calendar )
+        private void GetMetricData( bool? pageContext, string metricComparison, DateRange dateRange, List<int> primaryMetricSource, List<int> secondaryMetricSource, Metric newMetric, Calendar calendar )
         {
-            DateRange dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( string.Empty );
-
             if ( GetAttributeValue( "MetricDisplayType" ) == "Text" )
             {
                 // This is using the date range picker
@@ -373,14 +374,14 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 }
 
                 // This Week Last Year
-                else if ( metricCustomDates == "This Week Last Year" )
-                {
-                    //currentMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
-                    //.Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == calendar.GetWeekOfYear( DateTime.Now.AddYears( -1 ).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) && a.MetricValueDateTime.Value.Year.ToString() == DateTime.Now.AddYears( -1 ).ToString() )
-                    //.Select( a => a.YValue )
-                    //.Sum()
-                    //);
-                }
+                //else if ( metricCustomDates == "This Week Last Year" )
+                //{
+                //currentMetricValue.Value = string.Format( "{0:n0}", newMetric.MetricValues
+                //.Where( a => calendar.GetWeekOfYear( a.MetricValueDateTime.Value.Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) == calendar.GetWeekOfYear( DateTime.Now.AddYears( -1 ).Date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday ) && a.MetricValueDateTime.Value.Year.ToString() == DateTime.Now.AddYears( -1 ).ToString() )
+                //.Select( a => a.YValue )
+                //.Sum()
+                //);
+                //}
             }
             else if ( GetAttributeValue( "MetricDisplayType" ) == "Line" && newMetric != null )
             {
