@@ -212,7 +212,7 @@ namespace Rock.Model
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [Column( TypeName = "Date" )]
-        public DateTime SundayDate { get; set; }
+        public DateTime? SundayDate { get; set; }
 
         #endregion Entity Properties
 
