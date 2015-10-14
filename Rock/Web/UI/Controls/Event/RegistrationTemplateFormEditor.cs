@@ -240,6 +240,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
                         a.Attribute.Name,
                     FieldSource = a.FieldSource.ConvertToString(),
                     FieldType = a.FieldSource == RegistrationFieldSource.PersonField ? 0 : a.Attribute.FieldTypeId,
+                    a.IsSharedValue,
                     a.IsGridField,
                     a.IsRequired
                 } )
@@ -319,6 +320,11 @@ $('.template-form > .panel-body').on('validation-error', function() {
             typeField.HeaderText = "Type";
             _gFields.Columns.Add( typeField );
 
+            var sharedValueField = new BoolField();
+            sharedValueField.DataField = "IsSharedValue";
+            sharedValueField.HeaderText = "Common Value";
+            _gFields.Columns.Add( sharedValueField ); 
+            
             var gridField = new BoolField();
             gridField.DataField = "IsGridField";
             gridField.HeaderText = "Show on Grid";
