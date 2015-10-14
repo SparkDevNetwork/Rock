@@ -405,12 +405,33 @@ namespace Rock.Rest.Controllers
         /// <param name="postalCode">The postal code.</param>
         /// <param name="country">The country.</param>
         /// <param name="street2">The street2.</param>
-        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/Groups/SaveAddress/{groupId}/{locationTypeId}/{street1}/{city}/{state}/{postalCode}/{country}" )]
-        public virtual void SaveAddress( int groupId, int locationTypeId,
+        [Obsolete( "Use ~api/Groups/SaveAddress/{groupId}/{locationTypeId}?street1={street1}&city={city}&state={state}&postalCode={postalCode}&country={country}" )]
+        public virtual void SaveAddress2( int groupId, int locationTypeId,
             string street1, string city, string state, string postalCode, string country, string street2 = ""  )
+        {
+            this.SaveAddress( groupId, locationTypeId, street1, street2, city, state, postalCode, country );
+        }
+
+        /// <summary>
+        /// Saves a group address.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationTypeId">The location type identifier.</param>
+        /// <param name="street1">The street1.</param>
+        /// <param name="street2">The street2.</param>
+        /// <param name="city">The city.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="postalCode">The postal code.</param>
+        /// <param name="country">The country.</param>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpPut]
+        [System.Web.Http.Route( "api/Groups/SaveAddress/{groupId}/{locationTypeId}" )]
+        public virtual void SaveAddress( int groupId, int locationTypeId,
+            string street1 = "", string street2 = "", string city = "", string state = "", string postalCode = "", string country = "" )
         {
             SetProxyCreation( true );
 
