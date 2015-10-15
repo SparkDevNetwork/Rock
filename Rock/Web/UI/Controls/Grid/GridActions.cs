@@ -388,9 +388,33 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            _lbPersonMerge.Visible = ShowMergePerson;
-            _lbBulkUpdate.Visible = ShowBulkUpdate;
-            _lbCommunicate.Visible = ShowCommunicate;
+            var rockPage = Page as RockPage;
+
+            _lbPersonMerge.Visible = ShowMergePerson && _parentGrid.CanViewTargetPage( _parentGrid.PersonMergePageRoute );
+            _lbBulkUpdate.Visible = ShowBulkUpdate && _parentGrid.CanViewTargetPage( _parentGrid.BulkUpdatePageRoute );
+
+            if ( ShowCommunicate )
+            {
+                string url = _parentGrid.CommunicationPageRoute;
+                if ( string.IsNullOrWhiteSpace( url ) )
+                {
+                    var pageRef = rockPage.Site.CommunicationPageReference;
+                    if ( pageRef.PageId > 0 )
+                    {
+                        pageRef.Parameters.AddOrReplace( "CommunicationId", "0" );
+                        url = pageRef.BuildUrl();
+                    }
+                    else
+                    {
+                        url = "~/Communication/{0}";
+                    }
+                }
+                _lbCommunicate.Visible = _parentGrid.CanViewTargetPage( url );
+            }
+            else
+            {
+                _lbCommunicate.Visible = false;
+            }
 
             _aAdd.Visible = ShowAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
             _lbAdd.Visible = ShowAdd && String.IsNullOrWhiteSpace( ClientAddScript );
@@ -398,7 +422,7 @@ namespace Rock.Web.UI.Controls
             _aExcelExport.Visible = ShowExcelExport && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
             _lbExcelExport.Visible = ShowExcelExport && String.IsNullOrWhiteSpace( ClientExcelExportScript );
 
-            _lbMergeTemplate.Visible = ShowMergeTemplate;
+            _lbMergeTemplate.Visible = ShowMergeTemplate && _parentGrid.CanViewTargetPage( _parentGrid.MergeTemplatePageRoute );
 
             base.RenderControl( writer );
         }

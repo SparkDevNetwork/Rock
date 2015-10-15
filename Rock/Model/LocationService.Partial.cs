@@ -52,12 +52,12 @@ namespace Rock.Model
 
             // First check if a location exists with the entered values
             Location existingLocation = Queryable().FirstOrDefault( t =>
-                ( t.Street1 == street1 || ( street1 == null && t.Street1 == null ) ) &&
-                ( t.Street2 == street2 || ( street2 == null && t.Street2 == null ) ) &&
-                ( t.City == city || ( city == null && t.City == null ) ) &&
-                ( t.State == state || ( state == null && t.State == null ) ) &&
-                ( t.PostalCode == postalCode || ( postalCode == null && t.PostalCode == null ) ) &&
-                ( t.Country == country || ( country == null && t.Country == null ) ) );
+                ( t.Street1 == street1 || ( ( street1 == null || street1 == "" ) && ( t.Street1 == null || t.Street1 == "" ) ) ) &&
+                ( t.Street2 == street2 || ( ( street2 == null || street2 == "" ) && ( t.Street2 == null || t.Street2 == "" ) ) ) &&
+                ( t.City == city || ( ( city == null || city == "" ) && ( t.City == null || t.City == "" ) ) ) &&
+                ( t.State == state || ( ( state == null || state == "" ) && ( t.State == null || t.State == "" ) ) ) &&
+                ( t.PostalCode == postalCode || ( ( postalCode == null || postalCode == "" ) && ( t.PostalCode == null || t.PostalCode == "" ) ) ) &&
+                ( t.Country == country || ( ( country == null || country == "" ) && ( t.Country == null || t.Country == "" ) ) ) );
             if ( existingLocation != null )
             {
                 return existingLocation;
@@ -81,12 +81,12 @@ namespace Rock.Model
             }
 
             existingLocation = Queryable().FirstOrDefault( t =>
-                ( t.Street1 == newLocation.Street1 || ( newLocation.Street1 == null && t.Street1 == null ) ) &&
-                ( t.Street2 == newLocation.Street2 || ( newLocation.Street2 == null && t.Street2 == null ) ) &&
-                ( t.City == newLocation.City || ( newLocation.City == null && t.City == null ) ) &&
-                ( t.State == newLocation.State || ( newLocation.State == null && t.State == null ) ) &&
-                ( t.PostalCode == newLocation.PostalCode || ( newLocation.PostalCode == null && t.PostalCode == null ) ) &&
-                ( t.Country == newLocation.Country || ( newLocation.Country == null && t.Country == null ) ) );
+                ( t.Street1 == newLocation.Street1 || ( ( newLocation.Street1 == null || newLocation.Street1 == "" ) && ( t.Street1 == null || t.Street1 == "" ) ) ) &&
+                ( t.Street2 == newLocation.Street2 || ( ( newLocation.Street2 == null || newLocation.Street2 == "" ) && ( t.Street2 == null || t.Street2 == "" ) ) ) &&
+                ( t.City == newLocation.City || ( ( newLocation.City == null || newLocation.City == "" ) && ( t.City == null || t.City == "" ) ) ) &&
+                ( t.State == newLocation.State || ( ( newLocation.State == null || newLocation.State == "" ) && ( t.State == null || t.State == "" ) ) ) &&
+                ( t.PostalCode == newLocation.PostalCode || ( ( newLocation.PostalCode == null || newLocation.PostalCode == "" ) && ( t.PostalCode == null || t.PostalCode == "" ) ) ) &&
+                ( t.Country == newLocation.Country || ( ( newLocation.Country == null || newLocation.Country == "" ) && ( t.Country == null || t.Country == "" ) ) ) );
 
             if ( existingLocation != null )
             {
@@ -113,11 +113,13 @@ namespace Rock.Model
         public Location GetByGeoPoint( DbGeography point )
         {
             // get the first address that has a GeoPoint the value
-            var result = Queryable()
+            // use the 'Where Max(ID)' trick instead of TOP 1 to optimize SQL performance
+            var qryWhere = Queryable()
                 .Where( a =>
                     a.GeoPoint != null &&
-                    a.GeoPoint.SpatialEquals( point ) )
-                .FirstOrDefault();
+                    a.GeoPoint.SpatialEquals( point ) );
+
+            var result = Queryable().Where( a => a.Id == qryWhere.Max( b => b.Id ) ).FirstOrDefault();
 
             if ( result == null )
             {
@@ -150,12 +152,14 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Location"/> for the specified GeoFence. </returns>
         public Location GetByGeoFence( DbGeography fence )
         {
-            // get the first address that has a GeoPoint or GeoFence that matches the value
-            var result = Queryable()
+            // get the first address that has the GeoFence value
+            // use the 'Where Max(ID)' trick instead of TOP 1 to optimize SQL performance
+            var qryWhere = Queryable()
                 .Where( a =>
                     a.GeoFence != null &&
-                    a.GeoFence.SpatialEquals( fence ) )
-                .FirstOrDefault();
+                    a.GeoFence.SpatialEquals( fence ) );
+
+            var result = Queryable().Where( a => a.Id == qryWhere.Max( b => b.Id ) ).FirstOrDefault();
 
             if ( result == null )
             {

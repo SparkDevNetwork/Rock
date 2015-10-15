@@ -119,7 +119,7 @@ namespace RockWeb
                             // default Initializer is CreateDatabaseIfNotExists, so set it to NULL so that nothing happens if there isn't a database yet
                             Database.SetInitializer<Rock.Data.RockContext>( null );
                             new AttributeService( rockContext ).Get( 0 );
-                            System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                            System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase {2}/{1} - {0} ms", stopwatch.Elapsed.TotalMilliseconds, rockContext.Database.Connection.Database, rockContext.Database.Connection.DataSource ) );
                         }
                         catch
                         {
@@ -310,6 +310,7 @@ namespace RockWeb
             }
 
             Context.Items.Add( "Request_Start_Time", RockDateTime.Now );
+            Context.Items.Add( "Cache_Hits", new Dictionary<string, bool>() );
         }
 
         /// <summary>
@@ -335,6 +336,26 @@ namespace RockWeb
                 if ( context != null )
                 {
                     var ex = context.Server.GetLastError();
+
+                    try
+                    {
+                        HttpException httpEx = ex as HttpException;
+                        if ( httpEx != null )
+                        {
+                            int statusCode = httpEx.GetHttpCode();
+                            if (!GlobalAttributesCache.Read().GetValue( "Log404AsException" ).AsBoolean())
+                            {
+                                context.ClearError();
+                                context.Response.StatusCode = 404;
+                                return;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        //
+                    }
+
 
                     SendNotification( ex );
 
@@ -614,6 +635,10 @@ namespace RockWeb
 
             PageRouteService pageRouteService = new PageRouteService( rockContext );
 
+            //Add ingore rule for asp.net ScriptManager files. 
+            routes.Ignore("{resource}.axd/{*pathInfo}");
+
+
             // find each page that has defined a custom routes.
             foreach ( PageRoute pageRoute in pageRouteService.Queryable() )
             {
@@ -742,6 +767,16 @@ namespace RockWeb
                 var mergeObjects = GlobalAttributesCache.GetMergeFields( null );
                 mergeObjects.Add( "ExceptionDetails", string.Format( "An error occurred{0} on the {1} site on page: <br>{2}<p>{3}</p>",
                     person != null ? " for " + person.FullName : "", siteName, Context.Request.Url.OriginalString, FormatException( ex, "" ) ) );
+
+                try
+                {
+                    mergeObjects.Add( "Exception", Hash.FromAnonymousObject( ex ) );
+                }
+                catch
+                {
+                    // ignore
+                }
+
                 mergeObjects.Add( "Person", person );
 
                 // get email addresses to send to

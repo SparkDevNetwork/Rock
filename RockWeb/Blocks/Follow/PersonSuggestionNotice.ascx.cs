@@ -38,7 +38,9 @@ namespace RockWeb.Blocks.Follow
     [DisplayName( "Person Suggestion Notice" )]
     [Category( "Follow" )]
     [Description( "Block for displaying a button and count of suggested people that can be used to navigate to person suggestion list block." )]
-    [LinkedPage( "List Page" )]
+    [LinkedPage( "Suggestion Page", key: "ListPage", order: 0 )]
+    [LinkedPage( "Followers Page", order: 1 )]
+    [BooleanField("Show Followers Page", "Determines whether the link to the followers page should be shown", true, order: 2)]
     public partial class PersonSuggestionNotice : RockBlock
     {
         #region Control Methods
@@ -54,13 +56,15 @@ namespace RockWeb.Blocks.Follow
                 int count = GetCount();
                 if ( count <= 0 )
                 {
-                    this.Visible = false;
+                    lbSuggestions.Visible = false;
                 }
                 else
                 {
                     lbSuggestions.Text = string.Format( "Following Suggestions <span class='badge'>{0:N0}</span>", count );
-                    this.Visible = true;
+                    lbSuggestions.Visible = true;
                 }
+
+                lbFollowing.Visible = GetAttributeValue("ShowFollowersPage").AsBoolean();
             }
 
             base.OnLoad( e );
@@ -78,6 +82,16 @@ namespace RockWeb.Blocks.Follow
         protected void lbSuggestions_Click( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "ListPage" );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbFollowing control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbFollowing_Click( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( "FollowersPage" );
         }
         #endregion
 
@@ -124,6 +138,5 @@ namespace RockWeb.Blocks.Follow
         }
 
         #endregion
-
 }
 }

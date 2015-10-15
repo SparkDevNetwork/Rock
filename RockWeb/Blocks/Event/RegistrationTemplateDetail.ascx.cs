@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of the given registration template." )]
 
-    [CodeEditorField( "Default Confirmation Email", "The default Confirmation Email Template value to use for a new template", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
+    [CodeEditorField( "Default Confirmation Email", "The default Confirmation Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"
 {{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% assign registrantCount = Registration.Registrants | Size %}
@@ -110,7 +110,7 @@ namespace RockWeb.Blocks.Event
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 0 )]
 
-    [CodeEditorField( "Default Reminder Email", "The default Reminder Email Template value to use for a new template", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
+    [CodeEditorField( "Default Reminder Email", "The default Reminder Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
 {% assign registrantCount = Registration.Registrants | Size %}
@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Event
 {{ 'Global' | Attribute:'EmailFooter' }}
 ", "", 1 )]
 
-    [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
+    [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% assign registrantCount = Registration.Registrants | Size %}
 <p>
@@ -769,20 +769,16 @@ namespace RockWeb.Blocks.Event
                     // Get the existing registration attributes for this entity type and qualifier value
                     var attributesDB = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
 
-                    // Delete any of the registration attributes that were removed in the UI
+                    // Get the attributes that were removed in the UI to delete 
                     var selectedAttributeGuids = attributesUI.Select( a => a.Guid );
-                    foreach ( var attr in attributesDB.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
-                    {
-                        attributeService.Delete( attr );
-                        rockContext.SaveChanges();
-                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
-                    }
+                    var attributesToDelete = attributesDB.Where( a => !selectedAttributeGuids.Contains( a.Guid ) );
 
                     // Update the registration attributes that were assigned in the UI
                     foreach ( var attr in attributesUI )
                     {
                         Helper.SaveAttributeEdits( attr, entityTypeId, qualifierColumn, qualifierValue, rockContext );
                     }
+
 
                     // add/updated forms/fields
                     foreach ( var formUI in FormState )
@@ -844,6 +840,13 @@ namespace RockWeb.Blocks.Event
                         }
                     }
 
+                    // Now that the registration template form fields have been deleted, delete the attributes
+                    foreach ( var attr in attributesToDelete )
+                    {
+                        attributeService.Delete( attr );
+                        rockContext.SaveChanges();
+                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                    }
 
                     // add/updated discounts
                     foreach ( var discountUI in DiscountState )
@@ -882,6 +885,8 @@ namespace RockWeb.Blocks.Event
                     rockContext.SaveChanges();
 
                 } );
+
+                AttributeCache.FlushEntityAttributes();
 
                 var qryParams = new Dictionary<string, string>();
                 qryParams["RegistrationTemplateId"] = RegistrationTemplate.Id.ToString();

@@ -183,6 +183,11 @@ h4, .h4 {
   font-weight: 500;
 }
 
+.table-hover > tbody > tr:hover {  
+    td {
+        background-color: @grid-hover-bg;
+    }
+}
 
 // panel tweaks
 .panel {
@@ -197,7 +202,6 @@ h4, .h4 {
       font-size: 18px;
     }
   }
-
 
   &.panel-primary {
     .panel-heading {

@@ -149,7 +149,7 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <Rock:RockTextBox ID="tbConfirmationSubject" runat="server" Label="Subject" />
-                                <Rock:CodeEditor ID="ceConfirmationEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Liquid" EditorTheme="Rock" EditorHeight="300" />
+                                <Rock:CodeEditor ID="ceConfirmationEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
                             </div>
                         </div>
                     </Rock:PanelWidget>
@@ -166,7 +166,7 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <Rock:RockTextBox ID="tbReminderSubject" runat="server" Label="Subject" />
-                                <Rock:CodeEditor ID="ceReminderEmailTemplate" runat="server" Label="Reminder Email Template" EditorMode="Liquid" EditorTheme="Rock" EditorHeight="300" />
+                                <Rock:CodeEditor ID="ceReminderEmailTemplate" runat="server" Label="Reminder Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
                             </div>
                         </div>
                     </Rock:PanelWidget>
@@ -186,7 +186,7 @@
                             <div class="col-md-12">
                                 <Rock:RockTextBox ID="tbSuccessTitle" runat="server" Label="Success Title" Placeholder="Congratulations"
                                     Help="The heading to display to user after succesfully completing a registration of this type." />
-                                <Rock:CodeEditor ID="ceSuccessText" runat="server" Label="Success Text" EditorMode="Liquid" EditorTheme="Rock" EditorHeight="300" 
+                                <Rock:CodeEditor ID="ceSuccessText" runat="server" Label="Success Text" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" 
                                     Help="The text to display to user after succesfully completing a registration of this type. If there are costs or fees for this registration, a summary of those will be displayed after this text." />
                             </div>
                         </div>

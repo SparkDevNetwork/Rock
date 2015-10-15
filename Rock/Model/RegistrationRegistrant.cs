@@ -65,6 +65,7 @@ namespace Rock.Model
         /// The group member identifier.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int? GroupMemberId { get; set; }
 
         /// <summary>

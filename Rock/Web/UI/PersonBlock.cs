@@ -52,7 +52,19 @@ namespace Rock.Web.UI
 
             if ( Person == null )
             {
-                Person = new Person();
+                // check the query string and attempt to load the person from it
+                if ( Request["PersonId"] != null )
+                {
+                    int personId = Request["PersonId"].AsInteger();
+
+                    Person = new PersonService( new RockContext() ).Get( personId );
+                    Person.LoadAttributes();
+                }
+
+                if ( Person == null )
+                {
+                    Person = new Person();
+                }
             }
         }
 
@@ -112,7 +124,11 @@ namespace Rock.Web.UI
 
             var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeGuid );
             int groupTypeId = groupType != null ? groupType.Id : 0;
-            Context.Items.Add( itemKey, groupTypeId );
+
+            if ( !Context.Items.Contains( itemKey ) )
+            {
+                Context.Items.Add( itemKey, groupTypeId );
+            }
 
             return PersonGroups( groupTypeId );
         }
@@ -147,7 +163,10 @@ namespace Rock.Web.UI
                     .OrderByDescending( g => g.Name )
                     .ToList();
 
-                Context.Items.Add( itemKey, groups );
+                if ( !Context.Items.Contains( itemKey ) )
+                {
+                    Context.Items.Add( itemKey, groups );
+                }
 
                 return groups;
             }

@@ -53,6 +53,14 @@ namespace Rock.Client
         public bool EnableMobileRedirect { get; set; }
 
         /// <summary />
+        public bool EnablePageViews
+        {
+            get { return _EnablePageViews; }
+            set { _EnablePageViews = value; }
+        }
+        private bool _EnablePageViews = true;
+
+        /// <summary />
         public string ErrorPage { get; set; }
 
         /// <summary />
@@ -79,6 +87,11 @@ namespace Rock.Client
         /// <summary />
         public int? MobilePageId { get; set; }
 
+        /// <summary>
+        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
         /// <summary />
         public string Name { get; set; }
 
@@ -87,6 +100,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? PageNotFoundPageRouteId { get; set; }
+
+        /// <summary />
+        public int? PageViewRetentionPeriodDays { get; set; }
 
         /// <summary />
         public bool RedirectTablets { get; set; }
@@ -99,6 +115,26 @@ namespace Rock.Client
 
         /// <summary />
         public string Theme { get; set; }
+
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
+        public DateTime? CreatedDateTime { get; set; }
+
+        /// <summary>
+        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
+        /// </summary>
+        public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
+        public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -119,6 +155,7 @@ namespace Rock.Client
             this.DefaultPageRouteId = source.DefaultPageRouteId;
             this.Description = source.Description;
             this.EnableMobileRedirect = source.EnableMobileRedirect;
+            this.EnablePageViews = source.EnablePageViews;
             this.ErrorPage = source.ErrorPage;
             this.ExternalUrl = source.ExternalUrl;
             this.ForeignGuid = source.ForeignGuid;
@@ -128,13 +165,19 @@ namespace Rock.Client
             this.LoginPageId = source.LoginPageId;
             this.LoginPageRouteId = source.LoginPageRouteId;
             this.MobilePageId = source.MobilePageId;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.PageNotFoundPageId = source.PageNotFoundPageId;
             this.PageNotFoundPageRouteId = source.PageNotFoundPageRouteId;
+            this.PageViewRetentionPeriodDays = source.PageViewRetentionPeriodDays;
             this.RedirectTablets = source.RedirectTablets;
             this.RegistrationPageId = source.RegistrationPageId;
             this.RegistrationPageRouteId = source.RegistrationPageRouteId;
             this.Theme = source.Theme;
+            this.CreatedDateTime = source.CreatedDateTime;
+            this.ModifiedDateTime = source.ModifiedDateTime;
+            this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            this.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 
@@ -184,18 +227,6 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<SiteDomain> SiteDomains { get; set; }
-
-        /// <summary />
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary />
-        public DateTime? ModifiedDateTime { get; set; }
-
-        /// <summary />
-        public int? CreatedByPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

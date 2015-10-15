@@ -2861,6 +2861,79 @@ END
         }
 
         /// <summary>
+        /// Adds the security authentication for content channel.
+        /// </summary>
+        /// <param name="contentChannelGuid">The content channel unique identifier.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForContentChannel( string contentChannelGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        {
+            if ( string.IsNullOrWhiteSpace( groupGuid ) )
+            {
+                groupGuid = Guid.Empty.ToString();
+            }
+
+            string entityTypeName = "Rock.Model.ContentChannel";
+            EnsureEntityTypeExists( entityTypeName );
+
+            string sql = @"
+    DECLARE @EntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [name] = '{0}')
+    DECLARE @ContentChannelId int = (SELECT TOP 1 [Id] FROM [ContentChannel] WHERE [Guid] = '{1}')
+
+    IF @EntityTypeId IS NOT NULL AND @ContentChannelId IS NOT NULL
+    BEGIN
+
+        DECLARE @GroupId int = ( SELECT TOP 1 [Id] FROM [Group] WHERE [Guid] = '{2}')
+
+        IF NOT EXISTS (
+            SELECT [Id] FROM [dbo].[Auth]
+            WHERE [EntityTypeId] = @EntityTypeId
+            AND [EntityId] = @ContentChannelId
+            AND [Action] = '{4}'
+            AND [AllowOrDeny] = '{5}'
+            AND [SpecialRole] = {6}
+            AND [GroupId] = @GroupId
+        )
+        BEGIN
+            INSERT INTO [dbo].[Auth]
+                   ([EntityTypeId]
+                   ,[EntityId]
+                   ,[Order]
+                   ,[Action]
+                   ,[AllowOrDeny]
+                   ,[SpecialRole]
+                   ,[GroupId]
+                   ,[Guid])
+             VALUES
+                   (@EntityTypeId
+                   ,@ContentChannelId
+                   ,{3}
+                   ,'{4}'
+                   ,'{5}'
+                   ,{6}
+                   ,@GroupId
+                   ,'{7}')
+        END
+    END
+";
+
+            Migration.Sql( string.Format( sql,
+                entityTypeName,                 // 0
+                contentChannelGuid,             // 1
+                groupGuid,                      // 2
+                order,                          // 3
+                action,                         // 4
+                ( allow ? "A" : "D" ),          // 5
+                specialRole.ConvertToInt(),     // 6
+                authGuid ) );                   // 7
+
+        }
+
+        /// <summary>
         /// Adds the security authentication for rest action.
         /// </summary>
         /// <param name="restActionMethod">The rest action method.</param>
@@ -4172,27 +4245,32 @@ END
                 DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{3}')
                 DECLARE @FormId int = (SELECT [Id] FROM [WorkflowActionForm] WHERE [Guid] = '{6}')
 
-                IF EXISTS ( SELECT [Id] FROM [WorkflowActionType] WHERE [Guid] =  '{10}' )
+                IF @ActivityTypeId IS NOT NULL AND @EntityTypeId IS NOT NULL
                 BEGIN
-                    UPDATE [WorkflowActionType] SET
-                        [ActivityTypeId] = @ActivityTypeId,
-                        [Name] = '{1}',
-                        [Order] = {2},
-                        [EntityTypeId] = @EntityTypeId,
-                        [IsActionCompletedOnSuccess] = {4},
-                        [IsActivityCompletedOnSuccess] = {5},
-                        [WorkflowFormId] = @FormId,
-                        [CriteriaAttributeGuid] = {7},
-                        [CriteriaComparisonType] = {8},
-                        [CriteriaValue] = '{9}'
-                    WHERE [Guid] = '{10}'
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO [WorkflowActionType] (
-                        [ActivityTypeId], [Name], [Order], [EntityTypeId], [IsActionCompletedOnSuccess], [IsActivityCompletedOnSuccess],
-                        [WorkflowFormId], [CriteriaAttributeGuid], [CriteriaComparisonType], [CriteriaValue], [Guid] )
-                    VALUES( @ActivityTypeId, '{1}', {2}, @EntityTypeId, {4}, {5}, @FormId, {7}, {8}, '{9}', '{10}' )
+
+                    IF EXISTS ( SELECT [Id] FROM [WorkflowActionType] WHERE [Guid] =  '{10}' )
+                    BEGIN
+                        UPDATE [WorkflowActionType] SET
+                            [ActivityTypeId] = @ActivityTypeId,
+                            [Name] = '{1}',
+                            [Order] = {2},
+                            [EntityTypeId] = @EntityTypeId,
+                            [IsActionCompletedOnSuccess] = {4},
+                            [IsActivityCompletedOnSuccess] = {5},
+                            [WorkflowFormId] = @FormId,
+                            [CriteriaAttributeGuid] = {7},
+                            [CriteriaComparisonType] = {8},
+                            [CriteriaValue] = '{9}'
+                        WHERE [Guid] = '{10}'
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [WorkflowActionType] (
+                            [ActivityTypeId], [Name], [Order], [EntityTypeId], [IsActionCompletedOnSuccess], [IsActivityCompletedOnSuccess],
+                            [WorkflowFormId], [CriteriaAttributeGuid], [CriteriaComparisonType], [CriteriaValue], [Guid] )
+                        VALUES( @ActivityTypeId, '{1}', {2}, @EntityTypeId, {4}, {5}, @FormId, {7}, {8}, '{9}', '{10}' )
+                    END
+
                 END
 ",
                     activityTypeGuid,

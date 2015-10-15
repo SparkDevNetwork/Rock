@@ -346,15 +346,24 @@ namespace Rock
         {
             var enumType = typeof( T );
             var dictionary = new Dictionary<int, string>();
-            foreach ( var value in Enum.GetValues( enumType ) )
+            var names = Enum.GetNames(enumType);
+            foreach ( var name in names )
             {
+                // ignore Obsolete Enum values
+                object value = Enum.Parse( typeof( T ), name );
+                var fieldInfo = value.GetType().GetField( name );
+                if ( fieldInfo != null && fieldInfo.GetCustomAttribute<ObsoleteAttribute>() != null )
+                {
+                    continue;
+                }
+
                 if ( ignoreTypes != null && ignoreTypes.Contains( (T)value ) )
                 {
                     continue;
                 }
                 else
                 {
-                    dictionary.Add( Convert.ToInt32( value ), Enum.GetName( enumType, value ).SplitCase() );
+                    dictionary.Add( Convert.ToInt32( value ), name.SplitCase() );
                 }
             }
 

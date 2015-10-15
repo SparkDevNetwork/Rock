@@ -141,6 +141,8 @@
     <Compile Include="CodeGenerated\PageContext.cs" />
     <Compile Include="CodeGenerated\PageRoute.cs" />
     <Compile Include="CodeGenerated\PageView.cs" />
+    <Compile Include="CodeGenerated\PageViewSession.cs" />
+    <Compile Include="CodeGenerated\PageViewUserAgent.cs" />
     <Compile Include="CodeGenerated\Person.cs" />
     <Compile Include="CodeGenerated\PersonAlias.cs" />
     <Compile Include="CodeGenerated\PersonBadge.cs" />

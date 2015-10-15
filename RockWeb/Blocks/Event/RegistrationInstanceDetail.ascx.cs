@@ -2094,10 +2094,11 @@ namespace RockWeb.Blocks.Event
                                 .Select( m => m.GroupMember ) )
                             {
                                 groupMemberIds.Add( groupMember.Id );
-                                GroupLinks.AddOrIgnore( groupMember.GroupId, 
-                                    string.Format( "<a href='{0}'>{1}</a>",
-                                        LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } ),
-                                        groupMember.Group.Name ) );
+                                GroupLinks.AddOrIgnore( groupMember.GroupId,
+                                    gRegistrants.AllowPaging ?
+                                        string.Format( "<a href='{0}'>{1}</a>",
+                                            LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } ),
+                                            groupMember.Group.Name ) : groupMember.Group.Name );
                             }
 
                             // If the campus column was selected to be displayed on grid, preload all the people's
@@ -2184,7 +2185,7 @@ namespace RockWeb.Blocks.Event
                                             v.EntityId.Value == registrant.PersonAlias.PersonId )
                                         .ToList()
                                         .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, v ) );
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
 
                                     // Add any group member attribute values to object
                                     if ( registrant.GroupMemberId.HasValue )
@@ -2195,7 +2196,7 @@ namespace RockWeb.Blocks.Event
                                                 v.EntityId.Value == registrant.GroupMemberId.Value )
                                             .ToList()
                                             .ForEach( v => attributeFieldObject.AttributeValues
-                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, v ) );
+                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
                                     }
 
                                     // Add any registrant attribute values to object
@@ -2205,7 +2206,7 @@ namespace RockWeb.Blocks.Event
                                             v.EntityId.Value == registrant.PersonAlias.PersonId )
                                         .ToList()
                                         .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, v ) );
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
 
                                     // Add row attribute object to grid's object list
                                     gRegistrants.ObjectList.Add( registrant.Id.ToString(), attributeFieldObject );

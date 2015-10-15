@@ -158,7 +158,7 @@ namespace Rock.Reporting.DataSelect
 Use Lava syntax to get the values of any of the fields in this report. For example, to create a link to the Person record, type <code>&lt;a href=&quot;~/Person/{{ Id }}&quot;&gt;{{ NickName }} {{ LastName }}&lt;/a&gt</code><br />  
 Note: The fieldname will be the Column Label without spaces or special characters.";
 
-            codeEditor.EditorMode = CodeEditorMode.Liquid;
+            codeEditor.EditorMode = CodeEditorMode.Lava;
             codeEditor.ID = parentControl.ID + "_0";
             codeEditor.Label = "Template";
 

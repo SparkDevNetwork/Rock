@@ -131,7 +131,7 @@ namespace Rock.Web.UI.Controls
             string[] nameValues = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
             foreach ( string nameValue in nameValues )
             {
-                string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                string[] nameAndValue = nameValue.Split( new char[] { '^' } );
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls controls-row form-control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -318,6 +318,7 @@ namespace Rock.Web.UI.Controls
         e.preventDefault();
         var $keyValueList = $(this).closest('.key-value-list');
         $keyValueList.find('.key-value-rows').append($keyValueList.find('.js-value-html').val());
+        updateKeyValues($(this));
         Rock.controls.modal.updateSize($(this));
     });
 

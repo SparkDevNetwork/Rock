@@ -557,8 +557,13 @@ namespace RockWeb.Blocks.Core
             hfMergeTemplateId.SetValue( mergeTemplate.Id );
             lReadOnlyTitle.Text = mergeTemplate.Name.FormatAsHtmlTitle();
 
+            var getFileUrl = string.Format( 
+                "{0}GetFile.ashx?guid={1}", 
+                System.Web.VirtualPathUtility.ToAbsolute( "~" ), 
+                mergeTemplate.TemplateBinaryFile != null ? mergeTemplate.TemplateBinaryFile.Guid : (Guid?)null );
+
             DescriptionList descriptionListCol1 = new DescriptionList()
-                .Add( "Template File", string.Format( "<a href='{0}'>{1}</a>", mergeTemplate.TemplateBinaryFile.Url, mergeTemplate.TemplateBinaryFile.FileName ) )
+                .Add( "Template File", string.Format( "<a href='{0}'>{1}</a>", getFileUrl, mergeTemplate.TemplateBinaryFile.FileName ) )
                 .Add( "Description", mergeTemplate.Description ?? string.Empty )
                 .Add( "Type", mergeTemplate.MergeTemplateTypeEntityType );
 

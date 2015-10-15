@@ -35,9 +35,6 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public string ClientType { get; set; }
-
-        /// <summary />
         public DateTime? DateTimeViewed { get; set; }
 
         /// <summary />
@@ -47,28 +44,22 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public string IpAddress { get; set; }
-
-        /// <summary />
         public int? PageId { get; set; }
 
         /// <summary />
         public string PageTitle { get; set; }
 
         /// <summary />
-        public int? PersonAliasId { get; set; }
+        public int PageViewSessionId { get; set; }
 
         /// <summary />
-        public Guid? SessionId { get; set; }
+        public int? PersonAliasId { get; set; }
 
         /// <summary />
         public int? SiteId { get; set; }
 
         /// <summary />
         public string Url { get; set; }
-
-        /// <summary />
-        public string UserAgent { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -83,18 +74,15 @@ namespace Rock.Client
         public void CopyPropertiesFrom( PageView source )
         {
             this.Id = source.Id;
-            this.ClientType = source.ClientType;
             this.DateTimeViewed = source.DateTimeViewed;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IpAddress = source.IpAddress;
             this.PageId = source.PageId;
             this.PageTitle = source.PageTitle;
+            this.PageViewSessionId = source.PageViewSessionId;
             this.PersonAliasId = source.PersonAliasId;
-            this.SessionId = source.SessionId;
             this.SiteId = source.SiteId;
             this.Url = source.Url;
-            this.UserAgent = source.UserAgent;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 

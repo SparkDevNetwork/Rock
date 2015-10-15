@@ -200,21 +200,42 @@ namespace Rock.Model
                 personAliasId = personAlias.Id;
             }
 
+            string exceptionMessage = ex.Message;
+            if ( ex is System.Data.SqlClient.SqlException )
+            {
+                var sqlEx = ex as System.Data.SqlClient.SqlException;
+                var sqlErrorList = sqlEx.Errors.OfType<System.Data.SqlClient.SqlError>().ToList().Select(a => string.Format("{0}: Line {1}", a.Procedure, a.LineNumber));
+                if ( sqlErrorList.Any() )
+                {
+                    exceptionMessage += string.Format( "[{0}]", sqlErrorList.ToList().AsDelimited(", ") );
+                }
+            }
+
             var exceptionLog = new ExceptionLog
                 {
                     SiteId = siteId,
                     PageId = pageId,
                     HasInnerException = ex.InnerException != null,
                     ExceptionType = ex.GetType().ToString(),
-                    Description = ex.Message,
+                    Description = exceptionMessage,
                     Source = ex.Source,
                     StackTrace = ex.StackTrace,
                     Guid = Guid.NewGuid(),
                     CreatedByPersonAliasId = personAliasId,
                     ModifiedByPersonAliasId = personAliasId,
                     CreatedDateTime = RockDateTime.Now,
-                    ModifiedDateTime = RockDateTime.Now
+                    ModifiedDateTime = RockDateTime.Now,
+                    ModifiedAuditValuesAlreadyUpdated = true
                 };
+
+            try
+            {
+                ex.Data.Add( "ExceptionLogGuid", exceptionLog.Guid );
+            }
+            catch
+            {
+                // ignore
+            }
 
             try
             {
@@ -238,7 +259,7 @@ namespace Rock.Model
                     {
                         var httpCookie = cookieList[cookie];
                         if ( httpCookie != null )
-                            cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + httpCookie.Value + "</td></tr>" );
+                            cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + httpCookie.Value.EncodeHtml() + "</td></tr>" );
                     }
 
                     cookies.Append( "</table>" );
@@ -252,7 +273,7 @@ namespace Rock.Model
                     formItems.Append( "<table class=\"form-items exception-table\">" );
 
                     foreach ( string formItem in formList )
-                        formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + formList[formItem] + "</td></tr>" );
+                        formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + formList[formItem].EncodeHtml() + "</td></tr>" );
 
                     formItems.Append( "</table>" );
                 }
@@ -265,7 +286,7 @@ namespace Rock.Model
                     serverVars.Append( "<table class=\"server-variables exception-table\">" );
 
                     foreach ( string serverVar in serverVarList )
-                        serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + serverVarList[serverVar] + "</td></tr>" );
+                        serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + serverVarList[serverVar].EncodeHtml() + "</td></tr>" );
 
                     serverVars.Append( "</table>" );
                 }

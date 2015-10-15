@@ -44,7 +44,7 @@ namespace Rock.Web.UI
     {
         #region Private Variables
 
-        private PlaceHolder phLoadTime;
+        private PlaceHolder phLoadStats;
         private ScriptManager _scriptManager;
         private PageCache _pageCache = null;
 
@@ -767,7 +767,7 @@ namespace Rock.Web.UI
                     }
 
                     // Flag indicating if user has rights to administer one or more of the blocks on page
-                    bool canAdministrateBlock = false;
+                    bool canAdministrateBlockOnPage = false;
 
                     // Load the blocks and insert them into page zones
                     Page.Trace.Warn( "Loading Blocks" );
@@ -781,11 +781,6 @@ namespace Rock.Web.UI
                         bool canAdministrate = block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
                         bool canEdit = block.IsAuthorized( Authorization.EDIT, CurrentPerson );
                         bool canView = block.IsAuthorized( Authorization.VIEW, CurrentPerson );
-
-                        if ( canAdministrate || canEdit )
-                        {
-                            canAdministrateBlock = true;
-                        }
 
                         // Make sure user has access to view block instance
                         if ( canAdministrate || canEdit || canView )
@@ -830,13 +825,18 @@ namespace Rock.Web.UI
                                     if ( this.IsPostBack )
                                     {
                                         // throw an error on PostBack so that the ErrorPage gets shown (vs nothing happening)
-                                        throw ex;
+                                        throw;
                                     }
                                 }
                             }
 
                             if ( control != null )
                             {
+                                if ( canAdministrate || ( canEdit && control is RockBlockCustomSettings ) )
+                                {
+                                    canAdministrateBlockOnPage = true;
+                                }
+
                                 // If the current control is a block, set its properties
                                 var blockControl = control as RockBlock;
                                 if ( blockControl != null )
@@ -907,7 +907,7 @@ namespace Rock.Web.UI
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( _pageCache.IncludeAdminFooter && ( canAdministratePage || canAdministrateBlock ) )
+                    if ( _pageCache.IncludeAdminFooter && ( canAdministratePage || canAdministrateBlockOnPage ) )
                     {
                         // Add the page admin script
                         AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin", false );
@@ -918,8 +918,8 @@ namespace Rock.Web.UI
                         adminFooter.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         this.Form.Controls.Add( adminFooter );
 
-                        phLoadTime = new PlaceHolder();
-                        adminFooter.Controls.Add( phLoadTime );
+                        phLoadStats = new PlaceHolder();
+                        adminFooter.Controls.Add( phLoadStats );
 
                         HtmlGenericControl buttonBar = new HtmlGenericControl( "div" );
                         adminFooter.Controls.Add( buttonBar );
@@ -1082,28 +1082,31 @@ namespace Rock.Web.UI
             Page.Header.DataBind();
 
             // create a page view transaction if enabled
-            var globalAttributesCache = GlobalAttributesCache.Read();
-            if ( !Page.IsPostBack && _pageCache != null && globalAttributesCache.GetValue( "EnablePageViewTracking" ).AsBoolean() )
+            if ( !Page.IsPostBack && _pageCache != null )
             {
-                PageViewTransaction transaction = new PageViewTransaction();
-                transaction.DateViewed = RockDateTime.Now;
-                transaction.PageId = _pageCache.Id;
-                transaction.SiteId = _pageCache.Layout.Site.Id;
-                if ( CurrentPersonAlias != null )
+                if ( _pageCache.Layout.Site.EnablePageViews )
                 {
-                    transaction.PersonAliasId = CurrentPersonAlias.Id;
-                }
-                transaction.IPAddress = Request.UserHostAddress;
-                transaction.UserAgent = Request.UserAgent;
-                transaction.Url = Request.Url.ToString();
-                transaction.PageTitle = _pageCache.PageTitle;
-                var sessionId = Session["RockSessionID"];
-                if ( sessionId != null )
-                {
-                    transaction.SessionId = sessionId.ToString();
-                }
+                    PageViewTransaction transaction = new PageViewTransaction();
+                    transaction.DateViewed = RockDateTime.Now;
+                    transaction.PageId = _pageCache.Id;
+                    transaction.SiteId = _pageCache.Layout.Site.Id;
+                    if ( CurrentPersonAlias != null )
+                    {
+                        transaction.PersonAliasId = CurrentPersonAlias.Id;
+                    }
 
-                RockQueue.TransactionQueue.Enqueue( transaction );
+                    transaction.IPAddress = Request.UserHostAddress;
+                    transaction.UserAgent = Request.UserAgent ?? "";
+                    transaction.Url = Request.Url.ToString();
+                    transaction.PageTitle = _pageCache.PageTitle;
+                    var sessionId = Session["RockSessionID"];
+                    if ( sessionId != null )
+                    {
+                        transaction.SessionId = sessionId.ToString();
+                    }
+
+                    RockQueue.TransactionQueue.Enqueue( transaction );
+                }
             }
         }
 
@@ -1115,10 +1118,24 @@ namespace Rock.Web.UI
         {
             base.OnSaveStateComplete( e );
 
-            if ( phLoadTime != null )
+            if ( phLoadStats != null )
             {
                 TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
-                phLoadTime.Controls.Add( new LiteralControl( string.Format( "<span>{0}: {1:N2}s </span>", "Page Load Time", tsDuration.TotalSeconds ) ) );
+                double hitPercent = 0D;
+
+                if ( Context.Items.Contains( "Cache_Hits" ) )
+                {
+                    var cacheHits = Context.Items["Cache_Hits"] as System.Collections.Generic.Dictionary<string, bool>;
+                    if ( cacheHits != null )
+                    {
+                        int hits = cacheHits.Where( c => c.Value ).Count();
+                        int total = cacheHits.Count();
+                        hitPercent = total > 0 ? ( (double)hits / (double)total ) : 0D;
+                    }
+                }
+
+                phLoadStats.Controls.Add( new LiteralControl( string.Format(
+                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span>", tsDuration.TotalSeconds, hitPercent ) ) );
             }
         }
 

@@ -325,10 +325,9 @@ namespace Rock.Rest.Controllers
         /// <param name="locationId">The location identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [EnableQuery]
         [HttpGet]
         [System.Web.Http.Route( "api/Groups/ByLocation/{geofenceGroupTypeId}/{groupTypeId}/{locationId}" )]
-        public IQueryable<Group> GetByLocation( int geofenceGroupTypeId, int groupTypeId, int locationId )
+        public IQueryable GetByLocation( int geofenceGroupTypeId, int groupTypeId, int locationId, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions )
         {
             var fenceGroups = new List<Group>();
 
@@ -388,8 +387,10 @@ namespace Rock.Rest.Controllers
                     }
                 }
             }
-
-            return fenceGroups.AsQueryable();
+            
+            // manually apply any OData parameters to the InMemory Query
+            var qryResults = queryOptions.ApplyTo( fenceGroups.AsQueryable() );
+            return qryResults;
         }
 
         /// <summary>
@@ -422,8 +423,63 @@ namespace Rock.Rest.Controllers
             }
 
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+
             GroupService.AddNewFamilyAddress( rockContext, group, locationType.Guid.ToString(),
                 street1, street2, city, state, postalCode, country, true );
+        }
+
+        /// <summary>
+        /// Puts the specified identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="group">The group.</param>
+        public override void Put( int id, Group group )
+        {
+            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            if ( familyGroupType != null && familyGroupType.Id == group.GroupTypeId )
+            {
+                SetProxyCreation( true );
+
+                var rockContext = (RockContext)Service.Context;
+                var existingGroup = Service.Get( id );
+                if ( existingGroup != null )
+                {
+                    var changes = new List<string>();
+                    string oldCampus = existingGroup.Campus != null ? existingGroup.Campus.Name : string.Empty;
+                    string newCampus = group.Campus != null ? group.Campus.Name : string.Empty;
+                    if ( group.CampusId.HasValue && string.IsNullOrWhiteSpace( newCampus ))
+                    {
+                        var campus = CampusCache.Read( group.CampusId.Value );
+                        newCampus = campus != null ? campus.Name : string.Empty;
+                    }
+
+                    History.EvaluateChange( changes, "Campus", oldCampus, newCampus );
+
+                    if ( changes.Any() )
+                    {
+                        System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+
+                        int? modifiedByPersonAliasId = group.ModifiedAuditValuesAlreadyUpdated ? group.ModifiedByPersonAliasId : (int?)null;
+
+                        foreach ( var fm in existingGroup.Members )
+                        {
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( Person ),
+                                Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                fm.PersonId,
+                                changes,
+                                existingGroup.Name,
+                                typeof( Group ),
+                                existingGroup.Id,
+                                true,
+                                modifiedByPersonAliasId );
+                        }
+                    }
+                }
+            }
+
+            base.Put( id, group );
         }
 
         #region MapInfo methods

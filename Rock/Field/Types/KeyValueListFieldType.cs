@@ -160,7 +160,7 @@ namespace Rock.Field.Types
             string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
             foreach ( string nameValue in nameValues )
             {
-                string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                string[] nameAndValue = nameValue.Split( new char[] { '^' } );
                 if ( nameAndValue.Length == 2 && isDefinedType )
                 {
                     var definedValue = DefinedValueCache.Read( nameAndValue[1].AsInteger() );
@@ -168,9 +168,9 @@ namespace Rock.Field.Types
                     {
                         nameAndValue[1] = definedValue.Value;
                     }
-                }
 
-                values.Add( string.Format( "{0}: {1}", nameAndValue[0], nameAndValue[1] ) );
+                    values.Add( string.Format( "{0}: {1}", nameAndValue[0], nameAndValue[1] ) );
+                }
             }
 
             return values.AsDelimited( ", " );
@@ -293,7 +293,7 @@ namespace Rock.Field.Types
             string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
             foreach ( string nameValue in nameValues )
             {
-                string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                string[] nameAndValue = nameValue.Split( new char[] { '^' } );
                 if ( nameAndValue.Length == 2 && isDefinedType )
                 {
                     var definedValue = DefinedValueCache.Read( nameAndValue[1].AsInteger() );

@@ -64,16 +64,14 @@ namespace Rock.Jobs
             {
                 try
                 {
-                    var groupMemberQry = groupMemberService.Queryable().Where( a => a.GroupId == groupRequirement.GroupId ).AsNoTracking();
-                    var personQry = groupMemberQry.Select( a => a.Person );
                     var currentDateTime = RockDateTime.Now;
                     var expireDaysCount = groupRequirement.GroupRequirementType.ExpireInDays.Value;
                     var qryGroupMemberRequirementsAlreadyOK = groupMemberRequirementService.Queryable().Where( a => a.GroupRequirementId == groupRequirement.Id );
 
                     if ( groupRequirement.GroupRequirementType.CanExpire && groupRequirement.GroupRequirementType.ExpireInDays.HasValue )
                     {
-                        // Expirable: don't recalculate members that already met the requirement within the expiredays
-                        qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => a.RequirementMetDateTime.HasValue && SqlFunctions.DateDiff( "day", a.RequirementMetDateTime, currentDateTime ) < expireDaysCount );
+                        // Expirable: don't recalculate members that already met the requirement within the expiredays (unless they are flagged with a warning)
+                        qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => !a.RequirementWarningDateTime.HasValue && a.RequirementMetDateTime.HasValue && SqlFunctions.DateDiff( "day", a.RequirementMetDateTime, currentDateTime ) < expireDaysCount );
                     }
                     else
                     {
@@ -81,7 +79,8 @@ namespace Rock.Jobs
                         qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => a.RequirementMetDateTime.HasValue );
                     }
 
-                    personQry = personQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMember.PersonId == a.Id ) );
+                    var groupMemberQry = groupMemberService.Queryable().Where( a => a.GroupId == groupRequirement.GroupId ).AsNoTracking();
+                    var personQry = groupMemberQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMemberId == a.Id ) ).Select( a => a.Person );
 
                     var results = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, personQry, groupRequirement.GroupRoleId ).ToList();
                     foreach ( var result in results )
@@ -94,7 +93,7 @@ namespace Rock.Jobs
                 }
                 catch ( Exception ex )
                 {
-                    calculationExceptions.Add( new Exception( string.Format( "Exception when calculating group requirement: ", groupRequirement ), ex ) );
+                    calculationExceptions.Add( new Exception( string.Format( "Exception when calculating group requirement: {0} ", groupRequirement ), ex ) );
                 }
             }
 

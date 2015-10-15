@@ -48,39 +48,18 @@ namespace Rock.Web.Cache
         {
             RockMemoryCache cache = RockMemoryCache.Default;
 
-            var newValue = new Lazy<TT>( valueFactory );
-
-            var oldValue = cache.AddOrGetExisting( key, newValue, new CacheItemPolicy() ) as Lazy<TT>;
-            try
+            object cacheValue = cache.Get( key );
+            if ( cacheValue != null )
             {
-                return ( oldValue ?? newValue ).Value;
+                return (TT)cacheValue;
             }
-            catch
+
+            TT value = valueFactory();
+            if ( value != null )
             {
-                cache.Remove( key );
-                throw;
+                cache.Set( key, value, new CacheItemPolicy() );
             }
-        }
-
-        /// <summary>
-        /// Gets an item as a Lazy type
-        /// </summary>
-        /// <typeparam name="TT">The type of the t.</typeparam>
-        /// <param name="item">The item.</param>
-        /// <returns></returns>
-        public static TT AsLazy<TT>( TT item )
-        {
-            return item;
-        }
-
-        /// <summary>
-        /// Gets an integer as a Lazy integer
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns></returns>
-        public static int AsLazy( int item )
-        {
-            return item;
+            return value;
         }
 
         /// <summary>
@@ -93,17 +72,15 @@ namespace Rock.Web.Cache
         {
             RockMemoryCache cache = RockMemoryCache.Default;
 
-            var newValue = new Lazy<int>( valueFactory );
-            var oldValue = cache.AddOrGetExisting( key, newValue, new CacheItemPolicy() ) as Lazy<int>;
-            try
+            object cacheValue = cache.Get( key );
+            if ( cacheValue != null )
             {
-                return ( oldValue ?? newValue ).Value;
+                return (int)cacheValue;
             }
-            catch
-            {
-                cache.Remove( key );
-                throw;
-            }
+
+            int value = valueFactory();
+            cache.Set( key, value, new CacheItemPolicy() );
+            return value;
         }
 
         /// <summary>
@@ -116,17 +93,18 @@ namespace Rock.Web.Cache
         {
             RockMemoryCache cache = RockMemoryCache.Default;
 
-            var newValue = new Lazy<List<int>>( valueFactory );
-            var oldValue = cache.AddOrGetExisting( key, newValue, new CacheItemPolicy() ) as Lazy<List<int>>;
-            try
+            var value = cache.Get( key ) as List<int>;
+            if ( value != null )
             {
-                return ( oldValue ?? newValue ).Value;
+                return value;
             }
-            catch
+
+            value = valueFactory();
+            if ( value != null )
             {
-                cache.Remove( key );
-                throw;
+                cache.Set( key, value, new CacheItemPolicy() );
             }
+            return value;
         }
 
         /// <summary>
@@ -190,7 +168,7 @@ namespace Rock.Web.Cache
             this.Guid = model.Guid;
 
             RockMemoryCache cache = RockMemoryCache.Default;
-            cache.Set( model.Guid.ToString(), new Lazy<int>( () => AsLazy( model.Id ) ), new CacheItemPolicy() );
+            cache.Set( model.Guid.ToString(), model.Id, new CacheItemPolicy() );
         }
 
     }

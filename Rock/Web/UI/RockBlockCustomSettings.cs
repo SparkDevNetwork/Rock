@@ -65,7 +65,7 @@ namespace Rock.Web.UI
         {
             List<Control> configControls = new List<Control>();
 
-            if ( IsUserAuthorized( Authorization.EDIT ) )
+            if ( canEdit )
             {
                 LinkButton lbEdit = new LinkButton();
                 lbEdit.CssClass = "edit";

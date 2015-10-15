@@ -28,7 +28,7 @@ namespace Rock
         #region Object Extensions
 
         /// <summary>
-        /// Gets the property value.
+        /// Gets the property Value of the object's property as specified by propertyPathName.
         /// </summary>
         /// <param name="rootObj">The root obj.</param>
         /// <param name="propertyPathName">Name of the property path.</param>
@@ -59,6 +59,35 @@ namespace Rock
         }
 
         /// <summary>
+        /// Gets the Property Type of the type's property as specified by propertyPathName.
+        /// </summary>
+        /// <param name="rootType">Type of the root.</param>
+        /// <param name="propertyPathName">Name of the property path.</param>
+        /// <returns></returns>
+        public static Type GetPropertyType( this Type rootType, string propertyPathName )
+        {
+            var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
+
+            Type objType = rootType;
+
+            while ( propPath.Any() )
+            {
+                PropertyInfo property = objType.GetProperty( propPath.First() );
+                if ( property != null )
+                {
+                    objType = property.PropertyType;
+                    propPath = propPath.Skip( 1 ).ToList();
+                }
+                else
+                {
+                    objType = null;
+                }
+            }
+
+            return objType;
+        }
+
+        /// <summary>
         /// Safely ToString() this item, even if it's null.
         /// </summary>
         /// <param name="obj">an object</param>
@@ -70,6 +99,20 @@ namespace Rock
                 return obj.ToString();
             }
             return String.Empty;
+        }
+
+        /// <summary>
+        /// Gets the data annotaion attribute from. http://stackoverflow.com/questions/7027613/how-to-retrieve-data-annotations-from-code-programmatically
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="instance">The instance.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <returns></returns>
+        public static T GetAttributeFrom<T>( this object instance, string propertyName ) where T : System.Attribute
+        {
+            var attrType = typeof( T );
+            var property = instance.GetType().GetProperty( propertyName );
+            return (T)property.GetCustomAttributes( attrType, false ).First();
         }
 
         #endregion

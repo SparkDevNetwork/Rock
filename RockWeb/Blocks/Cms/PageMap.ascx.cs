@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using Rock;
@@ -97,9 +98,9 @@ namespace RockWeb.Blocks.Cms
                 allPages = allPages.Where( a => a.ParentPageId == null );
             }
 
-            foreach ( var page in allPages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).ToList() )
+            foreach ( var page in allPages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).Include(a => a.Blocks).ToList() )
             {
-                sb.Append( PageNode( page, expandedPageIds, rockContext ) );
+                sb.Append( PageNode( PageCache.Read( page ), expandedPageIds, rockContext ) );
             }
 
             sb.AppendLine( "</ul>" );
@@ -114,7 +115,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="expandedPageIdList">The expanded page identifier list.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        protected string PageNode( Page page, List<int> expandedPageIdList, RockContext rockContext )
+        protected string PageNode( PageCache page, List<int> expandedPageIdList, RockContext rockContext )
         {
             var sb = new StringBuilder();
 
@@ -146,18 +147,26 @@ namespace RockWeb.Blocks.Cms
                 authHtml, 
                 CreatePageConfigIcon(page));
 
-            if ( page.Pages.Any() || page.Blocks.Any() )
+            var childPages = page.GetPages( rockContext );
+            if ( childPages.Any() || page.Blocks.Any() )
             {
                 sb.AppendLine( "<ul>" );
 
-                foreach ( var childPage in page.Pages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
+                foreach ( var childPage in childPages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
                 {
                     sb.Append( PageNode( childPage, expandedPageIdList, rockContext ) );
                 }
 
                 foreach ( var block in page.Blocks.OrderBy( b => b.Order ) )
                 {
-                    sb.AppendFormat( "<li data-expanded='false' data-model='Block' data-id='b{0}'><span>{1}{2}:{3}</span></li>{4}", block.Id, CreateConfigIcon( block ), block.Name, BlockTypeCache.Read( block.BlockTypeId, rockContext ).Name, Environment.NewLine );
+                    string blockName = block.Name;
+                    string blockCacheName = BlockTypeCache.Read( block.BlockTypeId, rockContext ).Name;
+                    if (blockName != blockCacheName)
+                    {
+                        blockName = blockName + " (" + blockCacheName + ")";
+                    }
+
+                    sb.AppendFormat( "<li data-expanded='false' data-model='Block' data-id='b{0}'><span>{1}{2}</span></li>{3}", block.Id, CreateConfigIcon( block ), blockName, Environment.NewLine );
                 }
 
                 sb.AppendLine( "</ul>" );
@@ -173,7 +182,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="block">The block.</param>
         /// <returns></returns>
-        protected string CreateConfigIcon( Block block )
+        protected string CreateConfigIcon( BlockCache block )
         {
             var blockPropertyUrl = ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", block.Id ) );
 
@@ -187,7 +196,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns></returns>
-        protected string CreatePageConfigIcon ( Page page)
+        protected string CreatePageConfigIcon( PageCache page )
         {
             var pagePropertyUrl = ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", page.Id ) );
 

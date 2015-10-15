@@ -110,6 +110,8 @@
     <Compile Include="Constraints\ValidControllerNameConstraint.cs" />
     <Compile Include="Controllers\AttendancesController.partial.cs" />
     <Compile Include="Controllers\CampusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PageViewSessionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PageViewUserAgentsController.cs" />
     <Compile Include="Controllers\ConnectionRequestsController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceRequestsController.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceResultsController.cs" />
@@ -174,6 +176,7 @@
     <Compile Include="Controllers\MetricValuesController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormAttributesController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormsController.cs" />
+    <Compile Include="Controllers\PhoneNumbersController.Partial.cs" />
     <Compile Include="Controllers\UtilityController.cs" />
     <Compile Include="Controllers\WorkflowsController.Partial.cs" />
     <Compile Include="Controllers\PersonBadgesController.cs" />
