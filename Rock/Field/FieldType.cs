@@ -632,7 +632,7 @@ namespace Rock.Field
         /// <param name="value">The value.</param>
         /// <param name="propertyType">Type of the property.</param>
         /// <returns></returns>
-        [Obsolete("Use ConvertValueToPropertyType( string value, Type propertyType, bool isNullableType )"]
+        [Obsolete("Use ConvertValueToPropertyType( string value, Type propertyType, bool isNullableType )")]
         public virtual object ConvertValueToPropertyType( string value, Type propertyType )
         {
             return ConvertValueToPropertyType( value, propertyType, false );
