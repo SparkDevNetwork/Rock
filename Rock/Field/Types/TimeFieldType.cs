@@ -135,8 +135,9 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="propertyType">Type of the property.</param>
+        /// <param name="isNullableType">if set to <c>true</c> [is nullable type].</param>
         /// <returns></returns>
-        public override object ConvertValueToPropertyType( string value, Type propertyType )
+        public override object ConvertValueToPropertyType( string value, Type propertyType, bool isNullableType )
         {
             var timeValue = TimeSpan.MinValue;
             if ( TimeSpan.TryParse( value, out timeValue ) )
