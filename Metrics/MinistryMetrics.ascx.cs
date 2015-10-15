@@ -38,7 +38,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [DisplayName( "Ministry Metrics" )]
     [Category( "NewSpring" )]
     [Description( "Custom church metrics block using the Chart.js library" )]
-    [CustomDropdownListField( "Number of Columns", "", "1,2,3,4,5,6,7,8,9,10,11,12", false, DefaultValue = "12", Order = 1 )]
+    [CustomDropdownListField( "Number of Columns", "", "1,2,3,4,5,6,7,8,9,10,11,12", false, DefaultValue = "4", Order = 1 )]
     [CustomDropdownListField( "Metric Display Type", "", "Text,Line,Donut", false, "Text", Order = 2 )]
     [TextField( "Primary Metric Key", "Enter the metric title to pull display values from.", false, Order = 3 )]
     [MetricCategoriesField( "Primary Metric Source", "Select the primary metric(s) to include in this chart.", false, Order = 4 )]
