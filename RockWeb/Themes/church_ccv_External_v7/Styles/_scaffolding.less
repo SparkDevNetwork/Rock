@@ -34,6 +34,15 @@ body {
   margin-right: auto;
 }
 
+// Because maroon doesn't stand out enough in a paragraph of regular text.
+// Not changing Bootstrap variable as we still want maroon for btn-primary and other things.
+a {
+  color: lighten(@brand-primary, 15%);
+  &:hover {
+    color: @brand-primary;
+  }
+}
+
 
 // Extensions
 // -------------------------
