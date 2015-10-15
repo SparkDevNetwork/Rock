@@ -11,25 +11,24 @@ REQUIRED VARIABLES
 {% assign fullService = false %}
 
 
-PAGE TITLE LAVA
-===============
-
-{{ table1.rows.first.Title }} - {{ table1.rows.first.SeriesTitle }}
-
-{{ table1.rows.first.Title }} - {{ table1.rows.first.SeriesTitle }} (Full Service)
-
-
 {% endcomment %}
 
 
-{% comment %}
+{% capture pageTitle %}{{ table1.rows.first.SeriesTitle }}: {{ table1.rows.first.Title }}{% endcapture %}
 
-@todo add real link for series detail page
-@todo open graph meta tags
+{% if fullService %}
+  {% capture pageTitle %}{{ pageTitle }} (Full Service){% endcapture %}
+{% endif %}
 
-{% endcomment %}
+{% capture ogImage %}http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId3 }}{% endcapture %}
 
+{{ 'photo' | AddMetaTagToHead: 'property', 'twitter:card' }}
+{{ '@ccvonline' | AddMetaTagToHead: 'property', 'twitter:site' }}
 
+{{ pageTitle | SetPageTitle }}
+{{ pageTitle | AddMetaTagToHead: 'property', 'og:title' }}
+{{ table1.rows.first.Description | AddMetaTagToHead: 'property', 'og:description' }}
+{{ ogImage | AddMetaTagToHead: 'property', 'og:image' }}
 
 
 {{ "/Themes/church_ccv_External_v7/Styles/pages/watch.css" | AddLinkTagToHead:'rel','stylesheet' }}

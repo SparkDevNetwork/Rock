@@ -9,23 +9,18 @@ REQUIRED VARIABLES
 {% assign messageDetailPage = "/page/547" %}
 
 
-PAGE TITLE LAVA
-===============
-
-{{ table1.rows.first.Title }}
-
-
 {% endcomment %}
 
 
-{% comment %}
+{% capture ogImage %}http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId3 }}{% endcapture %}
 
-@todo opengraph meta tags
+{{ 'photo' | AddMetaTagToHead: 'property', 'twitter:card' }}
+{{ '@ccvonline' | AddMetaTagToHead: 'property', 'twitter:site' }}
 
-{% endcomment %}
-
-
-
+{{ table1.rows.first.Title | SetPageTitle }}
+{{ table1.rows.first.Title | AddMetaTagToHead: 'property', 'og:title' }}
+{{ table1.rows.first.Description | AddMetaTagToHead: 'property', 'og:description' }}
+{{ ogImage | AddMetaTagToHead: 'property', 'og:image' }}
 
 {{ "/Themes/church_ccv_External_v7/Styles/pages/watch.css" | AddLinkTagToHead:'rel','stylesheet' }}
 
