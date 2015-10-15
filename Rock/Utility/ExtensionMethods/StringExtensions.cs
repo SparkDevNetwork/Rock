@@ -240,6 +240,7 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="resultIfNullOrEmpty">if set to <c>true</c> [result if null or empty].</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()]
         public static bool AsBoolean( this string str, bool resultIfNullOrEmpty = false )
         {
             if ( string.IsNullOrWhiteSpace( str ) )
@@ -272,6 +273,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The STR.</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()]
         public static int AsInteger( this string str )
         {
             return str.AsIntegerOrNull() ?? 0;
