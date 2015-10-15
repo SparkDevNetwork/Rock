@@ -940,14 +940,14 @@ namespace RockWeb.Blocks.Groups
                         m.Guid,
                         m.PersonId,
                         Name = 
-                        (m.Person.PhotoId.HasValue ? "<i class='fa fa-fw fa-user photo-icon has-photo js-person-popover' personid=" + m.PersonId.ToString() + "></i> " : "<i class='fa fa-fw photo-icon js-person-popover' personid=" + m.PersonId.ToString() + "></i> ") +
+                        (selectAll ? m.Person.LastName + ", " + m.Person.NickName : (m.Person.PhotoId.HasValue ? "<i class='fa fa-fw fa-user photo-icon has-photo js-person-popover' personid=" + m.PersonId.ToString() + "></i> " : "<i class='fa fa-fw photo-icon js-person-popover' personid=" + m.PersonId.ToString() + "></i> ") +
                         m.Person.NickName + " " + m.Person.LastName
                             + ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id )
                                 ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
                                 : string.Empty )
                             + ( !string.IsNullOrEmpty( m.Note )
                             ? " <i class='fa fa-file-text-o text-info'></i>"
-                            : string.Empty ),
+                            : string.Empty) ),
                         Email = m.Person.Email,
                         HomePhone = homePhoneType != null ?
                             m.Person.PhoneNumbers
