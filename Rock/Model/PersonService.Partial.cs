@@ -411,7 +411,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<Person> GetByFirstLastName( string firstName, string lastName, bool includeDeceased, bool includeBusinesses )
         {
-            string fullname = string.IsNullOrWhiteSpace( firstName ) ? firstName + " " + lastName : lastName;
+            string fullname = !string.IsNullOrWhiteSpace( firstName ) ? firstName + " " + lastName : lastName;
 
             var previousNamesQry = new PersonPreviousNameService( this.Context as RockContext ).Queryable();
 
@@ -420,10 +420,9 @@ namespace Rock.Model
             {
                 int recordTypeBusinessId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
-
                 // if a we are including businesses, compare fullname against the Business Name (Person.LastName)
                 qry = qry.Where( p =>
-                    ( p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.Contains( fullname ) )
+                    ( p.RecordTypeValueId.HasValue && p.RecordTypeValueId.Value == recordTypeBusinessId && p.LastName.StartsWith( fullname ) )
                     ||
                     ( ( p.LastName.StartsWith( lastName ) || previousNamesQry.Any( a => a.PersonAlias.PersonId == p.Id && a.LastName.StartsWith( lastName ) ) ) &&
                     ( p.FirstName.StartsWith( firstName ) ||
