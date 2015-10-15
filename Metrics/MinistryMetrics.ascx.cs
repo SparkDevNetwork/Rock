@@ -140,15 +140,12 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 metricDisplay.Value = GetAttributeValue( "MetricDisplayType" );
                 metricWidth.Value = GetAttributeValue( "NumberofColumns" );
 
-                var churchMetricPeriod = GetAttributeValue( "MetricPeriod" );
-
-                var metricComparison = GetAttributeValue( "MetricComparison" );
-
-                var metricDisplayType = GetAttributeValue( "MetricDisplayType" );
-
                 PrimaryMetricKey = GetAttributeValue( "PrimaryMetricKey" );
-
                 PercentageMetricKey = GetAttributeValue( "PercentageMetricKey" );
+
+                var churchMetricPeriod = GetAttributeValue( "MetricPeriod" );
+                var metricComparison = GetAttributeValue( "MetricComparison" );
+                var metricDisplayType = GetAttributeValue( "MetricDisplayType" );
 
                 var rockContext = new RockContext();
                 var metricService = new MetricService( rockContext );
@@ -192,8 +189,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     churchMetricWarning.Visible = true;
                 }
             }
-
-            
 
             // unused variables
             // var metricCustomDates = GetAttributeValue( "CustomDates" );
@@ -244,11 +239,11 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             if ( ScheduleContext != null )
             {
                 var scheduleTime = new ScheduleService( rockContext ).Get( ScheduleContext.Guid ).StartTimeOfDay;
-                metricValueQueryable = metricValueQueryable.Where( a => scheduleTime == DbFunctions.CreateTime( 
-                        a.MetricValueDateTime.Value.Hour, 
-                        a.MetricValueDateTime.Value.Minute, 
-                        a.MetricValueDateTime.Value.Second 
-                    ) 
+                metricValueQueryable = metricValueQueryable.Where( a => scheduleTime == DbFunctions.CreateTime(
+                        a.MetricValueDateTime.Value.Hour,
+                        a.MetricValueDateTime.Value.Minute,
+                        a.MetricValueDateTime.Value.Second
+                    )
                 );
             }
 
