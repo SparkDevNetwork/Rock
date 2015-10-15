@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -1160,6 +1161,7 @@ namespace RockWeb.Blocks.Event
             else
             {
                 var rockContext = new RockContext();
+
                 var registrationService = new RegistrationService( rockContext );
                 
                 bool registrationCreated = false;
@@ -1390,12 +1392,14 @@ namespace RockWeb.Blocks.Event
                 noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PERSON_EVENT_REGISTRATION.AsGuid() );
             }
 
-            HistoryService.SaveChanges(
-                rockContext,
-                typeof( Registration ),
-                Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                registration.Id,
-                registrationChanges );
+            Task.Run( () =>
+                HistoryService.SaveChanges(
+                    new RockContext(),
+                    typeof( Registration ),
+                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                    registration.Id,
+                    registrationChanges )
+            );
 
             // Get each registrant
             foreach ( var registrantInfo in RegistrationState.Registrants )
@@ -1569,13 +1573,13 @@ namespace RockWeb.Blocks.Event
                                     formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
                                 }
 
+                                Helper.SaveAttributeValue( person, attribute, newValue, rockContext );
                                 History.EvaluateChange( personChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
+
                             }
                         }
                     }
                 }
-
-                person.SaveAttributeValues( rockContext );
 
                 string registrantName = person.FullName + ": ";
 
@@ -1651,13 +1655,12 @@ namespace RockWeb.Blocks.Event
                                         formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
                                     }
 
+                                    Helper.SaveAttributeValue( groupMember, attribute, newValue, rockContext );
                                     History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
                                 }
                             }
                         }
                     }
-
-                    groupMember.SaveAttributeValues( rockContext );
                 }
 
                 var registrant = new RegistrationRegistrant();
@@ -1732,12 +1735,11 @@ namespace RockWeb.Blocks.Event
                                     formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
                                 }
 
+                                Helper.SaveAttributeValue( registrant, attribute, newValue, rockContext );
                                 History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
                             }
                         }
                     }
-
-                    registrant.SaveAttributeValues( rockContext );
                 }
 
                 // Add a note to the registrant's person notes (if they aren't the one doing the registering)
@@ -1764,14 +1766,16 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                HistoryService.SaveChanges(
-                    rockContext,
-                    typeof( Registration ),
-                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                    registration.Id,
-                    registrantChanges,
-                    "Registrant: " + person.FullName,
-                    null, null );
+                Task.Run( () => 
+                    HistoryService.SaveChanges(
+                        new RockContext(),
+                        typeof( Registration ),
+                        Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                        registration.Id,
+                        registrantChanges,
+                        "Registrant: " + person.FullName,
+                        null, null )
+                );
             }
 
             // Add a note to the registrars notes
@@ -2071,23 +2075,25 @@ namespace RockWeb.Blocks.Event
 
                 rockContext.SaveChanges();
 
-                HistoryService.SaveChanges(
-                    rockContext,
-                    typeof( FinancialBatch ),
-                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
-                    batch.Id,
-                    batchChanges
+                Task.Run( () => 
+                    HistoryService.SaveChanges(
+                        new RockContext(),
+                        typeof( FinancialBatch ),
+                        Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                        batch.Id,
+                        batchChanges )
                 );
 
-                HistoryService.SaveChanges(
-                    rockContext,
-                    typeof( FinancialBatch ),
-                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                    batch.Id,
-                    txnChanges,
-                    CurrentPerson != null ? CurrentPerson.FullName : string.Empty,
-                    typeof( FinancialTransaction ),
-                    transaction.Id
+                Task.Run( () => 
+                    HistoryService.SaveChanges(
+                        new RockContext(),
+                        typeof( FinancialBatch ),
+                        Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                        batch.Id,
+                        txnChanges,
+                        CurrentPerson != null ? CurrentPerson.FullName : string.Empty,
+                        typeof( FinancialTransaction ),
+                        transaction.Id )
                 );
 
                 TransactionCode = transaction.TransactionCode;
