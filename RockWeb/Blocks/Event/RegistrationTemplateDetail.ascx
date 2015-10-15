@@ -94,6 +94,7 @@
                                     <Rock:RockBoundField DataField="Name" HeaderText="Field" />
                                     <Rock:EnumField DataField="FieldSource" HeaderText="Source" />
                                     <Rock:FieldTypeField DataField="FieldType" HeaderText="Type" />
+                                    <Rock:BoolField DataField="IsSharedValue" HeaderText="Common Value" />
                                     <Rock:BoolField DataField="IsGridField" HeaderText="Show on Grid" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                     <Rock:EditField OnClick="gFields_Edit" />

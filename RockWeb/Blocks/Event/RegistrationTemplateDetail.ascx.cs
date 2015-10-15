@@ -1037,7 +1037,10 @@ namespace RockWeb.Blocks.Event
                 ( e.Row.Cells[1].Text == "First Name" || e.Row.Cells[1].Text == "Last Name" ) &&
                 e.Row.Cells[2].Text == "Person Field" )
             {
-                e.Row.Cells[7].Controls.Clear();
+                foreach ( var lb in e.Row.Cells[8].ControlsOfTypeRecursive<LinkButton>() )
+                {
+                    lb.Visible = false;
+                }
             }
         }
 
@@ -2096,6 +2099,7 @@ namespace RockWeb.Blocks.Event
                         FieldSource = a.FieldSource.ConvertToString(),
                         FieldType = ( a.FieldSource != RegistrationFieldSource.PersonField && a.Attribute != null ) ? 
                             a.Attribute.FieldTypeId : 0,
+                        a.IsSharedValue,
                         a.IsGridField,
                         a.IsRequired
                     } )
