@@ -1395,10 +1395,14 @@ namespace RockWeb.Blocks.Event
                 // render UI based on Authorized 
                 bool readOnly = false;
 
+                bool canEdit = UserCanEdit ||
+                    registrationInstance.IsAuthorized( Authorization.EDIT, CurrentPerson ) ||
+                    registrationInstance.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+
                 nbEditModeMessage.Text = string.Empty;
 
                 // User must have 'Edit' rights to block, or 'Administrate' rights to instance
-                if ( !UserCanEdit && !registrationInstance.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+                if ( !canEdit )
                 {
                     readOnly = true;
                     nbEditModeMessage.Heading = "Information";
