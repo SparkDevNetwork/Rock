@@ -166,6 +166,26 @@ namespace Rock.Rest.Controllers
             throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
         }
 
+        /// <summary>
+        /// Gets the graduation year based on the provided GradeOffset
+        /// </summary>
+        /// <param name="gradeOffset">The grade offset for the person.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route("api/People/GetGraduationYear/{gradeOffset}")]
+        public int GetGraduationYear( int gradeOffset )
+        {
+            int? graduationYear = Person.GraduationYearFromGradeOffset( gradeOffset );
+            if( graduationYear.HasValue )
+            {
+                return graduationYear.Value;
+            }
+
+            throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
+        }
+
         #endregion
 
         #region Post

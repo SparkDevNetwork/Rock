@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Model;
 using Rock;
 using Rock.Web.Cache;
+using System.Web;
 
 namespace Rock.Web.UI.Controls
 {
@@ -425,7 +426,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            ItemRestUrlExtraParams = "/" + MergeFields.AsDelimited( "," );
+            ItemRestUrlExtraParams = "?additionalFields=" + HttpUtility.UrlPathEncode(MergeFields.AsDelimited( "," ));
             base.RenderControl( writer );
         }
     }

@@ -94,9 +94,11 @@
                                     <Rock:RockBoundField DataField="Name" HeaderText="Field" />
                                     <Rock:EnumField DataField="FieldSource" HeaderText="Source" />
                                     <Rock:FieldTypeField DataField="FieldType" HeaderText="Type" />
-                                    <Rock:BoolField DataField="IsSharedValue" HeaderText="Common Value" />
-                                    <Rock:BoolField DataField="IsGridField" HeaderText="Show on Grid" />
+                                    <Rock:BoolField DataField="IsInternal" HeaderText="Internal" />
+                                    <Rock:BoolField DataField="IsSharedValue" HeaderText="Common" />
+                                    <Rock:BoolField DataField="ShowCurrentValue" HeaderText="Use Current Value" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                    <Rock:BoolField DataField="IsGridField" HeaderText="Show on Grid" />
                                     <Rock:EditField OnClick="gFields_Edit" />
                                     <Rock:DeleteField OnClick="gFields_Delete" />
                                 </Columns>
@@ -255,32 +257,28 @@
                 <asp:HiddenField ID="hfAttributeGuid" runat="server" />
                 <asp:ValidationSummary ID="ValidationSummaryAttribute" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Field" />
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <Rock:RockDropDownList ID="ddlFieldSource" runat="server" Label="Source" AutoPostBack="true" OnSelectedIndexChanged="ddlFieldSource_SelectedIndexChanged" ValidationGroup="Field" />
-                    </div>
-                    <div class="col-md-4">
-                        <Rock:RockCheckBox ID="cbCommonValue" runat="server" Label="Common Value" Text="Yes" ValidationGroup="Field"
-                            Help="When registering more than one person, should the value of this attribute default to the value entered for first person registered?" />
-                    </div>
-                    <div class="col-md-4">
-                        <Rock:RockCheckBox ID="cbUseCurrentPersonAttributeValue" runat="server" Label="Display Current Value" Text="Yes" Visible="false" ValidationGroup="Field"
-                            Help="Should the person's current value for this attribute be displayed when they register?" />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-4">
                         <Rock:RockLiteral ID="lPersonField" runat="server" Label="Person Field" Visible="false" />
                         <Rock:RockDropDownList ID="ddlPersonField" runat="server" Label="Person Field" Visible="false" ValidationGroup="Field" />
                         <Rock:RockDropDownList ID="ddlPersonAttributes" runat="server" Label="Person Attribute" Visible="false" ValidationGroup="Field" />
                         <Rock:RockDropDownList ID="ddlGroupTypeAttributes" runat="server" Label="Group Member Attribute" Visible="false" ValidationGroup="Field" />
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <Rock:RockCheckBox ID="cbInternalField" runat="server" Label="Internal Field" Text="Yes" Visible="false" ValidationGroup="Field"
+                            Help="Should this field be hidden on the public registration page(s) and only visible internally?" />
+                        <Rock:RockCheckBox ID="cbRequireInInitialEntry" runat="server" Label="Required" Text="Yes" Visible="false" ValidationGroup="Field"
+                            Help="Should a value for this attribute be required when registering?" />
+                    </div>
+                    <div class="col-md-3">
+                        <Rock:RockCheckBox ID="cbCommonValue" runat="server" Label="Common Value" Text="Yes" Visible="false" ValidationGroup="Field"
+                            Help="When registering more than one person, should the value of this attribute default to the value entered for first person registered?" />
                         <Rock:RockCheckBox ID="cbShowOnGrid" runat="server" Label="Show on Grid" Text="Yes" Visible="false" ValidationGroup="Field"
                             Help="Should this value be displayed on the list of registrants?" />
                     </div>
-                    <div class="col-md-4">
-                        <Rock:RockCheckBox ID="cbRequireInInitialEntry" runat="server" Label="Required" Text="Yes" Visible="false" ValidationGroup="Field"
-                            Help="Should a value for this attribute be required when registering?" />
+                    <div class="col-md-3">
+                        <Rock:RockCheckBox ID="cbUsePersonCurrentValue" runat="server" Label="Use Current Value" Text="Yes" Visible="false" ValidationGroup="Field"
+                            Help="Should the person's current value for this field be displayed when they register?" />
                     </div>
                 </div>
                 <Rock:AttributeEditor ID="edtRegistrationAttribute" runat="server" ShowActions="false" ValidationGroup="Field" Visible="false" />

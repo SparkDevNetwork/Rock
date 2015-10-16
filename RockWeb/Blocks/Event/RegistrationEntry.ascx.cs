@@ -1050,6 +1050,15 @@ namespace RockWeb.Blocks.Event
         {
             if ( RegistrationState != null )
             {
+                // If this is the first registrant being added, default it to the current person
+                if ( RegistrationState.RegistrantCount == 0 && registrantCount == 1 && CurrentPerson != null )
+                {
+                    var registrant = new RegistrantInfo( RegistrationInstanceState, CurrentPerson );
+                    registrant.Cost = RegistrationTemplate.Cost;
+                    registrant.FamilyGuid = Guid.NewGuid();
+                    RegistrationState.Registrants.Add( registrant );
+                }
+                
                 var firstFamilyGuid = RegistrationState.RegistrantCount > 0 ? RegistrationState.Registrants[0].FamilyGuid : Guid.NewGuid();
 
                 // While the number of registrants belonging to registration is less than the selected count, addd another registrant
@@ -1402,7 +1411,7 @@ namespace RockWeb.Blocks.Event
             );
 
             // Get each registrant
-            foreach ( var registrantInfo in RegistrationState.Registrants )
+            foreach ( var registrantInfo in RegistrationState.Registrants.ToList() )
             {
                 var registrantChanges = new List<string>();
                 var personChanges = new List<string>();
@@ -1776,6 +1785,10 @@ namespace RockWeb.Blocks.Event
                         "Registrant: " + person.FullName,
                         null, null )
                 );
+
+                // Clear this registran't family guid so it's not updated again
+                registrantInfo.FamilyGuid = Guid.Empty;
+
             }
 
             // Add a note to the registrars notes
@@ -1838,6 +1851,17 @@ namespace RockWeb.Blocks.Event
             if ( person.Id > 0 )
             {
                 rockContext.SaveChanges();
+
+                // Set the family guid for any other registrants that were selected to be in the same family
+                var family = person.GetFamilies( rockContext ).FirstOrDefault();
+                if ( family != null )
+                {
+                    multipleFamilyGroupIds.AddOrIgnore( familyGuid, family.Id );
+                    if ( !singleFamilyId.HasValue )
+                    {
+                        singleFamilyId = family.Id;
+                    }
+                }
             }
             else
             {
@@ -2513,7 +2537,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 var form = RegistrationTemplate.Forms.OrderBy( f => f.Order ).ToList()[CurrentFormIndex];
-                foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
+                foreach ( var field in form.Fields.Where( f => !f.IsInternal ).OrderBy( f => f.Order ) )
                 {
                     object value = null;
                     if ( registrant != null && registrant.FieldValues.ContainsKey( field.Id ) )
@@ -2974,7 +2998,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 var form = RegistrationTemplate.Forms.OrderBy( f => f.Order ).ToList()[CurrentFormIndex];
-                foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
+                foreach ( var field in form.Fields.Where( f => !f.IsInternal ).OrderBy( f => f.Order ) )
                 {
                     object value = null;
 

@@ -733,6 +733,17 @@ namespace RockWeb.Blocks.Event
                     registrationTemplateFormService.Delete( form );
                 }
 
+                // delete fields that aren't assigned in the UI anymore
+                var fieldUiGuids = FormFieldsState.SelectMany( a => a.Value).Select( f => f.Guid ).ToList();
+                foreach ( var formField in registrationTemplateFormFieldService
+                    .Queryable()
+                    .Where( a =>
+                        formUiGuids.Contains( a.RegistrationTemplateForm.Guid ) &&
+                        !fieldUiGuids.Contains( a.Guid ) ) )
+                {
+                    registrationTemplateFormFieldService.Delete( formField );
+                }
+
                 // delete discounts that aren't assigned in the UI anymore
                 var discountUiGuids = DiscountState.Select( u => u.Guid ).ToList();
                 foreach ( var discount in registrationTemplateDiscountService
@@ -755,6 +766,11 @@ namespace RockWeb.Blocks.Event
                     registrationTemplateFeeService.Delete( fee );
                 }
 
+                int? entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
+                var qualifierColumn = "RegistrationTemplateId";
+                var qualifierValue = RegistrationTemplate.Id.ToString();
+
+                // Get the registration attributes still in the UI
                 var attributesUI = FormFieldsState
                     .SelectMany( s =>
                         s.Value.Where( a =>
@@ -762,19 +778,19 @@ namespace RockWeb.Blocks.Event
                             a.Attribute != null ) )
                     .Select( f => f.Attribute )
                     .ToList();
-
-                int? entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
-                var qualifierColumn = "RegistrationTemplateId";
-                var qualifierValue = RegistrationTemplate.Id.ToString();
-
-                // Get the existing registration attributes for this entity type and qualifier value
-                var attributesDB = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
-
-                // Get the attributes that were removed in the UI to delete 
                 var selectedAttributeGuids = attributesUI.Select( a => a.Guid );
-                var attributesToDelete = attributesDB.Where( a => !selectedAttributeGuids.Contains( a.Guid ) );
 
-                // Update the registration attributes that were assigned in the UI
+                // Delete the registration attributes that were removed from the UI
+                var attributesDB = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+                foreach ( var attr in attributesDB.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ).ToList() )
+                {
+                    attributeService.Delete( attr );
+                    Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                }
+
+                rockContext.SaveChanges();
+
+                // Save all of the registration attributes still in the UI
                 foreach ( var attr in attributesUI )
                 {
                     Helper.SaveAttributeEdits( attr, entityTypeId, qualifierColumn, qualifierValue, rockContext );
@@ -795,16 +811,6 @@ namespace RockWeb.Blocks.Event
 
                     if ( FormFieldsState.ContainsKey( form.Guid ) )
                     {
-                        var fieldUiGuids = FormFieldsState[form.Guid].Select( a => a.Guid ).ToList();
-                        foreach ( var formField in registrationTemplateFormFieldService
-                            .Queryable()
-                            .Where( a =>
-                                a.RegistrationTemplateForm.Guid.Equals( form.Guid ) &&
-                                !fieldUiGuids.Contains( a.Guid ) ) )
-                        {
-                            registrationTemplateFormFieldService.Delete( formField );
-                        }
-
                         foreach ( var formFieldUI in FormFieldsState[form.Guid] )
                         {
                             var formField = form.Fields.FirstOrDefault( a => a.Guid.Equals( formFieldUI.Guid ) );
@@ -829,6 +835,7 @@ namespace RockWeb.Blocks.Event
 
                             formField.FieldSource = formFieldUI.FieldSource;
                             formField.PersonFieldType = formFieldUI.PersonFieldType;
+                            formField.IsInternal = formFieldUI.IsInternal;
                             formField.IsSharedValue = formFieldUI.IsSharedValue;
                             formField.ShowCurrentValue = formFieldUI.ShowCurrentValue;
                             formField.PreText = formFieldUI.PreText;
@@ -838,14 +845,6 @@ namespace RockWeb.Blocks.Event
                             formField.Order = formFieldUI.Order;
                         }
                     }
-                }
-
-                // Now that the registration template form fields have been deleted, delete the attributes
-                foreach ( var attr in attributesToDelete )
-                {
-                    attributeService.Delete( attr );
-                    rockContext.SaveChanges();
-                    Rock.Web.Cache.AttributeCache.Flush( attr.Id );
                 }
 
                 // add/updated discounts
@@ -1228,6 +1227,8 @@ namespace RockWeb.Blocks.Event
                 {
                     attributeForm.PersonFieldType = ddlPersonField.SelectedValueAsEnum<RegistrationPersonFieldType>();
                 }
+
+                attributeForm.IsInternal = cbInternalField.Checked;
                 attributeForm.IsSharedValue = cbCommonValue.Checked;
 
                 int? attributeId = null;
@@ -1236,7 +1237,7 @@ namespace RockWeb.Blocks.Event
                 {
                     case RegistrationFieldSource.PersonField:
                         {
-                            attributeForm.ShowCurrentValue = cbUseCurrentPersonAttributeValue.Checked;
+                            attributeForm.ShowCurrentValue = cbUsePersonCurrentValue.Checked;
                             attributeForm.IsGridField = cbShowOnGrid.Checked;
                             attributeForm.IsRequired = cbRequireInInitialEntry.Checked;
                             break;
@@ -1244,7 +1245,7 @@ namespace RockWeb.Blocks.Event
                     case RegistrationFieldSource.PersonAttribute:
                         {
                             attributeId = ddlPersonAttributes.SelectedValueAsInt();
-                            attributeForm.ShowCurrentValue = cbUseCurrentPersonAttributeValue.Checked;
+                            attributeForm.ShowCurrentValue = cbUsePersonCurrentValue.Checked;
                             attributeForm.IsGridField = cbShowOnGrid.Checked;
                             attributeForm.IsRequired = cbRequireInInitialEntry.Checked;
                             break;
@@ -1267,9 +1268,6 @@ namespace RockWeb.Blocks.Event
                             break;
                         }
                 }
-
-                // Hide the current value option for now as it's not yet supported by any registration block
-                attributeForm.ShowCurrentValue = false;
 
                 if ( attributeId.HasValue )
                 {
@@ -2099,9 +2097,11 @@ namespace RockWeb.Blocks.Event
                         FieldSource = a.FieldSource.ConvertToString(),
                         FieldType = ( a.FieldSource != RegistrationFieldSource.PersonField && a.Attribute != null ) ? 
                             a.Attribute.FieldTypeId : 0,
+                        a.IsInternal,
                         a.IsSharedValue,
-                        a.IsGridField,
-                        a.IsRequired
+                        a.ShowCurrentValue,
+                        a.IsRequired,
+                        a.IsGridField
                     } )
                     .ToList();
                 gFields.DataBind();
@@ -2183,10 +2183,11 @@ namespace RockWeb.Blocks.Event
 
                 edtRegistrationAttribute.SetAttributeProperties( attribute, typeof( RegistrationTemplate ) );
 
-                cbUseCurrentPersonAttributeValue.Checked = formField.ShowCurrentValue;
-                cbCommonValue.Checked = formField.IsSharedValue;
+                cbInternalField.Checked = formField.IsInternal;
                 cbShowOnGrid.Checked = formField.IsGridField;
                 cbRequireInInitialEntry.Checked = formField.IsRequired;
+                cbUsePersonCurrentValue.Checked = formField.ShowCurrentValue;
+                cbCommonValue.Checked = formField.IsSharedValue;
 
                 hfFormGuid.Value = formGuid.ToString();
                 hfAttributeGuid.Value = formFieldGuid.ToString();
@@ -2211,21 +2212,27 @@ namespace RockWeb.Blocks.Event
             bool protectedField = lPersonField.Visible;
 
             ddlFieldSource.Enabled = !protectedField;
+
+            cbInternalField.Enabled = !protectedField;
             cbCommonValue.Enabled = !protectedField;
-            cbShowOnGrid.Enabled = !protectedField;
+            cbUsePersonCurrentValue.Enabled = true;
+
             cbRequireInInitialEntry.Enabled = !protectedField;
+            cbShowOnGrid.Enabled = !protectedField;
 
             var fieldSource = ddlFieldSource.SelectedValueAsEnum<RegistrationFieldSource>();
 
             ddlPersonField.Visible = !protectedField && fieldSource == RegistrationFieldSource.PersonField;
 
             ddlPersonAttributes.Visible = fieldSource == RegistrationFieldSource.PersonAttribute;
-            
-            // Curently disabled as the RegistrationEntry block does not support this functionality ( it may be supported in future block )
-            //cbUseCurrentPersonAttributeValue.Visible = fieldSource == RegistrationFieldSource.PersonAttribute ||
-            //    fieldSource == RegistrationFieldSource.PersonField;
 
             ddlGroupTypeAttributes.Visible = fieldSource == RegistrationFieldSource.GroupMemberAttribute;
+
+            cbInternalField.Visible = true;
+            cbCommonValue.Visible = true;
+            cbUsePersonCurrentValue.Visible = 
+                fieldSource == RegistrationFieldSource.PersonAttribute ||
+                fieldSource == RegistrationFieldSource.PersonField;
 
             cbShowOnGrid.Visible = fieldSource != RegistrationFieldSource.RegistrationAttribute;
             cbRequireInInitialEntry.Visible = fieldSource != RegistrationFieldSource.RegistrationAttribute;
