@@ -11299,6 +11299,12 @@ iframe.email-body {
   width: 340px;
   height: 190px;
 }
+.date-time-picker {
+  margin-bottom: 11px;
+}
+.date-time-picker .input-group {
+  margin-bottom: 4px;
+}
 .campuses-picker:before,
 .campuses-picker:after {
   content: " ";
