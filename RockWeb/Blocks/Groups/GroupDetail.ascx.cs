@@ -715,6 +715,21 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 rockContext.SaveChanges();
+
+                if ( group.IsActive == false && cbInactivateChildGroups.Checked )
+                {
+                    var allActiveChildGroupsId = groupService.GetAllDescendents( group.Id ).Where( a => a.IsActive ).Select( a => a.Id ).ToList();
+                    var allActiveChildGroups = groupService.GetByIds( allActiveChildGroupsId );
+                    foreach ( var childGroup in allActiveChildGroups )
+                    {
+                        if ( childGroup.IsActive )
+                        {
+                            childGroup.IsActive = false;
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+                }
             } );
 
             if ( group != null && wasSecurityRole )
