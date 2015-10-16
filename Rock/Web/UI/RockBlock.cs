@@ -471,6 +471,23 @@ namespace Rock.Web.UI
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            try
+            {
+                if ( this.PageParameter( "ShowDebugTimings" ).AsBoolean() )
+                {
+                    TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
+                    var lblShowDebugTimings = this.Page.Form.Controls.OfType<Label>().Where( a => a.ID == "lblShowDebugTimings" ).FirstOrDefault();
+                    if ( lblShowDebugTimings != null )
+                    {
+                        lblShowDebugTimings.Text += string.Format( "<pre>Start OnLoad {0} @ {1}</pre>", this.BlockName, tsDuration.TotalMilliseconds );
+                    }
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+            
             base.OnLoad( e );
             SetValidationGroup( this.Controls, BlockValidationGroup );
         }

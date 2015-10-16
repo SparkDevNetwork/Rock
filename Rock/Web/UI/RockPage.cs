@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -452,6 +453,17 @@ namespace Rock.Web.UI
         /// <param name="e"></param>
         protected override void OnInit( EventArgs e )
         {
+            var slDebugTimings = new StringBuilder();
+            var stopwatchInitEvents = Stopwatch.StartNew();
+            bool showDebugTimings = this.PageParameter( "ShowDebugTimings" ).AsBoolean();
+            bool canAdministratePage = false;
+
+            if ( showDebugTimings )
+            {
+                slDebugTimings.AppendFormat( "OnInit [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                stopwatchInitEvents.Restart();
+            }
+
             // Add the ScriptManager to each page
             _scriptManager = ScriptManager.GetCurrent( this.Page );
 
@@ -491,6 +503,12 @@ namespace Rock.Web.UI
             rockVersion.Attributes.Add( "content", string.Format( "Rock v{0}", version ) );
             AddMetaTag( this.Page, rockVersion );
 
+            if ( showDebugTimings )
+            {
+                slDebugTimings.AppendFormat( "CheckingForLogout [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                stopwatchInitEvents.Restart();
+            }
+            
             // If the logout parameter was entered, delete the user's forms authentication cookie and redirect them
             // back to the same page.
             Page.Trace.Warn( "Checking for logout request" );
@@ -540,6 +558,12 @@ namespace Rock.Web.UI
 
             var rockContext = new RockContext();
 
+            if ( showDebugTimings )
+            {
+                slDebugTimings.AppendFormat( "CreateRockContext [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                stopwatchInitEvents.Restart();
+            }
+
             // If the impersonated query key was included then set the current person
             Page.Trace.Warn( "Checking for person impersanation" );
             string impersonatedPersonKey = PageParameter( "rckipid" );
@@ -562,6 +586,12 @@ namespace Rock.Web.UI
             // Get current user/person info
             Page.Trace.Warn( "Getting CurrentUser" );
             Rock.Model.UserLogin user = CurrentUser;
+
+            if ( showDebugTimings )
+            {
+                slDebugTimings.AppendFormat( "GetCurrentUser [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                stopwatchInitEvents.Restart();
+            }
 
             // If there is a logged in user, see if it has an associated Person Record.  If so, set the UserName to 
             // the person's full name (which is then cached in the Session state for future page requests)
@@ -591,6 +621,12 @@ namespace Rock.Web.UI
                         Session[personNameKey] = UserName;
                     }
                 }
+
+                if ( showDebugTimings )
+                {
+                    slDebugTimings.AppendFormat( "GetCurrentPerson [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                    stopwatchInitEvents.Restart();
+                }
             }
 
             // If a PageInstance exists
@@ -618,7 +654,16 @@ namespace Rock.Web.UI
 
                 // Verify that the current user is allowed to view the page.  
                 Page.Trace.Warn( "Checking if user is authorized" );
-                if ( !_pageCache.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+
+                var isCurrentPersonAuthorized = _pageCache.IsAuthorized( Authorization.VIEW, CurrentPerson );
+
+                if ( showDebugTimings )
+                {
+                    slDebugTimings.AppendFormat( "isCurrentPersonAuthorized [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                    stopwatchInitEvents.Restart();
+                }
+
+                if ( !isCurrentPersonAuthorized )
                 {
                     if ( user == null )
                     {
@@ -687,6 +732,12 @@ namespace Rock.Web.UI
                             }
                         }
 
+                        if ( showDebugTimings )
+                        {
+                            slDebugTimings.AppendFormat( "Set Page Context(s) [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                            stopwatchInitEvents.Restart();
+                        }
+
                         // first search the cookies for any saved context, but pageContext can replace it
                         GetCookieContext( GetContextCookieName( false ) );      // Site
                         GetCookieContext( GetContextCookieName( true ) );       // Page (will replace any site values)
@@ -712,6 +763,12 @@ namespace Rock.Web.UI
                             }
                         }
 
+                        if ( showDebugTimings )
+                        {
+                            slDebugTimings.AppendFormat( "Check Page Context(s) [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                            stopwatchInitEvents.Restart();
+                        }
+
                     }
                     catch
                     {
@@ -722,7 +779,13 @@ namespace Rock.Web.UI
                     this.EnableViewState = _pageCache.EnableViewState;
 
                     Page.Trace.Warn( "Checking if user can administer" );
-                    bool canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                    canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+
+                    if ( showDebugTimings )
+                    {
+                        slDebugTimings.AppendFormat( "canAdministratePage [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                        stopwatchInitEvents.Restart();
+                    }
 
                     // Create a javascript object to store information about the current page for client side scripts to use
                     Page.Trace.Warn( "Creating JS objects" );
@@ -769,11 +832,18 @@ namespace Rock.Web.UI
                     // Flag indicating if user has rights to administer one or more of the blocks on page
                     bool canAdministrateBlockOnPage = false;
 
+                    if ( showDebugTimings )
+                    {
+                        slDebugTimings.AppendFormat( "start loading blocks [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                        stopwatchInitEvents.Restart();
+                    }
+
                     // Load the blocks and insert them into page zones
                     Page.Trace.Warn( "Loading Blocks" );
                     var pageBlocks = _pageCache.Blocks;
                     foreach ( Rock.Web.Cache.BlockCache block in pageBlocks )
                     {
+                        var stopwatchBlockInit= Stopwatch.StartNew();
                         Page.Trace.Warn( string.Format( "\tLoading '{0}' block", block.Name ) );
 
                         // Get current user's permissions for the block instance
@@ -883,6 +953,15 @@ namespace Rock.Web.UI
                                 ( (RockBlockWrapper)control ).EnsureBlockControls();
                             }
 
+                            if ( showDebugTimings )
+                            {
+                                stopwatchBlockInit.Stop();
+                                slDebugTimings.AppendFormat( 
+                                    "create/init block {0} <span class='label label-{2}'>[{1}ms]</span>\n", 
+                                    block.Name, 
+                                    stopwatchBlockInit.Elapsed.TotalMilliseconds,
+                                    stopwatchBlockInit.Elapsed.TotalMilliseconds > 500 ? "danger" : "info");
+                            }
                         }
                     }
 
@@ -1013,6 +1092,8 @@ namespace Rock.Web.UI
                     }
                 }
 
+                stopwatchInitEvents.Restart();
+
                 string pageTitle = BrowserTitle;
                 string siteTitle = _pageCache.Layout.Site.Name;
                 string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
@@ -1038,6 +1119,21 @@ namespace Rock.Web.UI
                 if ( !string.IsNullOrWhiteSpace( _pageCache.HeaderContent ) )
                 {
                     Page.Header.Controls.Add( new LiteralControl( _pageCache.HeaderContent ) );
+                }
+                
+                if ( showDebugTimings )
+                {
+                    slDebugTimings.AppendFormat( "done oninit [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                    stopwatchInitEvents.Restart();
+                }
+
+                if ( showDebugTimings && canAdministratePage )
+                {
+                    Page.Form.Controls.Add( new Label
+                    {
+                        ID="lblShowDebugTimings",
+                        Text = string.Format( "<pre>{0}</pre>", slDebugTimings.ToString() )
+                    } );
                 }
             }
         }
@@ -1077,6 +1173,8 @@ namespace Rock.Web.UI
         /// <param name="e">The <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            Stopwatch onLoadStopwatch = Stopwatch.StartNew();
+            
             base.OnLoad( e );
 
             Page.Header.DataBind();
@@ -1107,6 +1205,26 @@ namespace Rock.Web.UI
 
                     RockQueue.TransactionQueue.Enqueue( transaction );
                 }
+            }
+
+            try
+            {
+                bool showDebugTimings = this.PageParameter( "ShowDebugTimings" ).AsBoolean();
+                if ( showDebugTimings && onLoadStopwatch.Elapsed.TotalMilliseconds > 500 )
+                {
+                    if ( _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+                    {
+                        Page.Form.Controls.Add( new Literal
+                        {
+
+                            Text = string.Format( "OnLoad [{0}ms]", onLoadStopwatch.Elapsed.TotalMilliseconds )
+                        } );
+                    }
+                }
+            }
+            catch
+            {
+                // ignore
             }
         }
 
