@@ -240,7 +240,7 @@ namespace RockWeb.Blocks.Crm
 
                 if ( !isComparePerson )
                 {
-                    row.AddCssClass( "duplicate-source" );
+                    row.AddCssClass( "grid-row-bold" );
                 }
 
                 // If this is the main person for the compare, hide the "not duplicate" button
