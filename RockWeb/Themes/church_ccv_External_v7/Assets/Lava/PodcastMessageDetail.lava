@@ -57,17 +57,19 @@ REQUIRED VARIABLES
       <li><time datetime="{{ table1.rows.first.PublishDate | Date: 'MMM d, yyyy' }}" title="{{ table1.rows.first.PublishDate | Date: 'MMM d, yyyy' }}" data-toggle="tooltip" data-placement="right">{{ table1.rows.first.PublishDate | HumanizeDateTime }}</time></li>
     </ul>
   </div>
-  <div class="col-md-4">
-    <div class="btn-group btn-group-justified">
-      {% if fullService %}
-        <a class="btn btn-default" href="{{ messageDetailPage }}?MessageId={{ table1.rows.first.MessageId }}">Message Only</a>
-        <a class="btn btn-default active" href="{{ fullServicePage }}?MessageId={{ table1.rows.first.MessageId }}">Full Service</a>
-      {% else %}
-        <a class="btn btn-default active" href="{{ messageDetailPage }}?MessageId={{ table1.rows.first.MessageId }}">Message Only</a>
-        <a class="btn btn-default" href="{{ fullServicePage }}?MessageId={{ table1.rows.first.MessageId }}">Full Service</a>
-      {% endif %}
+  {% if table1.rows.first.VideoFullService != '' %}
+    <div class="col-md-4">
+      <div class="btn-group btn-group-justified">
+        {% if fullService %}
+          <a class="btn btn-default" href="{{ messageDetailPage }}?MessageId={{ table1.rows.first.MessageId }}">Message Only</a>
+          <a class="btn btn-default active" href="{{ fullServicePage }}?MessageId={{ table1.rows.first.MessageId }}">Full Service</a>
+        {% else %}
+          <a class="btn btn-default active" href="{{ messageDetailPage }}?MessageId={{ table1.rows.first.MessageId }}">Message Only</a>
+          <a class="btn btn-default" href="{{ fullServicePage }}?MessageId={{ table1.rows.first.MessageId }}">Full Service</a>
+        {% endif %}
+      </div>
     </div>
-  </div>
+  {% endif %}
 </div>
 <hr>
 <div class="row">
