@@ -322,7 +322,8 @@ namespace RockWeb.Blocks.Connection
                             .Where( a =>
                                 a.EntityTypeId == entityTypeId &&
                                 a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                                a.EntityTypeQualifierValue.Equals( connectionType.Id.ToString() ) )
+                                a.EntityTypeQualifierValue.Equals( connectionType.Id.ToString() ) &&
+                                a.AllowSearch == true )
                             .OrderBy( a => a.Order )
                             .ThenBy( a => a.Name ) )
                         {
