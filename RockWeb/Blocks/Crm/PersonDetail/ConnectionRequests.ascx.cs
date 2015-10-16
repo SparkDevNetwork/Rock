@@ -133,9 +133,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
 
                             listHtml += string.Format(
-                                "<li>{0} - <small>{1}</small></li>",
+                                "<li {0}>{1} - <small>{2}</small></li>",
+                                connectionRequest.ConnectionState == ConnectionState.Connected ? "class='is-inactive'" : string.Empty,
                                 connectionNameHtml,
-                                connectionRequest.ConnectionStatus );
+                                connectionRequest.ConnectionState == ConnectionState.Connected ? "Connected" : connectionRequest.ConnectionStatus.ToString() );
                         }
 
                         lConnectionOpportunityList.Text = listHtml;
