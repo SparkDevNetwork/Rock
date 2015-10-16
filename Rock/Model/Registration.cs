@@ -734,11 +734,10 @@ Registration By: {0} Total Cost/Fees:{1}
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RegistrantInfo"/> class.
+        /// Initializes a new instance of the <see cref="RegistrantInfo" /> class.
         /// </summary>
         /// <param name="registrationInstance">The registration instance.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
         public RegistrantInfo( RegistrationInstance registrationInstance, Person person )
             : this()
         {
