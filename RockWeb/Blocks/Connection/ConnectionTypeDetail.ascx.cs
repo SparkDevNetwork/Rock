@@ -530,6 +530,7 @@ namespace RockWeb.Blocks.Connection
             edtAttributes.ActionTitle = ActionTitle.Edit( "attribute for Opportunities of Connection type " + tbName.Text );
             var reservedKeyNames = new List<string>();
             AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            edtAttributes.AllowSearchVisible = true; 
             edtAttributes.ReservedKeyNames = reservedKeyNames.ToList();
             edtAttributes.SetAttributeProperties( attribute, typeof( ConnectionType ) );
 
