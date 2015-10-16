@@ -260,7 +260,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     BindMembers();
 
                     FamilyAddresses = new List<FamilyAddress>();
-                    foreach ( var groupLocation in _family.GroupLocations )
+                    foreach ( var groupLocation in _family.GroupLocations
+                        .OrderBy( l => l.GroupLocationTypeValue.Order ) )
                     {
                         FamilyAddresses.Add( new FamilyAddress( groupLocation ) );
                     }
