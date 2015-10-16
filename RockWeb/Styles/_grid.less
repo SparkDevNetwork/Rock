@@ -403,6 +403,15 @@ tr.row-highlight {
     }
 }
 
+.table > thead > tr.grid-row-bold {
+    td {
+        background-color: @grid-column-header-bold-bg;
+        color: @grid-column-header-bold-color;
+        border-color: lighten(@grid-column-header-bold-bg, 5%);
+        vertical-align: top !important;
+    }
+}
+
 // inactive row
 .table > tbody > tr.is-inactive {
 
