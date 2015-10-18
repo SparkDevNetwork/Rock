@@ -45,6 +45,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [TextField( "Percentage Metric Key", "Enter the metric title to calculate against the Primary Source/Key.", false, Order = 5 )]
     [MetricCategoriesField( "Percentage Metric Source", "Select the metric(s) to calculate against the Primary Source/Key.", false, Order = 6 )]
     [CustomRadioListField( "Context Scope", "The scope of context to set", "None,Page", true, "Page", order: 7 )]
+    [CustomRadioListField( "Display As", "Choose to display as number or percentage", "Integer,Percentage", true, "Integer", order: 8 )]
     //[SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", Order = 9 )]
     //[CustomRadioListField( "Custom Dates", "If not using date range, please select a custom date from here", "This Week Last Year", Order = 9 )]
     //[CustomCheckboxListField( "Compare Against Last Year", "", "Yes", Order = 10 )]
@@ -277,7 +278,16 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 if ( percentageValueSum > 0 )
                 {
                     decimal percentage = primaryValueSum / percentageValueSum;
-                    return percentage * 100;
+
+                    if ( GetAttributeValue( "DisplayAs" ) == "Number" )
+                    {
+                        return percentage;
+                    }
+                    else
+                    {
+                        return percentage * 100;
+                    }
+                    
                 }
                 else
                 {
@@ -335,7 +345,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     }
                 }
 
-                if ( percentageMetricSource.Any() || !string.IsNullOrEmpty( PercentageMetricKey ) )
+                if ( ( percentageMetricSource.Any() || !string.IsNullOrEmpty( PercentageMetricKey ) ) && GetAttributeValue("DisplayAs") == "Percentage" )
                 {
                     metricComparisonDisplay.Value = "%";
                 }
