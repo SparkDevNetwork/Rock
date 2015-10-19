@@ -470,6 +470,11 @@
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupMemberAttributeSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupStatusSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupRoleSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataComponentSettingsHelper.cs" />
     <Compile Include="Reporting\DataFilter\BaseAccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\ContentChannelItem\ContentChannelItemAttributesFilter.cs" />
