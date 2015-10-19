@@ -280,7 +280,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 {
                     decimal comparison = primaryValueSum / comparisonValueSum;
 
-                    if ( GetAttributeValue( "DisplayComparisonAs" ) == "Integer" )
+                    if ( GetAttributeValue( "DisplayComparisonAs" ).Equals("Integer") )
                     {
                         return comparison;
                     }
@@ -346,7 +346,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     }
                 }
 
-                if ( ( comparisonMetricSource.Any() || !string.IsNullOrEmpty( ComparisonMetricKey ) ) && GetAttributeValue( "DisplayComparisonAs" ) == "Percentage" )
+                if ( ( comparisonMetricSource.Any() || !string.IsNullOrEmpty( ComparisonMetricKey ) ) && GetAttributeValue( "DisplayComparisonAs" ).Equals("Percentage") )
                 {
                     metricComparisonDisplay.Value = "%";
                 }
