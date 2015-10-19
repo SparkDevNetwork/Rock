@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Security
 {
@@ -109,11 +110,15 @@ namespace Rock.Security
                         role.Id = groupModel.Id;
                         role.Name = groupModel.Name;
                         role.Users = new List<string>();
-                        role.IsSecurityTypeGroup = groupModel.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+                        var groupTypeCache = GroupTypeCache.Read( groupModel.GroupTypeId, rockContext );
+                        role.IsSecurityTypeGroup = groupTypeCache != null && groupTypeCache.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+                        
+                        Rock.Model.GroupMemberService groupMemberService = new Rock.Model.GroupMemberService( rockContext );
+                        var groupMemberPersonGuids = groupMemberService.Queryable().Where( a => a.GroupId == groupModel.Id ).Select( a => a.Person.Guid ).ToList();
 
-                        foreach ( Rock.Model.GroupMember member in groupModel.Members )
+                        foreach ( var personGuid in groupMemberPersonGuids )
                         {
-                            role.Users.Add( member.Person.Guid.ToString() );
+                            role.Users.Add( personGuid.ToString() );
                         }
 
                         cache.Set( cacheKey, role, new CacheItemPolicy() );
