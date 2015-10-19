@@ -26,6 +26,8 @@ namespace Rock
     /// </summary>
     public static class DebugHelper
     {
+        public static int _callCounts = 0;
+        
         /// <summary>
         /// 
         /// </summary>
@@ -51,10 +53,13 @@ namespace Rock
                     return;
                 }
                 
+                DebugHelper._callCounts++;
+
                 System.Diagnostics.Debug.WriteLine( "\n" );
 
                 StackTrace st = new StackTrace( 1, true );
                 var frames = st.GetFrames().Where( a => a.GetFileName() != null );
+                System.Diagnostics.Debug.WriteLine( string.Format( "/* Call# {0}*/", DebugHelper._callCounts ) );
                 System.Diagnostics.Debug.WriteLine( string.Format( "/*\n{0}*/", frames.ToList().AsDelimited("") ) );
                 
                 System.Diagnostics.Debug.WriteLine( "BEGIN\n" );
