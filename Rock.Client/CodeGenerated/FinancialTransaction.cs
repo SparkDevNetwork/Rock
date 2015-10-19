@@ -173,7 +173,7 @@ namespace Rock.Client
         public DefinedValue SourceTypeValue { get; set; }
 
         /// <summary />
-        public DateTime SundayDate { get; set; }
+        public DateTime? SundayDate { get; set; }
 
         /// <summary />
         public ICollection<FinancialTransactionDetail> TransactionDetails { get; set; }
