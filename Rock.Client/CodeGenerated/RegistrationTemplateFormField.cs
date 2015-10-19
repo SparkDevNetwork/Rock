@@ -50,6 +50,9 @@ namespace Rock.Client
         public bool IsGridField { get; set; }
 
         /// <summary />
+        public bool IsInternal { get; set; }
+
+        /// <summary />
         public bool IsRequired { get; set; }
 
         /// <summary />
@@ -116,6 +119,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsGridField = source.IsGridField;
+            this.IsInternal = source.IsInternal;
             this.IsRequired = source.IsRequired;
             this.IsSharedValue = source.IsSharedValue;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

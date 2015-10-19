@@ -74,7 +74,7 @@ namespace Rock.Client
         public int? GivingGroupId { get; set; }
 
         /// <summary>
-        /// The Grade Offset of the person, which is the number of years until their graduation date. See GradeFormatted to see their current Grade.
+        /// The Grade Offset of the person, which is the number of years until their graduation date. See GradeFormatted to see their current Grade. [Readonly]
         /// </summary>
         public int? GradeOffset { get; set; }
 

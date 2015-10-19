@@ -100,6 +100,9 @@ namespace Rock.Client
         public bool SendAttendanceReminder { get; set; }
 
         /// <summary />
+        public bool ShowConnectionStatus { get; set; }
+
+        /// <summary />
         public bool ShowInGroupList { get; set; }
 
         /// <summary />
@@ -162,6 +165,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.Order = source.Order;
             this.SendAttendanceReminder = source.SendAttendanceReminder;
+            this.ShowConnectionStatus = source.ShowConnectionStatus;
             this.ShowInGroupList = source.ShowInGroupList;
             this.ShowInNavigation = source.ShowInNavigation;
             this.TakesAttendance = source.TakesAttendance;
