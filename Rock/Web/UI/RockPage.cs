@@ -460,7 +460,8 @@ namespace Rock.Web.UI
 
             if ( showDebugTimings )
             {
-                slDebugTimings.AppendFormat( "OnInit [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
+                slDebugTimings.AppendFormat( "OnInit [{0}ms] @ {1} \n", stopwatchInitEvents.Elapsed.TotalMilliseconds, tsDuration.TotalMilliseconds );
                 stopwatchInitEvents.Restart();
             }
 
@@ -1123,7 +1124,8 @@ namespace Rock.Web.UI
                 
                 if ( showDebugTimings )
                 {
-                    slDebugTimings.AppendFormat( "done oninit [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                    TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
+                    slDebugTimings.AppendFormat( "done oninit [{0}ms] @ {1} \n", stopwatchInitEvents.Elapsed.TotalMilliseconds, tsDuration.TotalMilliseconds );
                     stopwatchInitEvents.Restart();
                 }
 
