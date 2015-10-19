@@ -52,12 +52,12 @@ namespace Rock.Migrations
 {% for amount in Amounts %}
     <tr>
         <td style=""min-width: 200px;"">{{ amount.AccountName }}</td>
-        <td style=""min-width: 100px;"">{{ ''Global'' | Attribute:''CurrencySymbol'' }} {{ amount.Amount | Format:''#,##0.00'' }}</td>
+        <td style=""min-width: 100px;"">{{ 'Global' | Attribute:'CurrencySymbol' }} {{ amount.Amount | Format:'#,##0.00' }}</td>
     </tr>
 {% endfor %}
     <tr>
         <td style=""min-width: 200px;""><strong>Total:</strong></td>
-        <td style=""min-width: 100px;""><strong>{{ ''Global'' | Attribute:''CurrencySymbol'' }} {{ TotalAmount | Format:''#,##0.00'' }}</strong></td>
+        <td style=""min-width: 100px;""><strong>{{ 'Global' | Attribute:'CurrencySymbol' }} {{ TotalAmount | Format:'#,##0.00' }}</strong></td>
     </tr>
 </table>
 
