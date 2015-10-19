@@ -54,18 +54,25 @@ namespace Rock.Security
         public bool IsSecurityTypeGroup { get; private set; }
 
         /// <summary>
-        /// Gets the users that belong to the role
+        /// Gets the Guids of the Persons in this role
         /// </summary>
-        public List<string> Users { get; private set; }
+        public HashSet<Guid> PersonGuids { get; private set; }
 
         /// <summary>
         /// Is user in role
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public bool IsUserInRole( string user )
+        public bool IsPersonInRole( Guid? personGuid )
         {
-            return Users.Contains( user );
+            if ( personGuid.HasValue )
+            {
+                return PersonGuids.Contains( personGuid.Value );
+            }
+            else
+            {
+                return false;
+            }
         }
 
         #region Static Methods
@@ -109,7 +116,7 @@ namespace Rock.Security
                         role = new Role();
                         role.Id = groupModel.Id;
                         role.Name = groupModel.Name;
-                        role.Users = new List<string>();
+                        role.PersonGuids = new HashSet<Guid>();
                         var groupTypeCache = GroupTypeCache.Read( groupModel.GroupTypeId, rockContext );
                         role.IsSecurityTypeGroup = groupTypeCache != null && groupTypeCache.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
                         
@@ -118,7 +125,7 @@ namespace Rock.Security
 
                         foreach ( var personGuid in groupMemberPersonGuids )
                         {
-                            role.Users.Add( personGuid.ToString() );
+                            role.PersonGuids.Add( personGuid );
                         }
 
                         cache.Set( cacheKey, role, new CacheItemPolicy() );

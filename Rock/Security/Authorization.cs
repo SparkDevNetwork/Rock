@@ -706,7 +706,7 @@ namespace Rock.Security
                     _authorizations[entityTypeId].Keys.Contains( entity.Id ) &&
                     _authorizations[entityTypeId][entity.Id].Keys.Contains( action ) )
                 {
-                    string userName = person != null ? person.Guid.ToString() : string.Empty;
+                    Guid? personGuid = person != null ? person.Guid : (Guid?)null;
 
                     foreach ( AuthRule authRule in _authorizations[entityTypeId][entity.Id][action] )
                     {
@@ -719,7 +719,7 @@ namespace Rock.Security
                         }
 
                         // All Authenticated Users
-                        if ( !matchFound && authRule.SpecialRole == SpecialRole.AllAuthenticatedUsers && userName.Trim() != string.Empty )
+                        if ( !matchFound && authRule.SpecialRole == SpecialRole.AllAuthenticatedUsers && personGuid.HasValue )
                         {
                             matchFound = true;
                             authorized = authRule.AllowOrDeny == 'A';
@@ -727,7 +727,7 @@ namespace Rock.Security
                         }
 
                         // All Unauthenticated Users
-                        if ( !matchFound && authRule.SpecialRole == SpecialRole.AllUnAuthenticatedUsers && userName.Trim() == string.Empty )
+                        if ( !matchFound && authRule.SpecialRole == SpecialRole.AllUnAuthenticatedUsers && !personGuid.HasValue )
                         {
                             matchFound = true;
                             authorized = authRule.AllowOrDeny == 'A';
@@ -749,7 +749,7 @@ namespace Rock.Security
                             if ( !matchFound && authRule.GroupId.HasValue )
                             {
                                 Role role = Role.Read( authRule.GroupId.Value );
-                                if ( role != null && role.IsUserInRole( userName ) )
+                                if ( role != null && role.IsPersonInRole( personGuid ) )
                                 {
                                     matchFound = true;
                                     authorized = authRule.AllowOrDeny == 'A';
