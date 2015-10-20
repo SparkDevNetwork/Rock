@@ -67,7 +67,7 @@ namespace Rock.Communication.Medium
             {
                 mergeValues.Add( "Person", person );
 
-                var recipient = communication.Recipients.Where( r => r.PersonAlias != null && r.PersonAlias.PersonId == person.Id ).FirstOrDefault();
+                var recipient = new CommunicationRecipientService( rockContext ).Queryable().Where(a => a.CommunicationId == communication.Id).Where( r => r.PersonAlias != null && r.PersonAlias.PersonId == person.Id ).FirstOrDefault();
                 if ( recipient != null )
                 {
                     // Add any additional merge fields created through a report
@@ -128,7 +128,7 @@ namespace Rock.Communication.Medium
 
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
-                communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
+                communication.HasPendingRecipients( rockContext ) &&
                 ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
             {
                 // Update any recipients that should not get sent the communication
