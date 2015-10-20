@@ -26,6 +26,9 @@ namespace Rock
     /// </summary>
     public static class DebugHelper
     {
+        /// <summary>
+        /// The _call counts
+        /// </summary>
         public static int _callCounts = 0;
         
         /// <summary>
