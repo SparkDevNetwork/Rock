@@ -234,6 +234,11 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
+                if ( _occurrence.LocationId.HasValue )
+                {
+                    Rock.CheckIn.KioskLocationAttendance.Flush( _occurrence.LocationId.Value );
+                }
+
                 rockContext.SaveChanges();
 
                 WorkflowType workflowType = null;
