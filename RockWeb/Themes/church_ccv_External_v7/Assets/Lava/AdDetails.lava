@@ -11,6 +11,9 @@
     {% assign showItem = false %}
   {% endif %}
   {% if item.Status != 'Approved' %}{% assign showItem = false %}{% endif %}
+  {% if adminMode %}
+    {% assign showItem = true %}
+  {% endif %}
   {% comment %}
   <pre>{{ daysTillStartDate }}</pre>
   <pre>{{ daysTillEndDate }}</pre>
@@ -27,6 +30,9 @@
       <img src="/GetImage.ashx?Guid={{ item.DetailImage_unformatted }}" class="title-image img-responsive">
       <div class="container-md">
         <h1>{{ item.Title }}</h1>
+        {% if item.SummaryText != empty %}
+          <p class="lead">{{ item.SummaryText }}</p>
+        {% endif %}
         {{ item.Content }}
       </div>
     {% else %}
