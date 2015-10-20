@@ -1053,6 +1053,8 @@ namespace RockWeb.Blocks.CheckIn
 
                 AttributeCache.FlushEntityAttributes();
 
+                Rock.CheckIn.KioskDevice.FlushAll();
+
             } );
 
             if ( !hasValidationErrors )

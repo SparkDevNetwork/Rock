@@ -203,6 +203,11 @@ namespace Rock.Workflow.Action
 
                     attendanceService.Add(attendance);
                     rockContext.SaveChanges();
+
+                    if ( attendance.LocationId.HasValue )
+                    {
+                        Rock.CheckIn.KioskLocationAttendance.Flush( attendance.LocationId.Value );
+                    }
                 }
                 else
                 {

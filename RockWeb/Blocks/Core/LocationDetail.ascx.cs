@@ -152,10 +152,13 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                FlushCampus( location.Id );
+                int locationId = location.Id;
 
                 locationService.Delete( location );
                 rockContext.SaveChanges();
+
+                FlushCampus( locationId );
+                Rock.CheckIn.KioskDevice.FlushAll();
             }
 
             // reload page, selecting the deleted location's parent
@@ -271,7 +274,7 @@ namespace RockWeb.Blocks.Core
 
             } );
 
-
+            Rock.CheckIn.KioskDevice.FlushAll();
 
             var qryParams = new Dictionary<string, string>();
             qryParams["LocationId"] = location.Id.ToString();
