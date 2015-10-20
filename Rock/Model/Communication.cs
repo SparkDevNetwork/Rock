@@ -328,13 +328,23 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a queryable of the Pending Recipients for this communication
+        /// Returns true if this communication has any pending recipients
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public bool HasPendingRecipients( RockContext rockContext )
         {
             return new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == this.Id && a.Status == Model.CommunicationRecipientStatus.Pending ).Any();
+        }
+
+        /// <summary>
+        /// Returns a queryable of the Recipients for this communication
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IQueryable<CommunicationRecipient> GetRecipientsQry( RockContext rockContext )
+        {
+            return new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == this.Id );
         }
 
         /// <summary>
