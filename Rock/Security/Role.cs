@@ -61,7 +61,7 @@ namespace Rock.Security
         /// <summary>
         /// Is user in role
         /// </summary>
-        /// <param name="user"></param>
+        /// <param name="personGuid">The person unique identifier.</param>
         /// <returns></returns>
         public bool IsPersonInRole( Guid? personGuid )
         {
