@@ -19,6 +19,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Entity;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -1235,8 +1236,8 @@ namespace Rock.Web.UI.Controls
                 {
 
                     // Create communication 
-                    var rockContext = new RockContext();
-                    var service = new Rock.Model.CommunicationService( rockContext );
+                    var communicationRockContext = new RockContext();
+                    var communicationService = new Rock.Model.CommunicationService( communicationRockContext );
                     var communication = new Rock.Model.Communication();
                     communication.IsBulkCommunication = true;
                     communication.Status = Model.CommunicationStatus.Transient;
@@ -1246,22 +1247,42 @@ namespace Rock.Web.UI.Controls
                         communication.SenderPersonAliasId = rockPage.CurrentPersonAliasId;
                     }
 
-                    service.Add( communication );
+                    communicationService.Add( communication );
+                    
+                    // save communication to get Id
+                    communicationRockContext.SaveChanges();
 
                     var personIds = recipients.Select( r => r.Key ).ToList();
                     var personAliasService = new Rock.Model.PersonAliasService( new Rock.Data.RockContext() );
 
                     // Get the primary aliases
-                    foreach ( var personAlias in personAliasService.Queryable()
-                        .Where( p => p.PersonId == p.AliasPersonId && personIds.Contains( p.PersonId ) ) )
+                    List<Rock.Model.PersonAlias> primaryAliasList = new List<Model.PersonAlias>( personIds.Count );
+
+                    // get the data in chunks just in case we have a large list of PersonIds (to avoid a SQL Expression limit error)
+                    var chunkedPersonIds = personIds.Take( 1000 );
+                    int skipCount = 0;
+                    while ( chunkedPersonIds.Any() )
                     {
-                        var recipient = new Rock.Model.CommunicationRecipient();
-                        recipient.PersonAliasId = personAlias.Id;
-                        recipient.AdditionalMergeValues = recipients[personAlias.PersonId];
-                        communication.Recipients.Add( recipient );
+                        var chunkedPrimaryAliasList = personAliasService.Queryable()
+                            .Where( p => p.PersonId == p.AliasPersonId && chunkedPersonIds.Contains( p.PersonId ) ).AsNoTracking().ToList();
+                        primaryAliasList.AddRange(chunkedPrimaryAliasList);
+                        skipCount += 1000;
+                        chunkedPersonIds = personIds.Skip( skipCount ).Take( 1000 );
                     }
 
-                    rockContext.SaveChanges();
+                    var communicationRecipientList = primaryAliasList.Select( a => new Rock.Model.CommunicationRecipient
+                    {
+                        CommunicationId = communication.Id,
+                        PersonAliasId = a.Id,
+                        AdditionalMergeValues = recipients[a.PersonId]
+                    } );
+
+                    var communicationRecipientRockContext = new RockContext();
+                    
+                    communicationRecipientRockContext.Configuration.AutoDetectChangesEnabled = false;
+                    var communicationRecipientService = new Rock.Model.CommunicationRecipientService( communicationRecipientRockContext );
+                    communicationRecipientService.AddRange( communicationRecipientList );
+                    communicationRecipientRockContext.SaveChanges();
 
                     // Get the URL to communication page
                     string url = CommunicationPageRoute;
