@@ -181,6 +181,8 @@ namespace RockWeb.Blocks.Core
 
             if ( Device != null )
             {
+                int deviceId = Device.Id;
+
                 string errorMessage;
                 if ( !DeviceService.CanDelete( Device, out errorMessage ) )
                 {
@@ -190,6 +192,8 @@ namespace RockWeb.Blocks.Core
 
                 DeviceService.Delete( Device );
                 rockContext.SaveChanges();
+
+                Rock.CheckIn.KioskDevice.Flush( deviceId );
             }
 
             BindGrid();

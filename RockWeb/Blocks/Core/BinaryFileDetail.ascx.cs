@@ -254,6 +254,8 @@ namespace RockWeb.Blocks.Core
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
             AttributeService attributeService = new AttributeService( rockContext );
 
+            int? prevBinaryFileTypeId = null;
+
             int binaryFileId = int.Parse( hfBinaryFileId.Value );
 
             if ( binaryFileId == 0 )
@@ -264,6 +266,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 binaryFile = binaryFileService.Get( binaryFileId );
+                prevBinaryFileTypeId = binaryFile != null ? binaryFile.BinaryFileTypeId : (int?)null;
             }
 
             // if a new file was uploaded, copy the uploaded file to this binaryFile (uploaded files are always new temporary binaryFiles)
@@ -310,7 +313,22 @@ namespace RockWeb.Blocks.Core
 
                 rockContext.SaveChanges();
                 binaryFile.SaveAttributeValues( rockContext );
+
             } );
+
+            Rock.CheckIn.KioskLabel.Flush( binaryFile.Guid );
+
+            if ( !prevBinaryFileTypeId.Equals( binaryFile.BinaryFileTypeId ) )
+            {
+                var checkInBinaryFileType = new BinaryFileTypeService( rockContext )
+                    .Get( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid() );
+                if ( checkInBinaryFileType != null && (
+                    ( prevBinaryFileTypeId.HasValue && prevBinaryFileTypeId.Value == checkInBinaryFileType.Id )  ||
+                    ( binaryFile.BinaryFileTypeId.HasValue && binaryFile.BinaryFileTypeId.Value == checkInBinaryFileType.Id ) )
+                {
+                    Rock.CheckIn.KioskDevice.FlushAll();
+                }
+            }
 
             NavigateToParentPage();
         }
