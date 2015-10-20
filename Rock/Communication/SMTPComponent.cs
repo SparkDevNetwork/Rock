@@ -118,17 +118,27 @@ namespace Rock.Communication.Transport
         /// <exception cref="System.NotImplementedException"></exception>
         public override void Send( Rock.Model.Communication communication )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var communicationRockContext = new RockContext() )
             {
-                // Requery the Communication object
-                communication = new CommunicationService( rockContext )
+                // Requery the Communication object in case we need to load any properties from the database
+                communication = new CommunicationService( communicationRockContext )
                     .Queryable( "CreatedByPersonAlias.Person" )
                     .FirstOrDefault( c => c.Id == communication.Id );
+                
+                bool hasPendingRecipients;
+                if ( communication != null 
+                    && communication.Status == Model.CommunicationStatus.Approved 
+                    && ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ))
+                {
+                    var qryRecipients = new CommunicationRecipientService( communicationRockContext ).Queryable();
+                    hasPendingRecipients = qryRecipients.Where( a => a.CommunicationId == communication.Id ).Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any();
+                }
+                else
+                {
+                    hasPendingRecipients = false;
+                }
 
-                if ( communication != null &&
-                    communication.Status == Model.CommunicationStatus.Approved &&
-                    communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
-                    ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
+                if ( hasPendingRecipients )
                 {
                     var currentPerson = communication.CreatedByPersonAlias.Person;
                     var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
@@ -196,7 +206,7 @@ namespace Rock.Communication.Transport
                         string attachmentIds = communication.GetMediumDataValue( "Attachments" );
                         if ( !string.IsNullOrWhiteSpace( attachmentIds ) )
                         {
-                            var binaryFileService = new BinaryFileService( rockContext );
+                            var binaryFileService = new BinaryFileService( communicationRockContext );
 
                             foreach ( string idVal in attachmentIds.SplitDelimitedValues() )
                             {
@@ -212,17 +222,16 @@ namespace Rock.Communication.Transport
                             }
                         }
 
-                        var historyService = new HistoryService( rockContext );
-                        var recipientService = new CommunicationRecipientService( rockContext );
-
                         var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
                         var communicationEntityTypeId = EntityTypeCache.Read( "Rock.Model.Communication" ).Id;
-                        var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), rockContext ).Id;
+                        var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), communicationRockContext ).Id;
 
                         bool recipientFound = true;
                         while ( recipientFound )
                         {
-                            var recipient = Rock.Model.Communication.GetNextPending( communication.Id, rockContext );
+                            // make a new rockContext per recipient so that DbChangeTracker doesn't get gummed up on large communications
+                            var recipientRockContext = new RockContext();
+                            var recipient = Rock.Model.Communication.GetNextPending( communication.Id, recipientRockContext );
                             if ( recipient != null )
                             {
                                 if ( string.IsNullOrWhiteSpace( recipient.PersonAlias.Person.Email ) )
@@ -287,6 +296,7 @@ namespace Rock.Communication.Transport
 
                                         recipient.TransportEntityTypeName = this.GetType().FullName;
 
+                                        var historyService = new HistoryService( recipientRockContext );
                                         historyService.Add( new History
                                         {
                                             CreatedByPersonAliasId = communication.SenderPersonAliasId,
@@ -307,7 +317,7 @@ namespace Rock.Communication.Transport
                                     }
                                 }
 
-                                rockContext.SaveChanges();
+                                recipientRockContext.SaveChanges();
                             }
                             else
                             {

@@ -48,6 +48,20 @@ namespace Rock
         }
 
         /// <summary>
+        /// removes any invalid FileName chars in a filename
+        /// from http://stackoverflow.com/a/14836763/1755417
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        public static string MakeValidFileName( this string name )
+        {
+            string invalidChars = Regex.Escape( new string( System.IO.Path.GetInvalidFileNameChars() ) );
+            string invalidReStr = string.Format( @"[{0}]+", invalidChars );
+            string replace = Regex.Replace( name, invalidReStr, "_" ).Replace( ";", "" ).Replace( ",", "" );
+            return replace;
+        }
+
+        /// <summary>
         /// Splits a Camel or Pascal cased identifier into seperate words.
         /// </summary>
         /// <param name="str">The identifier.</param>

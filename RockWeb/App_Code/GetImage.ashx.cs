@@ -253,7 +253,7 @@ namespace RockWeb
 
                 using ( var responseStream = fileContent )
                 {
-                    context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName );
+                    context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName.MakeValidFileName() );
                     if ( responseStream.CanSeek )
                     {
                         responseStream.Seek( 0, SeekOrigin.Begin );

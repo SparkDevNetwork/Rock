@@ -51,6 +51,7 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" CssClass="js-isactivegroup" Text="Active" />
+                                <Rock:RockCheckBox ID="cbInactivateChildGroups" runat="server" Text="Inactivate Child Groups" ContainerCssClass="margin-l-md js-inactivatechildgroups" style="display:none" />
                                 <Rock:RockCheckBox ID="cbIsPublic" runat="server" CssClass="js-ispublicgroup" Text="Public" />
                             </div>
                         </div>
@@ -369,7 +370,7 @@
         <script>
             
             Sys.Application.add_load(function () {
-                function setActiveLabel(activeCheckbox) {
+                function setIsActiveControls(activeCheckbox) {
                     
                     var $inactiveLabel = $(activeCheckbox).closest(".js-group-panel").find('.js-inactivegroup-label');
                     if ($(activeCheckbox).is(':checked')) {
@@ -377,6 +378,14 @@
                     }
                     else {
                         $inactiveLabel.show();
+                    }
+
+                    // if isactive was toggled from Active to Inactive, show the inactivate child groups checkbox
+                    if ($(activeCheckbox).is(':checked')) {
+                        $('.js-inactivatechildgroups').hide();
+                    }
+                    else {
+                        $('.js-inactivatechildgroups').show();
                     }
                 }
 
@@ -391,7 +400,7 @@
                 }
 
                 $('.js-isactivegroup').on('click', function () {
-                    setActiveLabel(this);
+                    setIsActiveControls(this);
                 });
 
                 $('.js-ispublicgroup').on('click', function () {
@@ -399,7 +408,7 @@
                 });
 
                 $('.js-isactivegroup').each(function (i) {
-                    setActiveLabel(this);
+                    setIsActiveControls(this);
                 });
 
                 $('.js-ispublicgroup').each(function (i) {
