@@ -1188,6 +1188,12 @@ tr.row-highlight td {
   border-color: #2f2f2f;
   vertical-align: top !important;
 }
+.table > thead > tr.grid-row-bold td {
+  background-color: #222222;
+  color: #d5d5d5;
+  border-color: #2f2f2f;
+  vertical-align: top !important;
+}
 .table > tbody > tr.is-inactive > td {
   color: #808080;
 }
@@ -4815,6 +4821,9 @@ ul.list-group-panel .list-group-item:first-child,
 .text-color {
   color: #333333;
 }
+.is-inactive {
+  opacity: .6;
+}
 .padding-all-none {
   padding: 0 !important;
 }
@@ -5389,6 +5398,15 @@ th[align=center] {
 }
 .panel .panel-heading .panel-title small {
   opacity: .5;
+}
+.panel .panel-heading .panel-options {
+  margin: -10px -15px;
+  float: right;
+}
+.panel .panel-heading .panel-options button {
+  border: 0;
+  border-radius: 0;
+  padding: 9px 12px 10px;
 }
 .panel .panel-heading .checkbox {
   margin: 0;
