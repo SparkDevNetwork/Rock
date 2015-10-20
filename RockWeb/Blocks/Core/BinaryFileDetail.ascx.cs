@@ -324,7 +324,7 @@ namespace RockWeb.Blocks.Core
                     .Get( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid() );
                 if ( checkInBinaryFileType != null && (
                     ( prevBinaryFileTypeId.HasValue && prevBinaryFileTypeId.Value == checkInBinaryFileType.Id )  ||
-                    ( binaryFile.BinaryFileTypeId.HasValue && binaryFile.BinaryFileTypeId.Value == checkInBinaryFileType.Id ) )
+                    ( binaryFile.BinaryFileTypeId.HasValue && binaryFile.BinaryFileTypeId.Value == checkInBinaryFileType.Id ) ) )
                 {
                     Rock.CheckIn.KioskDevice.FlushAll();
                 }
