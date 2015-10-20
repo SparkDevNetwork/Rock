@@ -225,7 +225,7 @@ You can view an online version of this email here:
             var rockContext = new RockContext();
             var communicationService = new CommunicationService( rockContext );
 
-            communication = communicationService.Queryable( "Recipients" )
+            communication = communicationService.Queryable()
                 .FirstOrDefault( t => t.Id == communication.Id );
 
             if ( communication != null &&
