@@ -71,6 +71,8 @@ namespace Rock.Utility
         /// <param name="delimiter">The delimiter used to separate the setting values.</param>
         public void FromSelectionString( string selectionString, string delimiter = SettingsDelimiter )
         {
+            selectionString = selectionString ?? string.Empty;
+
             // Selection String is of the format: version=X|param1|param2|param3...
             // If version parameter is missing, assume version = 1.                   
             var parameterValues = selectionString.Split( new[] { delimiter }, StringSplitOptions.None ).ToList();
