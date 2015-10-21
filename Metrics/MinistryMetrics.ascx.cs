@@ -214,21 +214,29 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         /// <param name="percentageMetricSource">The percentage metric source.</param>
         /// <param name="dateRange">The date range.</param>
         /// <returns></returns>
-        protected decimal FormatValues( List<int> primaryMetricSource, List<int> percentageMetricSource, DateRange dateRange )
+        protected decimal FormatValues( List<int> primaryMetricSource, List<int> comparisonMetricSource, DateRange dateRange )
         {
             var primaryMetricValues = GetMetricValues( primaryMetricSource, dateRange, PrimaryMetricKey );
             var primaryValueSum = primaryMetricValues.Select( a => a.YValue ).Sum() ?? 0.0M;
 
             // if comparing values, make sure we have a valid percentage source
-            if ( primaryValueSum > 0 && ( percentageMetricSource.Any() || !string.IsNullOrEmpty( ComparisonMetricKey ) ) )
+            if ( primaryValueSum > 0 && ( comparisonMetricSource.Any() || !string.IsNullOrEmpty( ComparisonMetricKey ) ) )
             {
-                var percentageMetricValues = GetMetricValues( percentageMetricSource, dateRange, ComparisonMetricKey );
-                var percentageValueSum = percentageMetricValues.Select( a => a.YValue ).Sum() ?? 0.0M;
+                var comparisonMetricValues = GetMetricValues( comparisonMetricSource, dateRange, ComparisonMetricKey );
+                var comparisonValueSum = comparisonMetricValues.Select( a => a.YValue ).Sum() ?? 0.0M;
 
-                if ( percentageValueSum > 0 )
+                if ( comparisonValueSum > 0 )
                 {
-                    decimal percentage = primaryValueSum / percentageValueSum;
-                    return percentage * 100;
+                    decimal comparison = primaryValueSum / comparisonValueSum;
+
+                    if ( GetAttributeValue( "DisplayComparisonAs" ).Equals( "Integer" ) )
+                    {
+                        return comparison;
+                    }
+                    else
+                    {
+                        return comparison * 100;
+                    }
                 }
                 else
                 {
@@ -295,7 +303,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             return metricValueQueryable.ToList();
         }
 
-
         #endregion
 
         #region Display Methods
@@ -311,7 +318,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             // this may be a little complicated to compare date ranges while accepting two metric keys/sources
             decimal currentMetricValues = FormatValues( primaryMetricSource, comparisonMetricSource, dateRange );
             decimal comparisonMetricValues = 0;
-
 
             // if doing a date comparison
             //DateTime dateRangeStart = dateRange.Start ?? DateTime.Now;
@@ -331,7 +337,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             //    comparisonMetricValues = FormatValues( primaryMetricSource, percentageMetricSource, comparisonDateRange );
             //}
 
-
             if ( currentMetricValues > 0 )
             {
                 currentMetricValue.Value = string.Format( "{0:n0}", currentMetricValues );
@@ -348,7 +353,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     }
                 }
 
-                if ( ( comparisonMetricSource.Any() || !string.IsNullOrEmpty( ComparisonMetricKey ) ) && GetAttributeValue( "DisplayComparisonAs" ).Equals("Percentage") )
+                if ( ( comparisonMetricSource.Any() || !string.IsNullOrEmpty( ComparisonMetricKey ) ) && GetAttributeValue( "DisplayComparisonAs" ).Equals( "Percentage" ) )
                 {
                     metricComparisonDisplay.Value = "%";
                 }
