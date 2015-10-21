@@ -84,7 +84,8 @@
 
                     <Rock:NotificationBox ID="nbImportWarning" runat="server" NotificationBoxType="Warning" Title="Warning" Text="Unmatched Records must be matched before importing. Ensure that the unmatched people have the correct Payroll Employee Id." Visible="false" />
 
-                    <Rock:RockTextBox ID="tbBatchNameFormat" runat="server" Required="true" Label="Batch Name <span class='tip tip-lava'></span>" />
+                    <Rock:DateTimePicker ID="dpBatchDate" runat="server" Required="true" Label="Batch Date" Help="The Date to assign as the batch date.  Also sets the date of all the transactions" />
+                    <Rock:RockTextBox ID="tbBatchNameFormat" runat="server" Required="true" Label="Batch Name <span class='tip tip-lava'></span>" Help="Use <code>Employee Tithe Import {{ BatchDate | Date:'MM/dd/yyyy' }}</code> to name it after the selected Batch Date or <code>Employee Tithe Import {{ 'Now' | Date:'MM/dd/yyyy' }}</code> to use today's date."/>
                     <div class="actions pull-right">
                         <asp:LinkButton ID="btnImport" runat="server" AccessKey="i" Text="Import" CssClass="btn btn-primary" OnClick="btnImport_Click" />
                     </div>

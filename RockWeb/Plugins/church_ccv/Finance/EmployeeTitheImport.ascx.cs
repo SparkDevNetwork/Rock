@@ -126,6 +126,8 @@ namespace RockWeb.Plugins.church_ccv.Finance
             {
                 tbBatchNameFormat.Text = this.GetAttributeValue("DefaultBatchNameFormat");
             }
+
+            dpBatchDate.SelectedDateTime = RockDateTime.Now;
         }
 
         /// <summary>
@@ -555,11 +557,13 @@ namespace RockWeb.Plugins.church_ccv.Finance
             var financialBatchService = new FinancialBatchService( rockContext );
             var financialTransactionServcie = new FinancialTransactionService( rockContext );
 
-            var currentDateTime = RockDateTime.Now;
-
+            var batchDateTime = dpBatchDate.SelectedDateTime ?? RockDateTime.Now;
             var financialBatch = new FinancialBatch();
-            financialBatch.Name = tbBatchNameFormat.Text.ResolveMergeFields( GlobalAttributesCache.GetMergeFields( this.CurrentPerson ) );
-            financialBatch.BatchStartDateTime = currentDateTime.Date;
+            
+            var mergeFields = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
+            mergeFields.Add( "BatchDate", batchDateTime );
+            financialBatch.Name = tbBatchNameFormat.Text.ResolveMergeFields( mergeFields );
+            financialBatch.BatchStartDateTime = batchDateTime;
             financialBatch.ControlAmount = lGrandTotal.Text.AsDecimal();
             financialBatch.Status = BatchStatus.Open;
 
@@ -571,7 +575,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
             {
                 FinancialTransaction financialTransaction = new FinancialTransaction();
                 financialTransaction.AuthorizedPersonAliasId = importDataRow.RockPerson != null ? importDataRow.RockPerson.PrimaryAliasId : null;
-                financialTransaction.TransactionDateTime = RockDateTime.Now;
+                financialTransaction.TransactionDateTime = batchDateTime;
                 financialTransaction.TransactionTypeValueId = contributionValueId;
                 financialTransaction.SourceTypeValueId = sourceTypeValueId;
                 financialTransaction.FinancialPaymentDetail = new FinancialPaymentDetail { CurrencyTypeValueId = ddlCurrencyType.SelectedValue.AsInteger() };
