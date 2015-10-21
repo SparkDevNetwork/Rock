@@ -97,6 +97,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
         protected IEntity GroupContext = null;
 
+        protected IEntity GroupTypeContext = null;
+
         protected IEntity DateContext = null;
 
         protected string PrimaryMetricKey = string.Empty;
@@ -131,6 +133,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
                     // Get Current Group Context
                     GroupContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Group ) ) );
+
+                    // Get Current GroupType Context
+                    GroupTypeContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( GroupType ) ) );
                 }
 
                 // Output variables direct to the ascx
@@ -201,6 +206,38 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         #region Internal Methods
 
         /// <summary>
+        /// Formats the values.
+        /// </summary>
+        /// <param name="primaryMetricSource">The primary metric source.</param>
+        /// <param name="percentageMetricSource">The percentage metric source.</param>
+        /// <param name="dateRange">The date range.</param>
+        /// <returns></returns>
+        protected decimal FormatValues( List<int> primaryMetricSource, List<int> percentageMetricSource, DateRange dateRange )
+        {
+            var primaryMetricValues = GetMetricValues( primaryMetricSource, dateRange, PrimaryMetricKey );
+            var primaryValueSum = primaryMetricValues.Select( a => a.YValue ).Sum() ?? 0.0M;
+
+            // if comparing values, make sure we have a valid percentage source
+            if ( primaryValueSum > 0 && ( percentageMetricSource.Any() || !string.IsNullOrEmpty( PercentageMetricKey ) ) )
+            {
+                var percentageMetricValues = GetMetricValues( percentageMetricSource, dateRange, PercentageMetricKey );
+                var percentageValueSum = percentageMetricValues.Select( a => a.YValue ).Sum() ?? 0.0M;
+
+                if ( percentageValueSum > 0 )
+                {
+                    decimal percentage = primaryValueSum / percentageValueSum;
+                    return percentage * 100;
+                }
+                else
+                {
+                    return 0.0M;
+                }
+            }
+
+            return primaryValueSum;
+        }
+
+        /// <summary>
         /// Builds the metric query.
         /// </summary>
         /// <param name="metricSource">The metric source.</param>
@@ -252,41 +289,21 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             {
                 metricValueQueryable = metricValueQueryable.Where( a => a.ForeignId == GroupContext.Id );
             }
+            else if ( GroupTypeContext != null )
+            {
+                var childGroupIds = new GroupTypeService( rockContext ).Queryable()
+                    .Where( t => t.ParentGroupTypes.Select( p => p.Guid ).Contains( GroupTypeContext.Guid ) )
+                    .SelectMany( t => t.Groups )
+                    .Select( g => g.Id )
+                    .ToList();
+
+                metricValueQueryable = metricValueQueryable.Where( a => a.ForeignId != null && childGroupIds.Contains( (int)a.ForeignId ) );
+            }
 
             return metricValueQueryable.ToList();
         }
 
-        /// <summary>
-        /// Formats the values.
-        /// </summary>
-        /// <param name="primaryMetricSource">The primary metric source.</param>
-        /// <param name="percentageMetricSource">The percentage metric source.</param>
-        /// <param name="dateRange">The date range.</param>
-        /// <returns></returns>
-        protected decimal FormatValues( List<int> primaryMetricSource, List<int> percentageMetricSource, DateRange dateRange )
-        {
-            var primaryMetricValues = GetMetricValues( primaryMetricSource, dateRange, PrimaryMetricKey );
-            var primaryValueSum = primaryMetricValues.Select( a => a.YValue ).Sum() ?? 0.0M;
-
-            // if comparing values, make sure we have a valid percentage source
-            if ( primaryValueSum > 0 && ( percentageMetricSource.Any() || !string.IsNullOrEmpty( PercentageMetricKey ) ) )
-            {
-                var percentageMetricValues = GetMetricValues( percentageMetricSource, dateRange, PercentageMetricKey );
-                var percentageValueSum = percentageMetricValues.Select( a => a.YValue ).Sum() ?? 0.0M;
-
-                if ( percentageValueSum > 0 )
-                {
-                    decimal percentage = primaryValueSum / percentageValueSum;
-                    return percentage * 100;
-                }
-                else
-                {
-                    return 0.0M;
-                }
-            }
-
-            return primaryValueSum;
-        }
+        
 
         #endregion
 
