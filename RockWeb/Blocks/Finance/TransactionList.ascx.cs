@@ -42,12 +42,15 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Detail Page", order:0 )]
     [TextField( "Title", "Title to display above the grid. Leave blank to hide.", false, order:1 )]
     [BooleanField( "Show Only Active Accounts on Filter", "If account filter is displayed, only list active accounts", false, "", 2, "ActiveAccountsOnlyFilter")]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transation types to limit the list to (if none are selected all types will be included).", false, true, "", "", 3 )]
+    [BooleanField( "Show Options", "Show an Options button in the title panel for showing images or summary.", false, order: 3 )]
+    [IntegerField( "Image Height", "If the Show Images option is selected, the image height", false, 200, order: 4)]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transation types to limit the list to (if none are selected all types will be included).", false, true, "", "", 5 )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler
     {
         #region Fields
 
         private bool _canEdit = false;
+        private int _imageHeight = 200;
         private FinancialBatch _batch = null;
         private Person _person = null;
         private FinancialScheduledTransaction _scheduledTxn = null;
@@ -75,13 +78,7 @@ namespace RockWeb.Blocks.Finance
             gfTransactions.ClearFilterClick += gfTransactions_ClearFilterClick;
             gfTransactions.DisplayFilterValue += gfTransactions_DisplayFilterValue;
 
-            string title = GetAttributeValue( "Title" );
-            if (string.IsNullOrWhiteSpace(title))
-            {
-                title = "Transaction List";
-            }
-
-            lTitle.Text = title;
+            SetBlockOptions();
 
             _canEdit = UserCanEdit;
 
@@ -131,6 +128,23 @@ namespace RockWeb.Blocks.Finance
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upTransactions );
 
+        }
+
+        /// <summary>
+        /// Sets the block options.
+        /// </summary>
+        private void SetBlockOptions()
+        {
+            string title = GetAttributeValue( "Title" );
+            if ( string.IsNullOrWhiteSpace( title ) )
+            {
+                title = "Transaction List";
+            }
+
+            bddlOptions.Visible = GetAttributeValue( "ShowOptions" ).AsBooleanOrNull() ?? false;
+            _imageHeight = GetAttributeValue( "ImageHeight" ).AsIntegerOrNull() ?? 200;
+
+            lTitle.Text = title;
         }
 
         /// <summary>
@@ -261,8 +275,14 @@ namespace RockWeb.Blocks.Finance
 
         #region Events
 
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            SetBlockOptions();
             BindGrid();
         }
 
@@ -387,6 +407,17 @@ namespace RockWeb.Blocks.Finance
                         else
                         {
                             lCurrencyType.Text = currencyType;
+                        }
+                    }
+
+                    var lTransactionImage = e.Row.FindControl( "lTransactionImage" ) as Literal;
+                    if (lTransactionImage != null)
+                    {
+                        var firstImage = txn.Images.FirstOrDefault();
+                        if (firstImage != null )
+                        {
+                            string imageSrc = string.Format( "~/GetImage.ashx?id={0}&height={1}", firstImage.BinaryFileId, _imageHeight );
+                            lTransactionImage.Text = string.Format("<image src='{0}' />", this.ResolveUrl(imageSrc)) ;
                         }
                     }
                 }
@@ -888,6 +919,24 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
+            var lTransactionImageField = gTransactions.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lTransactionImage" );
+            var summaryField = gTransactions.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "Summary" );
+            var showImages = bddlOptions.SelectedValue.AsIntegerOrNull() == 1;
+            if ( lTransactionImageField != null)
+            {
+                lTransactionImageField.Visible = showImages;
+            }
+
+            if ( summaryField != null )
+            {
+                summaryField.Visible = !showImages;
+            }
+
+            if ( showImages )
+            {
+                qry = qry.Include( a => a.Images );
+            }
+
             gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
 
@@ -978,5 +1027,14 @@ namespace RockWeb.Blocks.Finance
 
         #endregion Internal Methods
 
-    }
+        /// <summary>
+        /// Handles the SelectionChanged event of the bddlOptions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void bddlOptions_SelectionChanged( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
+}
 }

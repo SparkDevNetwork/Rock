@@ -9,6 +9,12 @@
             <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-credit-card"></i> <asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
+                    
+                        <Rock:ButtonDropDownList ID="bddlOptions" runat="server" CssClass="panel-options pull-right" Title="Options" SelectionStyle="Checkmark" OnSelectionChanged="bddlOptions_SelectionChanged">
+                            <asp:ListItem Text="Show Images" Value="1" />
+                            <asp:ListItem Text="Show Summary" Value="0" />
+                        </Rock:ButtonDropDownList>
+                    
                 </div>
                 <div class="panel-body">
 
@@ -46,7 +52,8 @@
                                 <Rock:RockTemplateField HeaderText="Accounts" >
                                     <ItemTemplate><%# GetAccounts( Container.DataItem ) %></ItemTemplate>
                                 </Rock:RockTemplateField>
-                                <Rock:RockBoundField DataField="Summary" HeaderText="Summary" SortExpression="TransactionCode" ColumnPriority="DesktopLarge" />                
+                                <Rock:RockBoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" ColumnPriority="DesktopLarge" />                
+                                <Rock:RockLiteralField ID="lTransactionImage" HeaderText="Image" />
                                 <Rock:DeleteField OnClick="gTransactions_Delete" Visible="false"/>
                             </Columns>
                         </Rock:Grid>
