@@ -1279,7 +1279,6 @@ namespace Rock.Web.UI.Controls
 
                     var communicationRecipientRockContext = new RockContext();
                     
-                    communicationRecipientRockContext.Configuration.AutoDetectChangesEnabled = false;
                     var communicationRecipientService = new Rock.Model.CommunicationRecipientService( communicationRecipientRockContext );
                     communicationRecipientService.AddRange( communicationRecipientList );
                     communicationRecipientRockContext.SaveChanges();
