@@ -1079,11 +1079,14 @@ namespace RockWeb.Blocks.Communication
 
             Rock.Model.Communication communication = null;
             IQueryable<CommunicationRecipient> qryRecipients = null;
-            
+
             if ( CommunicationId.HasValue )
             {
                 communication = communicationService.Get( CommunicationId.Value );
+            }
 
+            if ( communication != null )
+            {
                 // Remove any deleted recipients
                 HashSet<int> personIdHash = new HashSet<int>( Recipients.Select( a => a.PersonId ) );
                 qryRecipients = communication.GetRecipientsQry( rockContext );
