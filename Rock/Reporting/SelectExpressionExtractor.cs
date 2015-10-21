@@ -66,7 +66,6 @@ namespace Rock.Reporting
         /// <summary>
         /// Extracts the first inner SELECT from an IQueryable. Useful for building DataSelect expressions for Reporting
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="qry">The qry.</param>
         /// <param name="propertyExpression">The property expression.</param>
         /// <param name="parameterName">Name of the parameter (forexample: 'p') from the qry to replace with the parameterExpression.</param>
@@ -81,6 +80,14 @@ namespace Rock.Reporting
             return propertyParameterExpressionVisitor.Visit( extractedExpression );
         }
 
+        /// <summary>
+        /// Extracts the specified qry.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="qry">The qry.</param>
+        /// <param name="propertyExpression">The property expression.</param>
+        /// <param name="parameterName">Name of the parameter.</param>
+        /// <returns></returns>
         [Obsolete("The Type Parameter <T> has no effect.")]
         public static Expression Extract<T>( IQueryable qry, MemberExpression propertyExpression, string parameterName )
         {
