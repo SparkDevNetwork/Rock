@@ -327,10 +327,19 @@ namespace Rock.Reporting.DataFilter
         public Expression GetAttributeExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
         {
             var service = new AttributeValueService( (RockContext)serviceInstance.Context );
+            
             var attributeValues = service.Queryable().Where( v =>
-                v.Attribute.Guid == entityField.AttributeGuid &&
                 v.EntityId.HasValue &&
                 v.Value != string.Empty );
+
+            if (entityField.AttributeGuid.HasValue)
+            {
+                attributeValues = attributeValues.Where( v => v.Attribute.Guid == entityField.AttributeGuid );
+            }
+            else
+            {
+                attributeValues = attributeValues.Where( v => v.Attribute.Key == entityField.Name && v.Attribute.FieldTypeId == entityField.FieldType.Id );
+            }
 
             ParameterExpression attributeValueParameterExpression = Expression.Parameter( typeof( AttributeValue ), "v" );
 
