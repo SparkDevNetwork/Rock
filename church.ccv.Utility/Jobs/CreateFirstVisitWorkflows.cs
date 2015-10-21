@@ -177,8 +177,10 @@ namespace church.ccv.Utility
                                 // set attribute values
                                 visitorWorkflow.SetAttributeValue( "HeadOfHouse", headOfHouse.PrimaryAlias.Guid.ToString() );
                                 visitorWorkflow.SetAttributeValue( "Family", family.ToString() );
-                                visitorWorkflow.SetAttributeValue( "FirstVisitDate", firstVisitDates.OrderByDescending( d => d.ValueAsDateTime ).Select( d => d.ValueAsDateTime ).FirstOrDefault().ToString() );
-                                visitorWorkflow.SetAttributeValue( "Campus", family.Campus.Guid.ToString() );
+                                
+                                var firstVisitDate = firstVisitDates.OrderByDescending( d => d.ValueAsDateTime ).Select( d => d.ValueAsDateTime ).FirstOrDefault();
+                                visitorWorkflow.SetAttributeValue( "FirstVisitDate", firstVisitDate != null ? firstVisitDate.ToString() : string.Empty );
+                                visitorWorkflow.SetAttributeValue( "Campus", family.Campus != null ? family.Campus.Guid.ToString() : string.Empty );
                                 visitorWorkflow.SetAttributeValue( "Children", BuildPersonList( children.Select( m => m.Person ).ToList() ) );
                                 visitorWorkflow.SetAttributeValue( "Adults", BuildPersonList( adults.Select( m => m.Person ).ToList() ) );
                                 visitorWorkflow.SetAttributeValue( "HomePhone", homePhone );
@@ -210,7 +212,14 @@ namespace church.ccv.Utility
                                                             m.GroupRole.IsLeader )
                                                         .Select( m => m.Person ).FirstOrDefault();
 
-                                        visitorWorkflow.SetAttributeValue( "NeighborhoodPastor", neighborhoodPastor.PrimaryAlias.Guid.ToString() );
+                                        if ( neighborhoodPastor != null && neighborhoodPastor.PrimaryAlias != null )
+                                        {
+                                            visitorWorkflow.SetAttributeValue( "NeighborhoodPastor", neighborhoodPastor.PrimaryAlias.Guid.ToString() );
+                                        }
+                                        else
+                                        {
+                                            visitorWorkflow.SetAttributeValue( "NeighborhoodPastor", string.Empty );
+                                        }
                                     }
                                 }
 
