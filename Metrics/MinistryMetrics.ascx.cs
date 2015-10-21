@@ -316,25 +316,28 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         /// <param name="primaryMetricSource">The primary metric source.</param>
         /// <param name="percentageMetricSource">The percentage metric source.</param>
         private void DisplayTextValue( DateRange dateRange, List<int> primaryMetricSource, List<int> percentageMetricSource )
-        {
-            DateTime dateRangeStart = dateRange.Start ?? DateTime.Now;
-            DateTime dateRangeEnd = dateRange.End ?? DateTime.Now;
-
-            TimeSpan ts = dateRangeEnd - dateRangeStart;
-
-            var differenceInDays = ts.Days + 1;
-
-            var comparisonDateRange = new DateRange
-            {
-                Start = dateRange.Start.Value.AddDays( -differenceInDays ),
-                End = dateRange.End.Value.AddDays( -differenceInDays )
-            };
-
+        {   
             // this may be a little complicated to compare date ranges while accepting two metric keys/sources
             decimal currentMetricValues = FormatValues( primaryMetricSource, percentageMetricSource, dateRange );
+            decimal comparisonMetricValues = 0;
 
-            // this is a comparison date range, not necessarily a percentage
-            decimal comparisonMetricValues = FormatValues( primaryMetricSource, percentageMetricSource, comparisonDateRange );
+            // if doing a date comparison
+            //DateTime dateRangeStart = dateRange.Start ?? DateTime.Now;
+            //DateTime dateRangeEnd = dateRange.End ?? DateTime.Now;
+            //TimeSpan ts = dateRangeEnd - dateRangeStart;
+
+            //if ( ts.Days > 0 )
+            //{
+            //    var differenceInDays = ts.Days + 1;
+
+            //    var comparisonDateRange = new DateRange
+            //    {
+            //        Start = dateRange.Start.Value.AddDays( -differenceInDays ),
+            //        End = dateRange.End.Value.AddDays( -differenceInDays )
+            //    };
+
+            //    comparisonMetricValues = FormatValues( primaryMetricSource, percentageMetricSource, comparisonDateRange );
+            //}
 
             if ( currentMetricValues > 0 )
             {
