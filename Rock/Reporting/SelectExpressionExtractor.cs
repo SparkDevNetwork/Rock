@@ -71,7 +71,7 @@ namespace Rock.Reporting
         /// <param name="propertyExpression">The property expression.</param>
         /// <param name="parameterName">Name of the parameter (forexample: 'p') from the qry to replace with the parameterExpression.</param>
         /// <returns></returns>
-        public static Expression Extract<T>( IQueryable qry, MemberExpression propertyExpression, string parameterName )
+        public static Expression Extract( IQueryable qry, MemberExpression propertyExpression, string parameterName )
         {
             MethodCallExpression methodCallExpression = qry.Expression as MethodCallExpression;
             Expression<Func<LambdaExpression>> executionLambda = Expression.Lambda<Func<LambdaExpression>>( methodCallExpression.Arguments[1] );
@@ -79,6 +79,12 @@ namespace Rock.Reporting
             var propertyParameterExpressionVisitor = new PropertyParameterExpressionVisitor( propertyExpression, parameterName );
 
             return propertyParameterExpressionVisitor.Visit( extractedExpression );
+        }
+
+        [Obsolete("The Type Parameter <T> has no effect.")]
+        public static Expression Extract<T>( IQueryable qry, MemberExpression propertyExpression, string parameterName )
+        {
+            return Extract( qry, propertyExpression, parameterName );
         }
     }
 }

@@ -69,19 +69,30 @@ namespace Rock
             var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
 
             Type objType = rootType;
+            string elementName = rootType.Name;
 
-            while ( propPath.Any() )
+            try
             {
-                PropertyInfo property = objType.GetProperty( propPath.First() );
-                if ( property != null )
+                while (propPath.Any())
                 {
-                    objType = property.PropertyType;
-                    propPath = propPath.Skip( 1 ).ToList();
+                    elementName = propPath.First();
+
+                    PropertyInfo property = objType.GetProperty( elementName );
+                    if (property != null)
+                    {
+                        objType = property.PropertyType;
+                        propPath = propPath.Skip( 1 ).ToList();
+                    }
+                    else
+                    {
+                        objType = null;
+                    }
                 }
-                else
-                {
-                    objType = null;
-                }
+
+            }
+            catch (Exception)
+            {
+                throw new Exception( string.Format( "GetPropertyType failed. Could not resolve element \"{0}\" in path \"{1}.{2}\".", elementName, rootType.Name, propertyPathName ) );
             }
 
             return objType;

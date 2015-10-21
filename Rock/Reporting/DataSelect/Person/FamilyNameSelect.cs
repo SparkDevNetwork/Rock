@@ -130,10 +130,10 @@ namespace Rock.Reporting.DataSelect.Person
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
             // groupmembers
-            var groupMembers = context.Set<GroupMember>();
+            var groupMembers = context.Set<Rock.Model.GroupMember>();
 
             // m
-            ParameterExpression groupMemberParameter = Expression.Parameter( typeof( GroupMember ), "m" );
+            ParameterExpression groupMemberParameter = Expression.Parameter( typeof( Rock.Model.GroupMember ), "m" );
 
             // m.PersonId
             MemberExpression memberPersonIdProperty = Expression.Property( groupMemberParameter, "PersonId" );
@@ -163,11 +163,11 @@ namespace Rock.Reporting.DataSelect.Person
             // m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid
             var compare = new Expression[] {
                 Expression.Constant(groupMembers),
-                Expression.Lambda<Func<GroupMember, bool>>(andExpression, new ParameterExpression[] { groupMemberParameter } )
+                Expression.Lambda<Func<Rock.Model.GroupMember, bool>>(andExpression, new ParameterExpression[] { groupMemberParameter } )
             };
 
             // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid)
-            Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( GroupMember ) }, compare );
+            Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( Rock.Model.GroupMember ) }, compare );
 
             // m.Group.Name
             MemberExpression groupName = Expression.Property( groupProperty, "Name" );
@@ -176,7 +176,7 @@ namespace Rock.Reporting.DataSelect.Person
             Expression groupNameLambda = Expression.Lambda( groupName, new ParameterExpression[] { groupMemberParameter } );
 
             // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid).Select( m => m.Group.Name);
-            Expression selectName = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( GroupMember ), typeof( string ) }, whereExpression, groupNameLambda );
+            Expression selectName = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( Rock.Model.GroupMember ), typeof( string ) }, whereExpression, groupNameLambda );
 
             // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid).Select( m => m.Group.Name).FirstOrDefault();
             Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { typeof( string ) }, selectName );
