@@ -212,7 +212,7 @@ namespace Rock.Reporting.DataSelect.Person
                                                                                               .ThenBy( x => x.GroupRole.Name )
                                                                                               .Select( outputExpression ).AsEnumerable() );
 
-            var selectExpression = SelectExpressionExtractor.Extract<Model.Person>( personGroupsQuery, entityIdProperty, "p" );
+            var selectExpression = SelectExpressionExtractor.Extract( personGroupsQuery, entityIdProperty, "p" );
 
             return selectExpression;
         }

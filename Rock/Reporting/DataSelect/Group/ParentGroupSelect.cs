@@ -169,7 +169,7 @@ namespace Rock.Reporting.DataSelect.Group
                 groupParentLinkQry = groupParentQry.Select( p => p.ParentGroup.Name );
             }
 
-            return SelectExpressionExtractor.Extract<Rock.Model.Group>( groupParentLinkQry, entityIdProperty, "p" );
+            return SelectExpressionExtractor.Extract( groupParentLinkQry, entityIdProperty, "p" );
         }
     }
 }
