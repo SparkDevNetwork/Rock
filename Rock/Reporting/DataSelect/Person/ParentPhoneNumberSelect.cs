@@ -167,7 +167,7 @@ namespace Rock.Reporting.DataSelect.Person
                     .Where( m => m.PhoneNumbers.Count( t => t.NumberTypeValueId == phoneNumberTypeValueId ) != 0 )
                     .Select( m => m.PhoneNumbers.FirstOrDefault( t => t.NumberTypeValueId == phoneNumberTypeValueId ) ).AsEnumerable() );
 
-            var selectNumbersExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personParentsPhoneQuery, entityIdProperty, "p" );            
+            var selectNumbersExpression = SelectExpressionExtractor.Extract( personParentsPhoneQuery, entityIdProperty, "p" );            
             
             return selectNumbersExpression;
         }

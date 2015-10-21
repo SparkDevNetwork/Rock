@@ -129,7 +129,7 @@ namespace Rock.Reporting.DataSelect.FinancialTransaction
             var totalAmountQuery = new FinancialTransactionService( context ).Queryable()
                 .Select( p => p.TransactionDetails.Sum( a => a.Amount ) );
 
-            var selectTotalAmountExpression = SelectExpressionExtractor.Extract<Rock.Model.FinancialTransaction>( totalAmountQuery, entityIdProperty, "p" );
+            var selectTotalAmountExpression = SelectExpressionExtractor.Extract( totalAmountQuery, entityIdProperty, "p" );
 
             return selectTotalAmountExpression;
         }
