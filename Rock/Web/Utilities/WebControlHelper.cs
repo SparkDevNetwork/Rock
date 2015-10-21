@@ -69,7 +69,14 @@ namespace Rock.Web.Utilities
         /// </summary>
         public enum SearchDepthSpecifier
         {
+            /// <summary>
+            /// Include child controls
+            /// </summary>
             IncludeChildControls = 0,
+
+            /// <summary>
+            /// Exclude child controls
+            /// </summary>
             ExcludeChildControls = 1
         }
 
