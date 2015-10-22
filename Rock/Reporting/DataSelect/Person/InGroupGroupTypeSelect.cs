@@ -69,6 +69,17 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
+        /// Gets the section that this will appear in in the Field Selector
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public override string Section
+        {
+            get { return "Groups"; }
+        }
+
+        /// <summary>
         /// Gets the type of the column field.
         /// </summary>
         /// <value>
