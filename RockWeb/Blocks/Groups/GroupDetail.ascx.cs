@@ -1208,6 +1208,7 @@ namespace RockWeb.Blocks.Groups
 
                 var groupType = GroupTypeCache.Read( CurrentGroupTypeId, rockContext );
                 lGroupType.Text = groupType != null ? groupType.Name : string.Empty;
+                ddlGroupType.SetValue( CurrentGroupTypeId );
             }
 
             ddlCampus.SetValue( group.CampusId );
