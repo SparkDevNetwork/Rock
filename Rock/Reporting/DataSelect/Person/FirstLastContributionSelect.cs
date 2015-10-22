@@ -143,7 +143,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof( DateTime ); }
+            get { return typeof( DateTime? ); }
         }
 
         /// <summary>
@@ -244,11 +244,11 @@ namespace Rock.Reporting.DataSelect.Person
             MemberExpression transactionDateTime = Expression.Property( transactionProperty, "SundayDate" );
 
             // t => t.Transaction.transactionDateTime
-            var transactionDate = Expression.Lambda<Func<FinancialTransactionDetail, DateTime>>( transactionDateTime, new ParameterExpression[] { transactionDetailParameter } );
+            var transactionDate = Expression.Lambda<Func<FinancialTransactionDetail, DateTime?>>( transactionDateTime, new ParameterExpression[] { transactionDetailParameter } );
 
             // transaction.Where( t => t.Transaction.AuthorizedPersonId == Convert(p.Id).Max( t => t.Transaction.transactionDateTime)
             string methodName = FirstOrLast == FirstLast.Last ? "Max" : "Min";
-            Expression maxMinExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { typeof( FinancialTransactionDetail ), typeof( DateTime ) }, whereExpression, transactionDate );
+            Expression maxMinExpression = Expression.Call( typeof( Queryable ), methodName, new Type[] { typeof( FinancialTransactionDetail ), typeof( DateTime? ) }, whereExpression, transactionDate );
 
             return maxMinExpression;
         }
