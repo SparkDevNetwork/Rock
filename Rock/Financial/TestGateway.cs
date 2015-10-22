@@ -76,6 +76,15 @@ namespace Rock.Financial
             return transaction;
         }
 
+        public override FinancialTransaction Credit( FinancialTransaction transaction, decimal amount, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            var refundTransaction = new FinancialTransaction();
+            refundTransaction.TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
+            return transaction;
+        }
+
         /// <summary>
         /// Adds the scheduled payment.
         /// </summary>

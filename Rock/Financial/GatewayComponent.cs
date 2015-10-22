@@ -197,6 +197,15 @@ namespace Rock.Financial
         public abstract FinancialTransaction Charge( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage );
 
         /// <summary>
+        /// Credits (Refunds) the specified transaction.
+        /// </summary>
+        /// <param name="origTransaction">The original transaction.</param>
+        /// <param name="amount">The amount.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public abstract FinancialTransaction Credit( FinancialTransaction origTransaction, decimal amount, out string errorMessage );
+
+        /// <summary>
         /// Adds the scheduled payment.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>

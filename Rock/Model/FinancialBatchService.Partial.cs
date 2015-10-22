@@ -41,6 +41,22 @@ namespace Rock.Model
         public FinancialBatch Get( string namePrefix, DefinedValueCache currencyType, DefinedValueCache creditCardType,
             DateTime transactionDate, TimeSpan batchTimeOffset, List<FinancialBatch> batches = null )
         {
+            return Get( namePrefix, string.Empty, currencyType, creditCardType, transactionDate, batchTimeOffset, batches );
+        }
+
+        /// <summary>
+        /// Gets the specified name prefix.
+        /// </summary>
+        /// <param name="namePrefix">The name prefix.</param>
+        /// <param name="currencyType">Type of the currency.</param>
+        /// <param name="creditCardType">Type of the credit card.</param>
+        /// <param name="transactionDate">The transaction date.</param>
+        /// <param name="batchTimeOffset">The batch time offset.</param>
+        /// <param name="batches">The batches.</param>
+        /// <returns></returns>
+        public FinancialBatch Get( string namePrefix, string nameSuffix, DefinedValueCache currencyType, DefinedValueCache creditCardType,
+            DateTime transactionDate, TimeSpan batchTimeOffset, List<FinancialBatch> batches = null )
+        {
             // Use the credit card type's batch name suffix, or if that doesn't exist, use the currency type value
             string ccSuffix = string.Empty;
             
@@ -58,8 +74,21 @@ namespace Rock.Model
                 ccSuffix = currencyType.Value;
             }
 
-            string batchName = namePrefix.Trim() + ( string.IsNullOrWhiteSpace( ccSuffix ) ? "" : " " + ccSuffix );
+            string batchName = namePrefix.Trim() + ( string.IsNullOrWhiteSpace( ccSuffix ) ? "" : " " + ccSuffix ) + nameSuffix;
 
+            return GetByNameAndDate( batchName, transactionDate, batchTimeOffset, batches );
+        }
+
+        /// <summary>
+        /// Gets the by name and date.
+        /// </summary>
+        /// <param name="batchName">Name of the batch.</param>
+        /// <param name="transactionDate">The transaction date.</param>
+        /// <param name="batchTimeOffset">The batch time offset.</param>
+        /// <param name="batches">The batches.</param>
+        /// <returns></returns>
+        public FinancialBatch GetByNameAndDate ( string batchName, DateTime transactionDate, TimeSpan batchTimeOffset, List<FinancialBatch> batches = null )
+        {
             FinancialBatch batch = null;
 
             // If a list of batches was passed, search those first
@@ -98,7 +127,10 @@ namespace Rock.Model
                 batch.Name = batchName;
                 batch.Status = BatchStatus.Open;
 
-                var batchStartDateTime = transactionDate.Date.Add( batchTimeOffset );
+                var batchStartDateTime = batchTimeOffset != null ?
+                    transactionDate.Date.Add( batchTimeOffset ) :
+                    transactionDate.Date;
+
                 if ( batchStartDateTime > transactionDate )
                 {
                     batchStartDateTime = batchStartDateTime.AddDays( -1 );
