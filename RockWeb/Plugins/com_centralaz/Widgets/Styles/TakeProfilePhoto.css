@@ -1,0 +1,13 @@
+﻿    #video_box {
+        float: none;
+    }
+
+        #video_box:before {
+            content: '';
+            position: absolute;
+            float: none;
+            width: 100%;
+            min-height: 100%;
+            background: url(../Assets/Icons/HeadshotOverlay.png) no-repeat;
+            opacity: 0.25;
+        }

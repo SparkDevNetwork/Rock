@@ -31,13 +31,13 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Plugins.com_centralaz.Widgets
 {
 
-    [DisplayName( "Servant Minister Photo" )]
+    [DisplayName( "Take Profile Photo" )]
     [Category( "com_centralaz > widgets" )]
-    [Description( "Allows servant ministers to upload a profile picture." )]
+    [Description( "Allows a profile picture to be uploaded using a device's camera by an authorized user." )]
 
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 5 )]
 
-    public partial class ServantMinisterPhoto : Rock.Web.UI.RockBlock
+    public partial class TakeProfilePhoto : Rock.Web.UI.RockBlock
     {
         #region Base ControlMethods
 
@@ -48,6 +48,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            RockPage.AddCSSLink( ResolveRockUrl( "~/Plugins/com_centralaz/Widgets/Styles/TakeProfilePhoto.css" ) );
 
             if ( CurrentPerson == null )
             {

@@ -1,29 +1,5 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ServantMinisterPhoto.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.Widgets.ServantMinisterPhoto" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TakeProfilePhoto.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.Widgets.TakeProfilePhoto" %>
 <meta name="viewport" content="width=device-width, initial-scale=0.75, user-scalable=no" />
-<style>
-    .logWrap, .logWrap a {
-        color: #888;
-        margin-top: 5px;
-    }
-
-    .top-buffer {
-        margin-top: 5px;
-    }
-
-    #video_box {
-        float: none;
-    }
-
-        #video_box:before {
-            content: '';
-            position: absolute;
-            float: none;
-            width: 100%;
-            min-height: 100%;
-            background: url(http://rock.centralaz.com/Plugins/com_centralaz/Widgets/Assets/Icons/HeadshotOverlay.png) no-repeat;
-            opacity: 0.25;
-        }
-</style>
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server" CssClass="row">
@@ -60,7 +36,7 @@
                     <asp:Button runat="server" ID="btnStart" Text="Start" class="btn btn-primary btn-large" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
                     <asp:Button runat="server" ID="btnStop" Text="Cancel" class="btn btn-default btn-large" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
                     <a href="#" id="btnSwap" class="btn btn-default" style="display: none;">
-                        <img src='http://rock.centralaz.com/Plugins/com_centralaz/Widgets/Assets/Icons/camera_swap.png' />
+                        <img src='<%=Server.MapPath( ResolveRockUrl( "~/Plugins/com_centralaz/Widgets/Assets/Icons/camera_swap.png")) %>' />
                         Swap</a>
                 </div>
                 <div class="col-md-6 col-sm-6 col-xs-6">
