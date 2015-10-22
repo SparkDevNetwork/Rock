@@ -188,7 +188,7 @@ namespace Rock.Reporting.DataFilter
                         ddlProperty.SelectedValue = selectedProperty;
                     }
 
-                    var control = controls.ToList().FirstOrDefault( c => c.ID.EndsWith( entityField.Name ) );
+                    var control = controls.ToList().FirstOrDefault( c => c.ID.EndsWith( "_" + entityField.Name ) );
                     if ( control != null )
                     {
                         if ( values.Count > 1 && setFilterValues )
