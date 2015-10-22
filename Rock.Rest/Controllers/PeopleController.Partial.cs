@@ -138,7 +138,7 @@ namespace Rock.Rest.Controllers
 
             if ( personId != null )
             {
-                return Service.Queryable().Include( a => a.PhoneNumbers).Include(a => a.Aliases )
+                return Service.Queryable().Include( a => a.PhoneNumbers ).Include( a => a.Aliases )
                     .FirstOrDefault( p => p.Id == personId.Value );
             }
 
@@ -311,6 +311,76 @@ namespace Rock.Rest.Controllers
                 PersonService.RemovePersonFromOtherFamilies( familyId, personId, (Rock.Data.RockContext)Service.Context );
             }
 
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
+        }
+
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "api/People/AddPhotoToPerson" )]
+        public System.Net.Http.HttpResponseMessage AddPhotoToPerson( int personId, [FromBody] string img64 )
+        {
+            SetProxyCreation( true );
+            var context = (Rock.Data.RockContext)Service.Context;
+
+            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+            var person = this.Get( personId );
+            CheckCanEdit( person );
+
+            if ( person == null || person.Id == -1 )
+            {
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.NoContent, person.Id );
+
+            }
+
+            var dataPortion = img64.Split( ',' )[1];
+            char[] toSplitOn = { ';', ':' };
+            var mimeType = img64.Split( toSplitOn )[1];
+            byte[] array = Convert.FromBase64String( dataPortion );
+
+            BinaryFile photo = new BinaryFile();
+            photo.FileName = String.Format( "{0}{1}_ProfilePhoto_{2}", person.LastName, person.FirstName, DateTime.Now.ToString() );
+            photo.BinaryFileTypeId = new BinaryFileTypeService( context ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() ).Id;
+            photo.DatabaseData = new BinaryFileData();
+            photo.MimeType = mimeType;
+            photo.DatabaseData.Content = array;
+            BinaryFileService binaryFileService = new BinaryFileService( context );
+            PersonService personService = new PersonService( context );
+
+            binaryFileService.Add( photo );
+            context.SaveChanges();
+            var photoId = binaryFileService.Get( photo.Guid ).Id;
+
+            var changes = new List<string>();
+
+            int? orphanedPhotoId = null;
+            if ( person.PhotoId != photoId )
+            {
+                orphanedPhotoId = person.PhotoId;
+                person.PhotoId = photoId;
+
+                if ( orphanedPhotoId.HasValue )
+                {
+                    if ( person.PhotoId.HasValue )
+                    {
+                        changes.Add( "Modified the photo." );
+                    }
+                    else
+                    {
+                        changes.Add( "Deleted the photo." );
+                    }
+                }
+                else if ( person.PhotoId.HasValue )
+                {
+                    changes.Add( "Added a photo." );
+                }
+            }
+
+            HistoryService.SaveChanges(
+                                    context,
+                                    typeof( Person ),
+                                    Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                    person.Id,
+                                    changes );
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
         }
 
@@ -631,7 +701,7 @@ namespace Rock.Rest.Controllers
         public string GetImpersonationParameter( int personId )
         {
             string result = string.Empty;
-            
+
             var rockContext = this.Service.Context as Rock.Data.RockContext;
 
             var person = new PersonService( rockContext ).Get( personId );
@@ -708,7 +778,7 @@ namespace Rock.Rest.Controllers
                 int? age = person.Age;
                 if ( age.HasValue )
                 {
-                    html.AppendFormat( "<div><strong>Age</strong> {0}</div>" , age );
+                    html.AppendFormat( "<div><strong>Age</strong> {0}</div>", age );
                 }
 
                 if ( !string.IsNullOrWhiteSpace( person.Email ) )
@@ -777,7 +847,7 @@ namespace Rock.Rest.Controllers
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         public bool IsActive { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the image HTML tag.
         /// </summary>
