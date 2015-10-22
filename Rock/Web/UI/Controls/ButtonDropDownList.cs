@@ -211,7 +211,14 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public enum ButtonSelectionStyle
         {
+            /// <summary>
+            /// Title
+            /// </summary>
             Title,
+
+            /// <summary>
+            /// Checkmark
+            /// </summary>
             Checkmark
         }
 
