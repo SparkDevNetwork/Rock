@@ -319,7 +319,7 @@ namespace RockWeb.Blocks.Event
         Rock.dialogs.confirm('Are you sure you want to delete this registration template? All of the instances, and the registrations and registrants from each instance will also be deleted!', function (result) {
             if (result) {
                 if ( $('input.js-has-registrations').val() == 'True' ) {
-                    Rock.dialogs.confirm('This template has existing instances with existing registrations. Are you really sure that you want to delete the template?<br/><small>(payments will not be deleted, but they will no longer be associated with a registration)</small>', function (result) {
+                    Rock.dialogs.confirm('This template has existing instances with existing registrations. Are you really sure that you want to delete the template?<br/><small>(Payments will not be deleted, but they will no longer be associated with a registration.)</small>', function (result) {
                         if (result) {
                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }
