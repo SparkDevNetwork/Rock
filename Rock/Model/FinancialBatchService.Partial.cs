@@ -48,6 +48,7 @@ namespace Rock.Model
         /// Gets the specified name prefix.
         /// </summary>
         /// <param name="namePrefix">The name prefix.</param>
+        /// <param name="nameSuffix">The name suffix.</param>
         /// <param name="currencyType">Type of the currency.</param>
         /// <param name="creditCardType">Type of the credit card.</param>
         /// <param name="transactionDate">The transaction date.</param>
@@ -127,10 +128,7 @@ namespace Rock.Model
                 batch.Name = batchName;
                 batch.Status = BatchStatus.Open;
 
-                var batchStartDateTime = batchTimeOffset != null ?
-                    transactionDate.Date.Add( batchTimeOffset ) :
-                    transactionDate.Date;
-
+                var batchStartDateTime = transactionDate.Date.Add( batchTimeOffset );
                 if ( batchStartDateTime > transactionDate )
                 {
                     batchStartDateTime = batchStartDateTime.AddDays( -1 );
