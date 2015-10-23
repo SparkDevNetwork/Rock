@@ -963,12 +963,12 @@ namespace RockWeb.Blocks.Groups
                             ? " <i class='fa fa-file-text-o text-info'></i>"
                             : string.Empty ) ),
                         Email = m.Person.Email,
-                        HomePhone = homePhoneType != null ?
+                        HomePhone = selectAll && homePhoneType != null ?
                             m.Person.PhoneNumbers
                                 .Where( p => p.NumberTypeValueId.HasValue && p.NumberTypeValueId.Value == homePhoneType.Id )
                                 .Select( p => p.NumberFormatted )
                                 .FirstOrDefault() : string.Empty,
-                        CellPhone = cellPhoneType != null ?
+                        CellPhone = selectAll && cellPhoneType != null ?
                             m.Person.PhoneNumbers
                                 .Where( p => p.NumberTypeValueId.HasValue && p.NumberTypeValueId.Value == cellPhoneType.Id )
                                 .Select( p => p.NumberFormatted )
@@ -982,9 +982,10 @@ namespace RockWeb.Blocks.Groups
                         GroupRole = m.GroupRole.Name,
                         m.GroupMemberStatus,
                         RecordStatusValueId = m.Person.RecordStatusValueId,
-                        PersonConnectionStatus = m.Person.ConnectionStatusValueId.HasValue ? m.Person.ConnectionStatusValue.Value : null,
+                        m.Person,
                         IsDeceased = m.Person.IsDeceased
                     } ).ToList();
+
                     gGroupMembers.DataBind();
                 }
                 else
