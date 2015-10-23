@@ -1,9 +1,12 @@
 
 
 //
-// BRAND LIST (The lists with triangle bullets)
+// LISTS
 // --------------------------------------------------
 
+
+// Brand List (The lists with triangle bullets)
+// -------------------------
 
 .brandlist {
   list-style: none;
@@ -45,3 +48,22 @@
     display: inline-block;
     margin-left: @line-height-computed;
   }
+
+
+// Button List (transforms ul into a button grid)
+// -------------------------
+
+.list-btns {
+  .list-unstyled();
+  .make-row();
+  max-width: 50em; // same as container-md
+  > li {
+    .make-sm-column(6);
+    > a {
+      .btn();
+      .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
+      display: block;
+      margin-bottom: @grid-gutter-width/2;
+    }
+  }
+}
