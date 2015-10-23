@@ -72,30 +72,14 @@ namespace Rock.Security
         {
             if ( personGuid.HasValue )
             {
-                return People.GetOrAdd( personGuid.Value, GetGroupMember );
+                bool inRole = false;
+                if ( People.TryGetValue( personGuid.Value, out inRole ) )
+                {
+                    return inRole;
+                }
             }
-            else
-            {
-                return false;
-            }
-        }
 
-        /// <summary>
-        /// Gets the group member.
-        /// </summary>
-        /// <param name="personGuid">The person unique identifier.</param>
-        /// <returns></returns>
-        private bool GetGroupMember( Guid personGuid )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                return new Rock.Model.GroupMemberService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Any( m =>
-                        m.GroupId == Id &&
-                        m.Person.Guid.Equals( personGuid ) &&
-                        m.GroupMemberStatus == Model.GroupMemberStatus.Active );
-            }
+            return false;
         }
 
         #region Static Methods
@@ -123,35 +107,6 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// Loads the by identifier.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns></returns>
-        public static Role LoadById( int id )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                Rock.Model.GroupService groupService = new Rock.Model.GroupService( rockContext );
-                Rock.Model.Group groupModel = groupService.Get( id );
-
-                if ( groupModel != null && groupModel.IsSecurityRole == true )
-                {
-                    var role = new Role();
-                    role.Id = groupModel.Id;
-                    role.Name = groupModel.Name;
-                    role.People = new ConcurrentDictionary<Guid,bool>();
-
-                    var groupTypeCache = GroupTypeCache.Read( groupModel.GroupTypeId, rockContext );
-                    role.IsSecurityTypeGroup = groupTypeCache != null && groupTypeCache.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
-                        
-                    return role;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Gets the or add existing.
         /// </summary>
         /// <param name="key">The key.</param>
@@ -170,6 +125,47 @@ namespace Rock.Security
             Role value = valueFactory();
             cache.Set( key, value, new CacheItemPolicy() );
             return value;
+        }
+
+        /// <summary>
+        /// Loads the by identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public static Role LoadById( int id )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                Rock.Model.GroupService groupService = new Rock.Model.GroupService( rockContext );
+                Rock.Model.Group groupModel = groupService.Get( id );
+
+                if ( groupModel != null && groupModel.IsSecurityRole == true )
+                {
+                    var role = new Role();
+                    role.Id = groupModel.Id;
+                    role.Name = groupModel.Name;
+                    role.People = new ConcurrentDictionary<Guid,bool>();
+
+                    // Add the members
+                    foreach ( var personGuid in groupModel.Members 
+                        .Where( m => 
+                            m.Person != null &&
+                            m.GroupMemberStatus == Model.GroupMemberStatus.Active )
+                        .Select( m => m.Person.Guid )
+                        .ToList()
+                        .Distinct() )
+                    {
+                        role.People.TryAdd( personGuid, true );
+                    }
+
+                    var groupTypeCache = GroupTypeCache.Read( groupModel.GroupTypeId, rockContext );
+                    role.IsSecurityTypeGroup = groupTypeCache != null && groupTypeCache.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+                        
+                    return role;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
