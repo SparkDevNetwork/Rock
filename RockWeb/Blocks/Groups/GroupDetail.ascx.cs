@@ -976,33 +976,35 @@ namespace RockWeb.Blocks.Groups
                     {
                         // Start by setting the group type to the same as the parent
                         group.ParentGroup = parentGroup;
-
-                        // If the parent group type is allowed, first set that as the selected group type and check security
-                        var allowedGroupTypes = GetAllowedGroupTypes( parentGroup, rockContext ).ToList();
-                        if ( allowedGroupTypes.Any( t => t.Id == parentGroup.Id ) )
+                        
+                        // get all the allowed GroupTypes as defined by the parent group type
+                        var allowedChildGroupTypesOfParentGroup = GetAllowedGroupTypes( parentGroup, rockContext ).ToList();
+                        
+                        // narrow it down to group types that the current user is allowed to edit 
+                        var authorizedGroupTypes = new List<GroupType>();
+                        foreach ( var allowedGroupType in allowedChildGroupTypesOfParentGroup )
                         {
-                            group.GroupTypeId = parentGroup.GroupTypeId;
-                            group.GroupType = parentGroup.GroupType;
-
-                            editAllowed = editAllowed || group.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                            // to see if the user is authorized for the group type, test by setting the new group's grouptype and see if they are authorized
+                            group.GroupTypeId = allowedGroupType.Id;
+                            group.GroupType = allowedGroupType;
+                            
+                            if ( group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                            {
+                                authorizedGroupTypes.Add( allowedGroupType );
+                            }
                         }
 
-                        // parent group type was not allowed, or user is not allowed to edit
-                        if ( !editAllowed || group.GroupType == null )
+                        // exactly one grouptype is allowed/authorized, so it is safe to default this new group to it
+                        if (authorizedGroupTypes.Count() == 1)
                         {
-                            // Loop through the other allowed group types to determine if user is allowed to edit any
-                            foreach ( var groupType in allowedGroupTypes.Where( g => g.Id != parentGroup.GroupTypeId ) )
-                            {
-                                group.GroupTypeId = groupType.Id;
-                                group.GroupType = groupType;
-                                if ( group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
-                                {
-                                    // Once a group type is found that allows user to edit, keep that
-                                    // group type by default
-                                    editAllowed = true;
-                                    break;
-                                }
-                            }
+                            group.GroupType = authorizedGroupTypes.First();
+                            group.GroupTypeId = group.GroupType.Id;
+                        }
+                        else
+                        {
+                            // more than one grouptype is allowed/authorized, so don't default it so they are forced to pick which one
+                            group.GroupType = null;
+                            group.GroupTypeId = 0;
                         }
                     }
                 }
