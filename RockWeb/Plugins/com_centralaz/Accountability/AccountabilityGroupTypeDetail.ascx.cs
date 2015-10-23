@@ -185,22 +185,29 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                 groupType = groupTypeService.Get( groupTypeId );
             }
 
-            //Add roles
             GroupTypeRole role = new GroupTypeRole();
-            role.IsSystem = true;
-            role.Name = "Member";
-            role.Description = "Member of an accountability group";
-            role.Order = 0;
-            role.IsLeader = false;
-            groupType.Roles.Add( role );
+            if ( !groupType.Roles.Any( r => r.Name == "Member" ) )
+            {
+                //Add roles
+                role.IsSystem = true;
+                role.Name = "Member";
+                role.Description = "Member of an accountability group";
+                role.Order = 0;
+                role.IsLeader = false;
+                groupType.Roles.Add( role );
+            }
 
-            role = new GroupTypeRole();
-            role.IsSystem = true;
-            role.Name = "Leader";
-            role.Description = "The Accountability Group Leader";
-            role.Order = 1;
-            role.IsLeader = true;
-            groupType.Roles.Add( role );
+            if ( !groupType.Roles.Any( r => r.Name == "Leader" ) )
+            {
+
+                role = new GroupTypeRole();
+                role.IsSystem = true;
+                role.Name = "Leader";
+                role.Description = "The Accountability Group Leader";
+                role.Order = 1;
+                role.IsLeader = true;
+                groupType.Roles.Add( role );
+            }
 
             groupType.Name = dtbName.Text;
             groupType.Description = dtbDescription.Text;

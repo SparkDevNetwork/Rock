@@ -183,6 +183,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                 for ( int i = 0; i < questions.Count; i++ )
                 {
                     questionRow = new HtmlGenericControl( "div" );
+                    questionRow.AddCssClass( "row" );
 
                     //The question id
                     HiddenField questionIdHiddenField = new HiddenField();
@@ -192,7 +193,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                     //The question long form
                     questionLongFormLiteral = new Literal();
                     questionLongFormLiteral.ID = "lblquestionLongForm" + i.ToString();
-                    questionLongFormLiteral.Text = "<div class='col-md-7'>" + questions[i].LongForm + "</div>";
+                    questionLongFormLiteral.Text = "<div class='col-md-6'>" + questions[i].LongForm + "</div>";
                     questionRow.Controls.Add( questionLongFormLiteral );
 
                     //The response yes/no dropdown
@@ -201,7 +202,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                     responseDropDown.Items.Add( "yes" );
                     responseDropDown.Items.Add( "no" );
                     gridCell = new HtmlGenericControl( "div" );
-                    gridCell.AddCssClass( "col-md-1" );
+                    gridCell.AddCssClass( "col-md-2" );
                     gridCell.Controls.Add( responseDropDown );
                     questionRow.Controls.Add( gridCell );
 
@@ -216,6 +217,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
 
                     //And the row to phQuestions
                     phQuestions.Controls.Add( questionRow );
+                    phQuestions.Controls.Add( new LiteralControl( "<br>" ) );
                 }
             }
         }
