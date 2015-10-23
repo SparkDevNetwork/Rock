@@ -350,7 +350,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Replace the first occurence of a string with another - this is a Rock version on this filter which takes any object
+        /// Replace the first occurrence of a string with another - this is a Rock version on this filter which takes any object
         /// </summary>
         /// <param name="input"></param>
         /// <param name="string"></param>
@@ -387,7 +387,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Replace the last occurence of a string with another - this is a Rock version on this filter which takes any object
+        /// Replace the last occurrence of a string with another - this is a Rock version on this filter which takes any object
         /// </summary>
         /// <param name="input">The input.</param>
         /// <param name="search">The search.</param>
