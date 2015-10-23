@@ -86,6 +86,8 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnInit( e );
 
+            this.BlockUpdated += GroupMemberList_BlockUpdated;
+
             string script = @"
     $('.js-person-popover').popover({
         placement: 'right', 
@@ -198,6 +200,16 @@ namespace RockWeb.Blocks.Groups
     });
 ";
             ScriptManager.RegisterStartupScript( gGroupMembers, gGroupMembers.GetType(), "deleteInstanceScript", deleteScript, true );
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the GroupMemberList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        public void GroupMemberList_BlockUpdated( object sender, EventArgs e )
+        {
+            BindGroupMembersGrid();
         }
 
         /// <summary>
@@ -834,7 +846,7 @@ namespace RockWeb.Blocks.Groups
                         qry = qry.Where( m => roles.Contains( m.GroupRoleId ) );
                     }
 
-                    // Filter by Status
+                    // Filter by Group Member Status
                     var statuses = new List<GroupMemberStatus>();
                     foreach ( string status in cblStatus.SelectedValues )
                     {
@@ -934,6 +946,12 @@ namespace RockWeb.Blocks.Groups
                         .Select( r => r.GroupMemberId.Value )
                         .ToList();
 
+                    var connectionStatusField = gGroupMembers.ColumnsOfType<BoundField>().FirstOrDefault( a => a.DataField == "PersonConnectionStatus" );
+                    if (connectionStatusField != null)
+                    {
+                        connectionStatusField.Visible = _group.GroupType.ShowConnectionStatus;
+                    }
+
                     gGroupMembers.DataSource = groupMembersList.Select( m => new
                     {
                         m.Id,
@@ -968,6 +986,7 @@ namespace RockWeb.Blocks.Groups
                         GroupRole = m.GroupRole.Name,
                         m.GroupMemberStatus,
                         RecordStatusValueId = m.Person.RecordStatusValueId,
+                        PersonConnectionStatus = m.Person.ConnectionStatusValueId.HasValue ? m.Person.ConnectionStatusValue.Value : null,
                         IsDeceased = m.Person.IsDeceased
                     } ).ToList();
                     gGroupMembers.DataBind();

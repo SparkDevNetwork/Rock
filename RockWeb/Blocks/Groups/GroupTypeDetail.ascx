@@ -291,6 +291,8 @@
                                     Help="Check this option to include groups of this type in the GroupList block's list of groups." />
                                 <Rock:RockCheckBox ID="cbShowInNavigation" runat="server" Label="Show in Navigation" Text="Yes" 
                                     Help="Check this option to include groups of this type in the GroupTreeView block's navigation control." />
+                                <Rock:RockCheckBox ID="cbShowConnectionStatus" runat="server" Label="Show Connection Status" Text="Yes" 
+                                    Help="Check this option to show the person's connection status as a column in the group member list." />
                             </div>
                         </div>
                     </Rock:PanelWidget>
