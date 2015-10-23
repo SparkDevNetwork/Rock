@@ -37,6 +37,9 @@
       </div>
     {% else %}
       <h1>{{ item.Title }}</h1>
+      {% if item.SummaryText != empty %}
+        <p class="lead">{{ item.SummaryText }}</p>
+      {% endif %}
       {{ item.Content }}
     {% endif %}
 
