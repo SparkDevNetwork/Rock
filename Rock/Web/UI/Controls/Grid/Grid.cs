@@ -1309,6 +1309,7 @@ namespace Rock.Web.UI.Controls
                 else
                 {
                     // nobody in list or nobody selected
+                    RebindGrid( e, false );
                     this.ShowModalAlertMessage( "Grid has no " + this.RowItemText.Pluralize(), ModalAlertType.Warning );
                 }
             }
@@ -2039,7 +2040,7 @@ namespace Rock.Web.UI.Controls
             {
                 // The ToList() is potentially needed for Linq cases.
                 var keysSelected = SelectedKeys.ToList();
-                string dataKeyColumn = this.DataKeyNames.FirstOrDefault();
+                string dataKeyColumn = this.DataKeyNames.FirstOrDefault() ?? "Id";
 
                 if ( !string.IsNullOrWhiteSpace( dataKeyColumn ) && this.DataSourceAsDataTable != null )
                 {
@@ -2081,7 +2082,7 @@ namespace Rock.Web.UI.Controls
                         Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
 
                         PropertyInfo personIdProp = oType.GetProperty( this.PersonIdField );
-                        PropertyInfo idProp = oType.GetProperty( dataKeyColumn );
+                        PropertyInfo idProp = !string.IsNullOrEmpty( dataKeyColumn ) ? oType.GetProperty( dataKeyColumn ) : null;
 
                         foreach ( var item in data )
                         {
