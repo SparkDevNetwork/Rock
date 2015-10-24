@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.Reporting
     [TextField( "SelectedDataFieldGuids", "The DataFilters to present to the user", false, "", "CustomSetting" )]
     [TextField( "ConfigurableDataFieldGuids", "Of the DataFilters that are presented to the user, which are configurable vs just a checkbox", false, "", "CustomSetting" )]
     [TextField( "TogglableDataFieldGuids", "The configurable datafilters that include a checkbox that can disable/enable the filter", false, "", "CustomSetting" )]
+    [TextField( "PersonIdField", "If this isn't a Person report, but there is a person id field, specify the name of the field", false, "", "CustomSetting" )]
     public partial class DynamicReport : RockBlockCustomSettings
     {
         /// <summary>
@@ -189,6 +190,7 @@ namespace RockWeb.Blocks.Reporting
             this.SetAttributeValue( "FilterTitle", txtFilterTitle.Text );
             this.SetAttributeValue( "FilterIconCssClass", txtFilterIconCssClass.Text );
             this.SetAttributeValue( "Report", ddlReport.SelectedValue.AsGuidOrNull().ToString() );
+            this.SetAttributeValue( "PersonIdField", ddlPersonIdField.SelectedValue );
             SaveAttributeValues();
 
             this.Block_BlockUpdated( sender, e );
@@ -440,7 +442,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
                 this.LogException( new Exception( "Exception creating FilterControl for DataViewFilter: " + filter.Guid, ex ) );
             }
@@ -514,6 +516,7 @@ namespace RockWeb.Blocks.Reporting
             var rockContext = new RockContext();
             var reportService = new ReportService( rockContext );
             var reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
+            var personIdField = this.GetAttributeValue( "PersonIdField" );
             Report report = null;
             if ( reportGuid.HasValue )
             {
@@ -539,7 +542,17 @@ namespace RockWeb.Blocks.Reporting
                 report.DataView.DataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
 
                 string errorMessage;
+
                 ReportingHelper.BindGrid( report, gReport, this.CurrentPerson, null, out errorMessage );
+
+                if ( report.EntityTypeId != EntityTypeCache.GetId<Rock.Model.Person>() )
+                {
+                    var personColumn = gReport.ColumnsOfType<BoundField>().Where( a => a.HeaderText == personIdField ).FirstOrDefault();
+                    if ( personColumn != null )
+                    {
+                        gReport.PersonIdField = personColumn.SortExpression;
+                    }
+                }
 
                 if ( !string.IsNullOrWhiteSpace( errorMessage ) )
                 {
@@ -598,6 +611,16 @@ namespace RockWeb.Blocks.Reporting
                 {
                     groupedFilter.Title = string.Format( "[{0}]", groupedFilter.FilterExpressionType.ConvertToString() );
                     groupedFilter.Summary = filters.Where( a => a.ParentFilter == groupedFilter ).Select( a => a.Summary ?? string.Empty ).ToList().AsDelimited( ", ", groupedFilter.FilterExpressionType == FilterExpressionType.GroupAny ? " or " : " and " );
+                }
+
+
+                ddlPersonIdField.Visible = report.EntityTypeId != EntityTypeCache.GetId<Rock.Model.Person>();
+                ddlPersonIdField.Items.Clear();
+                ddlPersonIdField.Items.Add( new ListItem() );
+                ddlPersonIdField.Items.Add( new ListItem( "Id", "Id") );
+                foreach (var reportField in report.ReportFields)
+                {
+                    ddlPersonIdField.Items.Add( new ListItem( reportField.ColumnHeaderText, reportField.ColumnHeaderText ) );
                 }
 
                 // remove any filter that are part of a child group filter
