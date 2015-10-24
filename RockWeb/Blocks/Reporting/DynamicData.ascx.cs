@@ -315,6 +315,7 @@ namespace RockWeb.Blocks.Reporting
             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
             mergeFields.Add( "Campuses", CampusCache.All() );
             mergeFields.Add( "PageParameter", PageParameters() );
+            mergeFields.Add( "CurrentPage", this.PageCache );
 
             return mergeFields;
         }
