@@ -19,5 +19,5 @@ REQUIRED VARIABLES
     <a class="small" href="{{ myAccountPage }}">My Account</a>
   </div>
 {% else %}
-  <div><a class="small" href="{{ loginPage }}?returnurl={{ currentPageEscaped }}&logout=true">Login</a></div>
+  <div><a class="small" href="{{ loginPage }}?returnurl={{ currentPageEscaped }}">Login</a></div>
 {% endif %}

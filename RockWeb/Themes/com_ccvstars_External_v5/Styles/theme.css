@@ -6126,6 +6126,7 @@ h2 {
 }
 .mainfooter {
   color: #aaa;
+  padding-bottom: 60px;
 }
 .mainfooter a {
   color: inherit;
@@ -6135,7 +6136,7 @@ h2 {
 }
 .mainfooter-dark {
   background: #333333;
-  padding: 15px 0;
+  padding-top: 30px;
   color: #aaa;
 }
 .mainfooter-dark a {
