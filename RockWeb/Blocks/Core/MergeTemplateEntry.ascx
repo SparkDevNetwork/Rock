@@ -30,7 +30,8 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:NotificationBox ID="nbNumberOfRecords" runat="server" NotificationBoxType="Info" />
-                            <Rock:RockCheckBox ID="cbCombineFamilyMembers" runat="server" Text="Combine Family Members" Help="Set this to combine family members into a single row. For example, Ted Decker and Cindy Decker would be combined into 'Ted & Cindy Decker'" />
+                            <Rock:RockCheckBox ID="cbCombineFamilyMembers" runat="server" Text="Combine Family Members" Help="Set this to combine family members into a single row. For example, Ted Decker and Cindy Decker would be combined into 'Ted & Cindy Decker'. 
+                                NOTE: Design your template to use {{ Row.FullName }} instead of {{ Row.NickName }} {{ Row.LastName }} to help in situations where family members might have different last names." />
                             <Rock:MergeTemplatePicker ID="mtPicker" runat="server" Label="Merge Template" Required="true" OnSelectItem="mtPicker_SelectItem" />
                         </div>
                         <div class="col-md-6">
