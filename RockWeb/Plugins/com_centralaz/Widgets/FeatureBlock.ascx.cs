@@ -279,7 +279,15 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             var mergeFields = new Dictionary<string, object>();
 
             // add linked pages
-            mergeFields.Add( "ImageUrl", ResolveRockUrlIncludeRoot( images.FirstOrDefault() ) );
+            if (images.Count > 0)
+            {
+                mergeFields.Add( "ImageUrl", ResolveRockUrlIncludeRoot( images.FirstOrDefault() ) );
+            }
+            else
+            {
+                mergeFields.Add( "ImageUrl", Request.Url.ToString() );
+            }
+
             mergeFields.Add( "ImageTitle", GetAttributeValue( "FeatureTitle" ) );
 
             mergeFields.Add( "CurrentPerson", CurrentPerson );
