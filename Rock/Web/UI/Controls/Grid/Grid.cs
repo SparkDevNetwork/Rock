@@ -1368,8 +1368,7 @@ namespace Rock.Web.UI.Controls
             string workSheetName = "Export";
             string title = "Rock Export";
 
-            MemoryStream ms = new MemoryStream();
-            ExcelPackage excel = new ExcelPackage( ms );
+            ExcelPackage excel = new ExcelPackage();
 
             // if the grid has a caption customize on it
             if ( !string.IsNullOrEmpty( this.Caption ) )
@@ -1719,10 +1718,12 @@ namespace Rock.Web.UI.Controls
             // set some footer text
             worksheet.HeaderFooter.OddHeader.CenteredText = title;
             worksheet.HeaderFooter.OddFooter.RightAlignedText = string.Format( "Page {0} of {1}", ExcelHeaderFooter.PageNumber, ExcelHeaderFooter.NumberOfPages );
-
-            excel.Save();
-
-            byte[] byteArray = ms.ToArray();
+            byte[] byteArray;
+            using ( MemoryStream ms = new MemoryStream() )
+            {
+                excel.SaveAs( ms );
+                byteArray = ms.ToArray();
+            }
 
             // send the spreadsheet to the browser
             this.Page.EnableViewState = false;
