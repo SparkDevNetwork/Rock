@@ -1410,6 +1410,7 @@ namespace RockWeb.Blocks.Event
                     registrationChanges )
             );
 
+
             // Get each registrant
             foreach ( var registrantInfo in RegistrationState.Registrants.ToList() )
             {
@@ -1427,6 +1428,39 @@ namespace RockWeb.Blocks.Event
                 if ( personMatches.Count() == 1 )
                 {
                     person = personMatches.First();
+                }
+
+                // Try to find a matching person based on name within same family as registrar
+                if ( person == null && registrar != null )
+                {
+                    var familyMembers = registrar.GetFamilyMembers( true, rockContext )
+                        .Where( m =>
+                            ( m.Person.FirstName == firstName || m.Person.NickName == firstName ) &&
+                            m.Person.LastName == lastName )
+                        .Select( m => m.Person )
+                        .ToList();
+
+                    if ( familyMembers.Count() == 1 )
+                    {
+                        person = familyMembers.First();
+                        if ( !string.IsNullOrWhiteSpace( email ) )
+                        {
+                            person.Email = email;
+                        }
+                    }
+
+                    if ( familyMembers.Count() > 1 && !string.IsNullOrWhiteSpace(email) )
+                    {
+                        familyMembers = familyMembers
+                            .Where( m => 
+                                m.Email != null &&
+                                m.Email.Equals( email, StringComparison.OrdinalIgnoreCase ) )
+                            .ToList();
+                        if ( familyMembers.Count() == 1 )
+                        {
+                            person = familyMembers.First();
+                        }
+                    }
                 }
 
                 if ( person == null )
@@ -1757,7 +1791,7 @@ namespace RockWeb.Blocks.Event
                     var noteText = new StringBuilder();
                     if ( registrar == null || registrar.Id != person.Id )
                     {
-                        noteText.AppendFormat( "Registered for {0} ({1})", RegistrationInstanceState.Name, RegistrationInstanceState.Id );
+                        noteText.AppendFormat( "Registered for {0}", RegistrationInstanceState.Name );
                         if ( registrar != null )
                         {
                             noteText.AppendFormat( " by {0}", registrar.FullName );
@@ -1822,7 +1856,7 @@ namespace RockWeb.Blocks.Event
                 note.IsPrivateNote = false;
                 note.EntityId = registrar.Id;
                 note.Caption = string.Empty;
-                note.Text = string.Format( "Registered {0}for {1} ({2})", namesText, RegistrationInstanceState.Name, RegistrationInstanceState.Id );
+                note.Text = string.Format( "Registered {0} for {1}", namesText, RegistrationInstanceState.Name );
                 noteService.Add( note );
             }
 
