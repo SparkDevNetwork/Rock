@@ -112,7 +112,8 @@ namespace Rock.Model
         public int? GuestCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the date/time that the person was added to the group 
+        /// Gets or sets the date/time that the person was added to the group.
+        /// Rock will automatically set this value when a group member is added if it isn't set manually
         /// </summary>
         /// <value>
         /// The date added.
