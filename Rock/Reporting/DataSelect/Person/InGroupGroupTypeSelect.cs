@@ -156,43 +156,29 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
-        /// The GroupTypePicker
-        /// </summary>
-        private GroupTypePicker groupTypePicker = null;
-
-        /// <summary>
-        /// The GroupTypeRole CheckBoxList
-        /// </summary>
-        private RockCheckBoxList cblRole = null;
-
-        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <param name="parentControl"></param>
         /// <returns></returns>
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
-            int? selectedGroupTypeId = null;
-            if (groupTypePicker != null)
-            {
-                selectedGroupTypeId = groupTypePicker.SelectedGroupTypeId;
-            }
-            
-            groupTypePicker = new GroupTypePicker();
-            groupTypePicker.ID = parentControl.ID + "_0";
+            var groupTypePicker = new GroupTypePicker();
+            groupTypePicker.ID = parentControl.ID + "_groupTypePicker";
             groupTypePicker.Label = "Group Type";
             groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             groupTypePicker.SelectedIndexChanged += groupTypePicker_SelectedIndexChanged;
             groupTypePicker.AutoPostBack = true;
-            groupTypePicker.SelectedGroupTypeId = selectedGroupTypeId;
             parentControl.Controls.Add( groupTypePicker );
 
-            cblRole = new RockCheckBoxList();
+            int? selectedGroupTypeId = parentControl.Page.Request.Params[groupTypePicker.UniqueID].AsIntegerOrNull();
+            groupTypePicker.SelectedGroupTypeId = selectedGroupTypeId;
+
+            var cblRole = new RockCheckBoxList();
             cblRole.Label = "with Group Role(s)";
-            cblRole.ID = parentControl.ID + "_1";
-            PopulateGroupRolesCheckList( groupTypePicker.SelectedGroupTypeId ?? 0 );
-            
+            cblRole.ID = parentControl.ID + "_cblRole";
             parentControl.Controls.Add( cblRole );
+
+            PopulateGroupRolesCheckList( groupTypePicker.SelectedGroupTypeId ?? 0, cblRole );
 
             return new Control[2] { groupTypePicker, cblRole };
         }
@@ -204,15 +190,24 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void groupTypePicker_SelectedIndexChanged( object sender, EventArgs e )
         {
-            int groupTypeId = groupTypePicker.SelectedValueAsId() ?? 0;
-            PopulateGroupRolesCheckList(groupTypeId);
+            var groupTypePicker = sender as GroupTypePicker;
+            if ( groupTypePicker != null )
+            {
+                var cblRole = groupTypePicker.Parent.FindControl( groupTypePicker.ID.Replace( "_groupTypePicker", "_cblRole" ) ) as RockCheckBoxList;
+                if ( cblRole != null )
+                {
+                    int groupTypeId = groupTypePicker.SelectedValueAsId() ?? 0;
+                    PopulateGroupRolesCheckList( groupTypeId, cblRole );
+                }
+            }
         }
 
         /// <summary>
         /// Populates the group roles.
         /// </summary>
         /// <param name="groupTypeId">The group type identifier.</param>
-        private void PopulateGroupRolesCheckList( int groupTypeId )
+        /// <param name="cblRole">The CBL role.</param>
+        private void PopulateGroupRolesCheckList( int groupTypeId, RockCheckBoxList cblRole )
         {
             var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeId );
             if ( groupType != null )
@@ -222,6 +217,7 @@ namespace Rock.Reporting.DataSelect.Person
                 {
                     cblRole.Items.Add( new ListItem( item.Name, item.Guid.ToString() ) );
                 }
+
                 cblRole.Visible = cblRole.Items.Count > 0;
             }
             else
@@ -247,21 +243,23 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
-        {            
+        {
             // Get the selected Group Type as a Guid.
-            var groupTypeId = ( controls[0] as GroupTypePicker ).SelectedValueAsId().GetValueOrDefault(0);
+            var groupTypePicker = ( controls[0] as GroupTypePicker );
+            var groupTypeId = groupTypePicker.SelectedValueAsId().GetValueOrDefault( 0 );
 
             string value1 = string.Empty;
 
-            if (groupTypeId > 0)
+            if ( groupTypeId > 0 )
             {
-                var groupType = GroupTypeCache.Read(groupTypeId);
-                value1 = (groupType == null) ? string.Empty : groupType.Guid.ToString();
+                var groupType = GroupTypeCache.Read( groupTypeId );
+                value1 = ( groupType == null ) ? string.Empty : groupType.Guid.ToString();
             }
 
             // Get the selected Roles
-            var value2 = ( controls[1] as RockCheckBoxList ).SelectedValues.AsDelimited( "," );
-            
+            var cblRoles = ( controls[1] as RockCheckBoxList );
+            var value2 = cblRoles.SelectedValues.AsDelimited( "," );
+
             return value1 + "|" + value2;
         }
 
@@ -275,10 +273,12 @@ namespace Rock.Reporting.DataSelect.Person
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                var groupType = new GroupTypeService( new RockContext() ).Get( selectionValues[0].AsGuid());
-                ( controls[0] as GroupTypePicker ).SetValue( groupType != null ? groupType.Id : (int?)null );
+                Guid groupTypeGuid = selectionValues[0].AsGuid();
+                var groupType = new GroupTypeService( new RockContext() ).Get( groupTypeGuid );
+                var groupTypePicker = ( controls[0] as GroupTypePicker );
+                groupTypePicker.SetValue( groupType != null ? groupType.Id : (int?)null );
 
-                groupTypePicker_SelectedIndexChanged( this, new EventArgs() );
+                groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
 
                 string[] selectedRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
                 RockCheckBoxList cblRole = ( controls[1] as RockCheckBoxList );
