@@ -1384,6 +1384,46 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Gets the parents of the person
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static List<Person> Parents(DotLiquid.Context context, object input)
+        {
+            var person = GetPerson(input);
+
+            if (person != null )
+            {
+                Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+                var parents = new PersonService(new RockContext()).GetFamilyMembers(person.Id).Where(m => m.GroupRole.Guid == adultGuid).Select(a => a.Person);
+                return parents.ToList();
+            }
+
+            return new List<Person>();
+        }
+
+        /// <summary>
+        /// Gets the children of the person
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static List<Person> Children(DotLiquid.Context context, object input)
+        {
+            var person = GetPerson(input);
+
+            if (person != null)
+            {
+                Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
+                var children = new PersonService(new RockContext()).GetFamilyMembers(person.Id).Where(m => m.GroupRole.Guid == childGuid).Select(a => a.Person);
+                return children.ToList();  
+            }
+            return new List<Person> ();
+        }
+
+
+        /// <summary>
         /// Gets an address for a person object
         /// </summary>
         /// <param name="context">The context.</param>
