@@ -1368,8 +1368,7 @@ namespace Rock.Web.UI.Controls
             string workSheetName = "Export";
             string title = "Rock Export";
 
-            MemoryStream ms = new MemoryStream();
-            ExcelPackage excel = new ExcelPackage( ms );
+            ExcelPackage excel = new ExcelPackage();
 
             // if the grid has a caption customize on it
             if ( !string.IsNullOrEmpty( this.Caption ) )
@@ -1483,13 +1482,6 @@ namespace Rock.Web.UI.Controls
                             worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "0.00";
                         }
 
-                        // format background color for alternating rows
-                        if ( rowCounter % 2 == 1 )
-                        {
-                            worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                            worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
-                        }
-
                         if ( exportValue != null && exportValue is DateTime )
                         {
                             worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
@@ -1521,13 +1513,6 @@ namespace Rock.Web.UI.Controls
                         for ( int i = 0; i < data.Columns.Count; i++ )
                         {
                             SetExcelValue( worksheet.Cells[rowCounter, i + 1], row[i] );
-
-                            // format background color for alternating rows
-                            if ( rowCounter % 2 == 1 )
-                            {
-                                worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
-                            }
                         }
 
                         rowCounter++;
@@ -1584,6 +1569,11 @@ namespace Rock.Web.UI.Controls
                             worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
                         }
 
+                        if ( prop.PropertyType == typeof(DateTime) || prop.PropertyType == typeof(DateTime?))
+                        {
+                            worksheet.Column(columnCounter).Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
+                        }
+
                         columnCounter++;
                     }
 
@@ -1629,19 +1619,6 @@ namespace Rock.Web.UI.Controls
 
                             var cell = worksheet.Cells[rowCounter, columnCounter];
                             SetExcelValue( cell, this.GetExportValue( prop, propValue, isDefinedValue, cell ) );
-
-                            // format background color for alternating rows
-                            if ( rowCounter % 2 == 1 )
-                            {
-                                worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
-                            }
-
-                            if ( propValue is DateTime )
-                            {
-                                worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
-                            }
-
                         }
 
                         if ( attributeFields.Any() )
@@ -1684,14 +1661,6 @@ namespace Rock.Web.UI.Controls
                                         string resultHtml = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, false );
                                         worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
                                     }
-
-                                    // format background color for alternating rows
-                                    if ( rowCounter % 2 == 1 )
-                                    {
-                                        worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                        worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
-                                    }
-
                                 }
                             }
                         }
@@ -1701,6 +1670,12 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
+
+
+            var range = worksheet.Cells[3, 1, rowCounter, columnCounter];
+            var table = worksheet.Tables.Add(range, "table1");
+            table.ShowFilter = true;
+            table.TableStyle = OfficeOpenXml.Table.TableStyles.Light1;
 
             // format header range
             using ( ExcelRange r = worksheet.Cells[3, 1, 3, columnCounter] )
@@ -1738,18 +1713,17 @@ namespace Rock.Web.UI.Controls
             // autofit columns for all cells
             worksheet.Cells.AutoFitColumns( 0 );
 
-            // add the auto filter / sorting
-            worksheet.Cells[3, 1, rowCounter, columnCounter].AutoFilter = true;
-
             // add alternating highlights
 
             // set some footer text
             worksheet.HeaderFooter.OddHeader.CenteredText = title;
             worksheet.HeaderFooter.OddFooter.RightAlignedText = string.Format( "Page {0} of {1}", ExcelHeaderFooter.PageNumber, ExcelHeaderFooter.NumberOfPages );
-
-            excel.Save();
-
-            byte[] byteArray = ms.ToArray();
+            byte[] byteArray;
+            using ( MemoryStream ms = new MemoryStream() )
+            {
+                excel.SaveAs( ms );
+                byteArray = ms.ToArray();
+            }
 
             // send the spreadsheet to the browser
             this.Page.EnableViewState = false;
@@ -1890,12 +1864,10 @@ namespace Rock.Web.UI.Controls
                     {
                         try
                         {
-                            System.Xml.XmlDocument htmlSnippet = new System.Xml.XmlDocument();
-                            htmlSnippet.Load( new StringReader( propValue.ToString() ) );
+                            var aNode = HtmlAgilityPack.HtmlNode.CreateNode( propValue.ToString() );
                             // Select the hyperlink tag
-                            var aNode = htmlSnippet.GetElementsByTagName( "a" ).Item( 0 );
                             string url = string.Format( "{0}{1}", this.RockBlock().RootPath, aNode.Attributes["href"].Value );
-                            cell.Hyperlink = new Uri( url );
+                            cell.Hyperlink = new ExcelHyperLink( url ) { Display = aNode.InnerText, ToolTip = url };
                             return aNode.InnerText;
                         }
                         catch ( System.Xml.XmlException ) { }
