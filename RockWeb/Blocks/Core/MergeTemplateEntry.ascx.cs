@@ -115,9 +115,9 @@ namespace RockWeb.Blocks.Core
 
             if ( entitySet.EntityTypeId.HasValue )
             {
-                var entityTypeCache = EntityTypeCache.Read( entitySet.EntityTypeId.Value );
-                bool isPersonEntitySet = entityTypeCache.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid();
-                cbCombineFamilyMembers.Visible = isPersonEntitySet;
+                bool isPersonEntitySet = entitySet.EntityTypeId.Value == EntityTypeCache.GetId<Rock.Model.Person>();
+                bool isGroupMemberEntitySet = entitySet.EntityTypeId.Value == EntityTypeCache.GetId<Rock.Model.GroupMember>();
+                cbCombineFamilyMembers.Visible = isPersonEntitySet || isGroupMemberEntitySet;
             }
             else
             {
@@ -253,9 +253,18 @@ namespace RockWeb.Blocks.Core
                 bool isGroupMemberEntityType = entityTypeCache != null && entityTypeCache.Guid == Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid();
                 bool combineFamilyMembers = cbCombineFamilyMembers.Visible && cbCombineFamilyMembers.Checked;
 
-                if ( isPersonEntityType && combineFamilyMembers )
+                if ( ( isGroupMemberEntityType || isPersonEntityType ) && combineFamilyMembers )
                 {
-                    var qryPersons = qryEntity;
+                    IQueryable<IEntity> qryPersons;
+                    if ( isGroupMemberEntityType )
+                    {
+                        qryPersons = qryEntity.OfType<GroupMember>().Select( a => a.Person ).Distinct();
+                    }
+                    else
+                    {
+                        qryPersons = qryEntity;
+                    }
+
                     Guid familyGroupType = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
                     var qryFamilyGroupMembers = new GroupMemberService( rockContext ).Queryable()
                         .Where( a => a.Group.GroupType.Guid == familyGroupType )
@@ -289,6 +298,32 @@ namespace RockWeb.Blocks.Core
                                 {
                                     primaryGroupPerson = person as Person;
                                     break;
+                                }
+                            }
+                        }
+
+                        // if we are combining from a GroupMemberEntityType list add the GroupMember attributes of the primary person in the combined list
+                        if ( isGroupMemberEntityType )
+                        {
+                            var groupMember = qryEntity.OfType<GroupMember>().Where( a => a.PersonId == primaryGroupPerson.Id ).FirstOrDefault();
+                            primaryGroupPerson.AdditionalLavaFields = primaryGroupPerson.AdditionalLavaFields ?? new Dictionary<string, object>();
+                            if ( groupMember != null )
+                            {
+                                var groupMemberDictionary = groupMember.ToDictionary();
+                                foreach ( var item in groupMemberDictionary )
+                                {
+                                    if ( item.Key == "Id" )
+                                    {
+                                        primaryGroupPerson.AdditionalLavaFields.AddOrIgnore( "GroupMemberId", item.Value );
+                                    }
+                                    else if ( item.Key == "Guid" )
+                                    {
+                                        primaryGroupPerson.AdditionalLavaFields.AddOrIgnore( "GroupMemberGuid", item.Value.ToStringSafe() );
+                                    }
+                                    else
+                                    {
+                                        primaryGroupPerson.AdditionalLavaFields.AddOrIgnore( item.Key, item.Value );
+                                    }
                                 }
                             }
                         }
