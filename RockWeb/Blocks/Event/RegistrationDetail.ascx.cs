@@ -1485,7 +1485,15 @@ namespace RockWeb.Blocks.Event
 
             details.Add( txn.TransactionCode );
 
-            return details.Where( d => d != null && d != "" ).ToList().AsDelimited( "<br/>" );
+            string formattedDetails = details.Where( d => d != null && d != "" ).ToList().AsDelimited( "<br/>" );
+            if ( txn.RefundDetails != null )
+            {
+                return "<span class='label label-danger'>Refund</span> " + formattedDetails;
+            }
+            else
+            {
+                return formattedDetails;
+            }
         }
 
         #endregion
