@@ -28,6 +28,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Security;
 using Rock.Data;
+using System.Web;
 
 namespace RockWeb.Blocks.Core
 {
@@ -118,7 +119,7 @@ namespace RockWeb.Blocks.Core
             }
             catch ( SystemException ex )
             {
-                DisplayError( ex.Message, "<pre>" + ex.StackTrace + "</pre>" );
+                DisplayError( ex.Message, "<pre>" + HttpUtility.HtmlEncode( ex.StackTrace ) + "</pre>" );
             }
 
             base.OnInit( e );

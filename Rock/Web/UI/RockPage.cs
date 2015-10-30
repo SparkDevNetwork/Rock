@@ -889,7 +889,7 @@ namespace Rock.Web.UI
                                     nbBlockLoad.CssClass = "system-error";
                                     nbBlockLoad.NotificationBoxType = NotificationBoxType.Danger;
                                     nbBlockLoad.Text = string.Format( "Error Loading Block: {0}", block.Name );
-                                    nbBlockLoad.Details = string.Format( "{0}<pre>{1}</pre>", ex.Message, ex.StackTrace );
+                                    nbBlockLoad.Details = string.Format( "{0}<pre>{1}</pre>", HttpUtility.HtmlEncode( ex.Message ), HttpUtility.HtmlEncode( ex.StackTrace ) );
                                     nbBlockLoad.Dismissable = true;
                                     control = nbBlockLoad;
 

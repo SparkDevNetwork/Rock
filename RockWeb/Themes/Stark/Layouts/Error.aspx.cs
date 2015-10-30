@@ -82,7 +82,6 @@ namespace RockWeb.Themes.Stark.Layouts
             // check for inner exception
             if ( ex.InnerException != null )
             {
-                //lErrorInfo.Text += "<p /><p />";
                 ProcessException( ex.InnerException, "-" + exLevel );
             }
         }

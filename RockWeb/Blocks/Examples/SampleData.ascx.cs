@@ -37,6 +37,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using System.Globalization;
+using System.Web;
 
 namespace RockWeb.Blocks.Examples
 {
@@ -293,7 +294,7 @@ namespace RockWeb.Blocks.Examples
                     "That wasn't supposed to happen.  The error was:<br/>{0}<br/>{1}<br/>{2}",
                     ex.Message.ConvertCrLfToHtmlBr(),
                     FlattenInnerExceptions( ex.InnerException ),
-                    ex.StackTrace.ConvertCrLfToHtmlBr() );
+                    HttpUtility.HtmlEncode( ex.StackTrace ).ConvertCrLfToHtmlBr() );
             }
 
             if ( File.Exists( saveFile ) )
