@@ -334,7 +334,7 @@ namespace Rock.Reporting.DataFilter
                     string selectedProperty = values[0].Replace( " ", "" );   // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
 
                     var entityFields = EntityHelper.GetEntityFields( entityType );
-                    var entityField = entityFields.FirstOrDefault( f => f.Name == selectedProperty );
+                    var entityField = entityFields.FirstOrDefault( f => f.Name.Equals( selectedProperty, StringComparison.OrdinalIgnoreCase ) );
                     if ( entityField != null )
                     {
                         if ( entityField.FieldKind == FieldKind.Property )

@@ -41,7 +41,6 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:Grid runat=server></{0}:Grid>" )]
     public class Grid : System.Web.UI.WebControls.GridView, IPostBackEventHandler
     {
-
         #region Constants
 
         private const string DEFAULT_EMPTY_DATA_TEXT = "No Results Found";
@@ -168,8 +167,10 @@ namespace Rock.Web.UI.Controls
                 {
                     result = string.Format( "No {0} Found", RowItemText.Pluralize() );
                 }
+
                 return result;
             }
+
             set
             {
                 base.EmptyDataText = value;
@@ -217,6 +218,7 @@ namespace Rock.Web.UI.Controls
                 {
                     exportFilename += ".xlsx";
                 }
+
                 return exportFilename.RemoveSpecialCharacters();
             }
 
@@ -389,7 +391,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The merge page route.
         /// </value>
-        [Obsolete("Use PersonMergePageRoute instead")]
+        [Obsolete( "Use PersonMergePageRoute instead" )]
         public virtual string MergePageRoute
         {
             get
@@ -451,6 +453,12 @@ namespace Rock.Web.UI.Controls
             set { ViewState["MergeTemplatePageRoute"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the row selected columns.
+        /// </summary>
+        /// <value>
+        /// The row selected columns.
+        /// </value>
         private Dictionary<int, string> RowSelectedColumns
         {
             get
@@ -461,8 +469,10 @@ namespace Rock.Web.UI.Controls
                     rowSelectedColumns = new Dictionary<int, string>();
                     ViewState["RowSelectedColumns"] = rowSelectedColumns;
                 }
+
                 return rowSelectedColumns;
             }
+
             set
             {
                 ViewState["RowSelectedColumns"] = value;
@@ -604,7 +614,7 @@ namespace Rock.Web.UI.Controls
             this.Actions.MergeTemplateClick += Actions_MergeTemplateClick;
 
             int pageSize = 50;
-            
+
             var rockBlock = this.RockBlock();
             if ( rockBlock != null )
             {
@@ -740,7 +750,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-
             if ( this.DataSource != null )
             {
                 if ( this.EnableResponsiveTable )
@@ -783,6 +792,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
         }
+
         /// <summary>
         /// TODO: Added this override to prevent the default behavior of rending a grid with a table inside
         /// and div element.  The div may be needed for paging when grid is not used in an update panel
@@ -818,15 +828,14 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Creates the control hierarchy used to render the <see cref="T:System.Web.UI.WebControls.GridView"/> control using the specified data source.
+        /// Creates the control hierarchy used to render the <see cref="T:System.Web.UI.WebControls.GridView" /> control using the specified data source.
         /// </summary>
-        /// <param name="dataSource">An <see cref="T:System.Collections.IEnumerable"/> that contains the data source for the <see cref="T:System.Web.UI.WebControls.GridView"/> control.</param>
+        /// <param name="dataSource">An <see cref="T:System.Collections.IEnumerable" /> that contains the data source for the <see cref="T:System.Web.UI.WebControls.GridView" /> control.</param>
         /// <param name="dataBinding">true to indicate that the child controls are bound to data; otherwise, false.</param>
         /// <returns>
         /// The number of rows created.
         /// </returns>
-        /// <exception cref="T:System.Web.HttpException">
-        ///   <paramref name="dataSource"/> returns a null <see cref="T:System.Web.UI.DataSourceView"/>.-or-<paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and cannot return a <see cref="P:System.Web.UI.DataSourceSelectArguments.TotalRowCount"/>. -or-<see cref="P:System.Web.UI.WebControls.GridView.AllowPaging"/> is true and <paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and cannot perform data source paging.-or-<paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and <paramref name="dataBinding"/> is set to false.</exception>
+        /// <exception cref="T:System.Web.HttpException"><paramref name="dataSource" /> returns a null <see cref="T:System.Web.UI.DataSourceView" />.-or-<paramref name="dataSource" /> does not implement the <see cref="T:System.Collections.ICollection" /> interface and cannot return a <see cref="P:System.Web.UI.DataSourceSelectArguments.TotalRowCount" />. -or-<see cref="P:System.Web.UI.WebControls.GridView.AllowPaging" /> is true and <paramref name="dataSource" /> does not implement the <see cref="T:System.Collections.ICollection" /> interface and cannot perform data source paging.-or-<paramref name="dataSource" /> does not implement the <see cref="T:System.Collections.ICollection" /> interface and <paramref name="dataBinding" /> is set to false.</exception>
         protected override int CreateChildControls( System.Collections.IEnumerable dataSource, bool dataBinding )
         {
             int result = base.CreateChildControls( dataSource, dataBinding );
@@ -1019,7 +1028,7 @@ namespace Rock.Web.UI.Controls
                         CheckBox cbSelect = e.Row.FindControl( "cbSelect_" + colIndex ) as CheckBox;
                         if ( cbSelect != null )
                         {
-                            cbSelect.Checked = ( col.SelectedKeys.Contains( this.DataKeys[e.Row.RowIndex].Value ) );
+                            cbSelect.Checked = col.SelectedKeys.Contains( this.DataKeys[e.Row.RowIndex].Value );
                         }
                     }
                 }
@@ -1088,7 +1097,6 @@ namespace Rock.Web.UI.Controls
             {
                 if ( e.Row.DataItem != null )
                 {
-
                     e.Row.Attributes.Add( "data-row-index", e.Row.RowIndex.ToString() );
 
                     if ( this.DataKeys != null && this.DataKeys.Count > 0 )
@@ -1149,7 +1157,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
-        void pagerTemplate_ItemsPerPageClick( object sender, NumericalEventArgs e )
+        internal void pagerTemplate_ItemsPerPageClick( object sender, NumericalEventArgs e )
         {
             var rockBlock = this.RockBlock();
             if ( rockBlock != null )
@@ -1167,7 +1175,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
-        void pagerTemplate_NavigateClick( object sender, NumericalEventArgs e )
+        public void pagerTemplate_NavigateClick( object sender, NumericalEventArgs e )
         {
             this.PageIndex = e.Number;
             RebindGrid( e, false );
@@ -1182,7 +1190,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void Actions_PersonMergeClick( object sender, EventArgs e )
+        public void Actions_PersonMergeClick( object sender, EventArgs e )
         {
             int? entitySetId = GetPersonEntitySet( e );
             if ( entitySetId.HasValue )
@@ -1202,7 +1210,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void Actions_BulkUpdateClick( object sender, EventArgs e )
+        protected void Actions_BulkUpdateClick( object sender, EventArgs e )
         {
             int? entitySetId = GetPersonEntitySet( e );
             if ( entitySetId.HasValue )
@@ -1234,7 +1242,6 @@ namespace Rock.Web.UI.Controls
                 var recipients = GetPersonData();
                 if ( recipients.Any() )
                 {
-
                     // Create communication 
                     var communicationRockContext = new RockContext();
                     var communicationService = new Rock.Model.CommunicationService( communicationRockContext );
@@ -1248,7 +1255,7 @@ namespace Rock.Web.UI.Controls
                     }
 
                     communicationService.Add( communication );
-                    
+
                     // save communication to get Id
                     communicationRockContext.SaveChanges();
 
@@ -1265,7 +1272,7 @@ namespace Rock.Web.UI.Controls
                     {
                         var chunkedPrimaryAliasList = personAliasService.Queryable()
                             .Where( p => p.PersonId == p.AliasPersonId && chunkedPersonIds.Contains( p.PersonId ) ).AsNoTracking().ToList();
-                        primaryAliasList.AddRange(chunkedPrimaryAliasList);
+                        primaryAliasList.AddRange( chunkedPrimaryAliasList );
                         skipCount += 1000;
                         chunkedPersonIds = personIds.Skip( skipCount ).Take( 1000 );
                     }
@@ -1278,8 +1285,7 @@ namespace Rock.Web.UI.Controls
                     } );
 
                     var communicationRecipientRockContext = new RockContext();
-                    
-                    communicationRecipientRockContext.Configuration.AutoDetectChangesEnabled = false;
+
                     var communicationRecipientService = new Rock.Model.CommunicationRecipientService( communicationRecipientRockContext );
                     communicationRecipientService.AddRange( communicationRecipientList );
                     communicationRecipientRockContext.SaveChanges();
@@ -1299,6 +1305,7 @@ namespace Rock.Web.UI.Controls
                             url = "~/Communication/{0}";
                         }
                     }
+
                     if ( url.Contains( "{0}" ) )
                     {
                         url = string.Format( url, communication.Id );
@@ -1310,6 +1317,7 @@ namespace Rock.Web.UI.Controls
                 else
                 {
                     // nobody in list or nobody selected
+                    RebindGrid( e, false );
                     this.ShowModalAlertMessage( "Grid has no " + this.RowItemText.Pluralize(), ModalAlertType.Warning );
                 }
             }
@@ -1344,7 +1352,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="modalAlertType">Type of the modal alert.</param>
-        public void ShowModalAlertMessage(string message, ModalAlertType modalAlertType)
+        public void ShowModalAlertMessage( string message, ModalAlertType modalAlertType )
         {
             var modalAlert = new ModalAlert();
             modalAlert.ID = this.ID + "_mdlGridAlert";
@@ -1368,8 +1376,7 @@ namespace Rock.Web.UI.Controls
             string workSheetName = "Export";
             string title = "Rock Export";
 
-            MemoryStream ms = new MemoryStream();
-            ExcelPackage excel = new ExcelPackage( ms );
+            ExcelPackage excel = new ExcelPackage();
 
             // if the grid has a caption customize on it
             if ( !string.IsNullOrEmpty( this.Caption ) )
@@ -1432,7 +1439,7 @@ namespace Rock.Web.UI.Controls
 
                 var dataItems = this.DataSourceAsList;
                 var gridViewRows = this.Rows.OfType<GridViewRow>().ToList();
-                if ( gridViewRows.Count  != dataItems.Count )
+                if ( gridViewRows.Count != dataItems.Count )
                 {
                     return;
                 }
@@ -1483,13 +1490,6 @@ namespace Rock.Web.UI.Controls
                             worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "0.00";
                         }
 
-                        // format background color for alternating rows
-                        if ( rowCounter % 2 == 1 )
-                        {
-                            worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                            worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
-                        }
-
                         if ( exportValue != null && exportValue is DateTime )
                         {
                             worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
@@ -1521,13 +1521,6 @@ namespace Rock.Web.UI.Controls
                         for ( int i = 0; i < data.Columns.Count; i++ )
                         {
                             SetExcelValue( worksheet.Cells[rowCounter, i + 1], row[i] );
-
-                            // format background color for alternating rows
-                            if ( rowCounter % 2 == 1 )
-                            {
-                                worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
-                            }
                         }
 
                         rowCounter++;
@@ -1565,7 +1558,6 @@ namespace Rock.Web.UI.Controls
                         {
                             hiddenProps.Add( prop );
                         }
-
                     }
 
                     var props = orderedProps.Values.ToList();
@@ -1582,6 +1574,11 @@ namespace Rock.Web.UI.Controls
                         else
                         {
                             worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
+                        }
+
+                        if ( prop.PropertyType == typeof( DateTime ) || prop.PropertyType == typeof( DateTime? ) )
+                        {
+                            worksheet.Column( columnCounter ).Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
                         }
 
                         columnCounter++;
@@ -1606,10 +1603,10 @@ namespace Rock.Web.UI.Controls
                     var selectedKeys = SelectedKeys.ToList();
                     foreach ( var item in data )
                     {
-                        if (selectedKeys.Any() && this.DataKeyNames.Count() == 1)
+                        if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
                         {
                             var dataKeyValue = item.GetPropertyValue( this.DataKeyNames[0] );
-                            if (!selectedKeys.Contains(dataKeyValue))
+                            if ( !selectedKeys.Contains( dataKeyValue ) )
                             {
                                 // if there are specific rows selected, skip over rows that aren't selected
                                 continue;
@@ -1629,19 +1626,6 @@ namespace Rock.Web.UI.Controls
 
                             var cell = worksheet.Cells[rowCounter, columnCounter];
                             SetExcelValue( cell, this.GetExportValue( prop, propValue, isDefinedValue, cell ) );
-
-                            // format background color for alternating rows
-                            if ( rowCounter % 2 == 1 )
-                            {
-                                worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
-                            }
-
-                            if ( propValue is DateTime )
-                            {
-                                worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
-                            }
-
                         }
 
                         if ( attributeFields.Any() )
@@ -1684,14 +1668,6 @@ namespace Rock.Web.UI.Controls
                                         string resultHtml = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, false );
                                         worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
                                     }
-
-                                    // format background color for alternating rows
-                                    if ( rowCounter % 2 == 1 )
-                                    {
-                                        worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                        worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
-                                    }
-
                                 }
                             }
                         }
@@ -1701,6 +1677,11 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
+
+            var range = worksheet.Cells[3, 1, rowCounter, columnCounter];
+            var table = worksheet.Tables.Add( range, "table1" );
+            table.ShowFilter = true;
+            table.TableStyle = OfficeOpenXml.Table.TableStyles.Light1;
 
             // format header range
             using ( ExcelRange r = worksheet.Cells[3, 1, 3, columnCounter] )
@@ -1738,27 +1719,25 @@ namespace Rock.Web.UI.Controls
             // autofit columns for all cells
             worksheet.Cells.AutoFitColumns( 0 );
 
-            // add the auto filter / sorting
-            worksheet.Cells[3, 1, rowCounter, columnCounter].AutoFilter = true;
-
             // add alternating highlights
 
             // set some footer text
             worksheet.HeaderFooter.OddHeader.CenteredText = title;
             worksheet.HeaderFooter.OddFooter.RightAlignedText = string.Format( "Page {0} of {1}", ExcelHeaderFooter.PageNumber, ExcelHeaderFooter.NumberOfPages );
-
-            excel.Save();
-
-            byte[] byteArray = ms.ToArray();
+            byte[] byteArray;
+            using ( MemoryStream ms = new MemoryStream() )
+            {
+                excel.SaveAs( ms );
+                byteArray = ms.ToArray();
+            }
 
             // send the spreadsheet to the browser
             this.Page.EnableViewState = false;
             this.Page.Response.Clear();
-            //this.RockPage.Response.ContentType = "application/vnd.ms-excel";
             this.Page.Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             this.Page.Response.AppendHeader( "Content-Disposition", "attachment; filename=" + filename );
 
-            this.Page.Response.Charset = "";
+            this.Page.Response.Charset = string.Empty;
             this.Page.Response.BinaryWrite( byteArray );
             this.Page.Response.Flush();
             this.Page.Response.End();
@@ -1842,6 +1821,7 @@ namespace Rock.Web.UI.Controls
                             {
                                 return definedValue.Value;
                             }
+
                             return definedValueId;
                         }
                     }
@@ -1890,15 +1870,17 @@ namespace Rock.Web.UI.Controls
                     {
                         try
                         {
-                            System.Xml.XmlDocument htmlSnippet = new System.Xml.XmlDocument();
-                            htmlSnippet.Load( new StringReader( propValue.ToString() ) );
+                            var aNode = HtmlAgilityPack.HtmlNode.CreateNode( propValue.ToString() );
+                            
                             // Select the hyperlink tag
-                            var aNode = htmlSnippet.GetElementsByTagName( "a" ).Item( 0 );
                             string url = string.Format( "{0}{1}", this.RockBlock().RootPath, aNode.Attributes["href"].Value );
-                            cell.Hyperlink = new Uri( url );
+                            cell.Hyperlink = new ExcelHyperLink( url ) { Display = aNode.InnerText, ToolTip = url };
                             return aNode.InnerText;
                         }
-                        catch ( System.Xml.XmlException ) { }
+                        catch ( System.Xml.XmlException ) 
+                        { 
+                            // ignore
+                        }
                     }
                 }
             }
@@ -2040,7 +2022,7 @@ namespace Rock.Web.UI.Controls
             {
                 // The ToList() is potentially needed for Linq cases.
                 var keysSelected = SelectedKeys.ToList();
-                string dataKeyColumn = this.DataKeyNames.FirstOrDefault();
+                string dataKeyColumn = this.DataKeyNames.FirstOrDefault() ?? "Id";
 
                 if ( !string.IsNullOrWhiteSpace( dataKeyColumn ) && this.DataSourceAsDataTable != null )
                 {
@@ -2082,7 +2064,7 @@ namespace Rock.Web.UI.Controls
                         Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
 
                         PropertyInfo personIdProp = oType.GetProperty( this.PersonIdField );
-                        PropertyInfo idProp = oType.GetProperty( dataKeyColumn );
+                        PropertyInfo idProp = !string.IsNullOrEmpty( dataKeyColumn ) ? oType.GetProperty( dataKeyColumn ) : null;
 
                         foreach ( var item in data )
                         {
@@ -2090,6 +2072,7 @@ namespace Rock.Web.UI.Controls
                             {
                                 personIdProp = item.GetType().GetProperty( this.PersonIdField );
                             }
+
                             if ( idProp == null )
                             {
                                 idProp = item.GetType().GetProperty( dataKeyColumn );
@@ -2149,7 +2132,10 @@ namespace Rock.Web.UI.Controls
                         item.EntityId = (int)key.Key;
                         entitySet.Items.Add( item );
                     }
-                    catch { }
+                    catch 
+                    { 
+                        // ignore
+                    }
                 }
 
                 if ( entitySet.Items.Any() )
@@ -2177,7 +2163,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( DataSource is IList )
                 {
-                    return ( DataSource as IList );
+                    return DataSource as IList;
                 }
                 else
                 {
@@ -2198,7 +2184,6 @@ namespace Rock.Web.UI.Controls
             {
                 if ( this.DataSource is DataTable )
                 {
-
                     return (DataTable)this.DataSource;
                 }
                 else if ( this.DataSource is DataView )
@@ -2261,7 +2246,10 @@ namespace Rock.Web.UI.Controls
 
                     entitySet.Items.Add( item );
                 }
-                catch { }
+                catch 
+                { 
+                    // ignore
+                }
             }
 
             if ( entitySet.Items.Any() )
@@ -2320,8 +2308,6 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-
-
             // first try to get the SelectedKeys from the SelectField (if there is one)
             var selectedKeys = this.SelectedKeys.Select( a => a as int? ).Where( a => a.HasValue ).Select( a => a.Value ).Distinct().ToList();
             if ( selectedKeys == null || !selectedKeys.Any() )
@@ -2329,7 +2315,7 @@ namespace Rock.Web.UI.Controls
                 if ( entityTypeId.HasValue && dataSourceObjectType is IEntity )
                 {
                     // we know this is an IEntity Type so the datakey is Id
-                    selectedKeys = ( this.DataSourceAsList ).OfType<IEntity>().Select( a => a.Id ).Distinct().ToList();
+                    selectedKeys = this.DataSourceAsList.OfType<IEntity>().Select( a => a.Id ).Distinct().ToList();
                 }
                 else
                 {
@@ -2389,7 +2375,7 @@ namespace Rock.Web.UI.Controls
                 {
                     // since Reporting fieldnames are dynamic and can have special internal names, use the header text instead of the datafield name
                     bool useHeaderNamesIfAvailable = item.GetType().Assembly.IsDynamic;
-                    
+
                     var idVal = idProp.GetValue( item ) as int?;
                     if ( idVal.HasValue && selectedKeys.Contains( idVal.Value ) && !itemMergeFieldsList.Keys.Contains( idVal.Value ) )
                     {
@@ -2445,7 +2431,10 @@ namespace Rock.Web.UI.Controls
 
                     entitySet.Items.Add( item );
                 }
-                catch { }
+                catch 
+                { 
+                    // ignore
+                }
             }
 
             if ( entitySet.Items.Any() )
@@ -2498,7 +2487,10 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
-            catch { }
+            catch 
+            { 
+                // ignore
+            }
 
             return false;
         }
@@ -2631,7 +2623,7 @@ namespace Rock.Web.UI.Controls
             BoundField bf = new BoundField();
             Type baseType = propertyType;
 
-            if ( baseType == typeof( Boolean ) || baseType == typeof( Boolean? ) )
+            if ( baseType == typeof( bool ) || baseType == typeof( bool? ) )
             {
                 bf = new BoolField();
             }
@@ -2666,14 +2658,14 @@ namespace Rock.Web.UI.Controls
         public IEnumerable<T> ColumnsOfType<T>() where T : DataControlField
         {
             var result = new List<T>();
-            foreach (var col in Columns)
+            foreach ( var col in Columns )
             {
-                if (col is T)
+                if ( col is T )
                 {
                     result.Add( col as T );
                 }
-                
             }
+
             return result;
         }
 
@@ -2688,7 +2680,6 @@ namespace Rock.Web.UI.Controls
         }
 
         #endregion
-
     }
 
     #region Delegates
@@ -2721,7 +2712,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Items Per RockPage Event Argument
     /// </summary>
-    internal class NumericalEventArgs : EventArgs
+    public class NumericalEventArgs : EventArgs
     {
         /// <summary>
         /// Gets the items per page.
@@ -2798,8 +2789,28 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     internal class JsonResult
     {
+        /// <summary>
+        /// Gets or sets the action.
+        /// </summary>
+        /// <value>
+        /// The action.
+        /// </value>
         public string Action { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="JsonResult"/> is cancel.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if cancel; otherwise, <c>false</c>.
+        /// </value>
         public bool Cancel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the result.
+        /// </summary>
+        /// <value>
+        /// The result.
+        /// </value>
         public object Result { get; set; }
 
         /// <summary>
@@ -2927,18 +2938,89 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     internal class PagerTemplate : ITemplate, IDisposable
     {
-        //Literal lStatus;
-        private bool IsDisposed;
-        HtmlGenericControl NavigationPanel;
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is disposed.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is disposed; otherwise, <c>false</c>.
+        /// </value>
+        internal bool IsDisposed { get; set; }
 
-        HtmlGenericContainer[] PageLinkListItem = new HtmlGenericContainer[12];
-        LinkButton[] PageLink = new LinkButton[12];
+        /// <summary>
+        /// Gets or sets the navigation panel.
+        /// </summary>
+        /// <value>
+        /// The navigation panel.
+        /// </value>
+        internal HtmlGenericControl NavigationPanel { get; set; }
 
-        Literal itemCountDisplay;
+        /// <summary>
+        /// Gets or sets the page link list item.
+        /// </summary>
+        /// <value>
+        /// The page link list item.
+        /// </value>
+        internal HtmlGenericContainer[] PageLinkListItem
+        {
+            get { return _pageLinkListItem; }
+            set { _pageLinkListItem = value; }
+        }
+        
+        private HtmlGenericContainer[] _pageLinkListItem = new HtmlGenericContainer[12];
 
-        HtmlGenericContainer[] ItemLinkListItem = new HtmlGenericContainer[3];
-        LinkButton[] ItemLink = new LinkButton[3];
+        /// <summary>
+        /// Gets or sets the page link.
+        /// </summary>
+        /// <value>
+        /// The page link.
+        /// </value>
+        internal LinkButton[] PageLink
+        {
+            get { return _pageLink; }
+            set { _pageLink = value; }
+        }
 
+        private LinkButton[] _pageLink = new LinkButton[12];
+
+        /// <summary>
+        /// Gets or sets the item count display.
+        /// </summary>
+        /// <value>
+        /// The item count display.
+        /// </value>
+        internal Literal itemCountDisplay { get; set; }
+
+        /// <summary>
+        /// Gets or sets the item link list item.
+        /// </summary>
+        /// <value>
+        /// The item link list item.
+        /// </value>
+        internal HtmlGenericContainer[] ItemLinkListItem
+        {
+            get { return _itemLinkListItem; }
+            set { _itemLinkListItem = value; }
+        }
+
+        private HtmlGenericContainer[] _itemLinkListItem = new HtmlGenericContainer[3];
+
+        /// <summary>
+        /// Gets or sets the item link.
+        /// </summary>
+        /// <value>
+        /// The item link.
+        /// </value>
+        internal LinkButton[] ItemLink
+        {
+            get { return _itemLink; }
+            set { _itemLink = value; }
+        }
+
+        private LinkButton[] _itemLink = new LinkButton[3];
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PagerTemplate"/> class.
+        /// </summary>
         public PagerTemplate()
         {
             IsDisposed = false;
@@ -3026,6 +3108,7 @@ namespace Rock.Web.UI.Controls
                         PageLinkListItem[0].Attributes["class"] = "prev";
                         PageLink[0].Enabled = true;
                     }
+
                     PageLink[0].Attributes["page-index"] = prevPageIndex.ToString();
 
                     int nextPageIndex = pageIndex;
@@ -3040,8 +3123,8 @@ namespace Rock.Web.UI.Controls
                         PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next";
                         PageLink[PageLinkListItem.Length - 1].Enabled = true;
                     }
-                    PageLink[PageLinkListItem.Length - 1].Attributes["page-index"] = nextPageIndex.ToString();
 
+                    PageLink[PageLinkListItem.Length - 1].Attributes["page-index"] = nextPageIndex.ToString();
 
                     NavigationPanel.Visible = true;
                     for ( int i = 1; i < PageLink.Length - 1; i++ )
@@ -3053,7 +3136,7 @@ namespace Rock.Web.UI.Controls
 
                         if ( currentPage < pageCount )
                         {
-                            li.Attributes["class"] = currentPage == pageIndex ? "active" : "";
+                            li.Attributes["class"] = currentPage == pageIndex ? "active" : string.Empty;
                             li.Visible = true;
 
                             lb.Text = ( currentPage + 1 ).ToString( "N0" );
@@ -3085,7 +3168,7 @@ namespace Rock.Web.UI.Controls
                 string pageSizeValue = pageSize.ToString( "N0" );
                 for ( int i = 0; i < ItemLinkListItem.Length; i++ )
                 {
-                    ItemLinkListItem[i].Attributes["class"] = ItemLink[i].Text == pageSizeValue ? "active" : "";
+                    ItemLinkListItem[i].Attributes["class"] = ItemLink[i].Text == pageSizeValue ? "active" : string.Empty;
                 }
             }
         }
@@ -3095,17 +3178,17 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void lbPage_Click( object sender, EventArgs e )
+        protected void lbPage_Click( object sender, EventArgs e )
         {
             if ( NavigateClick != null )
             {
                 LinkButton lbPage = sender as LinkButton;
                 if ( lbPage != null )
                 {
-                    int pageIndex = 0;
-                    if ( Int32.TryParse( lbPage.Attributes["page-index"], out pageIndex ) )
+                    int? pageIndex = lbPage.Attributes["page-index"].AsIntegerOrNull();
+                    if ( pageIndex.HasValue )
                     {
-                        NumericalEventArgs eventArgs = new NumericalEventArgs( pageIndex );
+                        NumericalEventArgs eventArgs = new NumericalEventArgs( pageIndex.Value );
                         NavigateClick( sender, eventArgs );
                     }
                 }
@@ -3117,7 +3200,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        void lbItems_Click( object sender, EventArgs e )
+        protected void lbItems_Click( object sender, EventArgs e )
         {
             LinkButton lbItems = sender as LinkButton;
             if ( lbItems != null && ItemsPerPageClick != null )
@@ -3182,7 +3265,6 @@ namespace Rock.Web.UI.Controls
                 IsDisposed = true;
             }
         }
-
     }
 
     /// <summary>
@@ -3254,5 +3336,4 @@ namespace Rock.Web.UI.Controls
     }
 
     #endregion
-
 }

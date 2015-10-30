@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Groups
@@ -734,6 +735,21 @@ namespace RockWeb.Blocks.Groups
                 groupMemberService.Add( destGroupMember );
                 rockContext.SaveChanges();
                 destGroupMember.SaveAttributeValues( rockContext );
+
+                // move any Note records that were associated with the old groupMember to the new groupMember record
+                if ( cbMoveGroupMemberMoveNotes.Checked )
+                {
+                    destGroupMember.Note = groupMember.Note;
+                    int groupMemberEntityTypeId = EntityTypeCache.GetId<Rock.Model.GroupMember>().Value;
+                    var noteService = new NoteService( rockContext );
+                    var groupMemberNotes = noteService.Queryable().Where( a => a.NoteType.EntityTypeId == groupMemberEntityTypeId && a.EntityId == groupMember.Id );
+                    foreach ( var note in groupMemberNotes )
+                    {
+                        note.EntityId = destGroupMember.Id;
+                    }
+                    
+                    rockContext.SaveChanges();
+                }
 
                 groupMemberService.Delete( groupMember );
                 rockContext.SaveChanges();

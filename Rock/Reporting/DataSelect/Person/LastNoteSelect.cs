@@ -151,7 +151,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             var qryPersonNotes = new PersonService( context ).Queryable().Select( p => qryNotes.Where( xx => xx.Id == qryNotes.Where( a => a.EntityId == p.Id ).Max( x => x.Id ) ).Select( s => s.Text ).FirstOrDefault() );
 
-            var selectNoteExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( qryPersonNotes, entityIdProperty, "p" );
+            var selectNoteExpression = SelectExpressionExtractor.Extract( qryPersonNotes, entityIdProperty, "p" );
 
             return selectNoteExpression;
         }

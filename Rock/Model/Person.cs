@@ -81,6 +81,15 @@ namespace Rock.Model
         public int? RecordStatusValueId { get; set; }
 
         /// <summary>
+        /// Gets or sets the record status last modified date time.
+        /// </summary>
+        /// <value>
+        /// The record status last modified date time.
+        /// </value>
+        [DataMember]
+        public DateTime? RecordStatusLastModifiedDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the Id of the Record Status Reason <see cref="Rock.Model.DefinedValue"/> representing the reason why a person record status would have a set status.
         /// </summary>
         /// <value>

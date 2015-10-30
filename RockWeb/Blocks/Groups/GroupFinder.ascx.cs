@@ -49,9 +49,9 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Block for people to find a group that matches their search parameters." )]
 
-    // Block Properties
-    [LinkedPage( "Group Detail Page", "The page to navigate to for group details.", false, "", "", 0 )]
-    [LinkedPage( "Register Page", "The page to navigate to when registering for a group.", false, "", "", 1 )]
+    // Linked Pages
+    [LinkedPage( "Group Detail Page", "The page to navigate to for group details.", false, "", "CustomSetting" )]
+    [LinkedPage( "Register Page", "The page to navigate to when registering for a group.", false, "", "CustomSetting" )]
 
     // Filter Settings
     [GroupTypeField( "Group Type", "", true, "", "CustomSetting" )]

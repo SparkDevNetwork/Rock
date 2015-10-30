@@ -234,7 +234,7 @@ namespace Rock.Reporting.DataSelect.Group
                     GroupMemberId = m.Id
                 } ).OrderBy( a => a.LastName ).ThenBy( a => a.NickName ) );
 
-            var selectChildrenExpression = SelectExpressionExtractor.Extract<Rock.Model.Group>( memberListQuery, entityIdProperty, "p" );
+            var selectChildrenExpression = SelectExpressionExtractor.Extract( memberListQuery, entityIdProperty, "p" );
 
             return selectChildrenExpression;
         }
