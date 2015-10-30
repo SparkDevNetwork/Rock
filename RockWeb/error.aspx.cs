@@ -165,18 +165,18 @@ namespace RockWeb
 
                     if ( showDetails )
                     {
-                        var stackTrace = ex.StackTrace;
+                        var stackTrace = HttpUtility.HtmlEncode( ex.StackTrace );
                         // go get the important exception
                         while ( ex.InnerException != null )
                         {
                             ex = ex.InnerException;
                             if (ex != null)
                             {
-                                stackTrace = ex.StackTrace + "<br/>" + stackTrace;
+                                stackTrace = HttpUtility.HtmlEncode( ex.StackTrace ) + "<br/>" + stackTrace;
                             }
                         }
 
-                        Response.Write( string.Format( "{0}<p><pre>{1}</pre>", ex.Message, stackTrace ) );
+                        Response.Write( string.Format( "{0}<p><pre>{1}</pre>", HttpUtility.HtmlEncode( ex.Message ), stackTrace ) );
                     }
                     else
                     {

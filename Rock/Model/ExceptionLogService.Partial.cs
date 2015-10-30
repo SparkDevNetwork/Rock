@@ -109,9 +109,9 @@ namespace Rock.Model
                     {
                         // Populate with inner exception type, message and update whether or not there is another inner exception.
                         exceptionLog.ExceptionType = ex.GetType().ToString();
-                        exceptionLog.Description = ex.Message;
+                        exceptionLog.Description = HttpUtility.HtmlEncode( ex.Message );
                         exceptionLog.Source = ex.Source;
-                        exceptionLog.StackTrace = ex.StackTrace;
+                        exceptionLog.StackTrace = HttpUtility.HtmlEncode(ex.StackTrace );
                         exceptionLog.HasInnerException = ex.InnerException != null;
 
                         // Ensure EF properly recognizes this as a new record.
@@ -219,7 +219,7 @@ namespace Rock.Model
                     ExceptionType = ex.GetType().ToString(),
                     Description = exceptionMessage,
                     Source = ex.Source,
-                    StackTrace = ex.StackTrace,
+                    StackTrace = HttpUtility.HtmlEncode( ex.StackTrace ),
                     Guid = Guid.NewGuid(),
                     CreatedByPersonAliasId = personAliasId,
                     ModifiedByPersonAliasId = personAliasId,
