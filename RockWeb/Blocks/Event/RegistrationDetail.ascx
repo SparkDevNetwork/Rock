@@ -75,6 +75,7 @@
                             <div class="col-md-6">
                                 <Rock:PersonPicker ID="ppPerson" runat="server" Label="Registered By" OnSelectPerson="ppPerson_SelectPerson" EnableSelfSelection="true" />
                                 <Rock:EmailBox ID="ebConfirmationEmail" runat="server" Label="Confirmation Email" />
+                                <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Target Group" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbFirstName" runat="server" Label="Registered by First Name" Required="true" />
@@ -107,7 +108,7 @@
                                 <Rock:RockLiteral ID="lConfirmationEmail" runat="server" Label="Confirmation Email" />
                                 <asp:LinkButton ID="lbResendConfirmation" runat="server" CssClass="btn btn-default btn-xs margin-b-sm" Text="Resend Confirmation" OnClick="lbResendConfirmation_Click" CausesValidation="false"></asp:LinkButton>
                                 <Rock:NotificationBox ID="nbConfirmationQueued" runat="server" NotificationBoxType="Success" Text="A new confirmation email has been sent." Visible="false" Dismissable="true"  />
-                                <Rock:RockLiteral ID="lGroup" runat="server" Label="Group" />
+                                <Rock:RockLiteral ID="lGroup" runat="server" Label="Target Group" />
                             </div>
                             <div class="col-md-6">
 

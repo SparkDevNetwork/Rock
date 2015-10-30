@@ -652,6 +652,30 @@ Registration By: {0} Total Cost/Fees:{1}
         public int RegistrationId { get; set; }
 
         /// <summary>
+        /// Gets or sets the person identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
+        public int? PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member identifier.
+        /// </summary>
+        /// <value>
+        /// The group member identifier.
+        /// </value>
+        public int? GroupMemberId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the group.
+        /// </summary>
+        /// <value>
+        /// The name of the group.
+        /// </value>
+        public string GroupName { get; set; }
+
+        /// <summary>
         /// Gets or sets the person alias unique identifier.
         /// </summary>
         /// <value>
@@ -728,6 +752,9 @@ Registration By: {0} Total Cost/Fees:{1}
         {
             Guid = Guid.NewGuid();
             PersonAliasGuid = Guid.Empty;
+            PersonId = null;
+            GroupMemberId = null;
+            GroupName = string.Empty;
             FamilyGuid = Guid.Empty;
             FieldValues = new Dictionary<int, object>();
             FeeValues = new Dictionary<int, List<FeeInfo>>();
@@ -743,6 +770,8 @@ Registration By: {0} Total Cost/Fees:{1}
         {
             if ( person != null )
             {
+                PersonId = person.Id;
+
                 using ( var rockContext = new RockContext() )
                 {
                     PersonName = person.FullName;
@@ -780,6 +809,9 @@ Registration By: {0} Total Cost/Fees:{1}
             {
                 Id = registrant.Id;
                 Guid = registrant.Guid;
+                GroupMemberId = registrant.GroupMemberId;
+                GroupName = registrant.GroupMember != null && registrant.GroupMember.Group != null ?
+                    registrant.GroupMember.Group.Name : string.Empty;
                 RegistrationId = registrant.RegistrationId;
                 Cost = registrant.Cost;
 
@@ -788,6 +820,7 @@ Registration By: {0} Total Cost/Fees:{1}
 
                 if ( registrant.PersonAlias != null )
                 {
+                    PersonId = registrant.PersonAlias.PersonId;
                     PersonAliasGuid = registrant.PersonAlias.Guid;
                     person = registrant.PersonAlias.Person;
 
