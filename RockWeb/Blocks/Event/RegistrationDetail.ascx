@@ -168,7 +168,7 @@
 
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <asp:LinkButton ID="lbViewPaymentDetails" runat="server" CssClass="btn btn-link" Text="Payments" OnClick="lbViewPaymentDetails_Click" CausesValidation="false"></asp:LinkButton>
+                                            <asp:LinkButton ID="lbViewPaymentDetails" runat="server" CssClass="btn btn-link pull-right" Text="View/Edit Payments" OnClick="lbViewPaymentDetails_Click" CausesValidation="false"></asp:LinkButton>
                                         </div>
                                     </div>
 
