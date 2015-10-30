@@ -142,7 +142,7 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
                             .FirstOrDefault() ).FirstOrDefault() );
             }
 
-            var resultExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( groupLinkQuery, entityIdProperty, "p" );
+            var resultExpression = SelectExpressionExtractor.Extract( groupLinkQuery, entityIdProperty, "p" );
 
             return resultExpression;
         }

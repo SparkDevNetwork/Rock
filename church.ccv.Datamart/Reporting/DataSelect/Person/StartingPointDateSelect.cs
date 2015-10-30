@@ -102,7 +102,7 @@ namespace church.ccv.Datamart.Reporting.DataSelect.Person
                 .Select( p => qryDatamartPerson.Where( d => d.PersonId == p.Id )
                   .Select( s => s.StartingPointDate ).FirstOrDefault() );
 
-            var resultExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( qryResult, entityIdProperty, "p" );
+            var resultExpression = SelectExpressionExtractor.Extract( qryResult, entityIdProperty, "p" );
 
             return resultExpression;
         }
