@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
@@ -30,12 +31,9 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_centralaz.Widgets
 {
-
     [DisplayName( "Take Profile Photo" )]
     [Category( "com_centralaz > widgets" )]
-    [Description( "Allows a profile picture to be uploaded using a device's camera by an authorized user." )]
-
-    [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 5 )]
+    [Description( "Allows a profile picture to be uploaded using a device's camera (if authorized)." )]
 
     public partial class TakeProfilePhoto : Rock.Web.UI.RockBlock
     {
@@ -49,6 +47,17 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         {
             base.OnInit( e );
             RockPage.AddCSSLink( ResolveRockUrl( "~/Plugins/com_centralaz/Widgets/Styles/TakeProfilePhoto.css" ) );
+
+            string cameraIcon = ResolveRockUrl( "~/Plugins/com_centralaz/Widgets/Assets/Icons/camera-icon-128x128.png" );
+            HtmlMeta metaDescription = new HtmlMeta();
+            metaDescription.Name = "viewport";
+            metaDescription.Content = "width=device-width, initial-scale=0.75, user-scalable=no";
+            RockPage.Header.Controls.Add( metaDescription );
+
+            RockPage.Header.Controls.Add( new LiteralControl( string.Format( "<link rel=\"icon\" sizes=\"128x128\" href=\"{0}\">", cameraIcon) ) );
+            RockPage.Header.Controls.Add( new LiteralControl( string.Format( "<link rel=\"apple-touch-icon\" sizes=\"128x128\" href=\"{0}\">", cameraIcon  ) ) );
+            RockPage.Header.Controls.Add( new LiteralControl( string.Format( "<link rel=\"apple-touch-icon-precomposed\" sizes=\"128x128\" href=\"{0}\">", cameraIcon ) ) );
+            //Page.Header.Controls.Add( new LiteralControl( "<meta name=\"mobile-web-app-capable\" content=\"yes\">" ) );
 
             if ( CurrentPerson == null )
             {
@@ -67,24 +76,10 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
-        {
-            base.OnLoad( e );
+        #endregion
 
-            if ( !Page.IsPostBack )
-            {
-
-                // BindData();
-
-            }
-
-        }
-
-
+        #region Events
+        
         /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
@@ -95,20 +90,15 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             //  BindData();
         }
 
-        #endregion
-
-        #region Events
+        protected void btnUpload_Click( object sender, EventArgs e )
+        {
+         //   var dataUrl = canvas;
+        }
 
         #endregion
 
         #region Methods
 
-
         #endregion
-
-        protected void btnUpload_Click( object sender, EventArgs e )
-        {
-         //   var dataUrl = canvas;
-        }
     }
 }

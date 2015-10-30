@@ -8,6 +8,6 @@
             float: none;
             width: 100%;
             min-height: 100%;
-            background: url(../Assets/Icons/HeadshotOverlay.png) no-repeat;
+            background: url(../Assets/Icons/headshot-overlay.png) no-repeat;
             opacity: 0.25;
         }

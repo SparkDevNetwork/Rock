@@ -10,7 +10,7 @@
                 </div>
             </h3>
             <h3>Take photo for: 
-                <asp:TextBox ID="txtName" placeholder="type first & last name" runat="server" type="text" autocomplete='off' spellcheck='false' autocorrect='off' onkeydown="delayExecute(this);" AutoPostBack="false" />
+                <asp:TextBox ID="txtName" placeholder="first & last name" runat="server" type="text" autocomplete='off' spellcheck='false' autocorrect='off' onkeydown="delayExecute(this);" AutoPostBack="false" />
             </h3>
 
             <input type="hidden" id="selectedPersonId" />
@@ -33,16 +33,16 @@
                 <div class="well">
             <div class="row">
                 <div class="col-md-6 col-sm-6 col-xs-6">
-                    <asp:Button runat="server" ID="btnStart" Text="Start" class="btn btn-primary btn-large" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
-                    <asp:Button runat="server" ID="btnStop" Text="Cancel" class="btn btn-default btn-large" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
+                    <asp:Button runat="server" ID="btnStart" Text="Start" class="btn btn-primary btn-lg" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
+                    <asp:Button runat="server" ID="btnStop" Text="Cancel" class="btn btn-default btn-lg" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
                     <a href="#" id="btnSwap" class="btn btn-default" style="display: none;">
-                        <img src='<%=Server.MapPath( ResolveRockUrl( "~/Plugins/com_centralaz/Widgets/Assets/Icons/camera_swap.png")) %>' />
+                        <img src='<%= ResolveRockUrl( "~/Plugins/com_centralaz/Widgets/Assets/Icons/camera-swap.png") %>' />
                         Swap</a>
                 </div>
                 <div class="col-md-6 col-sm-6 col-xs-6">
-                    <asp:Button runat="server" ID="btnPhoto" Text="Take photo" class="btn btn-success btn-large" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
-                    <asp:Button runat="server" ID="btnRedo" Text="Re-do" class="btn btn-default btn-large" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
-                    <asp:Button runat="server" ID="btnUpload" Text="Upload" class="btn btn-warning btn-large" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
+                    <asp:Button runat="server" ID="btnPhoto" Text="Take photo" class="btn btn-success btn-lg" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
+                    <asp:Button runat="server" ID="btnRedo" Text="Re-do" class="btn btn-default btn-lg" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
+                    <asp:Button runat="server" ID="btnUpload" Text="Upload" class="btn btn-warning btn-lg" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
                 </div>
             </div>
                 </div>
@@ -113,11 +113,18 @@
                         if (result.length > 0) {
                             divPeople.append("<ul>");
                             for (var i = 0; i < result.length && i <= 20; i++) {
-                                if (result[i].SpouseName == null) {
-                                    divPeople.append("<li class='btn btn-default btn-large btn-block' onclick='clickPerson(this)' id='" + result[i].Id + "'>" + result[i].Name + " (" + result[i].Address + ")</li>");
-                                } else {
-                                    divPeople.append("<li class='btn btn-default btn-large btn-block' onclick='clickPerson(this)' id='" + result[i].Id + "'>" + result[i].Name + " (" + result[i].Address + "; spouse: " + result[i].SpouseName + ")</li>");
+                                var extraDetails = "";
+                                if (result[i].Address != null) {
+                                    extraDetails = result[i].Address;
                                 }
+                                if (result[i].SpouseName != null ) {
+                                    extraDetails += ( extraDetails.length > 0 ? "; " : "" ) + "spouse: " + result[i].SpouseName;
+                                }
+                                if ( extraDetails.length > 0 ) {
+                                    extraDetails = " (" + extraDetails + ")";
+                                }
+
+                                divPeople.append("<li class='btn btn-default btn-lg btn-block' onclick='clickPerson(this)' id='" + result[i].Id + "'>" + result[i].Name + extraDetails + "</li>");
                             }
 
                             divPeople.append("<ul>");
@@ -226,15 +233,15 @@
                     //videoObj = { "video": true },
                     //videoObj = { video: { mandatory: { minAspectRatio: 1.0, maxAspectRatio: 1.00 } } },
                     btnStart = document.getElementById('<%=btnStart.ClientID %>'),
-            btnRedo = document.getElementById('<%=btnRedo.ClientID %>'),
-            btnStop = document.getElementById('<%=btnStop.ClientID %>'),
-            btnSwap = document.getElementById('btnSwap'),
-            btnPhoto = document.getElementById('<%=btnPhoto.ClientID %>'),
-            btnUpload = document.getElementById('<%=btnUpload.ClientID %>'),
-            errBack = function (error) {
-                console.log("Video capture error: ", error.code);
-                alert("error with camera: " + error.code);
-            };
+                    btnRedo = document.getElementById('<%=btnRedo.ClientID %>'),
+                    btnStop = document.getElementById('<%=btnStop.ClientID %>'),
+                    btnSwap = document.getElementById('btnSwap'),
+                    btnPhoto = document.getElementById('<%=btnPhoto.ClientID %>'),
+                    btnUpload = document.getElementById('<%=btnUpload.ClientID %>'),
+                    errBack = function (error) {
+                        console.log("Video capture error: ", error.code);
+                        alert("error with camera: " + error.code);
+                    };
 
                 function getAndStartVideo(constraints) {
                     if (navigator.getUserMedia) { // standard
