@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -101,12 +102,13 @@ namespace RockWeb.Blocks.Event
                 RegistrantsState = JsonConvert.DeserializeObject<List<RegistrantInfo>>( json );
             }
 
+            Registration = GetRegistration( RegistrationId );
+
             if ( RegistrationTemplateState != null && RegistrantsState != null )
             {
                 BuildRegistrationControls( false );
             }
 
-            Registration = GetRegistration( RegistrationId );
         }
 
         /// <summary>
@@ -319,6 +321,13 @@ namespace RockWeb.Blocks.Event
                     History.EvaluateChange( changes, "Confirmation Email", registration.ConfirmationEmail, ebConfirmationEmail.Text );
                     registration.ConfirmationEmail = ebConfirmationEmail.Text;
 
+                    bool groupChanged = !registration.GroupId.Equals( ddlGroup.SelectedValueAsInt() );
+                    if ( groupChanged )
+                    {
+                        History.EvaluateChange( changes, "Group", registration.GroupId, ddlGroup.SelectedValueAsInt() );
+                        registration.GroupId = ddlGroup.SelectedValueAsInt();
+                    }
+
                     History.EvaluateChange( changes, "Discount Code", registration.DiscountCode, ddlDiscountCode.SelectedValue );
                     registration.DiscountCode = ddlDiscountCode.SelectedValue;
 
@@ -361,9 +370,21 @@ namespace RockWeb.Blocks.Event
                     else
                     {
                         // Reload registration
-                        var reloadedRegistration = GetRegistration( registration.Id );
-                        lWizardRegistrationName.Text = reloadedRegistration.ToString();
-                        ShowReadonlyDetails( reloadedRegistration );
+                        Registration = GetRegistration( Registration.Id );
+
+                        if ( groupChanged && Registration.GroupId.HasValue )
+                        {
+                            foreach( var registrant in Registration.Registrants.Where( r => !r.GroupMemberId.HasValue ) )
+                            {
+                                AddRegistrantToGroup( registrant.Id );
+                            }
+
+                            // ...Add, reload again
+                            Registration = GetRegistration( Registration.Id );
+                        }
+                        
+                        lWizardRegistrationName.Text = Registration.ToString();
+                        ShowReadonlyDetails( Registration );
                     }
                 }
             }
@@ -673,6 +694,90 @@ namespace RockWeb.Blocks.Event
 
         #region Registrant Events
 
+        void lbGroupMember_Click( object sender, EventArgs e )
+        {
+            var lb = sender as LinkButton;
+            if ( lb != null )
+            {
+                int? registrantId = lb.ID.Substring( 14 ).AsIntegerOrNull();
+                if ( registrantId.HasValue )
+                {
+                    AddRegistrantToGroup( registrantId.Value );
+                }
+            }
+
+            // Reload registration
+            Registration = GetRegistration( Registration.Id );
+            lWizardRegistrationName.Text = Registration.ToString();
+            ShowReadonlyDetails( Registration );
+        }
+
+        private void AddRegistrantToGroup( int registrantId )
+        {
+            if ( RegistrationTemplateState != null &&
+                RegistrationTemplateState.GroupTypeId.HasValue &&
+                Registration.GroupId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var registrant = new RegistrationRegistrantService( rockContext ).Get( registrantId );
+                    if ( registrant != null && registrant.PersonId.HasValue && !registrant.GroupMemberId.HasValue )
+                    {
+                        var groupService = new GroupService( rockContext );
+                        var group = groupService.Get( Registration.GroupId.Value );
+                        if ( group != null && group.GroupTypeId == RegistrationTemplateState.GroupTypeId.Value )
+                        {
+                            int? groupRoleId = RegistrationTemplateState.GroupMemberRoleId.HasValue ?
+                                RegistrationTemplateState.GroupMemberRoleId.Value :
+                                group.GroupType.DefaultGroupRoleId;
+                            if ( groupRoleId.HasValue )
+                            {
+                                var registrantChanges = new List<string>();
+
+                                var groupMemberService = new GroupMemberService( rockContext );
+                                var groupMember = groupMemberService
+                                    .Queryable().AsNoTracking()
+                                    .Where( m =>
+                                        m.GroupId == Registration.Group.Id &&
+                                        m.PersonId == registrant.PersonId &&
+                                        m.GroupRoleId == groupRoleId.Value )
+                                    .FirstOrDefault();
+                                if ( groupMember == null )
+                                {
+                                    groupMember = new GroupMember();
+                                    groupMemberService.Add( groupMember );
+                                    groupMember.GroupId = group.Id;
+                                    groupMember.PersonId = registrant.PersonId.Value;
+                                    groupMember.GroupRoleId = groupRoleId.Value;
+                                    groupMember.GroupMemberStatus = RegistrationTemplateState.GroupMemberStatus;
+
+                                    rockContext.SaveChanges();
+
+                                    registrantChanges.Add( string.Format( "Registrant added to {0} group", group.Name ) );
+                                }
+                                else
+                                {
+                                    registrantChanges.Add( string.Format( "Registrant group member reference updated to existing person in {0} group", group.Name ) );
+                                }
+
+                                registrant.GroupMemberId = groupMember.Id;
+                                rockContext.SaveChanges();
+
+                                HistoryService.SaveChanges(
+                                    rockContext,
+                                    typeof( Registration ),
+                                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                                    registrant.RegistrationId,
+                                    registrantChanges,
+                                    "Registrant: " + CurrentPerson.FullName,
+                                    null, null );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         void lbEditRegistrant_Click( object sender, EventArgs e )
         {
             var lb = sender as LinkButton;
@@ -871,6 +976,10 @@ namespace RockWeb.Blocks.Event
             if ( Registration == null && registrationInstanceId.HasValue )
             {
                 Registration = new Registration { Id = 0, RegistrationInstanceId = registrationInstanceId ?? 0 };
+                if ( Registration.RegistrationInstanceId > 0 )
+                {
+                    Registration.RegistrationInstance = new RegistrationInstanceService( rockContext ).Get( Registration.RegistrationInstanceId );
+                }
             }
 
             if ( Registration != null )
@@ -945,6 +1054,22 @@ namespace RockWeb.Blocks.Event
             {
                 discountCodes.AddOrIgnore( registration.DiscountCode, registration.DiscountCode );
             }
+
+            ddlGroup.Items.Clear();
+            ddlGroup.Items.Add( new ListItem( "", "" ) );
+            if ( registration.RegistrationInstance != null &&
+                registration.RegistrationInstance.Linkages != null &&
+                registration.RegistrationInstance.Linkages.Any() )
+            {
+                foreach( var group in registration.RegistrationInstance.Linkages
+                    .Where( l => l.Group != null )
+                    .OrderBy( l => l.Group.Name )
+                    .Select( l => l.Group ) )
+                {
+                    ddlGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                }
+            }
+            ddlGroup.SetValue( registration.Group );
 
             ddlDiscountCode.DataSource = discountCodes;
             ddlDiscountCode.DataBind();
@@ -1537,6 +1662,17 @@ namespace RockWeb.Blocks.Event
                 divLabels.Controls.Add( hlCost );
             }
 
+            if ( registrant.PersonId.HasValue )
+            {
+                var aProfileLink = new HtmlAnchor();
+                aProfileLink.HRef = ResolveRockUrl( string.Format( "~/Person/{0}", registrant.PersonId.Value ) ); 
+                divLabels.Controls.Add( aProfileLink );
+                aProfileLink.AddCssClass( "btn btn-default btn-xs margin-l-sm" );
+                var iProfileLink = new HtmlGenericControl( "i" );
+                iProfileLink.AddCssClass( "fa fa-user" );
+                aProfileLink.Controls.Add( iProfileLink );
+            }
+
             var divBody = new HtmlGenericControl( "div" );
             divBody.AddCssClass( "panel-body" );
             divPanel.Controls.Add( divBody );
@@ -1552,6 +1688,50 @@ namespace RockWeb.Blocks.Event
             var divFees = new HtmlGenericControl( "div" );
             divFees.AddCssClass( "col-md-6");
             divRow.Controls.Add( divFees );
+
+            if ( RegistrationTemplateState != null &&
+                RegistrationTemplateState.GroupTypeId.HasValue &&
+                Registration != null &&
+                Registration.Group != null &&
+                Registration.Group.GroupTypeId == RegistrationTemplateState.GroupTypeId.Value )
+            {
+                if ( Registration != null && Registration.Group != null )
+                {
+                    var rcwGroupMember = new RockControlWrapper();
+                    rcwGroupMember.ID = string.Format( "rcwGroupMember_{0}", registrant.Id );
+                    divFields.Controls.Add( rcwGroupMember );
+                    rcwGroupMember.Label = "Group";
+
+                    var pGroupMember = new HtmlGenericControl( "p" );
+                    pGroupMember.ID = string.Format( "pGroupMember_{0}", registrant.Id );
+                    divRow.AddCssClass( "form-control-static" );
+                    rcwGroupMember.Controls.Add( pGroupMember );
+
+                    if ( registrant.GroupMemberId.HasValue )
+                    {
+                        var qryParams = new Dictionary<string, string>();
+                        qryParams.Add( "GroupMemberId", registrant.GroupMemberId.Value.ToString() );
+
+                        var aProfileLink = new HtmlAnchor();
+                        aProfileLink.HRef = LinkedPageUrl( "GroupMemberPage", qryParams );
+                        pGroupMember.Controls.Add( aProfileLink );
+                        aProfileLink.Controls.Add( new LiteralControl( string.IsNullOrWhiteSpace( registrant.GroupName ) ? "Group" : registrant.GroupName ) );
+                    }
+                    else
+                    {
+                        pGroupMember.Controls.Add( new LiteralControl( "None (" ) );
+
+                        var lbGroupMember = new LinkButton();
+                        lbGroupMember.CausesValidation = false;
+                        lbGroupMember.ID = string.Format( "lbGroupMember_{0}", registrant.Id );
+                        lbGroupMember.Text = string.Format( "Add {0} to Target Group", registrant.GetFirstName( RegistrationTemplateState ) );
+                        lbGroupMember.Click += lbGroupMember_Click;
+                        pGroupMember.Controls.Add( lbGroupMember );
+
+                        pGroupMember.Controls.Add( new LiteralControl( ")" ) );
+                    }
+                }
+            }
 
             foreach( var form in RegistrationTemplateState.Forms )
             {

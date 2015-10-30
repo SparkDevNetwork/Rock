@@ -17,11 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -34,6 +36,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Member Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group member for editing role, status, etc." )]
+    [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 0 )]
     public partial class GroupMemberDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -425,6 +428,30 @@ namespace RockWeb.Blocks.Groups
             rblStatus.Enabled = !readOnly;
             rblStatus.Label = string.Format( "{0} Status", group.GroupType.GroupMemberTerm );
 
+            var registrations = new RegistrationRegistrantService( rockContext )
+                .Queryable().AsNoTracking()
+                .Where( r =>
+                    r.Registration != null &&
+                    r.Registration.RegistrationInstance != null &&
+                    r.GroupMemberId.HasValue &&
+                    r.GroupMemberId.Value == groupMember.Id )
+                .Select( r => new
+                {
+                    Id = r.Registration.Id,
+                    Name = r.Registration.RegistrationInstance.Name
+                } )
+                .ToList();
+            if ( registrations.Any() )
+            {
+                rcwLinkedRegistrations.Visible = true;
+                rptLinkedRegistrations.DataSource = registrations;
+                rptLinkedRegistrations.DataBind();
+            }
+            else
+            {
+                rcwLinkedRegistrations.Visible = false;
+            }
+
             groupMember.LoadAttributes();
             phAttributes.Controls.Clear();
 
@@ -605,6 +632,18 @@ namespace RockWeb.Blocks.Groups
             }
 
             rblStatus.BindToEnum<GroupMemberStatus>();
+        }
+
+        /// <summary>
+        /// Registrations the URL.
+        /// </summary>
+        /// <param name="registrationId">The registration identifier.</param>
+        /// <returns></returns>
+        protected string RegistrationUrl( int registrationId )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "RegistrationId", registrationId.ToString() );
+            return LinkedPageUrl( "RegistrationPage", qryParams );
         }
 
         /// <summary>
