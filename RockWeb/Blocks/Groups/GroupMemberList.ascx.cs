@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Groups
     [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
     [LinkedPage( "Detail Page" )]
     [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
+    [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 3 )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
@@ -48,7 +49,7 @@ namespace RockWeb.Blocks.Groups
         private DefinedValueCache _inactiveStatus = null;
         private Group _group = null;
         private bool _canView = false;
-        private List<int> _groupMembersWithRegistrations = new List<int>();
+        private Dictionary<int, Dictionary<int, string>> _groupMembersWithRegistrations = new Dictionary<int, Dictionary<int, string>>();
 
         #endregion
 
@@ -262,9 +263,26 @@ namespace RockWeb.Blocks.Groups
 
                 if ( groupMember != null )
                 {
-                    if ( _groupMembersWithRegistrations.Contains( groupMember.Id ) )
+                    int groupMemberId = groupMember.Id;
+
+                    if ( _groupMembersWithRegistrations.ContainsKey( groupMemberId ) )
                     {
                         e.Row.AddCssClass( "js-has-registration" );
+                        
+                        var lRegistration = e.Row.FindControl( "lRegistration" ) as Literal;
+                        if ( lRegistration != null )
+                        {
+                            var regLinks = new List<string>();
+                            
+                            foreach( var reg in _groupMembersWithRegistrations[ groupMemberId ] )
+                            {
+                                regLinks.Add( string.Format( "<a href='{0}'>{1}</a>",
+                                    LinkedPageUrl( "RegistrationPage", new Dictionary<string, string> { { "RegistrationId", reg.Key.ToString() } } ),
+                                    reg.Value ) );
+                            }
+
+                            lRegistration.Text = regLinks.AsDelimited( "<br/>" );   
+                        }
                     }
 
                     if ( groupMember != null && groupMember.IsDeceased )
@@ -934,19 +952,39 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     var groupMemberIds = groupMembersList.Select( m => m.Id ).ToList();
+
+                    // Get all the group members with any associated registrations
                     _groupMembersWithRegistrations = new RegistrationRegistrantService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( r =>
+                            r.Registration != null &&
+                            r.Registration.RegistrationInstance != null &&
                             r.GroupMemberId.HasValue &&
                             groupMemberIds.Contains( r.GroupMemberId.Value ) )
-                        .Select( r => r.GroupMemberId.Value )
-                        .ToList();
+                        .ToList()
+                        .GroupBy( r => r.GroupMemberId.Value )
+                        .Select( g => new
+                        {
+                            GroupMemberId = g.Key,
+                            Registrations = g.ToList()
+                                .Select( r => new {
+                                    Id = r.Registration.Id,
+                                    Name = r.Registration.RegistrationInstance.Name } )
+                                .ToDictionary( r => r.Id, r => r.Name )
+                        } )
+                        .ToDictionary( r => r.GroupMemberId, r => r.Registrations );
+
+                    var registrationField = gGroupMembers.ColumnsOfType<RockTemplateFieldUnselected>().FirstOrDefault();
+                    if ( registrationField != null )
+                    {
+                        registrationField.Visible = _groupMembersWithRegistrations.Any();
+                    }
 
                     var connectionStatusField = gGroupMembers.ColumnsOfType<BoundField>().FirstOrDefault( a => a.DataField == "PersonConnectionStatus" );
                     if ( connectionStatusField != null )
                     {
                         connectionStatusField.Visible = _group.GroupType.ShowConnectionStatus;
-                    }
+                    } 
 
                     gGroupMembers.DataSource = groupMembersList.Select( m => new
                     {

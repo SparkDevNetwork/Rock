@@ -160,10 +160,12 @@ namespace RockWeb.Blocks.Event
                     registrant = registrantService.Get( RegistrantState.Id );
                 }
 
+                bool newRegistrant = false;
                 var registrantChanges = new List<string>();
 
                 if ( registrant == null )
                 {
+                    newRegistrant = true;
                     registrant = new RegistrationRegistrant();
                     registrant.RegistrationId = RegistrantState.RegistrationId;
                     registrantService.Add( registrant );
@@ -183,7 +185,7 @@ namespace RockWeb.Blocks.Event
                 string registrantName = "Unknown";
                 if ( ppPerson.PersonId.HasValue )
                 {
-                    var person = personService.Get(ppPerson.PersonId.Value);
+                    var person = personService.Get( ppPerson.PersonId.Value );
                     if ( person != null )
                     {
                         registrantName = person.FullName;
@@ -249,7 +251,7 @@ namespace RockWeb.Blocks.Event
 
                         if ( dbFee.Id <= 0 )
                         {
-                            registrantChanges.Add( feeName +  " Fee Added" );
+                            registrantChanges.Add( feeName + " Fee Added" );
                         }
 
                         History.EvaluateChange( registrantChanges, feeName + " Quantity", dbFee.Quantity, uiFeeOption.Quantity );
@@ -313,20 +315,63 @@ namespace RockWeb.Blocks.Event
                     }
 
                     registrant.SaveAttributeValues( rockContext );
-
-                    HistoryService.SaveChanges(
-                        rockContext,
-                        typeof( Registration ),
-                        Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                        registrant.RegistrationId,
-                        registrantChanges,
-                        "Registrant: " + registrantName,
-                        null, null );
-
                 } );
 
-                NavigateToRegistration();
+                if ( newRegistrant && TemplateState.GroupTypeId.HasValue && ppPerson.PersonId.HasValue )
+                {
+                    var registration = new RegistrationService( rockContext ).Get( registrant.RegistrationId );
+                    if ( registration != null &&
+                        registration.Group != null &&
+                        registration.Group.GroupTypeId == TemplateState.GroupTypeId.Value )
+                    {
+                        int? groupRoleId = TemplateState.GroupMemberRoleId.HasValue ?
+                            TemplateState.GroupMemberRoleId.Value :
+                            registration.Group.GroupType.DefaultGroupRoleId;
+                        if ( groupRoleId.HasValue )
+                        {
+                            var groupMemberService = new GroupMemberService( rockContext );
+                            var groupMember = groupMemberService
+                                .Queryable().AsNoTracking()
+                                .Where( m =>
+                                    m.GroupId == registration.Group.Id &&
+                                    m.PersonId == registrant.PersonId &&
+                                    m.GroupRoleId == groupRoleId.Value )
+                                .FirstOrDefault();
+                            if ( groupMember == null )
+                            {
+                                groupMember = new GroupMember();
+                                groupMemberService.Add( groupMember );
+                                groupMember.GroupId = registration.Group.Id;
+                                groupMember.PersonId = ppPerson.PersonId.Value;
+                                groupMember.GroupRoleId = groupRoleId.Value;
+                                groupMember.GroupMemberStatus = TemplateState.GroupMemberStatus;
+
+                                rockContext.SaveChanges();
+
+                                registrantChanges.Add( string.Format( "Registrant added to {0} group", registration.Group.Name ) );
+                            }
+                            else
+                            {
+                                registrantChanges.Add( string.Format( "Registrant group member reference updated to existing person in {0} group", registration.Group.Name ) );
+                            }
+
+                            registrant.GroupMemberId = groupMember.Id;
+                            rockContext.SaveChanges();
+                        }
+                    }
+                }
+
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( Registration ),
+                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                    registrant.RegistrationId,
+                    registrantChanges,
+                    "Registrant: " + registrantName,
+                    null, null );
             }
+            
+            NavigateToRegistration();
         }
 
         /// <summary>
