@@ -629,11 +629,21 @@ namespace RockWeb.Blocks.Finance
                 // If account is associated with an entity (i.e. registration), or this is the total row do not allow it to be deleted
                 if ( account.EntityTypeId.HasValue || account.AccountId == int.MinValue )
                 {
-                    // Hide the delete button
-                    var ctrls = e.Row.Cells[3].ControlsOfTypeRecursive<LinkButton>();
-                    if ( ctrls.Any() && ctrls.Count() == 1 )
+                    // Hide the edit button if this is the total row
+                    if ( account.AccountId == int.MinValue )
                     {
-                        ctrls.First().Visible = false;
+                        var editBtn = e.Row.Cells[3].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+                        if ( editBtn != null )
+                        {
+                            editBtn.Visible = false;
+                        }
+                    }
+
+                    // Hide the delete button
+                    var deleteBtn = e.Row.Cells[4].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+                    if ( deleteBtn != null )
+                    {
+                        deleteBtn.Visible = false;
                     }
                 }
             }
@@ -654,11 +664,11 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the RowSelected event of the gTransactionDetails control.
+        /// Handles the EditClick event of the gAccountsEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gAccountsEdit_RowSelected( object sender, RowEventArgs e )
+        protected void gAccountsEdit_EditClick( object sender, RowEventArgs e )
         {
             Guid? guid = e.RowKeyValue.ToString().AsGuidOrNull();
             if ( guid.HasValue )
@@ -1643,5 +1653,5 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
-}
+    }
 }
