@@ -440,7 +440,7 @@ namespace Rock.Web.Cache
             }
             return null;
         }
-        
+
         /// <summary>
         /// Removes entityType from cache
         /// </summary>
@@ -448,7 +448,15 @@ namespace Rock.Web.Cache
         public static void Flush( int id )
         {
             FlushCache( EntityTypeCache.CacheKey( id ) );
-            _entityTypes = new ConcurrentDictionary<string, int>();
+            if ( _entityTypes == null )
+            {
+                // shouldn't happen, but just in case
+                _entityTypes = new ConcurrentDictionary<string, int>();
+            }
+
+            // rebuild the _entityTypes dictionary 
+            var _keepEntityTypes = _entityTypes.Where( a => a.Value != id );
+            _entityTypes = new ConcurrentDictionary<string, int>( _keepEntityTypes );
         }
 
         #endregion
