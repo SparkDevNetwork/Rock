@@ -85,12 +85,21 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        private class SummaryRecord
+        {
+            public int Year { get; set; }
+            public int AccountId { get; set; }
+            public decimal TotalAmount { get; set; }
+        }
+
+        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
         {
             var rockContext = new RockContext();
-            var transactionIdsQry = new FinancialTransactionService( rockContext ).Queryable();
             var transactionDetailService = new FinancialTransactionDetailService( rockContext );
             var qry = transactionDetailService.Queryable().AsNoTracking()
                 .Where( a => a.Transaction.TransactionDateTime.HasValue );
@@ -101,44 +110,39 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.Where( t => t.Transaction.AuthorizedPersonAlias.Person.GivingId == targetPerson.GivingId );
             }
 
-            var yearlyAccountDetails = qry.Select( t => new
-            {
-                Year = t.Transaction.TransactionDateTime.Value.Year,
-                AccountId = t.Account.Id,
-                AccountName = t.Account.Name,
-                Amount = t.Amount
-            } )
-            .ToList();
+            List<SummaryRecord> summaryList;
 
-            var summaryList = yearlyAccountDetails
-                .GroupBy( a => a.Year )
-                .Select( t => new
-                {
-                    Year = t.Key,
-                    Accounts = t.GroupBy( b => b.AccountId ).Select( c => new
+            using ( new Rock.Data.QueryHintScope( rockContext, QueryHintType.RECOMPILE ) )
+            {
+                summaryList = qry
+                    .GroupBy( a => new { a.Transaction.TransactionDateTime.Value.Year, a.AccountId } )
+                    .Select( t => new SummaryRecord
                     {
-                        AccountName = c.Max( d => d.AccountName ),
-                        TotalAmount = c.Sum( d => d.Amount )
-                    } ).OrderBy( e => e.AccountName )
-                } ).OrderByDescending( a => a.Year )
-                .ToList();
+                        Year = t.Key.Year,
+                        AccountId = t.Key.AccountId,
+                        TotalAmount = t.Sum( d => d.Amount )
+                    } ).OrderByDescending( a => a.Year )
+                    .ToList();
+            }
 
             var mergeObjects = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
+            var financialAccounts = new FinancialAccountService( rockContext ).Queryable().Select( a => new { a.Id, a.Name } ).ToDictionary( k => k.Id, v => v.Name );
 
             var yearsMergeObjects = new List<Dictionary<string, object>>();
-            foreach ( var item in summaryList )
+            foreach ( var item in summaryList.GroupBy( a => a.Year ) )
             {
+                var year = item.Key;
                 var accountsList = new List<object>();
-                foreach ( var a in item.Accounts )
+                foreach ( var a in item )
                 {
                     var accountDictionary = new Dictionary<string, object>();
-                    accountDictionary.Add( "Account", a.AccountName );
+                    accountDictionary.Add( "Account", financialAccounts.ContainsKey( a.AccountId ) ? financialAccounts[a.AccountId] : string.Empty );
                     accountDictionary.Add( "TotalAmount", a.TotalAmount );
                     accountsList.Add( accountDictionary );
                 }
 
                 var yearDictionary = new Dictionary<string, object>();
-                yearDictionary.Add( "Year", item.Year );
+                yearDictionary.Add( "Year", year );
                 yearDictionary.Add( "SummaryRows", accountsList );
 
                 yearsMergeObjects.Add( yearDictionary );
