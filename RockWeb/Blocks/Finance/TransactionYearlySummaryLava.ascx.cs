@@ -99,66 +99,72 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            var rockContext = new RockContext();
-            var transactionDetailService = new FinancialTransactionDetailService( rockContext );
-            var qry = transactionDetailService.Queryable().AsNoTracking()
-                .Where( a => a.Transaction.TransactionDateTime.HasValue );
-
-            var targetPerson = this.ContextEntity<Person>();
-            if ( targetPerson != null )
+            var contributionType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            if ( contributionType != null )
             {
-                qry = qry.Where( t => t.Transaction.AuthorizedPersonAlias.Person.GivingId == targetPerson.GivingId );
-            }
+                var rockContext = new RockContext();
+                var transactionDetailService = new FinancialTransactionDetailService( rockContext );
+                var qry = transactionDetailService.Queryable().AsNoTracking()
+                    .Where( a =>
+                        a.Transaction.TransactionTypeValueId == contributionType.Id &&
+                        a.Transaction.TransactionDateTime.HasValue );
 
-            List<SummaryRecord> summaryList;
-
-            using ( new Rock.Data.QueryHintScope( rockContext, QueryHintType.RECOMPILE ) )
-            {
-                summaryList = qry
-                    .GroupBy( a => new { a.Transaction.TransactionDateTime.Value.Year, a.AccountId } )
-                    .Select( t => new SummaryRecord
-                    {
-                        Year = t.Key.Year,
-                        AccountId = t.Key.AccountId,
-                        TotalAmount = t.Sum( d => d.Amount )
-                    } ).OrderByDescending( a => a.Year )
-                    .ToList();
-            }
-
-            var mergeObjects = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
-            var financialAccounts = new FinancialAccountService( rockContext ).Queryable().Select( a => new { a.Id, a.Name } ).ToDictionary( k => k.Id, v => v.Name );
-
-            var yearsMergeObjects = new List<Dictionary<string, object>>();
-            foreach ( var item in summaryList.GroupBy( a => a.Year ) )
-            {
-                var year = item.Key;
-                var accountsList = new List<object>();
-                foreach ( var a in item )
+                var targetPerson = this.ContextEntity<Person>();
+                if ( targetPerson != null )
                 {
-                    var accountDictionary = new Dictionary<string, object>();
-                    accountDictionary.Add( "Account", financialAccounts.ContainsKey( a.AccountId ) ? financialAccounts[a.AccountId] : string.Empty );
-                    accountDictionary.Add( "TotalAmount", a.TotalAmount );
-                    accountsList.Add( accountDictionary );
+                    qry = qry.Where( t => t.Transaction.AuthorizedPersonAlias.Person.GivingId == targetPerson.GivingId );
                 }
 
-                var yearDictionary = new Dictionary<string, object>();
-                yearDictionary.Add( "Year", year );
-                yearDictionary.Add( "SummaryRows", accountsList );
+                List<SummaryRecord> summaryList;
 
-                yearsMergeObjects.Add( yearDictionary );
+                using ( new Rock.Data.QueryHintScope( rockContext, QueryHintType.RECOMPILE ) )
+                {
+                    summaryList = qry
+                        .GroupBy( a => new { a.Transaction.TransactionDateTime.Value.Year, a.AccountId } )
+                        .Select( t => new SummaryRecord
+                        {
+                            Year = t.Key.Year,
+                            AccountId = t.Key.AccountId,
+                            TotalAmount = t.Sum( d => d.Amount )
+                        } ).OrderByDescending( a => a.Year )
+                        .ToList();
+                }
+
+                var mergeObjects = GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
+                var financialAccounts = new FinancialAccountService( rockContext ).Queryable().Select( a => new { a.Id, a.Name } ).ToDictionary( k => k.Id, v => v.Name );
+
+                var yearsMergeObjects = new List<Dictionary<string, object>>();
+                foreach ( var item in summaryList.GroupBy( a => a.Year ) )
+                {
+                    var year = item.Key;
+                    var accountsList = new List<object>();
+                    foreach ( var a in item )
+                    {
+                        var accountDictionary = new Dictionary<string, object>();
+                        accountDictionary.Add( "Account", financialAccounts.ContainsKey( a.AccountId ) ? financialAccounts[a.AccountId] : string.Empty );
+                        accountDictionary.Add( "TotalAmount", a.TotalAmount );
+                        accountsList.Add( accountDictionary );
+                    }
+
+                    var yearDictionary = new Dictionary<string, object>();
+                    yearDictionary.Add( "Year", year );
+                    yearDictionary.Add( "SummaryRows", accountsList );
+
+                    yearsMergeObjects.Add( yearDictionary );
+                }
+
+                mergeObjects.Add( "Rows", yearsMergeObjects );
+
+                lLavaOutput.Text = string.Empty;
+                if ( GetAttributeValue( "EnableDebug" ).AsBooleanOrNull().GetValueOrDefault( false ) )
+                {
+                    lLavaOutput.Text = mergeObjects.lavaDebugInfo( rockContext );
+                }
+
+                string template = GetAttributeValue( "LavaTemplate" );
+
+                lLavaOutput.Text += template.ResolveMergeFields( mergeObjects ).ResolveClientIds( upnlContent.ClientID );
             }
-
-            mergeObjects.Add( "Rows", yearsMergeObjects );
-
-            lLavaOutput.Text = string.Empty;
-            if ( GetAttributeValue( "EnableDebug" ).AsBooleanOrNull().GetValueOrDefault( false ) )
-            {
-                lLavaOutput.Text = mergeObjects.lavaDebugInfo( rockContext );
-            }
-
-            string template = GetAttributeValue( "LavaTemplate" );
-
-            lLavaOutput.Text += template.ResolveMergeFields( mergeObjects ).ResolveClientIds( upnlContent.ClientID );
         }
 
         #endregion
