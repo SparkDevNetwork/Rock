@@ -764,10 +764,11 @@ namespace RockWeb.Blocks.Finance
             var qry = new FinancialTransactionService( rockContext ).Queryable();
 
             // Transaction Types
-            var txnTypes = GetAttributeValue( "TransactionTypes" ).SplitDelimitedValues().AsGuidList();
-            if ( txnTypes.Any() )
+            var transactionTypeValueIdList = GetAttributeValue( "TransactionTypes" ).SplitDelimitedValues().AsGuidList().Select( a => DefinedValueCache.Read( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
+
+            if ( transactionTypeValueIdList.Any() )
             {
-                qry = qry.Where( t => txnTypes.Contains( t.TransactionTypeValue.Guid ) );
+                qry = qry.Where( t => transactionTypeValueIdList.Contains( t.TransactionTypeValueId ) );
             }
 
             // Set up the selection filter
