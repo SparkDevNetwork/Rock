@@ -194,7 +194,7 @@ namespace Rock.Reporting.DataSelect.Person
                 }
             }
 
-            return SelectExpressionExtractor.Extract<Rock.Model.Person>( personLinkQuery, entityIdProperty, "p" );
+            return SelectExpressionExtractor.Extract( personLinkQuery, entityIdProperty, "p" );
         }
     }
 }

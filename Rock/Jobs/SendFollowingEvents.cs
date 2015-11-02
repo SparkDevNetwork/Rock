@@ -64,262 +64,263 @@ namespace Rock.Jobs
 
                 var exceptionMsgs = new List<string>();
 
-                var rockContext = new RockContext();
-
-                var followingService = new FollowingService( rockContext );
-                var followingEventTypeService = new FollowingEventTypeService( rockContext );
-                var followingEventNotificationService = new FollowingEventNotificationService( rockContext );
-
-                // Get all the active event types
-                var eventTypes = followingEventTypeService
-                    .Queryable()
-                    .Where( e =>
-                        e.EntityTypeId.HasValue &&
-                        e.IsActive )
-                    .OrderBy( e => e.Order )
-                    .ToList();
-
-                // Get the required event types
-                var requiredEventTypes = eventTypes
-                    .Where( e => e.IsNoticeRequired )
-                    .ToList();
-
-                // The people who are eligible to get following event notices based on the group type setting for this job
-                var eligiblePersonIds = new GroupMemberService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( m =>
-                        m.Group != null &&
-                        m.Group.Guid.Equals( groupGuid.Value ) &&
-                        m.GroupMemberStatus == GroupMemberStatus.Active &&
-                        m.Person != null &&
-                        m.Person.Email != null &&
-                        m.Person.Email != "" )
-                    .Select( m => m.PersonId )
-                    .Distinct()
-                    .ToList();
-
-                // Get all the subscriptions for the eligible people
-                var eventSubscriptions = new FollowingEventSubscriptionService( rockContext )
-                    .Queryable( "PersonAlias" ).AsNoTracking()
-                    .Where( f => eligiblePersonIds.Contains( f.PersonAlias.PersonId ) )
-                    .ToList();
-
-                // Dictionaries used to store information that will be used to create notification
-                var personSubscriptions = new Dictionary<int, List<int>>();                     // Key: personId, Value: list of event type ids that person subscribes to
-                var personFollowings = new Dictionary<int, List<int>>();                        // Key: personId, Value: list of following ids that person follows
-                var eventsThatHappened = new Dictionary<int, Dictionary<int, string>>();        // Key: event type id Value: Dictionary of entity id and formatted event notice for the entity
-
-                //Get the subscriptions for each person
-                foreach ( int personId in eligiblePersonIds )
+                using ( var rockContext = new RockContext() )
                 {
-                    var personEventTypes = eventSubscriptions
-                        .Where( s => s.PersonAlias.PersonId == personId )
-                        .Select( s => s.EventType )
-                        .ToList();
-                    personEventTypes.AddRange( requiredEventTypes );
-                    if ( personEventTypes.Any() )
-                    {
-                        personSubscriptions.AddOrIgnore( personId, personEventTypes
-                            .OrderBy( e => e.Order )
-                            .ThenBy( e => e.Name )
-                            .Select( e => e.Id )
-                            .Distinct()
-                            .ToList() );
-                    }
-                }
+                    var followingService = new FollowingService( rockContext );
+                    var followingEventTypeService = new FollowingEventTypeService( rockContext );
+                    var followingEventNotificationService = new FollowingEventNotificationService( rockContext );
 
-                // Get a distinct list of each entitytype/entity that is being followed by anyone that subscribes to events
-                var followings = followingService
-                    .Queryable( "PersonAlias" ).AsNoTracking()
-                    .Where( f => personSubscriptions.Keys.Contains( f.PersonAlias.PersonId ) )
-                    .ToList();
-
-                // group the followings by their type
-                var followedEntityIds = new Dictionary<int, List<int>>();
-                foreach ( var followedEntity in followings
-                    .Select( f => new
-                    {
-                        f.EntityTypeId,
-                        f.EntityId
-                    } )
-                    .Distinct() )
-                {
-                    followedEntityIds.AddOrIgnore( followedEntity.EntityTypeId, new List<int>() );
-                    followedEntityIds[followedEntity.EntityTypeId].Add( followedEntity.EntityId );
-                }
-
-                // group the followings by the follower
-                foreach ( int personId in personSubscriptions.Select( s => s.Key ) )
-                {
-                    var personFollowing = followings
-                        .Where( f => f.PersonAlias.PersonId == personId )
-                        .Select( f => f.Id )
+                    // Get all the active event types
+                    var eventTypes = followingEventTypeService
+                        .Queryable().AsNoTracking()
+                        .Where( e =>
+                            e.EntityTypeId.HasValue &&
+                            e.IsActive )
+                        .OrderBy( e => e.Order )
                         .ToList();
 
-                    personFollowings.Add( personId, personFollowing );
-                }
+                    // Get the required event types
+                    var requiredEventTypes = eventTypes
+                        .Where( e => e.IsNoticeRequired )
+                        .ToList();
 
-                var timestamp = RockDateTime.Now;
+                    // The people who are eligible to get following event notices based on the group type setting for this job
+                    var eligiblePersonIds = new GroupMemberService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( m =>
+                            m.Group != null &&
+                            m.Group.Guid.Equals( groupGuid.Value ) &&
+                            m.GroupMemberStatus == GroupMemberStatus.Active &&
+                            m.Person != null &&
+                            m.Person.Email != null &&
+                            m.Person.Email != "" )
+                        .Select( m => m.PersonId )
+                        .Distinct()
+                        .ToList();
 
-                // foreach followed entitytype
-                foreach ( var keyVal in followedEntityIds )
-                {
-                    // Get the entitytype
-                    EntityTypeCache itemEntityType = EntityTypeCache.Read( keyVal.Key );
-                    if ( itemEntityType.AssemblyName != null )
+                    // Get all the subscriptions for the eligible people
+                    var eventSubscriptions = new FollowingEventSubscriptionService( rockContext )
+                        .Queryable( "PersonAlias" ).AsNoTracking()
+                        .Where( f => eligiblePersonIds.Contains( f.PersonAlias.PersonId ) )
+                        .ToList();
+
+                    // Dictionaries used to store information that will be used to create notification
+                    var personSubscriptions = new Dictionary<int, List<int>>();                     // Key: personId, Value: list of event type ids that person subscribes to
+                    var personFollowings = new Dictionary<int, List<int>>();                        // Key: personId, Value: list of following ids that person follows
+                    var eventsThatHappened = new Dictionary<int, Dictionary<int, string>>();        // Key: event type id Value: Dictionary of entity id and formatted event notice for the entity
+
+                    //Get the subscriptions for each person
+                    foreach ( int personId in eligiblePersonIds )
                     {
-                        // get the actual type of what is being followed 
-                        Type entityType = itemEntityType.GetEntityType();
-                        if ( entityType != null )
+                        var personEventTypes = eventSubscriptions
+                            .Where( s => s.PersonAlias.PersonId == personId )
+                            .Select( s => s.EventType )
+                            .ToList();
+                        personEventTypes.AddRange( requiredEventTypes );
+                        if ( personEventTypes.Any() )
                         {
-                            // Get generic queryable method and query all the entities that are being followed
-                            Type[] modelType = { entityType };
-                            Type genericServiceType = typeof( Rock.Data.Service<> );
-                            Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                            Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
-                            MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
-                            var entityQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
-                            var entityList = entityQry.Where( q => keyVal.Value.Contains( q.Id ) ).ToList();
+                            personSubscriptions.AddOrIgnore( personId, personEventTypes
+                                .OrderBy( e => e.Order )
+                                .ThenBy( e => e.Name )
+                                .Select( e => e.Id )
+                                .Distinct()
+                                .ToList() );
+                        }
+                    }
 
-                            // If there are any followed entities of this type 
-                            if ( entityList.Any() )
+                    // Get a distinct list of each entitytype/entity that is being followed by anyone that subscribes to events
+                    var followings = followingService
+                        .Queryable( "PersonAlias" ).AsNoTracking()
+                        .Where( f => personSubscriptions.Keys.Contains( f.PersonAlias.PersonId ) )
+                        .ToList();
+
+                    // group the followings by their type
+                    var followedEntityIds = new Dictionary<int, List<int>>();
+                    foreach ( var followedEntity in followings
+                        .Select( f => new
+                        {
+                            f.EntityTypeId,
+                            f.EntityId
+                        } )
+                        .Distinct() )
+                    {
+                        followedEntityIds.AddOrIgnore( followedEntity.EntityTypeId, new List<int>() );
+                        followedEntityIds[followedEntity.EntityTypeId].Add( followedEntity.EntityId );
+                    }
+
+                    // group the followings by the follower
+                    foreach ( int personId in personSubscriptions.Select( s => s.Key ) )
+                    {
+                        var personFollowing = followings
+                            .Where( f => f.PersonAlias.PersonId == personId )
+                            .Select( f => f.Id )
+                            .ToList();
+
+                        personFollowings.Add( personId, personFollowing );
+                    }
+
+                    var timestamp = RockDateTime.Now;
+
+                    // foreach followed entitytype
+                    foreach ( var keyVal in followedEntityIds )
+                    {
+                        // Get the entitytype
+                        EntityTypeCache itemEntityType = EntityTypeCache.Read( keyVal.Key );
+                        if ( itemEntityType.AssemblyName != null )
+                        {
+                            // get the actual type of what is being followed 
+                            Type entityType = itemEntityType.GetEntityType();
+                            if ( entityType != null )
                             {
-                                // Get the active event types for this entity type
-                                foreach ( var eventType in eventTypes.Where( e => e.FollowedEntityTypeId == keyVal.Key ) )
+                                // Get generic queryable method and query all the entities that are being followed
+                                Type[] modelType = { entityType };
+                                Type genericServiceType = typeof( Rock.Data.Service<> );
+                                Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+                                Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
+                                MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
+                                var entityQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
+                                var entityList = entityQry.Where( q => keyVal.Value.Contains( q.Id ) ).ToList();
+
+                                // If there are any followed entities of this type 
+                                if ( entityList.Any() )
                                 {
-                                    try
+                                    // Get the active event types for this entity type
+                                    foreach ( var eventType in eventTypes.Where( e => e.FollowedEntityTypeId == keyVal.Key ) )
                                     {
-
-                                        // Get the component
-                                        var eventComponent = eventType.GetEventComponent();
-                                        if ( eventComponent != null )
+                                        try
                                         {
-                                            // Get the previous notificatoins for this event type
-                                            var previousNotifications = followingEventNotificationService
-                                                .Queryable()
-                                                .Where( n => n.FollowingEventTypeId == eventType.Id )
-                                                .ToList();
 
-                                            // check each entity that is followed (by anyone)
-                                            foreach ( IEntity entity in entityList )
+                                            // Get the component
+                                            var eventComponent = eventType.GetEventComponent();
+                                            if ( eventComponent != null )
                                             {
-                                                var previousNotification = previousNotifications
-                                                    .Where( n => n.EntityId == entity.Id )
-                                                    .FirstOrDefault();
-                                                DateTime? lastNotification = previousNotification != null ? previousNotification.LastNotified : (DateTime?)null;
+                                                // Get the previous notificatoins for this event type
+                                                var previousNotifications = followingEventNotificationService
+                                                    .Queryable()
+                                                    .Where( n => n.FollowingEventTypeId == eventType.Id )
+                                                    .ToList();
 
-                                                // if the event happened
-                                                if ( eventComponent.HasEventHappened( eventType, entity, lastNotification ) )
+                                                // check each entity that is followed (by anyone)
+                                                foreach ( IEntity entity in entityList )
                                                 {
-                                                    // Store the event type id and the entity for later processing of notifications
-                                                    eventsThatHappened.AddOrIgnore( eventType.Id, new Dictionary<int, string>() );
-                                                    eventsThatHappened[eventType.Id].Add( entity.Id, eventComponent.FormatEntityNotification( eventType, entity ) );
+                                                    var previousNotification = previousNotifications
+                                                        .Where( n => n.EntityId == entity.Id )
+                                                        .FirstOrDefault();
+                                                    DateTime? lastNotification = previousNotification != null ? previousNotification.LastNotified : (DateTime?)null;
 
-                                                    if ( previousNotification == null )
+                                                    // if the event happened
+                                                    if ( eventComponent.HasEventHappened( eventType, entity, lastNotification ) )
                                                     {
-                                                        previousNotification = new FollowingEventNotification();
-                                                        previousNotification.FollowingEventTypeId = eventType.Id;
-                                                        previousNotification.EntityId = entity.Id;
-                                                        followingEventNotificationService.Add( previousNotification );
+                                                        // Store the event type id and the entity for later processing of notifications
+                                                        eventsThatHappened.AddOrIgnore( eventType.Id, new Dictionary<int, string>() );
+                                                        eventsThatHappened[eventType.Id].Add( entity.Id, eventComponent.FormatEntityNotification( eventType, entity ) );
+
+                                                        if ( previousNotification == null )
+                                                        {
+                                                            previousNotification = new FollowingEventNotification();
+                                                            previousNotification.FollowingEventTypeId = eventType.Id;
+                                                            previousNotification.EntityId = entity.Id;
+                                                            followingEventNotificationService.Add( previousNotification );
+                                                        }
+                                                        previousNotification.LastNotified = timestamp;
                                                     }
-                                                    previousNotification.LastNotified = timestamp;
                                                 }
+
+                                                rockContext.SaveChanges();
                                             }
 
-                                            rockContext.SaveChanges();
+                                            eventType.LastCheckDateTime = RockDateTime.Now;
                                         }
 
-                                        eventType.LastCheckDateTime = RockDateTime.Now;
+                                        catch ( Exception ex )
+                                        {
+                                            exceptionMsgs.Add( string.Format( "An exception occurred calculating events for the '{0}' suggestion type:{1}    {2}", eventType.Name, Environment.NewLine, ex.Messages().AsDelimited( Environment.NewLine + "   " ) ) );
+                                            ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+                                        }
                                     }
 
-                                    catch ( Exception ex )
-                                    {
-                                        exceptionMsgs.Add( string.Format( "An exception occurred calculating events for the '{0}' suggestion type:{1}    {2}", eventType.Name, Environment.NewLine, ex.Messages().AsDelimited( Environment.NewLine + "   " ) ) );
-                                        ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
-                                    }
                                 }
-
                             }
                         }
                     }
-                }
 
-                // send notificatons
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                    // send notificatons
+                    var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
 
-                var possibleRecipients = new PersonService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( p => personSubscriptions.Keys.Contains( p.Id ) )
-                    .ToList();
+                    var possibleRecipients = new PersonService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( p => personSubscriptions.Keys.Contains( p.Id ) )
+                        .ToList();
 
-                // Loop through the possible recipients that actually subscribe to events
-                foreach ( var personSubscription in personSubscriptions )
-                {
-                    // Get the recipient person
-                    int personId = personSubscription.Key;
-                    var person = possibleRecipients.Where( p => p.Id == personId ).FirstOrDefault();
-                    if ( person != null )
+                    // Loop through the possible recipients that actually subscribe to events
+                    foreach ( var personSubscription in personSubscriptions )
                     {
-                        try
+                        // Get the recipient person
+                        int personId = personSubscription.Key;
+                        var person = possibleRecipients.Where( p => p.Id == personId ).FirstOrDefault();
+                        if ( person != null )
                         {
-
-                            // Make sure person is actually following anything
-                            if ( personFollowings.ContainsKey( personId ) )
+                            try
                             {
-                                // Dictionary to store the entities that had an event for each event type
-                                var personEventTypeNotices = new List<FollowingEventTypeNotices>();
 
-                                // Get the event types that person subscribes to
-                                foreach ( var eventType in eventsThatHappened.Where( e => personSubscription.Value.Contains( e.Key ) ) )
+                                // Make sure person is actually following anything
+                                if ( personFollowings.ContainsKey( personId ) )
                                 {
-                                    // Get the EntityTypeId for this event type
-                                    int entityTypeId = eventTypes
-                                        .Where( e => e.Id == eventType.Key )
-                                        .Select( e => e.FollowedEntityTypeId.Value )
-                                        .FirstOrDefault();
+                                    // Dictionary to store the entities that had an event for each event type
+                                    var personEventTypeNotices = new List<FollowingEventTypeNotices>();
 
-                                    // Find all the entities with this event type that the person follows
-                                    var personFollowedEntityIds = followings
-                                        .Where( f =>
-                                            personFollowings[personId].Contains( f.Id ) &&
-                                            f.EntityTypeId == entityTypeId )
-                                        .Select( f => f.EntityId )
-                                        .ToList();
-
-                                    // Get any of those entities that had an event happen
-                                    var personFollowedEntities = eventType.Value
-                                        .Where( e => personFollowedEntityIds.Contains( e.Key ) )
-                                        .ToList();
-
-                                    // If any were found
-                                    if ( personFollowedEntities.Any() )
+                                    // Get the event types that person subscribes to
+                                    foreach ( var eventType in eventsThatHappened.Where( e => personSubscription.Value.Contains( e.Key ) ) )
                                     {
-                                        // Add the entry 
-                                        var eventTypeObj = eventTypes.Where( e => e.Id == eventType.Key ).FirstOrDefault();
-                                        if ( eventTypeObj != null )
+                                        // Get the EntityTypeId for this event type
+                                        int entityTypeId = eventTypes
+                                            .Where( e => e.Id == eventType.Key )
+                                            .Select( e => e.FollowedEntityTypeId.Value )
+                                            .FirstOrDefault();
+
+                                        // Find all the entities with this event type that the person follows
+                                        var personFollowedEntityIds = followings
+                                            .Where( f =>
+                                                personFollowings[personId].Contains( f.Id ) &&
+                                                f.EntityTypeId == entityTypeId )
+                                            .Select( f => f.EntityId )
+                                            .ToList();
+
+                                        // Get any of those entities that had an event happen
+                                        var personFollowedEntities = eventType.Value
+                                            .Where( e => personFollowedEntityIds.Contains( e.Key ) )
+                                            .ToList();
+
+                                        // If any were found
+                                        if ( personFollowedEntities.Any() )
                                         {
-                                            personEventTypeNotices.Add( new FollowingEventTypeNotices( eventTypeObj, personFollowedEntities.Select( e => e.Value ).ToList() ) );
+                                            // Add the entry 
+                                            var eventTypeObj = eventTypes.Where( e => e.Id == eventType.Key ).FirstOrDefault();
+                                            if ( eventTypeObj != null )
+                                            {
+                                                personEventTypeNotices.Add( new FollowingEventTypeNotices( eventTypeObj, personFollowedEntities.Select( e => e.Value ).ToList() ) );
+                                            }
                                         }
                                     }
-                                }
 
-                                // If there are any events for any of the entities that this person follows, send a notification
-                                if ( personEventTypeNotices.Any() )
-                                {
-                                    // Send the notice
-                                    var recipients = new List<RecipientData>();
-                                    var mergeFields = new Dictionary<string, object>();
-                                    mergeFields.Add( "Person", person );
-                                    mergeFields.Add( "EventTypes", personEventTypeNotices.OrderBy( e => e.EventType.Order ).ToList() );
-                                    recipients.Add( new RecipientData( person.Email, mergeFields ) );
-                                    Email.Send( systemEmailGuid.Value, recipients, appRoot );
+                                    // If there are any events for any of the entities that this person follows, send a notification
+                                    if ( personEventTypeNotices.Any() )
+                                    {
+                                        // Send the notice
+                                        var recipients = new List<RecipientData>();
+                                        var mergeFields = new Dictionary<string, object>();
+                                        mergeFields.Add( "Person", person );
+                                        mergeFields.Add( "EventTypes", personEventTypeNotices.OrderBy( e => e.EventType.Order ).ToList() );
+                                        recipients.Add( new RecipientData( person.Email, mergeFields ) );
+                                        Email.Send( systemEmailGuid.Value, recipients, appRoot );
+                                    }
                                 }
                             }
-                        }
-                        catch ( Exception ex )
-                        {
-                            exceptionMsgs.Add( string.Format( "An exception occurred sending event notice to '{0}':{1}    {2}", person.FullName, Environment.NewLine, ex.Messages().AsDelimited( Environment.NewLine + "   " ) ) );
-                            ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+                            catch ( Exception ex )
+                            {
+                                exceptionMsgs.Add( string.Format( "An exception occurred sending event notice to '{0}':{1}    {2}", person.FullName, Environment.NewLine, ex.Messages().AsDelimited( Environment.NewLine + "   " ) ) );
+                                ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+                            }
                         }
                     }
                 }

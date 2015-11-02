@@ -44,6 +44,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 0 )]
+        [IgnoreCanDelete]
         public int GroupId { get; set; }
 
         /// <summary>

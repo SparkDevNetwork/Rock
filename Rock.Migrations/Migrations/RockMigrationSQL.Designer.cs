@@ -690,5 +690,236 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201509032145388_PersonMergeRequests", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @BinaryFileTypeMergeTemplate INT = (
+        ///        SELECT TOP 1 Id
+        ///        FROM BinaryFileType
+        ///        WHERE [Guid] = &apos;BD63EC0C-2DF8-4C55-97E3-616870C67C59&apos;
+        ///        )
+        ///    ,@StorageEntityTypeDatabase INT = (
+        ///        SELECT TOP 1 Id
+        ///        FROM EntityType
+        ///        WHERE NAME = &apos;Rock.Storage.Provider.Database&apos;
+        ///        )
+        ///
+        ///INSERT INTO [dbo].[BinaryFile] (
+        ///    [IsTemporary]
+        ///    ,[IsSystem]
+        ///    ,[BinaryFileTypeId]
+        ///    ,[FileName]
+        ///    ,[MimeType]
+        ///    ,[Description]
+        ///    ,[StorageEntityTypeId]
+        ///   [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201509242206062_GroupAttendanceRoster_AddGroupRosterMergeTemplate {
+            get {
+                return ResourceManager.GetString("_201509242206062_GroupAttendanceRoster_AddGroupRosterMergeTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @Id int
+        ///DECLARE @ParentId int
+        ///DECLARE @Selection nvarchar(max)
+        ///DECLARE @FilterEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Reporting.DataFilter.PropertyFilter&apos; )
+        ///DECLARE @AndFilterId int
+        ///
+        ///DECLARE DataViewCursor INSENSITIVE CURSOR FOR
+        ///SELECT 
+        ///	F.[Id],
+        ///	F.[ParentId],
+        ///	&apos;[&apos; + char(13) + char(10) + 
+        ///	char(9) + &apos;&quot;SecondaryAudiences&quot;,&apos; + char(13) + char(10) + 
+        ///	char(9) + &apos;&quot;8&quot;,&apos; + char(13) + char(10) + 
+        ///	char(9) + &apos;&quot;&apos; + SUBSTRING( F.[Selection], 38, 36 ) + &apos;&quot;,&apos;  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201509242206062_GroupAttendanceRoster_SecondaryAudience {
+            get {
+                return ResourceManager.GetString("_201509242206062_GroupAttendanceRoster_SecondaryAudience", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A-AE6E-5EE307D9A0DC&apos;
+        ///            * Phone Type - Home: &apos;407E7E45-7B2E-4FCD-9605-ECB1339F2453&apos;
+        ///            * Phone Type - Cell: &apos;AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303&apos;
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		EX [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201509242206062_GroupAttendanceRoster_spCrm_PersonDuplicateFinder {
+            get {
+                return ResourceManager.GetString("_201509242206062_GroupAttendanceRoster_spCrm_PersonDuplicateFinder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @NoteEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Model.Note&apos; )
+        ///
+        ///;WITH CTE
+        ///AS
+        ///( 
+        ///                SELECT [EntityId], COUNT(*) AS [AuthCount]
+        ///                FROM [Auth]
+        ///                WHERE [EntityTypeId] = @NoteEntityTypeId
+        ///                AND [Action] = &apos;View&apos;
+        ///                GROUP BY [EntityId]
+        ///)
+        ///
+        ///UPDATE [Note]
+        ///SET [IsPrivateNote] = 1
+        ///WHERE [Id] IN (
+        ///                SELECT A1.[EntityId]
+        ///                FROM [Auth] A1
+        ///                INNER JOIN [Au [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201510082215386_ComputedSundayDate_PrivateNoteMigration {
+            get {
+                return ResourceManager.GetString("_201510082215386_ComputedSundayDate_PrivateNoteMigration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @NoteTypeEntityTypeId int = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = &apos;337EED57-D4AB-4EED-BBDB-0CB3A467DBCC&apos;)
+        ///DECLARE @GroupMemberNoteTypeId int = (SELECT TOP 1 [Id] FROM [NoteType] WHERE [Guid] = &apos;FFFC3644-60CD-4D14-A714-E8DCC202A0E1&apos;)
+        ///
+        ///DECLARE @StaffGroupId int = (SELECT TOP 1 [Id] FROM [Group] WHERE [Guid] = &apos;2C112948-FF4C-46E7-981A-0257681EADF4&apos;)
+        ///DECLARE @StaffLikeGroupId int = (SELECT TOP 1 [Id] FROM [Group] WHERE [Guid] = &apos;300BA2C8-49A3-44BA-A82A-82E3FD8C3745&apos;)
+        ///
+        ///IF NOT EXISTS ( [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201510082215386_ComputedSundayDate_SecurityForGroupMemberNotes {
+            get {
+                return ResourceManager.GetString("_201510082215386_ComputedSundayDate_SecurityForGroupMemberNotes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 	/*
+        ///	&lt;doc&gt;
+        ///		&lt;summary&gt;
+        /// 			This procedure merges the data from the non-primary person to the primary person.  It
+        ///			is used when merging people in Rock and should never be used outside of that process. 
+        ///		&lt;/summary&gt;
+        ///
+        ///		&lt;returns&gt;
+        ///		&lt;/returns&gt;
+        ///		&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///		&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///		&lt;remarks&gt;	
+        ///			Uses the following constants:
+        ///				* Group Type  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201510082215386_ComputedSundayDate_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_201510082215386_ComputedSundayDate_spCrm_PersonMerge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the Sunday date of a given date.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		The Sunday of the date given with Sunday being the last day of the week.
+        ///	&lt;/returns&gt;
+        ///	&lt;remarks&gt;
+        ///		
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		SELECT [dbo].[ufnUtility_GetSundayDate](getdate())
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///
+        ///ALTER FUNCTION [dbo].[ufnUtility_GetSundayDate](@InputDate datetime) 
+        ///
+        ///RETURNS DATE WITH SCHEMABINDING AS
+        ///
+        ///BEGIN
+        ///	DECLARE @DayOfWeek int
+        ///	DECLARE @DaysToAdd int
+        ///	DECLARE @SundayDate datetime        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201510082215386_ComputedSundayDate_ufnUtility_GetSundayDate {
+            get {
+                return ResourceManager.GetString("_201510082215386_ComputedSundayDate_ufnUtility_GetSundayDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @PageEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = &apos;Rock.Model.Page&apos; ) 
+        ///DECLARE @FinancePageId int = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = &apos;7BEB7569-C485-40A0-A609-B0678F6F7240&apos; ) 
+        ///DECLARE @FinanceFunctionsPageId int = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = &apos;142627AE-6590-48E3-BFCA-3669260B8CF2&apos; ) 
+        ///DECLARE @FinanceAdminPageId int = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = &apos;18C9E5C3-3E28-4AA3-84F6-78CD4EA2DD3C&apos; ) 
+        ///DECLARE @BenevolenceGroupId int =  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201510141725294_GroupTypeShowConnectionStatus_BenevolenceSecurity {
+            get {
+                return ResourceManager.GetString("_201510141725294_GroupTypeShowConnectionStatus_BenevolenceSecurity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the attendance data needed for the Attendance Badge. If no family role (adult/child)
+        ///		is given it is looked up.  If the individual is an adult it will return family attendance if it&apos;s a child
+        ///		it will return the individual&apos;s attendance. If a person is in two families once as a child once as an
+        ///		adult it will pick the first role it finds.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* AttendanceCount
+        ///		* SundaysInMonth
+        ///		* Month
+        ///		* Year
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;P [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201510141725294_GroupTypeShowConnectionStatus_spCheckin_BadgeAttendance {
+            get {
+                return ResourceManager.GetString("_201510141725294_GroupTypeShowConnectionStatus_spCheckin_BadgeAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  /*
+        ///    &lt;doc&gt;
+        ///	    &lt;summary&gt;
+        /// 		    This function returns the number of weekends a member of a family has attended a weekend service
+        ///		    in the last X weeks.
+        ///	    &lt;/summary&gt;
+        ///
+        ///	    &lt;returns&gt;
+        ///		    * Number of weeks
+        ///	    &lt;/returns&gt;
+        ///	    &lt;param name=&quot;&quot;PersonId&quot;&quot; datatype=&quot;&quot;int&quot;&quot;&gt;The person id to use&lt;/param&gt;
+        ///	    &lt;param name=&quot;&quot;WeekDuration&quot;&quot; datatype=&quot;&quot;int&quot;&quot;&gt;The number of weeks to use as the duration (default 16)&lt;/param&gt;
+        ///	    &lt;remarks&gt;	
+        ///	    &lt;/remarks&gt;
+        ///	    &lt;code&gt;
+        ///		    EXEC [dbo].[spCheckin_We [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201510141725294_GroupTypeShowConnectionStatus_spCheckin_WeeksAttendedInDuration {
+            get {
+                return ResourceManager.GetString("_201510141725294_GroupTypeShowConnectionStatus_spCheckin_WeeksAttendedInDuration", resourceCulture);
+            }
+        }
     }
 }

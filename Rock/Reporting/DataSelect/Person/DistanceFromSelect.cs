@@ -170,7 +170,7 @@ namespace Rock.Reporting.DataSelect.Person
                     .Select( p => (double?)null );
             }
 
-            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personLocationDistanceQuery, entityIdProperty, "p" );
+            var selectExpression = SelectExpressionExtractor.Extract( personLocationDistanceQuery, entityIdProperty, "p" );
 
             return selectExpression;
         }

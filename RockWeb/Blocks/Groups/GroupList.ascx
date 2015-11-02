@@ -23,6 +23,11 @@
                     <Rock:Grid ID="gGroups" runat="server" RowItemText="Group" AllowSorting="true" OnRowSelected="gGroups_Edit">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockTemplateField HeaderText="Name" SortExpression="Name" Visible="false">
+                                <ItemTemplate>
+                                    <%# Eval("Name") %><br /><small><%# Eval("Path") %></small>
+                                </ItemTemplate>
+                            </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="GroupTypeName" HeaderText="Group Type" SortExpression="GroupTypeName"/>
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" ColumnPriority="Desktop" SortExpression="Description" />
                             <Rock:RockBoundField DataField="GroupRole" HeaderText="Role" SortExpression="Role" />

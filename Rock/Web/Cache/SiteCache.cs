@@ -361,6 +361,22 @@ namespace Rock.Web.Cache
         public bool RedirectTablets { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable page views].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable page views]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnablePageViews { get; set; }
+
+        /// <summary>
+        /// Gets or sets the page view retention period days.
+        /// </summary>
+        /// <value>
+        /// The page view retention period days.
+        /// </value>
+        public int? PageViewRetentionPeriodDays { get; set; }
+
+        /// <summary>
         /// Gets or sets the facebook app id.
         /// </summary>
         /// <value>
@@ -429,6 +445,8 @@ namespace Rock.Web.Cache
                 this.MobilePageId = site.MobilePageId;
                 this.ExternalUrl = site.ExternalUrl;
                 this.RedirectTablets = site.RedirectTablets;
+                this.EnablePageViews = site.EnablePageViews;
+                this.PageViewRetentionPeriodDays = site.PageViewRetentionPeriodDays;
 
                 foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
                 {

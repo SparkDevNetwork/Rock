@@ -149,6 +149,7 @@
 @panel-text:                  @text-color;                  // The text color of the panel.
 @panel-border:                darken(@theme-6, 10%);        // The panel's border color.
 @panel-top-border-color:      @theme-3;    // Color of the panel's top border often used as an accent color.
+@panel-border-radius:         @border-radius-base;
 //--
 @panel-heading-bg:            @theme-6;                  // The background color of the panel's header.
 @panel-heading-text-color:    @theme-6-text;             // The heading's text color.
@@ -158,7 +159,6 @@
 //--
 @panel-footer-bg:             @panel-bg;                 // The background color of the panel's footer.
 @panel-footer-color:          @panel-text;              // The color text of the panel's footer.
-
 
 // Grid
 @grid-border-color: @panel-border;   // The border color of the grids cells.
@@ -210,6 +210,9 @@
 @grid-footer-button-bg: darken(@grid-footer-bg, 5%);
 @grid-footer-button-text-color: @text-color;
 @grid-footer-button-border: darken(@grid-footer-bg, 15%);
+
+// Popover
+@popover-title-bg: @panel-heading-bg; // The background color for popovers
 
 // Person Profile
 //// Bio Bar

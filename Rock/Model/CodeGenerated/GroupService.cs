@@ -69,12 +69,8 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} contains one or more child {1}.", Group.FriendlyTypeName, Group.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
             }  
- 
-            if ( new Service<GroupRequirement>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, GroupRequirement.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring GroupRequirement,GroupId 
  
             if ( new Service<Person>( Context ).Queryable().Any( a => a.GivingGroupId == item.Id ) )
             {

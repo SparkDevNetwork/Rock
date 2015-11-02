@@ -13,6 +13,7 @@ namespace DotLiquid
 		public Hash LocalVariables { get; set; }
 		public IEnumerable<Type> Filters { get; set; }
 		public Hash Registers { get; set; }
+        public Dictionary<Type, Func<object, object>> ValueTypeTransformers;
 
 		/// <summary>
 		/// Gets or sets a value that controls whether errors are thrown as exceptions.
@@ -34,6 +35,7 @@ namespace DotLiquid
 				environments.Add(LocalVariables);
 			environments.Add(template.Assigns);
 			context = new Context(environments, template.InstanceAssigns, template.Registers, RethrowErrors);
+            context.ValueTypeTransformers = ValueTypeTransformers;
 			registers = Registers;
 			filters = Filters;
 		}

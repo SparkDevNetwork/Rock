@@ -134,6 +134,8 @@ namespace RockWeb.Blocks.Core
 
             rockContext.SaveChanges();
 
+            Rock.CheckIn.KioskDevice.FlushAll();
+
             var qryParams = new Dictionary<string, string>();
             qryParams["ScheduleId"] = schedule.Id.ToString();
             qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );

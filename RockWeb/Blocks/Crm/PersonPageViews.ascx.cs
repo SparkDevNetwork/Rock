@@ -15,19 +15,16 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Collections.Generic;
-using UAParser;
+
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -37,7 +34,7 @@ namespace RockWeb.Blocks.Crm
     [DisplayName( "Person Page Views" )]
     [Category( "CRM" )]
     [Description( "Lists a persons web sessions with details." )]
-    [IntegerField("Session Count", "The number of sessions to show per page.", true, 20, "", 1)]
+    [IntegerField( "Session Count", "The number of sessions to show per page.", true, 20, "", 1 )]
     public partial class PersonPageViews : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -49,15 +46,7 @@ namespace RockWeb.Blocks.Crm
 
         #endregion
 
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
-
         #region Base Control Methods
-        
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -84,7 +73,7 @@ namespace RockWeb.Blocks.Crm
             {
                 if ( !string.IsNullOrWhiteSpace( PageParameter( "StartDate" ) ) )
                 {
-                    DateTime.TryParse( PageParameter( "StartDate" ), out startDate );
+                    startDate = PageParameter( "StartDate" ).AsDateTime() ?? DateTime.MinValue;
                     if ( startDate != DateTime.MinValue )
                     {
                         drpDateFilter.LowerValue = startDate;
@@ -93,26 +82,25 @@ namespace RockWeb.Blocks.Crm
 
                 if ( !string.IsNullOrWhiteSpace( PageParameter( "EndDate" ) ) )
                 {
-                    DateTime.TryParse( PageParameter( "EndDate" ), out endDate );
+                    endDate = PageParameter( "EndDate" ).AsDateTime() ?? DateTime.MaxValue;
                     if ( endDate != DateTime.MaxValue )
                     {
                         drpDateFilter.UpperValue = endDate;
                     }
                 }
 
-                if ( !String.IsNullOrEmpty( PageParameter( "Page" ) ) )
+                if ( !string.IsNullOrEmpty( PageParameter( "Page" ) ) )
                 {
-                    pageNumber = Int32.Parse( PageParameter( "Page" ) );
+                    pageNumber = PageParameter( "Page" ).AsInteger();
                 }
 
-                if ( !String.IsNullOrEmpty( PageParameter( "SiteId" ) ) )
+                if ( !string.IsNullOrEmpty( PageParameter( "SiteId" ) ) )
                 {
-                    siteId = Int32.Parse( PageParameter( "SiteId" ) );
+                    siteId = PageParameter( "SiteId" ).AsInteger();
                 }
 
                 ShowList();
             }
-            
         }
 
         #endregion
@@ -126,11 +114,16 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated(object sender, EventArgs e)
+        protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             ShowList();
         }
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptSessions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptSessions_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
@@ -143,7 +136,7 @@ namespace RockWeb.Blocks.Crm
 
                     var lClientIcon = e.Item.FindControl( "lClientIcon" ) as Literal;
                     string icon = string.Empty;
-                    switch ( session.ClientType )
+                    switch ( session.PageViewSession.PageViewUserAgent.ClientType )
                     {
                         case "Desktop":
                             icon = "fa-desktop";
@@ -155,30 +148,35 @@ namespace RockWeb.Blocks.Crm
                             icon = "fa-mobile-phone";
                             break;
                     }
-                    var lUserAgent = e.Item.FindControl( "lUserAgent" ) as Literal;
-                    Parser uaParser = Parser.GetDefault();
-                    ClientInfo client = uaParser.Parse( session.UserAgent );
 
-                    lClientIcon.Text = String.Format( "<div class='pageviewsession-client pull-right'><div class='pull-left'><small>{0}<br>{1}</small></div><i class='fa {2} fa-2x pull-right'></i></div>", 
-                                            client.UserAgent, 
-                                            client.OS,
-                                            icon );
-                    
+                    var lUserAgent = e.Item.FindControl( "lUserAgent" ) as Literal;
+
+                    lClientIcon.Text = string.Format(
+                        "<div class='pageviewsession-client pull-right'><div class='pull-left'><small>{0}<br>{1}</small></div><i class='fa {2} fa-2x pull-right'></i></div>",
+                        session.PageViewSession.PageViewUserAgent.Browser,
+                        session.PageViewSession.PageViewUserAgent.OperatingSystem,
+                        icon );
+
                     var lSessionDuration = e.Item.FindControl( "lSessionDuration" ) as Literal;
                     TimeSpan duration = (DateTime)session.EndDateTime - (DateTime)session.StartDateTime;
 
                     if ( duration.Hours > 0 )
                     {
-                        lSessionDuration.Text = String.Format( "{0}h {1}m", duration.Hours, duration.Minutes );
+                        lSessionDuration.Text = string.Format( "{0}h {1}m", duration.Hours, duration.Minutes );
                     }
                     else
                     {
-                        lSessionDuration.Text = String.Format( "{0}m", duration.Minutes );
+                        lSessionDuration.Text = string.Format( "{0}m", duration.Minutes );
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnFilter_Click( object sender, EventArgs e )
         {
             if ( drpDateFilter.LowerValue.HasValue )
@@ -200,16 +198,19 @@ namespace RockWeb.Blocks.Crm
 
         #region Methods
 
-        void ShowList() 
+        /// <summary>
+        /// Shows the list.
+        /// </summary>
+        public void ShowList()
         {
             var rockContext = new RockContext();
 
-            int sessionCount = Int32.Parse( GetAttributeValue( "SessionCount" ) );
+            int sessionCount = GetAttributeValue( "SessionCount" ).AsInteger();
 
             int skipCount = pageNumber * sessionCount;
 
             var person = new PersonService( rockContext ).GetByUrlEncodedKey( PageParameter( "Person" ) );
-            if (person != null)
+            if ( person != null )
             {
                 lPersonName.Text = person.FullName;
 
@@ -219,7 +220,6 @@ namespace RockWeb.Blocks.Crm
 
                 var sessionInfo = pageviewService.Queryable()
                     .Where( s => s.PersonAlias.PersonId == person.Id );
-                    
 
                 if ( startDate != DateTime.MinValue )
                 {
@@ -236,23 +236,25 @@ namespace RockWeb.Blocks.Crm
                     sessionInfo = sessionInfo.Where( p => p.SiteId == siteId );
                 }
 
-                var pageviewInfo = sessionInfo.GroupBy( s => new { s.SessionId, s.SiteId, SiteName = s.Site.Name, s.ClientType, s.IpAddress, s.UserAgent } )
+                var pageviewInfo = sessionInfo.GroupBy( s => new
+                                {
+                                    s.PageViewSession,
+                                    s.SiteId,
+                                    SiteName = s.Site.Name
+                                } )
                                 .Select( s => new WebSession
                                 {
-                                    SessionId = s.Key.SessionId,
+                                    PageViewSession = s.Key.PageViewSession,
                                     StartDateTime = s.Min( x => x.DateTimeViewed ),
                                     EndDateTime = s.Max( x => x.DateTimeViewed ),
                                     SiteId = s.Key.SiteId,
                                     Site = s.Key.SiteName,
-                                    ClientType = s.Key.ClientType,
-                                    IpAddress = s.Key.IpAddress,
-                                    UserAgent = s.Key.UserAgent,
-                                    PageViews = pageViews.Where( p => p.SessionId == s.Key.SessionId && p.SiteId == s.Key.SiteId).ToList()
+                                    PageViews = pageViews.Where( p => p.PageViewSessionId == s.Key.PageViewSession.Id && p.SiteId == s.Key.SiteId ).ToList()
                                 } );
 
                 pageviewInfo = pageviewInfo.OrderByDescending( p => p.StartDateTime )
                                 .Skip( skipCount )
-                                .Take( sessionCount + 1);
+                                .Take( sessionCount + 1 );
 
                 rptSessions.DataSource = pageviewInfo.ToList().Take( sessionCount );
                 rptSessions.DataBind();
@@ -262,20 +264,23 @@ namespace RockWeb.Blocks.Crm
                 {
                     hlNext.Visible = hlNext.Enabled = true;
                     Dictionary<string, string> queryStringNext = new Dictionary<string, string>();
-                    queryStringNext.Add( "Page", (pageNumber + 1).ToString() );
+                    queryStringNext.Add( "Page", ( pageNumber + 1 ).ToString() );
                     queryStringNext.Add( "Person", person.UrlEncodedKey );
                     if ( siteId != -1 )
                     {
                         queryStringNext.Add( "SiteId", siteId.ToString() );
                     }
+
                     if ( startDate != DateTime.MinValue )
                     {
                         queryStringNext.Add( "StartDate", startDate.ToShortDateString() );
                     }
+
                     if ( endDate != DateTime.MaxValue )
                     {
                         queryStringNext.Add( "EndDate", endDate.ToShortDateString() );
                     }
+
                     var pageReferenceNext = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringNext );
                     hlNext.NavigateUrl = pageReferenceNext.BuildUrl();
                 }
@@ -293,20 +298,23 @@ namespace RockWeb.Blocks.Crm
                 {
                     hlPrev.Visible = hlPrev.Enabled = true;
                     Dictionary<string, string> queryStringPrev = new Dictionary<string, string>();
-                    queryStringPrev.Add( "Page", (pageNumber - 1).ToString() );
+                    queryStringPrev.Add( "Page", ( pageNumber - 1 ).ToString() );
                     queryStringPrev.Add( "Person", person.UrlEncodedKey );
                     if ( siteId != -1 )
                     {
                         queryStringPrev.Add( "SiteId", siteId.ToString() );
                     }
+
                     if ( startDate != DateTime.MinValue )
                     {
                         queryStringPrev.Add( "StartDate", startDate.ToShortDateString() );
                     }
+
                     if ( endDate != DateTime.MaxValue )
                     {
                         queryStringPrev.Add( "EndDate", endDate.ToShortDateString() );
                     }
+
                     var pageReferencePrev = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringPrev );
                     hlPrev.NavigateUrl = pageReferencePrev.BuildUrl();
                 }
@@ -315,23 +323,62 @@ namespace RockWeb.Blocks.Crm
             {
                 lMessages.Text = "<div class='alert alert-warning'>No person provided to show results for.</div>";
             }
-            
-            
         }
 
         #endregion
 
+        /// <summary>
+        /// Special class just for this block 
+        /// </summary>
         public class WebSession
         {
-            public Guid? SessionId { get; set; }
+            /// <summary>
+            /// Gets or sets the page view session.
+            /// </summary>
+            /// <value>
+            /// The page view session.
+            /// </value>
+            public PageViewSession PageViewSession { get; set; }
+
+            /// <summary>
+            /// Gets or sets the start date time.
+            /// </summary>
+            /// <value>
+            /// The start date time.
+            /// </value>
             public DateTime? StartDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the end date time.
+            /// </summary>
+            /// <value>
+            /// The end date time.
+            /// </value>
             public DateTime? EndDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the site identifier.
+            /// </summary>
+            /// <value>
+            /// The site identifier.
+            /// </value>
             public int? SiteId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the site.
+            /// </summary>
+            /// <value>
+            /// The site.
+            /// </value>
             public string Site { get; set; }
-            public string ClientType { get; set; }
-            public string IpAddress { get; set; }
-            public string UserAgent { get; set; }
+
+            /// <summary>
+            /// Gets or sets the page views.
+            /// </summary>
+            /// <value>
+            /// The page views.
+            /// </value>
             public ICollection<PageView> PageViews { get; set; }
         }
-}
+    }
 }
