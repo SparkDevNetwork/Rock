@@ -60,6 +60,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.centralaz.SpiritualGift
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.centralaz.Utility", "com.centralaz.Utility\com.centralaz.Utility.csproj", "{A0D78E86-3DFB-4C3A-B59C-0619331D5BC1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prayer", "Prayer\Prayer.csproj", "{2EFA8359-969C-4321-BC7E-48FF5843653B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -230,6 +232,16 @@ Global
 		{A0D78E86-3DFB-4C3A-B59C-0619331D5BC1}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{A0D78E86-3DFB-4C3A-B59C-0619331D5BC1}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A0D78E86-3DFB-4C3A-B59C-0619331D5BC1}.Release|x86.ActiveCfg = Release|Any CPU
+		{2EFA8359-969C-4321-BC7E-48FF5843653B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EFA8359-969C-4321-BC7E-48FF5843653B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EFA8359-969C-4321-BC7E-48FF5843653B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{2EFA8359-969C-4321-BC7E-48FF5843653B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{2EFA8359-969C-4321-BC7E-48FF5843653B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2EFA8359-969C-4321-BC7E-48FF5843653B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EFA8359-969C-4321-BC7E-48FF5843653B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EFA8359-969C-4321-BC7E-48FF5843653B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{2EFA8359-969C-4321-BC7E-48FF5843653B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{2EFA8359-969C-4321-BC7E-48FF5843653B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
