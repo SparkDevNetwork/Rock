@@ -185,6 +185,7 @@
                                     <asp:PlaceHolder ID="phManualDetails" runat="server">
                                         <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
                                         <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
+                                        <Rock:RockTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" />
                                     </asp:PlaceHolder>
 
                                     <asp:PlaceHolder ID="phCCDetails" runat="server">
@@ -212,6 +213,8 @@
                                         <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" ShowAddressLine2="false" 
                                             Required="true" ValidationGroup="Payment" RequiredErrorMessage="Billing Address is required" />
                                     </asp:PlaceHolder>
+
+                                    <Rock:RockTextBox ID="tbSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="2" />
 
                                     <div class="actions">
                                         <asp:LinkButton ID="lbSubmitPayment" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="lbSubmitPayment_Click" CausesValidation="true" ValidationGroup="Payment" />

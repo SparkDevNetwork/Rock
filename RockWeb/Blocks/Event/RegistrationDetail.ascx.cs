@@ -585,6 +585,7 @@ namespace RockWeb.Blocks.Event
                 pnlCosts.Visible = false;
                 pnlPaymentDetails.Visible = false;
                 pnlPaymentInfo.Visible = true;
+                phManualDetails.Visible = true;
                 phCCDetails.Visible = false;
             }
         }
@@ -629,6 +630,7 @@ namespace RockWeb.Blocks.Event
                     pnlCosts.Visible = false;
                     pnlPaymentDetails.Visible = false;
                     pnlPaymentInfo.Visible = true;
+                    phManualDetails.Visible = false;
                     phCCDetails.Visible = true;
                     return;
                 }
@@ -1303,7 +1305,10 @@ namespace RockWeb.Blocks.Event
                 transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
                 transaction.FinancialPaymentDetail.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
                 transaction.FinancialPaymentDetail.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
+                transaction.TransactionCode = tbTransactionCode.Text;
             }
+
+            transaction.Summary = tbSummary.Text;
 
             if ( transaction != null )
             {
@@ -1333,8 +1338,6 @@ namespace RockWeb.Blocks.Event
                         History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
                     }
                 }
-
-                transaction.Summary = Registration.GetSummary();
 
                 var transactionDetail = new FinancialTransactionDetail();
                 transactionDetail.Amount = amount;
