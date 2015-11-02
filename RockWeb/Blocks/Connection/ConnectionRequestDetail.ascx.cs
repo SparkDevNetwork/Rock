@@ -1716,7 +1716,7 @@ namespace RockWeb.Blocks.Connection
 
             ddlActivityConnector.SetValue(
                 activity != null && activity.ConnectorPersonAlias != null ?
-                activity.ConnectorPersonAlias.PersonId : CurrentPersonAliasId ?? 0 );
+                activity.ConnectorPersonAlias.PersonId : CurrentPersonId ?? 0 );
 
             tbNote.Text = activity != null ? activity.Note : string.Empty;
 
