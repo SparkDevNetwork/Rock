@@ -321,14 +321,6 @@ namespace RockWeb.Blocks.Finance
                     return;
                 }
 
-                if ( !cbIsRefund.Checked && totalAmount < 0 )
-                {
-                    nbErrorMessage.Title = "Incorrect Refund Amount";
-                    nbErrorMessage.Text = "<p>A transaction with a negative amount should be saved as a refund. Please select the refund option, or change amounts to be positive values.</p>";
-                    nbErrorMessage.Visible = true;
-                    return;
-                }
-
                 if ( cbIsRefund.Checked )
                 {
                     if ( txn.RefundDetails != null )
