@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cc.newspring.Apollos", "..\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cc.newspring.Themes", "..\rock-themes\cc.newspring.Themes.csproj", "{B2E699A7-1509-4876-A588-DF4B806EF20C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cc.newspring.AttendedCheckIn", "..\rock-attended-checkin\cc.newspring.AttendedCheckIn.csproj", "{BC36CAC2-1F25-4190-9297-157DDD2E4960}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -153,6 +155,16 @@ Global
 		{B2E699A7-1509-4876-A588-DF4B806EF20C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{B2E699A7-1509-4876-A588-DF4B806EF20C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{B2E699A7-1509-4876-A588-DF4B806EF20C}.Release|x86.ActiveCfg = Release|Any CPU
+		{BC36CAC2-1F25-4190-9297-157DDD2E4960}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC36CAC2-1F25-4190-9297-157DDD2E4960}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC36CAC2-1F25-4190-9297-157DDD2E4960}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{BC36CAC2-1F25-4190-9297-157DDD2E4960}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{BC36CAC2-1F25-4190-9297-157DDD2E4960}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BC36CAC2-1F25-4190-9297-157DDD2E4960}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC36CAC2-1F25-4190-9297-157DDD2E4960}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC36CAC2-1F25-4190-9297-157DDD2E4960}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{BC36CAC2-1F25-4190-9297-157DDD2E4960}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{BC36CAC2-1F25-4190-9297-157DDD2E4960}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
