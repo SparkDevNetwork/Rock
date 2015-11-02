@@ -30,7 +30,7 @@ namespace com.centralaz.Baptism.Model
         public List<Baptizee> GetBaptizeesByDateRange( DateTime firstDay, DateTime lastDay, int groupId )
         {
             List<Baptizee> baptizeeList = Queryable()
-                .Where( b => b.BaptismDateTime.Day >= firstDay.Day && b.BaptismDateTime.Day <= lastDay.Day && b.GroupId == groupId)
+                .Where( b => b.BaptismDateTime.Date >= firstDay.Date && b.BaptismDateTime.Date <= lastDay.Date && b.GroupId == groupId )
                 .ToList();
             return baptizeeList;
         }
