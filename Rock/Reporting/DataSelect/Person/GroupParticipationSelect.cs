@@ -193,26 +193,40 @@ namespace Rock.Reporting.DataSelect.Person
             //
 
             // Set the Output Format of the field.
-            Expression<Func<Rock.Model.GroupMember, string>> outputExpression;
+            Expression selectExpression;
 
-            switch ( settings.ListFormat )
+            if (settings.ListFormat == ListFormatSpecifier.YesNo)
             {
-                case ListFormatSpecifier.GroupOnly:
-                    outputExpression = ( ( m => m.Group.Name ) );
-                    break;
-                default: // ListFormatSpecifier.GroupAndRole:                    
-                    outputExpression = ( ( m => m.Group.Name + " [" + m.GroupRole.Name + "]" ) );
-                    break;
+                // Define a Query to return True/False text indicating if the Person participates in any of the filtered Groups.
+                // Note that the text must be returned as an Enumerable to satisfy the expected output of this field.
+                var personGroupsQuery = new PersonService( context ).Queryable()
+                                                                    .Select( p => new List<string> { groupMemberQuery.Any( s => s.PersonId == p.Id ) ? "Yes" : "No" } );
+
+                selectExpression = SelectExpressionExtractor.Extract( personGroupsQuery, entityIdProperty, "p" );
             }
+            else
+            {
+                // Define a Query to return the collection of filtered Groups for each Person.
+                Expression<Func<Rock.Model.GroupMember, string>> outputExpression;
 
-            // Define a Query to return the collection of filtered Groups for each Person.
-            var personGroupsQuery = new PersonService( context ).Queryable()
-                                                                .Select( p => groupMemberQuery.Where( s => s.PersonId == p.Id )
-                                                                                              .OrderBy( x => x.Group.Name )
-                                                                                              .ThenBy( x => x.GroupRole.Name )
-                                                                                              .Select( outputExpression ).AsEnumerable() );
+                if (settings.ListFormat == ListFormatSpecifier.GroupOnly)
+                {
+                    outputExpression = ( ( m => m.Group.Name ) );
+                }
+                else
+                {
+                    outputExpression = ( ( m => m.Group.Name + " [" + m.GroupRole.Name + "]" ) );
+                }
 
-            var selectExpression = SelectExpressionExtractor.Extract( personGroupsQuery, entityIdProperty, "p" );
+                // Define a Query to return the collection of filtered Groups for each Person.
+                var personGroupsQuery = new PersonService( context ).Queryable()
+                                                                    .Select( p => groupMemberQuery.Where( s => s.PersonId == p.Id )
+                                                                                                  .OrderBy( x => x.Group.Name )
+                                                                                                  .ThenBy( x => x.GroupRole.Name )
+                                                                                                  .Select( outputExpression ).AsEnumerable() );
+
+                selectExpression = SelectExpressionExtractor.Extract( personGroupsQuery, entityIdProperty, "p" );
+            }
 
             return selectExpression;
         }
@@ -233,9 +247,11 @@ namespace Rock.Reporting.DataSelect.Person
             var ddlFormat = new RockDropDownList();
             ddlFormat.ID = parentControl.GetChildControlInstanceName( _CtlFormat );
             ddlFormat.Label = "Output Format";
-            ddlFormat.Help = "Specifies the content and format of the items in this field.";
-            ddlFormat.Items.Add( new ListItem( "Group Name And Role", ListFormatSpecifier.GroupAndRole.ToString() ) );
-            ddlFormat.Items.Add( new ListItem( "Group Name", ListFormatSpecifier.GroupOnly.ToString() ) );
+            ddlFormat.Help = "Specifies the content and format of the values in this field.";
+            ddlFormat.Items.Add( new ListItem( "Group List: Name And Role", ListFormatSpecifier.GroupAndRole.ToString() ) );
+            ddlFormat.Items.Add( new ListItem( "Group List: Group Name", ListFormatSpecifier.GroupOnly.ToString() ) );
+            ddlFormat.Items.Add( new ListItem( "Yes/No: Yes if any participation", ListFormatSpecifier.YesNo.ToString() ) );
+
             parentControl.Controls.Add( ddlFormat );
 
             // Define Control: Group Data View Picker
@@ -249,7 +265,7 @@ namespace Rock.Reporting.DataSelect.Person
             var ddlRoleType = new RockDropDownList();
             ddlRoleType.ID = parentControl.GetChildControlInstanceName( _CtlRoleType );
             ddlRoleType.Label = "with Group Role Type";
-            ddlRoleType.Help = "Specifies the type of Group Role the Member must have to be included in the result. If no value is selected, Members in every Role will be shown.";
+            ddlRoleType.Help = "Specifies the type of Group Role the Member must have to be included in the result. If no value is selected, Members in any Role will be included.";
             ddlRoleType.Items.Add( new ListItem( string.Empty, RoleTypeSpecifier.Any.ToString() ) );
             ddlRoleType.Items.Add( new ListItem( "Leader", RoleTypeSpecifier.Leader.ToString() ) );
             ddlRoleType.Items.Add( new ListItem( "Member", RoleTypeSpecifier.Member.ToString() ) );
@@ -260,7 +276,7 @@ namespace Rock.Reporting.DataSelect.Person
             ddlGroupMemberStatus.CssClass = "js-group-member-status";
             ddlGroupMemberStatus.ID = parentControl.GetChildControlInstanceName( _CtlGroupStatus );
             ddlGroupMemberStatus.Label = "with Group Member Status";
-            ddlGroupMemberStatus.Help = "Specifies the Status the Member must have to be included in the result. If no value is selected, Members of every Group Status will be shown.";
+            ddlGroupMemberStatus.Help = "Specifies the Status the Member must have to be included in the result. If no value is selected, Members of any Group Status will be shown.";
             ddlGroupMemberStatus.BindToEnum<GroupMemberStatus>( true );
             ddlGroupMemberStatus.SetValue( GroupMemberStatus.Active.ConvertToInt() );
             parentControl.Controls.Add( ddlGroupMemberStatus );
@@ -346,7 +362,8 @@ namespace Rock.Reporting.DataSelect.Person
         private enum ListFormatSpecifier
         {
             GroupAndRole = 0,
-            GroupOnly = 1
+            GroupOnly = 1,
+            YesNo = 2
         }
 
         /// <summary>

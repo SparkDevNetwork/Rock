@@ -270,7 +270,7 @@ namespace Rock.Reporting.DataFilter
                 var entityField = entityFields.FirstOrDefault( f => f.Name == ddlProperty.SelectedValue );
                 if ( entityField != null )
                 {
-                    var control = containerControl.Controls.OfType<Control>().ToList().FirstOrDefault( c => c.ID.EndsWith( entityField.Name ) );
+                    var control = containerControl.Controls.OfType<Control>().ToList().FirstOrDefault( c => c.ID.EndsWith( "_" + entityField.Name ) );
                     if ( control != null )
                     {
                         values.Add( ddlProperty.SelectedValue );
