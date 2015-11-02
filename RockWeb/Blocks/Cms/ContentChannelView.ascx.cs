@@ -648,7 +648,7 @@ $(document).ready(function() {
                             var qry = service.Queryable( "ContentChannel,ContentChannelType" );
 
                             int? itemId = PageParameter( "Item" ).AsIntegerOrNull();
-                            if ( queryParameterFiltering && itemId.HasValue )
+                            if ( itemId.HasValue )
                             {
                                 qry = qry.Where( i => i.Id == itemId.Value );
                             }
