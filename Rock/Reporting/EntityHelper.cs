@@ -262,21 +262,43 @@ namespace Rock.Reporting
         /// <param name="limitToFilterableAttributes">if set to <c>true</c> [limit to filterable attributes].</param>
         public static void AddEntityFieldForAttribute( List<EntityField> entityFields, AttributeCache attribute, bool limitToFilterableAttributes = true )
         {
-            // Ensure prop name only has Alpha, Numeric and underscore chars
-            string propName = attribute.Key.RemoveSpecialCharacters().Replace( ".", "" );
+            var entityField = GetEntityFieldForAttribute( attribute, limitToFilterableAttributes );
 
-            // Ensure prop name is unique
+            // If the field could not be created, we are done.
+            if (entityField == null)
+                return;
+
+            // Ensure that the field name is unique.
+            string fieldName = entityField.Name;
+
             int i = 1;
-            while ( entityFields.Any( p => p.Name.Equals( propName, StringComparison.CurrentCultureIgnoreCase ) ) )
+            while ( entityFields.Any( p => p.Name.Equals( fieldName, StringComparison.CurrentCultureIgnoreCase ) ) )
             {
-                propName = attribute.Key + ( i++ ).ToString();
+                fieldName = entityField.Name + ( i++ ).ToString();
             }
+
+            entityField.Name = fieldName;
+
+            entityFields.Add( entityField );
+        }
+
+        /// <summary>
+        /// Create an EntityField for an Attribute.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="limitToFilterableAttributes"></param>
+        public static EntityField GetEntityFieldForAttribute( AttributeCache attribute, bool limitToFilterableAttributes = true )
+        {
+            // Ensure field name only has Alpha, Numeric and underscore chars
+            string fieldName = attribute.Key.RemoveSpecialCharacters().Replace( ".", "" );
+
+            EntityField entityField = null;
 
             // Make sure that the attributes field type actually renders a filter control if limitToFilterableAttributes
             var fieldType = FieldTypeCache.Read( attribute.FieldTypeId );
             if ( fieldType != null && ( !limitToFilterableAttributes || fieldType.Field.HasFilterControl() ) )
             {
-                var entityField = new EntityField( propName, FieldKind.Attribute, typeof( string ), attribute.Guid, fieldType );
+                entityField = new EntityField( fieldName, FieldKind.Attribute, typeof( string ), attribute.Guid, fieldType );
                 entityField.Title = attribute.Name.SplitCase();
                 entityField.TitleWithoutQualifier = entityField.Title;
 
@@ -285,6 +307,7 @@ namespace Rock.Reporting
                     entityField.FieldConfig.Add( config.Key, config.Value );
                 }
 
+                // Special processing for Entity Type "Group" to handle sub-types that are distinguished by GroupTypeId.
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Group ) ) && attribute.EntityTypeQualifierColumn == "GroupTypeId" )
                 {
                     using ( var rockContext = new RockContext() )
@@ -298,6 +321,7 @@ namespace Rock.Reporting
                     }
                 }
 
+                // Special processing for Entity Type "ContentChannelItem" to handle sub-types that are distinguished by ContentChannelTypeId.
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( ContentChannelItem ) ) && attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
                 {
                     using ( var rockContext = new RockContext() )
@@ -310,9 +334,8 @@ namespace Rock.Reporting
                         }
                     }
                 }
-
-                entityFields.Add( entityField );
             }
+            return entityField;
         }
     }
 

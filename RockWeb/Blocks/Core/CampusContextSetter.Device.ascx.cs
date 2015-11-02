@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Campus Context Setter - Device" )]
     [Category( "Core" )]
     [Description( "Block that can be used to set the campus context for the site based on the location of the device." )]
-    [CodeEditorField( "Display Lava", "The Lava template to use when displaying the current campus.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, true, @"{% if Device %}
+    [CodeEditorField( "Display Lava", "The Lava template to use when displaying the current campus.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, @"{% if Device %}
 
     {% if Campus %}
         Campus: {{Campus.Name}}

@@ -81,7 +81,7 @@
                                 </div>
 
                                 <div class="col-md-12">
-                                    <Rock:CodeEditor ID="cePageTitleLava" runat="server" Label="Page Title Lava" EditorMode="Liquid" CssClass="input-large" EditorHeight="200"
+                                    <Rock:CodeEditor ID="cePageTitleLava" runat="server" Label="Page Title Lava" EditorMode="Lava" CssClass="input-large" EditorHeight="200"
                                         Help="Optional Lava for setting the page title. If nothing is provided then the page's title will be used. Example '{{rows[0].FullName}}' or if the query returns multiple result sets '{{table1.rows[0].FullName}}'." />
                                 </div>
                             </div>

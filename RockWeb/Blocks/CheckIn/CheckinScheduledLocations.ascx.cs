@@ -311,11 +311,7 @@ namespace RockWeb.Blocks.CheckIn
 
                 if ( schedulesChanged )
                 {
-                    rockContext.SaveChanges();
-                    if ( this.CurrentKioskId.HasValue )
-                    {
-                        KioskDevice.Flush( this.CurrentKioskId.Value );
-                    }
+                    KioskDevice.FlushAll();
                 }
             }
 

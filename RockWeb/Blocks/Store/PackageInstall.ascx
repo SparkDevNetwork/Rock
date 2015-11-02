@@ -11,21 +11,18 @@
             <div class="panel-body">
 
                 <asp:Panel ID="pnlInstall" runat="server">
+                    <div class="panel-headerimage">
+                        <asp:Image ID="imgPackageImage" runat="server" CssClass="packagedetail-image" />
+                    </div>
+
+                    
+                    
                     <div class="row">
                         <div class="col-md-4">
-                            <asp:Literal ID="lPackageImage" runat="server" />
-
-                            <h1><asp:Literal id="lPackageName" runat="server" /></h1>
-
-                            <h4>Package Description</h4>
-                            <p class="margin-b-lg">
-                                <asp:Literal ID="lPackageDescription" runat="server" />
-                            </p>
-
-                            <asp:Literal ID="lCost" runat="server" />
+                            
                         </div>
                         <div class="col-md-8">
-
+                            
                             <p>
                                 <asp:Literal ID="lInstallMessage" runat="server" />
                             </p>

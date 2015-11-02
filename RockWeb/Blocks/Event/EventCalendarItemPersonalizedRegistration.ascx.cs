@@ -272,7 +272,7 @@ namespace RockWeb.Blocks.Event
 
             if ( _campusId == 0 )
             {
-                _campusId = families.FirstOrDefault().CampusId ?? 0;
+                _campusId = families.FirstOrDefault().CampusId ?? 1;
                 cpCampus.SelectedCampusId = _campusId;
             }
 
@@ -359,9 +359,10 @@ namespace RockWeb.Blocks.Event
                 lbRegister.Visible = false;
                 lEventIntro.Visible = false;
                 cblRegistrants.Visible = false;
+                var campus = CampusCache.Read( _campusId );
                 lMessages.Text = string.Format( "<div class='alert alert-info'>There are no {0} events for the {1} campus in the next {2} days.</div>",
                                     eventItem.Name,
-                                    CampusCache.Read( _campusId ).Name,
+                                    campus != null ? campus.Name : string.Empty,
                                     _daysInRange.ToString() );
             }
         }

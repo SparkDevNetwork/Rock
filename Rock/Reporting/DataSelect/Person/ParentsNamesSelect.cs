@@ -171,7 +171,7 @@ namespace Rock.Reporting.DataSelect.Person
                     .OrderBy( m => m.Person.Gender )
                     .Select( m => m.Person.NickName + " " + m.Person.LastName).AsEnumerable() );
 
-            var selectParentsExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personParentsQuery, entityIdProperty, "p" );
+            var selectParentsExpression = SelectExpressionExtractor.Extract( personParentsQuery, entityIdProperty, "p" );
 
             return selectParentsExpression;
         }

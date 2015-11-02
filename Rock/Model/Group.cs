@@ -493,6 +493,25 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Pres the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if ( state == System.Data.Entity.EntityState.Deleted )
+            {
+                // manually delete any grouprequirements of this group since it can't be cascade deleted
+                var groupRequirementService = new GroupRequirementService( dbContext as RockContext );
+                var groupRequirements = groupRequirementService.Queryable().Where( a => a.GroupId == this.Id ).ToList();
+                if ( groupRequirements.Any() )
+                {
+                    groupRequirementService.DeleteRange( groupRequirements );
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the Group that represents this instance.
         /// </summary>
         /// <returns>

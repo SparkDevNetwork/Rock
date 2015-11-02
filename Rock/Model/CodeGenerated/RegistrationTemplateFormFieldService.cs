@@ -93,6 +93,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsGridField = source.IsGridField;
+            target.IsInternal = source.IsInternal;
             target.IsRequired = source.IsRequired;
             target.IsSharedValue = source.IsSharedValue;
             target.Order = source.Order;

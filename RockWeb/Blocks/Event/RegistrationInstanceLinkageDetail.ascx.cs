@@ -108,7 +108,7 @@ namespace RockWeb.Blocks.Event
 
             var qryParams = new Dictionary<string, string>();
             qryParams.Add( "RegistrationInstanceId", PageParameter( "RegistrationInstanceId" ) );
-            qryParams.Add( "Tab", "3" );
+            qryParams.Add( "Tab", "4" );
             NavigateToParentPage( qryParams );
         }
 
@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Event
         {
             var qryParams = new Dictionary<string, string>();
             qryParams.Add( "RegistrationInstanceId", PageParameter( "RegistrationInstanceId" ) );
-            qryParams.Add( "Tab", "3" );
+            qryParams.Add( "Tab", "4" );
             NavigateToParentPage( qryParams );
         }
 

@@ -240,8 +240,11 @@ $('.template-form > .panel-body').on('validation-error', function() {
                         a.Attribute.Name,
                     FieldSource = a.FieldSource.ConvertToString(),
                     FieldType = a.FieldSource == RegistrationFieldSource.PersonField ? 0 : a.Attribute.FieldTypeId,
-                    a.IsGridField,
-                    a.IsRequired
+                    a.IsInternal,
+                    a.IsSharedValue,
+                    a.ShowCurrentValue,
+                    a.IsRequired,
+                    a.IsGridField
                 } )
                 .ToList();
             _gFields.DataBind();
@@ -319,15 +322,30 @@ $('.template-form > .panel-body').on('validation-error', function() {
             typeField.HeaderText = "Type";
             _gFields.Columns.Add( typeField );
 
-            var gridField = new BoolField();
-            gridField.DataField = "IsGridField";
-            gridField.HeaderText = "Show on Grid";
-            _gFields.Columns.Add( gridField );
+            var isInternalField = new BoolField();
+            isInternalField.DataField = "IsInternal";
+            isInternalField.HeaderText = "Internal";
+            _gFields.Columns.Add( isInternalField );
 
-            var requireField = new BoolField();
-            requireField.DataField = "IsRequired";
-            requireField.HeaderText = "Required";
-            _gFields.Columns.Add( requireField );
+            var isSharedValueField = new BoolField();
+            isSharedValueField.DataField = "IsSharedValue";
+            isSharedValueField.HeaderText = "Common";
+            _gFields.Columns.Add( isSharedValueField );
+
+            var showCurrentValueField = new BoolField();
+            showCurrentValueField.DataField = "ShowCurrentValue";
+            showCurrentValueField.HeaderText = "Use Current Value";
+            _gFields.Columns.Add( showCurrentValueField );
+
+            var isRequiredField = new BoolField();
+            isRequiredField.DataField = "IsRequired";
+            isRequiredField.HeaderText = "Required";
+            _gFields.Columns.Add( isRequiredField );
+
+            var isGridField = new BoolField();
+            isGridField.DataField = "IsGridField";
+            isGridField.HeaderText = "Show on Grid";
+            _gFields.Columns.Add( isGridField );
 
             var editField = new EditField();
             editField.Click += gFields_Edit;

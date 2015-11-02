@@ -99,7 +99,7 @@ VALUES ( 'Baptism', @CategoryId, @GeneralGroupTypeId, @GeneralGroupTypeRoleId, 2
 {% capture currencySymbol %}{{ ''Global'' | Attribute:''CurrencySymbol'' }}{% endcapture %}
 {% assign registrantCount = Registration.Registrants | Size %}
 <p>
-    You have succesfully registered the following 
+    You have successfully registered the following 
     {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
     for {{ RegistrationInstance.Name }}:
 </p>
@@ -248,7 +248,7 @@ VALUES ( 'Starting Point', @CategoryId, @GeneralGroupTypeId, @GeneralGroupTypeRo
 {% capture currencySymbol %}{{ ''Global'' | Attribute:''CurrencySymbol'' }}{% endcapture %}
 {% assign registrantCount = Registration.Registrants | Size %}
 <p>
-    You have succesfully registered the following 
+    You have successfully registered the following 
     {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
     for {{ RegistrationInstance.Name }}:
 </p>

@@ -874,13 +874,17 @@ namespace RockWeb.Blocks.Crm
 
                             foreach ( int id in ids.Where( id => !alreadyFollowingIds.Contains( id ) ) )
                             {
-                                var following = new Following
+                                var person = people.FirstOrDefault( p => p.Id == id );
+                                if ( person != null && person.PrimaryAliasId.HasValue )
                                 {
-                                    EntityTypeId = personAliasEntityTypeId,
-                                    EntityId = ( people.FirstOrDefault( p => p.Id == id ).PrimaryAliasId ) ?? 0,
-                                    PersonAliasId = CurrentPersonAlias.Id
-                                };
-                                followingService.Add( following );
+                                    var following = new Following
+                                    {
+                                        EntityTypeId = personAliasEntityTypeId,
+                                        EntityId = person.PrimaryAliasId.Value,
+                                        PersonAliasId = CurrentPersonAlias.Id
+                                    };
+                                    followingService.Add( following );
+                                }
                             }
                         }
                         else
@@ -1024,24 +1028,13 @@ namespace RockWeb.Blocks.Crm
                             note.Caption = isPrivate ? "You - Personal Note" : string.Empty;
                             note.Text = tbNote.Text;
                             note.IsAlert = cbIsAlert.Checked;
+                            note.IsPrivateNote = isPrivate;
                             note.NoteTypeId = noteType.Id;
                             notes.Add( note );
                             noteService.Add( note );
                         }
 
-                        rockContext.WrapTransaction( () =>
-                        {
-                            rockContext.SaveChanges();
-                            foreach ( var note in notes )
-                            {
-                                note.AllowPerson( Authorization.EDIT, CurrentPerson, rockContext );
-                                if ( isPrivate )
-                                {
-                                    note.MakePrivate( Authorization.VIEW, CurrentPerson, rockContext );
-                                }
-                            }
-                        } );
-
+                        rockContext.SaveChanges();
                     }
                 }
 

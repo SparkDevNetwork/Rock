@@ -34,6 +34,7 @@
                 <div id="pnlEditDetails" runat="server">
 
                     <asp:ValidationSummary ID="valAccountDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:CustomValidator ID="cvAccount" runat="server" Display="None" />
 
                     <div class="row">
                         <div class="col-md-4">

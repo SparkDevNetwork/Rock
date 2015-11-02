@@ -40,7 +40,7 @@ DECLARE @i INT
     ,@month INT
     ,@day INT
     ,@personCounter INT = 0
-    ,@maxPerson INT = 99999
+    ,@maxPerson INT = 999
 	,@kidCountMax int
 	,@kidCounter int
 	,@kidPersonId int
@@ -69,6 +69,7 @@ DECLARE @i INT
         )
     ,@streetAddress INT
     ,@zipCode INT
+	,@geoPoint Geography
 
 BEGIN
     IF OBJECT_ID('tempdb..#lastNames') IS NOT NULL
@@ -12340,6 +12341,8 @@ BEGIN
         SET @zipCode = ROUND(rand() * 9999, 0) + 80000;
         SET @streetAddress = ROUND(rand() * 9999, 0) + 100;
 
+		set @geoPoint = concat('POINT (', (rand()*4)-114, ' ',  + (rand()*4)+30, ')');
+
         INSERT INTO [Location] (
             Street1
             ,Street2
@@ -12347,6 +12350,7 @@ BEGIN
             ,[State]
             ,PostalCode
             ,IsActive
+			,GeoPoint
             ,[Guid]
             )
         VALUES (
@@ -12356,6 +12360,7 @@ BEGIN
             ,'AZ'
             ,@zipCode
             ,1
+			,@geoPoint
             ,NEWID()
             )
 
