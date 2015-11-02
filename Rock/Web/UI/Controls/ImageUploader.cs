@@ -645,6 +645,7 @@ Rock.controls.imageUploader.initialize({{
             set
             {
                 base.Enabled = value;
+                EnsureChildControls();
                 _fileUpload.Visible = value;
                 _aRemove.Visible = value;
             }

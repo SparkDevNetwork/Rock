@@ -159,6 +159,33 @@ namespace Rock.Web.Cache
         public virtual Guid Guid { get; set; }
 
         /// <summary>
+        /// Gets or sets an optional int foreign identifier.  This can be used for importing or syncing data to a foreign system
+        /// </summary>
+        /// <value>
+        /// The foreign identifier.
+        /// </value>
+        [DataMember]
+        public int? ForeignId { get; set; }
+
+        /// <summary>
+        /// Gets or sets an optional Guid foreign identifier.  This can be used for importing or syncing data to a foreign system
+        /// </summary>
+        /// <value>
+        /// The foreign identifier.
+        /// </value>
+        [DataMember]
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets an optional string foreign identifier.  This can be used for importing or syncing data to a foreign system
+        /// </summary>
+        /// <value>
+        /// The foreign identifier.
+        /// </value>
+        [DataMember]
+        public string ForeignKey { get; set; }
+
+        /// <summary>
         /// Copies from model.
         /// </summary>
         /// <param name="model">The model.</param>
@@ -166,6 +193,9 @@ namespace Rock.Web.Cache
         {
             this.Id = model.Id;
             this.Guid = model.Guid;
+            this.ForeignId = model.ForeignId;
+            this.ForeignGuid = model.ForeignGuid;
+            this.ForeignKey = model.ForeignKey;
 
             RockMemoryCache cache = RockMemoryCache.Default;
             cache.Set( model.Guid.ToString(), model.Id, new CacheItemPolicy() );

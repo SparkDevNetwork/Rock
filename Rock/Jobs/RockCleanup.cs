@@ -91,6 +91,15 @@ namespace Rock.Jobs
 
             try
             {
+                CleanupPageViews( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupPageViews", ex ) );
+            }
+
+            try
+            {
                 PurgeAuditLog( dataMap );
             }
             catch ( Exception ex )
@@ -370,6 +379,47 @@ namespace Rock.Jobs
                 }
             }
 
+        }
+
+
+        /// <summary>
+        /// Cleans up PagesViews for sites that have a Page View retention period
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private void CleanupPageViews( JobDataMap dataMap )
+        {
+            var pageViewRockContext = new Rock.Data.RockContext();
+            var currentDateTime = RockDateTime.Now;
+            var siteService = new SiteService( pageViewRockContext );
+            var siteQry = siteService.Queryable().Where( a => a.PageViewRetentionPeriodDays.HasValue );
+            //
+
+            foreach ( var site in siteQry.ToList() )
+            {
+                var retentionCutoffDateTime = currentDateTime.AddDays( -site.PageViewRetentionPeriodDays.Value );
+                if ( retentionCutoffDateTime < System.Data.SqlTypes.SqlDateTime.MinValue.Value )
+                {
+                    retentionCutoffDateTime = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
+                }
+                
+                // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
+                bool keepDeleting = true;
+                while ( keepDeleting )
+                {
+                    var dbTransaction = pageViewRockContext.Database.BeginTransaction();
+                    try
+                    {
+                        string sqlCommand = @"DELETE TOP (1000) FROM [PageView] WHERE [SiteId] = @siteId AND DateTimeViewed < @retentionCutoffDateTime";
+
+                        int rowsDeleted = pageViewRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "siteId", site.Id ), new SqlParameter( "retentionCutoffDateTime", retentionCutoffDateTime ) );
+                        keepDeleting = rowsDeleted > 0;
+                    }
+                    finally
+                    {
+                        dbTransaction.Commit();
+                    }
+                }
+            }
         }
 
         /// <summary>

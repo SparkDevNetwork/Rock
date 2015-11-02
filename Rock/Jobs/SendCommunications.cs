@@ -55,10 +55,13 @@ namespace Rock.Jobs
             var beginWindow = RockDateTime.Now.AddDays( 0 - dataMap.GetInt( "ExpirationPeriod" ) );
             var endWindow = RockDateTime.Now.AddMinutes( 0 - dataMap.GetInt( "DelayPeriod" ) );
 
-            var qry = new CommunicationService( new RockContext() ).Queryable()
+            var rockContext = new RockContext();
+            var qryPendingRecipients = new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.Status == CommunicationRecipientStatus.Pending );
+
+            var qry = new CommunicationService( rockContext ).Queryable()
                 .Where( c =>
                     c.Status == CommunicationStatus.Approved &&
-                    c.Recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending ).Any() &&
+                    qryPendingRecipients.Where( r => r.CommunicationId == c.Id ).Any() &&
                     (
                         ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo( beginWindow ) >= 0 && c.CreatedDateTime.Value.CompareTo( endWindow ) <= 0 ) ||
                         ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) >= 0 && c.FutureSendDateTime.Value.CompareTo( endWindow ) <= 0 )

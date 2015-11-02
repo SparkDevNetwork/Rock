@@ -161,7 +161,7 @@ namespace Rock.Reporting.DataSelect.Group
                     .Select( p => (double?)null );
             }
 
-            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Group>( groupLocationDistanceQuery, entityIdProperty, "p" );
+            var selectExpression = SelectExpressionExtractor.Extract( groupLocationDistanceQuery, entityIdProperty, "p" );
 
             return selectExpression;
         }

@@ -96,13 +96,13 @@
                     <div class="grid">
                         <Rock:Grid ID="rGridParentRules" runat="server" AllowPaging="false" RowItemText="Inherited Security Rule">
                             <Columns>
-                                <Rock:RockBoundField DataField="DisplayName" HeaderText="Role / User" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" HtmlEncode="false" />
+                                <Rock:RockBoundField DataField="AuthRule.DisplayName" HeaderText="Role / User" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" HtmlEncode="false" />
                                 <Rock:RockTemplateField>
                                     <HeaderTemplate>Allow or Deny</HeaderTemplate>
                                     <HeaderStyle HorizontalAlign="Left" />
                                     <ItemStyle Wrap="false" HorizontalAlign="Left" />
                                     <ItemTemplate>
-                                        <%# Eval("AllowOrDeny").ToString() == "A" ? "Allow" : "Deny" %>
+                                        <%# Eval("AuthRule.AllowOrDeny").ToString() == "A" ? "Allow" : "Deny" %>
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
                                 <Rock:RockBoundField DataField="EntityTitle" HeaderText="From" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" HtmlEncode="false" />

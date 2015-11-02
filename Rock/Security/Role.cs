@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Security
 {
@@ -53,18 +54,25 @@ namespace Rock.Security
         public bool IsSecurityTypeGroup { get; private set; }
 
         /// <summary>
-        /// Gets the users that belong to the role
+        /// Gets the Guids of the Persons in this role
         /// </summary>
-        public List<string> Users { get; private set; }
+        public HashSet<Guid> PersonGuids { get; private set; }
 
         /// <summary>
         /// Is user in role
         /// </summary>
-        /// <param name="user"></param>
+        /// <param name="personGuid">The person unique identifier.</param>
         /// <returns></returns>
-        public bool IsUserInRole( string user )
+        public bool IsPersonInRole( Guid? personGuid )
         {
-            return Users.Contains( user );
+            if ( personGuid.HasValue )
+            {
+                return PersonGuids.Contains( personGuid.Value );
+            }
+            else
+            {
+                return false;
+            }
         }
 
         #region Static Methods
@@ -108,12 +116,16 @@ namespace Rock.Security
                         role = new Role();
                         role.Id = groupModel.Id;
                         role.Name = groupModel.Name;
-                        role.Users = new List<string>();
-                        role.IsSecurityTypeGroup = groupModel.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+                        role.PersonGuids = new HashSet<Guid>();
+                        var groupTypeCache = GroupTypeCache.Read( groupModel.GroupTypeId, rockContext );
+                        role.IsSecurityTypeGroup = groupTypeCache != null && groupTypeCache.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+                        
+                        Rock.Model.GroupMemberService groupMemberService = new Rock.Model.GroupMemberService( rockContext );
+                        var groupMemberPersonGuids = groupMemberService.Queryable().Where( a => a.GroupId == groupModel.Id ).Select( a => a.Person.Guid ).ToList();
 
-                        foreach ( Rock.Model.GroupMember member in groupModel.Members )
+                        foreach ( var personGuid in groupMemberPersonGuids )
                         {
-                            role.Users.Add( member.Person.Guid.ToString() );
+                            role.PersonGuids.Add( personGuid );
                         }
 
                         cache.Set( cacheKey, role, new CacheItemPolicy() );

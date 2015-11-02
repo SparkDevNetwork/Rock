@@ -44,14 +44,6 @@ namespace Rock.Store
         public int Rating { get; set; }
 
         /// <summary>
-        /// Gets or sets the Guid of the Package Category. 
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Guid"/> representing the Guid of the Package Category.
-        /// </value>
-        public Guid Guid { get; set; }
-
-        /// <summary>
         /// Gets or sets the review text. 
         /// </summary>
         /// <value>
@@ -65,7 +57,23 @@ namespace Rock.Store
         /// <value>
         /// A <see cref="System.DateTime"/> representing the date the rating was added.
         /// </value>
-        public DateTime DateAdded { get; set; }
+        public DateTime AddedDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the helpful count.
+        /// </summary>
+        /// <value>
+        /// The helpful count.
+        /// </value>
+        public int HelpfulCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the was helpful count.
+        /// </summary>
+        /// <value>
+        /// The was helpful count.
+        /// </value>
+        public int WasHelpfulCount { get; set; }
 
         /// <summary>
         /// Gets or sets the person id of the reviewer. 
@@ -81,6 +89,6 @@ namespace Rock.Store
         /// <value>
         /// A <see cref="Rock.Model.Person"/> representing the reviewer.
         /// </value>
-        public Rock.Model.Person Person { get; set; }
+        public string PersonName { get; set; }
     }
 }

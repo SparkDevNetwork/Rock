@@ -4,7 +4,7 @@ declare
   @routineName varchar(max),
   @routineType varchar(max)
 declare
-  routine_cursor CURSOR for select ROUTINE_NAME, ROUTINE_TYPE from INFORMATION_SCHEMA.ROUTINES;
+  routine_cursor CURSOR for select concat(ROUTINE_SCHEMA,'.', ROUTINE_NAME), ROUTINE_TYPE FROM INFORMATION_SCHEMA.ROUTINES;
 
 open routine_cursor
 fetch next from routine_cursor into @routineName,@routineType

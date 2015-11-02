@@ -33,7 +33,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:PersonPicker ID="ppAuthorizedPerson" CssClass="js-authorizedperson" runat="server" Label="Person" IncludeBusinesses="true" OnSelectPerson="ppAuthorizedPerson_SelectPerson" />
-                            <Rock:DateTimePicker ID="dtTransactionDateTime" runat="server" Label="Transaction Date/Time" />
+                            <Rock:DateTimePicker ID="dtTransactionDateTime" runat="server" Label="Transaction Date/Time" Required="true" />
                         </div>
                         <div class="col-md-6">
                             <asp:Panel ID="pnlSingleAccount" runat="server" Visible="false" CssClass="row">
@@ -151,7 +151,7 @@
                 <asp:HiddenField ID="hfAccountGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlAccount" runat="server" Label="Account" DataTextField="Value" DataValueField="Key" Required="true" ValidationGroup="Account" />
+                        <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="true" ValidationGroup="Account" />
                         <Rock:CurrencyBox ID="tbAccountAmount" runat="server" Label="Amount" Required="true" ValidationGroup="Account" />
                     </div>
                     <div class="col-md-6">

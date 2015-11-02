@@ -159,7 +159,7 @@ namespace Rock.Reporting.DataSelect.Person
             var personGradeQuery = new PersonService( context ).Queryable()
                     .Select( p => p.GraduationYear );
 
-            var selectGradeExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personGradeQuery, entityIdProperty, "p" );
+            var selectGradeExpression = SelectExpressionExtractor.Extract( personGradeQuery, entityIdProperty, "p" );
 
             return selectGradeExpression;
         }

@@ -63,7 +63,8 @@ namespace Rock.Jobs
                         i.RegistrationTemplate.ReminderEmailTemplate != "" &&
                         !i.ReminderSent &&
                         i.SendReminderDateTime.HasValue &&
-                        i.SendReminderDateTime <= now ) )
+                        i.SendReminderDateTime <= now )
+                    .ToList() )
                 {
                     var template = instance.RegistrationTemplate;
 
@@ -87,6 +88,7 @@ namespace Rock.Jobs
 
                     instance.SendReminderDateTime = now;
                     instance.ReminderSent = true;
+
                     rockContext.SaveChanges();
                 }
             }

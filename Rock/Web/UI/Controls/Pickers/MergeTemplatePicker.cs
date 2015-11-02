@@ -92,15 +92,24 @@ namespace Rock.Web.UI.Controls
             {
                 ItemId = mergeTemplate.Id.ToString();
 
-                string parentCategoryIds = string.Empty;
+                var parentCategoryIds = new List<string>();
                 var parentCategory = mergeTemplate.Category;
                 while ( parentCategory != null )
                 {
-                    parentCategoryIds = parentCategory.Id + "," + parentCategoryIds;
+                    if ( !parentCategoryIds.Contains( parentCategory.Id.ToString() ) )
+                    {
+                        parentCategoryIds.Insert( 0, parentCategory.Id.ToString() );
+                    }
+                    else
+                    {
+                        // infinite recursion
+                        break;
+                    }
+
                     parentCategory = parentCategory.ParentCategory;
                 }
 
-                InitialItemParentIds = parentCategoryIds.TrimEnd( new[] { ',' } );
+                InitialItemParentIds = parentCategoryIds.AsDelimited( "," );
                 ItemName = mergeTemplate.Name;
             }
             else

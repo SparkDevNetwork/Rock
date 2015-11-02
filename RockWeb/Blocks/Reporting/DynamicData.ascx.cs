@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Reporting
     [BooleanField( "Show Columns", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)", false, "CustomSetting" )]
     [TextField( "Columns", "The columns to hide or show", false, "", "CustomSetting" )]
     [CodeEditorField( "Formatted Output", "Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }}<br/> {% endfor %}",
-        CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
+        CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
     [BooleanField( "Person Report", "Is this report a list of people?", false, "CustomSetting" )]
 
     [BooleanField( "Show Communicate", "Show Communicate button in grid footer?", true, "CustomSetting" )]
@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Reporting
 
     [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false, "", "CustomSetting" )]
     [CodeEditorField( "Page Title Lava", "Optional Lava for setting the page title. If nothing is provided then the page's title will be used.",
-        CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
+        CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
 
     [BooleanField( "Paneled Grid", "Add the 'grid-panel' class to the grid to allow it to fit nicely in a block.", false, "Advanced" )]
     public partial class DynamicData : RockBlockCustomSettings
