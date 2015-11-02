@@ -15,8 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using Newtonsoft.Json;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -34,30 +36,32 @@ namespace RockWeb.Blocks.Core
     [Description( "Displays all details of a binary file type." )]
     public partial class BinaryFileTypeDetail : RockBlock, IDetailBlock
     {
-        #region Child Grid Dictionarys
+        #region Fields
 
-        /// <summary>
-        /// Gets or sets the state of the attributes.
-        /// </summary>
-        /// <value>
-        /// The state of the attributes.
-        /// </value>
-        private ViewStateList<Attribute> BinaryFileAttributesState
-        {
-            get
-            {
-                return ViewState["BinaryFileAttributesState"] as ViewStateList<Attribute>;
-            }
-
-            set
-            {
-                ViewState["BinaryFileAttributesState"] = value;
-            }
-        }
+        private List<Attribute> BinaryFileAttributesState { get; set; }
 
         #endregion
 
         #region Control Methods
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            string json = ViewState["BinaryFileAttributesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                BinaryFileAttributesState = new List<Attribute>();
+            }
+            else
+            {
+                BinaryFileAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -102,6 +106,25 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            var jsonSetting = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
+
+            ViewState["BinaryFileAttributesState"] = JsonConvert.SerializeObject( BinaryFileAttributesState, Formatting.None, jsonSetting );
+
+            return base.SaveViewState();
+        }
+
         #endregion
 
         #region Internal Methods
@@ -129,7 +152,7 @@ namespace RockWeb.Blocks.Core
                 lActionTitle.Text = ActionTitle.Add( BinaryFileType.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
-            BinaryFileAttributesState = new ViewStateList<Attribute>();
+            BinaryFileAttributesState = new List<Attribute>();
 
             hfBinaryFileTypeId.Value = binaryFileType.Id.ToString();
             tbName.Text = binaryFileType.Name;
@@ -164,7 +187,8 @@ namespace RockWeb.Blocks.Core
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "BinaryFileTypeId", StringComparison.OrdinalIgnoreCase )
                 && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
-            BinaryFileAttributesState.AddAll( qryBinaryFileAttributes.ToList() );
+            BinaryFileAttributesState = qryBinaryFileAttributes.ToList();
+
             BindBinaryFileAttributesGrid();
 
             // render UI based on Authorized and IsSystem

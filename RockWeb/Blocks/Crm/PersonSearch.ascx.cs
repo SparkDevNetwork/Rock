@@ -217,8 +217,10 @@ namespace RockWeb.Blocks.Crm
             string type = PageParameter( "SearchType" );
             string term = PageParameter( "SearchTerm" );
 
-            if ( !String.IsNullOrWhiteSpace( type ) && !String.IsNullOrWhiteSpace( term ) )
+            if ( !string.IsNullOrWhiteSpace( type ) && !string.IsNullOrWhiteSpace( term ) )
             {
+                term = term.Trim();
+                type = type.Trim();
                 var rockContext = new RockContext();
 
                 var personService = new PersonService( rockContext );

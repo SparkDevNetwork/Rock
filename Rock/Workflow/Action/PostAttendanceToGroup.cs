@@ -203,10 +203,15 @@ namespace Rock.Workflow.Action
 
                     attendanceService.Add(attendance);
                     rockContext.SaveChanges();
+
+                    if ( attendance.LocationId.HasValue )
+                    {
+                        Rock.CheckIn.KioskLocationAttendance.Flush( attendance.LocationId.Value );
+                    }
                 }
                 else
                 {
-                    errorMessages.Add(string.Format("Could not find group matching the guid ''.", groupGuid));
+                    errorMessages.Add(string.Format("Could not find group matching the guid '{0}'.", groupGuid));
                 }
             }
 

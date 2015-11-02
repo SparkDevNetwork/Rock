@@ -331,7 +331,7 @@ function() {
                     groupTypeId = groupType.Id;
                 }
 
-                var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => xx.Group.GroupTypeId == groupTypeId );
+                var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => xx.Group.GroupTypeId == groupTypeId && xx.Group.IsActive == true );
 
                 var groupRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( n => n.AsGuid() ).ToList();
                 if ( groupRoleGuids.Count() > 0 )

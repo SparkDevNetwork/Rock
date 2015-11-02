@@ -237,25 +237,8 @@ function(item) {
 
             fExceptionList.SaveUserPreference( "Status Code", txtStatusCode.Text );
 
-            DateTime startDate;
-            if ( DateTime.TryParse( dpStartDate.Text, out startDate ) )
-            {
-                fExceptionList.SaveUserPreference( "Start Date", startDate.ToShortDateString() );
-            }
-            else
-            {
-                fExceptionList.SaveUserPreference( "Start Date", String.Empty );
-            }
-
-            DateTime endDate;
-            if ( DateTime.TryParse( dpEndDate.Text, out endDate ) )
-            {
-                fExceptionList.SaveUserPreference( "End Date", endDate.ToShortDateString() );
-            }
-            else
-            {
-                fExceptionList.SaveUserPreference( "End Date", String.Empty );
-            }
+            fExceptionList.SaveUserPreference( "Date Range", sdpDateRange.DelimitedValues );
+           
             BindExceptionListGrid();
         }
 
@@ -279,6 +262,7 @@ function(item) {
                         }
                     }
                     break;
+
                 case "Page":
                     int pageId;
                     if ( int.TryParse( e.Value, out pageId ) )
@@ -290,6 +274,7 @@ function(item) {
                         }
                     }
                     break;
+
                 case "User":
                     int userPersonId;
                     if ( int.TryParse( e.Value, out userPersonId ) )
@@ -302,6 +287,17 @@ function(item) {
                         }
                     }
                     break;
+
+                // ignore old filter parameters
+                case "Start Date":
+                case "End Date":
+                    e.Value = null;
+                    break;
+
+                case "Date Range":
+                    e.Value = SlidingDateRangePicker.FormatDelimitedValues( e.Value );
+                    break;
+                        
             }
         }
 
@@ -424,18 +420,7 @@ function(item) {
                 txtStatusCode.Text = fExceptionList.GetUserPreference( "Status Code" );
             }
 
-            DateTime startDate;
-            if ( DateTime.TryParse( fExceptionList.GetUserPreference( "Start Date" ), out startDate ) )
-            {
-                dpStartDate.Text = startDate.ToShortDateString();
-            }
-
-            DateTime endDate;
-            if ( DateTime.TryParse( fExceptionList.GetUserPreference( "End Date" ), out endDate ) )
-            {
-                dpEndDate.Text = endDate.ToShortDateString();
-            }
-
+            sdpDateRange.DelimitedValues = fExceptionList.GetUserPreference( "Date Range" );
         }
 
         /// <summary>
@@ -452,11 +437,13 @@ function(item) {
             //get the subset/summary date
             DateTime minSummaryCountDate = RockDateTime.Now.Date.AddDays( -( summaryCountDays ) );
 
-            var exceptionQuery = BuildBaseExceptionListQuery()
+            var rockContext = new RockContext();
+            
+            var exceptionQuery = BuildBaseExceptionListQuery( rockContext )
                                     .GroupBy( e => new
                                         {
-                                            SiteName = e.Site.Name ?? string.Empty,
-                                            PageName = e.Page.InternalName ?? string.Empty,
+                                            SiteName = e.Site.Name ?? "",
+                                            PageName = e.Page.InternalName ?? "",
                                             Description = e.Description
                                         } )
                                     .Select( eg => new
@@ -472,13 +459,14 @@ function(item) {
 
             if ( gExceptionList.SortProperty != null )
             {
-                gExceptionList.DataSource = exceptionQuery.Sort( gExceptionList.SortProperty ).ToList();
+                exceptionQuery = exceptionQuery.Sort( gExceptionList.SortProperty );
             }
             else
             {
-                gExceptionList.DataSource = exceptionQuery.OrderByDescending( e => e.LastExceptionDate ).ToList();
+                exceptionQuery = exceptionQuery.OrderByDescending( e => e.LastExceptionDate );
             }
 
+            gExceptionList.SetLinqDataSource( exceptionQuery );
             gExceptionList.DataBind();
 
         }
@@ -500,6 +488,7 @@ function(item) {
                     {
                         Id = e.Id,
                         CreatedDateTime = e.CreatedDateTime,
+                        PageName = e.Page.InternalName ?? e.PageUrl,
                         FullName = ( e.CreatedByPersonAlias != null &&
                             e.CreatedByPersonAlias.Person != null ) ?
                             e.CreatedByPersonAlias.Person.LastName + ", " + e.CreatedByPersonAlias.Person.NickName : "",
@@ -508,14 +497,15 @@ function(item) {
 
             if ( gExceptionOccurrences.SortProperty == null )
             {
-                gExceptionOccurrences.DataSource = query.OrderByDescending( e => e.CreatedDateTime ).ToList();
+                query = query.OrderByDescending( e => e.CreatedDateTime );
             }
             else
             {
-                gExceptionOccurrences.DataSource = query.Sort( gExceptionOccurrences.SortProperty ).ToList();
+                query = query.Sort( gExceptionOccurrences.SortProperty );
             }
 
             gExceptionOccurrences.EntityTypeId = EntityTypeCache.Read<ExceptionLog>().Id;
+            gExceptionOccurrences.SetLinqDataSource( query );
             gExceptionOccurrences.DataBind();
         }
 
@@ -538,9 +528,9 @@ function(item) {
         /// Builds the base query for the Exception List grid data
         /// </summary>
         /// <returns>IQueryable containing filtered ExceptionLog records</returns>
-        private IQueryable<ExceptionLog> BuildBaseExceptionListQuery()
+        private IQueryable<ExceptionLog> BuildBaseExceptionListQuery( RockContext rockContext )
         {
-            ExceptionLogService exceptionLogService = new ExceptionLogService( new RockContext() );
+            ExceptionLogService exceptionLogService = new ExceptionLogService( rockContext );
             IQueryable<ExceptionLog> query = exceptionLogService.Queryable();
 
             int siteId;
@@ -567,18 +557,16 @@ function(item) {
                 query = query.Where( e => e.StatusCode == statusCode );
             }
 
-            DateTime startDate;
-            if ( DateTime.TryParse( fExceptionList.GetUserPreference( "Start Date" ), out startDate ) )
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( fExceptionList.GetUserPreference( "Date Range" ) );
+
+            if ( dateRange.Start.HasValue )
             {
-                startDate = startDate.Date;
-                query = query.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= startDate );
+                query = query.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= dateRange.Start.Value );
             }
 
-            DateTime endDate;
-            if ( DateTime.TryParse( fExceptionList.GetUserPreference( "End Date" ), out endDate ) )
+            if ( dateRange.End.HasValue )
             {
-                endDate = endDate.Date.AddDays( 1 );
-                query = query.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value < endDate );
+                query = query.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value < dateRange.End.Value );
             }
 
             //Only look for inner exceptions

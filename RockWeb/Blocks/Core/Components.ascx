@@ -34,13 +34,13 @@
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" />
-                            <Rock:RockTemplateField>
+                            <Rock:RockTemplateFieldUnselected>
                                 <HeaderStyle CssClass="span1" />
                                 <ItemStyle HorizontalAlign="Center" />
                                 <ItemTemplate>
                                     <a id="aSecure" runat="server" class="btn btn-sm btn-security" height="500px"><i class="fa fa-lock"></i></a>
                                 </ItemTemplate>
-                            </Rock:RockTemplateField>
+                            </Rock:RockTemplateFieldUnselected>
                         </Columns>
                     </Rock:Grid>
                 </div>

@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Roster Page", "The page to link to to view the roster.", true, "", "", 2 )]
     [LinkedPage( "Attendance Page", "The page to link to to manage the group's attendance.", true, "", "", 3 )]
     [LinkedPage( "Communication Page", "The communication page to use for sending emails to the group members.", true, "", "", 4 )]
-    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 5 )]
+    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 5 )]
     [BooleanField("Enable Location Edit", "Enables changing locations when editing a group.", false, "", 6)]
     [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 7 )]
     [CodeEditorField("Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 8)]

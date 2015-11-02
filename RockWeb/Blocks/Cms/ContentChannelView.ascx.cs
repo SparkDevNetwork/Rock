@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Cms
     // Custom Settings
     [ContentChannelField( "Channel", "The channel to display items from.", false, "", "CustomSetting" )]
     [EnumsField( "Status", "Include items with the following status.", typeof( ContentChannelItemStatus ), false, "2", "CustomSetting" )]
-    [CodeEditorField( "Template", "The template to use when formatting the list of items.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, false, @"", "CustomSetting" )]
+    [CodeEditorField( "Template", "The template to use when formatting the list of items.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 600, false, @"", "CustomSetting" )]
     [IntegerField( "Count", "The maximum number of items to display.", false, 5, "CustomSetting" )]
     [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "CustomSetting" )]
     [BooleanField( "Enable Debug", "Enabling debug will display the fields of the first 5 items to help show you wants available for your liquid.", false, "CustomSetting" )]
@@ -145,6 +145,17 @@ $(document).ready(function() {
 
             this.BlockUpdated += ContentDynamic_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            Button btnTrigger = new Button();
+            btnTrigger.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            btnTrigger.ID = "rock-config-cancel-trigger";
+            btnTrigger.Click += btnTrigger_Click;
+            pnlEditModal.Controls.Add( btnTrigger );
+
+            AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
+            trigger.ControlID ="rock-config-cancel-trigger";
+            trigger.EventName = "Click";
+            upnlContent.Triggers.Add( trigger );
         }
 
         /// <summary>
@@ -181,6 +192,14 @@ $(document).ready(function() {
 
         void ContentDynamic_BlockUpdated( object sender, EventArgs e )
         {
+            ShowView();
+        }
+
+        void btnTrigger_Click( object sender, EventArgs e )
+        {
+            mdEdit.Hide();
+            pnlEditModal.Visible = false;
+
             ShowView();
         }
 
@@ -667,14 +686,11 @@ $(document).ready(function() {
                                 }
                             }
 
-                            // All filtering has been added, now run query and then check security and load attributes
+                            // All filtering has been added, now run query and load attributes
                             foreach ( var item in qry.ToList() )
                             {
-                                if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                                {
-                                    item.LoadAttributes( rockContext );
-                                    items.Add( item );
-                                }
+                                item.LoadAttributes( rockContext );
+                                items.Add( item );
                             }
 
                             // Order the items

@@ -18,9 +18,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.HtmlControls;
@@ -1523,6 +1527,164 @@ namespace Rock.Lava
                 }
             }
 
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input, which is the person.</param>
+        /// <param name="size">The size.</param>
+        /// <returns></returns>
+        public static string ZebraPhoto( DotLiquid.Context context, object input, string size )
+        {
+            var person = GetPerson( input );
+            try
+            {
+                if ( person != null )
+                {
+                    Stream initialPhotoStream;
+                    if ( person.PhotoId.HasValue )
+                    {
+                        initialPhotoStream = new BinaryFileService( GetRockContext( context ) ).Get( person.PhotoId.Value ).ContentStream;
+                    }
+                    else
+                    {
+                        var photoUrl = new StringBuilder();
+                        photoUrl.Append( HttpContext.Current.Server.MapPath( "~/" ) );
+
+                        if ( person.Age.HasValue && person.Age.Value < 18 )
+                        {
+                            // it's a child
+                            if ( person.Gender == Gender.Female )
+                            {
+                                photoUrl.Append( "Assets/FamilyManagerThemes/RockDefault/photo-child-female.png" );
+                            }
+                            else
+                            {
+                                photoUrl.Append( "Assets/FamilyManagerThemes/RockDefault/photo-child-male.png" );
+                            }
+                        }
+                        else
+                        {
+                            // it's an adult
+                            if ( person.Gender == Gender.Female )
+                            {
+                                photoUrl.Append( "Assets/FamilyManagerThemes/RockDefault/photo-adult-female.png" );
+                            }
+                            else
+                            {
+                                photoUrl.Append( "Assets/FamilyManagerThemes/RockDefault/photo-adult-male.png" );
+                            }
+                        }
+
+                        initialPhotoStream = File.Open( photoUrl.ToString(), FileMode.Open );
+                    }
+
+                    Bitmap initialBitmap = new Bitmap( initialPhotoStream );
+
+                    // Calculate rectangle to crop image into
+                    int height = initialBitmap.Height;
+                    int width = initialBitmap.Width;
+                    Rectangle cropSection = new Rectangle( 0, 0, height, width );
+                    if ( height < width )
+                    {
+                        cropSection = new Rectangle( ( width - height ) / 2, 0, ( width + height ) / 2, height ); // (width + height)/2 is a simplified version of the (width - height)/2 + height function
+                    }
+                    else if ( height > width )
+                    {
+                        cropSection = new Rectangle( 0, ( height - width ) / 2, width, ( height + width ) / 2 );
+                    }
+
+                    // Crop and resize image
+                    int pixelSize = size.AsIntegerOrNull() ?? 395;
+                    Bitmap resizedBitmap = new Bitmap( pixelSize, pixelSize );
+                    using ( Graphics g = Graphics.FromImage( resizedBitmap ) )
+                    {
+                        g.DrawImage( initialBitmap, new Rectangle( 0, 0, resizedBitmap.Width, resizedBitmap.Height ), cropSection, GraphicsUnit.Pixel );
+                    }
+
+                    // Grayscale Image
+                    var masks = new byte[] { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
+                    var outputBitmap = new Bitmap( resizedBitmap.Width, resizedBitmap.Height, PixelFormat.Format1bppIndexed );
+                    var data = new sbyte[resizedBitmap.Width, resizedBitmap.Height];
+                    var inputData = resizedBitmap.LockBits( new Rectangle( 0, 0, resizedBitmap.Width, resizedBitmap.Height ), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb );
+                    try
+                    {
+                        var scanLine = inputData.Scan0;
+                        var line = new byte[inputData.Stride];
+                        for ( var y = 0; y < inputData.Height; y++, scanLine += inputData.Stride )
+                        {
+                            Marshal.Copy( scanLine, line, 0, line.Length );
+                            for ( var x = 0; x < resizedBitmap.Width; x++ )
+                            {
+                                // Change to greyscale
+                                data[x, y] = (sbyte)( 64 * ( ( ( line[x * 3 + 2] * 0.299 + line[x * 3 + 1] * 0.587 + line[x * 3 + 0] * 0.114 ) / 255 ) - 0.4 ) );
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        resizedBitmap.UnlockBits( inputData );
+                    }
+
+                    //Dither Image
+                    var outputData = outputBitmap.LockBits( new Rectangle( 0, 0, outputBitmap.Width, outputBitmap.Height ), ImageLockMode.WriteOnly, PixelFormat.Format1bppIndexed );
+                    try
+                    {
+                        var scanLine = outputData.Scan0;
+                        for ( var y = 0; y < outputData.Height; y++, scanLine += outputData.Stride )
+                        {
+                            var line = new byte[outputData.Stride];
+                            for ( var x = 0; x < resizedBitmap.Width; x++ )
+                            {
+                                var j = data[x, y] > 0;
+                                if ( j ) line[x / 8] |= masks[x % 8];
+                                var error = (sbyte)( data[x, y] - ( j ? 32 : -32 ) );
+                                if ( x < resizedBitmap.Width - 1 ) data[x + 1, y] += (sbyte)( 7 * error / 16 );
+                                if ( y < resizedBitmap.Height - 1 )
+                                {
+                                    if ( x > 0 ) data[x - 1, y + 1] += (sbyte)( 3 * error / 16 );
+                                    data[x, y + 1] += (sbyte)( 5 * error / 16 );
+                                    if ( x < resizedBitmap.Width - 1 ) data[x + 1, y + 1] += (sbyte)( 1 * error / 16 );
+                                }
+                            }
+                            Marshal.Copy( line, 0, scanLine, outputData.Stride );
+                        }
+                    }
+                    finally
+                    {
+                        outputBitmap.UnlockBits( outputData );
+                    }
+
+                    // Convert from x to .png
+                    MemoryStream convertedStream = new MemoryStream();
+                    outputBitmap.Save( convertedStream, System.Drawing.Imaging.ImageFormat.Png );
+                    convertedStream.Seek( 0, SeekOrigin.Begin );
+
+                    // Convert the .png stream into a ZPL-readable Hex format
+                    var content = convertedStream.ReadBytesToEnd();
+                    StringBuilder zplImageData = new StringBuilder();
+
+                    foreach ( Byte b in content )
+                    {
+                        string hexRep = String.Format( "{0:X}", b );
+                        if ( hexRep.Length == 1 )
+                            hexRep = "0" + hexRep;
+                        zplImageData.Append( hexRep );
+                    }
+
+                    convertedStream.Dispose();
+                    initialPhotoStream.Dispose();
+
+                    return String.Format( "^FS ~DYE:LOGO,P,P,{0},,{1} ^FD", content.Length, zplImageData.ToString() );
+                }
+            }
+            catch
+            {
+
+            }
             return string.Empty;
         }
 

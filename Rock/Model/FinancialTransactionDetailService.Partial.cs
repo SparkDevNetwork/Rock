@@ -373,25 +373,12 @@ namespace Rock.Model
         public static IQueryable<FinancialTransactionDetailService.FinancialTransactionDetailWithSummaryDateTime> 
             GetFinancialTransactionDetailWithSummaryDateTime( this IQueryable<FinancialTransactionDetail> qry, ChartGroupBy summarizeBy )
         {
-            //// for Date SQL functions, borrowed some ideas from http://stackoverflow.com/a/1177529/1755417 and http://stackoverflow.com/a/133101/1755417 and http://stackoverflow.com/a/607837/1755417
-
             if ( summarizeBy == ChartGroupBy.Week )
             {
-                var knownSunday = new DateTime( 1966, 1, 30 );    // Because we can't use the @@DATEFIRST option in Linq to query how DATEPART("weekday",) will work, use a known Sunday date instead.
                 var qryWithSundayDate = qry.Select( d => new
                 {
                     FinancialTransactionDetail = d,
-                    SundayDate = SqlFunctions.DateAdd(
-                            "day",
-                            SqlFunctions.DateDiff( "day",
-                                "1900-01-01",
-                                SqlFunctions.DateAdd( "day",
-                                    ( ( ( SqlFunctions.DatePart( "weekday", knownSunday ) + 7 ) - SqlFunctions.DatePart( "weekday", d.Transaction.TransactionDateTime ) ) % 7 ),
-                                    d.Transaction.TransactionDateTime
-                                )
-                            ),
-                            "1900-01-01"
-                        )
+                    SundayDate = d.Transaction.SundayDate
                 } );
 
                 var qryGroupedBy = qryWithSundayDate.Select( d => new FinancialTransactionDetailService.FinancialTransactionDetailWithSummaryDateTime

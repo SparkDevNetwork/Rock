@@ -143,6 +143,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Twilio.3.6.25\lib\3.5\Twilio.Api.dll</HintPath>
     </Reference>
+    <Reference Include="UAParser">
+      <HintPath>..\packages\UAParser.1.2.0.0\lib\net35-Client\UAParser.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -160,6 +163,7 @@
     <Compile Include="Attribute\EventCalendarFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionRequestFieldAttribute.cs" />
     <Compile Include="Attribute\IHasAttributesWrapper.cs" />
+    <Compile Include="Attribute\MergeTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\NoteTypeFieldAttribute.cs" />
     <Compile Include="Attribute\FinancialGatewayFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
@@ -256,6 +260,7 @@
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
+    <Compile Include="Field\Types\MergeTemplateFieldType.cs" />
     <Compile Include="Field\Types\ConnectionActivityTypeFieldType.cs" />
     <Compile Include="Field\Types\ConnectionTypesFieldType.cs" />
     <Compile Include="Field\Types\ConnectionTypeFieldType.cs" />
@@ -357,6 +362,8 @@
     <Compile Include="Model\CodeGenerated\FollowingSuggestedService.cs" />
     <Compile Include="Model\CodeGenerated\FollowingSuggestionTypeService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPaymentDetailService.cs" />
+    <Compile Include="Model\CodeGenerated\PageViewSessionService.cs" />
+    <Compile Include="Model\CodeGenerated\PageViewUserAgentService.cs" />
     <Compile Include="Model\CommunicationService.Partial.cs" />
     <Compile Include="Model\ConnectionOpportunityCampus.cs" />
     <Compile Include="Model\ConnectionRequest.cs" />
@@ -443,6 +450,8 @@
     <Compile Include="Model\GroupScheduleExclusion.cs" />
     <Compile Include="Model\GroupMemberWorkflowTrigger.Partial.cs" />
     <Compile Include="Model\MergeTemplate.cs" />
+    <Compile Include="Model\PageViewSession.cs" />
+    <Compile Include="Model\PageViewUserAgent.cs" />
     <Compile Include="Model\RegistrationRegistrant.cs" />
     <Compile Include="Model\Registration.cs" />
     <Compile Include="Model\RegistrationRegistrantFee.cs" />
@@ -465,9 +474,15 @@
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
     <Compile Include="Model\GroupMemberWorkflowTrigger.cs" />
     <Compile Include="Net\RockWebRequest.cs" />
+    <Compile Include="PersonProfile\Badge\AlertNote.cs" />
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupMemberAttributeSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupStatusSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupRoleSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataComponentSettingsHelper.cs" />
     <Compile Include="Reporting\DataFilter\BaseAccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\ContentChannelItem\ContentChannelItemAttributesFilter.cs" />
@@ -477,6 +492,7 @@
     <Compile Include="Reporting\DataFilter\FinancialTransactionDetail\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialTransaction\TotalAmountFilter.cs" />
     <Compile Include="Reporting\DataFilter\GroupMembers\ContainsPeopleFilter.cs" />
+    <Compile Include="Reporting\DataFilter\GroupMembers\GroupDataViewFilter.cs" />    
     <Compile Include="Reporting\DataFilter\Group\ContainsGroupMembersFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\ContainsPeopleFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\GroupBranchFilter.cs" />
@@ -501,6 +517,7 @@
     <Compile Include="Reporting\DataSelect\Group\ParentGroupSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\ParentPhoneNumberSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InGroupGeofenceGroupTypeSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\LastNoteSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\RelatedPeopleSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\TotalGivingAmountSelect.cs" />
@@ -509,11 +526,14 @@
     <Compile Include="Reporting\DataSelect\Person\GroupParticipationSelect.cs" />
     <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
+    <Compile Include="Transactions\SendPaymentReciepts.cs" />
+    <Compile Include="Transactions\UpdatePaymentStatusTransaction.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\NotNullJsonConverter.cs" />
     <Compile Include="Utility\ExtensionMethods\CurrencyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
+    <Compile Include="Web\Cache\AttributeValueCache.cs" />
     <Compile Include="Web\InternalContext.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />
@@ -1111,6 +1131,7 @@
     <Compile Include="Workflow\Action\ActivateActions.cs" />
     <Compile Include="Workflow\Action\AddPersonToGroupAttribute.cs" />
     <Compile Include="Workflow\Action\AssignActivityFromAttributeValue.cs" />
+    <Compile Include="Workflow\Action\SetInitiatorFromAttribute.cs" />
     <Compile Include="Workflow\Action\AssignActivityToSecurityRole.cs" />
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
     <Compile Include="Workflow\Action\AssignActivityToGroup.cs" />

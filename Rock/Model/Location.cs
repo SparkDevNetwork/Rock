@@ -507,6 +507,46 @@ namespace Rock.Model
 
         #endregion
 
+        #region overrides
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                var result = base.IsValid;
+                if ( result )
+                {
+                    // make sure it isn't getting saved with a recursive parent hierarchy
+                    var parentIds = new List<int>();
+                    parentIds.Add( this.Id );
+                    var parent = this.ParentLocationId.HasValue ? ( this.ParentLocation ?? new LocationService( new RockContext() ).Get( this.ParentLocationId.Value ) ) : null;
+                    while ( parent != null )
+                    {
+                        if ( parentIds.Contains( parent.Id ) )
+                        {
+                            this.ValidationResults.Add( new ValidationResult( "Parent Location cannot be a child of this Location (recursion)" ) );
+                            return false;
+                        }
+                        else
+                        {
+                            parentIds.Add( parent.Id );
+                            parent = parent.ParentLocation;
+                        }
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        #endregion
+
         #region Public Methods
 
         /// <summary>

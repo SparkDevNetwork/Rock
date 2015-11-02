@@ -41,8 +41,9 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Shows a graph of giving statistics which can be configured for specific date range, amounts, currency types, campus, etc." )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked" )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK, Order = 0 )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 1 )]
+    [BooleanField("Hide View By Options", "Should the View By options be hidden (Giver, Adults, Children, Family)?", Order = 2 )]
     public partial class GivingAnalytics : RockBlock
     {
         #region Fields
@@ -51,6 +52,7 @@ namespace RockWeb.Blocks.Finance
         private Dictionary<int, Dictionary<int, string>> _campusAccounts = null;
         private Panel pnlTotal;
         private Literal lTotal;
+        private bool HideViewByOption = false;
 
         #endregion
 
@@ -118,6 +120,9 @@ namespace RockWeb.Blocks.Finance
 
             dvpDataView.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
             _rockContext = new RockContext();
+
+            HideViewByOption = GetAttributeValue( "HideViewByOptions" ).AsBoolean();
+            pnlViewBy.Visible = !HideViewByOption;
         }
 
         /// <summary>
@@ -171,7 +176,10 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            LoadChartAndGrids();
+            if ( pnlResults.Visible )
+            {
+                LoadChartAndGrids();
+            }
         }
 
         /// <summary>
@@ -260,7 +268,10 @@ namespace RockWeb.Blocks.Finance
         protected void btnShowDetails_Click( object sender, EventArgs e )
         {
             DisplayShowBy( ShowBy.Attendees );
-            BindGiversGrid();
+            if ( pnlResults.Visible )
+            {
+                BindGiversGrid();
+            }
         }
 
         /// <summary>
@@ -271,7 +282,10 @@ namespace RockWeb.Blocks.Finance
         protected void btnShowChart_Click( object sender, EventArgs e )
         {
             DisplayShowBy( ShowBy.Chart );
-            BindChartAmountGrid(GetChartData());
+            if ( pnlResults.Visible )
+            {
+                BindChartAmountGrid( GetChartData() );
+            }
         }
 
         /// <summary>
@@ -568,7 +582,10 @@ function(item) {
 
             this.SetUserPreference( keyPrefix + "GraphBy", hfGraphBy.Value, false );
             this.SetUserPreference( keyPrefix + "ShowBy", hfShowBy.Value, false );
-            this.SetUserPreference( keyPrefix + "ViewBy", hfViewBy.Value, false );
+            if ( !HideViewByOption )
+            {
+                this.SetUserPreference( keyPrefix + "ViewBy", hfViewBy.Value, false );
+            }
 
             GiversFilterBy giversFilterBy;
             if ( radFirstTime.Checked )
@@ -759,7 +776,11 @@ function(item) {
 
             var dataViewId = dvpDataView.SelectedValueAsInt();
 
-            GiversViewBy viewBy = hfViewBy.Value.ConvertToEnumOrNull<GiversViewBy>() ?? GiversViewBy.Giver;
+            GiversViewBy viewBy = GiversViewBy.Giver;
+            if ( !HideViewByOption )
+            {
+                viewBy = hfViewBy.Value.ConvertToEnumOrNull<GiversViewBy>() ?? GiversViewBy.Giver;
+            }
 
             // Clear all the existing grid columns
             gGiversGifts.Columns.Clear();

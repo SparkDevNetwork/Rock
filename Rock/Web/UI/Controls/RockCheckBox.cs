@@ -323,14 +323,23 @@ namespace Rock.Web.UI.Controls
 
                 if ( !string.IsNullOrWhiteSpace( SelectedIconCssClass ) && !string.IsNullOrWhiteSpace( UnSelectedIconCssClass ) )
                 {
+                    string postbackJS = string.Empty;
+                    if ( this.AutoPostBack  )
+                    {
+                        postbackJS = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this ) );
+                    }
+
                     base.Style.Add( HtmlTextWriterStyle.Display, "none" );
                     writer.WriteLine( string.Format(
-                        "<div class='rock-checkbox-icon'><i onclick=\"$('#{0}').prop('checked', !$('#{0}').prop('checked')); $(this).toggleClass('{1}').toggleClass('{2}'); \" class=\"{3}\"></i> {4}</div>", 
-                            this.ClientID,
-                            SelectedIconCssClass,
-                            UnSelectedIconCssClass,
-                            this.Checked ? SelectedIconCssClass : UnSelectedIconCssClass,
-                            this.Text ) );
+                        "<div class='rock-checkbox-icon {5}'><i onclick=\"$('#{0}').prop('checked', !$('#{0}').prop('checked')); $(this).toggleClass('{1}').toggleClass('{2}'); {6} \" class=\"{3}\"></i> {4}</div>", 
+                            this.ClientID, // {0}
+                            SelectedIconCssClass, // {1}
+                            UnSelectedIconCssClass, // {2}
+                            this.Checked ? SelectedIconCssClass : UnSelectedIconCssClass, // {3}
+                            this.Text, // {4}
+                            this.ContainerCssClass, // {5}
+                            postbackJS // {6}
+                            ) );
                 }
                 else
                 {

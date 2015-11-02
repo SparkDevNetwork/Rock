@@ -1,5 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PhotoVerify.ascx.cs" Inherits="RockWeb.Blocks.Crm.PhotoVerify" %>
-<%@ Import Namespace="Rock.Web.UI.Controls" %>
+
+<script>
+    Sys.Application.add_load(function () {
+        $(".photo a").fluidbox();
+    });
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -17,16 +23,13 @@
                     <Rock:Grid ID="gList" runat="server" OnRowDataBound="gList_RowDataBound" OnRowSelected="gList_RowSelected" DataKeyNames="PersonId" EmptyDataText="No one to show." RowItemText="photo">
                         <Columns>
                             <Rock:SelectField />
-                            <Rock:RockTemplateField >
-                                <HeaderTemplate>
-                                    Photo
-                                </HeaderTemplate>
+                            <Rock:RockTemplateFieldUnselected HeaderText="Photo" >
                                 <itemtemplate>
-                                <a href='<%# FormatPersonLink(Eval("PersonId").ToString()) %>'>
-                                    <img class="person-image" id="imgPersonImage" src="" runat="server"/>
-                                </a>
+                                    <div class="photo">
+                                        <asp:Literal ID="lImage" runat="server" />
+                                    </div>
                                 </itemtemplate>
-                            </Rock:RockTemplateField>
+                            </Rock:RockTemplateFieldUnselected>
                             <Rock:RockBoundField DataField="CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime" />
                             <Rock:RockBoundField DataField="Person.FullName" HeaderText="Name" SortExpression="Person.FullName" />
                             <Rock:RockBoundField DataField="Person.Gender" HeaderText="Gender" SortExpression="Person.Gender" />

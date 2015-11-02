@@ -504,14 +504,14 @@ namespace RockWeb.Blocks.Event
                     {
                         foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
                         {
-                            object fieldValue = null;
-                            if ( RegistrantState.FieldValues.ContainsKey( field.Id ) )
-                            {
-                                fieldValue = RegistrantState.FieldValues[field.Id];
-                            }
-
                             if ( field.FieldSource == RegistrationFieldSource.RegistrationAttribute )
                             {
+                                object fieldValue = null;
+                                if ( RegistrantState.FieldValues.ContainsKey( field.Id ) )
+                                {
+                                    fieldValue = RegistrantState.FieldValues[field.Id];
+                                }
+
                                 if ( field.AttributeId.HasValue )
                                 {
                                     var attribute = AttributeCache.Read( field.AttributeId.Value );
@@ -686,27 +686,30 @@ namespace RockWeb.Blocks.Event
                     {
                         foreach ( var field in form.Fields.OrderBy( f => f.Order ) )
                         {
-                            object value = null;
-
-                            if ( field.AttributeId.HasValue )
+                            if ( field.FieldSource == RegistrationFieldSource.RegistrationAttribute )
                             {
-                                var attribute = AttributeCache.Read( field.AttributeId.Value );
-                                string fieldId = "attribute_field_" + attribute.Id.ToString();
+                                object value = null;
 
-                                Control control = phFields.FindControl( fieldId );
-                                if ( control != null )
+                                if ( field.AttributeId.HasValue )
                                 {
-                                    value = attribute.FieldType.Field.GetEditValue( control, attribute.QualifierValues );
-                                }
-                            }
+                                    var attribute = AttributeCache.Read( field.AttributeId.Value );
+                                    string fieldId = "attribute_field_" + attribute.Id.ToString();
 
-                            if ( value != null )
-                            {
-                                RegistrantState.FieldValues.AddOrReplace( field.Id, value );
-                            }
-                            else
-                            {
-                                RegistrantState.FieldValues.Remove( field.Id );
+                                    Control control = phFields.FindControl( fieldId );
+                                    if ( control != null )
+                                    {
+                                        value = attribute.FieldType.Field.GetEditValue( control, attribute.QualifierValues );
+                                    }
+                                }
+
+                                if ( value != null )
+                                {
+                                    RegistrantState.FieldValues.AddOrReplace( field.Id, value );
+                                }
+                                else
+                                {
+                                    RegistrantState.FieldValues.Remove( field.Id );
+                                }
                             }
                         }
                     }

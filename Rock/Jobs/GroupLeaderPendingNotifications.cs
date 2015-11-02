@@ -173,7 +173,7 @@ namespace Rock.Jobs
             {
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( ex, context2 );
-                throw ex;
+                throw;
             }
         }
     }

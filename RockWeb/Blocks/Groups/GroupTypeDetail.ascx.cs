@@ -1382,7 +1382,7 @@ namespace RockWeb.Blocks.Groups
             var groupTypeList = new GroupTypeService( new RockContext() )
                 .Queryable()
                 .Where( t => !ChildGroupTypesList.Contains( t.Id ) )
-                .OrderBy( t => t.Order )
+                .OrderBy( t => t.Name )
                 .ToList();
 
             if ( groupTypeList.Count == 0 )

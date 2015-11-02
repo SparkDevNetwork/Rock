@@ -36,9 +36,9 @@ namespace Rock.Communication.Medium
     [Export( typeof( MediumComponent ) )]
     [ExportMetadata( "ComponentName", "Email" )]
 
-    [CodeEditorField( "Unsubscribe HTML", "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubcribe HTML' merge field is used, or if not used, at the end of the email in email contents.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
+    [CodeEditorField( "Unsubscribe HTML", "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubcribe HTML' merge field is used, or if not used, at the end of the email in email contents.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
 <a href='{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person.UrlEncodedKey }}'>Unsubscribe</a>", "", 2 )]
-    [CodeEditorField( "Default Plain Text", "The text to use when the plain text field is left blank.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
+    [CodeEditorField( "Default Plain Text", "The text to use when the plain text field is left blank.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
 Unfortunately, you cannot view the contents of this email as it contains formatting that is not supported 
 by your email client.  
 
@@ -81,7 +81,7 @@ You can view an online version of this email here:
             {
                 mergeValues.Add( "Person", person );
 
-                var recipient = communication.Recipients.Where( r => r.PersonAlias != null && r.PersonAlias.PersonId == person.Id ).FirstOrDefault();
+                var recipient = new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == communication.Id ).Where( r => r.PersonAlias != null && r.PersonAlias.PersonId == person.Id ).FirstOrDefault();
                 if ( recipient != null )
                 {
                     // Add any additional merge fields created through a report
@@ -225,12 +225,12 @@ You can view an online version of this email here:
             var rockContext = new RockContext();
             var communicationService = new CommunicationService( rockContext );
 
-            communication = communicationService.Queryable( "Recipients" )
+            communication = communicationService.Queryable()
                 .FirstOrDefault( t => t.Id == communication.Id );
 
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
-                communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
+                communication.HasPendingRecipients( rockContext ) &&
                 ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
             {
                 // Update any recipients that should not get sent the communication

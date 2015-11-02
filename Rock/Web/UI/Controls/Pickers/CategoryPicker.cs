@@ -127,7 +127,7 @@ namespace Rock.Web.UI.Controls
             {
                 var ids = new List<string>();
                 var names = new List<string>();
-                var parentCategoryIds = string.Empty;
+                var parentCategoryIds = new List<string>();
 
                 foreach ( var category in theCategories )
                 {
@@ -139,13 +139,22 @@ namespace Rock.Web.UI.Controls
 
                         while ( parentCategory != null )
                         {
-                            parentCategoryIds += parentCategory.Id.ToString() + ",";
+                            if ( !parentCategoryIds.Contains( parentCategory.Id.ToString() ) )
+                            {
+                                parentCategoryIds.Insert( 0, parentCategory.Id.ToString() );
+                            }
+                            else
+                            {
+                                // infinite recursion
+                                break;
+                            }
+
                             parentCategory = parentCategory.ParentCategory;
                         }
                     }
                 }
 
-                InitialItemParentIds = parentCategoryIds.TrimEnd( new[] { ',' } );
+                InitialItemParentIds = parentCategoryIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;
             }

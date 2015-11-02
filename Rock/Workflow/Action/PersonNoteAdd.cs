@@ -67,6 +67,7 @@ namespace Rock.Workflow.Action
                 note.EntityId = person.Id;
                 note.Caption = GetAttributeValue( action, "Caption" ).ResolveMergeFields(mergeFields);
                 note.IsAlert = GetAttributeValue(action, "Alert").AsBoolean();
+                note.IsPrivateNote = false;
                 note.Text = GetAttributeValue(action, "Text").ResolveMergeFields(mergeFields); ;
 
                 var noteType = NoteTypeCache.Read( GetAttributeValue( action, "NoteType" ).AsGuid() );

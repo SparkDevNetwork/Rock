@@ -507,7 +507,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockTypeAttribute( "9F8F2D68-DEEA-4686-810F-AB32923F855E", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Schedule", "ShowSchedule", "", "", 0, @"False", "E13FC044-C674-4059-AAAB-099B0B636F0A" );
 
             // Attrib for BlockType: Group Simple Register:Success Message
-            RockMigrationHelper.AddBlockTypeAttribute( "82A285C1-0D6B-41E0-B1AA-DD356021BDBF", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Success Message", "SuccessMessage", "", "The message to display when user is succesfully added to the group", 0, @"Please check your email to verify your registration", "76112491-8806-4081-AA89-FDBEF5B27BBB" );
+            RockMigrationHelper.AddBlockTypeAttribute( "82A285C1-0D6B-41E0-B1AA-DD356021BDBF", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Success Message", "SuccessMessage", "", "The message to display when user is successfully added to the group", 0, @"Please check your email to verify your registration", "76112491-8806-4081-AA89-FDBEF5B27BBB" );
 
             // Attrib for BlockType: Group Simple Register:Group
             RockMigrationHelper.AddBlockTypeAttribute( "82A285C1-0D6B-41E0-B1AA-DD356021BDBF", "F4399CEF-827B-48B2-A735-F7806FCFE8E8", "Group", "Group", "", "The group to add people to", 0, @"", "F9DD30B1-DC64-4782-803C-D35D34807F3D" );
