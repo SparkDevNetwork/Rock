@@ -22,6 +22,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -31,6 +32,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [DisplayName( "Family Members" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to view the members of a family." )]
+
+    [LinkedPage("Location Detail Page", "Page used to edit the settings for a particular location.")]
     public partial class FamilyMembers : Rock.Web.UI.PersonBlock
     {
         #region Fields
@@ -191,24 +194,25 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         if ( Rock.Address.VerificationContainer.Instance.Components.Any( c => c.Value.Value.IsActive ) )
                         {
                             lbVerify.Visible = true;
-                            lbVerify.CommandName = "verify";
                             lbVerify.CommandArgument = loc.Id.ToString();
-
-                            if ( loc.GeoPoint != null )
-                            {
-                                lbVerify.ToolTip = string.Format( 
-                                    "{0} {1}",
-                                    loc.GeoPoint.Latitude,
-                                    loc.GeoPoint.Longitude );
-                            }
-                            else
-                            {
-                                lbVerify.ToolTip = "Verify Address";
-                            }
                         }
                         else
                         {
                             lbVerify.Visible = false;
+                        }
+                    }
+
+                    LinkButton lbLocationSettings = e.Item.FindControl( "lbLocationSettings" ) as LinkButton;
+                    if ( lbLocationSettings != null )
+                    {
+                        if ( UserCanAdministrate )
+                        {
+                            lbLocationSettings.Visible = true;
+                            lbLocationSettings.CommandArgument = loc.Id.ToString();
+                        }
+                        else
+                        {
+                            lbLocationSettings.Visible = false;
                         }
                     }
                 }
@@ -225,18 +229,30 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             int locationId = int.MinValue;
             if ( int.TryParse( e.CommandArgument.ToString(), out locationId ) )
             {
-                var rockContext = new RockContext();
-                var service = new LocationService( rockContext );
-                var location = service.Get( locationId );
-
-                switch ( e.CommandName )
+                using ( var rockContext = new RockContext() )
                 {
-                    case "verify":
-                        service.Verify( location, true );
-                        break;
-                }
+                    var service = new LocationService( rockContext );
+                    var location = service.Get( locationId );
 
-                rockContext.SaveChanges();
+                    if ( location != null )
+                    {
+                        switch ( e.CommandName )
+                        {
+                            case "verify":
+                                {
+                                    service.Verify( location, true );
+                                    rockContext.SaveChanges();
+                                    break;
+                                }
+                            case "settings":
+                                {
+                                    NavigateToLinkedPage( "LocationDetailPage", 
+                                        new Dictionary<string, string> { { "LocationId", location.Id.ToString() }, { "PersonId", Person.Id.ToString() } } );
+                                    break;
+                                }
+                        }
+                    }
+                }
             }
 
             BindFamilies();

@@ -764,10 +764,11 @@ namespace RockWeb.Blocks.Finance
             var qry = new FinancialTransactionService( rockContext ).Queryable();
 
             // Transaction Types
-            var txnTypes = GetAttributeValue( "TransactionTypes" ).SplitDelimitedValues().AsGuidList();
-            if ( txnTypes.Any() )
+            var transactionTypeValueIdList = GetAttributeValue( "TransactionTypes" ).SplitDelimitedValues().AsGuidList().Select( a => DefinedValueCache.Read( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
+
+            if ( transactionTypeValueIdList.Any() )
             {
-                qry = qry.Where( t => txnTypes.Contains( t.TransactionTypeValue.Guid ) );
+                qry = qry.Where( t => transactionTypeValueIdList.Contains( t.TransactionTypeValueId ) );
             }
 
             // Set up the selection filter
@@ -948,19 +949,19 @@ namespace RockWeb.Blocks.Finance
                 pnlSummary.Visible = true;
 
                 // No context - show account summary
-                var qryTransactionDetails = qry.SelectMany( a => a.TransactionDetails );
-                var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.Account ).Select( a => new
+                var qryTransactionDetails = qry.SelectMany( a => a.TransactionDetails ); 
+                var qryFinancialAccount = new FinancialAccountService( rockContext ).Queryable();
+                var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.AccountId ).Select( a => new
                 {
-                    a.Key.Name,
-                    a.Key.Order,
+                    AccountId = a.Key,
                     TotalAmount = (decimal?)a.Sum( d => d.Amount )
-                } ).OrderBy( a => a.Order );
-
+                } ).Join( qryFinancialAccount, k1 => k1.AccountId, k2 => k2.Id, ( td, fa ) => new { td.TotalAmount, fa.Name, fa.Order } )
+                .OrderBy( a => a.Order );
+                
                 var summaryList = accountSummaryQry.ToList();
                 var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
-                string currencyFormat = GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:n}";
-                lGrandTotal.Text = string.Format( currencyFormat, grandTotalAmount );
-                rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = string.Format( currencyFormat, a.TotalAmount ) } ).ToList();
+                lGrandTotal.Text = grandTotalAmount.FormatAsCurrency();
+                rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = a.TotalAmount.FormatAsCurrency() } ).ToList();
                 rptAccountSummary.DataBind();
             }
             else

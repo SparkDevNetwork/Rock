@@ -53,13 +53,14 @@
                             <asp:Panel ID="pnlAccounts" runat="server">
                                 <div class="grid">
                                     <Rock:Grid ID="gAccountsEdit" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" 
-                                        OnRowSelected="gAccountsEdit_RowSelected" ShowConfirmDeleteDialog="false">
+                                        ShowConfirmDeleteDialog="false">
                                         <Columns>
                                             <Rock:RockTemplateField HeaderText="Accounts">
                                                 <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                             </Rock:RockTemplateField>
                                             <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                             <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
+                                            <Rock:EditField OnClick="gAccountsEdit_EditClick" />
                                             <Rock:DeleteField OnClick="gAccountsEdit_DeleteClick" />
                                         </Columns>
                                     </Rock:Grid>

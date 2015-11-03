@@ -75,6 +75,7 @@
                             <div class="col-md-6">
                                 <Rock:PersonPicker ID="ppPerson" runat="server" Label="Registered By" OnSelectPerson="ppPerson_SelectPerson" EnableSelfSelection="true" />
                                 <Rock:EmailBox ID="ebConfirmationEmail" runat="server" Label="Confirmation Email" />
+                                <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Target Group" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbFirstName" runat="server" Label="Registered by First Name" Required="true" />
@@ -107,7 +108,7 @@
                                 <Rock:RockLiteral ID="lConfirmationEmail" runat="server" Label="Confirmation Email" />
                                 <asp:LinkButton ID="lbResendConfirmation" runat="server" CssClass="btn btn-default btn-xs margin-b-sm" Text="Resend Confirmation" OnClick="lbResendConfirmation_Click" CausesValidation="false"></asp:LinkButton>
                                 <Rock:NotificationBox ID="nbConfirmationQueued" runat="server" NotificationBoxType="Success" Text="A new confirmation email has been sent." Visible="false" Dismissable="true"  />
-                                <Rock:RockLiteral ID="lGroup" runat="server" Label="Group" />
+                                <Rock:RockLiteral ID="lGroup" runat="server" Label="Target Group" />
                             </div>
                             <div class="col-md-6">
 
@@ -167,7 +168,7 @@
 
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <asp:LinkButton ID="lbViewPaymentDetails" runat="server" CssClass="btn btn-link" Text="Payments" OnClick="lbViewPaymentDetails_Click" CausesValidation="false"></asp:LinkButton>
+                                            <asp:LinkButton ID="lbViewPaymentDetails" runat="server" CssClass="btn btn-link pull-right" Text="View/Edit Payments" OnClick="lbViewPaymentDetails_Click" CausesValidation="false"></asp:LinkButton>
                                         </div>
                                     </div>
 
@@ -184,6 +185,7 @@
                                     <asp:PlaceHolder ID="phManualDetails" runat="server">
                                         <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
                                         <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
+                                        <Rock:RockTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" />
                                     </asp:PlaceHolder>
 
                                     <asp:PlaceHolder ID="phCCDetails" runat="server">
@@ -211,6 +213,8 @@
                                         <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" ShowAddressLine2="false" 
                                             Required="true" ValidationGroup="Payment" RequiredErrorMessage="Billing Address is required" />
                                     </asp:PlaceHolder>
+
+                                    <Rock:RockTextBox ID="tbSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="2" />
 
                                     <div class="actions">
                                         <asp:LinkButton ID="lbSubmitPayment" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="lbSubmitPayment_Click" CausesValidation="true" ValidationGroup="Payment" />

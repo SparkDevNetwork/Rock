@@ -1679,9 +1679,16 @@ namespace Rock.Web.UI.Controls
             }
 
             var range = worksheet.Cells[3, 1, rowCounter, columnCounter];
+
+            // use conditionalFormatting to create the alternate row style
+            var conditionalFormatting = range.ConditionalFormatting.AddExpression();
+            conditionalFormatting.Formula = "MOD(ROW()+1,2)=0";
+            conditionalFormatting.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+            conditionalFormatting.Style.Fill.BackgroundColor.Color = Color.FromArgb( 240, 240, 240 );
+            
             var table = worksheet.Tables.Add( range, "table1" );
             table.ShowFilter = true;
-            table.TableStyle = OfficeOpenXml.Table.TableStyles.Light1;
+            table.TableStyle = OfficeOpenXml.Table.TableStyles.None;
 
             // format header range
             using ( ExcelRange r = worksheet.Cells[3, 1, 3, columnCounter] )

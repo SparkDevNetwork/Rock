@@ -44,6 +44,15 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
+                            <Rock:RockControlWrapper id="rcwLinkedRegistrations" runat="server" Label="Registration">
+                                <ul class="list-unstyled">
+                                    <asp:Repeater ID="rptLinkedRegistrations" runat="server">
+                                        <ItemTemplate>
+                                            <li><a href='<%# RegistrationUrl( (int)Eval("Id" ) ) %>'><%# Eval("Name") %></a></li>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </ul>
+                            </Rock:RockControlWrapper>
                         </div>
                     </div>
 

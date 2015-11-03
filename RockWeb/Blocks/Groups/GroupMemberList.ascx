@@ -38,6 +38,11 @@
                                     <Rock:SelectField></Rock:SelectField>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Person.LastName,Person.NickName" HtmlEncode="false" />
                                     <Rock:DefinedValueField DataField="Person.ConnectionStatusValueId" HeaderText="Connection Status" SortExpression="Person.ConnectionStatusValue.Value" />
+                                    <Rock:RockTemplateFieldUnselected HeaderText="Registration">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lRegistration" runat="server"></asp:Literal>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateFieldUnselected>
                                     <Rock:RockBoundField DataField="GroupRole" HeaderText="Role" SortExpression="GroupRole.Name" />
                                     <Rock:RockBoundField DataField="GroupMemberStatus" HeaderText="Member Status" SortExpression="GroupMemberStatus" />
                                 </Columns>

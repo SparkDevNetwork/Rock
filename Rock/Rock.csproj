@@ -475,6 +475,7 @@
     <Compile Include="Reporting\DataSelect\GroupMember\GroupStatusSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupRoleSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\PersonLinkSelect.cs" />
+    <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberAttributesFilter.cs" />
     <Compile Include="Reporting\DataComponentSettingsHelper.cs" />
     <Compile Include="Reporting\DataFilter\BaseAccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\ContentChannelItem\ContentChannelItemAttributesFilter.cs" />
