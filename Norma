@@ -12,7 +12,7 @@ tasks:
   # copy over all plugin blocks/styles/etc
   copy:
     endpoint: "NewSpring/norma-copy#feature-base-name"
-    src: ".remote/**/*(cc_newspring|com_centralaz|org_sparkdevnetwork|ColorCode)/**/*"
+    src: ".remote/**/*(cc_newspring|com_centralaz|org_sparkdevnetwork)/**/*"
     dest: "RockWeb/Plugins/"
     base: true
 
