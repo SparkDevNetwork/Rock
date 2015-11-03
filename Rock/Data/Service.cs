@@ -543,6 +543,12 @@ namespace Rock.Data
         public virtual void SetValues( T sourceItem, T targetItem )
         {
             _context.Entry( targetItem ).CurrentValues.SetValues( sourceItem );
+
+            if ( ( targetItem is IModel ) && ( sourceItem is IModel ) )
+            {
+                // manually set the value of ModifiedAuditValuesAlreadyUpdated since it isn't a Database field
+                ( targetItem as IModel ).ModifiedAuditValuesAlreadyUpdated = ( sourceItem as IModel ).ModifiedAuditValuesAlreadyUpdated;
+            }
         }
 
         #endregion

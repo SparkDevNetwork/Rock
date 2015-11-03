@@ -193,7 +193,7 @@ namespace Rock.Reporting.DataSelect.Person
             //
 
             // Set the Output Format of the field.
-            Expression<Func<GroupMember, string>> outputExpression;
+            Expression<Func<Rock.Model.GroupMember, string>> outputExpression;
 
             switch ( settings.ListFormat )
             {
@@ -212,7 +212,7 @@ namespace Rock.Reporting.DataSelect.Person
                                                                                               .ThenBy( x => x.GroupRole.Name )
                                                                                               .Select( outputExpression ).AsEnumerable() );
 
-            var selectExpression = SelectExpressionExtractor.Extract<Model.Person>( personGroupsQuery, entityIdProperty, "p" );
+            var selectExpression = SelectExpressionExtractor.Extract( personGroupsQuery, entityIdProperty, "p" );
 
             return selectExpression;
         }

@@ -29,6 +29,33 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class GroupPicker : ItemPicker
     {
+        #region Controls
+
+        /// <summary>
+        /// The checkbox to show inactive groups
+        /// </summary>
+        private RockCheckBox _cbShowInactiveGroups;
+
+        #endregion
+
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            base.CreateChildControls();
+
+            _cbShowInactiveGroups = new RockCheckBox();
+            _cbShowInactiveGroups.ContainerCssClass = "pull-right";
+            _cbShowInactiveGroups.SelectedIconCssClass = "fa fa-check-square-o";
+            _cbShowInactiveGroups.UnSelectedIconCssClass = "fa fa-square-o";
+            _cbShowInactiveGroups.ID = this.ID + "_cbShowInactiveGroups";
+            _cbShowInactiveGroups.Text = "Show Inactive";
+            _cbShowInactiveGroups.AutoPostBack = true;
+            _cbShowInactiveGroups.CheckedChanged += _cbShowInactiveGroups_CheckedChanged;
+            this.Controls.Add( _cbShowInactiveGroups );
+        }
+        
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -51,10 +78,7 @@ namespace Rock.Web.UI.Controls
                 ItemId = group.Id.ToString();
 
                 var parentIds = GetGroupAncestorsIdList( group.ParentGroup );
-
-                var parentGroupIds = parentIds.AsDelimited( "," );
-
-                InitialItemParentIds = parentGroupIds.TrimEnd( new[] { ',' } );
+                InitialItemParentIds = parentIds.AsDelimited( "," );
                 ItemName = group.Name;
             }
             else
@@ -84,16 +108,13 @@ namespace Rock.Web.UI.Controls
             }
 
             // If we have encountered this node previously in our tree walk, there is a recursive loop in the tree.
-            // Add an invalid Id to indicate that a problem was encountered, and exit.
             if ( ancestorGroupIds.Contains( group.Id ) )
             {
-                ancestorGroupIds.Add( -1 );
-
                 return ancestorGroupIds;
             }
 
             // Create or add this node to the history stack for this tree walk.
-            ancestorGroupIds.Add( group.Id );
+            ancestorGroupIds.Insert(0, group.Id );
 
             ancestorGroupIds = this.GetGroupAncestorsIdList( group.ParentGroup, ancestorGroupIds );
 
@@ -112,7 +133,7 @@ namespace Rock.Web.UI.Controls
             {
                 var ids = new List<string>();
                 var names = new List<string>();
-                var parentGroupIds = string.Empty;
+                var parentIds = new List<int>();
 
                 foreach ( var group in theGroups )
                 {
@@ -121,16 +142,12 @@ namespace Rock.Web.UI.Controls
                         ids.Add( group.Id.ToString() );
                         names.Add( group.Name );
                         var parentGroup = group.ParentGroup;
-
-                        while ( parentGroup != null )
-                        {
-                            parentGroupIds += parentGroup.Id.ToString() + ",";
-                            parentGroup = parentGroup.ParentGroup;
-                        }
+                        var groupParentIds = GetGroupAncestorsIdList( parentGroup );
+                        parentIds.AddRange( groupParentIds );
                     }
                 }
 
-                InitialItemParentIds = parentGroupIds.TrimEnd( new[] { ',' } );
+                InitialItemParentIds = parentIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;
             }
@@ -170,5 +187,26 @@ namespace Rock.Web.UI.Controls
             get { return "~/api/groups/getchildren/"; }
         }
 
+        /// <summary>
+        /// Render any additional picker actions
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public override void RenderCustomPickerActions( HtmlTextWriter writer )
+        {
+            base.RenderCustomPickerActions( writer );
+
+            _cbShowInactiveGroups.RenderControl( writer );
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the _cbShowInactiveGroups control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        public void _cbShowInactiveGroups_CheckedChanged( object sender, EventArgs e )
+        {
+            ShowDropDown = true;
+            this.ItemRestUrlExtraParams = "?includeInactiveGroups=" + _cbShowInactiveGroups.Checked.ToTrueFalse();
+        }
     }
 }

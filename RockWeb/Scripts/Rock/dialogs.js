@@ -1,5 +1,4 @@
 (function ($) {
-    'use strict';
     window.Rock = window.Rock || {};
 
     Rock.dialogs = (function () {

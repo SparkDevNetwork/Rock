@@ -94,6 +94,7 @@ namespace Rock.Model
             target.DefaultPageRouteId = source.DefaultPageRouteId;
             target.Description = source.Description;
             target.EnableMobileRedirect = source.EnableMobileRedirect;
+            target.EnablePageViews = source.EnablePageViews;
             target.ErrorPage = source.ErrorPage;
             target.ExternalUrl = source.ExternalUrl;
             target.ForeignGuid = source.ForeignGuid;
@@ -106,6 +107,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.PageNotFoundPageId = source.PageNotFoundPageId;
             target.PageNotFoundPageRouteId = source.PageNotFoundPageRouteId;
+            target.PageViewRetentionPeriodDays = source.PageViewRetentionPeriodDays;
             target.RedirectTablets = source.RedirectTablets;
             target.RegistrationPageId = source.RegistrationPageId;
             target.RegistrationPageRouteId = source.RegistrationPageRouteId;

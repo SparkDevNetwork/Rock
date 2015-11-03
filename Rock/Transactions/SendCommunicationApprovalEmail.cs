@@ -142,7 +142,7 @@ namespace Rock.Transactions
                                                     communication.SenderPersonAlias.Person.FullName,
                                                     typeName,
                                                     communicationDetails,
-                                                    communication.Recipients.Count(),
+                                                    communication.GetRecipientCount(rockContext),
                                                     ApprovalPageUrl);
                             
                             var recipients = new List<string>();

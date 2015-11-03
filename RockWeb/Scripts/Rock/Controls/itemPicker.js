@@ -92,7 +92,7 @@
                     $control.find('.picker-select-none').show();
                 }
 
-                $control.find('.picker-btn').click(function () {
+                $control.find('.picker-btn').click(function (el) {
 
                     var rockTree = $control.find('.treeview').data('rockTree'),
                             selectedNodes = rockTree.selectedNodes,
@@ -116,11 +116,12 @@
                     $(this).closest('.picker-menu').slideUp(function () {
                         self.updateScrollbar();
                     });
-
-                    if (!(event.srcElement == this)) {
+                    
+                    if (!(el && el.originalEvent && el.originalEvent.srcElement == this)) {
                         // if this event was called by something other than the button itself, make sure the execute the href (which is probably javascript)
-                        if ($(this).attr('href')) {
-                            window.location.href = $(this).attr('href');
+                        var jsPostback = $(this).attr('href');
+                        if (jsPostback) {
+                            window.location = jsPostback;
                         }
                     }
                 });

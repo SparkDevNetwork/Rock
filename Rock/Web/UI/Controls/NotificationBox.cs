@@ -134,7 +134,7 @@ namespace Rock.Web.UI.Controls
                     if ( !string.IsNullOrWhiteSpace( this.Heading ) )
                     {
                         writer.RenderBeginTag( HtmlTextWriterTag.Strong );
-                        writer.Write( Heading );
+                        writer.Write( Heading + " " );
                         writer.RenderEndTag();
                     }
 

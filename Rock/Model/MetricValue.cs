@@ -41,6 +41,7 @@ namespace Rock.Model
         /// The type of the metric value.
         /// </value>
         [DataMember]
+        [Previewable]
         public MetricValueType MetricValueType { get; set; }
 
         /// <summary>
@@ -61,6 +62,8 @@ namespace Rock.Model
         /// The y value.
         /// </value>
         [DataMember]
+        [IncludeForReporting]
+        [Previewable]
         public decimal? YValue { get; set; }
 
         /// <summary>
@@ -100,6 +103,7 @@ namespace Rock.Model
         /// </value>
         [Index]
         [DataMember]
+        [Previewable]
         public DateTime? MetricValueDateTime { get; set; }
 
         /// <summary>

@@ -58,6 +58,8 @@
                             <Rock:PagePicker ID="ppMobilePage" runat="server" Label="Mobile Page" Required="false" PromptForPageRoute="false" Help="The page that user will be redirected to if accessing site from a mobile device." />
                             <Rock:DataTextBox ID="tbExternalURL" runat="server" SourceTypeName="Rock.Model.Site, Rock" Label="External URL" PropertyName="ExternalUrl" Help="If user should be redirected to an external URL when accessing this site from a mobile device, enter the URL here."  />
                             <Rock:RockCheckBox ID="cbRedirectTablets" runat="server" Label="Redirect Tablets" />
+                            <Rock:RockCheckBox ID="cbEnablePageViews" runat="server" Label="Log Page Views" AutoPostBack="true" OnCheckedChanged="cbEnablePageViews_CheckedChanged" CausesValidation="false" />
+                            <Rock:NumberBox ID="nbPageViewRetentionPeriodDays" runat="server" Label="Page View Retention Period (Days)" Help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
                         </div>
                     </div>
 

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -29,6 +30,83 @@ namespace Rock.Field.Types
     /// </summary>
     public class ImageFieldType : BinaryFileFieldType
     {
+        #region Configuration
+
+        /// <summary>
+        /// if true, wrap the image with a an href to the full size image
+        /// </summary>
+        protected const string FORMAT_AS_LINK = "formatAsLink";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( FORMAT_AS_LINK );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            List<Control> controls = base.ConfigurationControls();
+
+            var cbFormatAsLink = new RockCheckBox();
+            cbFormatAsLink.Label = "Format as Link";
+            cbFormatAsLink.Help = "Enable this to navigate to a full size image when the image is clicked";
+            cbFormatAsLink.Text = "Yes";
+            controls.Add( cbFormatAsLink );
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
+            configurationValues.Add( FORMAT_AS_LINK, new ConfigurationValue( "Format Image as Link", "Enable this to navigate to a full size image when the image is clicked", string.Empty ) );
+
+            if ( controls != null && controls.Count > 1 )
+            {
+                var cbFormatAsLink = controls[1] as RockCheckBox;
+                if ( cbFormatAsLink != null )
+                {
+                    configurationValues[FORMAT_AS_LINK].Value = cbFormatAsLink.Checked.ToTrueFalse();
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            base.SetConfigurationValues( controls, configurationValues );
+
+            if ( controls != null && controls.Count > 1 && configurationValues != null )
+            {
+                var cbFormatAsLink = controls[1] as RockCheckBox;
+                if ( cbFormatAsLink != null && configurationValues.ContainsKey( FORMAT_AS_LINK ) )
+                {
+                    cbFormatAsLink.Checked = configurationValues[FORMAT_AS_LINK].Value.AsBooleanOrNull() ?? false;
+                }
+            }
+        }
+
+        #endregion
 
         #region Formatting
 
@@ -75,7 +153,19 @@ namespace Rock.Field.Types
                 Guid? imageGuid = value.AsGuidOrNull();
                 if ( imageGuid.HasValue )
                 {
-                    return string.Format("<a href='{0}?guid={1}' target='_blank'><img src='{0}?guid={1}{2}' /></a>", imagePath, imageGuid, queryParms );
+                    string imageUrl = string.Format( "{0}?guid={1}", imagePath, imageGuid );
+                    var imageTag = string.Format( "<img src='{0}{1}' />", imageUrl, queryParms );
+
+                    if ( configurationValues != null &&
+                        configurationValues.ContainsKey( FORMAT_AS_LINK ) &&
+                        ( configurationValues[FORMAT_AS_LINK].Value.AsBooleanOrNull() ?? false ) )
+                    {
+                        return string.Format( "<a href='{0}'>{1}</a>", imageUrl, imageTag );
+                    }
+                    else
+                    {
+                        return imageTag;
+                    }
                 }
             }
 
@@ -156,6 +246,5 @@ namespace Rock.Field.Types
         }
 
         #endregion
-
     }
 }

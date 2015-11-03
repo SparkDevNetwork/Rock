@@ -157,6 +157,7 @@ namespace RockWeb.Blocks.Prayer
             var note = new Note();
             note.IsSystem = false;
             note.IsAlert = false;
+            note.IsPrivateNote = false;
             note.NoteTypeId = noteType.Id;
             note.EntityId = contextEntity.Id;
             note.Text = tbNewNote.Text;

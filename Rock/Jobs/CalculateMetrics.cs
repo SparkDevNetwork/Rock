@@ -155,7 +155,7 @@ namespace Rock.Jobs
                 }
                 catch ( Exception ex )
                 {
-                    metricExceptions.Add( new Exception( string.Format( "Exception when calculating metric for ", metric ), ex ) );
+                    metricExceptions.Add( new Exception( string.Format( "Exception when calculating metric for {0} ", metric ), ex ) );
                 }
             }
 

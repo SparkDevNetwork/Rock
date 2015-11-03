@@ -46,13 +46,26 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Gets the children obsolete.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="additionalFields">The additional fields.</param>
+        /// <returns></returns>
+        [Obsolete( "use ~/api/MergeFields/GetChildren/{id}?additionalFields={additionalFields}" )]
+        [System.Web.Http.Route( "api/MergeFields/GetChildren/{id}/{additionalFields}" )]
+        public IQueryable<TreeViewItem> GetChildren2( string id, string additionalFields )
+        {
+            return GetChildren( id, additionalFields );
+        }
+
+        /// <summary>
         /// Gets the children.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <param name="additionalFields">The additional fields.</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/MergeFields/GetChildren/{id}/{additionalFields}" )]
+        [System.Web.Http.Route( "api/MergeFields/GetChildren/{id}" )]
         public IQueryable<TreeViewItem> GetChildren( string id, string additionalFields )
         {
             var person = GetPerson();

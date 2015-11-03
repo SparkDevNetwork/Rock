@@ -57,6 +57,7 @@ namespace Rock.Workflow.Action
                 var note = new Note();
                 note.IsSystem = false;
                 note.IsAlert = GetAttributeValue( action, "IsAlert" ).AsBoolean();
+                note.IsPrivateNote = false;
                 note.EntityId = action.Activity.Workflow.Id;
                 note.Caption = string.Empty;
                 note.Text = text;

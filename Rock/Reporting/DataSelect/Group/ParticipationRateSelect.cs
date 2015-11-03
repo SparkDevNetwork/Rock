@@ -217,7 +217,7 @@ namespace Rock.Reporting.DataSelect.Group
                     break;
             }
 
-            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Group>( resultQuery, entityIdProperty, "p" );
+            var selectExpression = SelectExpressionExtractor.Extract( resultQuery, entityIdProperty, "p" );
 
             return selectExpression;
         }
@@ -226,7 +226,7 @@ namespace Rock.Reporting.DataSelect.Group
         {
             var resultQuery = new GroupService( context ).Queryable().Select( p => (decimal)0 );
 
-            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Group>( resultQuery, entityIdProperty, "p" );
+            var selectExpression = SelectExpressionExtractor.Extract( resultQuery, entityIdProperty, "p" );
 
             return selectExpression;
         }
