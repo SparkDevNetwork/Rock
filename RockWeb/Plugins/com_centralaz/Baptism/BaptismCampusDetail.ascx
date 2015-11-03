@@ -28,7 +28,7 @@
                         <center>
                         <div id="calendar">
                             <asp:Calendar ID="calBaptism" runat="server"  DayNameFormat="FirstTwoLetters" SelectionMode="Day" PrevMonthText="«" NextMonthText="»"
-                                TitleStyle-BackColor="#ffffff" NextPrevStyle-ForeColor="#333333" FirstDayOfWeek="Monday" Width="200" CssClass="calendar table-condensed" OnSelectionChanged="calBaptism_SelectionChanged" OnDayRender="calBaptisms_DayRender">
+                                TitleStyle-BackColor="#ffffff" NextPrevStyle-ForeColor="#333333" FirstDayOfWeek="Monday" Width="240" CssClass="calendar table-condensed" OnSelectionChanged="calBaptism_SelectionChanged" OnDayRender="calBaptisms_DayRender">
                                 <DayStyle CssClass="calendar-day" ForeColor="#6a6a6a" />
                                 <TodayDayStyle CssClass="calendar-today" />
                                 <SelectedDayStyle CssClass="calendar-selected" />
