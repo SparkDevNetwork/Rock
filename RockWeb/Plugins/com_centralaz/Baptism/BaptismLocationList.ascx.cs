@@ -213,24 +213,24 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             GroupService groupService = new GroupService( rockContext );
             bool needsUpdate = false;
 
-            List<Category> categoryList = categoryService.Queryable().ToList();
-            List<Group> groupList = groupService.Queryable().ToList();
+            var categoryList = categoryService.Queryable();
+            var groupList = groupService.Queryable();
             foreach ( var campus in CampusCache.All() )
             {
-                Category blackout = categoryList.Where( c => c.Name.Equals( String.Format( "{0} Blackout", campus.Name ) ) ).FirstOrDefault();
+                Category blackout = categoryList.Where( c => c.Name.Equals(  campus.Name + " Blackout" ) ).FirstOrDefault();
                 if ( blackout == null )
                 {
                     needsUpdate = true;
                 }
 
-                Category serviceTimes = categoryList.Where( c => c.Name.Equals( String.Format( "{0} Service Times", campus.Name ) ) ).FirstOrDefault();
+                Category serviceTimes = categoryList.Where( c => c.Name.Equals( campus.Name + " Service Times" ) ).FirstOrDefault();
                 if ( serviceTimes == null )
                 {
                     needsUpdate = true;
 
                 }
 
-                Group baptismLocationGroup = groupList.Where( g => g.Name.Equals( String.Format( "{0} Baptism Schedule", campus.Name ) ) ).FirstOrDefault();
+                Group baptismLocationGroup = groupList.Where( g => g.Name.Equals(  campus.Name + " Baptism Schedule" ) ).FirstOrDefault();
                 if ( baptismLocationGroup == null )
                 {
                     needsUpdate = true;
@@ -261,11 +261,11 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             int blackoutDatesAttributeId = attributeService.Get( "D58F0DB5-09AA-4A5A-BC17-CE3E3985D6F8".AsGuid() ).Id;
             int serviceTimesAttributeId = attributeService.Get( "B7371337-57CB-4CB3-994C-72258729950F".AsGuid() ).Id;
 
-            List<Category> categoryList = categoryService.Queryable().ToList();
-            List<Group> groupList = groupService.Queryable().ToList();
+            var categoryList = categoryService.Queryable();
+            var groupList = groupService.Queryable();
             foreach ( var campus in CampusCache.All() )
             {
-                Category blackout = categoryList.Where( c => c.Name.Equals( String.Format( "{0} Blackout", campus.Name ) ) ).FirstOrDefault();
+                Category blackout = categoryList.Where( c => c.Name.Equals( campus.Name + " Blackout" ) ).FirstOrDefault();
                 if ( blackout == null )
                 {
                     blackout = new Category();
@@ -277,7 +277,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                     categoryService.Add( blackout );
                 }
 
-                Category serviceTimes = categoryList.Where( c => c.Name.Equals( String.Format( "{0} Service Times", campus.Name ) ) ).FirstOrDefault();
+                Category serviceTimes = categoryList.Where( c => c.Name.Equals( campus.Name + " Service Times" ) ).FirstOrDefault();
                 if ( serviceTimes == null )
                 {
                     serviceTimes = new Category();
@@ -289,7 +289,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                     categoryService.Add( serviceTimes );
                 }
 
-                Group baptismLocationGroup = groupList.Where( g => g.Name.Equals( String.Format( "{0} Baptism Schedule", campus.Name ) ) ).FirstOrDefault();
+                Group baptismLocationGroup = groupList.Where( g => g.Name.Equals( campus.Name + " Baptism Schedule" ) ).FirstOrDefault();
                 if ( baptismLocationGroup == null )
                 {
                     baptismLocationGroup = new Group();
