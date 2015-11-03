@@ -52,7 +52,7 @@
                             <section class="panel panel-widget">
                                 <header class="panel-heading clearfix">
                                     <div class="pull-left">
-                                        <h3 class="panel-title margin-t-sm">
+                                        <h3 class="panel-title">
                                             <span>Fields</span>
                                         </h3>
                                     </div>

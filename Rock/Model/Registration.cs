@@ -736,6 +736,41 @@ Registration By: {0} Total Cost/Fees:{1}
         /// <summary>
         /// Initializes a new instance of the <see cref="RegistrantInfo" /> class.
         /// </summary>
+        /// <param name="registrationInstance">The registration instance.</param>
+        /// <param name="person">The person.</param>
+        public RegistrantInfo( RegistrationInstance registrationInstance, Person person )
+            : this()
+        {
+            if ( person != null )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    PersonName = person.FullName;
+                    var family = person.GetFamilies( rockContext ).FirstOrDefault();
+
+                    if ( registrationInstance != null &&
+                        registrationInstance.RegistrationTemplate != null )
+                    {
+                        var templateFields = registrationInstance.RegistrationTemplate.Forms
+                            .SelectMany( f => f.Fields )
+                            .Where( f => !f.IsInternal && f.ShowCurrentValue );
+
+                        foreach ( var field in templateFields )
+                        {
+                            object dbValue = GetRegistrantValue( null, person, family, field, rockContext );
+                            if ( dbValue != null )
+                            {
+                                FieldValues.Add( field.Id, dbValue );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistrantInfo" /> class.
+        /// </summary>
         /// <param name="registrant">The registrant.</param>
         /// <param name="rockContext">The rock context.</param>
         public RegistrantInfo( RegistrationRegistrant registrant, RockContext rockContext )

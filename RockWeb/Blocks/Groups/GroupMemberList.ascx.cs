@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
@@ -46,6 +47,7 @@ namespace RockWeb.Blocks.Groups
         private DefinedValueCache _inactiveStatus = null;
         private Group _group = null;
         private bool _canView = false;
+        private List<int> _groupMembersWithRegistrations = new List<int>();
 
         #endregion
 
@@ -84,6 +86,46 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnInit( e );
 
+            string script = @"
+    $('.js-person-popover').popover({
+        placement: 'right', 
+        trigger: 'manual',
+        delay: 500,
+        html: true,
+        content: function() {
+            var dataUrl = Rock.settings.get('baseUrl') + 'api/People/PopupHtml/' +  $(this).attr('personid') + '/false';
+
+            var result = $.ajax({ 
+                                type: 'GET', 
+                                url: dataUrl, 
+                                dataType: 'json', 
+                                contentType: 'application/json; charset=utf-8',
+                                async: false }).responseText;
+            
+            var resultObject = jQuery.parseJSON(result);
+
+            return resultObject.PickerItemDetailsHtml;
+
+        }
+    }).on('mouseenter', function () {
+        var _this = this;
+        $(this).popover('show');
+        $(this).siblings('.popover').on('mouseleave', function () {
+            $(_this).popover('hide');
+        });
+    }).on('mouseleave', function () {
+        var _this = this;
+        setTimeout(function () {
+            if (!$('.popover:hover').length) {
+                $(_this).popover('hide')
+            }
+        }, 100);
+    });
+
+   // $('.js-person-popover').popover('show'); // uncomment for styling
+";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "person-link-popover", script, true);
+
             // if this block has a specific GroupId set, use that, otherwise, determine it from the PageParameters
             Guid groupGuid = GetAttributeValue( "Group" ).AsGuid();
             int groupId = 0;
@@ -119,6 +161,7 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
                     gGroupMembers.ExportFilename = _group.Name;
                     gGroupMembers.ExportSource = ExcelExportSource.DataSource;
+                    gGroupMembers.ShowConfirmDeleteDialog = false;
 
                     // make sure they have Auth to edit the block OR edit to the Group
                     bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
@@ -134,6 +177,27 @@ namespace RockWeb.Blocks.Groups
                     hlSyncStatus.Visible = true;
                 }
             }
+
+            string deleteScript = @"
+    $('table.js-grid-group-members a.grid-delete-button').click(function( e ){
+        var $btn = $(this);
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this group member?', function (result) {
+            if (result) {
+                if ( $btn.closest('tr').hasClass('js-has-registration') ) {
+                    Rock.dialogs.confirm('This group member was added through a registration. Are you really sure that you want to delete this group member and remove the link from the registration? ', function (result) {
+                        if (result) {
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                        }
+                    });
+                } else {
+                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                }
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( gGroupMembers, gGroupMembers.GetType(), "deleteInstanceScript", deleteScript, true );
         }
 
         /// <summary>
@@ -185,6 +249,11 @@ namespace RockWeb.Blocks.Groups
 
                 if ( groupMember != null )
                 {
+                    if ( _groupMembersWithRegistrations.Contains( groupMember.Id ) )
+                    {
+                        e.Row.AddCssClass( "js-has-registration" );
+                    }
+
                     if ( groupMember != null && groupMember.IsDeceased )
                     {
                         e.Row.AddCssClass( "is-deceased" );
@@ -214,6 +283,7 @@ namespace RockWeb.Blocks.Groups
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Last Name" ), "Last Name", tbLastName.Text );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Role" ), "Role", cblRole.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Status" ), "Status", cblStatus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Campus" ), "Campus", cpCampusFilter.SelectedCampusId.ToString() );
 
             if ( AvailableAttributes != null )
             {
@@ -279,6 +349,19 @@ namespace RockWeb.Blocks.Groups
             {
                 e.Value = ResolveValues( e.Value, cblStatus );
             }
+            else if ( e.Key == MakeKeyUniqueToGroup( "Campus" ) )
+            {
+                var campusId = e.Value.AsIntegerOrNull();
+                if ( campusId.HasValue )
+                {
+                    var campusCache = CampusCache.Read( campusId.Value );
+                    e.Value = campusCache.Name;
+                }
+                else
+                {
+                    e.Value = null;
+                }
+            }
             else
             {
                 e.Value = string.Empty;
@@ -294,6 +377,7 @@ namespace RockWeb.Blocks.Groups
         {
             RockContext rockContext = new RockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+            RegistrationRegistrantService registrantService = new RegistrationRegistrantService( rockContext );
             GroupMember groupMember = groupMemberService.Get( e.RowKeyId );
             if ( groupMember != null )
             {
@@ -306,7 +390,13 @@ namespace RockWeb.Blocks.Groups
 
                 int groupId = groupMember.GroupId;
 
+                foreach( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId == groupMember.Id ))
+                {
+                    registrant.GroupMemberId = null;
+                }
+
                 groupMemberService.Delete( groupMember );
+
                 rockContext.SaveChanges();
 
                 Group group = new GroupService( rockContext ).Get( groupId );
@@ -370,11 +460,14 @@ namespace RockWeb.Blocks.Groups
 
             cblStatus.BindToEnum<GroupMemberStatus>();
 
+            cpCampusFilter.Campuses = CampusCache.All();
+
             BindAttributes();
             AddDynamicControls();
 
             tbFirstName.Text = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "First Name" ) );
             tbLastName.Text = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Last Name" ) );
+            cpCampusFilter.SelectedCampusId = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Campus" ) ).AsIntegerOrNull();
 
             string roleValue = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Role" ) );
             if ( !string.IsNullOrWhiteSpace( roleValue ) )
@@ -756,6 +849,15 @@ namespace RockWeb.Blocks.Groups
                         qry = qry.Where( m => statuses.Contains( m.GroupMemberStatus ) );
                     }
 
+                    // Filter by Campus
+                    if ( cpCampusFilter.SelectedCampusId.HasValue )
+                    {
+                        Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                        int campusId = cpCampusFilter.SelectedCampusId.Value;
+                        var qryFamilyMembersForCampus = new GroupMemberService( rockContext ).Queryable().Where( a => a.Group.GroupType.Guid == familyGuid && a.Group.CampusId == campusId );
+                        qry = qry.Where( a => qryFamilyMembersForCampus.Any( f => f.PersonId == a.PersonId ) );
+                    }
+
                     // Filter query by any configured attribute filters
                     if ( AvailableAttributes != null && AvailableAttributes.Any() )
                     {
@@ -823,19 +925,29 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
-                    gGroupMembers.DataSource = groupMembersList
-                        .ToList().Select( m => new
+                    var groupMemberIds = groupMembersList.Select( m => m.Id ).ToList();
+                    _groupMembersWithRegistrations = new RegistrationRegistrantService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( r =>
+                            r.GroupMemberId.HasValue &&
+                            groupMemberIds.Contains( r.GroupMemberId.Value ) )
+                        .Select( r => r.GroupMemberId.Value )
+                        .ToList();
+
+                    gGroupMembers.DataSource = groupMembersList.Select( m => new
                     {
                         m.Id,
                         m.Guid,
                         m.PersonId,
-                        Name = m.Person.NickName + " " + m.Person.LastName
+                        Name = 
+                        (selectAll ? m.Person.LastName + ", " + m.Person.NickName : (m.Person.PhotoId.HasValue ? "<i class='fa fa-fw fa-user photo-icon has-photo js-person-popover' personid=" + m.PersonId.ToString() + "></i> " : "<i class='fa fa-fw photo-icon js-person-popover' personid=" + m.PersonId.ToString() + "></i> ") +
+                        m.Person.NickName + " " + m.Person.LastName
                             + ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id )
                                 ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
                                 : string.Empty )
                             + ( !string.IsNullOrEmpty( m.Note )
                             ? " <i class='fa fa-file-text-o text-info'></i>"
-                            : string.Empty ),
+                            : string.Empty) ),
                         Email = m.Person.Email,
                         HomePhone = homePhoneType != null ?
                             m.Person.PhoneNumbers

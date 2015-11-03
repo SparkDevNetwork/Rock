@@ -81,6 +81,18 @@ namespace RockWeb.Blocks.Groups
                 GroupMember groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberId.Value );
                 if ( groupMember != null )
                 {
+                    var parentPageReference = PageReference.GetParentPageReferences( this.RockPage, this.PageCache, pageReference ).LastOrDefault();
+
+                    if ( parentPageReference != null )
+                    {
+                        var groupIdParam = parentPageReference.QueryString["GroupId"].AsIntegerOrNull();
+                        if ( !groupIdParam.HasValue || groupIdParam.Value != groupMember.GroupId)
+                        {
+                            // if the GroupMember's Group isn't included in the breadcrumbs, make sure to add the Group to the breadcrumbs so we know which group the group member is in
+                            breadCrumbs.Add( new BreadCrumb( groupMember.Group.Name, true ) );
+                        }
+                    }
+                    
                     breadCrumbs.Add( new BreadCrumb( groupMember.Person.FullName, pageReference ) );
                 }
                 else
@@ -311,8 +323,19 @@ namespace RockWeb.Blocks.Groups
 
             if ( groupMember == null )
             {
-                nbErrorMessage.Title = "Invalid Request";
-                nbErrorMessage.Text = "An incorrect querystring parameter was used.  A valid GroupMemberId or GroupId parameter is required.";
+                if ( groupMemberId > 0 )
+                {
+                    nbErrorMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
+                    nbErrorMessage.Title = "Warning";
+                    nbErrorMessage.Text = "Group Member not found. Group Member may have been moved to another group or deleted.";
+                }
+                else
+                {
+                    nbErrorMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                    nbErrorMessage.Title = "Invalid Request";
+                    nbErrorMessage.Text = "An incorrect querystring parameter was used.  A valid GroupMemberId or GroupId parameter is required.";
+                }
+
                 pnlEditDetails.Visible = false;
                 return;
             }
@@ -633,5 +656,136 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
+
+        /// <summary>
+        /// Handles the Click event of the btnShowMoveDialog control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnShowMoveDialog_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+            lCurrentGroup.Text = groupMember.Group.Name;
+            gpMoveGroupMember.SetValue( null );
+            grpMoveGroupMember.Visible = false;
+            nbMoveGroupMemberWarning.Visible = false;
+            mdMoveGroupMember.Visible = true;
+            mdMoveGroupMember.Show();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnMoveGroupMember control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnMoveGroupMember_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupMember = groupMemberService.Get( hfGroupMemberId.Value.AsInteger() );
+            groupMember.LoadAttributes();
+            int destGroupId = gpMoveGroupMember.SelectedValue.AsInteger();
+            var destGroup = new GroupService( rockContext ).Get( destGroupId );
+
+            var destGroupMember = groupMemberService.Queryable().Where( a =>
+                a.GroupId == destGroupId
+                && a.PersonId == groupMember.PersonId
+                && a.GroupRoleId == grpMoveGroupMember.GroupRoleId ).FirstOrDefault();
+
+            if ( destGroupMember != null )
+            {
+                nbMoveGroupMemberWarning.Visible = true;
+                nbMoveGroupMemberWarning.Text = string.Format( "{0} is already in {1}", groupMember.Person, destGroupMember.Group );
+                return;
+            }
+
+            if ( !grpMoveGroupMember.GroupRoleId.HasValue )
+            {
+                nbMoveGroupMemberWarning.Visible = true;
+                nbMoveGroupMemberWarning.Text = string.Format( "Please select a Group Role" );
+                return;
+            }
+
+            string canDeleteWarning;
+            if ( !groupMemberService.CanDelete( groupMember, out canDeleteWarning ) )
+            {
+                nbMoveGroupMemberWarning.Visible = true;
+                nbMoveGroupMemberWarning.Text = string.Format( "Unable to remove {0} from {1}: {2}", groupMember.Person, groupMember.Group, canDeleteWarning );
+                return;
+            }
+
+            destGroupMember = new GroupMember();
+            destGroupMember.GroupId = destGroupId;
+            destGroupMember.GroupRoleId = grpMoveGroupMember.GroupRoleId.Value;
+            destGroupMember.PersonId = groupMember.PersonId;
+            destGroupMember.LoadAttributes();
+
+            foreach ( var attribute in groupMember.Attributes )
+            {
+                if ( destGroupMember.Attributes.Any( a => a.Key == attribute.Key && a.Value.FieldTypeId == attribute.Value.FieldTypeId ) )
+                {
+                    destGroupMember.SetAttributeValue( attribute.Key, groupMember.GetAttributeValue( attribute.Key ) );
+                }
+            }
+
+            rockContext.WrapTransaction( () =>
+            {
+                groupMemberService.Add( destGroupMember );
+                rockContext.SaveChanges();
+                destGroupMember.SaveAttributeValues( rockContext );
+
+                groupMemberService.Delete( groupMember );
+                rockContext.SaveChanges();
+
+                destGroupMember.CalculateRequirements( rockContext, true );
+            } );
+
+            var queryString = new Dictionary<string, string>();
+            queryString.Add( "GroupMemberId", destGroupMember.Id.ToString() );
+            this.NavigateToPage( this.RockPage.Guid, queryString );
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the gpMoveGroupMember control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gpMoveGroupMember_SelectItem( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var destGroup = new GroupService( rockContext ).Get( gpMoveGroupMember.SelectedValue.AsInteger() );
+            if ( destGroup != null )
+            {
+                var destTempGroupMember = new GroupMember { Group = destGroup, GroupId = destGroup.Id };
+                destTempGroupMember.LoadAttributes( rockContext );
+                var destGroupMemberAttributes = destTempGroupMember.Attributes;
+                var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+                groupMember.LoadAttributes();
+                var currentGroupMemberAttributes = groupMember.Attributes;
+
+                var lostAttributes = currentGroupMemberAttributes.Where( a => !destGroupMemberAttributes.Any( d => d.Key == a.Key && d.Value.FieldTypeId == a.Value.FieldTypeId ) );
+                nbMoveGroupMemberWarning.Visible = lostAttributes.Any();
+                nbMoveGroupMemberWarning.Text = "The destination group does not have the same group member attributes as the source. Some loss of data may occur";
+
+                if ( destGroup.Id == groupMember.GroupId )
+                {
+                    grpMoveGroupMember.Visible = false;
+                    nbMoveGroupMemberWarning.Visible = true;
+                    nbMoveGroupMemberWarning.Text = "The destination group is the same as the current group";
+                }
+                else
+                {
+                    grpMoveGroupMember.Visible = true;
+                    grpMoveGroupMember.GroupTypeId = destGroup.GroupTypeId;
+                    grpMoveGroupMember.GroupRoleId = destGroup.GroupType.DefaultGroupRoleId;
+                }
+            }
+            else
+            {
+                nbMoveGroupMemberWarning.Visible = false;
+                grpMoveGroupMember.Visible = false;
+            }
+        }
     }
 }

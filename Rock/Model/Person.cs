@@ -1136,7 +1136,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [DataMember]
-        [RockClientInclude( "The Grade Offset of the person, which is the number of years until their graduation date. See GradeFormatted to see their current Grade." )]
+        [RockClientInclude( "The Grade Offset of the person, which is the number of years until their graduation date. See GradeFormatted to see their current Grade. [Readonly]" )]
         public virtual int? GradeOffset
         {
             get
@@ -1169,20 +1169,7 @@ namespace Rock.Model
 
             set
             {
-                if ( value.HasValue && value >= 0 )
-                {
-                    var globalAttributes = GlobalAttributesCache.Read();
-                    var transitionDate = globalAttributes.GetValue( "GradeTransitionDate" ).AsDateTime();
-                    if ( transitionDate.HasValue )
-                    {
-                        int gradeOffsetAdjustment = ( RockDateTime.Now < transitionDate.Value ) ? value.Value : value.Value + 1;
-                        GraduationYear = transitionDate.Value.Year + gradeOffsetAdjustment;
-                    }
-                }
-                else
-                {
-                    GraduationYear = null;
-                }
+                GraduationYear = GraduationYearFromGradeOffset(value);
             }
         }
 
@@ -1297,7 +1284,7 @@ namespace Rock.Model
         /// <value>
         /// The email tag.
         /// </value>
-        public string GetEmailTag( string rockUrlRoot, string cssClass = "", string preText = "", string postText = "" )
+        public string GetEmailTag( string rockUrlRoot, string cssClass = "", string preText = "", string postText = "", string styles = "" )
         {
             if ( !string.IsNullOrWhiteSpace( Email ) )
             {
@@ -1310,8 +1297,9 @@ namespace Rock.Model
                         case EmailPreference.EmailAllowed:
                             {
                                 return string.Format(
-                                    "<a class='{0}' href='{1}Communication?person={2}'>{3} {4} {5}</a>",
+                                    "<a class='{0}' style='{1}' href='{2}Communication?person={3}'>{4} {5} {6}</a>",
                                     cssClass,
+                                    styles,
                                     rockUrlRoot,
                                     Id,
                                     preText,
@@ -1837,6 +1825,27 @@ namespace Rock.Model
             }
 
             return FormatFullName( nickName, lastName, string.Empty );
+        }
+
+        /// <summary>
+        /// Given a grade offset, returns the graduation year
+        /// </summary>
+        /// <param name="gradeOffset"></param>
+        /// <returns></returns>
+        public static int? GraduationYearFromGradeOffset(int? gradeOffset)
+        {
+            if (gradeOffset.HasValue && gradeOffset.Value >= 0)
+            {
+                var globalAttributes = GlobalAttributesCache.Read();
+                var transitionDate = globalAttributes.GetValue("GradeTransitionDate").AsDateTime();
+                if (transitionDate.HasValue)
+                {
+                    int gradeOffsetAdjustment = (RockDateTime.Now < transitionDate.Value) ? gradeOffset.Value : gradeOffset.Value + 1;
+                    return transitionDate.Value.Year + gradeOffsetAdjustment;
+                }
+            }
+
+            return null;
         }
 
         #endregion

@@ -34,7 +34,7 @@ using System.Text;
 namespace RockWeb.Blocks.Checkin
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// Lists checkin areas and their groups based off a parent checkin configuration group type.
     /// </summary>
     [DisplayName( "Check-in Group List" )]
     [Category( "Check-in" )]

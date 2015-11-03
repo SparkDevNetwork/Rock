@@ -285,13 +285,16 @@ namespace RockWeb.Blocks.Event
 
                     linkage.CopyPropertiesFrom( LinkageState );
 
-                    // If a new registration instance was created in UI
-                    if ( !linkage.RegistrationInstanceId.HasValue && LinkageState.RegistrationInstance != null )
+                    // update registration instance 
+                    if ( LinkageState.RegistrationInstance != null )
                     {
-                        var registrationInstance = new RegistrationInstance();
-                        registrationInstanceService.Add( registrationInstance );
+                        RegistrationInstance registrationInstance = linkage.RegistrationInstance;
+                        if ( registrationInstance == null )
+                        {
+                            registrationInstance = new RegistrationInstance();
+                            registrationInstanceService.Add( registrationInstance );
+                        }
                         registrationInstance.CopyPropertiesFrom( LinkageState.RegistrationInstance );
-
                         linkage.RegistrationInstance = registrationInstance;
                     }
 
@@ -701,6 +704,8 @@ namespace RockWeb.Blocks.Event
 
             var rockContext = new RockContext();
 
+            bool canEdit = UserCanEdit;
+
             if ( !eventItemOccurrenceId.Equals( 0 ) )
             {
                 eventItemOccurrence = new EventItemOccurrenceService( rockContext ).Get( eventItemOccurrenceId );
@@ -711,8 +716,21 @@ namespace RockWeb.Blocks.Event
                 eventItemOccurrence = new EventItemOccurrence { Id = 0 };
             }
 
-            bool canEdit  = UserCanEdit || eventItemOccurrence.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            if ( !canEdit )
+            {
+                int? calendarId = PageParameter( "EventCalendarId" ).AsIntegerOrNull();
+                if ( calendarId.HasValue )
+                {
+                    var calendar = new EventCalendarService( rockContext ).Get( calendarId.Value );
+                    if ( calendar != null )
+                    {
+                        canEdit = calendar.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                    }
+                }
+            }
+
             bool readOnly = false;
+
             nbEditModeMessage.Text = string.Empty;
 
             if ( !canEdit )

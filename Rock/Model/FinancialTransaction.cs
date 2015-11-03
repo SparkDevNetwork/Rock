@@ -53,6 +53,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the BatchId of the <see cref="Rock.Model.FinancialBatch"/> that contains the transaction.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int? BatchId { get; set; }
 
         /// <summary>
@@ -201,6 +202,17 @@ namespace Rock.Model
         /// The processed date time.
         /// </value>
         public DateTime? ProcessedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sunday date.
+        /// </summary>
+        /// <value>
+        /// The sunday date.
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [Column( TypeName = "Date" )]
+        public DateTime? SundayDate { get; set; }
 
         #endregion Entity Properties
 

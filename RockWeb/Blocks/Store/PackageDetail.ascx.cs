@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Store
     [Category( "Store" )]
     [Description( "Manages the details of a package." )]
     [LinkedPage( "Install Page", "Page reference to use for the install / update page.", false, "", "", 1 )]
+    [LinkedPage( "Rating Page", "Page reference to use for the rating page.", false, "", "", 1 )]
     public partial class PackageDetail : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -123,6 +124,23 @@ namespace RockWeb.Blocks.Store
             }
         }
 
+        protected void lbRate_Click( object sender, EventArgs e )
+        {
+            // get package id
+            int packageId = -1;
+            
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "PackageId" ) ) )
+            {
+                packageId = Convert.ToInt32( PageParameter( "PackageId" ) );
+
+                var queryParams = new Dictionary<string, string>();
+                queryParams = new Dictionary<string, string>();
+                queryParams.Add( "PackageId", packageId.ToString() );
+
+                NavigateToLinkedPage( "RatingPage", queryParams );
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -152,7 +170,7 @@ namespace RockWeb.Blocks.Store
             lVendorName.Text = package.Vendor.Name;
             imgPackageImage.ImageUrl = package.PackageIconBinaryFile.ImageUrl;
             lbPackageLink.PostBackUrl = package.SupportUrl;
-            lRatingSummary.Text = string.Format( "<div class='rating rating-{0}'><small></small></div>", package.Rating.ToString().Replace( ".", "" ) );
+            lRatingSummary.Text = string.Format( "<div class='rating rating-{0} pull-left margin-r-sm'><small></small></div>", package.Rating.ToString().Replace( ".", "" ) );
 
             lAuthorInfo.Text = string.Format( "<a href='{0}'>{1}</a>", package.Vendor.Url, package.Vendor.Name );
 
@@ -305,6 +323,6 @@ namespace RockWeb.Blocks.Store
         }
 
         #endregion
-        
-}
+
+    }
 }

@@ -178,7 +178,7 @@ namespace Rock.Web.UI
                 twOutput.RenderBeginTag( HtmlTextWriterTag.Div );
             }
 
-            if ( _rockBlock.PageCache.IncludeAdminFooter && ( _rockBlock.UserCanAdministrate || _rockBlock.UserCanEdit ) )
+            if ( _rockBlock.PageCache.IncludeAdminFooter && _adminControls.Any() )
             {
                 // Add the config buttons
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "block-configuration config-bar" );

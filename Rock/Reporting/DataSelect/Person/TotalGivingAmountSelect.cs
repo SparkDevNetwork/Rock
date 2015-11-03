@@ -324,7 +324,7 @@ namespace Rock.Reporting.DataSelect.Person
                 .Sum( aa => aa.Amount ) );
             }
 
-            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personTotalAmountQry, entityIdProperty, "p" );
+            var selectExpression = SelectExpressionExtractor.Extract( personTotalAmountQry, entityIdProperty, "p" );
 
             return selectExpression;
         }

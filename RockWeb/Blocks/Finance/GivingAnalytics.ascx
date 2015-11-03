@@ -26,7 +26,7 @@
                     <div class="col-md-3 filter-options">
 
                         <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"/>
-                        <Rock:NumberRangeEditor ID="nreAmount" runat="server" NumberType="Currency" Label="Total Amount" />
+                        <Rock:NumberRangeEditor ID="nreAmount" runat="server" CssClass="input-width-sm" NumberType="Currency" Label="Total Amount" />
                         <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" AutoPostBack="true" OnSelectedIndexChanged="dvpDataView_SelectedIndexChanged" />
                         <Rock:RockCheckBoxList ID="cblCurrencyTypes" runat="server" Label="Currency Types" RepeatDirection="Vertical" />
                         <Rock:RockCheckBoxList ID="cblTransactionSource" runat="server" Label="Transaction Source" RepeatDirection="Vertical" />
@@ -129,7 +129,7 @@
                                 <div class="panel">
                                     <div class="grid-filter">
 
-                                        <div class="controls pull-right margin-t-sm">
+                                        <asp:Panel ID="pnlViewBy" runat="server" CssClass="controls pull-right margin-t-sm">
                                             <div class="js-view-by">
                                                 <Rock:HiddenFieldWithClass ID="hfViewBy" CssClass="js-hidden-selected" runat="server" />
                                                 <div class="btn-group">
@@ -147,7 +147,7 @@
                                                     </asp:HyperLink>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </asp:Panel>
 
                                         <Rock:RockControlWrapper ID="rcwGiversFilter" runat="server" Label="Filter" CssClass="rock-radio-button-list">
                                             <p>

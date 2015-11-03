@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Groups
     [IntegerField( "Map Height", "", false, 600, "CustomSetting" )]
     [BooleanField( "Show Fence", "", false, "CustomSetting" )]
     [ValueListField( "Polygon Colors", "", false, "#f37833|#446f7a|#afd074|#649dac|#f8eba2|#92d0df|#eaf7fc", "#ffffff", null, null, "CustomSetting" )]
-    [CodeEditorField( "Map Info", "", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
+    [CodeEditorField( "Map Info", "", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
 <h4 class='margin-t-none'>{{ Group.Name }}</h4> 
 
 <div class='margin-b-sm'>
@@ -96,7 +96,7 @@ namespace RockWeb.Blocks.Groups
 
     // Lava Output Settings
     [BooleanField( "Show Lava Output", "", false, "CustomSetting" )]
-    [CodeEditorField( "Lava Output", "", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
+    [CodeEditorField( "Lava Output", "", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
 ", "CustomSetting" )]
     [BooleanField( "Lava Output Debug", "", false, "CustomSetting" )]
 
