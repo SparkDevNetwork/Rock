@@ -309,22 +309,7 @@ namespace RockWeb.Blocks.Core
                             primaryGroupPerson.AdditionalLavaFields = primaryGroupPerson.AdditionalLavaFields ?? new Dictionary<string, object>();
                             if ( groupMember != null )
                             {
-                                var groupMemberDictionary = groupMember.ToDictionary();
-                                foreach ( var item in groupMemberDictionary )
-                                {
-                                    if ( item.Key == "Id" )
-                                    {
-                                        primaryGroupPerson.AdditionalLavaFields.AddOrIgnore( "GroupMemberId", item.Value );
-                                    }
-                                    else if ( item.Key == "Guid" )
-                                    {
-                                        primaryGroupPerson.AdditionalLavaFields.AddOrIgnore( "GroupMemberGuid", item.Value.ToStringSafe() );
-                                    }
-                                    else
-                                    {
-                                        primaryGroupPerson.AdditionalLavaFields.AddOrIgnore( item.Key, item.Value );
-                                    }
-                                }
+                                primaryGroupPerson.AdditionalLavaFields.Add( "GroupMember", groupMember );
                             }
                         }
 
@@ -359,23 +344,7 @@ namespace RockWeb.Blocks.Core
                     {
                         var person = groupMember.Person;
                         person.AdditionalLavaFields = new Dictionary<string, object>();
-
-                        foreach ( var item in groupMember.ToDictionary() )
-                        {
-                            if ( item.Key == "Id" )
-                            {
-                                person.AdditionalLavaFields.AddOrIgnore( "GroupMemberId", item.Value );
-                            }
-                            else if ( item.Key == "Guid" )
-                            {
-                                person.AdditionalLavaFields.AddOrIgnore( "GroupMemberGuid", item.Value.ToStringSafe() );
-                            }
-                            else
-                            {
-                                person.AdditionalLavaFields.AddOrIgnore( item.Key, item.Value );
-                            }
-                        }
-
+                        person.AdditionalLavaFields.Add( "GroupMember", groupMember );
                         mergeObjectsDictionary.AddOrIgnore( groupMember.PersonId, person );
                     }
                 }
