@@ -19,13 +19,16 @@ using Rock.Web.UI;
 
 namespace RockWeb.Plugins.com_centralaz.Baptism
 {
-
+    /// <summary>
+    /// Main control panel for editing Baptism schedules for a campus group.
+    /// </summary>
     [DisplayName( "Baptism Campus Detail Block" )]
     [Category( "com_centralaz > Baptism" )]
     [Description( "Detail block for Baptism scheduling" )]
     [LinkedPage( "Add Baptism Page", "", true, "", "", 0 )]
     [LinkedPage( "Add Blackout Date Page", "", true, "", "", 0 )]
     [TextField( "Report Font", "", true, "Gotham", "", 0 )]
+    [TextField( "Report Logo", "URL to the logo (PNG) to display in the printed report.", true, "~/Plugins/com_centralaz/Baptism/Assets/Icons/Central_Logo_Black_rgb_165_90.png", "", 0 )]
     public partial class BaptismCampusDetail : Rock.Web.UI.RockBlock
     {
         #region Properties
@@ -183,20 +186,29 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             var titleFont = FontFactory.GetFont( font, 16, Font.BOLD );
             var subTitleFont = FontFactory.GetFont( font, 14, Color.GRAY );
 
-            //Add church logo
+            // Add logo
             try
             {
-                var logo = iTextSharp.text.Image.GetInstance( Server.MapPath( ResolveRockUrl( "~/Plugins/com_centralaz/Baptism/Assets/Icons/Central_Logo_Black_rgb_165_90.png" ) ));
+                string logoUri = GetAttributeValue( "ReportLogo" );
+                string fileUrl = string.Empty;
+                iTextSharp.text.Image logo; 
+                if ( logoUri.ToLower().StartsWith( "http" ) )
+                {
+                    logo = iTextSharp.text.Image.GetInstance( new Uri( logoUri ) );
+                }
+                else
+                {
+                    fileUrl = Server.MapPath( ResolveRockUrl( logoUri ) );
+                    logo = iTextSharp.text.Image.GetInstance( fileUrl );
+                }
+
                 logo.Alignment = iTextSharp.text.Image.RIGHT_ALIGN;
-                logo.ScaleAbsolute( 100, 55 );
+                logo.ScaleToFit( 100, 55 );
                 document.Add( logo );
             }
-            catch
-            {
+            catch { }
 
-            }
-
-            //Write the document
+            // Write the document
             String title = String.Format( "{0}: {1} - {2}", group.Name, dateRange[0].ToString( "MMMM d" ), dateRange[1].ToString( "MMMM d" ) );
             document.Add( new Paragraph( title, titleFont ) );
 
@@ -204,7 +216,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             String subTitle = String.Format( "Baptism Schedule for {0}", campusName );
             document.Add( new Paragraph( subTitle, subTitleFont ) );
 
-            //Populate the Lists
+            // Populate the Lists
             DateTime current = DateTime.MinValue;
             foreach ( Baptizee b in _baptizeeList )
             {
