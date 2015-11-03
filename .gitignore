@@ -28,3 +28,4 @@ RockWeb/App_Data/PackageStaging
 /Build/*
 *.sln.GhostDoc.xml
 /packages
+node_modules
