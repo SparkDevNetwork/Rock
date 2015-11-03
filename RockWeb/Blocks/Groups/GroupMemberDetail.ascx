@@ -70,18 +70,37 @@
                         </div>
                     </asp:Panel>
 
-                    <Rock:NotificationBox runat="server" ID="nbRecheckedNotification" NotificationBoxType="Success" Dismissable="true" Text="Successfully re-checked requirements at {0}" Visible="false"/>
+                    <Rock:NotificationBox runat="server" ID="nbRecheckedNotification" NotificationBoxType="Success" Dismissable="true" Text="Successfully re-checked requirements at {0}" Visible="false" />
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
                         <asp:LinkButton ID="btnReCheckRequirements" runat="server" AccessKey="s" Text="Re-Check Requirements" CssClass="btn btn-default" OnClick="btnReCheckRequirements_Click" CausesValidation="false"></asp:LinkButton>
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
+                        <asp:LinkButton ID="btnShowMoveDialog" runat="server" CssClass="btn btn-default pull-right" OnClick="btnShowMoveDialog_Click" ToolTip="Move to another group" CausesValidation="false"><i class="fa fa-external-link"></i></asp:LinkButton>
                     </div>
 
                 </div>
 
             </div>
         </div>
+
+        <Rock:ModalDialog ID="mdMoveGroupMember" runat="server" Title="Move Group Member" ValidationGroup="vgMoveGroupMember" Visible="false" CancelLinkVisible="false">
+            <Content>
+                <asp:ValidationSummary ID="vsMoveGroupMember" runat="server" ValidationGroup="vgMoveGroupMember" HeaderText="Please Correct the Following" CssClass="alert alert-danger"  />
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:RockLiteral ID="lCurrentGroup" runat="server" Label="Current Group" />
+                        <Rock:GroupPicker ID="gpMoveGroupMember" runat="server" Required="true" Label="Destination Group" ValidationGroup="vgMoveGroupMember" OnSelectItem="gpMoveGroupMember_SelectItem" />
+                        <Rock:GroupRolePicker ID="grpMoveGroupMember" runat="server" Label="Role" ValidationGroup="vgMoveGroupMember" GroupTypeId="0" />   
+                        <Rock:NotificationBox ID="nbMoveGroupMemberWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
+                    </div>
+                </div>
+                <br />
+                <div class="actions">
+                    <asp:LinkButton ID="btnMoveGroupMember" runat="server" CssClass="btn btn-primary" Text="Move" ValidationGroup="vgMoveGroupMember" OnClick="btnMoveGroupMember_Click" />
+                </div>
+            </Content>
+        </Rock:ModalDialog>
 
     </ContentTemplate>
 </asp:UpdatePanel>

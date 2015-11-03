@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Crm
             //// list duplicates that aren't confirmed as NotDuplicate and aren't IgnoreUntilScoreChanges. Also, don't include records where both the Person and Duplicate are inactive
             var qry = personDuplicateService.Queryable()
                 .Where( a => a.PersonAlias.PersonId == personId && !a.IsConfirmedAsNotDuplicate && !a.IgnoreUntilScoreChanges )
-                .Where( a => a.PersonAlias.Person.RecordStatusValueId != recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId != recordStatusInactiveId )
+                .Where( a => !( a.PersonAlias.Person.RecordStatusValueId == recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId == recordStatusInactiveId ))
                 .Select( s => new
                 {
                     PersonId = s.DuplicatePersonAlias.Person.Id, // PersonId has to be the key field in the grid for the Merge button to work
@@ -240,7 +240,7 @@ namespace RockWeb.Blocks.Crm
 
                 if ( !isComparePerson )
                 {
-                    row.AddCssClass( "duplicate-source" );
+                    row.AddCssClass( "grid-row-bold" );
                 }
 
                 // If this is the main person for the compare, hide the "not duplicate" button

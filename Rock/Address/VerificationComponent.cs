@@ -28,7 +28,7 @@ namespace Rock.Address
         /// this method to perform an verification action on an address (i.e. standardize, geocode, etc.).
         /// </summary>
         /// <param name="location">The location.</param>
-        /// <param name="reVerify">Should location be reverified even if it has already been succesfully verified</param>
+        /// <param name="reVerify">Should location be reverified even if it has already been successfully verified</param>
         /// <param name="result">The result code unique to the service.</param>
         /// <returns>
         /// True/False value of whether the verification was successfull or not

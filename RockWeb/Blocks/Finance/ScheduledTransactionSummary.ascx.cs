@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Scheduled Transaction Summary" )]
     [Category( "Finance" )]
     [Description( "Block that shows a summary of the scheduled transactions for the currently logged in user." )]
-    [CodeEditorField( "Template", "Liquid template for the content to be placed on the page.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/ScheduledTransactionSummary.lava'  %}", "", 1 )]
+    [CodeEditorField( "Template", "Liquid template for the content to be placed on the page.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/ScheduledTransactionSummary.lava'  %}", "", 1 )]
     [BooleanField("Enable Debug", "Displays a list of available merge fields using the current person's scheduled transactions.", false, "", 2)]
     [LinkedPage("Manage Scheduled Transactions Page", "Link to be used for managing an individual's scheduled transactions.", false, "", "", 3)]
     [LinkedPage( "Transaction History Page", "Link to use for viewing an individual's transaction history.", false, "", "", 4 )]
@@ -155,7 +155,7 @@ namespace RockWeb.Blocks.Finance
                         scheduleSummary.Add( "DaysSinceLastPayment", null );
                     }
 
-                    scheduleSummary.Add("CurrencyType", schedule.FinancialPaymentDetail != null ? schedule.FinancialPaymentDetail.CurrencyTypeValue.Value : "" );
+                    scheduleSummary.Add("CurrencyType", ( schedule.FinancialPaymentDetail != null && schedule.FinancialPaymentDetail.CurrencyTypeValue != null ) ? schedule.FinancialPaymentDetail.CurrencyTypeValue.Value : "" );
                     scheduleSummary.Add( "CreditCardType", ( schedule.FinancialPaymentDetail != null && schedule.FinancialPaymentDetail.CreditCardTypeValue != null) ? schedule.FinancialPaymentDetail.CreditCardTypeValue.Value : "" );
                     scheduleSummary.Add("UrlEncryptedKey", schedule.UrlEncodedKey);
                     scheduleSummary.Add("Frequency",  schedule.TransactionFrequencyValue.Value);

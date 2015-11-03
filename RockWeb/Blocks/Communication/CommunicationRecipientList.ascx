@@ -26,6 +26,7 @@
                             <Rock:EnumField DataField="Status" SortExpression="Status" HeaderText="Status" />
                             <Rock:DateTimeField DataField="CreatedDateTime" SortExpression="CreatedDateTime" ColumnPriority="DesktopLarge" HeaderText="Created" />
                             <Rock:RockBoundField DataField="SenderPersonAlias.Person.FullName" HeaderText="Created By" SortExpression="SenderPersonAlias.Person.LastName,SenderPersonAlias.Person.NickName" />
+                            <Rock:LinkButtonField CssClass="btn btn-default btn-sm fa fa-file-text-o" OnClick="gCommunication_RowSelected" />
                         </Columns>
                     </Rock:Grid>
                 </div>

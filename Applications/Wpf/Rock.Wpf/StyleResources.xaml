@@ -829,6 +829,14 @@
            BasedOn="{StaticResource ResourceKey=inputStyleBase}">
     </Style>
 
+    <!-- ComboBox Style XL -->
+    <Style x:Key="comboBoxStyleXL"
+           TargetType="ComboBox"
+           BasedOn="{StaticResource ResourceKey=inputStyleBase}">
+        <Setter Property="Width"
+                Value="320" />
+    </Style>
+
     <!-- Page Styles -->
     <Style x:Key="pageBackground"
            TargetType="{x:Type Page}">

@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Takes a defined type and returns all defined values and merges them with a lava template." )]
     [DefinedTypeField("Defined Type", "The defined type to load values for merge fields.")]
-    [CodeEditorField("Lava Template", "Lava template to use to display content", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% for definedValue in DefinedValues %}
+    [CodeEditorField("Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% for definedValue in DefinedValues %}
     {{ definedValue.Value }}
 {% endfor %}", "", 4, "LiquidTemplate" )]
     [BooleanField("Enable Debug", "Show merge data to help you see what's available to you.")]

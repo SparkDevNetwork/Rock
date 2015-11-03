@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -73,6 +74,8 @@ namespace RockWeb.Blocks.Prayer
         {
             base.OnInit( e );
 
+            RockContext rockContext = new RockContext();
+
             this.EnableUrgentFlag = GetAttributeValue( "EnableUrgentFlag" ).AsBoolean();
             this.EnableCommentsFlag = GetAttributeValue( "EnableCommentsFlag" ).AsBoolean();
             this.EnablePublicDisplayFlag = GetAttributeValue( "EnablePublicDisplayFlag" ).AsBoolean();
@@ -83,6 +86,16 @@ namespace RockWeb.Blocks.Prayer
             if ( ! string.IsNullOrEmpty( categoryGuid ) )
             {
                 BindCategories( categoryGuid );
+
+                // set the default category
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultCategory" ) ) )
+                {
+                    
+                    Guid defaultCategoryGuid = GetAttributeValue( "DefaultCategory" ).AsGuid();
+                    var defaultCategoryId = CategoryCache.Read( defaultCategoryGuid, rockContext ).Id;
+
+                    bddlCategory.SetValue( defaultCategoryId );
+                }
             }
             else
             {

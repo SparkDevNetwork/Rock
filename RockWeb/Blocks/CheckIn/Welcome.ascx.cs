@@ -441,17 +441,13 @@ if ($ActiveWhen.text() != '')
                     {
                         location.IsActive = true;
                         rockContext.SaveChanges();
+                        KioskDevice.FlushAll();
                     }
                     else if ( e.CommandName == "Close" && location.IsActive )
                     {
                         location.IsActive = false;
                         rockContext.SaveChanges();
-                    }
-
-                    // flush the current kiosk ( the kiosk only caches groups, etc for active locations, so we need to flush anytime a location is opened/closed )
-                    if ( this.CurrentKioskId.HasValue )
-                    {
-                        KioskDevice.Flush( this.CurrentKioskId.Value );
+                        KioskDevice.FlushAll();
                     }
                 }
 

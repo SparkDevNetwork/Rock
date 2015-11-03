@@ -184,7 +184,7 @@ namespace Rock.Model
                     {
                         reference.InitialCurrencyTypeValue = DefinedValueCache.Read( this.FinancialPaymentDetail.CurrencyTypeValueId.Value );
                         if ( reference.InitialCurrencyTypeValue != null &&
-                            reference.InitialCreditCardTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) &&
+                            reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) &&
                             this.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
                         {
                             reference.InitialCreditCardTypeValue = DefinedValueCache.Read( this.FinancialPaymentDetail.CreditCardTypeValueId.Value );

@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Event
                             calendar.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
                     }
 
-                    if ( calendar.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                    if ( UserCanEdit || calendar.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                     {
                         cblCalendars.Items.Add( new ListItem( calendar.Name, calendar.Id.ToString() ) );
                     }
@@ -366,8 +366,12 @@ namespace RockWeb.Blocks.Event
                 var uiCalendarGuids = ItemsState.Where( i => calendarIds.Contains( i.EventCalendarId ) ).Select( a => a.Guid );
                 foreach ( var eventCalendarItem in eventItem.EventCalendarItems.Where( a => !uiCalendarGuids.Contains( a.Guid ) ).ToList() )
                 {
-                    eventItem.EventCalendarItems.Remove( eventCalendarItem );
-                    eventCalendarItemService.Delete( eventCalendarItem );
+                    // Make sure user is authorized to remove calendar (they may not have seen every calendar due to security)
+                    if ( UserCanEdit || eventCalendarItem.EventCalendar.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                    {
+                        eventItem.EventCalendarItems.Remove( eventCalendarItem );
+                        eventCalendarItemService.Delete( eventCalendarItem );
+                    }
                 }
 
                 // Add or Update calendar items from the UI
@@ -594,6 +598,8 @@ namespace RockWeb.Blocks.Event
             {
                 eventItem = new EventItem { Id = 0, IsActive = true, Name = "" };
                 eventItem.IsApproved = _canApprove;
+                var calendarItem = new EventCalendarItem { EventCalendarId = _calendarId };
+                eventItem.EventCalendarItems.Add( calendarItem );
             }
 
             eventItem.LoadAttributes( rockContext );
@@ -824,7 +830,7 @@ namespace RockWeb.Blocks.Event
             {
                 var eventCalendarService = new EventCalendarService( rockContext );
 
-                foreach ( int eventCalendarId in eventCalendarList )
+                foreach ( int eventCalendarId in eventCalendarList.Distinct() )
                 {
                     EventCalendarItem eventCalendarItem = ItemsState.FirstOrDefault( i => i.EventCalendarId == eventCalendarId );
                     if ( eventCalendarItem == null )

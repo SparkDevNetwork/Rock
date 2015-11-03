@@ -469,6 +469,8 @@ namespace RockWeb.Blocks.CheckIn
 
             rockContext.SaveChanges();
 
+            Rock.CheckIn.KioskDevice.FlushAll();
+
             NavigateToParentPage();
 
         }

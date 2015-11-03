@@ -149,6 +149,45 @@
                 },
 
                 //
+                formatFilterForGroupFilterField: function (title, $selectedContent) {
+                    var groupNames = $('.js-group-picker', $selectedContent).find('.selected-names').text();
+                    var checkedRoles = $('.js-roles', $selectedContent).find(':checked').closest('label');
+                    var result = title + ' ' + groupNames;
+                    var includeChildGroups = $('.js-include-child-groups', $selectedContent).is(':checked');
+                    if (includeChildGroups) {
+
+                        var includeDescendantGroups = $('.js-include-child-groups-descendants', $selectedContent).is(':checked');
+                        var includeSelectedGroups = $('.js-include-selected-groups', $selectedContent).is(':checked');
+                        var includeInactiveGroups = $('.js-include-inactive-groups', $selectedContent).is(':checked');
+                        if (includeDescendantGroups) {
+                            result = result + ' or descendant groups';
+                        } else {
+                            result = result + ' or child groups';
+                        }
+
+                        if (includeInactiveGroups) {
+                            result += ", including inactive groups";
+                        }
+
+                        if (!includeSelectedGroups) {
+                            result = result + ', not including selected groups';
+                        }
+                    }
+
+                    if (checkedRoles.length > 0) {
+                        var roleCommaList = checkedRoles.map(function () { { return $(this).text() } }).get().join(',');
+                        result = result + ', with role(s): ' + roleCommaList;
+                    }
+
+                    var groupMemberStatus = $('.js-group-member-status option:selected', $selectedContent).text();
+                    if (groupMemberStatus) {
+                        result = result + ', with member status:' + groupMemberStatus;
+                    }
+
+                    return result;
+                },
+
+                //
                 formatFilterDefault: function (title, $selectedContent) {
                     var compareTypeText = $('.js-filter-compare', $selectedContent).find(':selected').text();
                     var compareValueText = $('.js-filter-control', $selectedContent).val();

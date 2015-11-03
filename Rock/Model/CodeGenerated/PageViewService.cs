@@ -88,18 +88,15 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this PageView target, PageView source )
         {
             target.Id = source.Id;
-            target.ClientType = source.ClientType;
             target.DateTimeViewed = source.DateTimeViewed;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.IpAddress = source.IpAddress;
             target.PageId = source.PageId;
             target.PageTitle = source.PageTitle;
+            target.PageViewSessionId = source.PageViewSessionId;
             target.PersonAliasId = source.PersonAliasId;
-            target.SessionId = source.SessionId;
             target.SiteId = source.SiteId;
             target.Url = source.Url;
-            target.UserAgent = source.UserAgent;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

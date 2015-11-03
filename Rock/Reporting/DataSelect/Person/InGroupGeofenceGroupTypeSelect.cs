@@ -126,7 +126,7 @@ namespace Rock.Reporting.DataSelect.Person
             var qry = new PersonService( context ).Queryable()
                 .Select( p => RockUdfHelper.ufnGroup_GetGeofencingGroupNames( p.Id, groupTypeId ) );
 
-            return SelectExpressionExtractor.Extract<Rock.Model.Person>( qry, entityIdProperty, "p" );
+            return SelectExpressionExtractor.Extract( qry, entityIdProperty, "p" );
         }
 
         /// <summary>

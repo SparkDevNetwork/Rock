@@ -29,7 +29,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type to select a single (or null) CampusFieldType
+    /// Field Type to select a single (or null) Campus
     /// Stored as Campus's Guid
     /// </summary>
     public class CampusFieldType : FieldType, IEntityFieldType
@@ -189,6 +189,20 @@ namespace Rock.Field.Types
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var campusGuids = value.SplitDelimitedValues().AsGuidList();
+
+            var campuses = campusGuids.Select( a => CampusCache.Read( a ) ).Where( c => c != null );
+            return campuses.Select( a => a.Name ).ToList().AsDelimited( ", ", " or " );
         }
 
         /// <summary>

@@ -136,7 +136,7 @@ namespace Rock.Reporting.DataSelect.Person
                 var qry = new PersonService( context ).Queryable()
                     .Select( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );
 
-                Expression selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( qry, entityIdProperty, "p" );
+                Expression selectExpression = SelectExpressionExtractor.Extract( qry, entityIdProperty, "p" );
 
                 return selectExpression;
             }

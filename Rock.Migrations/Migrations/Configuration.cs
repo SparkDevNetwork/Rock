@@ -33,19 +33,6 @@ namespace Rock.Migrations
 
         protected override void Seed(Rock.Data.RockContext context)
         {
-            //  This method will be called after migrating to the latest version.
-
-            //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
-            //  to avoid creating duplicate seed data. E.g.
-            //
-            //    context.People.AddOrUpdate(
-            //      p => p.FullName,
-            //      new Person { FullName = "Andrew Peters" },
-            //      new Person { FullName = "Brice Lambson" },
-            //      new Person { FullName = "Rowan Miller" }
-            //    );
-            //
-
             // Previous to Rock v4.0 the saved routing|account numbers in the PersonBankAccount table may have included
             // leading or trailing spaces for the routing number and/or account number. v4.0 trims these leading/trailing
             // spaces before looking for and saving the routing|account numbers. Because of this, any existing saved 
@@ -78,6 +65,26 @@ namespace Rock.Migrations
 
                         context.SaveChanges();
                     }
+                }
+            }
+
+            // Previous to Rock v4.0 the PageViews didn't store Browser or OS info. This can probably be removed in a future update 
+            // after v4.0 -DT
+            var pageViewUserAgentService = new Rock.Model.PageViewUserAgentService( context );
+            var qryPageViewUserAgent = pageViewUserAgentService.Queryable().Where(a => a.Browser == null || a.OperatingSystem == null || a.ClientType == null);
+            foreach ( var pageViewUserAgent in qryPageViewUserAgent.Where(a => a.UserAgent != null ))
+            {
+                try
+                {
+                    UAParser.Parser uaParser = UAParser.Parser.GetDefault();
+                    UAParser.ClientInfo client = uaParser.Parse( pageViewUserAgent.UserAgent );
+                    pageViewUserAgent.ClientType = Rock.Model.PageViewUserAgent.GetClientType( pageViewUserAgent.UserAgent );
+                    pageViewUserAgent.OperatingSystem = client.OS.ToString();
+                    pageViewUserAgent.Browser = client.UserAgent.ToString();
+                }
+                catch
+                {
+                    // shouldn't happen, but skip if unable to parse
                 }
             }
 

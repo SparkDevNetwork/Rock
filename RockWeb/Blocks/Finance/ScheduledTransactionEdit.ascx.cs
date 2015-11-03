@@ -1082,7 +1082,8 @@ achieve our mission.  We are so grateful for your commitment.
                         transactionDetailService.Delete( deletedAccount );
                     }
 
-                    foreach ( var account in SelectedAccounts )
+                    foreach ( var account in SelectedAccounts
+                        .Where( a => a.Amount > 0 ) )
                     {
                         var detail = scheduledTransaction.ScheduledTransactionDetails
                             .Where( d => d.AccountId == account.Id ).FirstOrDefault();
