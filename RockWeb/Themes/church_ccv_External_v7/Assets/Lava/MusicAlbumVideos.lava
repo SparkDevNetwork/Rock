@@ -1,0 +1,25 @@
+{% assign album = Items.first %}
+{% assign videos = album | Attribute: "Videos" %}
+
+{% if videos != empty %}
+
+  <section class="bigblock bigblock-graylighter">
+    <div class="container">
+      <div class="row">
+        {% for item in videos %}
+          {% assign video = item | PropertyToKeyValue %}
+          <div class="col-xs-6 col-md-4">
+            <div class="js-vimeo-video" data-vimeo-id="{{ video.Value }}"></div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  {% comment %} ~~ doesn't work in this block {% endcomment %}
+  <script src="/Themes/church_ccv_External_v7/Scripts/jquery.vimeo-video.js"></script>
+  <script>
+    $('.js-vimeo-video').vimeoVideo();
+  </script>
+
+{% endif %}

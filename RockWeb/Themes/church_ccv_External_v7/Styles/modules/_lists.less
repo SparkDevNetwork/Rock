@@ -67,3 +67,47 @@
     }
   }
 }
+
+
+// Track List (album detail page)
+// -------------------------
+
+.list-tracks {
+  @media @sm {
+    .content-columns(2);
+  }
+  > li {
+    line-height: @grid-gutter-width;
+    margin-bottom: @grid-gutter-width/2;
+    font-size: 1.2em;
+    border-bottom: 1px solid @gray-lighter;
+    padding-bottom: @grid-gutter-width/2;
+  }
+}
+  .list-trackaudio {
+    width: 30px;
+    display: inline-block;
+    border-radius: 50px;
+    vertical-align: middle;
+    margin-right: @grid-gutter-width/4;
+
+    // MediaElement.js styling
+    .mejs-time,
+    .mejs-volume-button,
+    .mejs-mute {
+      display: none!important;
+    }
+    .mejs-container {
+      background: #fff;
+    }
+    .mejs-play .mejs-container {
+      background: red;
+    }
+    .mejs-container,
+    .mejs-controls {
+      border-radius: 50px;
+    }
+    .mejs-controls .mejs-button button {
+      margin: 7px;
+    }
+  }
