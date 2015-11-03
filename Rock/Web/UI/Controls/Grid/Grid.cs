@@ -53,6 +53,8 @@ namespace Rock.Web.UI.Controls
         private Table _table;
         private GridViewRow _actionRow;
         private GridActions _gridActions;
+        private bool PreDataBound = true;
+
         private Dictionary<int, string> _columnDataPriorities;
 
         #endregion
@@ -502,6 +504,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the current page rows.
+        /// </summary>
+        /// <value>
+        /// The current page rows.
+        /// </value>
+        private int CurrentPageRows
+        {
+            get { return ViewState["CurrentPageRows"] as int? ?? 0; }
+            set { ViewState["CurrentPageRows"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets a dictionary of objects that can be used independently of the actual objects that grid
         /// is bound to. This is helpful when binding to an anonymous type, but an actual known type is needed
         /// during row processing (i.e. RowDataBound events, or GetValue methods of custom grid fields)
@@ -585,6 +599,7 @@ namespace Rock.Web.UI.Controls
             base.PageIndex = 0;
 
             _gridActions = new GridActions( this );
+            _gridActions.ID = "gridActions";
 
             // set default DisplayType
             DisplayType = GridDisplayType.Full;
@@ -838,12 +853,23 @@ namespace Rock.Web.UI.Controls
         /// <exception cref="T:System.Web.HttpException"><paramref name="dataSource" /> returns a null <see cref="T:System.Web.UI.DataSourceView" />.-or-<paramref name="dataSource" /> does not implement the <see cref="T:System.Collections.ICollection" /> interface and cannot return a <see cref="P:System.Web.UI.DataSourceSelectArguments.TotalRowCount" />. -or-<see cref="P:System.Web.UI.WebControls.GridView.AllowPaging" /> is true and <paramref name="dataSource" /> does not implement the <see cref="T:System.Collections.ICollection" /> interface and cannot perform data source paging.-or-<paramref name="dataSource" /> does not implement the <see cref="T:System.Collections.ICollection" /> interface and <paramref name="dataBinding" /> is set to false.</exception>
         protected override int CreateChildControls( System.Collections.IEnumerable dataSource, bool dataBinding )
         {
+            if ( AllowCustomPaging && PreDataBound && CurrentPageRows < PageSize )
+            {
+                // When using a LinqDataSource (custom paging) and doing a postback from the last page of a grid that
+                // has fewer rows, the default dummy data source used by Asp.Net to rebuild controls does not reflect the 
+                // correct number of rows. Because we add custom paging and action rows to the end of the table, this results in 
+                // header/body/footer ordering errors and/or viewstate errors. As a work-around a custom dummy data source
+                // is used instead that has the correct number of rows.
+                dataSource = new RockDummyDataSource( CurrentPageRows );
+            }
+
             int result = base.CreateChildControls( dataSource, dataBinding );
 
             if ( _table != null && _table.Parent != null )
             {
                 if ( this.AllowPaging && this.BottomPagerRow != null )
                 {
+                    this.BottomPagerRow.ID = "pagerRow";
                     this.BottomPagerRow.Visible = true;
 
                     // add paging style
@@ -853,7 +879,11 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
+                bool testpreload = PreDataBound;
+                int testrows = CurrentPageRows;
+
                 _actionRow = base.CreateRow( -1, -1, DataControlRowType.Footer, DataControlRowState.Normal );
+                _actionRow.ID = "actionRow";
                 _table.Rows.Add( _actionRow );
 
                 TableCell cell = new TableCell();
@@ -930,8 +960,12 @@ namespace Rock.Web.UI.Controls
             if ( this.AllowPaging )
             {
                 this.AllowCustomPaging = true;
-                this.DataSource = qry.Skip( this.PageIndex * this.PageSize ).Take( this.PageSize ).ToList();
+                var currentPageData = qry.Skip( this.PageIndex * this.PageSize ).Take( this.PageSize ).ToList();
+                this.DataSource = currentPageData;
                 this.VirtualItemCount = qry.Count();
+
+                PreDataBound = false;
+                CurrentPageRows = currentPageData.Count();
             }
             else
             {
@@ -1167,6 +1201,7 @@ namespace Rock.Web.UI.Controls
             }
 
             this.PageSize = e.Number;
+            this.PageIndex = 0;
             RebindGrid( e, false );
         }
 
@@ -1177,7 +1212,19 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
         public void pagerTemplate_NavigateClick( object sender, NumericalEventArgs e )
         {
-            this.PageIndex = e.Number;
+            if ( e.Number <= 0 && this.PageIndex > 0 )
+            {
+                this.PageIndex--;
+            }
+            else if ( e.Number >= 11 && this.PageIndex < ( this.PageCount - 1 ) )
+            {
+                this.PageIndex++;
+            }
+            else if ( e.Number > 0 && e.Number <= this.PageCount )
+            {
+                this.PageIndex = ( e.Number - 1 );
+            }
+
             RebindGrid( e, false );
         }
 
@@ -2967,13 +3014,13 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The page link list item.
         /// </value>
-        internal HtmlGenericContainer[] PageLinkListItem
+        internal HtmlGenericControl[] PageLinkListItem
         {
             get { return _pageLinkListItem; }
             set { _pageLinkListItem = value; }
         }
-        
-        private HtmlGenericContainer[] _pageLinkListItem = new HtmlGenericContainer[12];
+
+        private HtmlGenericControl[] _pageLinkListItem = new HtmlGenericControl[12];
 
         /// <summary>
         /// Gets or sets the page link.
@@ -3003,13 +3050,13 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The item link list item.
         /// </value>
-        internal HtmlGenericContainer[] ItemLinkListItem
+        internal HtmlGenericControl[] ItemLinkListItem
         {
             get { return _itemLinkListItem; }
             set { _itemLinkListItem = value; }
         }
 
-        private HtmlGenericContainer[] _itemLinkListItem = new HtmlGenericContainer[3];
+        private HtmlGenericControl[] _itemLinkListItem = new HtmlGenericControl[3];
 
         /// <summary>
         /// Gets or sets the item link.
@@ -3045,18 +3092,16 @@ namespace Rock.Web.UI.Controls
 
             for ( int i = 0; i < ItemLinkListItem.Length; i++ )
             {
-                ItemLinkListItem[i] = new HtmlGenericContainer( "li" );
+                ItemLinkListItem[i] = new HtmlGenericControl( "li" );
                 ulSizeOptions.Controls.Add( ItemLinkListItem[i] );
 
                 ItemLink[i] = new LinkButton();
                 ItemLinkListItem[i].Controls.Add( ItemLink[i] );
+                ItemLink[i].ID = string.Format( "ItemLink{0}", i );
+                ItemLink[i].Text = ( 5 * Math.Pow(10, i + 1) ).ToString( "N0" );
                 ItemLink[i].CausesValidation = false;
                 ItemLink[i].Click += new EventHandler( lbItems_Click );
             }
-
-            ItemLink[0].Text = "50";
-            ItemLink[1].Text = "500";
-            ItemLink[2].Text = "5,000";
 
             // itemCount
             HtmlGenericControl divItemCount = new HtmlGenericControl( "div" );
@@ -3073,11 +3118,12 @@ namespace Rock.Web.UI.Controls
 
             for ( var i = 0; i < PageLinkListItem.Length; i++ )
             {
-                PageLinkListItem[i] = new HtmlGenericContainer( "li" );
+                PageLinkListItem[i] = new HtmlGenericControl( "li" );
                 NavigationPanel.Controls.Add( PageLinkListItem[i] );
 
                 PageLink[i] = new LinkButton();
                 PageLinkListItem[i].Controls.Add( PageLink[i] );
+                PageLink[i].ID = string.Format( "pageLink{0}", i );
                 PageLink[i].Click += new EventHandler( lbPage_Click );
             }
 
@@ -3116,8 +3162,6 @@ namespace Rock.Web.UI.Controls
                         PageLink[0].Enabled = true;
                     }
 
-                    PageLink[0].Attributes["page-index"] = prevPageIndex.ToString();
-
                     int nextPageIndex = pageIndex;
                     if ( pageIndex >= pageCount - 1 )
                     {
@@ -3130,8 +3174,6 @@ namespace Rock.Web.UI.Controls
                         PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next";
                         PageLink[PageLinkListItem.Length - 1].Enabled = true;
                     }
-
-                    PageLink[PageLinkListItem.Length - 1].Attributes["page-index"] = nextPageIndex.ToString();
 
                     NavigationPanel.Visible = true;
                     for ( int i = 1; i < PageLink.Length - 1; i++ )
@@ -3147,7 +3189,6 @@ namespace Rock.Web.UI.Controls
                             li.Visible = true;
 
                             lb.Text = ( currentPage + 1 ).ToString( "N0" );
-                            lb.Attributes["page-index"] = currentPage.ToString();
                             lb.Visible = true;
                         }
                         else
@@ -3192,7 +3233,7 @@ namespace Rock.Web.UI.Controls
                 LinkButton lbPage = sender as LinkButton;
                 if ( lbPage != null )
                 {
-                    int? pageIndex = lbPage.Attributes["page-index"].AsIntegerOrNull();
+                    int? pageIndex = lbPage.ID.Substring(8).AsIntegerOrNull();
                     if ( pageIndex.HasValue )
                     {
                         NumericalEventArgs eventArgs = new NumericalEventArgs( pageIndex.Value );
@@ -3340,6 +3381,145 @@ namespace Rock.Web.UI.Controls
         /// Devices with screensize > 1120px
         /// </summary>
         DesktopLarge = 6
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    internal class RockDummyDataSource : ICollection, IEnumerable
+    {
+        private int dataItemCount;
+
+        /// <summary>
+        /// Copies the elements of the <see cref="T:System.Collections.ICollection" /> to an <see cref="T:System.Array" />, starting at a particular <see cref="T:System.Array" /> index.
+        /// </summary>
+        /// <param name="array">The one-dimensional <see cref="T:System.Array" /> that is the destination of the elements copied from <see cref="T:System.Collections.ICollection" />. The <see cref="T:System.Array" /> must have zero-based indexing.</param>
+        /// <param name="index">The zero-based index in <paramref name="array" /> at which copying begins.</param>
+        public void CopyTo( Array array, int index )
+        {
+            IEnumerator enumerator = this.GetEnumerator();
+            while ( enumerator.MoveNext() )
+            {
+                int num = index;
+                index = num + 1;
+                array.SetValue( enumerator.Current, num );
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of elements contained in the <see cref="T:System.Collections.ICollection" />.
+        /// </summary>
+        public int Count
+        {
+            get { return dataItemCount; }
+            set { dataItemCount = value; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether access to the <see cref="T:System.Collections.ICollection" /> is synchronized (thread safe).
+        /// </summary>
+        public bool IsSynchronized
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets an object that can be used to synchronize access to the <see cref="T:System.Collections.ICollection" />.
+        /// </summary>
+        public object SyncRoot
+        {
+            get
+            {
+                return this;
+            }
+        }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through a collection.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.
+        /// </returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public IEnumerator GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through a collection.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.
+        /// </returns>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return new RockDummyDataSource.RockDummyDataSourceEnumerator( this.dataItemCount );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class RockDummyDataSourceEnumerator : IEnumerator
+        {
+            private int count;
+
+            private int index;
+
+            /// <summary>
+            /// Gets the current element in the collection.
+            /// </summary>
+            public object Current
+            {
+                get
+                {
+                    return null;
+                }
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="RockDummyDataSourceEnumerator"/> class.
+            /// </summary>
+            /// <param name="count">The count.</param>
+            public RockDummyDataSourceEnumerator( int count )
+            {
+                this.count = count;
+                this.index = -1;
+            }
+
+            /// <summary>
+            /// Advances the enumerator to the next element of the collection.
+            /// </summary>
+            /// <returns>
+            /// true if the enumerator was successfully advanced to the next element; false if the enumerator has passed the end of the collection.
+            /// </returns>
+            public bool MoveNext()
+            {
+                RockDummyDataSource.RockDummyDataSourceEnumerator dummyDataSourceEnumerator = this;
+                dummyDataSourceEnumerator.index = dummyDataSourceEnumerator.index + 1;
+                return this.index < this.count;
+            }
+
+            /// <summary>
+            /// Sets the enumerator to its initial position, which is before the first element in the collection.
+            /// </summary>
+            public void Reset()
+            {
+                this.index = -1;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockDummyDataSource"/> class.
+        /// </summary>
+        /// <param name="dataItemCount">The data item count.</param>
+        internal RockDummyDataSource( int dataItemCount )
+        {
+            this.dataItemCount = dataItemCount;
+        }
     }
 
     #endregion
