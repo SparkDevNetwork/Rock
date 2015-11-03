@@ -160,7 +160,8 @@ namespace RockWeb.Blocks.Cms
             var rockContext = new RockContext();
             ContentChannelItem contentItem = GetContentItem( rockContext );
 
-            if ( contentItem != null && contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            if ( contentItem != null &&
+                ( IsUserAuthorized( Authorization.EDIT ) || contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
             {
                 contentItem.Title = tbTitle.Text;
                 contentItem.Content = contentItem.ContentChannel.ContentControlType == ContentControlType.HtmlEditor ?

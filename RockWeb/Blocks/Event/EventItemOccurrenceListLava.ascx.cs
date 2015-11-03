@@ -43,10 +43,10 @@ namespace RockWeb.Blocks.Event
     [EventItemField("Event Item", "The event item to use to display occurrences for.", order: 0)]
     [CampusesField("Campuses", "List of which campuses to show occurences for. This setting will be ignored in the 'Use Campus Context' is enabled.", order:1)]
     [BooleanField("Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 2)]
-    [SlidingDateRangeField("Date Range", "Optional date range to filter the occurrences on.", false, order:3)]
+    [SlidingDateRangeField("Date Range", "Optional date range to filter the occurrences on.", false, enabledSlidingDateRangeTypes: "Next,Upcoming,Current", order:3)]
     [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 4)]
     [LinkedPage( "Registration Page", "The page to use for registrations.", order: 5 )]
-    [CodeEditorField("Lava Template", "The lava template to use for the results", CodeEditorMode.Liquid, CodeEditorTheme.Rock, defaultValue:"{% include '~~/Assets/Lava/EventItemOccurrenceList.lava' %}", order:6)]
+    [CodeEditorField("Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:"{% include '~~/Assets/Lava/EventItemOccurrenceList.lava' %}", order:6)]
     [BooleanField("Enable Debug", "Show the lava merge fields.", order: 7)]
     public partial class EventItemOccurrenceListLava : Rock.Web.UI.RockBlock
     {
@@ -173,7 +173,19 @@ namespace RockWeb.Blocks.Event
                 mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
                 mergeFields.Add( "EventItem", eventItem);
                 mergeFields.Add( "EventItemOccurrences", itemOccurrences );
-               
+
+                // add context to merge fields
+                var contextEntityTypes = RockPage.GetContextEntityTypes();
+
+                var contextObjects = new Dictionary<string, object>();
+                foreach (var conextEntityType in contextEntityTypes)
+                {
+                    var contextObject = RockPage.GetCurrentContext(conextEntityType);
+                    contextObjects.Add(conextEntityType.FriendlyName, contextObject);
+                }
+
+                mergeFields.Add("Context", contextObjects);
+
                 lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
                 // show debug info

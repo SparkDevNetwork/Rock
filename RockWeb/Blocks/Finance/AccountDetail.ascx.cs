@@ -94,6 +94,16 @@ namespace RockWeb.Blocks.Finance
             account.EndDate = dtpEndDate.SelectedDate;
             account.IsTaxDeductible = cbIsTaxDeductible.Checked;
 
+            // if the account IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of account didn't pass.
+            // So, make sure a message is displayed in the validation summary
+            cvAccount.IsValid = account.IsValid;
+
+            if ( !cvAccount.IsValid )
+            {
+                cvAccount.ErrorMessage = account.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                return;
+            }
+
             rockContext.SaveChanges();
 
             NavigateToParentPage();

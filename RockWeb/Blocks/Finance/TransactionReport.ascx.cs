@@ -176,12 +176,14 @@ namespace RockWeb.Blocks.Finance
                                             .Where( i => i.Selected == true )
                                             .Select( i => int.Parse( i.Value ) ).ToList();
 
+            string currentPersonGivingId = CurrentPerson.GivingId;
+
             var qry = transService.Queryable( "TransactionDetails.Account,FinancialPaymentDetail" )
                         .Where( t => 
                             t.TransactionDetails.Any( d => selectedAccountIds.Contains( d.AccountId ) ) && 
                             t.AuthorizedPersonAlias != null &&
                             t.AuthorizedPersonAlias.Person != null &&
-                            t.AuthorizedPersonAlias.Person.GivingId == CurrentPerson.GivingId );
+                            t.AuthorizedPersonAlias.Person.GivingId == currentPersonGivingId );
 
             if (drpFilterDates.LowerValue.HasValue) {
                 qry = qry.Where(t => t.TransactionDateTime.Value >= drpFilterDates.LowerValue.Value);

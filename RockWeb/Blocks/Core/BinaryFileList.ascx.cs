@@ -143,8 +143,17 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
+                Guid guid = binaryFile.Guid;
+                bool clearDeviceCache = binaryFile.BinaryFileType.Guid.Equals( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid() );
+
                 binaryFileService.Delete( binaryFile );
                 rockContext.SaveChanges();
+
+                if ( clearDeviceCache )
+                {
+                    Rock.CheckIn.KioskDevice.FlushAll();
+                    Rock.CheckIn.KioskLabel.Flush( guid );
+                }
             }
 
             BindGrid();

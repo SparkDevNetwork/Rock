@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Connection
     [Category( "Connection" )]
     [Description( "Displays the details of the given opportunity for the external website." )]
     [LinkedPage( "Signup Page", "The page used to sign up for an opportunity" )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the package details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunityDetail.lava' %}", "", 2 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the package details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunityDetail.lava' %}", "", 2 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the package name.", false )]
     public partial class ConnectionOpportunityDetailLava : RockBlock

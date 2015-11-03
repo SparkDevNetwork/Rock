@@ -66,6 +66,7 @@ namespace RockWeb.Blocks.Communication
                 gCommunication.RowSelected += gCommunication_RowSelected;
             }
 
+            gCommunication.RowDataBound += gCommunication_RowDataBound;
             gCommunication.GridRebind += gCommunication_GridRebind;
         }
 
@@ -87,8 +88,9 @@ namespace RockWeb.Blocks.Communication
             if ( !Page.IsPostBack )
             {
                 SetFilter();
-                BindGrid();
             }
+
+            BindGrid();
 
             base.OnLoad( e );
         }
@@ -185,6 +187,32 @@ namespace RockWeb.Blocks.Communication
         protected void gCommunication_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "CommunicationId", e.RowKeyId );
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gCommunication control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        void gCommunication_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( !UserCanEdit && e.Row.RowType == DataControlRowType.DataRow )
+            {
+                Rock.Model.Communication communication = e.Row.DataItem as Rock.Model.Communication;
+                if (
+                    !CurrentPersonAliasId.HasValue ||
+                    communication == null || 
+                    !communication.CreatedByPersonAliasId.HasValue ||
+                    communication.CreatedByPersonAliasId.Value != CurrentPersonAliasId.Value )
+                {
+                    var lb = e.Row.Cells[5].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+                    if ( lb != null )
+                    {
+                        lb.Visible = false;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -308,5 +336,5 @@ namespace RockWeb.Blocks.Communication
         }
 
         #endregion
-    }
+}
 }

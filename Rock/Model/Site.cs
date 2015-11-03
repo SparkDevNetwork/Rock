@@ -16,11 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -33,7 +33,6 @@ namespace Rock.Model
     [DataContract]
     public partial class Site : Model<Site>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -45,7 +44,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name of the Site. This property is required.
         /// </summary>
@@ -56,7 +55,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a user defined description/summary  of the Site.
         /// </summary>
@@ -66,7 +65,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Description { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name of the Theme that is used on the Site.
         /// </summary>
@@ -76,7 +75,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember]
         public string Theme { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the Site's default <see cref="Rock.Model.Page"/>. 
         /// </summary>
@@ -202,7 +201,7 @@ namespace Rock.Model
         /// <value>
         /// The google analytics code.
         /// </value>
-        [MaxLength(100)]
+        [MaxLength( 100 )]
         [DataMember]
         public string GoogleAnalyticsCode { get; set; }
 
@@ -244,6 +243,30 @@ namespace Rock.Model
         public bool RedirectTablets { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to log Page Views for pages in this site
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable page views]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        [DefaultValue( true )]
+        public bool EnablePageViews
+        {
+            get { return _enablePageViews; }
+            set { _enablePageViews = value; }
+        }
+        private bool _enablePageViews = true;
+
+        /// <summary>
+        /// Gets or sets the number of days to keep Page Views for pages in this site
+        /// </summary>
+        /// <value>
+        /// The page view retention period days.
+        /// </value>
+        [DataMember]
+        public int? PageViewRetentionPeriodDays { get; set; }
+
+        /// <summary>
         /// Gets or sets the Site's Facebook AppId for utilizing the Facebook SDK.
         /// </summary>
         /// <remarks>
@@ -254,7 +277,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 25 )]
         [DataMember]
-        [Obsolete("Attribute value of Facebook Authentication provider are used instead.")]
+        [Obsolete( "Attribute value of Facebook Authentication provider are used instead." )]
         public string FacebookAppId { get; set; }
 
         /// <summary>
@@ -267,7 +290,7 @@ namespace Rock.Model
         [DataMember]
         [Obsolete( "Attribute value of Facebook Authentication provider are used instead." )]
         public string FacebookAppSecret { get; set; }
-        
+
         #endregion
 
         #region Virtual Properties
@@ -280,7 +303,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual ICollection<Layout> Layouts { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the collection of <see cref="Rock.Model.SiteDomain"/> entities that reference the Site.
         /// </summary>
@@ -289,7 +312,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual ICollection<SiteDomain> SiteDomains { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the default <see cref="Rock.Model.Page"/> page for the site.
         /// </summary>
@@ -414,14 +437,13 @@ namespace Rock.Model
         {
             get
             {
-                var result = base.SupportedActions;;
+                var result = base.SupportedActions;
                 result.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve. Used as a base for blocks that use the approve action." );
                 return result;
             }
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -436,14 +458,14 @@ namespace Rock.Model
         /// </summary>
         public SiteConfiguration()
         {
-            this.HasOptional( p => p.DefaultPage ).WithMany().HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.DefaultPage ).WithMany().HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.DefaultPageRoute ).WithMany().HasForeignKey( p => p.DefaultPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.LoginPage ).WithMany().HasForeignKey( p => p.LoginPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.LoginPageRoute ).WithMany().HasForeignKey( p => p.LoginPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RegistrationPage ).WithMany().HasForeignKey( p => p.RegistrationPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RegistrationPageRoute ).WithMany().HasForeignKey( p => p.RegistrationPageRouteId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.PageNotFoundPage).WithMany().HasForeignKey(p => p.PageNotFoundPageId).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.PageNotFoundPageRoute).WithMany().HasForeignKey(p => p.PageNotFoundPageRouteId).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.PageNotFoundPage ).WithMany().HasForeignKey( p => p.PageNotFoundPageId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.PageNotFoundPageRoute ).WithMany().HasForeignKey( p => p.PageNotFoundPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.CommunicationPage ).WithMany().HasForeignKey( p => p.CommunicationPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.CommunicationPageRoute ).WithMany().HasForeignKey( p => p.CommunicationPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.MobilePage ).WithMany().HasForeignKey( p => p.MobilePageId ).WillCascadeOnDelete( false );

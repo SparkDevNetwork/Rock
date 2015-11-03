@@ -129,11 +129,15 @@ namespace Rock.Web.UI.Controls
                 LinkButton lbDelete = new LinkButton();
                 lbDelete.CausesValidation = false;
                 lbDelete.CssClass = "btn btn-danger btn-sm grid-delete-button";
-                if ( lbDelete.Enabled && ( !ParentGrid.Enabled || !ParentGrid.IsDeleteEnabled ) )
+                lbDelete.PreRender += ( s, e ) =>
                 {
-                    lbDelete.AddCssClass( "disabled" );
-                    lbDelete.Enabled = false;
-                }
+                    if ( lbDelete.Enabled && ( !ParentGrid.Enabled || !ParentGrid.IsDeleteEnabled ) )
+                    {
+                        lbDelete.AddCssClass( "disabled" );
+                        lbDelete.Enabled = false;
+                    }
+                };
+                
 
                 lbDelete.ToolTip = "Delete";
 

@@ -63,6 +63,9 @@ namespace Rock.Web.UI.Controls
 
                 int entityId = followEntity.Id;
 
+                // only show the following control if the entity has been saved to the database
+                followControl.Visible = entityId > 0;
+
                 string script = string.Format(
                     @"Rock.controls.followingsToggler.initialize($('#{0}'), {1}, {2}, {3}, {4});",
                         followControl.ClientID,

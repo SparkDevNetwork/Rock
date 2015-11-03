@@ -54,7 +54,17 @@ namespace RockWeb.Blocks.Core
             if ( !Page.IsPostBack )
             {
                 //show the detail
-                ShowDetail( PageParameter( "ExceptionId" ).AsInteger() );
+                int? exceptionId = PageParameter( "ExceptionId" ).AsIntegerOrNull();
+                if (!exceptionId.HasValue)
+                {
+                    Guid? exceptionGuid = PageParameter( "ExceptionGuid" ).AsGuidOrNull();
+                    if (exceptionGuid.HasValue)
+                    {
+                        exceptionId = new ExceptionLogService( new RockContext() ).Queryable().Where( a => a.Guid == exceptionGuid.Value ).Select( a => a.Id ).FirstOrDefault();
+                    }
+                }
+
+                ShowDetail( exceptionId ?? 0 );
             }
         }
         #endregion
@@ -160,12 +170,15 @@ namespace RockWeb.Blocks.Core
             DescriptionList dl = new DescriptionList();
 
             dl.Add( "Site", baseException.Site != null ? baseException.Site.Name : String.Empty, true );
-            dl.Add( "Page", baseException.Page != null ? string.Format( "{0} <a href=\"{1}\" class=\"btn btn-link btn-xs\" target=\"_blank\">Visit Page</a>", baseException.Page.InternalName, baseException.PageUrl ) : String.Empty, true );
+            if ( baseException.Page != null || !string.IsNullOrWhiteSpace(baseException.PageUrl) )
+            {
+                dl.Add( "Page", string.Format( "{0} <a href=\"{1}\" class=\"btn btn-link btn-xs\" target=\"_blank\">Visit Page</a>", baseException.Page != null ? baseException.Page.InternalName : baseException.PageUrl.EncodeHtml(), baseException.PageUrl.EncodeHtml() ) );
+            }
 
             //If query string is not empty build query string list
             if ( !String.IsNullOrWhiteSpace( baseException.QueryString ) )
             {
-                dl.Add( "Query String", BuildQueryStringList( baseException.QueryString ) );
+                dl.Add( "Query String", BuildQueryStringList( baseException.QueryString.EncodeHtml() ) );
             }
 
             if (baseException.CreatedByPersonAlias != null &&  baseException.CreatedByPersonAlias.Person != null)
@@ -182,12 +195,22 @@ namespace RockWeb.Blocks.Core
 
             lCookies.Text = baseException.Cookies;
             lServerVariables.Text = baseException.ServerVariables;
+            lFormData.Text = baseException.Form;
+            btnShowCookies.Visible = !string.IsNullOrWhiteSpace( baseException.Cookies );
+            btnShowVariables.Visible = !string.IsNullOrWhiteSpace( baseException.ServerVariables );
+            btnShowFormData.Visible = !string.IsNullOrWhiteSpace( baseException.Form );
 
             rptExcpetionDetails.DataSource = GetExceptionLogs( baseException ).OrderBy( e => e.Id );
             rptExcpetionDetails.DataBind();
 
             pnlSummary.Visible = true;
         }
+
+        protected string EncodeHtml( object obj )
+        {
+            return obj.ToString().EncodeHtml();
+        }
+
         #endregion
     }
 

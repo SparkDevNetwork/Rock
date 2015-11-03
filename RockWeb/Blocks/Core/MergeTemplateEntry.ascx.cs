@@ -222,13 +222,7 @@ namespace RockWeb.Blocks.Core
                 return null;
             }
 
-            var mergeTemplateTypeEntityType = EntityTypeCache.Read( mergeTemplate.MergeTemplateTypeEntityTypeId );
-            if ( mergeTemplateTypeEntityType == null )
-            {
-                return null;
-            }
-
-            return MergeTemplateTypeContainer.GetComponent( mergeTemplateTypeEntityType.Name );
+            return mergeTemplate.GetMergeTemplateType();
         }
 
         /// <summary>

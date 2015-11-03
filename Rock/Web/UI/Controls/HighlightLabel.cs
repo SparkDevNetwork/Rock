@@ -118,13 +118,19 @@ namespace Rock.Web.UI.Controls
                 {
                     cssClass += " " + this.CssClass;
                 }
-                writer.AddAttribute(HtmlTextWriterAttribute.Class, "label label-" + cssClass );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "label label-" + cssClass );
+                if ( !string.IsNullOrEmpty( this.Style[HtmlTextWriterStyle.Display] ) )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, this.Style[HtmlTextWriterStyle.Display] );
+                }
 
                 if ( !string.IsNullOrWhiteSpace( this.ToolTip ) )
                 {
                     writer.AddAttribute( "title", this.ToolTip );
                     writer.AddAttribute( "data-toggle", "tooltip" );
                 }
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
 
                 if ( !string.IsNullOrWhiteSpace( this.IconCssClass ) )

@@ -151,7 +151,7 @@ namespace Rock.Reporting.DataSelect.Person
             var personLocationQuery = new PersonService( context ).Queryable()
                 .Select( p => RockUdfHelper.ufnCrm_GetAddress( p.Id, addressTypeId, addressComponent ) );
 
-            return SelectExpressionExtractor.Extract<Rock.Model.Person>( personLocationQuery, entityIdProperty, "p" );
+            return SelectExpressionExtractor.Extract( personLocationQuery, entityIdProperty, "p" );
         }
 
         /// <summary>

@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Cms
     [Category("CMS")]
     [Description("Renders a page menu based on a root page and liquid template.")]
     [CodeEditorField( "Template", "The liquid template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
-        CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Lava/PageNav.lava' %}" )]
+        CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Lava/PageNav.lava' %}" )]
     [LinkedPage( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
     [TextField( "Number of Levels", "Number of parent-child page levels to display. Default 3.", false, "3" )]
     [TextField( "CSS File", "Optional CSS file to add to the page for styling. Example 'Styles/nav.css' would point the stylesheet in the current theme's styles folder.", false, "" )]

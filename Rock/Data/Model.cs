@@ -25,6 +25,7 @@ using System.Runtime.Serialization;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Data
 {
@@ -47,6 +48,7 @@ namespace Rock.Data
         /// </value>
         [DataMember]
         [IncludeForReporting]
+        [RockClientInclude( "Leave this as NULL to let Rock set this" )]
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
@@ -57,6 +59,7 @@ namespace Rock.Data
         /// </value>
         [DataMember]
         [IncludeForReporting]
+        [RockClientInclude( "This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database." )]
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
@@ -66,6 +69,7 @@ namespace Rock.Data
         /// The created by person alias identifier.
         /// </value>
         [DataMember]
+        [RockClientInclude( "Leave this as NULL to let Rock set this" )]
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
@@ -75,6 +79,7 @@ namespace Rock.Data
         /// The modified by person alias identifier.
         /// </value>
         [DataMember]
+        [RockClientInclude( "If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it" )]
         public int? ModifiedByPersonAliasId { get; set; }
 
         #endregion
@@ -173,17 +178,17 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the ModifiedByPersonAliasId and ModifiedDateTime values have already been 
-        /// updated to reflect who/when model was updated. If this value is false (default) the framework will update 
-        /// these values with the current user and datetime when the model is saved. Set this value to true if this automatic
+        /// Gets or sets a value indicating whether the ModifiedByPersonAliasId value has already been
+        /// updated to reflect who/when model was updated. If this value is false (default) the framework will update
+        /// the value with the current user when the model is saved. Set this value to true if this automatic
         /// update should not be done.
         /// </summary>
         /// <value>
-        /// <c>false</c> if rock should set the ModifiedDateTime to current time and ModifiedByPersonAliasId to current user when saving model; otherwise, <c>true</c>.
+        /// <c>false</c> if rock should set the ModifiedByPersonAliasId to current user when saving model; otherwise, <c>true</c>.
         /// </value>
         [NotMapped]
         [DataMember]
-        [RockClientInclude("If the ModifiedByPersonAliasId and ModifiedDateTime properties are being set manually and should not be overwritten with current time/user when saved, set this value to true")]
+        [RockClientInclude("If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true")]
         public virtual bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         #endregion
@@ -487,7 +492,7 @@ namespace Rock.Data
         [NotMapped]
         [DataMember]
         [LavaIgnore]
-        public virtual Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes { get; set; }
+        public virtual Dictionary<string, AttributeCache> Attributes { get; set; }
 
         /// <summary>
         /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the associated attribute value
@@ -498,7 +503,7 @@ namespace Rock.Data
         [NotMapped]
         [DataMember]
         [LavaIgnore]
-        public virtual Dictionary<string, Rock.Model.AttributeValue> AttributeValues { get; set; }
+        public virtual Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.

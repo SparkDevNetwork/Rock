@@ -241,7 +241,7 @@ namespace Rock.Reporting.DataSelect.Person
                         BirthDate = m.Person.BirthDate
                     }).AsEnumerable() );
 
-            var selectChildrenExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personChildrenQuery, entityIdProperty, "p" );
+            var selectChildrenExpression = SelectExpressionExtractor.Extract( personChildrenQuery, entityIdProperty, "p" );
 
             return selectChildrenExpression;
         }

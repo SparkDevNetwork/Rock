@@ -19,10 +19,13 @@
                     </div>
                     <div class="row actions">
                         <div class="col-md-3">
-                            <a href="#" class="btn-show-cookies btn btn-action"><i class="fa fa-laptop"></i> Show Cookies</a>
+                            <a href="#" id="btnShowCookies" runat="server" class="btn-show-cookies btn btn-action"><i class="fa fa-laptop"></i> Show Cookies</a>
                         </div>
                         <div class="col-md-3">
-                            <a href="#" class="btn-show-servervars btn btn-action"><i class="fa fa-hdd-o"></i> Show Server Variables</a>
+                            <a href="#" id="btnShowVariables" runat="server" class="btn-show-servervars btn btn-action"><i class="fa fa-hdd-o"></i> Show Server Variables</a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="#" id="btnShowFormData" runat="server" class="btn-show-formdata btn btn-action"><i class="fa fa-hdd-o"></i> Show Form Data</a>
                         </div>
                         <div class="col-md-6"></div>
                     </div>
@@ -38,6 +41,12 @@
                     <fieldset>
                         <h4>Server Variables</h4>
                         <asp:Literal ID="lServerVariables" runat="server" />
+                    </fieldset>
+                </div>
+                <div id="divFormData" style="display: none">
+                    <fieldset>
+                        <h4>Form Data</h4>
+                        <asp:Literal ID="lFormData" runat="server" />
                     </fieldset>
                 </div>
                 <div id="divExceptionDetails">
@@ -60,9 +69,9 @@
                             </HeaderTemplate>
                             <ItemTemplate>
                                 <tr>
-                                    <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# Eval("ExceptionType") %></td>
-                                    <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# Eval("Source") %></td>
-                                    <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# Eval("Description") %></td>
+                                    <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# EncodeHtml( Eval("ExceptionType") ) %></td>
+                                    <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# EncodeHtml( Eval("Source") )%></td>
+                                    <td onclick="<%# string.Format("redirectToPage('{0}')", GetExceptionDetailUrl((int)Eval("Id"))) %>"><%# EncodeHtml( Eval("Description") ) %></td>
                                     <td style="text-align: center;">
                                         <a id="<%# "lbToggleStackTrace_" + Eval("Id").ToString()  %>" href="#" onclick="<%# string.Format("return toggleStackTrace({0});", Eval("Id")) %>" class="btn btn-default">
                                             <i class="fa fa-file-o"></i> Show Stack Trace
@@ -116,6 +125,11 @@
 
     $(".btn-show-servervars").click(function () {
         $("#divServerVariables").slideToggle();
+        return false;
+    });
+
+    $(".btn-show-formdata").click(function () {
+        $("#divFormData").slideToggle();
         return false;
     });
 

@@ -36,7 +36,7 @@ namespace Rock.Web.UI.Controls.Communication
         private EmailBox ebFromAddress;
         private RockLiteral lFromName;
         private RockLiteral lFromAddress;
-        private RockTextBox tbReplyToAddress;
+        private EmailBox ebReplyToAddress;
         private RockTextBox tbSubject;
         private HtmlEditor htmlMessage;
         private RockTextBox tbTextMessage;
@@ -73,7 +73,7 @@ namespace Rock.Web.UI.Controls.Communication
                 var data = new Dictionary<string, string>();
                 data.Add( "FromName", tbFromName.Text );
                 data.Add( "FromAddress", ebFromAddress.Text );
-                data.Add( "ReplyTo", tbReplyToAddress.Text );
+                data.Add( "ReplyTo", ebReplyToAddress.Text );
                 data.Add( "Subject", tbSubject.Text );
                 data.Add( "HtmlMessage", htmlMessage.Text );
                 data.Add( "TextMessage", tbTextMessage.Text );
@@ -86,7 +86,7 @@ namespace Rock.Web.UI.Controls.Communication
                 EnsureChildControls();
                 tbFromName.Text = GetDataValue( value, "FromName" );
                 ebFromAddress.Text = GetDataValue( value, "FromAddress" );
-                tbReplyToAddress.Text = GetDataValue( value, "ReplyTo" );
+                ebReplyToAddress.Text = GetDataValue( value, "ReplyTo" );
                 tbSubject.Text = GetDataValue( value, "Subject" ); ;
                 htmlMessage.Text = GetDataValue( value, "HtmlMessage" );
                 tbTextMessage.Text = GetDataValue( value, "TextMessage" );
@@ -178,10 +178,10 @@ namespace Rock.Web.UI.Controls.Communication
             lFromAddress.Label = "From Address";
             Controls.Add( lFromAddress );
 
-            tbReplyToAddress = new RockTextBox();
-            tbReplyToAddress.ID = string.Format( "tbReplyToAddress_{0}", this.ID );
-            tbReplyToAddress.Label = "Reply To Address";
-            Controls.Add( tbReplyToAddress );
+            ebReplyToAddress = new EmailBox();
+            ebReplyToAddress.ID = string.Format( "ebReplyToAddress_{0}", this.ID );
+            ebReplyToAddress.Label = "Reply To Address";
+            Controls.Add( ebReplyToAddress );
 
             tbSubject = new RockTextBox();
             tbSubject.ID = string.Format( "tbSubject_{0}", this.ID );
@@ -235,6 +235,7 @@ namespace Rock.Web.UI.Controls.Communication
                 EnsureChildControls();
                 tbFromName.ValidationGroup = value;
                 ebFromAddress.ValidationGroup = value;
+                ebReplyToAddress.ValidationGroup = value;
                 tbSubject.ValidationGroup = value;
             }
         }
@@ -280,7 +281,7 @@ namespace Rock.Web.UI.Controls.Communication
             {
                 tbFromName.RenderControl( writer );
                 ebFromAddress.RenderControl( writer );
-                tbReplyToAddress.RenderControl( writer );
+                ebReplyToAddress.RenderControl( writer );
             }
             else
             {
