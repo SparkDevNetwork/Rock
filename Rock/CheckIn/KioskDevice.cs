@@ -224,9 +224,7 @@ namespace Rock.CheckIn
                                 LoadKioskLocations( device, location, campusLocations, rockContext );
                             }
 
-                            var cachePolicy = new CacheItemPolicy();
-                            cachePolicy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( 60 );
-                            cache.Set( cacheKey, device, cachePolicy );
+                            cache.Set( cacheKey, device, new CacheItemPolicy() );
 
                             return device;
                         }
@@ -245,6 +243,25 @@ namespace Rock.CheckIn
         {
             ObjectCache cache = Rock.Web.Cache.RockMemoryCache.Default;
             cache.Remove( KioskDevice.CacheKey( id ) );
+        }
+
+
+        /// <summary>
+        /// Flushes all.
+        /// </summary>
+        public static void FlushAll()
+        {
+            ObjectCache cache = Rock.Web.Cache.RockMemoryCache.Default;
+            var keysToRemove = cache
+                .Where( c =>
+                    c.Key.StartsWith( "Rock:CheckIn:KioskDevice:" ) )
+                .Select( c => c.Key )
+                .ToList();
+
+            foreach ( var key in keysToRemove )
+            {
+                cache.Remove( key );
+            }
         }
 
         /// <summary>

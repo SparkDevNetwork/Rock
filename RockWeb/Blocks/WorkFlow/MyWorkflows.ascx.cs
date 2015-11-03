@@ -116,8 +116,8 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( !Page.IsPostBack )
             {
-                bool? queryStatusFilter = Request.QueryString["StatusFilter"].AsBoolean();
-                bool? queryRoleFilter = Request.QueryString["RoleFilter"].AsBoolean();
+                bool? queryStatusFilter = Request.QueryString["StatusFilter"].AsBooleanOrNull();
+                bool? queryRoleFilter = Request.QueryString["RoleFilter"].AsBooleanOrNull();
 
                 /// If query string values exist then set them
                 if ( queryStatusFilter.HasValue || queryRoleFilter.HasValue )

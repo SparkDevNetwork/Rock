@@ -121,6 +121,11 @@
                         tagsInput: this
                     },
                     error: function (xhr, status, error) {
+                        if (xhr && xhr.status == 404) {
+                            // already deleted
+                            return;
+                        }
+
                         Rock.dialogs.alert("Unable to remove tag: " + error);
 
                         // put the tag back in (in alpha order, case-insensitive)

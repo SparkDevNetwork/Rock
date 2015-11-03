@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Prayer
     
     [CategoryField( "Category", "The category (or parent category) to limit the listed prayer requests to.", true, "Rock.Model.PrayerRequest", order: 0 )]
     [LinkedPage( "Prayer Request Detail Page", "The Page Request Detail Page to use for the LinkUrl merge field.  The LinkUrl field will include a [Id] which can be replaced by the prayerrequestitem.Id.", order: 1 )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
 <div class='panel panel-block'> 
     <div class='panel-heading'>
        <h4 class='panel-title'>Prayer Requests</h4>
@@ -62,7 +62,9 @@ namespace RockWeb.Blocks.Prayer
     [IntegerField( "Max Results", "The maximum number of results to display.", false, 100, order: 3 )]
     [CustomDropdownListField( "Sort by", "", "0^Entered Date Descending,1^Entered Date Ascending,2^Text", false, "0", order: 4 )]
     [CustomDropdownListField("Approval Status", "Which statuses to display.", "1^Approved,2^Unapproved,3^All", true, "1", order: 5)]
-    [BooleanField( "Enable Debug", "Show merge data to help you see what's available to you.", order: 6 )]
+    [BooleanField( "Show Expired", "Includes expired prayer requests.", false, order: 6)]
+    [SlidingDateRangeField( "Date Range", "Date range to limit by.", false, "", enabledSlidingDateRangeTypes: "Last,Previous,Current", order: 7 )]
+    [BooleanField( "Enable Debug", "Show merge data to help you see what's available to you.", order: 8 )]
     public partial class PrayerRequestListLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -128,6 +130,20 @@ namespace RockWeb.Blocks.Prayer
 
             var prayerRequestService = new PrayerRequestService( rockContext );
             var qryPrayerRequests = prayerRequestService.Queryable();
+
+            // filter out expired
+            if ( !GetAttributeValue( "Show Expired" ).AsBoolean() )
+            {
+                qryPrayerRequests = qryPrayerRequests.Where( r => r.ExpirationDate >= RockDateTime.Now );
+            }
+
+            // filter by date range
+            var requestDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "DateRange" ) ?? "-1||" );
+
+            if ( requestDateRange.Start != null && requestDateRange.End != null )
+            {
+                qryPrayerRequests = qryPrayerRequests.Where( r => r.EnteredDateTime >= requestDateRange.Start && r.EnteredDateTime <= requestDateRange.End );
+            }
 
             var categoryGuids = ( GetAttributeValue( "Category" ) ?? string.Empty ).SplitDelimitedValues().AsGuidList();
             if ( categoryGuids.Any() )

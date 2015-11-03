@@ -478,7 +478,7 @@ namespace RockWeb.Blocks.Crm
                             foreach ( var login in userLoginService.GetByPersonId( p.Id ) )
                             {
                                 var component = Rock.Security.AuthenticationContainer.GetComponent( login.EntityType.Name );
-                                if ( !component.RequiresRemoteAuthentication )
+                                if ( component != null && !component.RequiresRemoteAuthentication )
                                 {
                                     login.IsConfirmed = false;
                                 }
@@ -907,7 +907,8 @@ namespace RockWeb.Blocks.Crm
                 foreach ( var attribute in person.Attributes.OrderBy( a => a.Value.Order ) )
                 {
                     string value = person.GetAttributeValue( attribute.Key );
-                    string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false );
+                    bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
+                    string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, condensed );
                     AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue );
                 }
             }

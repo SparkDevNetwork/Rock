@@ -91,6 +91,7 @@ namespace RockWeb.Blocks.Connection
             gRequests.IsDeleteEnabled = true;
             gRequests.GridRebind += gRequests_GridRebind;
             gRequests.ShowConfirmDeleteDialog = false;
+            gRequests.PersonIdField = "PersonId";
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -696,18 +697,33 @@ namespace RockWeb.Blocks.Connection
                                 campusIds.Contains( r.CampusId.Value ) );
                     }
 
+
+                    SortProperty sortProperty = gRequests.SortProperty;
+                    if ( sortProperty != null )
+                    {
+                        requests = requests.Sort( sortProperty );
+                    }
+                    else
+                    {
+                        requests = requests
+                            .OrderBy( r => r.PersonAlias.Person.LastName )
+                            .ThenBy( r => r.PersonAlias.Person.NickName );
+                    }
+
                     gRequests.DataSource = requests.ToList()
                     .Select( r => new
                     {
                         r.Id,
                         r.Guid,
-                        Name = r.PersonAlias.Person.FullName,
+                        PersonId = r.PersonAlias.PersonId,
+                        Name = r.PersonAlias.Person.FullNameReversed,
                         Campus = r.Campus,
                         Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
                         Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
-                        Activities = r.ConnectionRequestActivities.Select( a => a.ConnectionActivityType.Name ).ToList().AsDelimited( "</br>" ),
+                        LastActivity = FormatActivity( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault() ),
                         Status = r.ConnectionStatus.Name,
                         StatusLabel = r.ConnectionStatus.IsCritical ? "warning" : "info",
+                        ConnectionState = r.ConnectionState,
                         StateLabel = FormatStateLabel( r.ConnectionState, r.FollowupDate )
                     } )
                    .ToList();
@@ -731,6 +747,17 @@ namespace RockWeb.Blocks.Connection
         private string MakeKeyUniqueToOpportunity( string key )
         {
             return string.Format( "{0}-{1}", SelectedOpportunityId ?? 0, key );
+        }
+
+        private string FormatActivity( object item )
+        {
+            var connectionRequestActivity = item as ConnectionRequestActivity;
+            if ( connectionRequestActivity != null )
+            {
+                return string.Format( "{0} (<span class='small'>{1}</small>)",
+                    connectionRequestActivity.ConnectionActivityType.Name, connectionRequestActivity.CreatedDateTime.ToRelativeDateString() );
+            }
+            return string.Empty;
         }
 
         /// <summary>

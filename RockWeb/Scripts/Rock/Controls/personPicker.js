@@ -43,7 +43,6 @@
                         exports.personPickers[controlId].updateScrollbar();
                     });
 
-                    // Is this needed? If an error is thrown on the server, we should see an exception in the log now...
                     promise.fail(function (xhr, status, error) {
                         console.log(status + ' [' + error + ']: ' + xhr.responseText);
                         var errorCode = xhr.status;

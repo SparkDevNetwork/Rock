@@ -37,7 +37,7 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<Auth> Get( int entityTypeId, int? entityId )
         {
-            return Queryable( "PersonAlias.Person" )
+            return Queryable( "PersonAlias" )
                 .Where( t => 
                     t.EntityTypeId == entityTypeId && 
                     ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) 
@@ -54,7 +54,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Auth"/> entities (Authorizations) for the specified entity and action.</returns>
         public IQueryable<Auth> GetAuths( int entityTypeId, int? entityId, string action )
         {
-            return Queryable( "PersonAlias.Person" ).
+            return Queryable( "PersonAlias" ).
                     Where( A => A.EntityTypeId == entityTypeId &&
                         A.EntityId == entityId &&
                         A.Action == action ).

@@ -65,6 +65,7 @@ namespace Rock.Model
         /// The group member identifier.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int? GroupMemberId { get; set; }
 
         /// <summary>
@@ -131,6 +132,86 @@ namespace Rock.Model
             set { _fees = value; }
         }
         private ICollection<RegistrationRegistrantFee> _fees;
+
+        /// <summary>
+        /// Gets the name of the nick.
+        /// </summary>
+        /// <value>
+        /// The name of the nick.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public virtual string NickName 
+        {
+            get 
+            {
+                if ( PersonAlias != null && PersonAlias.Person != null )
+                {
+                    return PersonAlias.Person.NickName;
+                }
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the first name.
+        /// </summary>
+        /// <value>
+        /// The first name.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public virtual string FirstName 
+        {
+            get 
+            {
+                if ( PersonAlias != null && PersonAlias.Person != null )
+                {
+                    return PersonAlias.Person.FirstName;
+                }
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the last name.
+        /// </summary>
+        /// <value>
+        /// The last name.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public virtual string LastName
+        {
+            get 
+            {
+                if ( PersonAlias != null && PersonAlias.Person != null )
+                {
+                    return PersonAlias.Person.LastName;
+                }
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the email.
+        /// </summary>
+        /// <value>
+        /// The email.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public virtual string Email
+        {
+            get
+            {
+                if ( PersonAlias != null && PersonAlias.Person != null )
+                {
+                    return PersonAlias.Person.Email;
+                }
+                return string.Empty;
+            }
+        }
 
         /// <summary>
         /// Gets the cost with fees.

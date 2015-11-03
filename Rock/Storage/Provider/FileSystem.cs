@@ -119,16 +119,11 @@ namespace Rock.Storage.Provider
 
                 if ( string.IsNullOrWhiteSpace( subFolder ) )
                 {
-                    subFolder = @"App_Data\Files";
+                    subFolder = @"~/App_Data/Files";
                 }
-                else
-                {
-                    subFolder = subFolder.Replace( "/", @"\" );
-                    subFolder = subFolder.TrimStart( "~".ToCharArray() );
-                    subFolder = subFolder.TrimStart( @"\".ToCharArray() );
-                }
-
-                string folder = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, subFolder );
+                
+                string folder = System.Web.Hosting.HostingEnvironment.MapPath( subFolder );
+                
                 string fileName = string.Format( "{0}_{1}", binaryFile.Guid, binaryFile.FileName );
                 return Path.Combine( folder, fileName );
             }

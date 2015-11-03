@@ -136,15 +136,21 @@
 
             if( options.scroll && window.addEventListener )
             {
-                oWrapper[0].addEventListener( 'DOMMouseScroll', wheel, false );
-                oWrapper[0].addEventListener( 'mousewheel', wheel, false );
-                oWrapper[0].addEventListener( 'MozMousePixelScroll', function( event ){
-                    event.preventDefault();
-                }, false);
+                // don't do wheel if the scrollbar is horizontal
+                if (options.axis != 'x') {
+                    oWrapper[0].addEventListener( 'DOMMouseScroll', wheel, false);
+                    oWrapper[0].addEventListener( 'mousewheel', wheel, false);
+                    oWrapper[0].addEventListener( 'MozMousePixelScroll', function( event ){
+                        event.preventDefault();
+                    }, false);
+                }
             }
             else if( options.scroll )
             {
-                oWrapper[0].onmousewheel = wheel;
+                // don't do wheel if the scrollbar is horizontal
+                if (options.axis != 'x') {
+                    oWrapper[0].onmousewheel = wheel;
+                }
             }
         }
 

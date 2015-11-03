@@ -225,7 +225,7 @@ namespace RockWeb
 
             bool sendAsAttachment = context.Request.QueryString["attachment"].AsBooleanOrNull() ?? false;
 
-            context.Response.AddHeader( "content-disposition", string.Format( "{1};filename={0}", fileName, sendAsAttachment ? "attachment" : "inline" ) );
+            context.Response.AddHeader( "content-disposition", string.Format( "{1};filename={0}", fileName.MakeValidFileName(), sendAsAttachment ? "attachment" : "inline" ) );
             context.Response.AddHeader( "content-length", responseLength.ToString() );
             context.Response.Cache.SetCacheability( HttpCacheability.Public ); // required for etag output
 

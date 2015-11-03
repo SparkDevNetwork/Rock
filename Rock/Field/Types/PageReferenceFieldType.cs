@@ -25,7 +25,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Stored as "Page.Guid" or "Page.Guid,PageRoute.Guid"
     /// </summary>
     [Serializable]
     public class PageReferenceFieldType : FieldType
