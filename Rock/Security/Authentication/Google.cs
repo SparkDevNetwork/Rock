@@ -254,6 +254,17 @@ namespace Rock.Security.ExternalAuthentication
         }
 
         /// <summary>
+        /// Sets the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override void SetPassword( UserLogin user, string password )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Google User Object
         /// </summary>
         public class GoogleUser

@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace Rock.Workflow.Action
@@ -71,7 +72,7 @@ namespace Rock.Workflow.Action
 
                 binaryFile.LoadAttributes();
 
-                var attributeValue = new AttributeValue();
+                var attributeValue = new AttributeValueCache();
                 attributeValue.Value = sb.ToString();
 
                 binaryFile.AttributeValues["MergeCodes"] = attributeValue;

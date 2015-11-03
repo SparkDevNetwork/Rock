@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Save Button Text", "The Text to shown on the Save button", true, "Save", Order = 7 )]
     [TextField( "Note Message", "Message to show at the bottom of the create pledge block.", false, "Note: This commitment is a statement of intent and may be changed as your circumstances change.", Order = 8 )]
 
-    [CodeEditorField( "Receipt Text", "The text (or html) to display as the pledge receipt. <span class='tip tip-lava'></span> <span class='tip tip-html'>", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, Order = 9, DefaultValue =
+    [CodeEditorField( "Receipt Text", "The text (or html) to display as the pledge receipt. <span class='tip tip-lava'></span> <span class='tip tip-html'>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, Order = 9, DefaultValue =
         @"
 <h1>Thank You!</h1>
 <p>

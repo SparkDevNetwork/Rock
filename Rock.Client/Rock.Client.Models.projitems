@@ -117,6 +117,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageRoute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageViewSession.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageViewUserAgent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Person.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonAlias.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonBadge.cs" />

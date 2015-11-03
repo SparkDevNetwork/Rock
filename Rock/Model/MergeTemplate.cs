@@ -19,6 +19,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.MergeTemplates;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -165,6 +167,21 @@ namespace Rock.Model
         #endregion
 
         #region Static Methods
+
+        /// <summary>
+        /// Gets the MergeTemplateType MEF Component for the specified MergeTemplate
+        /// </summary>
+        /// <returns></returns>
+        public MergeTemplateType GetMergeTemplateType()
+        {
+            var mergeTemplateTypeEntityType = EntityTypeCache.Read( this.MergeTemplateTypeEntityTypeId );
+            if ( mergeTemplateTypeEntityType == null )
+            {
+                return null;
+            }
+
+            return MergeTemplateTypeContainer.GetComponent( mergeTemplateTypeEntityType.Name );
+        }
 
         #endregion
     }

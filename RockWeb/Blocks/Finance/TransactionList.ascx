@@ -43,7 +43,10 @@
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
                                 <Rock:RockBoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" ColumnPriority="DesktopSmall" />                
-                                <Rock:RockBoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" ColumnPriority="Desktop" />
+                                <Rock:RockTemplateField HeaderText="Accounts" >
+                                    <ItemTemplate><%# GetAccounts( Container.DataItem ) %></ItemTemplate>
+                                </Rock:RockTemplateField>
+                                <Rock:RockBoundField DataField="Summary" HeaderText="Summary" SortExpression="TransactionCode" ColumnPriority="DesktopLarge" />                
                                 <Rock:DeleteField OnClick="gTransactions_Delete" Visible="false"/>
                             </Columns>
                         </Rock:Grid>

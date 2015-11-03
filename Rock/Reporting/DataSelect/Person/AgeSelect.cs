@@ -153,7 +153,7 @@ namespace Rock.Reporting.DataSelect.Person
                     ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
                     : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ));
 
-            var selectAgeExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personAgeQuery, entityIdProperty, "p" );
+            var selectAgeExpression = SelectExpressionExtractor.Extract( personAgeQuery, entityIdProperty, "p" );
 
             return selectAgeExpression;
         }

@@ -152,7 +152,7 @@ namespace Rock.Reporting.DataSelect.Person
                     .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
                     .Select( m => m.Person.FirstName ).FirstOrDefault() );
 
-            var selectSpouseExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personSpouseQuery, entityIdProperty, "p" );
+            var selectSpouseExpression = SelectExpressionExtractor.Extract( personSpouseQuery, entityIdProperty, "p" );
 
             return selectSpouseExpression;
         }

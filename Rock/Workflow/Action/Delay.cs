@@ -77,7 +77,7 @@ namespace Rock.Workflow.Action
                 newRockContext.SaveChanges();
 
                 action.Activity.Attributes.Add( AttrKey, AttributeCache.Read( attribute ) );
-                var attributeValue = new Rock.Model.AttributeValue();
+                var attributeValue = new AttributeValueCache();
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.Value = RockDateTime.Now.ToString( "o" );
                 action.Activity.AttributeValues.Add( AttrKey, attributeValue );

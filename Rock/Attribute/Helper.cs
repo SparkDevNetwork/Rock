@@ -469,7 +469,7 @@ namespace Rock.Attribute
                     allAttributes.Add( attribute );
                 }
 
-                var attributeValues = new Dictionary<string, Rock.Model.AttributeValue>();
+                var attributeValues = new Dictionary<string, AttributeValueCache>();
 
                 if ( allAttributes.Any() )
                 {
@@ -487,7 +487,7 @@ namespace Rock.Attribute
                             .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
                         {
                             var attributeKey = AttributeCache.Read( attributeValue.AttributeId ).Key;
-                            attributeValues[attributeKey] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
+                            attributeValues[attributeKey] = new AttributeValueCache( attributeValue );
                         }
                     }
 
@@ -496,7 +496,7 @@ namespace Rock.Attribute
                     {
                         if ( attributeValues[attribute.Key] == null )
                         {
-                            var attributeValue = new Rock.Model.AttributeValue();
+                            var attributeValue = new AttributeValueCache();
                             attributeValue.AttributeId = attribute.Id;
                             if ( entity.AttributeValueDefaults != null && entity.AttributeValueDefaults.ContainsKey( attribute.Name ) )
                             {
@@ -801,7 +801,7 @@ namespace Rock.Attribute
 
                 if ( model.AttributeValues != null && model.AttributeValues.ContainsKey( attribute.Key ) )
                 {
-                    model.AttributeValues[attribute.Key] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
+                    model.AttributeValues[attribute.Key] = new AttributeValueCache( attributeValue );
                 }
             }
         }
@@ -869,19 +869,15 @@ namespace Rock.Attribute
                 // Copy Attribute Values
                 if ( source.AttributeValues != null )
                 {
-                    target.AttributeValues = new Dictionary<string, Model.AttributeValue>();
+                    target.AttributeValues = new Dictionary<string, AttributeValueCache>();
                     foreach ( var item in source.AttributeValues )
                     {
                         var value = item.Value;
                         if ( value != null )
                         {
-                            var attributeValue = new Model.AttributeValue();
-                            attributeValue.IsSystem = value.IsSystem;
+                            var attributeValue = new AttributeValueCache();
                             attributeValue.AttributeId = value.AttributeId;
-                            attributeValue.EntityId = value.EntityId;
                             attributeValue.Value = value.Value;
-                            attributeValue.Id = value.Id;
-                            attributeValue.Guid = value.Guid;
                             target.AttributeValues.Add( item.Key, attributeValue );
                         }
                         else
@@ -1078,7 +1074,7 @@ namespace Rock.Attribute
                     Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attribute.Value.Id ) );
                     if ( control != null )
                     {
-                        var value = new AttributeValue();
+                        var value = new AttributeValueCache();
 
                         // Creating a brand new AttributeValue and setting its Value property.
                         // The Value prop's setter then queries the AttributeCache passing in the AttributeId, which is 0

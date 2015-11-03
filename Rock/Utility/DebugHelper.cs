@@ -27,6 +27,11 @@ namespace Rock
     public static class DebugHelper
     {
         /// <summary>
+        /// The _call counts
+        /// </summary>
+        public static int _callCounts = 0;
+        
+        /// <summary>
         /// 
         /// </summary>
         private class DebugLoggingDbCommandInterceptor : DbCommandInterceptor
@@ -51,10 +56,13 @@ namespace Rock
                     return;
                 }
                 
+                DebugHelper._callCounts++;
+
                 System.Diagnostics.Debug.WriteLine( "\n" );
 
                 StackTrace st = new StackTrace( 1, true );
                 var frames = st.GetFrames().Where( a => a.GetFileName() != null );
+                System.Diagnostics.Debug.WriteLine( string.Format( "/* Call# {0}*/", DebugHelper._callCounts ) );
                 System.Diagnostics.Debug.WriteLine( string.Format( "/*\n{0}*/", frames.ToList().AsDelimited("") ) );
                 
                 System.Diagnostics.Debug.WriteLine( "BEGIN\n" );
@@ -65,6 +73,10 @@ namespace Rock
                         if ( p.SqlDbType == System.Data.SqlDbType.NVarChar )
                         {
                             return string.Format( "@{0} {1}({2}) = '{3}'", p.ParameterName, p.SqlDbType, p.Size, p.SqlValue );
+                        }
+                        else if (p.SqlDbType == System.Data.SqlDbType.Udt)
+                        {
+                            return string.Format( "@{0} {1} = '{2}'", p.ParameterName, p.UdtTypeName, p.SqlValue );
                         }
                         else
                         {

@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeFile="license.aspx.cs" Inherits="license" %>
+Ôªø<%@ Page Language="C#" AutoEventWireup="true" CodeFile="license.aspx.cs" Inherits="license" %>
 
 <!DOCTYPE html>
 
@@ -115,6 +115,8 @@
                             <li><a href="#rating">Bootstrap Rating Input</a> (MIT) - <a href="https://github.com/javiertoledo/bootstrap-rating-input">Project Site</a> </li>
                             <li><a href="#resizesensor">ResizeSensor.js</a> (Custom) - <a href="https://github.com/marcj/css-element-queries">Project Site</a> </li>
                             <li><a href="#lazyload">LazyLoad.js</a> (MIT) - <a href="http://www.appelsiini.net/projects/lazyload">Project Site</a> </li>
+                            <li><a href="#bootstrap-sortable">Bootstrap Sortable</a> (MIT) - <a href="https://github.com/drvic10k/bootstrap-sortable">Project Site</a> </li>
+                            <li><a href="#moment">Moment.js</a> (MIT) - <a href="http://momentjs.com/">Project Site</a> </li>
                         </ul>
 
 
@@ -328,24 +330,24 @@ GNU LESSER GENERAL PUBLIC LICENSE
 
 Version 3, 29 June 2007
 
-Copyright © 2007 Free Software Foundation, Inc. <http://fsf.org/>
+Copyright ¬© 2007 Free Software Foundation, Inc. <http://fsf.org/>
 
 Everyone is permitted to copy and distribute verbatim copies of this license document, but changing it is not allowed.
 
 This version of the GNU Lesser General Public License incorporates the terms and conditions of version 3 of the GNU General Public License, supplemented by the additional permissions listed below.
 0. Additional Definitions.
 
-As used herein, ìthis Licenseî refers to version 3 of the GNU Lesser General Public License, and the ìGNU GPLî refers to version 3 of the GNU General Public License.
+As used herein, ‚Äúthis License‚Äù refers to version 3 of the GNU Lesser General Public License, and the ‚ÄúGNU GPL‚Äù refers to version 3 of the GNU General Public License.
 
-ìThe Libraryî refers to a covered work governed by this License, other than an Application or a Combined Work as defined below.
+‚ÄúThe Library‚Äù refers to a covered work governed by this License, other than an Application or a Combined Work as defined below.
 
-An ìApplicationî is any work that makes use of an interface provided by the Library, but which is not otherwise based on the Library. Defining a subclass of a class defined by the Library is deemed a mode of using an interface provided by the Library.
+An ‚ÄúApplication‚Äù is any work that makes use of an interface provided by the Library, but which is not otherwise based on the Library. Defining a subclass of a class defined by the Library is deemed a mode of using an interface provided by the Library.
 
-A ìCombined Workî is a work produced by combining or linking an Application with the Library. The particular version of the Library with which the Combined Work was made is also called the ìLinked Versionî.
+A ‚ÄúCombined Work‚Äù is a work produced by combining or linking an Application with the Library. The particular version of the Library with which the Combined Work was made is also called the ‚ÄúLinked Version‚Äù.
 
-The ìMinimal Corresponding Sourceî for a Combined Work means the Corresponding Source for the Combined Work, excluding any source code for portions of the Combined Work that, considered in isolation, are based on the Application, and not on the Linked Version.
+The ‚ÄúMinimal Corresponding Source‚Äù for a Combined Work means the Corresponding Source for the Combined Work, excluding any source code for portions of the Combined Work that, considered in isolation, are based on the Application, and not on the Linked Version.
 
-The ìCorresponding Application Codeî for a Combined Work means the object code and/or source code for the Application, including any data and utility programs needed for reproducing the Combined Work from the Application, but excluding the System Libraries of the Combined Work.
+The ‚ÄúCorresponding Application Code‚Äù for a Combined Work means the object code and/or source code for the Application, including any data and utility programs needed for reproducing the Combined Work from the Application, but excluding the System Libraries of the Combined Work.
 1. Exception to Section 3 of the GNU GPL.
 
 You may convey a covered work under sections 3 and 4 of this License without being bound by section 3 of the GNU GPL.
@@ -386,7 +388,7 @@ You may place library facilities that are a work based on the Library side by si
 
 The Free Software Foundation may publish revised and/or new versions of the GNU Lesser General Public License from time to time. Such new versions will be similar in spirit to the present version, but may differ in detail to address new problems or concerns.
 
-Each version is given a distinguishing version number. If the Library as you received it specifies that a certain numbered version of the GNU Lesser General Public License ìor any later versionî applies to it, you have the option of following the terms and conditions either of that published version or of any later version published by the Free Software Foundation. If the Library as you received it does not specify a version number of the GNU Lesser General Public License, you may choose any version of the GNU Lesser General Public License ever published by the Free Software Foundation.
+Each version is given a distinguishing version number. If the Library as you received it specifies that a certain numbered version of the GNU Lesser General Public License ‚Äúor any later version‚Äù applies to it, you have the option of following the terms and conditions either of that published version or of any later version published by the Free Software Foundation. If the Library as you received it does not specify a version number of the GNU Lesser General Public License, you may choose any version of the GNU Lesser General Public License ever published by the Free Software Foundation.
 
 If the Library as you received it specifies that a proxy can decide whether future versions of the GNU Lesser General Public License shall apply, that proxy's public statement of acceptance of any version is permanent authorization for you to choose that version for the Library.
 </pre>
@@ -580,10 +582,10 @@ The OFL provides a legal framework and infrastructure for worldwide development,
 The OFL meets the specific needs of typographic design and engineering as well as the gold standards of the FLOSS (Free/Libre and Open Source Software) community, namely the cultural values and guidelines from the FSF 1, the Debian Free Software Guidelines2, as well as the Open Source Definition3. It draws inspiration from concepts and elements found in other licenses, but our improvements in the specific area of fonts have made the licensing model work better than other approaches currently in use.
   SIL International serves language communities worldwide, building their capacity for sustainable language development, by means of research, translation, training and materials development. We have been thinking about more open and participative models for a while, for example through our partnerships with UNESCO (Initiative B@bel) and our work on the Gentium typeface.
 We want to:
-ï	enable others to participate in our projects
-ï	enable others to cater to needs for which we don't have the resources
-ï	share our wealth of knowledge and experience in the area of writing systems and pass on our tools
-ï	equip the community to meet its font needs
+‚Ä¢	enable others to participate in our projects
+‚Ä¢	enable others to cater to needs for which we don't have the resources
+‚Ä¢	share our wealth of knowledge and experience in the area of writing systems and pass on our tools
+‚Ä¢	equip the community to meet its font needs
 We serve the peoples of the world without regard to their material wealth, so we are grateful to those that do fund our work. Please visit   Donate to SIL International for information on supporting our efforts.
 Documents
 We have gone through a lot of effort to make our license readable and easily understood by users, designers and software developers as well as package maintainers and distributors. To make the OFL even more human-readable, we have provided a FAQ (Frequently Asked Questions) to help everyone understand the intent and the practical aspects of using the license itself. Although it already covers many items, the FAQ will grow as needed. Please let us know if you have more questions.
@@ -624,11 +626,11 @@ Please go to   http://scripts.sil.org/OFL for the official version of the licens
 If you start such a unofficial translation effort of the OFL and its accompanying FAQ please let us know, thank you.
 Using the OFL
 It is relatively simple to use the OFL for your own font project. If you are the copyright owner you only need to do the following:
-ï	Put your copyright and Reserved Font Names information at the beginning of the main OFL.txt file in place of the dedicated placeholders (marked with the <> characters). Include this file in your release package.
-ï	Put your copyright and the OFL text with your chosen Reserved Font Name(s) into your font files (the copyright and license fields). A link to the OFL text on the OFL web site is an acceptable (but not recommended) alternative. Also add this information to any other components (build scripts, glyph databases, documentation, test files, etc). Accurate metadata in your font files is beneficial to you as an increasing number of applications are exposing this information to the user. For example, clickable links can bring users back to your website and let them know about other work you have done or services you provide. Depending on the format of your fonts and sources, you can use template human-readable headers or machine-readable metadata. You should also double-check that there is no conflicting metadata in the font itself contradicting the license, such as the fstype bits in the os2 table or fields in the name table.
-ï	Write an initial FONTLOG.txt for your font and include it in the release package (see Section 6 and Appendix A of the OFL-FAQ for details including a template).
-ï	Include the relevant practical documentation on the license by adding the current OFL-FAQ.txt file in your package.
-ï	If you wish, you can use the OFL Graphics on your web page.
+‚Ä¢	Put your copyright and Reserved Font Names information at the beginning of the main OFL.txt file in place of the dedicated placeholders (marked with the <> characters). Include this file in your release package.
+‚Ä¢	Put your copyright and the OFL text with your chosen Reserved Font Name(s) into your font files (the copyright and license fields). A link to the OFL text on the OFL web site is an acceptable (but not recommended) alternative. Also add this information to any other components (build scripts, glyph databases, documentation, test files, etc). Accurate metadata in your font files is beneficial to you as an increasing number of applications are exposing this information to the user. For example, clickable links can bring users back to your website and let them know about other work you have done or services you provide. Depending on the format of your fonts and sources, you can use template human-readable headers or machine-readable metadata. You should also double-check that there is no conflicting metadata in the font itself contradicting the license, such as the fstype bits in the os2 table or fields in the name table.
+‚Ä¢	Write an initial FONTLOG.txt for your font and include it in the release package (see Section 6 and Appendix A of the OFL-FAQ for details including a template).
+‚Ä¢	Include the relevant practical documentation on the license by adding the current OFL-FAQ.txt file in your package.
+‚Ä¢	If you wish, you can use the OFL Graphics on your web page.
 More information can be found in the OFL-FAQ.
 History
 Current version: 1.1
@@ -658,34 +660,34 @@ The OFL is designed to be in tune with the FLOSS (Free/Libre and Open Source Sof
 The OFL authors were inspired by the partnership between   GNOME and   Bitstream for the   Vera family of fonts and the licensing model which was chosen. They have also studied the community impact and some of the difficulties faced by this model.
 The 4 FSF Freedoms
 The OFL is listed and recognized as a valid Free Software license on the FSF   License List. It complies with the   Free Software Definition and its four foundational freedoms as defined by the Free Software Foundation for the GNU project:
-ï	Use: the freedom to use font software for any purpose. (freedom 0)
-ï	Study and adaptation: the freedom to study how font software works, and adapt it to your needs (freedom 1). Access and rights to the source code is a precondition for this.
-ï	Redistribution: the freedom to redistribute copies of the font software so you can help your neighbor (freedom 2).
-ï	Improvement and redistribution of modifications: the freedom to improve the font software and release your improvements (freedom 3), so that the community benefits. Access and rights to the source code is a precondition for this.
+‚Ä¢	Use: the freedom to use font software for any purpose. (freedom 0)
+‚Ä¢	Study and adaptation: the freedom to study how font software works, and adapt it to your needs (freedom 1). Access and rights to the source code is a precondition for this.
+‚Ä¢	Redistribution: the freedom to redistribute copies of the font software so you can help your neighbor (freedom 2).
+‚Ä¢	Improvement and redistribution of modifications: the freedom to improve the font software and release your improvements (freedom 3), so that the community benefits. Access and rights to the source code is a precondition for this.
 DFSG compatibility
 Font Software released under the OFL complies with the   Debian Free Software Guidelines:
-ï	reselling: DFSG #1
-ï	source code redistribution: DFSG #2
-ï	derivatives: DFSG #3
-ï	"compromise" clause permitting name change: DFSG #4 (this is very important for font derivatives for artistic integrity and anti-collision purposes)
-ï	no discrimination against people/groups: DFSG #5
-ï	no discrimination against fields of endeavour: DFSG #6
-ï	license distribution: DFSG #7
-ï	non-Debian specific: DFSG #8
-ï	no contamination of other software: DFSG #9
+‚Ä¢	reselling: DFSG #1
+‚Ä¢	source code redistribution: DFSG #2
+‚Ä¢	derivatives: DFSG #3
+‚Ä¢	"compromise" clause permitting name change: DFSG #4 (this is very important for font derivatives for artistic integrity and anti-collision purposes)
+‚Ä¢	no discrimination against people/groups: DFSG #5
+‚Ä¢	no discrimination against fields of endeavour: DFSG #6
+‚Ä¢	license distribution: DFSG #7
+‚Ä¢	non-Debian specific: DFSG #8
+‚Ä¢	no contamination of other software: DFSG #9
 Various font families under OFL have been accepted in the main archive of Debian (as well as Ubuntu) by the ftp-masters. An increasing number of Debian and Ubuntu developers are maintaining font packages under the OFL in main (the component of the archive which only holds Free/Libre and Open Source software).
 OSD compatibility
 The OFL complies with the   Open Source Definition:
-ï	free redistribution: #1
-ï	source code: #2
-ï	derived works: #3
-ï	integrity of the author(s) source code: #4 (with the possibility of requiring a name change)
-ï	no discrimination against persons or groups: #5
-ï	no discrimination against fields of endeavour: #6
-ï	distribution of license: #7
-ï	license must not be specific to a product: #8
-ï	license must not restrict other software: #9
-ï	license must be technology-neutral: #10
+‚Ä¢	free redistribution: #1
+‚Ä¢	source code: #2
+‚Ä¢	derived works: #3
+‚Ä¢	integrity of the author(s) source code: #4 (with the possibility of requiring a name change)
+‚Ä¢	no discrimination against persons or groups: #5
+‚Ä¢	no discrimination against fields of endeavour: #6
+‚Ä¢	distribution of license: #7
+‚Ä¢	license must not be specific to a product: #8
+‚Ä¢	license must not restrict other software: #9
+‚Ä¢	license must be technology-neutral: #10
 The OSI (Open Source Initiative) has recognized the OFL's compliance with the OSD and placed it on their   list of approved licenses.
 "Human readable" version and visual representation
 The spirit and working model of the OFL can be expressed in human-readable Creative Commons-like 4 terminology using the following permits / requires elements and visual representations:
@@ -831,14 +833,14 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
                         <a name="nuget"></a>
                         <h3>Nunit</h3>
                         <pre>
-Copyright © 2002-2012 Charlie Poole
-Copyright © 2002-2004 James W. Newkirk, Michael C. Two, Alexei A. Vorontsov
-Copyright © 2000-2002 Philip A. Craig 
+Copyright ¬© 2002-2012 Charlie Poole
+Copyright ¬© 2002-2004 James W. Newkirk, Michael C. Two, Alexei A. Vorontsov
+Copyright ¬© 2000-2002 Philip A. Craig 
 This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software. 
 Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions: 
 1.	The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment (see the following) in the product documentation is required. 
 
-Portions Copyright © 2002-2009 Charlie Poole or Copyright © 2002-2004 James W. Newkirk, Michael C. Two, Alexei A. Vorontsov or Copyright © 2000-2002 Philip A. Craig 
+Portions Copyright ¬© 2002-2009 Charlie Poole or Copyright ¬© 2002-2004 James W. Newkirk, Michael C. Two, Alexei A. Vorontsov or Copyright ¬© 2000-2002 Philip A. Craig 
 2.	Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software. 
 3.	This notice may not be removed or altered from any source distribution. 
 License Note
@@ -1438,13 +1440,13 @@ MICROSOFT MSN WEBGREASE
 
 These license terms are an agreement between Microsoft Corporation (or based on where you live, one of its affiliates) and you. Please read them. They apply to the software named above, which includes the media on which you received it, if any. The terms also apply to any Microsoft
 
-∑         updates,
+¬∑         updates,
 
-∑         supplements,
+¬∑         supplements,
 
-∑         Internet-based services, and
+¬∑         Internet-based services, and
 
-∑         support services
+¬∑         support services
 
 for this software, unless other terms accompany those items. If so, those terms apply.
 
@@ -1457,140 +1459,140 @@ b.    Third Party Notices. The software may include third party code.  Microsoft
 2.    ADDITIONAL LICENSING REQUIREMENTS AND/OR USE RIGHTS.
 a.    Distributable Code. The software contains code that you are permitted to distribute in programs you develop if you comply with the terms below.
 
-i.      Right to Use and Distribute. The code and text files listed below are ìDistributable Code.î
+i.      Right to Use and Distribute. The code and text files listed below are ‚ÄúDistributable Code.‚Äù
 
-∑         Redistributable Files.  You may copy and distribute the object code form of the following files.
+¬∑         Redistributable Files.  You may copy and distribute the object code form of the following files.
 
-ß  WebGrease.dll
+¬ß  WebGrease.dll
 
-ß  WG.exe
+¬ß  WG.exe
 
-∑         Third Party Distribution. You may permit distributors of your programs to copy and distribute the Distributable Code as part of those programs.
+¬∑         Third Party Distribution. You may permit distributors of your programs to copy and distribute the Distributable Code as part of those programs.
 
 ii.     Distribution Requirements. For any Distributable Code you distribute, you must
 
-∑         add primary functionality to it in your programs;
+¬∑         add primary functionality to it in your programs;
 
-∑         for any Distributable Code having a filename extension of .lib, distribute only the results of running such Distributable Code through a linker with your program;
+¬∑         for any Distributable Code having a filename extension of .lib, distribute only the results of running such Distributable Code through a linker with your program;
 
-∑         distribute Distributable Code included in a setup program only as part of that setup program without modification;
+¬∑         distribute Distributable Code included in a setup program only as part of that setup program without modification;
 
-∑         require distributors and external end users to agree to terms that protect it at least as much as this agreement;
+¬∑         require distributors and external end users to agree to terms that protect it at least as much as this agreement;
 
-∑         display your valid copyright notice on your programs; and
+¬∑         display your valid copyright notice on your programs; and
 
-∑         indemnify, defend, and hold harmless Microsoft from any claims, including attorneysí fees, related to the distribution or use of your programs.
+¬∑         indemnify, defend, and hold harmless Microsoft from any claims, including attorneys‚Äô fees, related to the distribution or use of your programs.
 
 iii.    Distribution Restrictions. You may not
 
-∑         alter any copyright, trademark or patent notice in the Distributable Code;
+¬∑         alter any copyright, trademark or patent notice in the Distributable Code;
 
-∑         use Microsoftís trademarks in your programsí names or in a way that suggests your programs come from or are endorsed by Microsoft;
+¬∑         use Microsoft‚Äôs trademarks in your programs‚Äô names or in a way that suggests your programs come from or are endorsed by Microsoft;
 
-∑         distribute Distributable Code to run on a platform other than the Windows platform;
+¬∑         distribute Distributable Code to run on a platform other than the Windows platform;
 
-∑         include Distributable Code in malicious, deceptive or unlawful programs; or
+¬∑         include Distributable Code in malicious, deceptive or unlawful programs; or
 
-∑         modify or distribute the source code of any Distributable Code so that any part of it becomes subject to an Excluded License. An Excluded License is one that requires, as a condition of use, modification or distribution, that
+¬∑         modify or distribute the source code of any Distributable Code so that any part of it becomes subject to an Excluded License. An Excluded License is one that requires, as a condition of use, modification or distribution, that
 
-∑         the code be disclosed or distributed in source code form; or
+¬∑         the code be disclosed or distributed in source code form; or
 
-∑         others have the right to modify it.
-3.    INTERNET-BASED SERVICES. Microsoft provides Internet-based services with the software. It may change or cancel them at any time.  You may not use these services in any way that could harm them or impair anyone elseís use of them.  You may not use the services to try to gain unauthorized access to any service, data, account or network by any means.
+¬∑         others have the right to modify it.
+3.    INTERNET-BASED SERVICES. Microsoft provides Internet-based services with the software. It may change or cancel them at any time.  You may not use these services in any way that could harm them or impair anyone else‚Äôs use of them.  You may not use the services to try to gain unauthorized access to any service, data, account or network by any means.
 4.    SCOPE OF LICENSE. The software is licensed, not sold. This agreement only gives you some rights to use the software. Microsoft reserves all other rights. Unless applicable law gives you more rights despite this limitation, you may use the software only as expressly permitted in this agreement. In doing so, you must comply with any technical limitations in the software that only allow you to use it in certain ways. You may not
 
-∑         work around any technical limitations in the software;
+¬∑         work around any technical limitations in the software;
 
-∑         reverse engineer, decompile or disassemble the software, except and only to the extent that applicable law expressly permits, despite this limitation;
+¬∑         reverse engineer, decompile or disassemble the software, except and only to the extent that applicable law expressly permits, despite this limitation;
 
-∑         make more copies of the software than specified in this agreement or allowed by applicable law, despite this limitation;
+¬∑         make more copies of the software than specified in this agreement or allowed by applicable law, despite this limitation;
 
-∑         publish the software for others to copy;
+¬∑         publish the software for others to copy;
 
-∑         rent, lease or lend the software; or
+¬∑         rent, lease or lend the software; or
 
-∑         transfer the software or this agreement to any third party.
+¬∑         transfer the software or this agreement to any third party.
 5.    BACKUP COPY. You may make one backup copy of the software. You may use it only to reinstall the software.
 6.    DOCUMENTATION. Any person that has valid access to your computer or internal network may copy and use the documentation for your internal, reference purposes.
 7.    EXPORT RESTRICTIONS. The software is subject to United States export laws and regulations. You must comply with all domestic and international export laws and regulations that apply to the software. These laws include restrictions on destinations, end users and end use. For additional information, see www.microsoft.com/exporting.
-8.    SUPPORT SERVICES. Because this software is ìas is,î we may not provide support services for it.
+8.    SUPPORT SERVICES. Because this software is ‚Äúas is,‚Äù we may not provide support services for it.
 9.    ENTIRE AGREEMENT. This agreement, and the terms for supplements, updates, Internet-based services and support services that you use, are the entire agreement for the software and support services.
 10.  APPLICABLE LAW.
 a.    United States. If you acquired the software in the United States, Washington state law governs the interpretation of this agreement and applies to claims for breach of it, regardless of conflict of laws principles. The laws of the state where you live govern all other claims, including claims under state consumer protection laws, unfair competition laws, and in tort.
 b.    Outside the United States. If you acquired the software in any other country, the laws of that country apply.
 11.  LEGAL EFFECT. This agreement describes certain legal rights. You may have other rights under the laws of your country. You may also have rights with respect to the party from whom you acquired the software. This agreement does not change your rights under the laws of your country if the laws of your country do not permit it to do so.
-12.  DISCLAIMER OF WARRANTY. The software is licensed ìas-is.î You bear the risk of using it. Microsoft gives no express warranties, guarantees or conditions. You may have additional consumer rights or statutory guarantees under your local laws which this agreement cannot change. To the extent permitted under your local laws, Microsoft excludes the implied warranties of merchantability, fitness for a particular purpose and non-infringement.
+12.  DISCLAIMER OF WARRANTY. The software is licensed ‚Äúas-is.‚Äù You bear the risk of using it. Microsoft gives no express warranties, guarantees or conditions. You may have additional consumer rights or statutory guarantees under your local laws which this agreement cannot change. To the extent permitted under your local laws, Microsoft excludes the implied warranties of merchantability, fitness for a particular purpose and non-infringement.
 
-FOR AUSTRALIA ñ You have statutory guarantees under the Australian Consumer Law and nothing in these terms is intended to affect those rights.
+FOR AUSTRALIA ‚Äì You have statutory guarantees under the Australian Consumer Law and nothing in these terms is intended to affect those rights.
 13.  LIMITATION ON AND EXCLUSION OF REMEDIES AND DAMAGES. You can recover from Microsoft and its suppliers only direct damages up to U.S. $5.00. You cannot recover any other damages, including consequential, lost profits, special, indirect or incidental damages.
 
 This limitation applies to
 
-∑         anything related to the software, services, content (including code) on third party Internet sites, or third party programs; and
+¬∑         anything related to the software, services, content (including code) on third party Internet sites, or third party programs; and
 
-∑         claims for breach of contract, breach of warranty, guarantee or condition, strict liability, negligence, or other tort to the extent permitted by applicable law.
+¬∑         claims for breach of contract, breach of warranty, guarantee or condition, strict liability, negligence, or other tort to the extent permitted by applicable law.
 
 It also applies even if Microsoft knew or should have known about the possibility of the damages. The above limitation or exclusion may not apply to you because your country may not allow the exclusion or limitation of incidental, consequential or other damages.
 
 Please note: As this software is distributed in Quebec, Canada, these license terms are provided below in French.
 
-Remarque : Ce logiciel Ètant distribuÈ au QuÈbec, Canada, les termes de cette licence sont fournis ci-dessous en franÁais.
+Remarque : Ce logiciel √©tant distribu√© au Qu√©bec, Canada, les termes de cette licence sont fournis ci-dessous en fran√ßais.
 
-TERMES DU CONTRAT DE LICENCE DíUN LOGICIEL MICROSOFT
+TERMES DU CONTRAT DE LICENCE D‚ÄôUN LOGICIEL MICROSOFT
 
 MICROSOFT MSN WEBGREASE
 
-Les prÈsents termes ont valeur de contrat entre Microsoft Corporation (ou en fonction du lieu o˘ vous vivez, líun de ses affiliÈs) et vous. Lisez-les attentivement. Ils portent sur le logiciel nommÈ ci-dessus, y compris le support sur lequel vous líavez reÁu le cas ÈchÈant. Ce contrat porte Ègalement sur les produits Microsoft suivants :
+Les pr√©sents termes ont valeur de contrat entre Microsoft Corporation (ou en fonction du lieu o√π vous vivez, l‚Äôun de ses affili√©s) et vous. Lisez-les attentivement. Ils portent sur le logiciel nomm√© ci-dessus, y compris le support sur lequel vous l‚Äôavez re√ßu le cas √©ch√©ant. Ce contrat porte √©galement sur les produits Microsoft suivants :
 
-∑         les mises ‡ jour,
+¬∑         les mises √† jour,
 
-∑         les supplÈments,
+¬∑         les suppl√©ments,
 
-∑         les services Internet et
+¬∑         les services Internet et
 
-∑         les services díassistance technique
+¬∑         les services d‚Äôassistance technique
 
-de ce logiciel ‡ moins que díautres termes níaccompagnent ces produits, auquel cas, ces derniers prÈvalent.
+de ce logiciel √† moins que d‚Äôautres termes n‚Äôaccompagnent ces produits, auquel cas, ces derniers pr√©valent.
 
-En utilisant le logiciel, vous acceptez ces termes. Si vous ne les acceptez pas, níutilisez pas le logiciel.
+En utilisant le logiciel, vous acceptez ces termes. Si vous ne les acceptez pas, n‚Äôutilisez pas le logiciel.
 
-Si vous respectez les prÈsentes conditions de licence, vous disposez des droits suivants pour la durÈe des droits de propriÈtÈ intellectuelle.
-1.    INSTALLATION ET DROITS DíUTILISATION.
+Si vous respectez les pr√©sentes conditions de licence, vous disposez des droits suivants pour la dur√©e des droits de propri√©t√© intellectuelle.
+1.    INSTALLATION ET DROITS D‚ÄôUTILISATION.
 a.    Installation et utilisation. Un utilisateur peut installer et utiliser un nombre quelconque de copies du logiciel sur vos dispositifs.
 b.    Logiciels tiers. Le logiciel contient des programmes tiers. Les termes qui accompagnent ces programmes s'appliquent, sauf mention contraire dans lesdits termes.
-2.    SERVICES INTERNET. Microsoft fournit des services Internet avec le logiciel. Ils peuvent Ítre modifiÈs ou interrompus ‡ tout moment.
-3.    PORTEE DE LA LICENCE. Le logiciel est concÈdÈ sous licence, pas vendu. Ce contrat vous octroie uniquement certains droits díutilisation du logiciel. Microsoft se rÈserve tous les autres droits. ¿ moins que la loi en vigueur vous confËre davantage de droits nonobstant cette limitation, vous pouvez utiliser le logiciel uniquement tel quíexplicitement autorisÈ dans le prÈsent accord. ¿ cette fin, vous devez respecter les restrictions techniques du logiciel qui autorisent uniquement son utilisation de certaines faÁons. Vous níÍtes pas autorisÈ ‡ :
+2.    SERVICES INTERNET. Microsoft fournit des services Internet avec le logiciel. Ils peuvent √™tre modifi√©s ou interrompus √† tout moment.
+3.    PORTEE DE LA LICENCE. Le logiciel est conc√©d√© sous licence, pas vendu. Ce contrat vous octroie uniquement certains droits d‚Äôutilisation du logiciel. Microsoft se r√©serve tous les autres droits. √Ä moins que la loi en vigueur vous conf√®re davantage de droits nonobstant cette limitation, vous pouvez utiliser le logiciel uniquement tel qu‚Äôexplicitement autoris√© dans le pr√©sent accord. √Ä cette fin, vous devez respecter les restrictions techniques du logiciel qui autorisent uniquement son utilisation de certaines fa√ßons. Vous n‚Äô√™tes pas autoris√© √† :
 
-∑         contourner les limitations techniques du logiciel ;
+¬∑         contourner les limitations techniques du logiciel ;
 
-∑         reconstituer la logique du logiciel, le dÈcompiler ou le dÈsassembler, sauf dans la mesure o˘ ces opÈrations seraient expressÈment autorisÈes par la rÈglementation applicable nonobstant la prÈsente limitation ;
+¬∑         reconstituer la logique du logiciel, le d√©compiler ou le d√©sassembler, sauf dans la mesure o√π ces op√©rations seraient express√©ment autoris√©es par la r√©glementation applicable nonobstant la pr√©sente limitation ;
 
-∑         faire plus de copies du logiciel que spÈcifiÈ dans ce contrat ou par la rÈglementation applicable, nonobstant la prÈsente limitation ;
+¬∑         faire plus de copies du logiciel que sp√©cifi√© dans ce contrat ou par la r√©glementation applicable, nonobstant la pr√©sente limitation ;
 
-∑         publier le logiciel pour que díautres le copient ;
+¬∑         publier le logiciel pour que d‚Äôautres le copient ;
 
-∑         louer ou prÍter le logiciel ; ou
+¬∑         louer ou pr√™ter le logiciel ; ou
 
-∑         transfÈrer le logiciel ou le prÈsent contrat ‡ un tiers.
-4.    COPIE DE SAUVEGARDE. Vous Ítes autorisÈ ‡ effectuer une copie de sauvegarde du logiciel. Vous ne pouvez líutiliser que dans le but de rÈinstaller le logiciel.
-5.    DOCUMENTATION. Tout utilisateur disposant díun accËs valide ‡ votre ordinateur ou ‡ votre rÈseau interne peut copier et utiliser la documentation ‡ des fins de rÈfÈrence interne.
-6.    RESTRICTIONS ¿ LíEXPORTATION. Le logiciel est soumis ‡ la rÈglementation amÈricaine relative ‡ líexportation. Vous devez vous conformer ‡ toutes les rÈglementations nationales et internationales relatives aux exportations concernant le logiciel. Ces rÈglementations comprennent les restrictions sur les destinations, les utilisateurs finaux et líutilisation finale. Pour plus díinformations, consultez le site www.microsoft.com/exporting.
-7.    SERVICES DíASSISTANCE TECHNIQUE. Comme ce logiciel est fourni ´ en l'Ètat ª, nous ne fourniront aucun service díassistance.
-8.    INT…GRALIT… DES ACCORDS. Le prÈsent contrat ainsi que les termes concernant les supplÈments, les mises ‡ jour, les services Internet et díassistance technique constituent líintÈgralitÈ des accords en ce qui concerne le logiciel et les services díassistance technique.
+¬∑         transf√©rer le logiciel ou le pr√©sent contrat √† un tiers.
+4.    COPIE DE SAUVEGARDE. Vous √™tes autoris√© √† effectuer une copie de sauvegarde du logiciel. Vous ne pouvez l‚Äôutiliser que dans le but de r√©installer le logiciel.
+5.    DOCUMENTATION. Tout utilisateur disposant d‚Äôun acc√®s valide √† votre ordinateur ou √† votre r√©seau interne peut copier et utiliser la documentation √† des fins de r√©f√©rence interne.
+6.    RESTRICTIONS √Ä L‚ÄôEXPORTATION. Le logiciel est soumis √† la r√©glementation am√©ricaine relative √† l‚Äôexportation. Vous devez vous conformer √† toutes les r√©glementations nationales et internationales relatives aux exportations concernant le logiciel. Ces r√©glementations comprennent les restrictions sur les destinations, les utilisateurs finaux et l‚Äôutilisation finale. Pour plus d‚Äôinformations, consultez le site www.microsoft.com/exporting.
+7.    SERVICES D‚ÄôASSISTANCE TECHNIQUE. Comme ce logiciel est fourni ¬´ en l'√©tat ¬ª, nous ne fourniront aucun service d‚Äôassistance.
+8.    INT√âGRALIT√â DES ACCORDS. Le pr√©sent contrat ainsi que les termes concernant les suppl√©ments, les mises √† jour, les services Internet et d‚Äôassistance technique constituent l‚Äôint√©gralit√© des accords en ce qui concerne le logiciel et les services d‚Äôassistance technique.
 9.    DROIT APPLICABLE.
-a.    …tats-Unis. Si vous avez acquis le logiciel aux …tats-Unis, les lois de lí…tat de Washington, …tats-Unis díAmÈrique, rÈgissent líinterprÈtation de ce contrat et síappliquent en cas de rÈclamation pour violation dudit contrat, nonobstant les conflits de principes juridiques. La rÈglementation du pays dans lequel vous vivez rÈgit toutes les autres rÈclamations, notamment, et sans limitation, les rÈclamations dans le cadre des lois en faveur de la protection des consommateurs, relatives ‡ la concurrence et aux dÈlits.
-b.    En dehors des …tats-Unis. Si vous avez acquis le logiciel dans un autre pays, les lois de ce pays síappliquent.
-10.  EFFET JURIDIQUE. Le prÈsent contrat dÈcrit certains droits juridiques. Vous pourriez avoir díautres droits prÈvus par les lois de votre pays. Vous pourriez Ègalement avoir des droits ‡ líÈgard de la partie de qui vous avez acquis le logiciel. Le prÈsent contrat ne modifie pas les droits que vous confËrent les lois de votre ou pays si celles-ci ne le permettent pas.
-11.  EXCLUSIONS DE GARANTIE. Le logiciel est concÈdÈ sous licence ´ en líÈtat ª. Vous assumez tous les risques liÈs ‡ son utilisation. Microsoft níaccorde aucune garantie ou condition expresse. Vous pouvez bÈnÈficier de droits des consommateurs supplÈmentaires dans le cadre du droit local, que ce contrat ne peut modifier. Lorsque cela est autorisÈ par le droit local, Microsoft exclut les garanties implicites de qualitÈ, díadÈquation ‡ un usage particulier et díabsence de contrefaÁon.
-12.  LIMITATION ET EXCLUSION DE RECOURS ET DE DOMMAGES. Vous pouvez obtenir de Microsoft et de ses fournisseurs une indemnisation en cas de dommages directs limitÈe uniquement ‡ hauteur de 5,00 $ US. Vous ne pouvez prÈtendre ‡ aucune indemnisation pour les autres dommages, y compris les dommages spÈciaux, indirects ou accessoires et pertes de bÈnÈfices.
+a.    √âtats-Unis. Si vous avez acquis le logiciel aux √âtats-Unis, les lois de l‚Äô√âtat de Washington, √âtats-Unis d‚ÄôAm√©rique, r√©gissent l‚Äôinterpr√©tation de ce contrat et s‚Äôappliquent en cas de r√©clamation pour violation dudit contrat, nonobstant les conflits de principes juridiques. La r√©glementation du pays dans lequel vous vivez r√©git toutes les autres r√©clamations, notamment, et sans limitation, les r√©clamations dans le cadre des lois en faveur de la protection des consommateurs, relatives √† la concurrence et aux d√©lits.
+b.    En dehors des √âtats-Unis. Si vous avez acquis le logiciel dans un autre pays, les lois de ce pays s‚Äôappliquent.
+10.  EFFET JURIDIQUE. Le pr√©sent contrat d√©crit certains droits juridiques. Vous pourriez avoir d‚Äôautres droits pr√©vus par les lois de votre pays. Vous pourriez √©galement avoir des droits √† l‚Äô√©gard de la partie de qui vous avez acquis le logiciel. Le pr√©sent contrat ne modifie pas les droits que vous conf√®rent les lois de votre ou pays si celles-ci ne le permettent pas.
+11.  EXCLUSIONS DE GARANTIE. Le logiciel est conc√©d√© sous licence ¬´ en l‚Äô√©tat ¬ª. Vous assumez tous les risques li√©s √† son utilisation. Microsoft n‚Äôaccorde aucune garantie ou condition expresse. Vous pouvez b√©n√©ficier de droits des consommateurs suppl√©mentaires dans le cadre du droit local, que ce contrat ne peut modifier. Lorsque cela est autoris√© par le droit local, Microsoft exclut les garanties implicites de qualit√©, d‚Äôad√©quation √† un usage particulier et d‚Äôabsence de contrefa√ßon.
+12.  LIMITATION ET EXCLUSION DE RECOURS ET DE DOMMAGES. Vous pouvez obtenir de Microsoft et de ses fournisseurs une indemnisation en cas de dommages directs limit√©e uniquement √† hauteur de 5,00 $ US. Vous ne pouvez pr√©tendre √† aucune indemnisation pour les autres dommages, y compris les dommages sp√©ciaux, indirects ou accessoires et pertes de b√©n√©fices.
 
 Cette limitation concerne :
 
-∑         toute affaire liÈe au logiciel, aux services ou au contenu (y compris le code) figurant sur des sites Internet tiers ou dans des programmes tiers et
+¬∑         toute affaire li√©e au logiciel, aux services ou au contenu (y compris le code) figurant sur des sites Internet tiers ou dans des programmes tiers et
 
-∑         les rÈclamations au titre de violation de contrat ou de garantie, ou au titre de responsabilitÈ stricte, de nÈgligence ou díune autre faute dans la limite autorisÈe par la loi en vigueur.
+¬∑         les r√©clamations au titre de violation de contrat ou de garantie, ou au titre de responsabilit√© stricte, de n√©gligence ou d‚Äôune autre faute dans la limite autoris√©e par la loi en vigueur.
 
-Elle síapplique Ègalement mÍme si Microsoft connaissait l'ÈventualitÈ d'un tel dommage. La limitation ou exclusion ci-dessus peut Ègalement ne pas vous Ítre applicable, car votre pays níautorise pas líexclusion ou la limitation de responsabilitÈ pour les dommages indirects, accessoires ou de quelque nature que ce soit.
+Elle s‚Äôapplique √©galement m√™me si Microsoft connaissait l'√©ventualit√© d'un tel dommage. La limitation ou exclusion ci-dessus peut √©galement ne pas vous √™tre applicable, car votre pays n‚Äôautorise pas l‚Äôexclusion ou la limitation de responsabilit√© pour les dommages indirects, accessoires ou de quelque nature que ce soit.
 
  
 
@@ -2285,7 +2287,7 @@ Copyright (c) 1998, 1999 by Lawrence Philips.
                         <pre>
 The MIT License 
 
-Copyright ©2008 Kelly Hallman and Deep Liquid Group 
+Copyright ¬©2008 Kelly Hallman and Deep Liquid Group 
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: 
 
@@ -2300,15 +2302,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Creative Commons
 
 You are free to:
-Share ó copy and redistribute the material in any medium or format
-Adapt ó remix, transform, and build upon the material
+Share ‚Äî copy and redistribute the material in any medium or format
+Adapt ‚Äî remix, transform, and build upon the material
 for any purpose, even commercially.
 The licensor cannot revoke these freedoms as long as you follow the license terms.
 
 Under the following terms:
-Attribution ó You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
+Attribution ‚Äî You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
 
-ShareAlike ó If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
+ShareAlike ‚Äî If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
 </pre>
 
 <a name="jrespond"></a>
@@ -2384,7 +2386,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
           Apache License, Version 2.0
 ===========================
 
-Copyright 2012 S¯ren EnemÊrke
+Copyright 2012 S√∏ren Enem√¶rke
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -2402,7 +2404,7 @@ limitations under the License.
 <a name="dotimeout"></a>
 <h3>doTimeout</h3>
 <pre>
-Copyright © 2010 "Cowboy" Ben Alman
+Copyright ¬© 2010 "Cowboy" Ben Alman
  
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -2534,13 +2536,13 @@ Copyright (c) 2013-2014 Omar Khudeira (http://omar.io)
 <h3>MediaElement.js</h3>
 <pre>
 The MIT License (MIT) 
-Copyright © 2014 John Dyer
+Copyright ¬© 2014 John Dyer
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the ìSoftwareî), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the ‚ÄúSoftware‚Äù), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED ìAS ISî, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED ‚ÄúAS IS‚Äù, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </pre>
 
                        
@@ -2798,6 +2800,47 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+</pre>
+
+                        <a name="bootstrap-sortable"></a>
+<h3>Bootstrap Sortable</h3>
+<pre>
+Copyright (c) 2013 Mat√∫≈° Brli≈• (drvic10k), bootstrap-sortable contributors
+
+Copyright (c) 2011-2013 Tim Wood, Iskren Chernev, Moment.js contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+</pre>
+
+                        <a name="moment"></a>
+<h3>Moment.js</h3>
+<pre>
+Copyright (c) 2011-2015 Tim Wood, Iskren Chernev, Moment.js contributors
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 </pre>
 
                     </div>

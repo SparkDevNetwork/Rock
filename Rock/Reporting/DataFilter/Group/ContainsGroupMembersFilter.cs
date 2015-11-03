@@ -254,7 +254,7 @@ function ()
             filterControl.Controls.Add( nbCount );
 
             // Populate the Data View Picker
-            ddlDataView.EntityTypeId = EntityTypeCache.Read( typeof(GroupMember) ).Id;
+            ddlDataView.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.GroupMember ) ).Id;
 
             return new Control[] {ddlDataView, ddlCompare, nbCount};
         }

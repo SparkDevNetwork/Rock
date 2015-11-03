@@ -136,6 +136,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Order = source.Order;
             target.SendAttendanceReminder = source.SendAttendanceReminder;
+            target.ShowConnectionStatus = source.ShowConnectionStatus;
             target.ShowInGroupList = source.ShowInGroupList;
             target.ShowInNavigation = source.ShowInNavigation;
             target.TakesAttendance = source.TakesAttendance;

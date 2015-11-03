@@ -136,7 +136,7 @@ namespace Rock.Reporting.DataSelect.Group
             var groupLocationQuery = new GroupService( context ).Queryable()
                 .Select( p => p.GroupLocations.Where( gl => gl.GroupLocationTypeValue.Guid == groupLocationTypeValueGuid).Select( gl => gl.Location).FirstOrDefault());
 
-            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Group>( groupLocationQuery, entityIdProperty, "p" );
+            var selectExpression = SelectExpressionExtractor.Extract( groupLocationQuery, entityIdProperty, "p" );
 
             return selectExpression;
         }

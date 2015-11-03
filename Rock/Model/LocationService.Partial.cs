@@ -113,11 +113,13 @@ namespace Rock.Model
         public Location GetByGeoPoint( DbGeography point )
         {
             // get the first address that has a GeoPoint the value
-            var result = Queryable()
+            // use the 'Where Max(ID)' trick instead of TOP 1 to optimize SQL performance
+            var qryWhere = Queryable()
                 .Where( a =>
                     a.GeoPoint != null &&
-                    a.GeoPoint.SpatialEquals( point ) )
-                .FirstOrDefault();
+                    a.GeoPoint.SpatialEquals( point ) );
+
+            var result = Queryable().Where( a => a.Id == qryWhere.Max( b => b.Id ) ).FirstOrDefault();
 
             if ( result == null )
             {
@@ -150,12 +152,14 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Location"/> for the specified GeoFence. </returns>
         public Location GetByGeoFence( DbGeography fence )
         {
-            // get the first address that has a GeoPoint or GeoFence that matches the value
-            var result = Queryable()
+            // get the first address that has the GeoFence value
+            // use the 'Where Max(ID)' trick instead of TOP 1 to optimize SQL performance
+            var qryWhere = Queryable()
                 .Where( a =>
                     a.GeoFence != null &&
-                    a.GeoFence.SpatialEquals( fence ) )
-                .FirstOrDefault();
+                    a.GeoFence.SpatialEquals( fence ) );
+
+            var result = Queryable().Where( a => a.Id == qryWhere.Max( b => b.Id ) ).FirstOrDefault();
 
             if ( result == null )
             {

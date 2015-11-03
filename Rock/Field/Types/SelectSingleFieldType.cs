@@ -243,7 +243,9 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( control != null && control is ListControl )
+            {
                 return ( (ListControl)control ).SelectedValue;
+            }
 
             return null;
         }
@@ -259,7 +261,9 @@ namespace Rock.Field.Types
             if ( value != null )
             {
                 if ( control != null && control is ListControl )
-                    ( (ListControl)control ).SelectedValue = value;
+                {
+                    ( (ListControl)control ).SetValue( value );
+                }
             }
         }
 

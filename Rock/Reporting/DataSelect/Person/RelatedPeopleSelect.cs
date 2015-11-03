@@ -313,7 +313,7 @@ namespace Rock.Reporting.DataSelect.Person
             //
             var personQuery = new PersonService( context ).Queryable().Select( p => allRelatedPeopleQuery.Where( rpi => rpi.RelatedToPersonId == p.Id ).AsEnumerable() );
 
-            var selectExpression = SelectExpressionExtractor.Extract<Model.Person>( personQuery, entityIdProperty, "p" );
+            var selectExpression = SelectExpressionExtractor.Extract( personQuery, entityIdProperty, "p" );
 
             return selectExpression;
         }

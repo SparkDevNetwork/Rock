@@ -1113,6 +1113,8 @@ namespace RockWeb.Blocks.Event
             paymentInfo.FirstName = registration.FirstName;
             paymentInfo.LastName = registration.LastName;
 
+            paymentInfo.Comment1 = string.Format( "{0} ({1})", registration.RegistrationInstance.Name, registration.RegistrationInstance.Account.GlCode );
+
             var transaction = gateway.Charge( RegistrationTemplateState.FinancialGateway, paymentInfo, out errorMessage );
             if ( transaction != null )
             {
@@ -1566,11 +1568,11 @@ namespace RockWeb.Blocks.Event
                 fieldValue = registrant.FieldValues[field.Id];
             }
 
-            var rlField = new RockLiteral();
-            rlField.ID = string.Format( "rlField_{0}_{1}", registrant.Id, field.Id );
-
             if ( fieldValue != null )
             {
+                var rlField = new RockLiteral();
+                rlField.ID = string.Format( "rlField_{0}_{1}", registrant.Id, field.Id );
+
                 if ( field.FieldSource == RegistrationFieldSource.PersonField )
                 {
                     rlField.Label = field.PersonFieldType.ConvertToString( true );
@@ -1643,9 +1645,14 @@ namespace RockWeb.Blocks.Event
                         rlField.Text = attribute.FieldType.Field.FormatValueAsHtml( null, fieldValue.ToString(), attribute.QualifierValues );
                     }
                 }
+
+                if ( !string.IsNullOrWhiteSpace( rlField.Text ) )
+                {
+                    return rlField;
+                }
             }
 
-            return rlField;
+            return null;
         }
 
         #endregion

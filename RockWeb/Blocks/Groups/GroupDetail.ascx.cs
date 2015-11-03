@@ -715,6 +715,21 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 rockContext.SaveChanges();
+
+                if ( group.IsActive == false && cbInactivateChildGroups.Checked )
+                {
+                    var allActiveChildGroupsId = groupService.GetAllDescendents( group.Id ).Where( a => a.IsActive ).Select( a => a.Id ).ToList();
+                    var allActiveChildGroups = groupService.GetByIds( allActiveChildGroupsId );
+                    foreach ( var childGroup in allActiveChildGroups )
+                    {
+                        if ( childGroup.IsActive )
+                        {
+                            childGroup.IsActive = false;
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+                }
             } );
 
             if ( group != null && wasSecurityRole )
@@ -1019,7 +1034,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( group.GroupType != null && group.GroupType.Roles != null && group.GroupType.Roles.Any() )
             {
-                foreach ( var role in group.GroupType.Roles )
+                foreach ( var role in group.GroupType.Roles.Where( a => a.MinCount.HasValue || a.MaxCount.HasValue ) )
                 {
                     var groupMemberService = new GroupMemberService( rockContext );
                     int curCount = groupMemberService.Queryable().Where( m => m.GroupId == group.Id && m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
@@ -1065,6 +1080,23 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Sets the highlight label visibility.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        private void SetHighlightLabelVisibility( Group group )
+        {
+            if ( group.IsActive )
+            {
+                hlInactive.Style[HtmlTextWriterStyle.Display] = "none";
+            }
+
+            if ( group.IsPublic )
+            {
+                hlIsPrivate.Style[HtmlTextWriterStyle.Display] = "none";
+            }
+        }
+
+        /// <summary>
         /// Shows the edit details.
         /// </summary>
         /// <param name="group">The group.</param>
@@ -1073,12 +1105,13 @@ namespace RockWeb.Blocks.Groups
             if ( group.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( Group.FriendlyTypeName ).FormatAsHtmlTitle();
-                hlInactive.Visible = false;
             }
             else
             {
                 lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
             }
+
+            SetHighlightLabelVisibility( group );
 
             ddlGroupType.Visible = group.Id == 0;
             lGroupType.Visible = group.Id != 0;
@@ -1343,6 +1376,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="group">The group.</param>
         private void ShowReadonlyDetails( Group group )
         {
+            SetHighlightLabelVisibility( group );
             SetEditMode( false );
             var rockContext = new RockContext();
 
@@ -1358,13 +1392,9 @@ namespace RockWeb.Blocks.Groups
             lGroupIconHtml.Text = groupIconHtml;
             lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
 
-            hlInactive.Visible = !group.IsActive;
-            hlIsPrivate.Visible = !group.IsPublic;
-
             if (!string.IsNullOrWhiteSpace(group.Description)) {
                 lGroupDescription.Text = string.Format("<p class='description'>{0}</p>", group.Description);
             }
-            
 
             DescriptionList descriptionList = new DescriptionList();
 
@@ -1437,7 +1467,7 @@ namespace RockWeb.Blocks.Groups
                     .SelectMany( l => l.EventItemOccurrence.ContentChannelItems.Where( i => i.ContentChannelItem != null ) )
                     .ToList()
                     .ForEach( i => contentItems
-                        .AddOrIgnore( i.ContentChannelItem.Id, i.ContentChannelItem.Title ) );
+                        .AddOrIgnore( i.ContentChannelItem.Id, string.Format("{0} <small>({1})</small>", i.ContentChannelItem.Title, i.ContentChannelItem.ContentChannelType.Name ) ) );
 
                 rptLinkedRegistrations.DataSource = registrations;
                 rptLinkedRegistrations.DataBind();
@@ -2752,8 +2782,8 @@ namespace RockWeb.Blocks.Groups
                 ddlTriggerFromStatus.SelectedValue,
                 ddlTriggerFromRole.SelectedValue,
                 cbTriggerFirstTime.Checked.ToString(),
-                cbTriggerPlacedElsewhereShowNote.Checked.ToString(), 
-                cbTriggerPlacedElsewhereRequireNote.Checked.ToString());
+                cbTriggerPlacedElsewhereShowNote.Checked.ToString(),
+                cbTriggerPlacedElsewhereRequireNote.Checked.ToString() );
 
             // Controls will show warnings
             if ( !memberWorkflowTrigger.IsValid )

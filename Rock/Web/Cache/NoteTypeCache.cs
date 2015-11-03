@@ -306,10 +306,11 @@ namespace Rock.Web.Cache
             LoadEntityNoteTypes();
 
             var matchingNoteTypeIds = AllEntityNoteTypes
-                .Where( a =>
-                    a.EntityTypeId.Equals( entityTypeid ) &&
-                    a.EntityTypeQualifierColumn.Equals( entityTypeQualifierColumn ) &&
-                    a.EntityTypeQualifierValue.Equals( entityTypeQualifierValue ) )
+                .Where( a => a.EntityTypeId.Equals( entityTypeid ) )
+                .ToList()
+                .Where( a => 
+                    ( a.EntityTypeQualifierColumn ?? string.Empty ) == ( entityTypeQualifierColumn ?? string.Empty ) &&
+                    ( a.EntityTypeQualifierValue ?? string.Empty ) == ( entityTypeQualifierValue ?? string.Empty ) )
                 .SelectMany( a => a.NoteTypeIds )
                 .ToList();
 
