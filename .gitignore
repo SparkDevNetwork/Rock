@@ -29,3 +29,4 @@ RockWeb/App_Data/PackageStaging
 *.sln.GhostDoc.xml
 /packages
 node_modules
+/PrecompiledWeb
