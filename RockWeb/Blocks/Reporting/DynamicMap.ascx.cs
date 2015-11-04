@@ -102,6 +102,8 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
+        public string HeatMapData { get; set; }
+
         /// <summary>
         /// Shows the report.
         /// </summary>
@@ -120,8 +122,8 @@ namespace RockWeb.Blocks.Reporting
                             }}
                         </style>";
             lMapStyling.Text = string.Format( mapStylingFormat, GetAttributeValue( "MapHeight" ) );
-            
-            
+
+
             // add styling to map
             string styleCode = "null";
 
@@ -145,7 +147,7 @@ namespace RockWeb.Blocks.Reporting
                 zoom = "12";
             }
 
-            string heatMapData = string.Empty;
+
             var rockContext = new RockContext();
             var groupLocationService = new GroupLocationService( rockContext );
             var groupTypeFamilyId = GroupTypeCache.GetFamilyGroupType().Id;
@@ -155,7 +157,7 @@ namespace RockWeb.Blocks.Reporting
                 a.Location.GeoPoint.Latitude,
                 a.Location.GeoPoint.Longitude,
                 a.Group.CampusId
-            } ); 
+            } );
 
             var locationList = qryFamiliesLocations.ToList();
             var clusteredPointLocations = locationList.GroupBy( a => new { rLong = Math.Round( a.Longitude.Value * 100 ), rLat = Math.Round( a.Latitude.Value * 100 ) } ).Select( a => new
@@ -165,20 +167,11 @@ namespace RockWeb.Blocks.Reporting
                 PointCount = a.Count()
             } ).ToList();
 
-            
-            
-            heatMapData = clusteredPointLocations.Select( a => string.Format( "{{location: new google.maps.LatLng(  {0}, {1}), weight: {2}}}", a.rLat, a.rLong, a.PointCount ) ).ToList().AsDelimited( "," );
 
-            /*select top 5000 concat('new google.maps.LatLng(', l.GeoPoint.Lat, ',', l.GeoPoint.Long, '),') from 
-Location l
-join GroupLocation gl on gl.LocationId = l.Id
-join [Group] g on gl.GroupId = g.Id
-and g.GroupTypeId = 10
-and g.IsActive = 1
-where IsMappedLocation=1 and LocationId in (select id from Location where GeoPoint is not null and State = 'AZ') 
---and g.Id in (select distinct GroupId from GroupMember gm where gm.GroupMemberStatus = 1)*/
 
-            heatMapData = @"
+            //heatMapData = clusteredPointLocations.Select( a => string.Format( "{{location: new google.maps.LatLng(  {0}, {1}), weight: {2}}}", a.rLat, a.rLong, a.PointCount ) ).ToList().AsDelimited( "," );
+
+            this.HeatMapData = @"
 new google.maps.LatLng(33.5908,-112.126),
 new google.maps.LatLng(33.7092,-112.209),
 new google.maps.LatLng(33.7348,-112.255),
@@ -5181,73 +5174,21 @@ new google.maps.LatLng(33.7456,-112.208),
 new google.maps.LatLng(33.7164,-112.148),
 ";
 
+            StyleCode = styleCode;
+            hfPolygonColors.Value = polygonColors;
+            hfCenterLatitude.Value = latitude.ToString();
+            hfCenterLongitude.Value = longitude.ToString();
+            hfZoom.Value = zoom.ToString();
 
-
-            // write script to page
-            string mapScriptFormat = @"
-<script> 
-
-    Sys.Application.add_load(function () {{
-
-        var map;
-        var heatMap;
-        var bounds = new google.maps.LatLngBounds();
-
-        var mapStyle = {0};
-
-        var polygonColorIndex = 0;
-        var polygonColors = [{1}];
-
-        initializeMap();
-
-        function initializeMap() {{
-
-            var centerLatLng = new google.maps.LatLng({2}, {3});
-
-            // Set default map options
-            var mapOptions = {{
-                 mapTypeId: 'roadmap'
-                ,styles: mapStyle
-                ,center: centerLatLng
-                ,zoom: {4}
-            }};
-
-            // Display a map on the page
-            var mapCanvas = document.getElementById('map_canvas');
-            map = new google.maps.Map(mapCanvas, mapOptions);
-            map.setTilt(45);
-            map.setCenter(centerLatLng);
-
-            if (!bounds.isEmpty()) {{
-                map.fitBounds(bounds);
-            }}
-        }}
-
-        var heatMapData = [{5}];
-            
-        heatmap = new google.maps.visualization.HeatmapLayer({{
-		    data: heatMapData,
-            radius: 32
-	    }});
-
-	    heatmap.setMap(map);
-
-
-    }});
-</script>";
-
-            string mapScript = string.Format(
-                mapScriptFormat,
-                styleCode, // {0}
-                polygonColors, // {1}
-                latitude, // {2}
-                longitude, // {3}
-                zoom, // {4}
-                heatMapData // {5}
-                ); 
-
-            ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "dynamic-map-script", mapScript, false );
         }
+
+        /// <summary>
+        /// Gets or sets the style code.
+        /// </summary>
+        /// <value>
+        /// The style code.
+        /// </value>
+        public string StyleCode { get; set; }
 
         /// <summary>
         /// Shows the settings.
