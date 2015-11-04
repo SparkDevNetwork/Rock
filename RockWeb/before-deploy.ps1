@@ -16,7 +16,8 @@ $ErrorActionPreference = "Stop"
 
 # stop web publishing service - needed to allow the deploy to overwrite the sql server spatial types
 Write-Host "Stopping Web Publishing Service"
-stop-service -servicename w3svc
+Stop-Service -ServiceName w3logsvc
+Stop-Service -ServiceName w3svc
 
 # delete the content directory in temp
 If (Test-Path "$rootfolder\temp\Content"){
