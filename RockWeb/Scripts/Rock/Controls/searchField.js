@@ -16,7 +16,7 @@
             initialize: function () {
                 var self = this;
 
-                var key = localStorage.getItem("com.rockrms.search");
+                var key = sessionStorage.getItem("com.rockrms.search");
                 if (key && key != '') {
                     var $search = self.$el.parents('.smartsearch');
                     $search.find('input:hidden').val(key);
@@ -74,7 +74,7 @@
                         text = $this.html();
 
                     var key = $this.parent().attr('data-key');
-                    localStorage.setItem("com.rockrms.search", key);
+                    sessionStorage.setItem("com.rockrms.search", key);
 
                     $this.parents('.dropdown-menu').siblings('.navbar-link').find('span').html(text);
                     self.$el.parents('.smartsearch').find('input:hidden').val(key)

@@ -144,7 +144,7 @@ namespace Rock.Reporting.DataSelect.Person
             var personPhoneNumberQuery = new PersonService( context ).Queryable()
                 .Select( p => p.PhoneNumbers.FirstOrDefault( a => a.NumberTypeValueId == phoneNumberTypeValueId ) );
 
-            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personPhoneNumberQuery, entityIdProperty, "p" );
+            var selectExpression = SelectExpressionExtractor.Extract( personPhoneNumberQuery, entityIdProperty, "p" );
 
             return selectExpression;
         }

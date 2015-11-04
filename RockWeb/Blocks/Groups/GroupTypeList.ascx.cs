@@ -96,6 +96,7 @@ namespace RockWeb.Blocks.Groups
         {
             rFilter.SaveUserPreference( "Purpose", ddlPurpose.SelectedValue );
             rFilter.SaveUserPreference( "System Group Types", ddlIsSystem.SelectedValue );
+            rFilter.SaveUserPreference("Shown in Navigation", ddlShowInNavigation.SelectedValue);
             BindGrid();
         }
 
@@ -224,6 +225,7 @@ namespace RockWeb.Blocks.Groups
             ddlPurpose.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ), true );
             ddlPurpose.SelectedValue = rFilter.GetUserPreference( "Purpose" );
             ddlIsSystem.SelectedValue = rFilter.GetUserPreference( "System Group Types" );
+            ddlIsSystem.SelectedValue = rFilter.GetUserPreference("Shown in Navigation");
         }
 
         /// <summary>
@@ -231,7 +233,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindGrid()
         {
-            var selectQry = GetGroupTypes( new RockContext() )
+            var selectQry = GetGroupTypes(new RockContext())
                 .Select( a => new
                 {
                     a.Id,
@@ -255,6 +257,7 @@ namespace RockWeb.Blocks.Groups
         private IQueryable<GroupType> GetGroupTypes( RockContext rockContext )
         {
             var qry = new GroupTypeService( rockContext ).Queryable();
+            
 
             int? purposeId = rFilter.GetUserPreference( "Purpose" ).AsIntegerOrNull();
             if ( purposeId.HasValue )
@@ -270,6 +273,20 @@ namespace RockWeb.Blocks.Groups
             else if ( isSystem == "No" )
             {
                 qry = qry.Where( t => !t.IsSystem );
+            }
+
+            var isShownInNavigation = rFilter.GetUserPreference("Shown in Navigation").AsBooleanOrNull();
+            if (isShownInNavigation.HasValue)
+            {
+                if (isShownInNavigation.Value)
+                {
+                    qry = qry.Where(t => t.ShowInNavigation);
+                }
+                else if (!isShownInNavigation.Value)
+                {
+                    qry = qry.Where(t => !t.ShowInNavigation);
+                }
+
             }
 
             return qry.OrderBy( g => g.Order );

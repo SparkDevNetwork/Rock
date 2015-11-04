@@ -51,12 +51,8 @@ namespace Rock.Model
         public bool CanDelete( FinancialBatch item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.BatchId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialBatch.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring FinancialTransaction,BatchId 
             return true;
         }
     }

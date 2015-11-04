@@ -24,7 +24,7 @@
                     <div id="pnlEditDetails" runat="server">
 
                         <div class="row">
-                            <div class="col-md-6">
+                            <div id="divAdvSettings" runat="server" class="col-md-6">
                                 <Rock:LocationPicker ID="gpParentLocation" runat="server" Required="false" Label="Parent Location" AllowedPickerModes="Named" />
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Name" />
                                 <Rock:RockDropDownList ID="ddlLocationType" runat="server" DataTextField="Value" DataValueField="Id" Label="Location Type" AutoPostBack="true" OnSelectedIndexChanged="ddlLocationType_SelectedIndexChanged"  />
@@ -38,7 +38,7 @@
                                 <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" />
                                 <asp:Button ID="btnStandardize" runat="server" OnClick="btnStandardize_Click" Text="Verify Address" CssClass="btn btn-action margin-b-md" />
                                 <asp:Literal ID="lStandardizationUpdate" runat="server" />
-                                <Rock:RockCheckBox ID="cbGeoPointLocked" runat="server" Label="Point Locked" Text="Yes" Help="Locks the geocoding to keep the location from being re-geocoding in the future." />
+                                <Rock:RockCheckBox ID="cbGeoPointLocked" runat="server" Label="Location Locked" Text="Yes" Help="Locks the location to prevent verification services (standardization/geocoding) from updating the address or point." />
                                 <Rock:GeoPicker ID="geopPoint" runat="server" DrawingMode="Point" Label="Point" />
                                 <Rock:GeoPicker ID="geopFence" runat="server" DrawingMode="Polygon" Label="Geo-fence" />
                             </div>
@@ -54,10 +54,10 @@
                     <fieldset id="fieldsetViewDetails" runat="server">
 
                         <div class="row">
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <asp:Literal ID="lImage" runat="server" />
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-5">
                                 <asp:Literal ID="lblMainDetails" runat="server" />
                                 <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                             </div>

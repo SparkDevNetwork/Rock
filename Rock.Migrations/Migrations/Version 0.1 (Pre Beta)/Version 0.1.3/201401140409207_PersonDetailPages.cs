@@ -186,7 +186,7 @@ Clicking the 'finish' button will submit the transaction for processing.
 ");
             // Attrib Value for Block:Finance - Add Transaction, Attribute:Success Header Page: Add Scheduled Transaction, Site: Rock Internal
             AddBlockAttributeValue("8ADB1C1F-299B-461A-8469-0FF4E2C98216","1597A542-E6EB-4E29-A435-E5C23785251E",@"<p>
-Thank you.  The transaction has been submitted succesfully. 
+Thank you.  The transaction has been submitted successfully. 
 </p>
 ");
             // Attrib Value for Block:Finance - Add Transaction, Attribute:Success Footer Page: Add Scheduled Transaction, Site: Rock Internal

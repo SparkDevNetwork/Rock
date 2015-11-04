@@ -29,11 +29,12 @@
 
                 <div id="pnlEditDetails" runat="server">
                     <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Visible="false" />
 
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:PersonPicker ID="ppAuthorizedPerson" CssClass="js-authorizedperson" runat="server" Label="Person" IncludeBusinesses="true" OnSelectPerson="ppAuthorizedPerson_SelectPerson" />
-                            <Rock:DateTimePicker ID="dtTransactionDateTime" runat="server" Label="Transaction Date/Time" />
+                            <Rock:DateTimePicker ID="dtTransactionDateTime" runat="server" Label="Transaction Date/Time" Required="true" />
                         </div>
                         <div class="col-md-6">
                             <asp:Panel ID="pnlSingleAccount" runat="server" Visible="false" CssClass="row">
@@ -52,13 +53,14 @@
                             <asp:Panel ID="pnlAccounts" runat="server">
                                 <div class="grid">
                                     <Rock:Grid ID="gAccountsEdit" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" 
-                                        OnRowSelected="gAccountsEdit_RowSelected" ShowConfirmDeleteDialog="false">
+                                        ShowConfirmDeleteDialog="false">
                                         <Columns>
                                             <Rock:RockTemplateField HeaderText="Accounts">
                                                 <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                             </Rock:RockTemplateField>
                                             <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                             <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
+                                            <Rock:EditField OnClick="gAccountsEdit_EditClick" />
                                             <Rock:DeleteField OnClick="gAccountsEdit_DeleteClick" />
                                         </Columns>
                                     </Rock:Grid>
@@ -78,6 +80,9 @@
                                 SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
                         </div>
                         <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbIsRefund" runat="server" Label="This is a Refund" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbIsRefund_CheckedChanged" />
+                            <Rock:RockDropDownList ID="ddlRefundReasonEdit" runat="server" Label="Refund Reason" Visible="false" />
+                            <Rock:RockTextBox ID="tbRefundSummaryEdit" runat="server" Label="Refund Reason Summary" TextMode="MultiLine" Rows="3" Visible="false" />
                             <h4>Images</h4>
                             <asp:DataList ID="dlImages" runat="server" RepeatDirection="Horizontal" RepeatColumns="2" OnItemDataBound="dlImages_ItemDataBound">
                                 <ItemTemplate>
@@ -116,24 +121,39 @@
                                 </Columns>
                             </Rock:Grid>
 
-                            <h4>Images</h4>
-                            <div>
-                                <asp:Image ID="imgPrimary" runat="server" CssClass="transaction-image" />
-                            </div>
-                            <div>
-                                <asp:Repeater ID="rptrImages" runat="server">
-                                    <ItemTemplate>
-                                        <asp:Image ID="imgOther" ImageUrl='<%# ImageUrl( (int)Eval("BinaryFileId") ) %>' runat="server" CssClass="transaction-image-thumbnail" ToolTip="Click to toggle" />
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </div>
+                            <asp:Panel ID="pnlImages" runat="server">
+                                <h4>Images</h4>
+                                <div>
+                                    <asp:Image ID="imgPrimary" runat="server" CssClass="transaction-image" />
+                                </div>
+                                <div>
+                                    <asp:Repeater ID="rptrImages" runat="server">
+                                        <ItemTemplate>
+                                            <asp:Image ID="imgOther" ImageUrl='<%# ImageUrl( (int)Eval("BinaryFileId") ) %>' runat="server" CssClass="transaction-image-thumbnail" ToolTip="Click to toggle" />
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
+                            </asp:Panel>
+
+                            <asp:Panel ID="pnlRefunds" runat="server">
+                                <Rock:Grid ID="gRefunds" runat="server" RowItemText="Refund" DisplayType="Light">
+                                    <Columns>
+                                        <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id" HeaderText="Refunds" />
+                                        <Rock:RockBoundField DataField="TransactionCode" />
+                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </asp:Panel>
                         </div>
                     </div>
 
                     <div class="actions">
                         <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" AccessKey="m" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
-                        <asp:HyperLink ID="lbNext" runat="server" AccessKey="n" CssClass="btn btn-default margin-r-sm pull-right">Next <i class="fa fa-chevron-right"></i></asp:HyperLink>
-                        <asp:LinkButton ID="lbAddTransaction" runat="server" Text="Add New Transaction" AccessKey="a" CssClass="btn btn-default margin-r-sm pull-right" CausesValidation="false" OnClick="lbAddTransaction_Click" />
+                        <div class="pull-right">
+                            <asp:LinkButton ID="lbRefund" runat="server" Text="Refund" AccessKey="a" CssClass="btn btn-default margin-r-sm" CausesValidation="false" OnClick="lbRefundTransaction_Click" />
+                            <asp:LinkButton ID="lbAddTransaction" runat="server" Text="Add New Transaction" AccessKey="a" CssClass="btn btn-default margin-r-sm" CausesValidation="false" OnClick="lbAddTransaction_Click" />
+                            <asp:HyperLink ID="lbNext" runat="server" AccessKey="n" CssClass="btn btn-default margin-r-sm">Next <i class="fa fa-chevron-right"></i></asp:HyperLink>
+                        </div>
                     </div>
 
                 </fieldset>
@@ -148,14 +168,36 @@
 
         <Rock:ModalDialog ID="mdAccount" runat="server" Title="Account" OnSaveClick="mdAccount_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Account">
             <Content>
+                <asp:ValidationSummary ID="valSummaryAccount" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Account" />
                 <asp:HiddenField ID="hfAccountGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlAccount" runat="server" Label="Account" DataTextField="Value" DataValueField="Key" Required="true" ValidationGroup="Account" />
+                        <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="true" ValidationGroup="Account" />
                         <Rock:CurrencyBox ID="tbAccountAmount" runat="server" Label="Amount" Required="true" ValidationGroup="Account" />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbAccountSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="3" ValidationGroup="Account" />
+                    </div>
+                </div>
+            </Content>
+        </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="mdRefund" runat="server" Title="Refund" OnSaveClick="mdRefund_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Refund">
+            <Content>
+                <asp:ValidationSummary ID="valSummaryRefund" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Refund" />
+                <Rock:NotificationBox ID="nbRefundError" runat="server" NotificationBoxType="Danger" Visible="false" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:CurrencyBox ID="tbRefundAmount" runat="server" Label="Amount" Required="true" ValidationGroup="Refund" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlRefundReason" runat="server" Label="Reason" Required="true" ValidationGroup="Refund" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:RockTextBox ID="tbRefundSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="3" ValidationGroup="Refund" />
+                        <Rock:RockCheckBox ID="cbProcess" runat="server" Text="Process refund through financial gateway" />
                     </div>
                 </div>
             </Content>

@@ -621,7 +621,7 @@ namespace Rock.Web.UI.Controls
                         <b class='fa fa-caret-down pull-right'></b>
                     </a>";
 
-                    writer.Write( pickerLabelHtmlFormat, this.ID, this.ItemName, this.IconCssClass );
+                    writer.Write( pickerLabelHtmlFormat, this.ClientID, this.ItemName, this.IconCssClass );
 
                     writer.WriteLine();
 
@@ -659,13 +659,17 @@ namespace Rock.Web.UI.Controls
                                     </div>
                                 </div>
                             </div>",
-                           this.ID );
+                           this.ClientID );
 
                 // picker actions
                 writer.AddAttribute( "class", "picker-actions" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _btnSelect.RenderControl( writer );
-                writer.Write( "<a class='btn btn-xs btn-link picker-cancel' id='btnCancel_{0}'>Cancel</a>", this.ID );
+                writer.Write( "<a class='btn btn-xs btn-link picker-cancel' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
+
+                // render any additional picker actions that a child class if ItemPicker implements
+                RenderCustomPickerActions( writer );
+                
                 writer.WriteLine();
                 writer.RenderEndTag();
 
@@ -690,6 +694,15 @@ namespace Rock.Web.UI.Controls
                 writer.WriteLine();
                 writer.RenderEndTag();
             }
+        }
+
+        /// <summary>
+        /// Render any additional picker actions
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public virtual void RenderCustomPickerActions( HtmlTextWriter writer )
+        {
+            //
         }
 
         /// <summary>

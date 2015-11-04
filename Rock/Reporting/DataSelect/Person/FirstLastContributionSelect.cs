@@ -241,7 +241,7 @@ namespace Rock.Reporting.DataSelect.Person
             Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( FinancialTransactionDetail ) }, compare );
 
             // t.Transaction.TransactionDateTime
-            MemberExpression transactionDateTime = Expression.Property( transactionProperty, "TransactionDateTime" );
+            MemberExpression transactionDateTime = Expression.Property( transactionProperty, "SundayDate" );
 
             // t => t.Transaction.transactionDateTime
             var transactionDate = Expression.Lambda<Func<FinancialTransactionDetail, DateTime?>>( transactionDateTime, new ParameterExpression[] { transactionDetailParameter } );

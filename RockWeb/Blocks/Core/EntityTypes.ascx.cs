@@ -27,6 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Security;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -217,6 +218,8 @@ namespace RockWeb.Blocks.Core
             entityType.IsCommon = cbCommon.Checked;
 
             rockContext.SaveChanges();
+
+            EntityTypeCache.Flush( entityType.Id );
 
             hfEntityTypeId.Value = string.Empty;
 

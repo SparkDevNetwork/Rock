@@ -165,7 +165,7 @@ namespace Rock.Reporting.DataSelect.Person
                         p.Gender == Gender.Female ? nophotoChildFemaleHtml : nophotoChildMaleHtml 
                         : p.Gender == Gender.Female ? nophotoAdultFemaleHtml : nophotoAdultMaleHtml );
 
-            var selectPhotoExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personPhotoQuery, entityIdProperty, "p" );
+            var selectPhotoExpression = SelectExpressionExtractor.Extract( personPhotoQuery, entityIdProperty, "p" );
 
             return selectPhotoExpression;
         }

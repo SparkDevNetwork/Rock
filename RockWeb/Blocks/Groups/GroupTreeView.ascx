@@ -27,9 +27,9 @@
                             <asp:LinkButton ID="lbAddGroupChild" OnClick="lbAddGroupChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
                     </ul>
                 </div>
-                <Rock:Toggle ID="tglHideInactiveGroups" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveGroups_CheckedChanged" />
-
             </div>
+
+            <Rock:Toggle ID="tglHideInactiveGroups" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveGroups_CheckedChanged" />
 
             <div class="treeview-scroll scroll-container scroll-container-horizontal">
 

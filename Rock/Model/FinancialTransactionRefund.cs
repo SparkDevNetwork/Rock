@@ -38,6 +38,15 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
+        /// Gets or sets the original transaction identifier.
+        /// </summary>
+        /// <value>
+        /// The original transaction identifier.
+        /// </value>
+        [DataMember]
+        public int? OriginalTransactionId { get; set; }
+
+        /// <summary>
         /// Gets or sets the DefinedValueId of the return reason <see cref="Rock.Model.DefinedValue"/> indicating
         /// the reason why a refund was issued for the the original transaction.
         /// </summary>
@@ -61,6 +70,24 @@ namespace Rock.Model
         #endregion
 
         #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the financial transaction.
+        /// </summary>
+        /// <value>
+        /// The financial transaction.
+        /// </value>
+        [DataMember]
+        public virtual FinancialTransaction FinancialTransaction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the original transaction.
+        /// </summary>
+        /// <value>
+        /// The original transaction.
+        /// </value>
+        [DataMember]
+        public virtual FinancialTransaction OriginalTransaction { get; set; }
 
         /// <summary>
         /// Gets or sets the refund reason <see cref="Rock.Model.DefinedValue"/> indicating the reason 
@@ -89,7 +116,8 @@ namespace Rock.Model
         /// </summary>
         public FinancialTransactionRefundConfiguration()
         {
-            this.HasOptional( t => t.RefundReasonValue ).WithMany().HasForeignKey( t => t.RefundReasonValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.OriginalTransaction ).WithMany( t => t.Refunds ).HasForeignKey( r => r.OriginalTransactionId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.RefundReasonValue ).WithMany().HasForeignKey( r => r.RefundReasonValueId ).WillCascadeOnDelete( false );
         }
     }
 

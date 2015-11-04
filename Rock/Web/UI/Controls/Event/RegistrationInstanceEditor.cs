@@ -634,7 +634,7 @@ namespace Rock.Web.UI.Controls
                 _htmlAdditionalConfirmationDetails = new HtmlEditor();
                 _htmlAdditionalConfirmationDetails.ID = this.ID + "_htmlAdditionalConfirmationDetails";
                 _htmlAdditionalConfirmationDetails.Toolbar = HtmlEditor.ToolbarConfig.Light;
-                _htmlAdditionalConfirmationDetails.Label = "Additional Reminder Details";
+                _htmlAdditionalConfirmationDetails.Label = "Additional Confirmation Details";
                 _htmlAdditionalConfirmationDetails.Help = "These confirmation details will be appended to those from the registration template when displayed at the end of the registration process.";
                 _htmlAdditionalConfirmationDetails.Height = 200;
                 Controls.Add( _htmlAdditionalConfirmationDetails );

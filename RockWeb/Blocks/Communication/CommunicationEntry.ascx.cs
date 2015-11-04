@@ -334,7 +334,7 @@ namespace RockWeb.Blocks.Communication
                     var Person = new PersonService( new RockContext() ).Get( ppAddPerson.PersonId.Value );
                     if ( Person != null )
                     {
-                        Recipients.Add( new Recipient( Person, CommunicationRecipientStatus.Pending ) );
+                        Recipients.Add( new Recipient( Person, Person.PhoneNumbers.Any(a => a.IsMessagingEnabled), CommunicationRecipientStatus.Pending ) );
                         ShowAllRecipients = true;
                     }
                 }
@@ -477,7 +477,8 @@ namespace RockWeb.Blocks.Communication
             if ( Page.IsValid && CurrentPersonAliasId.HasValue )
             {
                 // Get existing or new communication record
-                var communication = UpdateCommunication( new RockContext() );
+                var rockContext = new RockContext();
+                var communication = UpdateCommunication( rockContext );
 
                 if ( communication != null  )
                 {
@@ -496,16 +497,16 @@ namespace RockWeb.Blocks.Communication
                     testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
 
                     var testRecipient = new CommunicationRecipient();
-                    if (communication.Recipients.Any())
+                    if ( communication.GetRecipientCount( rockContext ) > 0 )
                     {
-                        var recipient = communication.Recipients.FirstOrDefault();
+                        var recipient = communication.GetRecipientsQry(rockContext).FirstOrDefault();
                         testRecipient.AdditionalMergeValuesJson = recipient.AdditionalMergeValuesJson;
                     }
+                    
                     testRecipient.Status = CommunicationRecipientStatus.Pending;
                     testRecipient.PersonAliasId = CurrentPersonAliasId.Value;
                     testCommunication.Recipients.Add( testRecipient );
-
-                    var rockContext = new RockContext();
+                    
                     var communicationService = new CommunicationService( rockContext );
                     communicationService.Add( testCommunication );
                     rockContext.SaveChanges();
@@ -556,7 +557,7 @@ namespace RockWeb.Blocks.Communication
                     {
                         string message = string.Empty;
 
-                        if ( CheckApprovalRequired( communication.Recipients.Count ) && !IsUserAuthorized( "Approve" ) )
+                        if ( CheckApprovalRequired( communication.GetRecipientCount(rockContext) ) && !IsUserAuthorized( "Approve" ) )
                         {
                             communication.Status = CommunicationStatus.PendingApproval;
                             message = "Communication has been submitted for approval.";
@@ -663,13 +664,20 @@ namespace RockWeb.Blocks.Communication
             {
                 this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
                 lTitle.Text = ( communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
+                var recipientList = new CommunicationRecipientService( new RockContext() )
+                    .Queryable()
+                    //.Include()
+                    .Where( r => r.CommunicationId == communication.Id )
+                    .Select(a => new {
+                        a.PersonAlias.Person,
+                        PersonHasSMS = a.PersonAlias.Person.PhoneNumbers.Any( p => p.IsMessagingEnabled ),
+                        a.Status,
+                        a.StatusNote,
+                        a.OpenedClient,
+                        a.OpenedDateTime
+                    }).ToList();
 
-                foreach ( var recipient in new CommunicationRecipientService( new RockContext() )
-                    .Queryable( "PersonAlias.Person.PhoneNumbers" )
-                    .Where( r => r.CommunicationId == communication.Id ) )
-                {
-                    Recipients.Add( new Recipient( recipient.PersonAlias.Person, recipient.Status, recipient.StatusNote, recipient.OpenedClient, recipient.OpenedDateTime ) );
-                }
+                Recipients = recipientList.Select( recipient => new Recipient( recipient.Person, recipient.PersonHasSMS, recipient.Status, recipient.StatusNote, recipient.OpenedClient, recipient.OpenedDateTime ) ).ToList();
             }
             else
             {
@@ -684,7 +692,7 @@ namespace RockWeb.Blocks.Communication
                     var person = new PersonService( new RockContext() ).Get( personId.Value );
                     if ( person != null )
                     {
-                        Recipients.Add( new Recipient( person, CommunicationRecipientStatus.Pending, string.Empty, string.Empty, null ) );
+                        Recipients.Add( new Recipient( person, person.PhoneNumbers.Any(p => p.IsMessagingEnabled), CommunicationRecipientStatus.Pending, string.Empty, string.Empty, null ) );
                     }
                 }
             }
@@ -1070,16 +1078,29 @@ namespace RockWeb.Blocks.Communication
             var recipientService = new CommunicationRecipientService(rockContext);
 
             Rock.Model.Communication communication = null;
+            IQueryable<CommunicationRecipient> qryRecipients = null;
+
             if ( CommunicationId.HasValue )
             {
                 communication = communicationService.Get( CommunicationId.Value );
+            }
 
+            if ( communication != null )
+            {
                 // Remove any deleted recipients
-                foreach(var recipient in recipientService.GetByCommunicationId( CommunicationId.Value ) )
+                HashSet<int> personIdHash = new HashSet<int>( Recipients.Select( a => a.PersonId ) );
+                qryRecipients = communication.GetRecipientsQry( rockContext );
+
+                foreach ( var item in qryRecipients.Select( a => new 
                 {
-                    if (!Recipients.Any( r => recipient.PersonAlias != null && r.PersonId == recipient.PersonAlias.PersonId))
+                    Id = a.Id,
+                    PersonId = a.PersonAlias.PersonId
+                }) )
+                {
+                    if ( !personIdHash.Contains(item.PersonId) )
                     {
-                        recipientService.Delete(recipient);
+                        var recipient = qryRecipients.Where( a => a.Id == item.Id ).FirstOrDefault();
+                        recipientService.Delete( recipient );
                         communication.Recipients.Remove( recipient );
                     }
                 }
@@ -1093,10 +1114,16 @@ namespace RockWeb.Blocks.Communication
                 communicationService.Add( communication );
             }
 
+            if (qryRecipients == null)
+            {
+                qryRecipients = communication.GetRecipientsQry( rockContext );
+            }
+
             // Add any new recipients
+            HashSet<int> communicationPersonIdHash = new HashSet<int>( qryRecipients.Select( a => a.PersonAlias.PersonId ) );
             foreach(var recipient in Recipients )
             {
-                if ( !communication.Recipients.Any( r => r.PersonAlias != null && r.PersonAlias.PersonId == recipient.PersonId ) )
+                if ( !communicationPersonIdHash.Contains( recipient.PersonId ) )
                 {
                     var person = new PersonService( rockContext ).Get( recipient.PersonId );
                     if ( person != null )
@@ -1306,12 +1333,12 @@ namespace RockWeb.Blocks.Communication
             /// <param name="personId">The person id.</param>
             /// <param name="personName">Name of the person.</param>
             /// <param name="status">The status.</param>
-            public Recipient( Person person, CommunicationRecipientStatus status, string statusNote = "", string openedClient = "", DateTime? openedDateTime = null )
+            public Recipient( Person person, bool personHasSMS, CommunicationRecipientStatus status, string statusNote = "", string openedClient = "", DateTime? openedDateTime = null )
             {
                 PersonId = person.Id;
                 PersonName = person.FullName;
                 IsDeceased = person.IsDeceased;
-                HasSmsNumber = person.PhoneNumbers.Any( p => p.IsMessagingEnabled );
+                HasSmsNumber = personHasSMS;
                 Email = person.Email;
                 IsEmailActive = person.IsEmailActive;
                 EmailNote = person.EmailNote;

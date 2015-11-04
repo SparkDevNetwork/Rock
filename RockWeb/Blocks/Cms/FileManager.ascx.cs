@@ -25,7 +25,7 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
 {
-    [DisplayName( "File Browser" )]
+    [DisplayName( "File Manager" )]
     [Category( "CMS" )]
     [Description( "Block that can be used to browse and manage files on the web server" )]
 

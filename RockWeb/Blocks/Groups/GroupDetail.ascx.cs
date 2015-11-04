@@ -22,6 +22,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -715,6 +716,21 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 rockContext.SaveChanges();
+
+                if ( group.IsActive == false && cbInactivateChildGroups.Checked )
+                {
+                    var allActiveChildGroupsId = groupService.GetAllDescendents( group.Id ).Where( a => a.IsActive ).Select( a => a.Id ).ToList();
+                    var allActiveChildGroups = groupService.GetByIds( allActiveChildGroupsId );
+                    foreach ( var childGroup in allActiveChildGroups )
+                    {
+                        if ( childGroup.IsActive )
+                        {
+                            childGroup.IsActive = false;
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+                }
             } );
 
             if ( group != null && wasSecurityRole )
@@ -962,32 +978,34 @@ namespace RockWeb.Blocks.Groups
                         // Start by setting the group type to the same as the parent
                         group.ParentGroup = parentGroup;
 
-                        // If the parent group type is allowed, first set that as the selected group type and check security
-                        var allowedGroupTypes = GetAllowedGroupTypes( parentGroup, rockContext ).ToList();
-                        if ( allowedGroupTypes.Any( t => t.Id == parentGroup.Id ) )
-                        {
-                            group.GroupTypeId = parentGroup.GroupTypeId;
-                            group.GroupType = parentGroup.GroupType;
+                        // get all the allowed GroupTypes as defined by the parent group type
+                        var allowedChildGroupTypesOfParentGroup = GetAllowedGroupTypes( parentGroup, rockContext ).ToList();
 
-                            editAllowed = editAllowed || group.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                        // narrow it down to group types that the current user is allowed to edit 
+                        var authorizedGroupTypes = new List<GroupType>();
+                        foreach ( var allowedGroupType in allowedChildGroupTypesOfParentGroup )
+                        {
+                            // to see if the user is authorized for the group type, test by setting the new group's grouptype and see if they are authorized
+                            group.GroupTypeId = allowedGroupType.Id;
+                            group.GroupType = allowedGroupType;
+
+                            if ( group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                            {
+                                authorizedGroupTypes.Add( allowedGroupType );
+                            }
                         }
 
-                        // parent group type was not allowed, or user is not allowed to edit
-                        if ( !editAllowed || group.GroupType == null )
+                        // exactly one grouptype is allowed/authorized, so it is safe to default this new group to it
+                        if ( authorizedGroupTypes.Count() == 1 )
                         {
-                            // Loop through the other allowed group types to determine if user is allowed to edit any
-                            foreach ( var groupType in allowedGroupTypes.Where( g => g.Id != parentGroup.GroupTypeId ) )
-                            {
-                                group.GroupTypeId = groupType.Id;
-                                group.GroupType = groupType;
-                                if ( group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
-                                {
-                                    // Once a group type is found that allows user to edit, keep that
-                                    // group type by default
-                                    editAllowed = true;
-                                    break;
-                                }
-                            }
+                            group.GroupType = authorizedGroupTypes.First();
+                            group.GroupTypeId = group.GroupType.Id;
+                        }
+                        else
+                        {
+                            // more than one grouptype is allowed/authorized, so don't default it so they are forced to pick which one
+                            group.GroupType = null;
+                            group.GroupTypeId = 0;
                         }
                     }
                 }
@@ -1019,7 +1037,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( group.GroupType != null && group.GroupType.Roles != null && group.GroupType.Roles.Any() )
             {
-                foreach ( var role in group.GroupType.Roles )
+                foreach ( var role in group.GroupType.Roles.Where( a => a.MinCount.HasValue || a.MaxCount.HasValue ) )
                 {
                     var groupMemberService = new GroupMemberService( rockContext );
                     int curCount = groupMemberService.Queryable().Where( m => m.GroupId == group.Id && m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
@@ -1065,6 +1083,23 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Sets the highlight label visibility.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        private void SetHighlightLabelVisibility( Group group )
+        {
+            if ( group.IsActive )
+            {
+                hlInactive.Style[HtmlTextWriterStyle.Display] = "none";
+            }
+
+            if ( group.IsPublic )
+            {
+                hlIsPrivate.Style[HtmlTextWriterStyle.Display] = "none";
+            }
+        }
+
+        /// <summary>
         /// Shows the edit details.
         /// </summary>
         /// <param name="group">The group.</param>
@@ -1073,12 +1108,13 @@ namespace RockWeb.Blocks.Groups
             if ( group.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( Group.FriendlyTypeName ).FormatAsHtmlTitle();
-                hlInactive.Visible = false;
             }
             else
             {
                 lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
             }
+
+            SetHighlightLabelVisibility( group );
 
             ddlGroupType.Visible = group.Id == 0;
             lGroupType.Visible = group.Id != 0;
@@ -1101,11 +1137,17 @@ namespace RockWeb.Blocks.Groups
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
 
             // hide sync and requirements panel if no admin access
-            wpGroupSync.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
-            wpGroupRequirements.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
-            wpGroupMemberAttributes.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            bool canAdministrate = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            wpGroupSync.Visible = canAdministrate;
+            wpGroupRequirements.Visible = canAdministrate;
+            wpGroupMemberAttributes.Visible = canAdministrate;
 
-            var systemEmails = new SystemEmailService( new RockContext() ).Queryable().OrderBy( e => e.Title );
+            var systemEmails = new SystemEmailService( rockContext ).Queryable().OrderBy( e => e.Title )
+                .Select( a => new
+                {
+                    a.Id,
+                    a.Title
+                } );
 
             // add a blank for the first option
             ddlWelcomeEmail.Items.Add( new ListItem() );
@@ -1175,6 +1217,7 @@ namespace RockWeb.Blocks.Groups
 
                 var groupType = GroupTypeCache.Read( CurrentGroupTypeId, rockContext );
                 lGroupType.Text = groupType != null ? groupType.Name : string.Empty;
+                ddlGroupType.SetValue( CurrentGroupTypeId );
             }
 
             ddlCampus.SetValue( group.CampusId );
@@ -1343,6 +1386,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="group">The group.</param>
         private void ShowReadonlyDetails( Group group )
         {
+            SetHighlightLabelVisibility( group );
             SetEditMode( false );
             var rockContext = new RockContext();
 
@@ -1358,13 +1402,10 @@ namespace RockWeb.Blocks.Groups
             lGroupIconHtml.Text = groupIconHtml;
             lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
 
-            hlInactive.Visible = !group.IsActive;
-            hlIsPrivate.Visible = !group.IsPublic;
-
-            if (!string.IsNullOrWhiteSpace(group.Description)) {
-                lGroupDescription.Text = string.Format("<p class='description'>{0}</p>", group.Description);
+            if ( !string.IsNullOrWhiteSpace( group.Description ) )
+            {
+                lGroupDescription.Text = string.Format( "<p class='description'>{0}</p>", group.Description );
             }
-            
 
             DescriptionList descriptionList = new DescriptionList();
 
@@ -1413,31 +1454,29 @@ namespace RockWeb.Blocks.Groups
             if ( linkages.Any() )
             {
                 linkages
-                    .Where( l => 
+                    .Where( l =>
                         l.RegistrationInstanceId.HasValue )
                     .ToList()
                     .ForEach( l => registrations
                         .AddOrIgnore( l.RegistrationInstanceId.Value, l.ToString( true, true, false ) ) );
 
                 linkages
-                    .Where( l => 
-                        l.EventItemOccurrence != null && 
+                    .Where( l =>
+                        l.EventItemOccurrence != null &&
                         l.EventItemOccurrence.EventItem != null )
                     .ToList()
                     .ForEach( l => eventItemOccurrences
-                        .AddOrIgnore( l.EventItemOccurrence.Id, string.Format( "{0} - {1}",
-                            l.EventItemOccurrence.EventItem.Name,
-                            l.EventItemOccurrence.Campus != null ? l.EventItemOccurrence.Campus.Name : "All Campuses" ) ) );
+                        .AddOrIgnore( l.EventItemOccurrence.Id, string.Format( "{0} - {1}", l.EventItemOccurrence.EventItem.Name, l.EventItemOccurrence.Campus != null ? l.EventItemOccurrence.Campus.Name : "All Campuses" ) ) );
 
                 linkages
-                    .Where( l => 
-                        l.EventItemOccurrence != null && 
-                        l.EventItemOccurrence.EventItem != null && 
+                    .Where( l =>
+                        l.EventItemOccurrence != null &&
+                        l.EventItemOccurrence.EventItem != null &&
                         l.EventItemOccurrence.ContentChannelItems.Any() )
                     .SelectMany( l => l.EventItemOccurrence.ContentChannelItems.Where( i => i.ContentChannelItem != null ) )
                     .ToList()
                     .ForEach( i => contentItems
-                        .AddOrIgnore( i.ContentChannelItem.Id, string.Format("{0} <small>({1})</small>", i.ContentChannelItem.Title, i.ContentChannelItem.ContentChannelType.Name ) ) );
+                        .AddOrIgnore( i.ContentChannelItem.Id, string.Format( "{0} <small>({1})</small>", i.ContentChannelItem.Title, i.ContentChannelItem.ContentChannelType.Name ) ) );
 
                 rptLinkedRegistrations.DataSource = registrations;
                 rptLinkedRegistrations.DataBind();
@@ -1599,6 +1638,11 @@ namespace RockWeb.Blocks.Groups
             return LinkedPageUrl( "RegistrationInstancePage", qryParams );
         }
 
+        /// <summary>
+        /// Events the item occurrence URL.
+        /// </summary>
+        /// <param name="eventItemOccurrenceId">The event item occurrence identifier.</param>
+        /// <returns></returns>
         protected string EventItemOccurrenceUrl( int eventItemOccurrenceId )
         {
             var qryParams = new Dictionary<string, string>();
@@ -1606,6 +1650,11 @@ namespace RockWeb.Blocks.Groups
             return LinkedPageUrl( "EventItemOccurrencePage", qryParams );
         }
 
+        /// <summary>
+        /// Contents the item URL.
+        /// </summary>
+        /// <param name="contentItemId">The content item identifier.</param>
+        /// <returns></returns>
         protected string ContentItemUrl( int contentItemId )
         {
             var qryParams = new Dictionary<string, string>();
@@ -2752,8 +2801,8 @@ namespace RockWeb.Blocks.Groups
                 ddlTriggerFromStatus.SelectedValue,
                 ddlTriggerFromRole.SelectedValue,
                 cbTriggerFirstTime.Checked.ToString(),
-                cbTriggerPlacedElsewhereShowNote.Checked.ToString(), 
-                cbTriggerPlacedElsewhereRequireNote.Checked.ToString());
+                cbTriggerPlacedElsewhereShowNote.Checked.ToString(),
+                cbTriggerPlacedElsewhereRequireNote.Checked.ToString() );
 
             // Controls will show warnings
             if ( !memberWorkflowTrigger.IsValid )

@@ -22,6 +22,14 @@ namespace Rock.Web.UI.Controls
     public class TreeViewItem
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="TreeViewItem"/> class.
+        /// </summary>
+        public TreeViewItem()
+        {
+            IsActive = true;
+        }
+        
+        /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>
@@ -60,5 +68,13 @@ namespace Rock.Web.UI.Controls
         /// The image url.
         /// </value>
         public string IconSmallUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsActive { get; set; }
     }
 }

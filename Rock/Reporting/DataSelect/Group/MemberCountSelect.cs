@@ -149,7 +149,7 @@ namespace Rock.Reporting.DataSelect.Group
                 memberCountQuery = new GroupService( context ).Queryable().Select( p => (int)0 );
             }
 
-            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Group>( memberCountQuery, entityIdProperty, "p" );
+            var selectExpression = SelectExpressionExtractor.Extract( memberCountQuery, entityIdProperty, "p" );
 
             return selectExpression;
         }

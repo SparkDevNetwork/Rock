@@ -256,17 +256,17 @@ function() {
                 .Select( ss => new
                 {
                     PersonId = ss.Key,
-                    FirstTransactionDateTime = ss.Min( a => a.TransactionDateTime )
+                    FirstTransactionSundayDate = ss.Min( a => a.SundayDate )
                 } );
 
             if ( startDate.HasValue )
             {
-                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionDateTime >= startDate.Value );
+                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionSundayDate >= startDate.Value );
             }
 
             if ( endDate.HasValue )
             {
-                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionDateTime < endDate );
+                firstContributionDateQry = firstContributionDateQry.Where( xx => xx.FirstTransactionSundayDate < endDate );
             }
 
             var innerQry = firstContributionDateQry.Select( xx => xx.PersonId ).AsQueryable();

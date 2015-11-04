@@ -343,7 +343,7 @@ namespace RockWeb
                         if ( httpEx != null )
                         {
                             int statusCode = httpEx.GetHttpCode();
-                            if (!GlobalAttributesCache.Read().GetValue( "Log404AsException" ).AsBoolean())
+                            if ( ( statusCode == 404 ) && !GlobalAttributesCache.Read().GetValue( "Log404AsException" ).AsBoolean())
                             {
                                 context.ClearError();
                                 context.Response.StatusCode = 404;
@@ -840,8 +840,8 @@ namespace RockWeb
             string message = string.Empty;
 
             message += "<h2>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h2>";
-            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Message</strong><br>" + ex.Message + "</div>";
-            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Stack Trace</strong><br>" + ex.StackTrace.ConvertCrLfToHtmlBr() + "</p>";
+            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Message</strong><br>" + HttpUtility.HtmlEncode( ex.Message ) + "</div>";
+            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Stack Trace</strong><br>" + HttpUtility.HtmlEncode( ex.StackTrace ).ConvertCrLfToHtmlBr() + "</p>";
 
             // check for inner exception
             if ( ex.InnerException != null )

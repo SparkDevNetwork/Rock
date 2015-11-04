@@ -43,6 +43,16 @@ namespace Rock.Rest.Filters
             string controllerClassName = controller.ControllerType.FullName;
             string actionMethod = actionContext.Request.Method.Method;
             string actionPath = actionContext.Request.GetRouteData().Route.RouteTemplate.Replace( "{controller}", controller.ControllerName );
+            
+            //// find any additional arguments that aren't part of the RouteTemplate that qualified the action method
+            //// for example: ~/person/search?name={name}&includeHtml={includeHtml}&includeDetails={includeDetails}&includeBusinesses={includeBusinesses}
+            //// is a different action method than ~/person/search?name={name}
+            var routeQueryParams = actionContext.ActionArguments.Where(a => !actionPath.Contains("{" + a.Key + "}"));
+            if ( routeQueryParams.Any())
+            {
+                var actionPathQueryString = routeQueryParams.Select( a => string.Format( "{0}={{{0}}}", a.Key ) ).ToList().AsDelimited( "&" );
+                actionPath += "?" + actionPathQueryString;
+            }
 
             ISecured item = Rock.Web.Cache.RestActionCache.Read( actionMethod + actionPath );
             if ( item == null )

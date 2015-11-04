@@ -437,11 +437,13 @@ function(item) {
             //get the subset/summary date
             DateTime minSummaryCountDate = RockDateTime.Now.Date.AddDays( -( summaryCountDays ) );
 
-            var exceptionQuery = BuildBaseExceptionListQuery()
+            var rockContext = new RockContext();
+            
+            var exceptionQuery = BuildBaseExceptionListQuery( rockContext )
                                     .GroupBy( e => new
                                         {
-                                            SiteName = e.Site.Name ?? string.Empty,
-                                            PageName = e.Page.InternalName ?? string.Empty,
+                                            SiteName = e.Site.Name ?? "",
+                                            PageName = e.Page.InternalName ?? "",
                                             Description = e.Description
                                         } )
                                     .Select( eg => new
@@ -457,13 +459,14 @@ function(item) {
 
             if ( gExceptionList.SortProperty != null )
             {
-                gExceptionList.DataSource = exceptionQuery.Sort( gExceptionList.SortProperty ).ToList();
+                exceptionQuery = exceptionQuery.Sort( gExceptionList.SortProperty );
             }
             else
             {
-                gExceptionList.DataSource = exceptionQuery.OrderByDescending( e => e.LastExceptionDate ).ToList();
+                exceptionQuery = exceptionQuery.OrderByDescending( e => e.LastExceptionDate );
             }
 
+            gExceptionList.SetLinqDataSource( exceptionQuery );
             gExceptionList.DataBind();
 
         }
@@ -494,14 +497,15 @@ function(item) {
 
             if ( gExceptionOccurrences.SortProperty == null )
             {
-                gExceptionOccurrences.DataSource = query.OrderByDescending( e => e.CreatedDateTime ).ToList();
+                query = query.OrderByDescending( e => e.CreatedDateTime );
             }
             else
             {
-                gExceptionOccurrences.DataSource = query.Sort( gExceptionOccurrences.SortProperty ).ToList();
+                query = query.Sort( gExceptionOccurrences.SortProperty );
             }
 
             gExceptionOccurrences.EntityTypeId = EntityTypeCache.Read<ExceptionLog>().Id;
+            gExceptionOccurrences.SetLinqDataSource( query );
             gExceptionOccurrences.DataBind();
         }
 
@@ -524,9 +528,9 @@ function(item) {
         /// Builds the base query for the Exception List grid data
         /// </summary>
         /// <returns>IQueryable containing filtered ExceptionLog records</returns>
-        private IQueryable<ExceptionLog> BuildBaseExceptionListQuery()
+        private IQueryable<ExceptionLog> BuildBaseExceptionListQuery( RockContext rockContext )
         {
-            ExceptionLogService exceptionLogService = new ExceptionLogService( new RockContext() );
+            ExceptionLogService exceptionLogService = new ExceptionLogService( rockContext );
             IQueryable<ExceptionLog> query = exceptionLogService.Queryable();
 
             int siteId;
