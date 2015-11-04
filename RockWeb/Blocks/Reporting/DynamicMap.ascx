@@ -5,25 +5,25 @@
 
         <Rock:NotificationBox ID="nbConfigurationWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
 
-        <%-- View Panel --%>
-        <asp:Panel ID="pnlView" runat="server">
+        <div class="panel panel-block">
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-map-marker"></i>&nbsp;Dynamic Map</h1>
+            </div>
+            <div class="panel-body">
 
-            <div class="panel panel-block margin-t-md">
-                <div class="panel-heading clearfix">
-                    <h1 class="panel-title pull-left">
-                        <asp:Literal ID="lResultsIconCssClass" runat="server" />
-                        <asp:Literal ID="lResultsTitle" runat="server" />
-                    </h1>
-                </div>
-                <asp:Panel ID="pnlMap" runat="server" CssClass="margin-v-sm">
+                <asp:Literal ID="lMapStyling" runat="server" />
+
+                <asp:Panel ID="pnlMap" runat="server">
                     <div id="map_wrapper">
                         <div id="map_canvas" class="mapping"></div>
                     </div>
-                    <asp:Literal ID="lMapInfoDebug" runat="server" />
                 </asp:Panel>
-            </div>
 
-        </asp:Panel>
+                <asp:Literal ID="lMessages" runat="server" />
+                <asp:Literal ID="lDebug" runat="server" />
+
+            </div>
+        </div>
 
         <%-- Configuration Panel --%>
         <asp:Panel ID="pnlConfigure" runat="server" Visible="false">
