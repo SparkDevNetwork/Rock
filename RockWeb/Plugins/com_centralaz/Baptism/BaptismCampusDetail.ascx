@@ -1,5 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BaptismCampusDetail.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.Baptism.BaptismCampusDetail" %>
 
+<script type="text/javascript">
+    Sys.Application.add_load( function () {
+        $('.js-baptism-status').tooltip();
+    });
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 

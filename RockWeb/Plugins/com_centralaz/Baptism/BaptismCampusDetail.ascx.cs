@@ -468,7 +468,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         /// <param name="baptizee">The baptizee</param>
         protected void BuildListItem( Baptizee baptizee )
         {
-            phBaptismList.Controls.Add( new LiteralControl( "<div class='row'>" ) );
+            phBaptismList.Controls.Add( new LiteralControl( string.Format( "<div class='row js-baptism-status' data-toggle='tooltip' data-placement='top' title=\"scheduled by {0} on {1}\" >", baptizee.CreatedByPersonAlias.Person.FullName, baptizee.CreatedDateTime ) ) );
             string url = ResolveUrl( string.Format( "~/Person/{0}", baptizee.Person.PersonId ) );
             String theString = String.Format( "<div class='col-md-2'><a href=\"{0}\">{1}</a></div>", url, baptizee.Person.Person.FullName );
             phBaptismList.Controls.Add( new LiteralControl( theString ) );
@@ -513,12 +513,12 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             dictionaryInfo.Add( "GroupId", PageParameter( "GroupId" ) );
             dictionaryInfo.Add( "SelectedDate", calBaptism.SelectedDate.ToShortDateString() );
             dictionaryInfo.Add( "BaptizeeId", baptizee.Id.ToString() );
-            theString = LinkedPageUrl( "AddBaptismPage", dictionaryInfo );
+            var linkedPageUrl = LinkedPageUrl( "AddBaptismPage", dictionaryInfo );
 
             LinkButton lbEdit = new LinkButton
             {
                 Text = "<i class='fa fa-pencil'></i>",
-                PostBackUrl = theString
+                PostBackUrl = linkedPageUrl
             };
 
             phBaptismList.Controls.Add( new LiteralControl( "<div class='col-md-2'>" ) );
