@@ -49,7 +49,8 @@ If (Test-Path "$rootfolder\temp\web.connectionstrings.config"){
 
 # start web publishing service
 Write-Host "Starting Web Publishing Service"
-start-service -servicename w3svc
+Start-Service -ServiceName w3svc
+Start-Service -ServiceName w3logsvc
 
 # create empty migration flag
 New-Item "$webroot\App_Data\Run.Migration" -type file -force
