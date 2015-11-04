@@ -138,7 +138,7 @@ namespace Rock.Rest.Controllers
 
             if ( personId != null )
             {
-                return Service.Queryable().Include( a => a.PhoneNumbers).Include(a => a.Aliases )
+                return Service.Queryable().Include( a => a.PhoneNumbers ).Include( a => a.Aliases )
                     .FirstOrDefault( p => p.Id == personId.Value );
             }
 

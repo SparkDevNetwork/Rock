@@ -1,0 +1,4 @@
+[submodule ".remote/rock-bookshelf"]
+	path = .remote/rock-bookshelf
+	# url = https://github.com/NewSpring/rock-bookshelf.git
+	url = git@github.com:NewSpring/rock-bookshelf.git
