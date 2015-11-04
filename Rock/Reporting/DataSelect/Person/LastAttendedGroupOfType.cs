@@ -138,7 +138,7 @@ namespace Rock.Reporting.DataSelect.Person
                 var groupAttendanceQry = attendanceService.Queryable().Where( a => a.Group.GroupType.Guid == groupTypeGuid);
 
                 var qry = new PersonService( context ).Queryable()
-                    .Select( p => groupAttendanceQry.Where( xx => xx.PersonAlias.PersonId == p.Id ).Max( xx => xx.StartDateTime ));
+                    .Select( p => groupAttendanceQry.Where( xx => xx.PersonAlias.PersonId == p.Id && xx.DidAttend == true ).Max( xx => xx.StartDateTime ));
 
                 Expression selectExpression = SelectExpressionExtractor.Extract( qry, entityIdProperty, "p" );
 
