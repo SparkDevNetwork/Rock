@@ -60,7 +60,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.centralaz.SpiritualGift
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.centralaz.Utility", "com.centralaz.Utility\com.centralaz.Utility.csproj", "{A0D78E86-3DFB-4C3A-B59C-0619331D5BC1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prayer", "Prayer\Prayer.csproj", "{2EFA8359-969C-4321-BC7E-48FF5843653B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.centralaz.Prayer", "Prayer\com.centralaz.Prayer.csproj", "{2EFA8359-969C-4321-BC7E-48FF5843653B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

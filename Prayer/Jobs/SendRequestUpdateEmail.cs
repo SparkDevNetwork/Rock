@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+
 using Quartz;
 using Rock;
 using Rock.Attribute;
@@ -36,7 +37,7 @@ namespace com.centralaz.Prayer.Jobs
             Guid? updatePageGuid = dataMap.GetString( "RequestUpdatePage" ).AsGuidOrNull();
             if ( updatePageGuid != null )
             {
-                var pageId = ( new PageService( new RockContext() ).Get( updatePageGuid.Value ) ).Id;
+                int? pageId = ( new PageService( new RockContext() ).Get( updatePageGuid.Value ) ).Id;
                 if ( pageId != null )
                 {
                     SystemEmailService emailService = new SystemEmailService( rockContext );
