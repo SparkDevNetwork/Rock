@@ -42,6 +42,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         #region Fields
 
         // used for private variables
+        Dictionary<string,object> mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
 
         #endregion
 
@@ -78,6 +79,8 @@ namespace RockWeb.Plugins.com_centralaz.Utility
 
             if ( !Page.IsPostBack )
             {
+                mergeFields.Add( "CurrentPerson", CurrentPerson );
+                litDebug.Text = mergeFields.lavaDebugInfo();
                 // added for your convenience
             }
         }
@@ -119,12 +122,18 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                 person = CurrentPerson;
             }
             
+            if ( gpGroups.SelectedValueAsId().HasValue )
+            {
+                GroupService groupService = new GroupService( rockContext );
+                mergeFields.Add( "Group", groupService.Get( gpGroups.SelectedValueAsId() ?? -1 ) );
+            }
+
             // Get Lava
-            string lava = txtLava.Text;
-            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+            string lava = ceLava.Text;
             mergeFields.Add( "CurrentPerson", CurrentPerson );
             mergeFields.Add( "Person", person );
             litOutput.Text = lava.ResolveMergeFields( mergeFields );
+            litDebug.Text = mergeFields.lavaDebugInfo();
         }
     }
 }

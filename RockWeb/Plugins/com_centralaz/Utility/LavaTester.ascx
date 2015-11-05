@@ -6,20 +6,20 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-star"></i>Lava Tester</h1>
+                <h1 class="panel-title">Lava Tester</h1>
             </div>
             <div class="panel-body form-group">
                 <fieldset>
                     <div class="row">
                         <div class="col-md-12">
-                            <h2>Entity (only supports Person for now)</h2>
-
-                            <Rock:PersonPicker ID="ppPerson" runat="server" />
+                            <h2>Entity <small>(currently only supports Person and Group)</small></h2>
+                            <Rock:PersonPicker ID="ppPerson" Label="Person" runat="server" />
+                            <Rock:GroupPicker ID="gpGroups" runat="server" Label="Group"/>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:RockTextBox ID="txtLava" runat="server" TextMode="MultiLine" Rows="10"></Rock:RockTextBox>
+                            <Rock:CodeEditor ID="ceLava" runat="server" Label="Lava" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" AutoCompleteType="Email" />
                         </div>
                     </div>
 
@@ -28,9 +28,12 @@
                     </div>
 
                     <h2>Output</h2>
-                    <code>
+                    <div class="alert alert-info">
                         <asp:Literal ID="litOutput" runat="server"></asp:Literal>
-                    </code>
+                    </div>
+
+                    <h3>Lava Reference</h3>
+                    <asp:Literal ID="litDebug" runat="server"></asp:Literal>
                 </fieldset>
             </div>
         </asp:Panel>
