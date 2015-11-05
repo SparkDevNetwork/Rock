@@ -152,18 +152,22 @@ namespace Rock.Migrations
             try
             {
                 Sql( @"
-select Id into #deadEntityTypeIds from EntityType where Guid in (
-'048CEB0E-0673-42C5-8935-2A06AD03B850', -- Marketing Campaign Ad
-'772C19CE-FDDD-4057-BC81-9E359231E78E', -- Marketing Campaign
-'2F1818BD-4BC8-4562-BD89-E17512C2F3A6', -- Marketing Campaign Ad Type
-'60169E17-26E2-4C25-9AAD-3F96A874E372', -- Marketing Campaign Audience
-'1CA3E384-92D9-4688-8B8D-31513449BCE0') -- Marketing Campaign Campus
+    DECLARE @EntityTypeIds TABLE ( Id int )
 
-delete from Audit where EntityTypeId in (select id from #deadEntityTypeIds)
-delete from Auth where EntityTypeId in (select id from #deadEntityTypeIds)
-delete from Attribute where EntityTypeId in (select id from #deadEntityTypeIds)
-delete from EntityType where Id in  (select id from #deadEntityTypeIds)
-drop table #deadEntityTypeIds" );
+    INSERT INTO @EntityTypeIds 
+    SELECT [Id] FROM [EntityType] WHERE [Guid] IN (
+	    '048CEB0E-0673-42C5-8935-2A06AD03B850', -- Marketing Campaign Ad
+	    '772C19CE-FDDD-4057-BC81-9E359231E78E', -- Marketing Campaign
+	    '2F1818BD-4BC8-4562-BD89-E17512C2F3A6', -- Marketing Campaign Ad Type
+	    '60169E17-26E2-4C25-9AAD-3F96A874E372', -- Marketing Campaign Audience
+	    '1CA3E384-92D9-4688-8B8D-31513449BCE0'  -- Marketing Campaign Campus
+    )
+
+    delete from Audit where EntityTypeId in (select id from @EntityTypeIds)
+    delete from Auth where EntityTypeId in (select id from @EntityTypeIds)
+    delete from Attribute where EntityTypeId in (select id from @EntityTypeIds)
+    delete from EntityType where Id in  (select id from @EntityTypeIds)
+" );
             }
             catch
             {
