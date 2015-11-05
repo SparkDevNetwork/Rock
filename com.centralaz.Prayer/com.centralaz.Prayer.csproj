@@ -7,8 +7,8 @@
     <ProjectGuid>{2EFA8359-969C-4321-BC7E-48FF5843653B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Prayer</RootNamespace>
-    <AssemblyName>Prayer</AssemblyName>
+    <RootNamespace>com.centralaz.Prayer</RootNamespace>
+    <AssemblyName>com.centralaz.Prayer</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
