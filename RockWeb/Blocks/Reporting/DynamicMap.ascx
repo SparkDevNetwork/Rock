@@ -88,13 +88,14 @@
 
                     var heatMapBounds = new google.maps.LatLngBounds();
                     heatMapData.forEach(function (a) {
-                        heatMapBounds.extend(a);
+                        heatMapBounds.extend(a.location);
                     });
 
 
                     heatmap = new google.maps.visualization.HeatmapLayer({
+                        dissipating: true,
                         data: heatMapData,
-                        radius: 32
+                        radius: 128
                     });
 
                     heatmap.setMap(map);
@@ -144,10 +145,9 @@
                         var selectedBounds = shape.getBounds();
 
                         var pointCount = 0;
-                        debugger
                         heatmap.data.forEach(function (latLng) {
-                            if (selectedBounds.contains(latLng)) {
-                                pointCount++;
+                            if (selectedBounds.contains(latLng.location)) {
+                                pointCount += latLng.weight;
                             }
                         });
 
@@ -165,24 +165,26 @@
                         selectedShape.mapLabel = mapLabel;
 
                         allMarkers += mapLabel;
-                        selectedShape.addListener('bounds_changed', function (event) {
-                            var shape = this;
-                            selectedShape.mapLabel.setMap(null);
-                            AddUpdateShape(shap, true);
+                        if (!justUpdate) {
+                            selectedShape.addListener('bounds_changed', function (event) {
+                                var resizedShape = this;
+                                resizedShape.mapLabel.setMap(null);
+                                AddUpdateShape(resizedShape, true);
+                            });
+                        }
 
-                            debugger;
-                        });
-
-                        $('.js-deleteshape').click(function () {
-                            if (selectedShape) {
-                                selectedShape.setMap(null);
-                                selectedShape.mapLabel.setMap(null);
-                                selectedShape = null;
-                            }
-                        });
+                        
 
                     }
                 }
+
+                $('.js-deleteshape').click(function () {
+                    if (selectedShape) {
+                        selectedShape.setMap(null);
+                        selectedShape.mapLabel.setMap(null);
+                        selectedShape = null;
+                    }
+                });
             });
 
       
