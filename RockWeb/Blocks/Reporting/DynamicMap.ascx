@@ -65,7 +65,7 @@
                     var long = Number($('#<%=hfCenterLongitude.ClientID%>').val());
                     var zoom = Number($('#<%=hfZoom.ClientID%>').val());
                     var centerLatLng = new google.maps.LatLng(lat,long );
-
+                    
                     // Set default map options
                     var mapOptions = {
                         mapTypeId: 'roadmap'
@@ -84,13 +84,13 @@
                         map.fitBounds(bounds);
                     }
 
-                    var heatMapData = [<%=this.HeatMapData%>]
+                    var heatMapData = [
+<%=this.HeatMapData%>]
 
                     var heatMapBounds = new google.maps.LatLngBounds();
                     heatMapData.forEach(function (a) {
-                        heatMapBounds.extend(a.location);
+                        heatMapBounds.extend(a.location || a);
                     });
-
 
                     heatmap = new google.maps.visualization.HeatmapLayer({
                         dissipating: true,
@@ -101,7 +101,7 @@
                     heatmap.setMap(map);
 
                     var drawingManager = new google.maps.drawing.DrawingManager({
-                        drawingMode: google.maps.drawing.OverlayType.POLYGON,
+                        drawingMode: google.maps.drawing.OverlayType.RECTANGLE,
                         drawingControl: true,
                         drawingControlOptions: {
                             position: google.maps.ControlPosition.TOP_CENTER,
@@ -112,12 +112,20 @@
                                 google.maps.drawing.OverlayType.RECTANGLE
                             ]
                         },
+                        circleOptions: {
+                            draggable: true,
+                            editable: true
+                        },
                         polygonOptions: {
                             draggable: true,
                             editable: true,
                             strokeColor: self.strokeColor,
                             fillColor: self.fillColor,
                             strokeWeight: 2
+                        },
+                        polylineOptions: {
+                            draggable: true,
+                            editable: true
                         },
                         rectangleOptions: {
                             draggable: true,
@@ -146,9 +154,16 @@
 
                         var pointCount = 0;
                         heatmap.data.forEach(function (latLng) {
-                            if (selectedBounds.contains(latLng.location)) {
-                                pointCount += latLng.weight;
+                            if (latLng.location) {
+                                if (selectedBounds.contains(latLng.location)) {
+                                    pointCount += latLng.weight;
+                                }
+                            } else {
+                                if (selectedBounds.contains(latLng)) {
+                                    pointCount++;
+                                }
                             }
+
                         });
 
                         var totalCount = pointCount;

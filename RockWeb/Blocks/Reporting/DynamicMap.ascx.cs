@@ -104,6 +104,25 @@ namespace RockWeb.Blocks.Reporting
 
         public string HeatMapData { get; set; }
 
+        public class LatLong
+        {
+            public double Lat { get; set; }
+            public double Long { get; set; }
+        }
+
+        public class LatLongWeighted : LatLong
+        {
+            public LatLongWeighted( double lat, double lng, int weight )
+            {
+                Lat = lat;
+                Long = lng;
+                Weight = weight;
+            }
+            public int Weight { get; set; }
+        }
+
+
+
         /// <summary>
         /// Shows the report.
         /// </summary>
@@ -147,7 +166,6 @@ namespace RockWeb.Blocks.Reporting
                 zoom = "12";
             }
 
-
             var rockContext = new RockContext();
             var groupLocationService = new GroupLocationService( rockContext );
             var groupTypeFamilyId = GroupTypeCache.GetFamilyGroupType().Id;
@@ -160,4692 +178,4707 @@ namespace RockWeb.Blocks.Reporting
             } );
 
             var locationList = qryFamiliesLocations.ToList();
-            var clusteredPointLocations = locationList.GroupBy( a => new { rLong = Math.Round( a.Longitude.Value * 100 ), rLat = Math.Round( a.Latitude.Value * 100 ) } ).Select( a => new
+            var metersPerLatitudePHX = 110886.79;
+            var metersPerLongitudePHX = 94493.11;
+
+            const double metersPerMile = 1609.34;
+            var milesPerGrouping = 0.25;
+            var squareLengthHeightMeters = metersPerMile * milesPerGrouping;
+
+            var longitudeRoundFactor = metersPerLongitudePHX / squareLengthHeightMeters;
+            var latitudeRoundFactor = metersPerLatitudePHX / squareLengthHeightMeters;
+
+            var clusteredPointLocations = locationList.GroupBy( a => new { rLong = Math.Round( a.Longitude.Value * longitudeRoundFactor ), rLat = Math.Round( a.Latitude.Value * latitudeRoundFactor) } ).Select( a => new
             {
-                rLat = a.Key.rLat / 100,
-                rLong = a.Key.rLong / 100,
+                aLat = a.Average( x => x.Latitude),
+                aLong = a.Average( x => x.Longitude ),
                 PointCount = a.Count()
             } ).ToList();
 
 
 
-            //heatMapData = clusteredPointLocations.Select( a => string.Format( "{{location: new google.maps.LatLng(  {0}, {1}), weight: {2}}}", a.rLat, a.rLong, a.PointCount ) ).ToList().AsDelimited( "," );
+            //heatMapData = clusteredPointLocations.Select( a => string.Format( "{points.Add( new LatLongWeighted(   {0}, {1}, {2}}}", a.rLat, a.rLong, a.PointCount ) ).ToList().AsDelimited( "," );
 
-            this.HeatMapData = @"
-{location: new google.maps.LatLng(26.15,-80.14), weight:1},
-{location: new google.maps.LatLng(26.33,-80.13), weight:1},
-{location: new google.maps.LatLng(26.48,-81.83), weight:1},
-{location: new google.maps.LatLng(27,-82.02), weight:1},
-{location: new google.maps.LatLng(27.72,-82.48), weight:1},
-{location: new google.maps.LatLng(28.05,-80.65), weight:1},
-{location: new google.maps.LatLng(28.21,-80.7), weight:1},
-{location: new google.maps.LatLng(28.36,-80.66), weight:1},
-{location: new google.maps.LatLng(29.43,-98.7), weight:1},
-{location: new google.maps.LatLng(29.46,-98.49), weight:1},
-{location: new google.maps.LatLng(29.46,-98.36), weight:1},
-{location: new google.maps.LatLng(29.52,-98.81), weight:1},
-{location: new google.maps.LatLng(29.52,-98.34), weight:1},
-{location: new google.maps.LatLng(29.53,-98.28), weight:1},
-{location: new google.maps.LatLng(29.56,-95.54), weight:1},
-{location: new google.maps.LatLng(29.66,-98.47), weight:1},
-{location: new google.maps.LatLng(29.76,-94.99), weight:1},
-{location: new google.maps.LatLng(29.94,-89.95), weight:1},
-{location: new google.maps.LatLng(29.96,-90.37), weight:1},
-{location: new google.maps.LatLng(30.04,-95.17), weight:1},
-{location: new google.maps.LatLng(30.4,-89.05), weight:1},
-{location: new google.maps.LatLng(31.1,-97.39), weight:1},
-{location: new google.maps.LatLng(31.44,-110.24), weight:1},
-{location: new google.maps.LatLng(31.53,-110.28), weight:1},
-{location: new google.maps.LatLng(31.54,-110.24), weight:1},
-{location: new google.maps.LatLng(31.9,-111), weight:1},
-{location: new google.maps.LatLng(31.9,-106.44), weight:1},
-{location: new google.maps.LatLng(31.98,-110.97), weight:1},
-{location: new google.maps.LatLng(32.08,-110.69), weight:1},
-{location: new google.maps.LatLng(32.12,-111.11), weight:1},
-{location: new google.maps.LatLng(32.14,-110.92), weight:1},
-{location: new google.maps.LatLng(32.15,-110.97), weight:1},
-{location: new google.maps.LatLng(32.17,-97.74), weight:1},
-{location: new google.maps.LatLng(32.18,-110.78), weight:3},
-{location: new google.maps.LatLng(32.19,-110.84), weight:1},
-{location: new google.maps.LatLng(32.19,-81.23), weight:1},
-{location: new google.maps.LatLng(32.2,-110.95), weight:1},
-{location: new google.maps.LatLng(32.21,-110.82), weight:1},
-{location: new google.maps.LatLng(32.23,-110.9), weight:1},
-{location: new google.maps.LatLng(32.24,-110.96), weight:1},
-{location: new google.maps.LatLng(32.25,-110.82), weight:1},
-{location: new google.maps.LatLng(32.26,-111.02), weight:1},
-{location: new google.maps.LatLng(32.3,-96.94), weight:1},
-{location: new google.maps.LatLng(32.33,-111.09), weight:1},
-{location: new google.maps.LatLng(32.36,-111.12), weight:3},
-{location: new google.maps.LatLng(32.36,-111.07), weight:1},
-{location: new google.maps.LatLng(32.37,-111.11), weight:1},
-{location: new google.maps.LatLng(32.37,-106.73), weight:1},
-{location: new google.maps.LatLng(32.38,-111.09), weight:1},
-{location: new google.maps.LatLng(32.38,-111.05), weight:1},
-{location: new google.maps.LatLng(32.38,-104.22), weight:1},
-{location: new google.maps.LatLng(32.39,-110.98), weight:2},
-{location: new google.maps.LatLng(32.41,-110.99), weight:2},
-{location: new google.maps.LatLng(32.42,-109.93), weight:1},
-{location: new google.maps.LatLng(32.44,-111.21), weight:1},
-{location: new google.maps.LatLng(32.44,-111.08), weight:2},
-{location: new google.maps.LatLng(32.44,-110.99), weight:1},
-{location: new google.maps.LatLng(32.46,-110.98), weight:1},
-{location: new google.maps.LatLng(32.58,-93.65), weight:1},
-{location: new google.maps.LatLng(32.7,-117.17), weight:1},
-{location: new google.maps.LatLng(32.71,-117.15), weight:1},
-{location: new google.maps.LatLng(32.72,-117.13), weight:1},
-{location: new google.maps.LatLng(32.73,-117.17), weight:1},
-{location: new google.maps.LatLng(32.73,-117.1), weight:1},
-{location: new google.maps.LatLng(32.74,-117.06), weight:1},
-{location: new google.maps.LatLng(32.78,-117.16), weight:1},
-{location: new google.maps.LatLng(32.81,-96.8), weight:1},
-{location: new google.maps.LatLng(32.84,-109.75), weight:1},
-{location: new google.maps.LatLng(32.86,-112.13), weight:1},
-{location: new google.maps.LatLng(32.89,-111.72), weight:1},
-{location: new google.maps.LatLng(32.9,-111.76), weight:1},
-{location: new google.maps.LatLng(32.9,-109.85), weight:1},
-{location: new google.maps.LatLng(32.91,-111.77), weight:1},
-{location: new google.maps.LatLng(32.91,-111.74), weight:1},
-{location: new google.maps.LatLng(32.91,-111.62), weight:1},
-{location: new google.maps.LatLng(32.93,-111.73), weight:1},
-{location: new google.maps.LatLng(32.93,-111.72), weight:1},
-{location: new google.maps.LatLng(32.94,-117.24), weight:1},
-{location: new google.maps.LatLng(32.95,-96.48), weight:3},
-{location: new google.maps.LatLng(32.98,-117.07), weight:1},
-{location: new google.maps.LatLng(33.02,-97.26), weight:1},
-{location: new google.maps.LatLng(33.03,-117.11), weight:1},
-{location: new google.maps.LatLng(33.03,-111.4), weight:1},
-{location: new google.maps.LatLng(33.04,-112.06), weight:1},
-{location: new google.maps.LatLng(33.04,-112.05), weight:1},
-{location: new google.maps.LatLng(33.04,-112), weight:1},
-{location: new google.maps.LatLng(33.05,-112.06), weight:1},
-{location: new google.maps.LatLng(33.05,-111.96), weight:1},
-{location: new google.maps.LatLng(33.05,-111.95), weight:1},
-{location: new google.maps.LatLng(33.05,-111.48), weight:1},
-{location: new google.maps.LatLng(33.06,-112.04), weight:1},
-{location: new google.maps.LatLng(33.06,-111.48), weight:1},
-{location: new google.maps.LatLng(33.07,-112.01), weight:1},
-{location: new google.maps.LatLng(33.07,-112), weight:1},
-{location: new google.maps.LatLng(33.08,-112.04), weight:1},
-{location: new google.maps.LatLng(33.08,-112.01), weight:1},
-{location: new google.maps.LatLng(33.13,-117.06), weight:1},
-{location: new google.maps.LatLng(33.14,-117.07), weight:1},
-{location: new google.maps.LatLng(33.15,-117.33), weight:1},
-{location: new google.maps.LatLng(33.16,-111.55), weight:1},
-{location: new google.maps.LatLng(33.17,-117.32), weight:1},
-{location: new google.maps.LatLng(33.19,-111.57), weight:1},
-{location: new google.maps.LatLng(33.2,-112.83), weight:1},
-{location: new google.maps.LatLng(33.2,-111.59), weight:1},
-{location: new google.maps.LatLng(33.21,-111.81), weight:1},
-{location: new google.maps.LatLng(33.21,-111.8), weight:1},
-{location: new google.maps.LatLng(33.21,-111.69), weight:2},
-{location: new google.maps.LatLng(33.21,-111.68), weight:1},
-{location: new google.maps.LatLng(33.21,-111.66), weight:1},
-{location: new google.maps.LatLng(33.21,-111.63), weight:1},
-{location: new google.maps.LatLng(33.22,-111.82), weight:1},
-{location: new google.maps.LatLng(33.22,-111.8), weight:1},
-{location: new google.maps.LatLng(33.22,-111.69), weight:1},
-{location: new google.maps.LatLng(33.22,-96.71), weight:1},
-{location: new google.maps.LatLng(33.23,-111.82), weight:1},
-{location: new google.maps.LatLng(33.23,-111.71), weight:1},
-{location: new google.maps.LatLng(33.23,-111.67), weight:1},
-{location: new google.maps.LatLng(33.24,-112.46), weight:1},
-{location: new google.maps.LatLng(33.24,-111.81), weight:1},
-{location: new google.maps.LatLng(33.24,-111.78), weight:1},
-{location: new google.maps.LatLng(33.24,-111.72), weight:1},
-{location: new google.maps.LatLng(33.25,-111.87), weight:2},
-{location: new google.maps.LatLng(33.25,-111.74), weight:1},
-{location: new google.maps.LatLng(33.25,-111.73), weight:2},
-{location: new google.maps.LatLng(33.26,-111.85), weight:1},
-{location: new google.maps.LatLng(33.26,-111.8), weight:1},
-{location: new google.maps.LatLng(33.27,-111.76), weight:1},
-{location: new google.maps.LatLng(33.27,-111.7), weight:1},
-{location: new google.maps.LatLng(33.27,-111.69), weight:1},
-{location: new google.maps.LatLng(33.28,-111.88), weight:2},
-{location: new google.maps.LatLng(33.28,-111.86), weight:1},
-{location: new google.maps.LatLng(33.28,-111.72), weight:1},
-{location: new google.maps.LatLng(33.28,-111.71), weight:2},
-{location: new google.maps.LatLng(33.28,-111.69), weight:1},
-{location: new google.maps.LatLng(33.29,-112.04), weight:1},
-{location: new google.maps.LatLng(33.29,-112.02), weight:1},
-{location: new google.maps.LatLng(33.29,-111.95), weight:1},
-{location: new google.maps.LatLng(33.29,-111.87), weight:1},
-{location: new google.maps.LatLng(33.29,-111.86), weight:1},
-{location: new google.maps.LatLng(33.29,-111.81), weight:2},
-{location: new google.maps.LatLng(33.3,-112.12), weight:1},
-{location: new google.maps.LatLng(33.3,-111.89), weight:2},
-{location: new google.maps.LatLng(33.3,-111.71), weight:1},
-{location: new google.maps.LatLng(33.31,-112.03), weight:1},
-{location: new google.maps.LatLng(33.31,-111.98), weight:1},
-{location: new google.maps.LatLng(33.31,-111.95), weight:1},
-{location: new google.maps.LatLng(33.31,-111.93), weight:1},
-{location: new google.maps.LatLng(33.31,-111.7), weight:1},
-{location: new google.maps.LatLng(33.31,-86.58), weight:1},
-{location: new google.maps.LatLng(33.32,-112.46), weight:1},
-{location: new google.maps.LatLng(33.32,-112.45), weight:2},
-{location: new google.maps.LatLng(33.32,-112.44), weight:1},
-{location: new google.maps.LatLng(33.32,-112), weight:1},
-{location: new google.maps.LatLng(33.32,-111.98), weight:2},
-{location: new google.maps.LatLng(33.32,-111.96), weight:1},
-{location: new google.maps.LatLng(33.32,-111.94), weight:1},
-{location: new google.maps.LatLng(33.32,-111.91), weight:1},
-{location: new google.maps.LatLng(33.32,-111.9), weight:2},
-{location: new google.maps.LatLng(33.32,-111.89), weight:1},
-{location: new google.maps.LatLng(33.32,-111.87), weight:1},
-{location: new google.maps.LatLng(33.32,-111.83), weight:1},
-{location: new google.maps.LatLng(33.32,-111.78), weight:1},
-{location: new google.maps.LatLng(33.32,-111.77), weight:1},
-{location: new google.maps.LatLng(33.32,-111.73), weight:1},
-{location: new google.maps.LatLng(33.32,-111.72), weight:1},
-{location: new google.maps.LatLng(33.32,-111.7), weight:1},
-{location: new google.maps.LatLng(33.33,-112.44), weight:2},
-{location: new google.maps.LatLng(33.33,-112.43), weight:1},
-{location: new google.maps.LatLng(33.33,-111.98), weight:1},
-{location: new google.maps.LatLng(33.33,-111.96), weight:1},
-{location: new google.maps.LatLng(33.33,-111.94), weight:1},
-{location: new google.maps.LatLng(33.33,-111.87), weight:1},
-{location: new google.maps.LatLng(33.33,-111.83), weight:1},
-{location: new google.maps.LatLng(33.33,-111.77), weight:1},
-{location: new google.maps.LatLng(33.33,-111.71), weight:1},
-{location: new google.maps.LatLng(33.33,-111.59), weight:2},
-{location: new google.maps.LatLng(33.34,-112.47), weight:1},
-{location: new google.maps.LatLng(33.34,-112.43), weight:1},
-{location: new google.maps.LatLng(33.34,-111.99), weight:4},
-{location: new google.maps.LatLng(33.34,-111.98), weight:1},
-{location: new google.maps.LatLng(33.34,-111.96), weight:1},
-{location: new google.maps.LatLng(33.34,-111.84), weight:1},
-{location: new google.maps.LatLng(33.34,-111.83), weight:1},
-{location: new google.maps.LatLng(33.34,-111.82), weight:1},
-{location: new google.maps.LatLng(33.34,-111.78), weight:1},
-{location: new google.maps.LatLng(33.34,-111.74), weight:1},
-{location: new google.maps.LatLng(33.34,-111.6), weight:1},
-{location: new google.maps.LatLng(33.35,-112.44), weight:2},
-{location: new google.maps.LatLng(33.35,-111.97), weight:1},
-{location: new google.maps.LatLng(33.35,-111.96), weight:1},
-{location: new google.maps.LatLng(33.35,-111.93), weight:1},
-{location: new google.maps.LatLng(33.35,-111.9), weight:1},
-{location: new google.maps.LatLng(33.35,-111.89), weight:1},
-{location: new google.maps.LatLng(33.35,-111.81), weight:1},
-{location: new google.maps.LatLng(33.35,-111.79), weight:2},
-{location: new google.maps.LatLng(33.36,-112.44), weight:2},
-{location: new google.maps.LatLng(33.36,-112.16), weight:2},
-{location: new google.maps.LatLng(33.36,-112.13), weight:1},
-{location: new google.maps.LatLng(33.36,-112.08), weight:2},
-{location: new google.maps.LatLng(33.36,-112.06), weight:1},
-{location: new google.maps.LatLng(33.36,-111.98), weight:1},
-{location: new google.maps.LatLng(33.36,-111.91), weight:1},
-{location: new google.maps.LatLng(33.36,-111.88), weight:1},
-{location: new google.maps.LatLng(33.36,-111.87), weight:1},
-{location: new google.maps.LatLng(33.36,-111.85), weight:1},
-{location: new google.maps.LatLng(33.36,-111.82), weight:2},
-{location: new google.maps.LatLng(33.36,-111.81), weight:1},
-{location: new google.maps.LatLng(33.36,-111.8), weight:1},
-{location: new google.maps.LatLng(33.36,-111.79), weight:1},
-{location: new google.maps.LatLng(33.36,-111.77), weight:1},
-{location: new google.maps.LatLng(33.36,-111.75), weight:1},
-{location: new google.maps.LatLng(33.36,-111.71), weight:1},
-{location: new google.maps.LatLng(33.36,-111.66), weight:1},
-{location: new google.maps.LatLng(33.36,-111.62), weight:1},
-{location: new google.maps.LatLng(33.36,-111.6), weight:1},
-{location: new google.maps.LatLng(33.37,-112.59), weight:1},
-{location: new google.maps.LatLng(33.37,-112.57), weight:1},
-{location: new google.maps.LatLng(33.37,-112.21), weight:1},
-{location: new google.maps.LatLng(33.37,-112.2), weight:1},
-{location: new google.maps.LatLng(33.37,-112.18), weight:3},
-{location: new google.maps.LatLng(33.37,-112.17), weight:3},
-{location: new google.maps.LatLng(33.37,-112.16), weight:3},
-{location: new google.maps.LatLng(33.37,-112.15), weight:2},
-{location: new google.maps.LatLng(33.37,-112.07), weight:2},
-{location: new google.maps.LatLng(33.37,-112.05), weight:1},
-{location: new google.maps.LatLng(33.37,-112.04), weight:1},
-{location: new google.maps.LatLng(33.37,-112.03), weight:2},
-{location: new google.maps.LatLng(33.37,-111.93), weight:1},
-{location: new google.maps.LatLng(33.37,-111.92), weight:1},
-{location: new google.maps.LatLng(33.37,-111.91), weight:1},
-{location: new google.maps.LatLng(33.37,-111.85), weight:2},
-{location: new google.maps.LatLng(33.37,-111.84), weight:1},
-{location: new google.maps.LatLng(33.37,-111.82), weight:1},
-{location: new google.maps.LatLng(33.37,-111.8), weight:1},
-{location: new google.maps.LatLng(33.37,-111.79), weight:1},
-{location: new google.maps.LatLng(33.37,-111.75), weight:1},
-{location: new google.maps.LatLng(33.37,-111.72), weight:1},
-{location: new google.maps.LatLng(33.37,-111.71), weight:1},
-{location: new google.maps.LatLng(33.37,-111.64), weight:1},
-{location: new google.maps.LatLng(33.37,-111.63), weight:1},
-{location: new google.maps.LatLng(33.37,-111.61), weight:1},
-{location: new google.maps.LatLng(33.37,-86.78), weight:1},
-{location: new google.maps.LatLng(33.38,-112.22), weight:2},
-{location: new google.maps.LatLng(33.38,-112.21), weight:3},
-{location: new google.maps.LatLng(33.38,-112.2), weight:1},
-{location: new google.maps.LatLng(33.38,-112.18), weight:1},
-{location: new google.maps.LatLng(33.38,-112.15), weight:1},
-{location: new google.maps.LatLng(33.38,-112.14), weight:2},
-{location: new google.maps.LatLng(33.38,-112.12), weight:1},
-{location: new google.maps.LatLng(33.38,-112.11), weight:1},
-{location: new google.maps.LatLng(33.38,-112.09), weight:1},
-{location: new google.maps.LatLng(33.38,-112.08), weight:1},
-{location: new google.maps.LatLng(33.38,-112.06), weight:1},
-{location: new google.maps.LatLng(33.38,-112.04), weight:2},
-{location: new google.maps.LatLng(33.38,-112), weight:3},
-{location: new google.maps.LatLng(33.38,-111.99), weight:2},
-{location: new google.maps.LatLng(33.38,-111.96), weight:1},
-{location: new google.maps.LatLng(33.38,-111.95), weight:2},
-{location: new google.maps.LatLng(33.38,-111.94), weight:1},
-{location: new google.maps.LatLng(33.38,-111.93), weight:2},
-{location: new google.maps.LatLng(33.38,-111.92), weight:1},
-{location: new google.maps.LatLng(33.38,-111.89), weight:1},
-{location: new google.maps.LatLng(33.38,-111.86), weight:1},
-{location: new google.maps.LatLng(33.38,-111.85), weight:2},
-{location: new google.maps.LatLng(33.38,-111.78), weight:1},
-{location: new google.maps.LatLng(33.38,-111.75), weight:1},
-{location: new google.maps.LatLng(33.38,-111.71), weight:1},
-{location: new google.maps.LatLng(33.38,-111.66), weight:1},
-{location: new google.maps.LatLng(33.38,-111.53), weight:1},
-{location: new google.maps.LatLng(33.39,-112.83), weight:2},
-{location: new google.maps.LatLng(33.39,-112.48), weight:1},
-{location: new google.maps.LatLng(33.39,-112.32), weight:1},
-{location: new google.maps.LatLng(33.39,-112.22), weight:1},
-{location: new google.maps.LatLng(33.39,-112.21), weight:6},
-{location: new google.maps.LatLng(33.39,-112.16), weight:3},
-{location: new google.maps.LatLng(33.39,-112.15), weight:3},
-{location: new google.maps.LatLng(33.39,-112.11), weight:3},
-{location: new google.maps.LatLng(33.39,-112.1), weight:1},
-{location: new google.maps.LatLng(33.39,-111.98), weight:1},
-{location: new google.maps.LatLng(33.39,-111.96), weight:1},
-{location: new google.maps.LatLng(33.39,-111.94), weight:2},
-{location: new google.maps.LatLng(33.39,-111.93), weight:1},
-{location: new google.maps.LatLng(33.39,-111.92), weight:2},
-{location: new google.maps.LatLng(33.39,-111.87), weight:1},
-{location: new google.maps.LatLng(33.39,-111.8), weight:1},
-{location: new google.maps.LatLng(33.39,-111.75), weight:2},
-{location: new google.maps.LatLng(33.39,-111.74), weight:1},
-{location: new google.maps.LatLng(33.39,-111.72), weight:1},
-{location: new google.maps.LatLng(33.39,-111.67), weight:3},
-{location: new google.maps.LatLng(33.39,-111.62), weight:1},
-{location: new google.maps.LatLng(33.4,-112.58), weight:2},
-{location: new google.maps.LatLng(33.4,-112.3), weight:1},
-{location: new google.maps.LatLng(33.4,-112.28), weight:1},
-{location: new google.maps.LatLng(33.4,-112.21), weight:1},
-{location: new google.maps.LatLng(33.4,-112.17), weight:1},
-{location: new google.maps.LatLng(33.4,-112.12), weight:1},
-{location: new google.maps.LatLng(33.4,-112.11), weight:3},
-{location: new google.maps.LatLng(33.4,-112.08), weight:2},
-{location: new google.maps.LatLng(33.4,-112.07), weight:2},
-{location: new google.maps.LatLng(33.4,-112.04), weight:2},
-{location: new google.maps.LatLng(33.4,-111.94), weight:1},
-{location: new google.maps.LatLng(33.4,-111.91), weight:1},
-{location: new google.maps.LatLng(33.4,-111.87), weight:1},
-{location: new google.maps.LatLng(33.4,-111.85), weight:1},
-{location: new google.maps.LatLng(33.4,-111.54), weight:1},
-{location: new google.maps.LatLng(33.41,-112.61), weight:1},
-{location: new google.maps.LatLng(33.41,-112.6), weight:1},
-{location: new google.maps.LatLng(33.41,-112.58), weight:2},
-{location: new google.maps.LatLng(33.41,-112.56), weight:1},
-{location: new google.maps.LatLng(33.41,-112.46), weight:2},
-{location: new google.maps.LatLng(33.41,-112.41), weight:1},
-{location: new google.maps.LatLng(33.41,-112.32), weight:1},
-{location: new google.maps.LatLng(33.41,-112.28), weight:2},
-{location: new google.maps.LatLng(33.41,-112.27), weight:2},
-{location: new google.maps.LatLng(33.41,-112.26), weight:4},
-{location: new google.maps.LatLng(33.41,-112.23), weight:2},
-{location: new google.maps.LatLng(33.41,-112.22), weight:3},
-{location: new google.maps.LatLng(33.41,-112.21), weight:1},
-{location: new google.maps.LatLng(33.41,-112.19), weight:2},
-{location: new google.maps.LatLng(33.41,-112.17), weight:1},
-{location: new google.maps.LatLng(33.41,-112.08), weight:1},
-{location: new google.maps.LatLng(33.41,-112.06), weight:1},
-{location: new google.maps.LatLng(33.41,-112.02), weight:1},
-{location: new google.maps.LatLng(33.41,-111.96), weight:1},
-{location: new google.maps.LatLng(33.41,-111.93), weight:1},
-{location: new google.maps.LatLng(33.41,-111.92), weight:3},
-{location: new google.maps.LatLng(33.41,-111.88), weight:1},
-{location: new google.maps.LatLng(33.41,-111.77), weight:2},
-{location: new google.maps.LatLng(33.41,-111.76), weight:1},
-{location: new google.maps.LatLng(33.41,-111.74), weight:1},
-{location: new google.maps.LatLng(33.41,-111.54), weight:1},
-{location: new google.maps.LatLng(33.42,-112.42), weight:3},
-{location: new google.maps.LatLng(33.42,-112.41), weight:3},
-{location: new google.maps.LatLng(33.42,-112.4), weight:5},
-{location: new google.maps.LatLng(33.42,-112.32), weight:3},
-{location: new google.maps.LatLng(33.42,-112.31), weight:2},
-{location: new google.maps.LatLng(33.42,-112.28), weight:4},
-{location: new google.maps.LatLng(33.42,-112.27), weight:5},
-{location: new google.maps.LatLng(33.42,-112.26), weight:7},
-{location: new google.maps.LatLng(33.42,-112.25), weight:2},
-{location: new google.maps.LatLng(33.42,-112.24), weight:2},
-{location: new google.maps.LatLng(33.42,-112.23), weight:4},
-{location: new google.maps.LatLng(33.42,-112.21), weight:3},
-{location: new google.maps.LatLng(33.42,-111.95), weight:1},
-{location: new google.maps.LatLng(33.42,-111.92), weight:1},
-{location: new google.maps.LatLng(33.42,-111.91), weight:2},
-{location: new google.maps.LatLng(33.42,-111.9), weight:2},
-{location: new google.maps.LatLng(33.42,-111.88), weight:3},
-{location: new google.maps.LatLng(33.42,-111.78), weight:1},
-{location: new google.maps.LatLng(33.42,-111.75), weight:3},
-{location: new google.maps.LatLng(33.42,-111.74), weight:1},
-{location: new google.maps.LatLng(33.42,-111.64), weight:1},
-{location: new google.maps.LatLng(33.42,-111.49), weight:1},
-{location: new google.maps.LatLng(33.43,-112.56), weight:1},
-{location: new google.maps.LatLng(33.43,-112.55), weight:2},
-{location: new google.maps.LatLng(33.43,-112.53), weight:1},
-{location: new google.maps.LatLng(33.43,-112.52), weight:3},
-{location: new google.maps.LatLng(33.43,-112.43), weight:5},
-{location: new google.maps.LatLng(33.43,-112.42), weight:4},
-{location: new google.maps.LatLng(33.43,-112.41), weight:5},
-{location: new google.maps.LatLng(33.43,-112.4), weight:6},
-{location: new google.maps.LatLng(33.43,-112.39), weight:1},
-{location: new google.maps.LatLng(33.43,-112.36), weight:1},
-{location: new google.maps.LatLng(33.43,-112.34), weight:3},
-{location: new google.maps.LatLng(33.43,-112.32), weight:5},
-{location: new google.maps.LatLng(33.43,-112.31), weight:4},
-{location: new google.maps.LatLng(33.43,-112.3), weight:1},
-{location: new google.maps.LatLng(33.43,-112.29), weight:1},
-{location: new google.maps.LatLng(33.43,-112.28), weight:1},
-{location: new google.maps.LatLng(33.43,-112.25), weight:1},
-{location: new google.maps.LatLng(33.43,-112.24), weight:2},
-{location: new google.maps.LatLng(33.43,-112.23), weight:2},
-{location: new google.maps.LatLng(33.43,-112.2), weight:3},
-{location: new google.maps.LatLng(33.43,-112.13), weight:1},
-{location: new google.maps.LatLng(33.43,-111.96), weight:1},
-{location: new google.maps.LatLng(33.43,-111.95), weight:1},
-{location: new google.maps.LatLng(33.43,-111.88), weight:2},
-{location: new google.maps.LatLng(33.43,-111.86), weight:1},
-{location: new google.maps.LatLng(33.43,-111.73), weight:1},
-{location: new google.maps.LatLng(33.43,-111.71), weight:1},
-{location: new google.maps.LatLng(33.43,-111.6), weight:1},
-{location: new google.maps.LatLng(33.44,-112.57), weight:1},
-{location: new google.maps.LatLng(33.44,-112.55), weight:1},
-{location: new google.maps.LatLng(33.44,-112.54), weight:1},
-{location: new google.maps.LatLng(33.44,-112.53), weight:3},
-{location: new google.maps.LatLng(33.44,-112.52), weight:3},
-{location: new google.maps.LatLng(33.44,-112.48), weight:1},
-{location: new google.maps.LatLng(33.44,-112.45), weight:1},
-{location: new google.maps.LatLng(33.44,-112.44), weight:2},
-{location: new google.maps.LatLng(33.44,-112.43), weight:3},
-{location: new google.maps.LatLng(33.44,-112.42), weight:3},
-{location: new google.maps.LatLng(33.44,-112.41), weight:5},
-{location: new google.maps.LatLng(33.44,-112.4), weight:5},
-{location: new google.maps.LatLng(33.44,-112.39), weight:6},
-{location: new google.maps.LatLng(33.44,-112.36), weight:2},
-{location: new google.maps.LatLng(33.44,-112.35), weight:3},
-{location: new google.maps.LatLng(33.44,-112.34), weight:1},
-{location: new google.maps.LatLng(33.44,-112.33), weight:2},
-{location: new google.maps.LatLng(33.44,-112.32), weight:2},
-{location: new google.maps.LatLng(33.44,-112.31), weight:2},
-{location: new google.maps.LatLng(33.44,-112.3), weight:7},
-{location: new google.maps.LatLng(33.44,-112.15), weight:1},
-{location: new google.maps.LatLng(33.44,-112.14), weight:2},
-{location: new google.maps.LatLng(33.44,-112.13), weight:1},
-{location: new google.maps.LatLng(33.44,-112.09), weight:1},
-{location: new google.maps.LatLng(33.44,-111.84), weight:1},
-{location: new google.maps.LatLng(33.44,-111.82), weight:2},
-{location: new google.maps.LatLng(33.44,-111.76), weight:1},
-{location: new google.maps.LatLng(33.44,-111.73), weight:1},
-{location: new google.maps.LatLng(33.44,-111.64), weight:1},
-{location: new google.maps.LatLng(33.45,-112.56), weight:1},
-{location: new google.maps.LatLng(33.45,-112.54), weight:1},
-{location: new google.maps.LatLng(33.45,-112.53), weight:2},
-{location: new google.maps.LatLng(33.45,-112.46), weight:2},
-{location: new google.maps.LatLng(33.45,-112.43), weight:2},
-{location: new google.maps.LatLng(33.45,-112.42), weight:4},
-{location: new google.maps.LatLng(33.45,-112.41), weight:3},
-{location: new google.maps.LatLng(33.45,-112.36), weight:1},
-{location: new google.maps.LatLng(33.45,-112.35), weight:2},
-{location: new google.maps.LatLng(33.45,-112.34), weight:1},
-{location: new google.maps.LatLng(33.45,-112.33), weight:1},
-{location: new google.maps.LatLng(33.45,-112.32), weight:4},
-{location: new google.maps.LatLng(33.45,-112.31), weight:1},
-{location: new google.maps.LatLng(33.45,-112.3), weight:8},
-{location: new google.maps.LatLng(33.45,-112.29), weight:3},
-{location: new google.maps.LatLng(33.45,-112.26), weight:1},
-{location: new google.maps.LatLng(33.45,-112.25), weight:4},
-{location: new google.maps.LatLng(33.45,-112.21), weight:2},
-{location: new google.maps.LatLng(33.45,-112.13), weight:1},
-{location: new google.maps.LatLng(33.45,-112.12), weight:1},
-{location: new google.maps.LatLng(33.45,-112.09), weight:1},
-{location: new google.maps.LatLng(33.45,-112.08), weight:3},
-{location: new google.maps.LatLng(33.45,-112.07), weight:4},
-{location: new google.maps.LatLng(33.45,-112.06), weight:3},
-{location: new google.maps.LatLng(33.45,-111.98), weight:3},
-{location: new google.maps.LatLng(33.45,-111.97), weight:4},
-{location: new google.maps.LatLng(33.45,-111.96), weight:1},
-{location: new google.maps.LatLng(33.45,-111.93), weight:1},
-{location: new google.maps.LatLng(33.45,-111.85), weight:1},
-{location: new google.maps.LatLng(33.45,-111.81), weight:1},
-{location: new google.maps.LatLng(33.45,-111.8), weight:1},
-{location: new google.maps.LatLng(33.45,-111.79), weight:1},
-{location: new google.maps.LatLng(33.46,-112.7), weight:2},
-{location: new google.maps.LatLng(33.46,-112.56), weight:1},
-{location: new google.maps.LatLng(33.46,-112.47), weight:1},
-{location: new google.maps.LatLng(33.46,-112.42), weight:2},
-{location: new google.maps.LatLng(33.46,-112.39), weight:1},
-{location: new google.maps.LatLng(33.46,-112.35), weight:1},
-{location: new google.maps.LatLng(33.46,-112.32), weight:3},
-{location: new google.maps.LatLng(33.46,-112.31), weight:3},
-{location: new google.maps.LatLng(33.46,-112.28), weight:4},
-{location: new google.maps.LatLng(33.46,-112.25), weight:1},
-{location: new google.maps.LatLng(33.46,-112.24), weight:2},
-{location: new google.maps.LatLng(33.46,-112.23), weight:3},
-{location: new google.maps.LatLng(33.46,-112.2), weight:2},
-{location: new google.maps.LatLng(33.46,-112.19), weight:3},
-{location: new google.maps.LatLng(33.46,-112.18), weight:1},
-{location: new google.maps.LatLng(33.46,-112.14), weight:1},
-{location: new google.maps.LatLng(33.46,-112.09), weight:4},
-{location: new google.maps.LatLng(33.46,-112.08), weight:7},
-{location: new google.maps.LatLng(33.46,-112.07), weight:3},
-{location: new google.maps.LatLng(33.46,-112.05), weight:2},
-{location: new google.maps.LatLng(33.46,-112.03), weight:2},
-{location: new google.maps.LatLng(33.46,-112), weight:4},
-{location: new google.maps.LatLng(33.46,-111.99), weight:2},
-{location: new google.maps.LatLng(33.46,-111.98), weight:3},
-{location: new google.maps.LatLng(33.46,-111.97), weight:2},
-{location: new google.maps.LatLng(33.46,-111.93), weight:3},
-{location: new google.maps.LatLng(33.46,-111.89), weight:1},
-{location: new google.maps.LatLng(33.46,-111.68), weight:1},
-{location: new google.maps.LatLng(33.46,-111.57), weight:1},
-{location: new google.maps.LatLng(33.47,-112.51), weight:2},
-{location: new google.maps.LatLng(33.47,-112.41), weight:4},
-{location: new google.maps.LatLng(33.47,-112.37), weight:3},
-{location: new google.maps.LatLng(33.47,-112.36), weight:2},
-{location: new google.maps.LatLng(33.47,-112.35), weight:1},
-{location: new google.maps.LatLng(33.47,-112.34), weight:6},
-{location: new google.maps.LatLng(33.47,-112.33), weight:7},
-{location: new google.maps.LatLng(33.47,-112.32), weight:4},
-{location: new google.maps.LatLng(33.47,-112.31), weight:2},
-{location: new google.maps.LatLng(33.47,-112.3), weight:9},
-{location: new google.maps.LatLng(33.47,-112.29), weight:7},
-{location: new google.maps.LatLng(33.47,-112.28), weight:4},
-{location: new google.maps.LatLng(33.47,-112.26), weight:8},
-{location: new google.maps.LatLng(33.47,-112.25), weight:10},
-{location: new google.maps.LatLng(33.47,-112.24), weight:9},
-{location: new google.maps.LatLng(33.47,-112.23), weight:8},
-{location: new google.maps.LatLng(33.47,-112.21), weight:3},
-{location: new google.maps.LatLng(33.47,-112.19), weight:1},
-{location: new google.maps.LatLng(33.47,-112.18), weight:1},
-{location: new google.maps.LatLng(33.47,-112.17), weight:3},
-{location: new google.maps.LatLng(33.47,-112.16), weight:1},
-{location: new google.maps.LatLng(33.47,-112.15), weight:1},
-{location: new google.maps.LatLng(33.47,-112.13), weight:4},
-{location: new google.maps.LatLng(33.47,-112.12), weight:2},
-{location: new google.maps.LatLng(33.47,-112.11), weight:1},
-{location: new google.maps.LatLng(33.47,-112.1), weight:1},
-{location: new google.maps.LatLng(33.47,-112.09), weight:4},
-{location: new google.maps.LatLng(33.47,-112.08), weight:7},
-{location: new google.maps.LatLng(33.47,-112.07), weight:3},
-{location: new google.maps.LatLng(33.47,-112.06), weight:4},
-{location: new google.maps.LatLng(33.47,-112.04), weight:2},
-{location: new google.maps.LatLng(33.47,-112.01), weight:1},
-{location: new google.maps.LatLng(33.47,-112), weight:3},
-{location: new google.maps.LatLng(33.47,-111.99), weight:2},
-{location: new google.maps.LatLng(33.47,-111.98), weight:1},
-{location: new google.maps.LatLng(33.47,-111.93), weight:1},
-{location: new google.maps.LatLng(33.47,-111.9), weight:2},
-{location: new google.maps.LatLng(33.48,-112.48), weight:1},
-{location: new google.maps.LatLng(33.48,-112.4), weight:3},
-{location: new google.maps.LatLng(33.48,-112.39), weight:3},
-{location: new google.maps.LatLng(33.48,-112.38), weight:2},
-{location: new google.maps.LatLng(33.48,-112.37), weight:4},
-{location: new google.maps.LatLng(33.48,-112.36), weight:3},
-{location: new google.maps.LatLng(33.48,-112.35), weight:3},
-{location: new google.maps.LatLng(33.48,-112.34), weight:4},
-{location: new google.maps.LatLng(33.48,-112.33), weight:8},
-{location: new google.maps.LatLng(33.48,-112.32), weight:3},
-{location: new google.maps.LatLng(33.48,-112.31), weight:8},
-{location: new google.maps.LatLng(33.48,-112.3), weight:6},
-{location: new google.maps.LatLng(33.48,-112.29), weight:7},
-{location: new google.maps.LatLng(33.48,-112.28), weight:3},
-{location: new google.maps.LatLng(33.48,-112.26), weight:1},
-{location: new google.maps.LatLng(33.48,-112.25), weight:2},
-{location: new google.maps.LatLng(33.48,-112.24), weight:1},
-{location: new google.maps.LatLng(33.48,-112.22), weight:2},
-{location: new google.maps.LatLng(33.48,-112.21), weight:1},
-{location: new google.maps.LatLng(33.48,-112.2), weight:2},
-{location: new google.maps.LatLng(33.48,-112.19), weight:5},
-{location: new google.maps.LatLng(33.48,-112.16), weight:3},
-{location: new google.maps.LatLng(33.48,-112.15), weight:2},
-{location: new google.maps.LatLng(33.48,-112.13), weight:1},
-{location: new google.maps.LatLng(33.48,-112.12), weight:6},
-{location: new google.maps.LatLng(33.48,-112.1), weight:1},
-{location: new google.maps.LatLng(33.48,-112.05), weight:3},
-{location: new google.maps.LatLng(33.48,-112.03), weight:3},
-{location: new google.maps.LatLng(33.48,-112.02), weight:1},
-{location: new google.maps.LatLng(33.48,-112.01), weight:1},
-{location: new google.maps.LatLng(33.48,-112), weight:1},
-{location: new google.maps.LatLng(33.48,-111.99), weight:3},
-{location: new google.maps.LatLng(33.48,-111.97), weight:1},
-{location: new google.maps.LatLng(33.48,-111.95), weight:1},
-{location: new google.maps.LatLng(33.48,-111.91), weight:3},
-{location: new google.maps.LatLng(33.48,-111.9), weight:1},
-{location: new google.maps.LatLng(33.49,-117.71), weight:1},
-{location: new google.maps.LatLng(33.49,-117.09), weight:1},
-{location: new google.maps.LatLng(33.49,-112.7), weight:1},
-{location: new google.maps.LatLng(33.49,-112.68), weight:1},
-{location: new google.maps.LatLng(33.49,-112.5), weight:3},
-{location: new google.maps.LatLng(33.49,-112.47), weight:3},
-{location: new google.maps.LatLng(33.49,-112.46), weight:1},
-{location: new google.maps.LatLng(33.49,-112.39), weight:1},
-{location: new google.maps.LatLng(33.49,-112.38), weight:2},
-{location: new google.maps.LatLng(33.49,-112.37), weight:8},
-{location: new google.maps.LatLng(33.49,-112.36), weight:4},
-{location: new google.maps.LatLng(33.49,-112.35), weight:4},
-{location: new google.maps.LatLng(33.49,-112.34), weight:1},
-{location: new google.maps.LatLng(33.49,-112.33), weight:3},
-{location: new google.maps.LatLng(33.49,-112.32), weight:1},
-{location: new google.maps.LatLng(33.49,-112.31), weight:2},
-{location: new google.maps.LatLng(33.49,-112.3), weight:12},
-{location: new google.maps.LatLng(33.49,-112.29), weight:6},
-{location: new google.maps.LatLng(33.49,-112.28), weight:5},
-{location: new google.maps.LatLng(33.49,-112.25), weight:5},
-{location: new google.maps.LatLng(33.49,-112.24), weight:1},
-{location: new google.maps.LatLng(33.49,-112.23), weight:6},
-{location: new google.maps.LatLng(33.49,-112.22), weight:2},
-{location: new google.maps.LatLng(33.49,-112.21), weight:4},
-{location: new google.maps.LatLng(33.49,-112.19), weight:1},
-{location: new google.maps.LatLng(33.49,-112.17), weight:1},
-{location: new google.maps.LatLng(33.49,-112.16), weight:1},
-{location: new google.maps.LatLng(33.49,-112.15), weight:1},
-{location: new google.maps.LatLng(33.49,-112.13), weight:2},
-{location: new google.maps.LatLng(33.49,-112.12), weight:3},
-{location: new google.maps.LatLng(33.49,-112.11), weight:4},
-{location: new google.maps.LatLng(33.49,-112.1), weight:3},
-{location: new google.maps.LatLng(33.49,-112.09), weight:4},
-{location: new google.maps.LatLng(33.49,-112.08), weight:3},
-{location: new google.maps.LatLng(33.49,-112.07), weight:2},
-{location: new google.maps.LatLng(33.49,-112.06), weight:4},
-{location: new google.maps.LatLng(33.49,-112.05), weight:3},
-{location: new google.maps.LatLng(33.49,-112.04), weight:2},
-{location: new google.maps.LatLng(33.49,-112.03), weight:1},
-{location: new google.maps.LatLng(33.49,-112.02), weight:3},
-{location: new google.maps.LatLng(33.49,-112.01), weight:3},
-{location: new google.maps.LatLng(33.49,-112), weight:1},
-{location: new google.maps.LatLng(33.49,-111.99), weight:3},
-{location: new google.maps.LatLng(33.49,-111.98), weight:5},
-{location: new google.maps.LatLng(33.49,-111.95), weight:1},
-{location: new google.maps.LatLng(33.49,-111.93), weight:1},
-{location: new google.maps.LatLng(33.49,-111.91), weight:1},
-{location: new google.maps.LatLng(33.49,-111.67), weight:1},
-{location: new google.maps.LatLng(33.5,-112.51), weight:3},
-{location: new google.maps.LatLng(33.5,-112.45), weight:2},
-{location: new google.maps.LatLng(33.5,-112.4), weight:5},
-{location: new google.maps.LatLng(33.5,-112.39), weight:2},
-{location: new google.maps.LatLng(33.5,-112.38), weight:3},
-{location: new google.maps.LatLng(33.5,-112.37), weight:1},
-{location: new google.maps.LatLng(33.5,-112.36), weight:1},
-{location: new google.maps.LatLng(33.5,-112.35), weight:2},
-{location: new google.maps.LatLng(33.5,-112.34), weight:6},
-{location: new google.maps.LatLng(33.5,-112.33), weight:6},
-{location: new google.maps.LatLng(33.5,-112.3), weight:6},
-{location: new google.maps.LatLng(33.5,-112.29), weight:8},
-{location: new google.maps.LatLng(33.5,-112.28), weight:7},
-{location: new google.maps.LatLng(33.5,-112.27), weight:3},
-{location: new google.maps.LatLng(33.5,-112.26), weight:2},
-{location: new google.maps.LatLng(33.5,-112.25), weight:2},
-{location: new google.maps.LatLng(33.5,-112.24), weight:5},
-{location: new google.maps.LatLng(33.5,-112.23), weight:4},
-{location: new google.maps.LatLng(33.5,-112.22), weight:1},
-{location: new google.maps.LatLng(33.5,-112.21), weight:4},
-{location: new google.maps.LatLng(33.5,-112.2), weight:1},
-{location: new google.maps.LatLng(33.5,-112.18), weight:5},
-{location: new google.maps.LatLng(33.5,-112.17), weight:1},
-{location: new google.maps.LatLng(33.5,-112.16), weight:6},
-{location: new google.maps.LatLng(33.5,-112.14), weight:2},
-{location: new google.maps.LatLng(33.5,-112.13), weight:1},
-{location: new google.maps.LatLng(33.5,-112.12), weight:2},
-{location: new google.maps.LatLng(33.5,-112.11), weight:4},
-{location: new google.maps.LatLng(33.5,-112.1), weight:4},
-{location: new google.maps.LatLng(33.5,-112.09), weight:10},
-{location: new google.maps.LatLng(33.5,-112.08), weight:1},
-{location: new google.maps.LatLng(33.5,-112.07), weight:2},
-{location: new google.maps.LatLng(33.5,-112.06), weight:1},
-{location: new google.maps.LatLng(33.5,-112.05), weight:2},
-{location: new google.maps.LatLng(33.5,-112.04), weight:3},
-{location: new google.maps.LatLng(33.5,-112.03), weight:6},
-{location: new google.maps.LatLng(33.5,-112.02), weight:2},
-{location: new google.maps.LatLng(33.5,-112.01), weight:1},
-{location: new google.maps.LatLng(33.5,-112), weight:6},
-{location: new google.maps.LatLng(33.5,-111.99), weight:1},
-{location: new google.maps.LatLng(33.5,-111.98), weight:3},
-{location: new google.maps.LatLng(33.5,-111.96), weight:2},
-{location: new google.maps.LatLng(33.5,-111.93), weight:2},
-{location: new google.maps.LatLng(33.5,-111.92), weight:1},
-{location: new google.maps.LatLng(33.5,-111.91), weight:3},
-{location: new google.maps.LatLng(33.5,-111.9), weight:2},
-{location: new google.maps.LatLng(33.5,-111.86), weight:1},
-{location: new google.maps.LatLng(33.51,-112.49), weight:2},
-{location: new google.maps.LatLng(33.51,-112.48), weight:4},
-{location: new google.maps.LatLng(33.51,-112.45), weight:2},
-{location: new google.maps.LatLng(33.51,-112.35), weight:3},
-{location: new google.maps.LatLng(33.51,-112.34), weight:2},
-{location: new google.maps.LatLng(33.51,-112.33), weight:8},
-{location: new google.maps.LatLng(33.51,-112.32), weight:1},
-{location: new google.maps.LatLng(33.51,-112.3), weight:3},
-{location: new google.maps.LatLng(33.51,-112.29), weight:5},
-{location: new google.maps.LatLng(33.51,-112.28), weight:17},
-{location: new google.maps.LatLng(33.51,-112.27), weight:10},
-{location: new google.maps.LatLng(33.51,-112.26), weight:6},
-{location: new google.maps.LatLng(33.51,-112.25), weight:3},
-{location: new google.maps.LatLng(33.51,-112.24), weight:3},
-{location: new google.maps.LatLng(33.51,-112.23), weight:6},
-{location: new google.maps.LatLng(33.51,-112.22), weight:6},
-{location: new google.maps.LatLng(33.51,-112.21), weight:4},
-{location: new google.maps.LatLng(33.51,-112.19), weight:4},
-{location: new google.maps.LatLng(33.51,-112.18), weight:1},
-{location: new google.maps.LatLng(33.51,-112.17), weight:2},
-{location: new google.maps.LatLng(33.51,-112.14), weight:5},
-{location: new google.maps.LatLng(33.51,-112.13), weight:30},
-{location: new google.maps.LatLng(33.51,-112.12), weight:3},
-{location: new google.maps.LatLng(33.51,-112.11), weight:2},
-{location: new google.maps.LatLng(33.51,-112.1), weight:3},
-{location: new google.maps.LatLng(33.51,-112.09), weight:1},
-{location: new google.maps.LatLng(33.51,-112.08), weight:2},
-{location: new google.maps.LatLng(33.51,-112.07), weight:1},
-{location: new google.maps.LatLng(33.51,-112.06), weight:9},
-{location: new google.maps.LatLng(33.51,-112.05), weight:7},
-{location: new google.maps.LatLng(33.51,-112.04), weight:3},
-{location: new google.maps.LatLng(33.51,-112.03), weight:4},
-{location: new google.maps.LatLng(33.51,-112.02), weight:1},
-{location: new google.maps.LatLng(33.51,-112.01), weight:7},
-{location: new google.maps.LatLng(33.51,-112), weight:7},
-{location: new google.maps.LatLng(33.51,-111.98), weight:1},
-{location: new google.maps.LatLng(33.51,-111.93), weight:2},
-{location: new google.maps.LatLng(33.51,-111.9), weight:2},
-{location: new google.maps.LatLng(33.51,-101.99), weight:1},
-{location: new google.maps.LatLng(33.52,-112.46), weight:1},
-{location: new google.maps.LatLng(33.52,-112.45), weight:2},
-{location: new google.maps.LatLng(33.52,-112.44), weight:1},
-{location: new google.maps.LatLng(33.52,-112.36), weight:2},
-{location: new google.maps.LatLng(33.52,-112.35), weight:10},
-{location: new google.maps.LatLng(33.52,-112.34), weight:7},
-{location: new google.maps.LatLng(33.52,-112.33), weight:7},
-{location: new google.maps.LatLng(33.52,-112.32), weight:1},
-{location: new google.maps.LatLng(33.52,-112.29), weight:2},
-{location: new google.maps.LatLng(33.52,-112.28), weight:2},
-{location: new google.maps.LatLng(33.52,-112.27), weight:1},
-{location: new google.maps.LatLng(33.52,-112.26), weight:2},
-{location: new google.maps.LatLng(33.52,-112.25), weight:2},
-{location: new google.maps.LatLng(33.52,-112.24), weight:7},
-{location: new google.maps.LatLng(33.52,-112.23), weight:15},
-{location: new google.maps.LatLng(33.52,-112.22), weight:5},
-{location: new google.maps.LatLng(33.52,-112.21), weight:5},
-{location: new google.maps.LatLng(33.52,-112.2), weight:4},
-{location: new google.maps.LatLng(33.52,-112.19), weight:6},
-{location: new google.maps.LatLng(33.52,-112.18), weight:1},
-{location: new google.maps.LatLng(33.52,-112.16), weight:8},
-{location: new google.maps.LatLng(33.52,-112.15), weight:7},
-{location: new google.maps.LatLng(33.52,-112.14), weight:9},
-{location: new google.maps.LatLng(33.52,-112.13), weight:8},
-{location: new google.maps.LatLng(33.52,-112.12), weight:7},
-{location: new google.maps.LatLng(33.52,-112.11), weight:4},
-{location: new google.maps.LatLng(33.52,-112.1), weight:3},
-{location: new google.maps.LatLng(33.52,-112.09), weight:2},
-{location: new google.maps.LatLng(33.52,-112.08), weight:2},
-{location: new google.maps.LatLng(33.52,-112.06), weight:4},
-{location: new google.maps.LatLng(33.52,-112.05), weight:4},
-{location: new google.maps.LatLng(33.52,-112.04), weight:3},
-{location: new google.maps.LatLng(33.52,-112.03), weight:1},
-{location: new google.maps.LatLng(33.52,-112.01), weight:3},
-{location: new google.maps.LatLng(33.52,-111.99), weight:1},
-{location: new google.maps.LatLng(33.52,-111.94), weight:1},
-{location: new google.maps.LatLng(33.52,-111.93), weight:1},
-{location: new google.maps.LatLng(33.52,-111.91), weight:1},
-{location: new google.maps.LatLng(33.52,-111.9), weight:1},
-{location: new google.maps.LatLng(33.53,-112.46), weight:1},
-{location: new google.maps.LatLng(33.53,-112.44), weight:1},
-{location: new google.maps.LatLng(33.53,-112.36), weight:1},
-{location: new google.maps.LatLng(33.53,-112.35), weight:19},
-{location: new google.maps.LatLng(33.53,-112.34), weight:3},
-{location: new google.maps.LatLng(33.53,-112.26), weight:3},
-{location: new google.maps.LatLng(33.53,-112.25), weight:18},
-{location: new google.maps.LatLng(33.53,-112.24), weight:16},
-{location: new google.maps.LatLng(33.53,-112.23), weight:14},
-{location: new google.maps.LatLng(33.53,-112.22), weight:8},
-{location: new google.maps.LatLng(33.53,-112.21), weight:8},
-{location: new google.maps.LatLng(33.53,-112.2), weight:2},
-{location: new google.maps.LatLng(33.53,-112.19), weight:3},
-{location: new google.maps.LatLng(33.53,-112.18), weight:8},
-{location: new google.maps.LatLng(33.53,-112.17), weight:1},
-{location: new google.maps.LatLng(33.53,-112.16), weight:8},
-{location: new google.maps.LatLng(33.53,-112.15), weight:11},
-{location: new google.maps.LatLng(33.53,-112.14), weight:8},
-{location: new google.maps.LatLng(33.53,-112.13), weight:3},
-{location: new google.maps.LatLng(33.53,-112.12), weight:8},
-{location: new google.maps.LatLng(33.53,-112.11), weight:6},
-{location: new google.maps.LatLng(33.53,-112.1), weight:10},
-{location: new google.maps.LatLng(33.53,-112.09), weight:4},
-{location: new google.maps.LatLng(33.53,-112.08), weight:7},
-{location: new google.maps.LatLng(33.53,-112.07), weight:1},
-{location: new google.maps.LatLng(33.53,-112.06), weight:2},
-{location: new google.maps.LatLng(33.53,-112.05), weight:11},
-{location: new google.maps.LatLng(33.53,-112.04), weight:4},
-{location: new google.maps.LatLng(33.53,-112.01), weight:1},
-{location: new google.maps.LatLng(33.53,-111.93), weight:1},
-{location: new google.maps.LatLng(33.53,-111.91), weight:1},
-{location: new google.maps.LatLng(33.53,-111.9), weight:1},
-{location: new google.maps.LatLng(33.54,-112.46), weight:2},
-{location: new google.maps.LatLng(33.54,-112.43), weight:1},
-{location: new google.maps.LatLng(33.54,-112.35), weight:12},
-{location: new google.maps.LatLng(33.54,-112.34), weight:1},
-{location: new google.maps.LatLng(33.54,-112.33), weight:2},
-{location: new google.maps.LatLng(33.54,-112.3), weight:2},
-{location: new google.maps.LatLng(33.54,-112.29), weight:3},
-{location: new google.maps.LatLng(33.54,-112.26), weight:10},
-{location: new google.maps.LatLng(33.54,-112.25), weight:14},
-{location: new google.maps.LatLng(33.54,-112.24), weight:13},
-{location: new google.maps.LatLng(33.54,-112.23), weight:16},
-{location: new google.maps.LatLng(33.54,-112.22), weight:9},
-{location: new google.maps.LatLng(33.54,-112.21), weight:11},
-{location: new google.maps.LatLng(33.54,-112.2), weight:8},
-{location: new google.maps.LatLng(33.54,-112.19), weight:3},
-{location: new google.maps.LatLng(33.54,-112.18), weight:6},
-{location: new google.maps.LatLng(33.54,-112.17), weight:2},
-{location: new google.maps.LatLng(33.54,-112.16), weight:2},
-{location: new google.maps.LatLng(33.54,-112.15), weight:8},
-{location: new google.maps.LatLng(33.54,-112.14), weight:8},
-{location: new google.maps.LatLng(33.54,-112.13), weight:6},
-{location: new google.maps.LatLng(33.54,-112.12), weight:3},
-{location: new google.maps.LatLng(33.54,-112.11), weight:1},
-{location: new google.maps.LatLng(33.54,-112.1), weight:2},
-{location: new google.maps.LatLng(33.54,-112.09), weight:4},
-{location: new google.maps.LatLng(33.54,-112.08), weight:13},
-{location: new google.maps.LatLng(33.54,-112.07), weight:2},
-{location: new google.maps.LatLng(33.54,-112.06), weight:8},
-{location: new google.maps.LatLng(33.54,-112.05), weight:5},
-{location: new google.maps.LatLng(33.54,-112.04), weight:3},
-{location: new google.maps.LatLng(33.54,-112.03), weight:2},
-{location: new google.maps.LatLng(33.54,-111.92), weight:1},
-{location: new google.maps.LatLng(33.54,-111.9), weight:1},
-{location: new google.maps.LatLng(33.55,-117.65), weight:2},
-{location: new google.maps.LatLng(33.55,-112.46), weight:2},
-{location: new google.maps.LatLng(33.55,-112.44), weight:2},
-{location: new google.maps.LatLng(33.55,-112.3), weight:5},
-{location: new google.maps.LatLng(33.55,-112.29), weight:11},
-{location: new google.maps.LatLng(33.55,-112.28), weight:3},
-{location: new google.maps.LatLng(33.55,-112.27), weight:7},
-{location: new google.maps.LatLng(33.55,-112.25), weight:10},
-{location: new google.maps.LatLng(33.55,-112.24), weight:3},
-{location: new google.maps.LatLng(33.55,-112.23), weight:2},
-{location: new google.maps.LatLng(33.55,-112.22), weight:1},
-{location: new google.maps.LatLng(33.55,-112.2), weight:1},
-{location: new google.maps.LatLng(33.55,-112.19), weight:11},
-{location: new google.maps.LatLng(33.55,-112.18), weight:5},
-{location: new google.maps.LatLng(33.55,-112.17), weight:7},
-{location: new google.maps.LatLng(33.55,-112.16), weight:14},
-{location: new google.maps.LatLng(33.55,-112.15), weight:10},
-{location: new google.maps.LatLng(33.55,-112.14), weight:5},
-{location: new google.maps.LatLng(33.55,-112.13), weight:6},
-{location: new google.maps.LatLng(33.55,-112.12), weight:2},
-{location: new google.maps.LatLng(33.55,-112.11), weight:6},
-{location: new google.maps.LatLng(33.55,-112.1), weight:7},
-{location: new google.maps.LatLng(33.55,-112.09), weight:6},
-{location: new google.maps.LatLng(33.55,-112.08), weight:2},
-{location: new google.maps.LatLng(33.55,-112.07), weight:7},
-{location: new google.maps.LatLng(33.55,-112.06), weight:5},
-{location: new google.maps.LatLng(33.55,-112.05), weight:6},
-{location: new google.maps.LatLng(33.55,-112.04), weight:4},
-{location: new google.maps.LatLng(33.55,-111.98), weight:1},
-{location: new google.maps.LatLng(33.55,-111.9), weight:3},
-{location: new google.maps.LatLng(33.55,-111.89), weight:1},
-{location: new google.maps.LatLng(33.56,-112.47), weight:1},
-{location: new google.maps.LatLng(33.56,-112.45), weight:11},
-{location: new google.maps.LatLng(33.56,-112.44), weight:1},
-{location: new google.maps.LatLng(33.56,-112.3), weight:8},
-{location: new google.maps.LatLng(33.56,-112.29), weight:22},
-{location: new google.maps.LatLng(33.56,-112.28), weight:15},
-{location: new google.maps.LatLng(33.56,-112.27), weight:22},
-{location: new google.maps.LatLng(33.56,-112.26), weight:5},
-{location: new google.maps.LatLng(33.56,-112.25), weight:32},
-{location: new google.maps.LatLng(33.56,-112.24), weight:15},
-{location: new google.maps.LatLng(33.56,-112.21), weight:7},
-{location: new google.maps.LatLng(33.56,-112.2), weight:15},
-{location: new google.maps.LatLng(33.56,-112.19), weight:20},
-{location: new google.maps.LatLng(33.56,-112.18), weight:15},
-{location: new google.maps.LatLng(33.56,-112.17), weight:14},
-{location: new google.maps.LatLng(33.56,-112.16), weight:17},
-{location: new google.maps.LatLng(33.56,-112.15), weight:13},
-{location: new google.maps.LatLng(33.56,-112.14), weight:9},
-{location: new google.maps.LatLng(33.56,-112.13), weight:10},
-{location: new google.maps.LatLng(33.56,-112.12), weight:9},
-{location: new google.maps.LatLng(33.56,-112.11), weight:6},
-{location: new google.maps.LatLng(33.56,-112.1), weight:10},
-{location: new google.maps.LatLng(33.56,-112.09), weight:6},
-{location: new google.maps.LatLng(33.56,-112.08), weight:5},
-{location: new google.maps.LatLng(33.56,-112.07), weight:3},
-{location: new google.maps.LatLng(33.56,-112.06), weight:10},
-{location: new google.maps.LatLng(33.56,-112.05), weight:2},
-{location: new google.maps.LatLng(33.56,-112.04), weight:1},
-{location: new google.maps.LatLng(33.56,-111.97), weight:1},
-{location: new google.maps.LatLng(33.56,-111.92), weight:1},
-{location: new google.maps.LatLng(33.56,-88.42), weight:1},
-{location: new google.maps.LatLng(33.57,-112.46), weight:6},
-{location: new google.maps.LatLng(33.57,-112.45), weight:10},
-{location: new google.maps.LatLng(33.57,-112.31), weight:22},
-{location: new google.maps.LatLng(33.57,-112.3), weight:1},
-{location: new google.maps.LatLng(33.57,-112.29), weight:9},
-{location: new google.maps.LatLng(33.57,-112.28), weight:4},
-{location: new google.maps.LatLng(33.57,-112.27), weight:14},
-{location: new google.maps.LatLng(33.57,-112.26), weight:37},
-{location: new google.maps.LatLng(33.57,-112.25), weight:35},
-{location: new google.maps.LatLng(33.57,-112.24), weight:30},
-{location: new google.maps.LatLng(33.57,-112.23), weight:11},
-{location: new google.maps.LatLng(33.57,-112.22), weight:10},
-{location: new google.maps.LatLng(33.57,-112.21), weight:20},
-{location: new google.maps.LatLng(33.57,-112.2), weight:21},
-{location: new google.maps.LatLng(33.57,-112.19), weight:9},
-{location: new google.maps.LatLng(33.57,-112.18), weight:13},
-{location: new google.maps.LatLng(33.57,-112.17), weight:16},
-{location: new google.maps.LatLng(33.57,-112.16), weight:25},
-{location: new google.maps.LatLng(33.57,-112.15), weight:14},
-{location: new google.maps.LatLng(33.57,-112.14), weight:15},
-{location: new google.maps.LatLng(33.57,-112.13), weight:6},
-{location: new google.maps.LatLng(33.57,-112.12), weight:4},
-{location: new google.maps.LatLng(33.57,-112.11), weight:3},
-{location: new google.maps.LatLng(33.57,-112.1), weight:7},
-{location: new google.maps.LatLng(33.57,-112.09), weight:7},
-{location: new google.maps.LatLng(33.57,-112.08), weight:3},
-{location: new google.maps.LatLng(33.57,-112.07), weight:4},
-{location: new google.maps.LatLng(33.57,-112.06), weight:2},
-{location: new google.maps.LatLng(33.57,-112.05), weight:5},
-{location: new google.maps.LatLng(33.57,-112.01), weight:4},
-{location: new google.maps.LatLng(33.57,-111.95), weight:1},
-{location: new google.maps.LatLng(33.57,-111.93), weight:1},
-{location: new google.maps.LatLng(33.57,-111.91), weight:1},
-{location: new google.maps.LatLng(33.57,-111.9), weight:1},
-{location: new google.maps.LatLng(33.57,-111.88), weight:2},
-{location: new google.maps.LatLng(33.57,-111.86), weight:2},
-{location: new google.maps.LatLng(33.57,-111.85), weight:2},
-{location: new google.maps.LatLng(33.57,-111.75), weight:1},
-{location: new google.maps.LatLng(33.57,-111.73), weight:1},
-{location: new google.maps.LatLng(33.58,-112.46), weight:2},
-{location: new google.maps.LatLng(33.58,-112.45), weight:1},
-{location: new google.maps.LatLng(33.58,-112.44), weight:2},
-{location: new google.maps.LatLng(33.58,-112.41), weight:2},
-{location: new google.maps.LatLng(33.58,-112.4), weight:6},
-{location: new google.maps.LatLng(33.58,-112.37), weight:1},
-{location: new google.maps.LatLng(33.58,-112.31), weight:13},
-{location: new google.maps.LatLng(33.58,-112.3), weight:3},
-{location: new google.maps.LatLng(33.58,-112.29), weight:2},
-{location: new google.maps.LatLng(33.58,-112.28), weight:6},
-{location: new google.maps.LatLng(33.58,-112.27), weight:9},
-{location: new google.maps.LatLng(33.58,-112.26), weight:36},
-{location: new google.maps.LatLng(33.58,-112.25), weight:37},
-{location: new google.maps.LatLng(33.58,-112.24), weight:22},
-{location: new google.maps.LatLng(33.58,-112.23), weight:20},
-{location: new google.maps.LatLng(33.58,-112.22), weight:20},
-{location: new google.maps.LatLng(33.58,-112.21), weight:32},
-{location: new google.maps.LatLng(33.58,-112.2), weight:34},
-{location: new google.maps.LatLng(33.58,-112.19), weight:13},
-{location: new google.maps.LatLng(33.58,-112.18), weight:25},
-{location: new google.maps.LatLng(33.58,-112.17), weight:18},
-{location: new google.maps.LatLng(33.58,-112.16), weight:23},
-{location: new google.maps.LatLng(33.58,-112.15), weight:14},
-{location: new google.maps.LatLng(33.58,-112.14), weight:17},
-{location: new google.maps.LatLng(33.58,-112.13), weight:18},
-{location: new google.maps.LatLng(33.58,-112.12), weight:7},
-{location: new google.maps.LatLng(33.58,-112.1), weight:4},
-{location: new google.maps.LatLng(33.58,-112.09), weight:6},
-{location: new google.maps.LatLng(33.58,-112.08), weight:1},
-{location: new google.maps.LatLng(33.58,-112.07), weight:6},
-{location: new google.maps.LatLng(33.58,-112.06), weight:16},
-{location: new google.maps.LatLng(33.58,-112.05), weight:3},
-{location: new google.maps.LatLng(33.58,-112.03), weight:5},
-{location: new google.maps.LatLng(33.58,-112.02), weight:10},
-{location: new google.maps.LatLng(33.58,-112), weight:2},
-{location: new google.maps.LatLng(33.58,-111.99), weight:2},
-{location: new google.maps.LatLng(33.58,-111.96), weight:1},
-{location: new google.maps.LatLng(33.58,-111.93), weight:4},
-{location: new google.maps.LatLng(33.58,-111.92), weight:1},
-{location: new google.maps.LatLng(33.58,-111.91), weight:1},
-{location: new google.maps.LatLng(33.58,-111.9), weight:1},
-{location: new google.maps.LatLng(33.58,-111.89), weight:1},
-{location: new google.maps.LatLng(33.58,-111.88), weight:1},
-{location: new google.maps.LatLng(33.58,-111.86), weight:1},
-{location: new google.maps.LatLng(33.58,-111.85), weight:1},
-{location: new google.maps.LatLng(33.58,-111.84), weight:1},
-{location: new google.maps.LatLng(33.58,-111.82), weight:1},
-{location: new google.maps.LatLng(33.58,-111.79), weight:1},
-{location: new google.maps.LatLng(33.59,-117.23), weight:1},
-{location: new google.maps.LatLng(33.59,-117.22), weight:1},
-{location: new google.maps.LatLng(33.59,-117.14), weight:1},
-{location: new google.maps.LatLng(33.59,-112.42), weight:2},
-{location: new google.maps.LatLng(33.59,-112.41), weight:6},
-{location: new google.maps.LatLng(33.59,-112.4), weight:8},
-{location: new google.maps.LatLng(33.59,-112.39), weight:8},
-{location: new google.maps.LatLng(33.59,-112.38), weight:7},
-{location: new google.maps.LatLng(33.59,-112.37), weight:11},
-{location: new google.maps.LatLng(33.59,-112.34), weight:6},
-{location: new google.maps.LatLng(33.59,-112.33), weight:7},
-{location: new google.maps.LatLng(33.59,-112.32), weight:2},
-{location: new google.maps.LatLng(33.59,-112.31), weight:8},
-{location: new google.maps.LatLng(33.59,-112.3), weight:4},
-{location: new google.maps.LatLng(33.59,-112.29), weight:6},
-{location: new google.maps.LatLng(33.59,-112.28), weight:5},
-{location: new google.maps.LatLng(33.59,-112.27), weight:15},
-{location: new google.maps.LatLng(33.59,-112.26), weight:20},
-{location: new google.maps.LatLng(33.59,-112.25), weight:20},
-{location: new google.maps.LatLng(33.59,-112.24), weight:35},
-{location: new google.maps.LatLng(33.59,-112.23), weight:34},
-{location: new google.maps.LatLng(33.59,-112.22), weight:40},
-{location: new google.maps.LatLng(33.59,-112.21), weight:38},
-{location: new google.maps.LatLng(33.59,-112.2), weight:47},
-{location: new google.maps.LatLng(33.59,-112.19), weight:35},
-{location: new google.maps.LatLng(33.59,-112.18), weight:24},
-{location: new google.maps.LatLng(33.59,-112.17), weight:31},
-{location: new google.maps.LatLng(33.59,-112.16), weight:18},
-{location: new google.maps.LatLng(33.59,-112.15), weight:21},
-{location: new google.maps.LatLng(33.59,-112.14), weight:19},
-{location: new google.maps.LatLng(33.59,-112.13), weight:16},
-{location: new google.maps.LatLng(33.59,-112.12), weight:20},
-{location: new google.maps.LatLng(33.59,-112.11), weight:7},
-{location: new google.maps.LatLng(33.59,-112.1), weight:10},
-{location: new google.maps.LatLng(33.59,-112.09), weight:6},
-{location: new google.maps.LatLng(33.59,-112.06), weight:5},
-{location: new google.maps.LatLng(33.59,-112.03), weight:3},
-{location: new google.maps.LatLng(33.59,-112.02), weight:2},
-{location: new google.maps.LatLng(33.59,-112.01), weight:3},
-{location: new google.maps.LatLng(33.59,-112), weight:3},
-{location: new google.maps.LatLng(33.59,-111.99), weight:3},
-{location: new google.maps.LatLng(33.59,-111.98), weight:3},
-{location: new google.maps.LatLng(33.59,-111.97), weight:1},
-{location: new google.maps.LatLng(33.59,-111.95), weight:2},
-{location: new google.maps.LatLng(33.59,-111.93), weight:2},
-{location: new google.maps.LatLng(33.59,-111.91), weight:1},
-{location: new google.maps.LatLng(33.59,-111.88), weight:2},
-{location: new google.maps.LatLng(33.59,-111.84), weight:1},
-{location: new google.maps.LatLng(33.6,-112.44), weight:7},
-{location: new google.maps.LatLng(33.6,-112.39), weight:7},
-{location: new google.maps.LatLng(33.6,-112.38), weight:11},
-{location: new google.maps.LatLng(33.6,-112.37), weight:1},
-{location: new google.maps.LatLng(33.6,-112.34), weight:8},
-{location: new google.maps.LatLng(33.6,-112.33), weight:11},
-{location: new google.maps.LatLng(33.6,-112.32), weight:11},
-{location: new google.maps.LatLng(33.6,-112.31), weight:7},
-{location: new google.maps.LatLng(33.6,-112.3), weight:9},
-{location: new google.maps.LatLng(33.6,-112.29), weight:4},
-{location: new google.maps.LatLng(33.6,-112.28), weight:6},
-{location: new google.maps.LatLng(33.6,-112.27), weight:13},
-{location: new google.maps.LatLng(33.6,-112.26), weight:2},
-{location: new google.maps.LatLng(33.6,-112.25), weight:61},
-{location: new google.maps.LatLng(33.6,-112.24), weight:51},
-{location: new google.maps.LatLng(33.6,-112.23), weight:57},
-{location: new google.maps.LatLng(33.6,-112.22), weight:58},
-{location: new google.maps.LatLng(33.6,-112.21), weight:47},
-{location: new google.maps.LatLng(33.6,-112.2), weight:18},
-{location: new google.maps.LatLng(33.6,-112.19), weight:21},
-{location: new google.maps.LatLng(33.6,-112.18), weight:24},
-{location: new google.maps.LatLng(33.6,-112.17), weight:25},
-{location: new google.maps.LatLng(33.6,-112.16), weight:22},
-{location: new google.maps.LatLng(33.6,-112.15), weight:24},
-{location: new google.maps.LatLng(33.6,-112.14), weight:16},
-{location: new google.maps.LatLng(33.6,-112.13), weight:17},
-{location: new google.maps.LatLng(33.6,-112.12), weight:15},
-{location: new google.maps.LatLng(33.6,-112.11), weight:21},
-{location: new google.maps.LatLng(33.6,-112.1), weight:14},
-{location: new google.maps.LatLng(33.6,-112.08), weight:2},
-{location: new google.maps.LatLng(33.6,-112.07), weight:2},
-{location: new google.maps.LatLng(33.6,-112.05), weight:6},
-{location: new google.maps.LatLng(33.6,-112.04), weight:8},
-{location: new google.maps.LatLng(33.6,-112.03), weight:8},
-{location: new google.maps.LatLng(33.6,-112.02), weight:4},
-{location: new google.maps.LatLng(33.6,-112.01), weight:3},
-{location: new google.maps.LatLng(33.6,-112), weight:5},
-{location: new google.maps.LatLng(33.6,-111.99), weight:4},
-{location: new google.maps.LatLng(33.6,-111.98), weight:1},
-{location: new google.maps.LatLng(33.6,-111.96), weight:4},
-{location: new google.maps.LatLng(33.6,-111.95), weight:2},
-{location: new google.maps.LatLng(33.6,-111.94), weight:1},
-{location: new google.maps.LatLng(33.6,-111.92), weight:3},
-{location: new google.maps.LatLng(33.6,-111.91), weight:3},
-{location: new google.maps.LatLng(33.6,-111.9), weight:1},
-{location: new google.maps.LatLng(33.6,-111.89), weight:1},
-{location: new google.maps.LatLng(33.6,-111.88), weight:3},
-{location: new google.maps.LatLng(33.6,-111.87), weight:1},
-{location: new google.maps.LatLng(33.6,-111.86), weight:1},
-{location: new google.maps.LatLng(33.6,-111.85), weight:1},
-{location: new google.maps.LatLng(33.6,-111.84), weight:1},
-{location: new google.maps.LatLng(33.6,-111.74), weight:1},
-{location: new google.maps.LatLng(33.6,-111.72), weight:2},
-{location: new google.maps.LatLng(33.61,-112.44), weight:11},
-{location: new google.maps.LatLng(33.61,-112.41), weight:1},
-{location: new google.maps.LatLng(33.61,-112.4), weight:7},
-{location: new google.maps.LatLng(33.61,-112.39), weight:6},
-{location: new google.maps.LatLng(33.61,-112.38), weight:9},
-{location: new google.maps.LatLng(33.61,-112.37), weight:7},
-{location: new google.maps.LatLng(33.61,-112.36), weight:3},
-{location: new google.maps.LatLng(33.61,-112.35), weight:10},
-{location: new google.maps.LatLng(33.61,-112.34), weight:10},
-{location: new google.maps.LatLng(33.61,-112.33), weight:10},
-{location: new google.maps.LatLng(33.61,-112.32), weight:2},
-{location: new google.maps.LatLng(33.61,-112.31), weight:1},
-{location: new google.maps.LatLng(33.61,-112.3), weight:14},
-{location: new google.maps.LatLng(33.61,-112.29), weight:9},
-{location: new google.maps.LatLng(33.61,-112.28), weight:5},
-{location: new google.maps.LatLng(33.61,-112.27), weight:10},
-{location: new google.maps.LatLng(33.61,-112.26), weight:21},
-{location: new google.maps.LatLng(33.61,-112.25), weight:54},
-{location: new google.maps.LatLng(33.61,-112.24), weight:47},
-{location: new google.maps.LatLng(33.61,-112.23), weight:85},
-{location: new google.maps.LatLng(33.61,-112.22), weight:73},
-{location: new google.maps.LatLng(33.61,-112.21), weight:28},
-{location: new google.maps.LatLng(33.61,-112.2), weight:9},
-{location: new google.maps.LatLng(33.61,-112.19), weight:17},
-{location: new google.maps.LatLng(33.61,-112.18), weight:27},
-{location: new google.maps.LatLng(33.61,-112.17), weight:46},
-{location: new google.maps.LatLng(33.61,-112.16), weight:17},
-{location: new google.maps.LatLng(33.61,-112.15), weight:23},
-{location: new google.maps.LatLng(33.61,-112.14), weight:25},
-{location: new google.maps.LatLng(33.61,-112.13), weight:18},
-{location: new google.maps.LatLng(33.61,-112.12), weight:13},
-{location: new google.maps.LatLng(33.61,-112.11), weight:16},
-{location: new google.maps.LatLng(33.61,-112.1), weight:23},
-{location: new google.maps.LatLng(33.61,-112.09), weight:7},
-{location: new google.maps.LatLng(33.61,-112.08), weight:10},
-{location: new google.maps.LatLng(33.61,-112.07), weight:11},
-{location: new google.maps.LatLng(33.61,-112.06), weight:5},
-{location: new google.maps.LatLng(33.61,-112.05), weight:4},
-{location: new google.maps.LatLng(33.61,-112.04), weight:6},
-{location: new google.maps.LatLng(33.61,-112.03), weight:3},
-{location: new google.maps.LatLng(33.61,-112.02), weight:5},
-{location: new google.maps.LatLng(33.61,-112.01), weight:3},
-{location: new google.maps.LatLng(33.61,-112), weight:11},
-{location: new google.maps.LatLng(33.61,-111.99), weight:6},
-{location: new google.maps.LatLng(33.61,-111.98), weight:2},
-{location: new google.maps.LatLng(33.61,-111.97), weight:2},
-{location: new google.maps.LatLng(33.61,-111.96), weight:2},
-{location: new google.maps.LatLng(33.61,-111.95), weight:3},
-{location: new google.maps.LatLng(33.61,-111.94), weight:2},
-{location: new google.maps.LatLng(33.61,-111.93), weight:1},
-{location: new google.maps.LatLng(33.61,-111.9), weight:1},
-{location: new google.maps.LatLng(33.61,-111.88), weight:6},
-{location: new google.maps.LatLng(33.61,-111.87), weight:3},
-{location: new google.maps.LatLng(33.61,-111.86), weight:3},
-{location: new google.maps.LatLng(33.61,-111.85), weight:1},
-{location: new google.maps.LatLng(33.61,-111.73), weight:1},
-{location: new google.maps.LatLng(33.62,-112.45), weight:10},
-{location: new google.maps.LatLng(33.62,-112.44), weight:11},
-{location: new google.maps.LatLng(33.62,-112.43), weight:7},
-{location: new google.maps.LatLng(33.62,-112.41), weight:6},
-{location: new google.maps.LatLng(33.62,-112.4), weight:7},
-{location: new google.maps.LatLng(33.62,-112.39), weight:10},
-{location: new google.maps.LatLng(33.62,-112.38), weight:12},
-{location: new google.maps.LatLng(33.62,-112.37), weight:13},
-{location: new google.maps.LatLng(33.62,-112.36), weight:11},
-{location: new google.maps.LatLng(33.62,-112.35), weight:19},
-{location: new google.maps.LatLng(33.62,-112.34), weight:5},
-{location: new google.maps.LatLng(33.62,-112.33), weight:11},
-{location: new google.maps.LatLng(33.62,-112.32), weight:16},
-{location: new google.maps.LatLng(33.62,-112.31), weight:5},
-{location: new google.maps.LatLng(33.62,-112.3), weight:3},
-{location: new google.maps.LatLng(33.62,-112.29), weight:8},
-{location: new google.maps.LatLng(33.62,-112.28), weight:7},
-{location: new google.maps.LatLng(33.62,-112.27), weight:13},
-{location: new google.maps.LatLng(33.62,-112.26), weight:43},
-{location: new google.maps.LatLng(33.62,-112.25), weight:60},
-{location: new google.maps.LatLng(33.62,-112.24), weight:26},
-{location: new google.maps.LatLng(33.62,-112.23), weight:30},
-{location: new google.maps.LatLng(33.62,-112.22), weight:36},
-{location: new google.maps.LatLng(33.62,-112.21), weight:13},
-{location: new google.maps.LatLng(33.62,-112.2), weight:49},
-{location: new google.maps.LatLng(33.62,-112.19), weight:57},
-{location: new google.maps.LatLng(33.62,-112.18), weight:24},
-{location: new google.maps.LatLng(33.62,-112.17), weight:38},
-{location: new google.maps.LatLng(33.62,-112.16), weight:8},
-{location: new google.maps.LatLng(33.62,-112.15), weight:11},
-{location: new google.maps.LatLng(33.62,-112.14), weight:14},
-{location: new google.maps.LatLng(33.62,-112.13), weight:37},
-{location: new google.maps.LatLng(33.62,-112.12), weight:16},
-{location: new google.maps.LatLng(33.62,-112.11), weight:17},
-{location: new google.maps.LatLng(33.62,-112.1), weight:7},
-{location: new google.maps.LatLng(33.62,-112.09), weight:2},
-{location: new google.maps.LatLng(33.62,-112.08), weight:4},
-{location: new google.maps.LatLng(33.62,-112.07), weight:9},
-{location: new google.maps.LatLng(33.62,-112.06), weight:8},
-{location: new google.maps.LatLng(33.62,-112.04), weight:8},
-{location: new google.maps.LatLng(33.62,-112.03), weight:3},
-{location: new google.maps.LatLng(33.62,-112.02), weight:3},
-{location: new google.maps.LatLng(33.62,-112.01), weight:8},
-{location: new google.maps.LatLng(33.62,-112), weight:7},
-{location: new google.maps.LatLng(33.62,-111.99), weight:3},
-{location: new google.maps.LatLng(33.62,-111.98), weight:2},
-{location: new google.maps.LatLng(33.62,-111.97), weight:4},
-{location: new google.maps.LatLng(33.62,-111.96), weight:3},
-{location: new google.maps.LatLng(33.62,-111.95), weight:1},
-{location: new google.maps.LatLng(33.62,-111.94), weight:1},
-{location: new google.maps.LatLng(33.62,-111.93), weight:4},
-{location: new google.maps.LatLng(33.62,-111.89), weight:1},
-{location: new google.maps.LatLng(33.62,-111.88), weight:4},
-{location: new google.maps.LatLng(33.62,-111.87), weight:3},
-{location: new google.maps.LatLng(33.62,-111.86), weight:1},
-{location: new google.maps.LatLng(33.62,-111.84), weight:1},
-{location: new google.maps.LatLng(33.62,-111.83), weight:1},
-{location: new google.maps.LatLng(33.62,-111.71), weight:1},
-{location: new google.maps.LatLng(33.63,-112.46), weight:3},
-{location: new google.maps.LatLng(33.63,-112.45), weight:6},
-{location: new google.maps.LatLng(33.63,-112.44), weight:16},
-{location: new google.maps.LatLng(33.63,-112.43), weight:12},
-{location: new google.maps.LatLng(33.63,-112.42), weight:22},
-{location: new google.maps.LatLng(33.63,-112.41), weight:17},
-{location: new google.maps.LatLng(33.63,-112.4), weight:3},
-{location: new google.maps.LatLng(33.63,-112.39), weight:9},
-{location: new google.maps.LatLng(33.63,-112.38), weight:6},
-{location: new google.maps.LatLng(33.63,-112.36), weight:1},
-{location: new google.maps.LatLng(33.63,-112.35), weight:18},
-{location: new google.maps.LatLng(33.63,-112.34), weight:2},
-{location: new google.maps.LatLng(33.63,-112.33), weight:4},
-{location: new google.maps.LatLng(33.63,-112.32), weight:5},
-{location: new google.maps.LatLng(33.63,-112.31), weight:3},
-{location: new google.maps.LatLng(33.63,-112.3), weight:7},
-{location: new google.maps.LatLng(33.63,-112.29), weight:3},
-{location: new google.maps.LatLng(33.63,-112.28), weight:10},
-{location: new google.maps.LatLng(33.63,-112.27), weight:6},
-{location: new google.maps.LatLng(33.63,-112.26), weight:5},
-{location: new google.maps.LatLng(33.63,-112.25), weight:87},
-{location: new google.maps.LatLng(33.63,-112.24), weight:34},
-{location: new google.maps.LatLng(33.63,-112.23), weight:51},
-{location: new google.maps.LatLng(33.63,-112.22), weight:68},
-{location: new google.maps.LatLng(33.63,-112.21), weight:36},
-{location: new google.maps.LatLng(33.63,-112.2), weight:34},
-{location: new google.maps.LatLng(33.63,-112.19), weight:39},
-{location: new google.maps.LatLng(33.63,-112.18), weight:29},
-{location: new google.maps.LatLng(33.63,-112.17), weight:31},
-{location: new google.maps.LatLng(33.63,-112.16), weight:33},
-{location: new google.maps.LatLng(33.63,-112.15), weight:18},
-{location: new google.maps.LatLng(33.63,-112.14), weight:35},
-{location: new google.maps.LatLng(33.63,-112.13), weight:28},
-{location: new google.maps.LatLng(33.63,-112.12), weight:16},
-{location: new google.maps.LatLng(33.63,-112.11), weight:25},
-{location: new google.maps.LatLng(33.63,-112.1), weight:16},
-{location: new google.maps.LatLng(33.63,-112.09), weight:13},
-{location: new google.maps.LatLng(33.63,-112.08), weight:17},
-{location: new google.maps.LatLng(33.63,-112.07), weight:17},
-{location: new google.maps.LatLng(33.63,-112.06), weight:16},
-{location: new google.maps.LatLng(33.63,-112.05), weight:7},
-{location: new google.maps.LatLng(33.63,-112.04), weight:6},
-{location: new google.maps.LatLng(33.63,-112.03), weight:12},
-{location: new google.maps.LatLng(33.63,-112.02), weight:11},
-{location: new google.maps.LatLng(33.63,-112.01), weight:6},
-{location: new google.maps.LatLng(33.63,-112), weight:9},
-{location: new google.maps.LatLng(33.63,-111.99), weight:3},
-{location: new google.maps.LatLng(33.63,-111.98), weight:7},
-{location: new google.maps.LatLng(33.63,-111.97), weight:5},
-{location: new google.maps.LatLng(33.63,-111.96), weight:3},
-{location: new google.maps.LatLng(33.63,-111.95), weight:2},
-{location: new google.maps.LatLng(33.63,-111.94), weight:2},
-{location: new google.maps.LatLng(33.63,-111.93), weight:2},
-{location: new google.maps.LatLng(33.63,-111.89), weight:1},
-{location: new google.maps.LatLng(33.63,-111.88), weight:4},
-{location: new google.maps.LatLng(33.63,-111.87), weight:1},
-{location: new google.maps.LatLng(33.63,-111.86), weight:6},
-{location: new google.maps.LatLng(33.63,-111.84), weight:2},
-{location: new google.maps.LatLng(33.64,-112.46), weight:10},
-{location: new google.maps.LatLng(33.64,-112.45), weight:7},
-{location: new google.maps.LatLng(33.64,-112.44), weight:1},
-{location: new google.maps.LatLng(33.64,-112.43), weight:2},
-{location: new google.maps.LatLng(33.64,-112.42), weight:7},
-{location: new google.maps.LatLng(33.64,-112.41), weight:1},
-{location: new google.maps.LatLng(33.64,-112.4), weight:2},
-{location: new google.maps.LatLng(33.64,-112.39), weight:9},
-{location: new google.maps.LatLng(33.64,-112.38), weight:6},
-{location: new google.maps.LatLng(33.64,-112.37), weight:3},
-{location: new google.maps.LatLng(33.64,-112.36), weight:2},
-{location: new google.maps.LatLng(33.64,-112.34), weight:2},
-{location: new google.maps.LatLng(33.64,-112.33), weight:3},
-{location: new google.maps.LatLng(33.64,-112.32), weight:5},
-{location: new google.maps.LatLng(33.64,-112.31), weight:14},
-{location: new google.maps.LatLng(33.64,-112.3), weight:18},
-{location: new google.maps.LatLng(33.64,-112.29), weight:6},
-{location: new google.maps.LatLng(33.64,-112.28), weight:12},
-{location: new google.maps.LatLng(33.64,-112.27), weight:12},
-{location: new google.maps.LatLng(33.64,-112.26), weight:22},
-{location: new google.maps.LatLng(33.64,-112.25), weight:55},
-{location: new google.maps.LatLng(33.64,-112.24), weight:26},
-{location: new google.maps.LatLng(33.64,-112.23), weight:30},
-{location: new google.maps.LatLng(33.64,-112.22), weight:6},
-{location: new google.maps.LatLng(33.64,-112.21), weight:59},
-{location: new google.maps.LatLng(33.64,-112.2), weight:37},
-{location: new google.maps.LatLng(33.64,-112.19), weight:15},
-{location: new google.maps.LatLng(33.64,-112.18), weight:36},
-{location: new google.maps.LatLng(33.64,-112.17), weight:41},
-{location: new google.maps.LatLng(33.64,-112.16), weight:40},
-{location: new google.maps.LatLng(33.64,-112.15), weight:52},
-{location: new google.maps.LatLng(33.64,-112.14), weight:33},
-{location: new google.maps.LatLng(33.64,-112.13), weight:57},
-{location: new google.maps.LatLng(33.64,-112.12), weight:23},
-{location: new google.maps.LatLng(33.64,-112.11), weight:12},
-{location: new google.maps.LatLng(33.64,-112.1), weight:10},
-{location: new google.maps.LatLng(33.64,-112.09), weight:13},
-{location: new google.maps.LatLng(33.64,-112.08), weight:11},
-{location: new google.maps.LatLng(33.64,-112.07), weight:58},
-{location: new google.maps.LatLng(33.64,-112.06), weight:12},
-{location: new google.maps.LatLng(33.64,-112.05), weight:19},
-{location: new google.maps.LatLng(33.64,-112.04), weight:23},
-{location: new google.maps.LatLng(33.64,-112.03), weight:8},
-{location: new google.maps.LatLng(33.64,-112.02), weight:6},
-{location: new google.maps.LatLng(33.64,-112.01), weight:3},
-{location: new google.maps.LatLng(33.64,-112), weight:1},
-{location: new google.maps.LatLng(33.64,-111.99), weight:2},
-{location: new google.maps.LatLng(33.64,-111.98), weight:8},
-{location: new google.maps.LatLng(33.64,-111.97), weight:6},
-{location: new google.maps.LatLng(33.64,-111.96), weight:7},
-{location: new google.maps.LatLng(33.64,-111.95), weight:4},
-{location: new google.maps.LatLng(33.64,-111.94), weight:2},
-{location: new google.maps.LatLng(33.64,-111.93), weight:3},
-{location: new google.maps.LatLng(33.64,-111.88), weight:2},
-{location: new google.maps.LatLng(33.64,-111.86), weight:1},
-{location: new google.maps.LatLng(33.64,-111.74), weight:1},
-{location: new google.maps.LatLng(33.65,-117.89), weight:1},
-{location: new google.maps.LatLng(33.65,-112.45), weight:2},
-{location: new google.maps.LatLng(33.65,-112.43), weight:3},
-{location: new google.maps.LatLng(33.65,-112.42), weight:11},
-{location: new google.maps.LatLng(33.65,-112.4), weight:8},
-{location: new google.maps.LatLng(33.65,-112.39), weight:3},
-{location: new google.maps.LatLng(33.65,-112.38), weight:13},
-{location: new google.maps.LatLng(33.65,-112.37), weight:2},
-{location: new google.maps.LatLng(33.65,-112.36), weight:1},
-{location: new google.maps.LatLng(33.65,-112.35), weight:3},
-{location: new google.maps.LatLng(33.65,-112.34), weight:4},
-{location: new google.maps.LatLng(33.65,-112.33), weight:4},
-{location: new google.maps.LatLng(33.65,-112.31), weight:37},
-{location: new google.maps.LatLng(33.65,-112.3), weight:47},
-{location: new google.maps.LatLng(33.65,-112.29), weight:4},
-{location: new google.maps.LatLng(33.65,-112.28), weight:10},
-{location: new google.maps.LatLng(33.65,-112.27), weight:8},
-{location: new google.maps.LatLng(33.65,-112.26), weight:33},
-{location: new google.maps.LatLng(33.65,-112.25), weight:91},
-{location: new google.maps.LatLng(33.65,-112.24), weight:53},
-{location: new google.maps.LatLng(33.65,-112.23), weight:79},
-{location: new google.maps.LatLng(33.65,-112.22), weight:56},
-{location: new google.maps.LatLng(33.65,-112.21), weight:63},
-{location: new google.maps.LatLng(33.65,-112.2), weight:57},
-{location: new google.maps.LatLng(33.65,-112.19), weight:33},
-{location: new google.maps.LatLng(33.65,-112.18), weight:62},
-{location: new google.maps.LatLng(33.65,-112.17), weight:41},
-{location: new google.maps.LatLng(33.65,-112.16), weight:51},
-{location: new google.maps.LatLng(33.65,-112.15), weight:90},
-{location: new google.maps.LatLng(33.65,-112.14), weight:53},
-{location: new google.maps.LatLng(33.65,-112.13), weight:33},
-{location: new google.maps.LatLng(33.65,-112.12), weight:54},
-{location: new google.maps.LatLng(33.65,-112.11), weight:13},
-{location: new google.maps.LatLng(33.65,-112.1), weight:18},
-{location: new google.maps.LatLng(33.65,-112.09), weight:12},
-{location: new google.maps.LatLng(33.65,-112.08), weight:20},
-{location: new google.maps.LatLng(33.65,-112.07), weight:28},
-{location: new google.maps.LatLng(33.65,-112.06), weight:21},
-{location: new google.maps.LatLng(33.65,-112.05), weight:17},
-{location: new google.maps.LatLng(33.65,-112.04), weight:8},
-{location: new google.maps.LatLng(33.65,-112.03), weight:6},
-{location: new google.maps.LatLng(33.65,-112.02), weight:5},
-{location: new google.maps.LatLng(33.65,-112.01), weight:5},
-{location: new google.maps.LatLng(33.65,-112), weight:5},
-{location: new google.maps.LatLng(33.65,-111.99), weight:8},
-{location: new google.maps.LatLng(33.65,-111.98), weight:6},
-{location: new google.maps.LatLng(33.65,-111.97), weight:1},
-{location: new google.maps.LatLng(33.65,-111.96), weight:2},
-{location: new google.maps.LatLng(33.65,-111.93), weight:3},
-{location: new google.maps.LatLng(33.65,-111.89), weight:1},
-{location: new google.maps.LatLng(33.65,-111.88), weight:3},
-{location: new google.maps.LatLng(33.66,-117.9), weight:1},
-{location: new google.maps.LatLng(33.66,-112.43), weight:4},
-{location: new google.maps.LatLng(33.66,-112.42), weight:6},
-{location: new google.maps.LatLng(33.66,-112.4), weight:2},
-{location: new google.maps.LatLng(33.66,-112.39), weight:3},
-{location: new google.maps.LatLng(33.66,-112.38), weight:5},
-{location: new google.maps.LatLng(33.66,-112.36), weight:4},
-{location: new google.maps.LatLng(33.66,-112.35), weight:3},
-{location: new google.maps.LatLng(33.66,-112.34), weight:6},
-{location: new google.maps.LatLng(33.66,-112.33), weight:3},
-{location: new google.maps.LatLng(33.66,-112.31), weight:8},
-{location: new google.maps.LatLng(33.66,-112.3), weight:4},
-{location: new google.maps.LatLng(33.66,-112.29), weight:12},
-{location: new google.maps.LatLng(33.66,-112.28), weight:11},
-{location: new google.maps.LatLng(33.66,-112.27), weight:13},
-{location: new google.maps.LatLng(33.66,-112.26), weight:29},
-{location: new google.maps.LatLng(33.66,-112.25), weight:16},
-{location: new google.maps.LatLng(33.66,-112.24), weight:67},
-{location: new google.maps.LatLng(33.66,-112.23), weight:76},
-{location: new google.maps.LatLng(33.66,-112.22), weight:129},
-{location: new google.maps.LatLng(33.66,-112.21), weight:84},
-{location: new google.maps.LatLng(33.66,-112.2), weight:80},
-{location: new google.maps.LatLng(33.66,-112.19), weight:94},
-{location: new google.maps.LatLng(33.66,-112.18), weight:19},
-{location: new google.maps.LatLng(33.66,-112.17), weight:92},
-{location: new google.maps.LatLng(33.66,-112.16), weight:56},
-{location: new google.maps.LatLng(33.66,-112.15), weight:34},
-{location: new google.maps.LatLng(33.66,-112.14), weight:14},
-{location: new google.maps.LatLng(33.66,-112.13), weight:42},
-{location: new google.maps.LatLng(33.66,-112.12), weight:30},
-{location: new google.maps.LatLng(33.66,-112.11), weight:14},
-{location: new google.maps.LatLng(33.66,-112.1), weight:24},
-{location: new google.maps.LatLng(33.66,-112.09), weight:20},
-{location: new google.maps.LatLng(33.66,-112.08), weight:42},
-{location: new google.maps.LatLng(33.66,-112.07), weight:20},
-{location: new google.maps.LatLng(33.66,-112.06), weight:24},
-{location: new google.maps.LatLng(33.66,-112.05), weight:24},
-{location: new google.maps.LatLng(33.66,-112.04), weight:7},
-{location: new google.maps.LatLng(33.66,-112.03), weight:16},
-{location: new google.maps.LatLng(33.66,-112.02), weight:7},
-{location: new google.maps.LatLng(33.66,-112.01), weight:17},
-{location: new google.maps.LatLng(33.66,-112), weight:6},
-{location: new google.maps.LatLng(33.66,-111.99), weight:11},
-{location: new google.maps.LatLng(33.66,-111.98), weight:2},
-{location: new google.maps.LatLng(33.66,-111.92), weight:1},
-{location: new google.maps.LatLng(33.66,-111.87), weight:3},
-{location: new google.maps.LatLng(33.67,-112.64), weight:1},
-{location: new google.maps.LatLng(33.67,-112.63), weight:1},
-{location: new google.maps.LatLng(33.67,-112.62), weight:4},
-{location: new google.maps.LatLng(33.67,-112.61), weight:9},
-{location: new google.maps.LatLng(33.67,-112.43), weight:2},
-{location: new google.maps.LatLng(33.67,-112.42), weight:1},
-{location: new google.maps.LatLng(33.67,-112.41), weight:1},
-{location: new google.maps.LatLng(33.67,-112.39), weight:3},
-{location: new google.maps.LatLng(33.67,-112.38), weight:5},
-{location: new google.maps.LatLng(33.67,-112.37), weight:4},
-{location: new google.maps.LatLng(33.67,-112.36), weight:3},
-{location: new google.maps.LatLng(33.67,-112.35), weight:1},
-{location: new google.maps.LatLng(33.67,-112.34), weight:1},
-{location: new google.maps.LatLng(33.67,-112.33), weight:3},
-{location: new google.maps.LatLng(33.67,-112.3), weight:2},
-{location: new google.maps.LatLng(33.67,-112.29), weight:19},
-{location: new google.maps.LatLng(33.67,-112.28), weight:61},
-{location: new google.maps.LatLng(33.67,-112.27), weight:108},
-{location: new google.maps.LatLng(33.67,-112.26), weight:124},
-{location: new google.maps.LatLng(33.67,-112.25), weight:111},
-{location: new google.maps.LatLng(33.67,-112.24), weight:130},
-{location: new google.maps.LatLng(33.67,-112.23), weight:93},
-{location: new google.maps.LatLng(33.67,-112.22), weight:96},
-{location: new google.maps.LatLng(33.67,-112.21), weight:126},
-{location: new google.maps.LatLng(33.67,-112.2), weight:113},
-{location: new google.maps.LatLng(33.67,-112.19), weight:59},
-{location: new google.maps.LatLng(33.67,-112.18), weight:53},
-{location: new google.maps.LatLng(33.67,-112.17), weight:34},
-{location: new google.maps.LatLng(33.67,-112.16), weight:37},
-{location: new google.maps.LatLng(33.67,-112.15), weight:45},
-{location: new google.maps.LatLng(33.67,-112.14), weight:19},
-{location: new google.maps.LatLng(33.67,-112.13), weight:35},
-{location: new google.maps.LatLng(33.67,-112.12), weight:20},
-{location: new google.maps.LatLng(33.67,-112.11), weight:47},
-{location: new google.maps.LatLng(33.67,-112.1), weight:23},
-{location: new google.maps.LatLng(33.67,-112.09), weight:30},
-{location: new google.maps.LatLng(33.67,-112.08), weight:22},
-{location: new google.maps.LatLng(33.67,-112.07), weight:23},
-{location: new google.maps.LatLng(33.67,-112.06), weight:25},
-{location: new google.maps.LatLng(33.67,-112.05), weight:8},
-{location: new google.maps.LatLng(33.67,-112.04), weight:16},
-{location: new google.maps.LatLng(33.67,-112.03), weight:33},
-{location: new google.maps.LatLng(33.67,-112.02), weight:16},
-{location: new google.maps.LatLng(33.67,-112.01), weight:5},
-{location: new google.maps.LatLng(33.67,-112), weight:4},
-{location: new google.maps.LatLng(33.67,-111.92), weight:1},
-{location: new google.maps.LatLng(33.67,-111.91), weight:4},
-{location: new google.maps.LatLng(33.67,-111.9), weight:1},
-{location: new google.maps.LatLng(33.67,-111.89), weight:1},
-{location: new google.maps.LatLng(33.67,-111.88), weight:3},
-{location: new google.maps.LatLng(33.67,-111.86), weight:1},
-{location: new google.maps.LatLng(33.67,-86.44), weight:1},
-{location: new google.maps.LatLng(33.68,-112.62), weight:1},
-{location: new google.maps.LatLng(33.68,-112.42), weight:1},
-{location: new google.maps.LatLng(33.68,-112.4), weight:1},
-{location: new google.maps.LatLng(33.68,-112.39), weight:5},
-{location: new google.maps.LatLng(33.68,-112.38), weight:3},
-{location: new google.maps.LatLng(33.68,-112.36), weight:4},
-{location: new google.maps.LatLng(33.68,-112.35), weight:6},
-{location: new google.maps.LatLng(33.68,-112.34), weight:7},
-{location: new google.maps.LatLng(33.68,-112.33), weight:7},
-{location: new google.maps.LatLng(33.68,-112.32), weight:61},
-{location: new google.maps.LatLng(33.68,-112.31), weight:1},
-{location: new google.maps.LatLng(33.68,-112.29), weight:160},
-{location: new google.maps.LatLng(33.68,-112.28), weight:43},
-{location: new google.maps.LatLng(33.68,-112.27), weight:64},
-{location: new google.maps.LatLng(33.68,-112.26), weight:124},
-{location: new google.maps.LatLng(33.68,-112.25), weight:132},
-{location: new google.maps.LatLng(33.68,-112.24), weight:84},
-{location: new google.maps.LatLng(33.68,-112.23), weight:150},
-{location: new google.maps.LatLng(33.68,-112.22), weight:123},
-{location: new google.maps.LatLng(33.68,-112.21), weight:203},
-{location: new google.maps.LatLng(33.68,-112.2), weight:107},
-{location: new google.maps.LatLng(33.68,-112.19), weight:94},
-{location: new google.maps.LatLng(33.68,-112.18), weight:41},
-{location: new google.maps.LatLng(33.68,-112.17), weight:10},
-{location: new google.maps.LatLng(33.68,-112.15), weight:2},
-{location: new google.maps.LatLng(33.68,-112.14), weight:39},
-{location: new google.maps.LatLng(33.68,-112.13), weight:69},
-{location: new google.maps.LatLng(33.68,-112.12), weight:27},
-{location: new google.maps.LatLng(33.68,-112.11), weight:11},
-{location: new google.maps.LatLng(33.68,-112.1), weight:2},
-{location: new google.maps.LatLng(33.68,-112.09), weight:5},
-{location: new google.maps.LatLng(33.68,-112.08), weight:5},
-{location: new google.maps.LatLng(33.68,-112.06), weight:7},
-{location: new google.maps.LatLng(33.68,-112.05), weight:1},
-{location: new google.maps.LatLng(33.68,-112.03), weight:1},
-{location: new google.maps.LatLng(33.68,-112), weight:7},
-{location: new google.maps.LatLng(33.68,-111.98), weight:6},
-{location: new google.maps.LatLng(33.68,-111.97), weight:2},
-{location: new google.maps.LatLng(33.68,-111.96), weight:7},
-{location: new google.maps.LatLng(33.68,-111.92), weight:5},
-{location: new google.maps.LatLng(33.68,-111.91), weight:2},
-{location: new google.maps.LatLng(33.68,-111.9), weight:1},
-{location: new google.maps.LatLng(33.69,-112.39), weight:1},
-{location: new google.maps.LatLng(33.69,-112.38), weight:3},
-{location: new google.maps.LatLng(33.69,-112.37), weight:7},
-{location: new google.maps.LatLng(33.69,-112.36), weight:12},
-{location: new google.maps.LatLng(33.69,-112.35), weight:9},
-{location: new google.maps.LatLng(33.69,-112.34), weight:12},
-{location: new google.maps.LatLng(33.69,-112.33), weight:9},
-{location: new google.maps.LatLng(33.69,-112.32), weight:126},
-{location: new google.maps.LatLng(33.69,-112.31), weight:64},
-{location: new google.maps.LatLng(33.69,-112.29), weight:63},
-{location: new google.maps.LatLng(33.69,-112.28), weight:95},
-{location: new google.maps.LatLng(33.69,-112.27), weight:8},
-{location: new google.maps.LatLng(33.69,-112.25), weight:41},
-{location: new google.maps.LatLng(33.69,-112.24), weight:58},
-{location: new google.maps.LatLng(33.69,-112.23), weight:78},
-{location: new google.maps.LatLng(33.69,-112.22), weight:138},
-{location: new google.maps.LatLng(33.69,-112.21), weight:114},
-{location: new google.maps.LatLng(33.69,-112.2), weight:50},
-{location: new google.maps.LatLng(33.69,-112.19), weight:19},
-{location: new google.maps.LatLng(33.69,-112.18), weight:1},
-{location: new google.maps.LatLng(33.69,-112.14), weight:6},
-{location: new google.maps.LatLng(33.69,-112.13), weight:84},
-{location: new google.maps.LatLng(33.69,-112.12), weight:14},
-{location: new google.maps.LatLng(33.69,-112.11), weight:9},
-{location: new google.maps.LatLng(33.69,-112.1), weight:1},
-{location: new google.maps.LatLng(33.69,-112.04), weight:17},
-{location: new google.maps.LatLng(33.69,-112.03), weight:6},
-{location: new google.maps.LatLng(33.69,-112), weight:8},
-{location: new google.maps.LatLng(33.69,-111.99), weight:4},
-{location: new google.maps.LatLng(33.69,-111.98), weight:6},
-{location: new google.maps.LatLng(33.69,-111.97), weight:1},
-{location: new google.maps.LatLng(33.69,-111.96), weight:2},
-{location: new google.maps.LatLng(33.7,-112.48), weight:2},
-{location: new google.maps.LatLng(33.7,-112.41), weight:2},
-{location: new google.maps.LatLng(33.7,-112.36), weight:2},
-{location: new google.maps.LatLng(33.7,-112.35), weight:10},
-{location: new google.maps.LatLng(33.7,-112.34), weight:4},
-{location: new google.maps.LatLng(33.7,-112.33), weight:11},
-{location: new google.maps.LatLng(33.7,-112.32), weight:88},
-{location: new google.maps.LatLng(33.7,-112.31), weight:76},
-{location: new google.maps.LatLng(33.7,-112.29), weight:1},
-{location: new google.maps.LatLng(33.7,-112.28), weight:22},
-{location: new google.maps.LatLng(33.7,-112.27), weight:45},
-{location: new google.maps.LatLng(33.7,-112.26), weight:51},
-{location: new google.maps.LatLng(33.7,-112.25), weight:36},
-{location: new google.maps.LatLng(33.7,-112.24), weight:43},
-{location: new google.maps.LatLng(33.7,-112.23), weight:56},
-{location: new google.maps.LatLng(33.7,-112.22), weight:24},
-{location: new google.maps.LatLng(33.7,-112.21), weight:66},
-{location: new google.maps.LatLng(33.7,-112.2), weight:43},
-{location: new google.maps.LatLng(33.7,-112.19), weight:48},
-{location: new google.maps.LatLng(33.7,-112.18), weight:26},
-{location: new google.maps.LatLng(33.7,-112.17), weight:39},
-{location: new google.maps.LatLng(33.7,-112.16), weight:39},
-{location: new google.maps.LatLng(33.7,-112.15), weight:108},
-{location: new google.maps.LatLng(33.7,-112.14), weight:92},
-{location: new google.maps.LatLng(33.7,-112.13), weight:31},
-{location: new google.maps.LatLng(33.7,-112.05), weight:1},
-{location: new google.maps.LatLng(33.7,-112.04), weight:14},
-{location: new google.maps.LatLng(33.7,-112.03), weight:18},
-{location: new google.maps.LatLng(33.7,-112.02), weight:3},
-{location: new google.maps.LatLng(33.7,-112), weight:1},
-{location: new google.maps.LatLng(33.7,-111.99), weight:3},
-{location: new google.maps.LatLng(33.7,-111.98), weight:6},
-{location: new google.maps.LatLng(33.7,-111.92), weight:1},
-{location: new google.maps.LatLng(33.7,-111.86), weight:1},
-{location: new google.maps.LatLng(33.71,-117.79), weight:1},
-{location: new google.maps.LatLng(33.71,-112.38), weight:1},
-{location: new google.maps.LatLng(33.71,-112.31), weight:1},
-{location: new google.maps.LatLng(33.71,-112.29), weight:25},
-{location: new google.maps.LatLng(33.71,-112.28), weight:19},
-{location: new google.maps.LatLng(33.71,-112.27), weight:11},
-{location: new google.maps.LatLng(33.71,-112.26), weight:11},
-{location: new google.maps.LatLng(33.71,-112.25), weight:4},
-{location: new google.maps.LatLng(33.71,-112.24), weight:5},
-{location: new google.maps.LatLng(33.71,-112.23), weight:25},
-{location: new google.maps.LatLng(33.71,-112.22), weight:41},
-{location: new google.maps.LatLng(33.71,-112.21), weight:70},
-{location: new google.maps.LatLng(33.71,-112.2), weight:95},
-{location: new google.maps.LatLng(33.71,-112.19), weight:89},
-{location: new google.maps.LatLng(33.71,-112.18), weight:73},
-{location: new google.maps.LatLng(33.71,-112.17), weight:68},
-{location: new google.maps.LatLng(33.71,-112.16), weight:69},
-{location: new google.maps.LatLng(33.71,-112.15), weight:160},
-{location: new google.maps.LatLng(33.71,-112.14), weight:163},
-{location: new google.maps.LatLng(33.71,-112.12), weight:1},
-{location: new google.maps.LatLng(33.71,-112.11), weight:57},
-{location: new google.maps.LatLng(33.71,-112.1), weight:6},
-{location: new google.maps.LatLng(33.71,-112.03), weight:4},
-{location: new google.maps.LatLng(33.71,-112.02), weight:5},
-{location: new google.maps.LatLng(33.71,-111.91), weight:1},
-{location: new google.maps.LatLng(33.71,-111.9), weight:1},
-{location: new google.maps.LatLng(33.71,-111.83), weight:1},
-{location: new google.maps.LatLng(33.71,-111.82), weight:1},
-{location: new google.maps.LatLng(33.72,-118), weight:1},
-{location: new google.maps.LatLng(33.72,-117.2), weight:1},
-{location: new google.maps.LatLng(33.72,-112.42), weight:18},
-{location: new google.maps.LatLng(33.72,-112.41), weight:3},
-{location: new google.maps.LatLng(33.72,-112.39), weight:2},
-{location: new google.maps.LatLng(33.72,-112.38), weight:3},
-{location: new google.maps.LatLng(33.72,-112.37), weight:1},
-{location: new google.maps.LatLng(33.72,-112.32), weight:29},
-{location: new google.maps.LatLng(33.72,-112.31), weight:4},
-{location: new google.maps.LatLng(33.72,-112.3), weight:8},
-{location: new google.maps.LatLng(33.72,-112.29), weight:39},
-{location: new google.maps.LatLng(33.72,-112.28), weight:13},
-{location: new google.maps.LatLng(33.72,-112.27), weight:2},
-{location: new google.maps.LatLng(33.72,-112.26), weight:12},
-{location: new google.maps.LatLng(33.72,-112.25), weight:31},
-{location: new google.maps.LatLng(33.72,-112.24), weight:73},
-{location: new google.maps.LatLng(33.72,-112.22), weight:93},
-{location: new google.maps.LatLng(33.72,-112.21), weight:307},
-{location: new google.maps.LatLng(33.72,-112.2), weight:211},
-{location: new google.maps.LatLng(33.72,-112.19), weight:1},
-{location: new google.maps.LatLng(33.72,-112.18), weight:106},
-{location: new google.maps.LatLng(33.72,-112.17), weight:132},
-{location: new google.maps.LatLng(33.72,-112.16), weight:46},
-{location: new google.maps.LatLng(33.72,-112.15), weight:138},
-{location: new google.maps.LatLng(33.72,-112.14), weight:3},
-{location: new google.maps.LatLng(33.72,-112.1), weight:6},
-{location: new google.maps.LatLng(33.72,-112.09), weight:6},
-{location: new google.maps.LatLng(33.72,-112.08), weight:2},
-{location: new google.maps.LatLng(33.72,-112.07), weight:6},
-{location: new google.maps.LatLng(33.72,-111.98), weight:4},
-{location: new google.maps.LatLng(33.72,-111.91), weight:2},
-{location: new google.maps.LatLng(33.73,-112.56), weight:2},
-{location: new google.maps.LatLng(33.73,-112.44), weight:18},
-{location: new google.maps.LatLng(33.73,-112.43), weight:4},
-{location: new google.maps.LatLng(33.73,-112.38), weight:3},
-{location: new google.maps.LatLng(33.73,-112.37), weight:1},
-{location: new google.maps.LatLng(33.73,-112.34), weight:23},
-{location: new google.maps.LatLng(33.73,-112.33), weight:33},
-{location: new google.maps.LatLng(33.73,-112.3), weight:1},
-{location: new google.maps.LatLng(33.73,-112.27), weight:140},
-{location: new google.maps.LatLng(33.73,-112.26), weight:99},
-{location: new google.maps.LatLng(33.73,-112.25), weight:193},
-{location: new google.maps.LatLng(33.73,-112.24), weight:135},
-{location: new google.maps.LatLng(33.73,-112.23), weight:51},
-{location: new google.maps.LatLng(33.73,-112.22), weight:39},
-{location: new google.maps.LatLng(33.73,-112.2), weight:93},
-{location: new google.maps.LatLng(33.73,-112.19), weight:99},
-{location: new google.maps.LatLng(33.73,-112.18), weight:120},
-{location: new google.maps.LatLng(33.73,-112.17), weight:106},
-{location: new google.maps.LatLng(33.73,-112.14), weight:26},
-{location: new google.maps.LatLng(33.73,-112.13), weight:39},
-{location: new google.maps.LatLng(33.73,-112.11), weight:54},
-{location: new google.maps.LatLng(33.73,-112.1), weight:40},
-{location: new google.maps.LatLng(33.73,-112.09), weight:5},
-{location: new google.maps.LatLng(33.73,-112.08), weight:4},
-{location: new google.maps.LatLng(33.73,-111.99), weight:5},
-{location: new google.maps.LatLng(33.73,-111.98), weight:3},
-{location: new google.maps.LatLng(33.73,-111.95), weight:1},
-{location: new google.maps.LatLng(33.73,-111.94), weight:1},
-{location: new google.maps.LatLng(33.73,-111.93), weight:1},
-{location: new google.maps.LatLng(33.73,-111.92), weight:1},
-{location: new google.maps.LatLng(33.73,-111.75), weight:1},
-{location: new google.maps.LatLng(33.74,-112.72), weight:1},
-{location: new google.maps.LatLng(33.74,-112.61), weight:1},
-{location: new google.maps.LatLng(33.74,-112.6), weight:1},
-{location: new google.maps.LatLng(33.74,-112.59), weight:3},
-{location: new google.maps.LatLng(33.74,-112.55), weight:1},
-{location: new google.maps.LatLng(33.74,-112.54), weight:1},
-{location: new google.maps.LatLng(33.74,-112.45), weight:2},
-{location: new google.maps.LatLng(33.74,-112.41), weight:1},
-{location: new google.maps.LatLng(33.74,-112.4), weight:3},
-{location: new google.maps.LatLng(33.74,-112.39), weight:1},
-{location: new google.maps.LatLng(33.74,-112.34), weight:13},
-{location: new google.maps.LatLng(33.74,-112.33), weight:18},
-{location: new google.maps.LatLng(33.74,-112.27), weight:66},
-{location: new google.maps.LatLng(33.74,-112.26), weight:29},
-{location: new google.maps.LatLng(33.74,-112.25), weight:33},
-{location: new google.maps.LatLng(33.74,-112.21), weight:20},
-{location: new google.maps.LatLng(33.74,-112.2), weight:135},
-{location: new google.maps.LatLng(33.74,-112.19), weight:54},
-{location: new google.maps.LatLng(33.74,-112.18), weight:13},
-{location: new google.maps.LatLng(33.74,-112.14), weight:5},
-{location: new google.maps.LatLng(33.74,-112.13), weight:43},
-{location: new google.maps.LatLng(33.74,-112.12), weight:38},
-{location: new google.maps.LatLng(33.74,-112.11), weight:77},
-{location: new google.maps.LatLng(33.74,-112.1), weight:18},
-{location: new google.maps.LatLng(33.74,-112.09), weight:10},
-{location: new google.maps.LatLng(33.74,-111.98), weight:3},
-{location: new google.maps.LatLng(33.74,-111.96), weight:1},
-{location: new google.maps.LatLng(33.74,-111.95), weight:1},
-{location: new google.maps.LatLng(33.74,-111.75), weight:1},
-{location: new google.maps.LatLng(33.74,-111.73), weight:1},
-{location: new google.maps.LatLng(33.75,-117.77), weight:1},
-{location: new google.maps.LatLng(33.75,-112.6), weight:2},
-{location: new google.maps.LatLng(33.75,-112.52), weight:1},
-{location: new google.maps.LatLng(33.75,-112.5), weight:1},
-{location: new google.maps.LatLng(33.75,-112.45), weight:1},
-{location: new google.maps.LatLng(33.75,-112.41), weight:2},
-{location: new google.maps.LatLng(33.75,-112.4), weight:5},
-{location: new google.maps.LatLng(33.75,-112.39), weight:3},
-{location: new google.maps.LatLng(33.75,-112.34), weight:21},
-{location: new google.maps.LatLng(33.75,-112.33), weight:107},
-{location: new google.maps.LatLng(33.75,-112.32), weight:82},
-{location: new google.maps.LatLng(33.75,-112.22), weight:2},
-{location: new google.maps.LatLng(33.75,-112.21), weight:143},
-{location: new google.maps.LatLng(33.75,-112.2), weight:22},
-{location: new google.maps.LatLng(33.75,-112.11), weight:85},
-{location: new google.maps.LatLng(33.75,-112.1), weight:39},
-{location: new google.maps.LatLng(33.75,-111.99), weight:1},
-{location: new google.maps.LatLng(33.75,-111.98), weight:7},
-{location: new google.maps.LatLng(33.75,-111.97), weight:3},
-{location: new google.maps.LatLng(33.75,-111.95), weight:2},
-{location: new google.maps.LatLng(33.75,-111.94), weight:3},
-{location: new google.maps.LatLng(33.75,-111.93), weight:2},
-{location: new google.maps.LatLng(33.75,-111.87), weight:2},
-{location: new google.maps.LatLng(33.75,-111.85), weight:1},
-{location: new google.maps.LatLng(33.75,-111.84), weight:1},
-{location: new google.maps.LatLng(33.75,-111.78), weight:1},
-{location: new google.maps.LatLng(33.75,-111.76), weight:1},
-{location: new google.maps.LatLng(33.76,-112.43), weight:1},
-{location: new google.maps.LatLng(33.76,-112.42), weight:3},
-{location: new google.maps.LatLng(33.76,-112.36), weight:2},
-{location: new google.maps.LatLng(33.76,-112.35), weight:11},
-{location: new google.maps.LatLng(33.76,-112.34), weight:72},
-{location: new google.maps.LatLng(33.76,-112.33), weight:118},
-{location: new google.maps.LatLng(33.76,-112.32), weight:30},
-{location: new google.maps.LatLng(33.76,-112.22), weight:84},
-{location: new google.maps.LatLng(33.76,-112.21), weight:80},
-{location: new google.maps.LatLng(33.76,-111.99), weight:2},
-{location: new google.maps.LatLng(33.76,-111.98), weight:3},
-{location: new google.maps.LatLng(33.76,-111.97), weight:3},
-{location: new google.maps.LatLng(33.76,-111.96), weight:1},
-{location: new google.maps.LatLng(33.76,-111.92), weight:2},
-{location: new google.maps.LatLng(33.76,-78.91), weight:1},
-{location: new google.maps.LatLng(33.77,-112.62), weight:1},
-{location: new google.maps.LatLng(33.77,-112.56), weight:1},
-{location: new google.maps.LatLng(33.77,-112.55), weight:2},
-{location: new google.maps.LatLng(33.77,-112.53), weight:4},
-{location: new google.maps.LatLng(33.77,-112.42), weight:3},
-{location: new google.maps.LatLng(33.77,-112.36), weight:11},
-{location: new google.maps.LatLng(33.77,-112.35), weight:75},
-{location: new google.maps.LatLng(33.77,-112.34), weight:29},
-{location: new google.maps.LatLng(33.77,-112.33), weight:1},
-{location: new google.maps.LatLng(33.77,-112.11), weight:23},
-{location: new google.maps.LatLng(33.77,-112.1), weight:16},
-{location: new google.maps.LatLng(33.77,-111.99), weight:2},
-{location: new google.maps.LatLng(33.77,-111.98), weight:1},
-{location: new google.maps.LatLng(33.77,-111.96), weight:2},
-{location: new google.maps.LatLng(33.77,-111.94), weight:1},
-{location: new google.maps.LatLng(33.77,-111.92), weight:1},
-{location: new google.maps.LatLng(33.78,-112.55), weight:1},
-{location: new google.maps.LatLng(33.78,-112.42), weight:1},
-{location: new google.maps.LatLng(33.78,-112.41), weight:1},
-{location: new google.maps.LatLng(33.78,-112.12), weight:14},
-{location: new google.maps.LatLng(33.78,-112.11), weight:34},
-{location: new google.maps.LatLng(33.78,-112.1), weight:15},
-{location: new google.maps.LatLng(33.78,-112.09), weight:7},
-{location: new google.maps.LatLng(33.78,-111.99), weight:4},
-{location: new google.maps.LatLng(33.78,-111.98), weight:2},
-{location: new google.maps.LatLng(33.78,-111.97), weight:1},
-{location: new google.maps.LatLng(33.78,-111.96), weight:2},
-{location: new google.maps.LatLng(33.78,-111.92), weight:1},
-{location: new google.maps.LatLng(33.79,-112.12), weight:23},
-{location: new google.maps.LatLng(33.79,-112.11), weight:23},
-{location: new google.maps.LatLng(33.79,-112.08), weight:3},
-{location: new google.maps.LatLng(33.79,-112.05), weight:1},
-{location: new google.maps.LatLng(33.79,-111.99), weight:1},
-{location: new google.maps.LatLng(33.79,-111.98), weight:4},
-{location: new google.maps.LatLng(33.79,-111.95), weight:2},
-{location: new google.maps.LatLng(33.79,-111.92), weight:3},
-{location: new google.maps.LatLng(33.8,-112.52), weight:1},
-{location: new google.maps.LatLng(33.8,-112.14), weight:4},
-{location: new google.maps.LatLng(33.8,-112.13), weight:30},
-{location: new google.maps.LatLng(33.8,-112.12), weight:33},
-{location: new google.maps.LatLng(33.8,-112.11), weight:8},
-{location: new google.maps.LatLng(33.8,-112.08), weight:3},
-{location: new google.maps.LatLng(33.8,-112.07), weight:9},
-{location: new google.maps.LatLng(33.8,-112.06), weight:1},
-{location: new google.maps.LatLng(33.8,-112), weight:1},
-{location: new google.maps.LatLng(33.8,-111.99), weight:2},
-{location: new google.maps.LatLng(33.8,-111.98), weight:1},
-{location: new google.maps.LatLng(33.8,-111.97), weight:2},
-{location: new google.maps.LatLng(33.8,-111.95), weight:1},
-{location: new google.maps.LatLng(33.8,-111.88), weight:1},
-{location: new google.maps.LatLng(33.81,-112.13), weight:38},
-{location: new google.maps.LatLng(33.81,-112.12), weight:15},
-{location: new google.maps.LatLng(33.81,-112.09), weight:7},
-{location: new google.maps.LatLng(33.81,-112.08), weight:1},
-{location: new google.maps.LatLng(33.81,-112.07), weight:2},
-{location: new google.maps.LatLng(33.81,-112.06), weight:1},
-{location: new google.maps.LatLng(33.81,-112.05), weight:2},
-{location: new google.maps.LatLng(33.81,-112.03), weight:2},
-{location: new google.maps.LatLng(33.81,-112), weight:1},
-{location: new google.maps.LatLng(33.81,-111.98), weight:1},
-{location: new google.maps.LatLng(33.81,-111.97), weight:3},
-{location: new google.maps.LatLng(33.81,-111.96), weight:2},
-{location: new google.maps.LatLng(33.81,-111.95), weight:3},
-{location: new google.maps.LatLng(33.81,-111.89), weight:1},
-{location: new google.maps.LatLng(33.82,-112.13), weight:1},
-{location: new google.maps.LatLng(33.82,-112.12), weight:1},
-{location: new google.maps.LatLng(33.82,-112.1), weight:3},
-{location: new google.maps.LatLng(33.82,-112.09), weight:6},
-{location: new google.maps.LatLng(33.82,-112.08), weight:1},
-{location: new google.maps.LatLng(33.82,-112.06), weight:7},
-{location: new google.maps.LatLng(33.82,-112.05), weight:4},
-{location: new google.maps.LatLng(33.82,-112.03), weight:3},
-{location: new google.maps.LatLng(33.82,-112.02), weight:1},
-{location: new google.maps.LatLng(33.82,-111.84), weight:2},
-{location: new google.maps.LatLng(33.83,-117.87), weight:1},
-{location: new google.maps.LatLng(33.83,-112.14), weight:5},
-{location: new google.maps.LatLng(33.83,-112.13), weight:2},
-{location: new google.maps.LatLng(33.83,-112.12), weight:3},
-{location: new google.maps.LatLng(33.83,-112.11), weight:5},
-{location: new google.maps.LatLng(33.83,-112.1), weight:1},
-{location: new google.maps.LatLng(33.83,-112.08), weight:1},
-{location: new google.maps.LatLng(33.83,-112.07), weight:1},
-{location: new google.maps.LatLng(33.83,-112.06), weight:1},
-{location: new google.maps.LatLng(33.83,-112.05), weight:1},
-{location: new google.maps.LatLng(33.83,-112.04), weight:1},
-{location: new google.maps.LatLng(33.83,-111.95), weight:2},
-{location: new google.maps.LatLng(33.83,-111.92), weight:2},
-{location: new google.maps.LatLng(33.84,-112.14), weight:11},
-{location: new google.maps.LatLng(33.84,-112.13), weight:4},
-{location: new google.maps.LatLng(33.84,-112.12), weight:5},
-{location: new google.maps.LatLng(33.84,-112.11), weight:5},
-{location: new google.maps.LatLng(33.84,-112.1), weight:7},
-{location: new google.maps.LatLng(33.84,-112.09), weight:2},
-{location: new google.maps.LatLng(33.84,-112.08), weight:3},
-{location: new google.maps.LatLng(33.84,-112.07), weight:10},
-{location: new google.maps.LatLng(33.84,-112.06), weight:1},
-{location: new google.maps.LatLng(33.84,-112.04), weight:1},
-{location: new google.maps.LatLng(33.84,-111.94), weight:1},
-{location: new google.maps.LatLng(33.84,-111.84), weight:2},
-{location: new google.maps.LatLng(33.85,-112.25), weight:2},
-{location: new google.maps.LatLng(33.85,-112.14), weight:13},
-{location: new google.maps.LatLng(33.85,-112.13), weight:20},
-{location: new google.maps.LatLng(33.85,-112.12), weight:24},
-{location: new google.maps.LatLng(33.85,-112.11), weight:26},
-{location: new google.maps.LatLng(33.85,-112.1), weight:17},
-{location: new google.maps.LatLng(33.85,-112.09), weight:5},
-{location: new google.maps.LatLng(33.85,-112.08), weight:1},
-{location: new google.maps.LatLng(33.85,-112.07), weight:1},
-{location: new google.maps.LatLng(33.85,-112.06), weight:5},
-{location: new google.maps.LatLng(33.85,-111.93), weight:1},
-{location: new google.maps.LatLng(33.86,-118.39), weight:1},
-{location: new google.maps.LatLng(33.86,-112.16), weight:2},
-{location: new google.maps.LatLng(33.86,-112.14), weight:20},
-{location: new google.maps.LatLng(33.86,-112.13), weight:8},
-{location: new google.maps.LatLng(33.86,-112.12), weight:10},
-{location: new google.maps.LatLng(33.86,-112.11), weight:5},
-{location: new google.maps.LatLng(33.86,-112.1), weight:8},
-{location: new google.maps.LatLng(33.86,-112.09), weight:4},
-{location: new google.maps.LatLng(33.86,-112.08), weight:3},
-{location: new google.maps.LatLng(33.86,-112.07), weight:1},
-{location: new google.maps.LatLng(33.87,-112.16), weight:16},
-{location: new google.maps.LatLng(33.87,-112.15), weight:8},
-{location: new google.maps.LatLng(33.87,-112.14), weight:27},
-{location: new google.maps.LatLng(33.87,-112.13), weight:3},
-{location: new google.maps.LatLng(33.87,-112.12), weight:3},
-{location: new google.maps.LatLng(33.87,-112.11), weight:4},
-{location: new google.maps.LatLng(33.87,-112.1), weight:6},
-{location: new google.maps.LatLng(33.87,-112.09), weight:3},
-{location: new google.maps.LatLng(33.87,-112.06), weight:1},
-{location: new google.maps.LatLng(33.88,-112.17), weight:3},
-{location: new google.maps.LatLng(33.88,-112.16), weight:2},
-{location: new google.maps.LatLng(33.88,-112.15), weight:20},
-{location: new google.maps.LatLng(33.88,-112.14), weight:11},
-{location: new google.maps.LatLng(33.88,-112.05), weight:1},
-{location: new google.maps.LatLng(33.88,-112.04), weight:2},
-{location: new google.maps.LatLng(33.89,-118.39), weight:1},
-{location: new google.maps.LatLng(33.89,-112.16), weight:3},
-{location: new google.maps.LatLng(33.89,-112.06), weight:3},
-{location: new google.maps.LatLng(33.89,-112.05), weight:7},
-{location: new google.maps.LatLng(33.9,-117.38), weight:1},
-{location: new google.maps.LatLng(33.9,-112.04), weight:1},
-{location: new google.maps.LatLng(33.91,-112.14), weight:1},
-{location: new google.maps.LatLng(33.91,-112.12), weight:1},
-{location: new google.maps.LatLng(33.92,-112.12), weight:2},
-{location: new google.maps.LatLng(33.92,-112.11), weight:2},
-{location: new google.maps.LatLng(33.92,-112.1), weight:3},
-{location: new google.maps.LatLng(33.92,-112.09), weight:2},
-{location: new google.maps.LatLng(33.93,-112.11), weight:1},
-{location: new google.maps.LatLng(33.93,-112.1), weight:1},
-{location: new google.maps.LatLng(33.93,-112.07), weight:1},
-{location: new google.maps.LatLng(33.94,-112.11), weight:1},
-{location: new google.maps.LatLng(33.95,-112.77), weight:1},
-{location: new google.maps.LatLng(33.95,-112.73), weight:2},
-{location: new google.maps.LatLng(33.96,-112.75), weight:1},
-{location: new google.maps.LatLng(33.96,-112.74), weight:1},
-{location: new google.maps.LatLng(33.97,-112.73), weight:2},
-{location: new google.maps.LatLng(33.98,-112.74), weight:2},
-{location: new google.maps.LatLng(33.98,-112.72), weight:1},
-{location: new google.maps.LatLng(34,-112.78), weight:1},
-{location: new google.maps.LatLng(34.02,-118.46), weight:1},
-{location: new google.maps.LatLng(34.02,-117.66), weight:1},
-{location: new google.maps.LatLng(34.03,-117.3), weight:1},
-{location: new google.maps.LatLng(34.03,-117.05), weight:1},
-{location: new google.maps.LatLng(34.05,-112.16), weight:2},
-{location: new google.maps.LatLng(34.06,-112.16), weight:1},
-{location: new google.maps.LatLng(34.06,-84.77), weight:1},
-{location: new google.maps.LatLng(34.07,-112.13), weight:2},
-{location: new google.maps.LatLng(34.08,-112.14), weight:3},
-{location: new google.maps.LatLng(34.1,-112.15), weight:1},
-{location: new google.maps.LatLng(34.11,-109.91), weight:1},
-{location: new google.maps.LatLng(34.11,-84.19), weight:1},
-{location: new google.maps.LatLng(34.13,-117.71), weight:1},
-{location: new google.maps.LatLng(34.15,-118.41), weight:1},
-{location: new google.maps.LatLng(34.16,-110), weight:1},
-{location: new google.maps.LatLng(34.18,-118.88), weight:1},
-{location: new google.maps.LatLng(34.18,-118.09), weight:1},
-{location: new google.maps.LatLng(34.19,-109.92), weight:1},
-{location: new google.maps.LatLng(34.2,-118.14), weight:1},
-{location: new google.maps.LatLng(34.2,-110.03), weight:1},
-{location: new google.maps.LatLng(34.23,-111.31), weight:1},
-{location: new google.maps.LatLng(34.24,-110.07), weight:1},
-{location: new google.maps.LatLng(34.25,-112.31), weight:1},
-{location: new google.maps.LatLng(34.26,-111.32), weight:1},
-{location: new google.maps.LatLng(34.26,-111.28), weight:1},
-{location: new google.maps.LatLng(34.27,-111.33), weight:1},
-{location: new google.maps.LatLng(34.28,-112.75), weight:1},
-{location: new google.maps.LatLng(34.28,-84.2), weight:2},
-{location: new google.maps.LatLng(34.34,-112.16), weight:3},
-{location: new google.maps.LatLng(34.34,-112.15), weight:1},
-{location: new google.maps.LatLng(34.35,-112.16), weight:1},
-{location: new google.maps.LatLng(34.39,-118.48), weight:1},
-{location: new google.maps.LatLng(34.4,-118.45), weight:1},
-{location: new google.maps.LatLng(34.41,-118.59), weight:2},
-{location: new google.maps.LatLng(34.41,-93.15), weight:1},
-{location: new google.maps.LatLng(34.46,-92.99), weight:1},
-{location: new google.maps.LatLng(34.47,-94.35), weight:1},
-{location: new google.maps.LatLng(34.48,-117.27), weight:1},
-{location: new google.maps.LatLng(34.49,-117.38), weight:1},
-{location: new google.maps.LatLng(34.5,-114.34), weight:1},
-{location: new google.maps.LatLng(34.52,-117.35), weight:1},
-{location: new google.maps.LatLng(34.52,-112.48), weight:1},
-{location: new google.maps.LatLng(34.52,-112.21), weight:1},
-{location: new google.maps.LatLng(34.53,-112.48), weight:1},
-{location: new google.maps.LatLng(34.53,-112.45), weight:1},
-{location: new google.maps.LatLng(34.54,-112.48), weight:1},
-{location: new google.maps.LatLng(34.55,-112.27), weight:1},
-{location: new google.maps.LatLng(34.55,-112.24), weight:1},
-{location: new google.maps.LatLng(34.56,-112.39), weight:1},
-{location: new google.maps.LatLng(34.56,-112.26), weight:1},
-{location: new google.maps.LatLng(34.56,-112.24), weight:1},
-{location: new google.maps.LatLng(34.56,-111.87), weight:1},
-{location: new google.maps.LatLng(34.57,-113.18), weight:1},
-{location: new google.maps.LatLng(34.57,-112.52), weight:1},
-{location: new google.maps.LatLng(34.57,-112.5), weight:2},
-{location: new google.maps.LatLng(34.57,-112.45), weight:1},
-{location: new google.maps.LatLng(34.57,-112.4), weight:1},
-{location: new google.maps.LatLng(34.57,-112.33), weight:1},
-{location: new google.maps.LatLng(34.57,-112.27), weight:1},
-{location: new google.maps.LatLng(34.57,-111.86), weight:1},
-{location: new google.maps.LatLng(34.58,-113.17), weight:1},
-{location: new google.maps.LatLng(34.58,-112.52), weight:1},
-{location: new google.maps.LatLng(34.58,-112.51), weight:1},
-{location: new google.maps.LatLng(34.58,-112.45), weight:1},
-{location: new google.maps.LatLng(34.58,-112.35), weight:1},
-{location: new google.maps.LatLng(34.6,-112.35), weight:1},
-{location: new google.maps.LatLng(34.6,-112.34), weight:1},
-{location: new google.maps.LatLng(34.6,-111.87), weight:1},
-{location: new google.maps.LatLng(34.61,-112.32), weight:1},
-{location: new google.maps.LatLng(34.61,-112.3), weight:1},
-{location: new google.maps.LatLng(34.61,-112.29), weight:1},
-{location: new google.maps.LatLng(34.63,-120.46), weight:1},
-{location: new google.maps.LatLng(34.63,-112.35), weight:1},
-{location: new google.maps.LatLng(34.63,-112.33), weight:1},
-{location: new google.maps.LatLng(34.63,-111.9), weight:1},
-{location: new google.maps.LatLng(34.63,-111.79), weight:1},
-{location: new google.maps.LatLng(34.64,-118.21), weight:1},
-{location: new google.maps.LatLng(34.64,-112.42), weight:1},
-{location: new google.maps.LatLng(34.66,-112.33), weight:1},
-{location: new google.maps.LatLng(34.67,-112.51), weight:1},
-{location: new google.maps.LatLng(34.68,-112.32), weight:1},
-{location: new google.maps.LatLng(34.69,-111.99), weight:1},
-{location: new google.maps.LatLng(34.7,-111.99), weight:2},
-{location: new google.maps.LatLng(34.71,-112.02), weight:2},
-{location: new google.maps.LatLng(34.72,-111.97), weight:1},
-{location: new google.maps.LatLng(34.73,-112.45), weight:1},
-{location: new google.maps.LatLng(34.76,-112.06), weight:1},
-{location: new google.maps.LatLng(34.77,-112.52), weight:1},
-{location: new google.maps.LatLng(34.78,-111.79), weight:1},
-{location: new google.maps.LatLng(34.79,-111.79), weight:2},
-{location: new google.maps.LatLng(34.8,-112.5), weight:1},
-{location: new google.maps.LatLng(34.8,-112.49), weight:1},
-{location: new google.maps.LatLng(34.84,-112.47), weight:1},
-{location: new google.maps.LatLng(34.86,-120.44), weight:1},
-{location: new google.maps.LatLng(34.86,-77.49), weight:1},
-{location: new google.maps.LatLng(34.87,-111.81), weight:1},
-{location: new google.maps.LatLng(34.9,-82.03), weight:1},
-{location: new google.maps.LatLng(34.94,-111.65), weight:1},
-{location: new google.maps.LatLng(34.94,-90), weight:1},
-{location: new google.maps.LatLng(35,-80.81), weight:1},
-{location: new google.maps.LatLng(35,-79.1), weight:1},
-{location: new google.maps.LatLng(35.03,-110.7), weight:1},
-{location: new google.maps.LatLng(35.11,-89.96), weight:1},
-{location: new google.maps.LatLng(35.16,-111.67), weight:1},
-{location: new google.maps.LatLng(35.16,-111.64), weight:1},
-{location: new google.maps.LatLng(35.17,-107.89), weight:1},
-{location: new google.maps.LatLng(35.18,-111.64), weight:1},
-{location: new google.maps.LatLng(35.19,-111.59), weight:1},
-{location: new google.maps.LatLng(35.19,-106.7), weight:1},
-{location: new google.maps.LatLng(35.2,-114.01), weight:1},
-{location: new google.maps.LatLng(35.2,-111.65), weight:2},
-{location: new google.maps.LatLng(35.2,-111.6), weight:1},
-{location: new google.maps.LatLng(35.21,-114.04), weight:1},
-{location: new google.maps.LatLng(35.21,-111.61), weight:1},
-{location: new google.maps.LatLng(35.22,-114.05), weight:1},
-{location: new google.maps.LatLng(35.22,-111.62), weight:2},
-{location: new google.maps.LatLng(35.22,-111.61), weight:1},
-{location: new google.maps.LatLng(35.22,-111.59), weight:1},
-{location: new google.maps.LatLng(35.23,-111.66), weight:1},
-{location: new google.maps.LatLng(35.24,-111.67), weight:1},
-{location: new google.maps.LatLng(35.24,-111.57), weight:2},
-{location: new google.maps.LatLng(35.24,-111.56), weight:1},
-{location: new google.maps.LatLng(35.25,-112.19), weight:1},
-{location: new google.maps.LatLng(35.26,-111.5), weight:1},
-{location: new google.maps.LatLng(35.28,-106.61), weight:1},
-{location: new google.maps.LatLng(35.3,-111.56), weight:2},
-{location: new google.maps.LatLng(35.3,-111.55), weight:1},
-{location: new google.maps.LatLng(35.31,-111.54), weight:1},
-{location: new google.maps.LatLng(35.58,-78.52), weight:2},
-{location: new google.maps.LatLng(35.66,-97.56), weight:1},
-{location: new google.maps.LatLng(35.87,-80.06), weight:1},
-{location: new google.maps.LatLng(35.9,-78.69), weight:1},
-{location: new google.maps.LatLng(35.99,-115.22), weight:1},
-{location: new google.maps.LatLng(36.01,-115.09), weight:1},
-{location: new google.maps.LatLng(36.03,-115.14), weight:2},
-{location: new google.maps.LatLng(36.03,-95.89), weight:1},
-{location: new google.maps.LatLng(36.05,-86.66), weight:1},
-{location: new google.maps.LatLng(36.09,-94.24), weight:1},
-{location: new google.maps.LatLng(36.11,-95.73), weight:1},
-{location: new google.maps.LatLng(36.12,-115.3), weight:1},
-{location: new google.maps.LatLng(36.19,-86.74), weight:1},
-{location: new google.maps.LatLng(36.2,-115.21), weight:1},
-{location: new google.maps.LatLng(36.2,-94.55), weight:1},
-{location: new google.maps.LatLng(36.27,-115.2), weight:1},
-{location: new google.maps.LatLng(36.28,-115.17), weight:1},
-{location: new google.maps.LatLng(36.3,-115.29), weight:1},
-{location: new google.maps.LatLng(36.31,-115.28), weight:1},
-{location: new google.maps.LatLng(36.44,-82.26), weight:1},
-{location: new google.maps.LatLng(36.65,-93.47), weight:1},
-{location: new google.maps.LatLng(36.74,-108.14), weight:1},
-{location: new google.maps.LatLng(36.76,-76.02), weight:1},
-{location: new google.maps.LatLng(36.77,-108.16), weight:1},
-{location: new google.maps.LatLng(36.82,-119.78), weight:1},
-{location: new google.maps.LatLng(36.83,-119.85), weight:1},
-{location: new google.maps.LatLng(36.84,-76.31), weight:1},
-{location: new google.maps.LatLng(36.86,-76.22), weight:1},
-{location: new google.maps.LatLng(37.11,-93.27), weight:1},
-{location: new google.maps.LatLng(37.12,-76.52), weight:1},
-{location: new google.maps.LatLng(37.15,-93.31), weight:1},
-{location: new google.maps.LatLng(37.17,-93.21), weight:1},
-{location: new google.maps.LatLng(37.29,-107.84), weight:1},
-{location: new google.maps.LatLng(37.32,-79.95), weight:1},
-{location: new google.maps.LatLng(37.38,-122.06), weight:1},
-{location: new google.maps.LatLng(37.41,-107.83), weight:1},
-{location: new google.maps.LatLng(37.66,-84.78), weight:1},
-{location: new google.maps.LatLng(37.67,-120.94), weight:1},
-{location: new google.maps.LatLng(37.67,-97.26), weight:2},
-{location: new google.maps.LatLng(37.77,-122.27), weight:1},
-{location: new google.maps.LatLng(37.78,-97.44), weight:1},
-{location: new google.maps.LatLng(37.78,-87.16), weight:1},
-{location: new google.maps.LatLng(38.2,-85.63), weight:1},
-{location: new google.maps.LatLng(38.24,-85.46), weight:1},
-{location: new google.maps.LatLng(38.28,-121.94), weight:1},
-{location: new google.maps.LatLng(38.32,-121.97), weight:1},
-{location: new google.maps.LatLng(38.36,-97.67), weight:1},
-{location: new google.maps.LatLng(38.37,-98.8), weight:1},
-{location: new google.maps.LatLng(38.45,-77.42), weight:1},
-{location: new google.maps.LatLng(38.48,-107.86), weight:1},
-{location: new google.maps.LatLng(38.55,-121.78), weight:1},
-{location: new google.maps.LatLng(38.55,-121.53), weight:1},
-{location: new google.maps.LatLng(38.56,-107.95), weight:1},
-{location: new google.maps.LatLng(38.59,-90.65), weight:1},
-{location: new google.maps.LatLng(38.59,-78.79), weight:1},
-{location: new google.maps.LatLng(38.6,-107.99), weight:1},
-{location: new google.maps.LatLng(38.69,-121.78), weight:1},
-{location: new google.maps.LatLng(38.69,-121.3), weight:1},
-{location: new google.maps.LatLng(38.75,-121.29), weight:1},
-{location: new google.maps.LatLng(38.79,-77.29), weight:1},
-{location: new google.maps.LatLng(38.79,-77.06), weight:1},
-{location: new google.maps.LatLng(38.83,-104.72), weight:1},
-{location: new google.maps.LatLng(38.83,-94.61), weight:1},
-{location: new google.maps.LatLng(38.89,-90.99), weight:1},
-{location: new google.maps.LatLng(38.92,-94.35), weight:1},
-{location: new google.maps.LatLng(38.94,-104.79), weight:1},
-{location: new google.maps.LatLng(38.94,-104.73), weight:1},
-{location: new google.maps.LatLng(38.94,-94.64), weight:1},
-{location: new google.maps.LatLng(38.95,-104.78), weight:1},
-{location: new google.maps.LatLng(38.97,-104.74), weight:1},
-{location: new google.maps.LatLng(38.97,-94.67), weight:1},
-{location: new google.maps.LatLng(39.02,-94.7), weight:1},
-{location: new google.maps.LatLng(39.05,-121.07), weight:1},
-{location: new google.maps.LatLng(39.06,-104.75), weight:1},
-{location: new google.maps.LatLng(39.07,-76.71), weight:1},
-{location: new google.maps.LatLng(39.11,-76.77), weight:1},
-{location: new google.maps.LatLng(39.12,-92.45), weight:1},
-{location: new google.maps.LatLng(39.14,-95.69), weight:1},
-{location: new google.maps.LatLng(39.16,-84.41), weight:1},
-{location: new google.maps.LatLng(39.18,-96.57), weight:1},
-{location: new google.maps.LatLng(39.19,-96.58), weight:5},
-{location: new google.maps.LatLng(39.26,-94.45), weight:1},
-{location: new google.maps.LatLng(39.27,-94.25), weight:1},
-{location: new google.maps.LatLng(39.42,-92.8), weight:1},
-{location: new google.maps.LatLng(39.46,-77.99), weight:1},
-{location: new google.maps.LatLng(39.47,-107.32), weight:1},
-{location: new google.maps.LatLng(39.52,-119.82), weight:1},
-{location: new google.maps.LatLng(39.53,-105.02), weight:1},
-{location: new google.maps.LatLng(39.54,-104.99), weight:1},
-{location: new google.maps.LatLng(39.54,-104.97), weight:1},
-{location: new google.maps.LatLng(39.59,-104.72), weight:1},
-{location: new google.maps.LatLng(39.6,-105.03), weight:1},
-{location: new google.maps.LatLng(39.61,-104.72), weight:1},
-{location: new google.maps.LatLng(39.62,-105.01), weight:1},
-{location: new google.maps.LatLng(39.62,-104.8), weight:1},
-{location: new google.maps.LatLng(39.64,-104.9), weight:1},
-{location: new google.maps.LatLng(39.64,-84.08), weight:1},
-{location: new google.maps.LatLng(39.72,-104.79), weight:1},
-{location: new google.maps.LatLng(39.79,-86.15), weight:1},
-{location: new google.maps.LatLng(39.83,-99.89), weight:1},
-{location: new google.maps.LatLng(39.85,-82.81), weight:1},
-{location: new google.maps.LatLng(39.88,-86.19), weight:1},
-{location: new google.maps.LatLng(39.89,-105.04), weight:1},
-{location: new google.maps.LatLng(39.92,-91.38), weight:1},
-{location: new google.maps.LatLng(39.93,-78), weight:1},
-{location: new google.maps.LatLng(39.98,-105.25), weight:1},
-{location: new google.maps.LatLng(39.99,-105.14), weight:1},
-{location: new google.maps.LatLng(40,-86.11), weight:1},
-{location: new google.maps.LatLng(40,-83.05), weight:1},
-{location: new google.maps.LatLng(40.01,-83.86), weight:1},
-{location: new google.maps.LatLng(40.07,-80.67), weight:1},
-{location: new google.maps.LatLng(40.11,-111.67), weight:1},
-{location: new google.maps.LatLng(40.15,-83.12), weight:1},
-{location: new google.maps.LatLng(40.16,-74.04), weight:1},
-{location: new google.maps.LatLng(40.27,-75.39), weight:1},
-{location: new google.maps.LatLng(40.28,-111.73), weight:1},
-{location: new google.maps.LatLng(40.29,-80.02), weight:1},
-{location: new google.maps.LatLng(40.32,-104.83), weight:1},
-{location: new google.maps.LatLng(40.37,-120.53), weight:1},
-{location: new google.maps.LatLng(40.49,-81.68), weight:1},
-{location: new google.maps.LatLng(40.5,-88.93), weight:1},
-{location: new google.maps.LatLng(40.53,-80.16), weight:1},
-{location: new google.maps.LatLng(40.55,-122.34), weight:1},
-{location: new google.maps.LatLng(40.55,-122.33), weight:1},
-{location: new google.maps.LatLng(40.56,-124.12), weight:1},
-{location: new google.maps.LatLng(40.56,-81.91), weight:1},
-{location: new google.maps.LatLng(40.58,-111.94), weight:1},
-{location: new google.maps.LatLng(40.58,-111.84), weight:1},
-{location: new google.maps.LatLng(40.77,-96.64), weight:1},
-{location: new google.maps.LatLng(40.78,-74.65), weight:1},
-{location: new google.maps.LatLng(40.82,-96.62), weight:1},
-{location: new google.maps.LatLng(40.83,-96.61), weight:1},
-{location: new google.maps.LatLng(40.98,-73.94), weight:2},
-{location: new google.maps.LatLng(40.99,-81.41), weight:1},
-{location: new google.maps.LatLng(41.08,-112.04), weight:1},
-{location: new google.maps.LatLng(41.14,-80.55), weight:1},
-{location: new google.maps.LatLng(41.28,-81.85), weight:1},
-{location: new google.maps.LatLng(41.38,-72.07), weight:1},
-{location: new google.maps.LatLng(41.4,-82.37), weight:1},
-{location: new google.maps.LatLng(41.41,-81.46), weight:1},
-{location: new google.maps.LatLng(41.55,-72.69), weight:1},
-{location: new google.maps.LatLng(41.6,-87.93), weight:1},
-{location: new google.maps.LatLng(41.6,-87.03), weight:1},
-{location: new google.maps.LatLng(41.62,-81.5), weight:1},
-{location: new google.maps.LatLng(41.64,-93.67), weight:1},
-{location: new google.maps.LatLng(41.72,-86.17), weight:1},
-{location: new google.maps.LatLng(41.74,-71.31), weight:1},
-{location: new google.maps.LatLng(41.82,-88.33), weight:1},
-{location: new google.maps.LatLng(41.82,-71.43), weight:1},
-{location: new google.maps.LatLng(41.85,-88.13), weight:1},
-{location: new google.maps.LatLng(41.86,-103.09), weight:1},
-{location: new google.maps.LatLng(41.87,-88.1), weight:1},
-{location: new google.maps.LatLng(41.93,-88.69), weight:1},
-{location: new google.maps.LatLng(41.93,-88.32), weight:1},
-{location: new google.maps.LatLng(41.94,-87.83), weight:1},
-{location: new google.maps.LatLng(41.95,-87.71), weight:1},
-{location: new google.maps.LatLng(42.01,-88.14), weight:1},
-{location: new google.maps.LatLng(42.02,-87.67), weight:1},
-{location: new google.maps.LatLng(42.04,-88.13), weight:1},
-{location: new google.maps.LatLng(42.19,-71.69), weight:1},
-{location: new google.maps.LatLng(42.2,-85.47), weight:1},
-{location: new google.maps.LatLng(42.22,-83.67), weight:1},
-{location: new google.maps.LatLng(42.33,-88.29), weight:1},
-{location: new google.maps.LatLng(42.34,-89.64), weight:1},
-{location: new google.maps.LatLng(42.36,-88.1), weight:1},
-{location: new google.maps.LatLng(42.43,-88.66), weight:1},
-{location: new google.maps.LatLng(42.46,-93.82), weight:1},
-{location: new google.maps.LatLng(42.5,-96.5), weight:1},
-{location: new google.maps.LatLng(42.57,-83.07), weight:1},
-{location: new google.maps.LatLng(42.66,-83.2), weight:1},
-{location: new google.maps.LatLng(42.75,-88.94), weight:1},
-{location: new google.maps.LatLng(42.8,-87.81), weight:1},
-{location: new google.maps.LatLng(42.81,-73.95), weight:1},
-{location: new google.maps.LatLng(42.82,-83.03), weight:1},
-{location: new google.maps.LatLng(42.83,-106.25), weight:1},
-{location: new google.maps.LatLng(42.94,-114.71), weight:1},
-{location: new google.maps.LatLng(42.96,-83.67), weight:1},
-{location: new google.maps.LatLng(43.06,-88.1), weight:1},
-{location: new google.maps.LatLng(43.08,-88.76), weight:1},
-{location: new google.maps.LatLng(43.1,-88.4), weight:1},
-{location: new google.maps.LatLng(43.38,-103.32), weight:1},
-{location: new google.maps.LatLng(43.46,-88.19), weight:1},
-{location: new google.maps.LatLng(43.59,-96.7), weight:1},
-{location: new google.maps.LatLng(43.6,-84.41), weight:1},
-{location: new google.maps.LatLng(43.63,-116.44), weight:1},
-{location: new google.maps.LatLng(43.64,-116.38), weight:1},
-{location: new google.maps.LatLng(43.74,-70.27), weight:1},
-{location: new google.maps.LatLng(44.05,-122.98), weight:1},
-{location: new google.maps.LatLng(44.71,-85.67), weight:1},
-{location: new google.maps.LatLng(44.73,-106.97), weight:1},
-{location: new google.maps.LatLng(44.76,-93.31), weight:1},
-{location: new google.maps.LatLng(44.78,-91.49), weight:1},
-{location: new google.maps.LatLng(44.81,-93.31), weight:1},
-{location: new google.maps.LatLng(44.88,-122.84), weight:1},
-{location: new google.maps.LatLng(44.91,-92.91), weight:1},
-{location: new google.maps.LatLng(44.94,-93.48), weight:1},
-{location: new google.maps.LatLng(44.96,-123.07), weight:1},
-{location: new google.maps.LatLng(45.19,-93.3), weight:1},
-{location: new google.maps.LatLng(45.31,-94.2), weight:1},
-{location: new google.maps.LatLng(45.37,-122.74), weight:1},
-{location: new google.maps.LatLng(45.43,-122.78), weight:1},
-{location: new google.maps.LatLng(45.53,-122.44), weight:1},
-{location: new google.maps.LatLng(45.54,-122.97), weight:1},
-{location: new google.maps.LatLng(45.63,-122.67), weight:1},
-{location: new google.maps.LatLng(45.65,-122.5), weight:1},
-{location: new google.maps.LatLng(45.65,-118.79), weight:1},
-{location: new google.maps.LatLng(46.05,-118.37), weight:1},
-{location: new google.maps.LatLng(46.23,-118.99), weight:1},
-{location: new google.maps.LatLng(46.57,-120.53), weight:1},
-{location: new google.maps.LatLng(46.6,-120.55), weight:1},
-{location: new google.maps.LatLng(46.73,-116.99), weight:1},
-{location: new google.maps.LatLng(46.74,-114.08), weight:1},
-{location: new google.maps.LatLng(46.8,-114.04), weight:1},
-{location: new google.maps.LatLng(46.82,-96.85), weight:1},
-{location: new google.maps.LatLng(46.93,-114.08), weight:1},
-{location: new google.maps.LatLng(46.94,-122.56), weight:2},
-{location: new google.maps.LatLng(47.06,-122.95), weight:1},
-{location: new google.maps.LatLng(47.1,-122.62), weight:1},
-{location: new google.maps.LatLng(47.21,-122.16), weight:1},
-{location: new google.maps.LatLng(47.25,-93.52), weight:1},
-{location: new google.maps.LatLng(47.26,-122.55), weight:1},
-{location: new google.maps.LatLng(47.3,-122.38), weight:1},
-{location: new google.maps.LatLng(47.31,-122.42), weight:1},
-{location: new google.maps.LatLng(47.31,-122.18), weight:1},
-{location: new google.maps.LatLng(47.33,-122.37), weight:1},
-{location: new google.maps.LatLng(47.41,-122.21), weight:1},
-{location: new google.maps.LatLng(47.47,-122.16), weight:1},
-{location: new google.maps.LatLng(47.49,-111.33), weight:1},
-{location: new google.maps.LatLng(47.71,-122.19), weight:1},
-{location: new google.maps.LatLng(47.73,-122.01), weight:1},
-{location: new google.maps.LatLng(47.8,-122.35), weight:2},
-{location: new google.maps.LatLng(47.8,-117.55), weight:1},
-{location: new google.maps.LatLng(47.91,-97.06), weight:1},
-{location: new google.maps.LatLng(48.01,-122.13), weight:1},
-{location: new google.maps.LatLng(48.23,-101.28), weight:1},
-{location: new google.maps.LatLng(48.25,-122.33), weight:1},
-{location: new google.maps.LatLng(48.78,-122.46), weight:1},
-{location: new google.maps.LatLng(48.83,-122.57), weight:1},
-{location: new google.maps.LatLng(48.9,-122.49), weight:1},
-{location: new google.maps.LatLng(48.94,-122.55), weight:1},
-{location: new google.maps.LatLng(48.96,-122.42), weight:1},
-{location: new google.maps.LatLng(53.46,-113.57), weight:1},
-{location: new google.maps.LatLng(61.19,-149.89), weight:1},
-{location: new google.maps.LatLng(27.87,-97.7), weight:1},
-{location: new google.maps.LatLng(28.62,-81.21), weight:1},
-{location: new google.maps.LatLng(28.63,-81.23), weight:1},
-{location: new google.maps.LatLng(29.52,-98.71), weight:1},
-{location: new google.maps.LatLng(30.06,-95.25), weight:1},
-{location: new google.maps.LatLng(30.64,-94.87), weight:1},
-{location: new google.maps.LatLng(32.34,-111.04), weight:1},
-{location: new google.maps.LatLng(32.41,-81.78), weight:1},
-{location: new google.maps.LatLng(32.71,-100.93), weight:1},
-{location: new google.maps.LatLng(32.76,-97.33), weight:1},
-{location: new google.maps.LatLng(32.8,-117.11), weight:1},
-{location: new google.maps.LatLng(33.04,-116.87), weight:1},
-{location: new google.maps.LatLng(33.18,-111.58), weight:1},
-{location: new google.maps.LatLng(33.21,-111.76), weight:1},
-{location: new google.maps.LatLng(33.23,-111.84), weight:1},
-{location: new google.maps.LatLng(33.25,-111.64), weight:1},
-{location: new google.maps.LatLng(33.27,-111.85), weight:1},
-{location: new google.maps.LatLng(33.32,-112.43), weight:2},
-{location: new google.maps.LatLng(33.32,-111.82), weight:1},
-{location: new google.maps.LatLng(33.33,-112.43), weight:1},
-{location: new google.maps.LatLng(33.34,-112.47), weight:1},
-{location: new google.maps.LatLng(33.34,-111.84), weight:1},
-{location: new google.maps.LatLng(33.34,-111.76), weight:1},
-{location: new google.maps.LatLng(33.35,-112.93), weight:1},
-{location: new google.maps.LatLng(33.35,-112.45), weight:2},
-{location: new google.maps.LatLng(33.35,-112.44), weight:3},
-{location: new google.maps.LatLng(33.35,-112.12), weight:1},
-{location: new google.maps.LatLng(33.36,-112.44), weight:2},
-{location: new google.maps.LatLng(33.36,-112.43), weight:1},
-{location: new google.maps.LatLng(33.36,-111.66), weight:1},
-{location: new google.maps.LatLng(33.36,-111.63), weight:1},
-{location: new google.maps.LatLng(33.37,-112.2), weight:2},
-{location: new google.maps.LatLng(33.37,-111.97), weight:1},
-{location: new google.maps.LatLng(33.37,-111.72), weight:1},
-{location: new google.maps.LatLng(33.38,-112.6), weight:1},
-{location: new google.maps.LatLng(33.38,-112.57), weight:1},
-{location: new google.maps.LatLng(33.38,-111.61), weight:1},
-{location: new google.maps.LatLng(33.38,-111.56), weight:1},
-{location: new google.maps.LatLng(33.39,-112.61), weight:1},
-{location: new google.maps.LatLng(33.39,-112.6), weight:2},
-{location: new google.maps.LatLng(33.39,-112.56), weight:3},
-{location: new google.maps.LatLng(33.39,-112.55), weight:1},
-{location: new google.maps.LatLng(33.4,-112.56), weight:3},
-{location: new google.maps.LatLng(33.4,-112.17), weight:1},
-{location: new google.maps.LatLng(33.4,-111.6), weight:1},
-{location: new google.maps.LatLng(33.41,-112.77), weight:1},
-{location: new google.maps.LatLng(33.41,-112.59), weight:1},
-{location: new google.maps.LatLng(33.41,-112.58), weight:1},
-{location: new google.maps.LatLng(33.41,-112.56), weight:1},
-{location: new google.maps.LatLng(33.41,-112.49), weight:1},
-{location: new google.maps.LatLng(33.41,-112.28), weight:2},
-{location: new google.maps.LatLng(33.41,-112.22), weight:1},
-{location: new google.maps.LatLng(33.41,-111.85), weight:1},
-{location: new google.maps.LatLng(33.41,-111.62), weight:1},
-{location: new google.maps.LatLng(33.42,-112.6), weight:3},
-{location: new google.maps.LatLng(33.42,-112.42), weight:4},
-{location: new google.maps.LatLng(33.42,-112.41), weight:4},
-{location: new google.maps.LatLng(33.42,-112.4), weight:4},
-{location: new google.maps.LatLng(33.42,-112.36), weight:1},
-{location: new google.maps.LatLng(33.42,-112.3), weight:1},
-{location: new google.maps.LatLng(33.42,-112.28), weight:1},
-{location: new google.maps.LatLng(33.42,-112.25), weight:1},
-{location: new google.maps.LatLng(33.42,-112.23), weight:1},
-{location: new google.maps.LatLng(33.42,-112.2), weight:1},
-{location: new google.maps.LatLng(33.43,-112.57), weight:1},
-{location: new google.maps.LatLng(33.43,-112.56), weight:4},
-{location: new google.maps.LatLng(33.43,-112.55), weight:3},
-{location: new google.maps.LatLng(33.43,-112.54), weight:1},
-{location: new google.maps.LatLng(33.43,-112.52), weight:4},
-{location: new google.maps.LatLng(33.43,-112.51), weight:1},
-{location: new google.maps.LatLng(33.43,-112.43), weight:5},
-{location: new google.maps.LatLng(33.43,-112.42), weight:1},
-{location: new google.maps.LatLng(33.43,-112.41), weight:1},
-{location: new google.maps.LatLng(33.43,-112.4), weight:4},
-{location: new google.maps.LatLng(33.43,-112.34), weight:1},
-{location: new google.maps.LatLng(33.43,-112.3), weight:6},
-{location: new google.maps.LatLng(33.43,-112.29), weight:1},
-{location: new google.maps.LatLng(33.43,-112.28), weight:1},
-{location: new google.maps.LatLng(33.43,-111.75), weight:1},
-{location: new google.maps.LatLng(33.43,-111.64), weight:1},
-{location: new google.maps.LatLng(33.44,-112.56), weight:2},
-{location: new google.maps.LatLng(33.44,-112.55), weight:2},
-{location: new google.maps.LatLng(33.44,-112.54), weight:1},
-{location: new google.maps.LatLng(33.44,-112.53), weight:1},
-{location: new google.maps.LatLng(33.44,-112.48), weight:1},
-{location: new google.maps.LatLng(33.44,-112.44), weight:5},
-{location: new google.maps.LatLng(33.44,-112.43), weight:1},
-{location: new google.maps.LatLng(33.44,-112.41), weight:1},
-{location: new google.maps.LatLng(33.44,-112.39), weight:2},
-{location: new google.maps.LatLng(33.44,-112.36), weight:2},
-{location: new google.maps.LatLng(33.44,-112.35), weight:1},
-{location: new google.maps.LatLng(33.44,-112.33), weight:5},
-{location: new google.maps.LatLng(33.44,-112.32), weight:2},
-{location: new google.maps.LatLng(33.44,-112.31), weight:1},
-{location: new google.maps.LatLng(33.44,-112.3), weight:1},
-{location: new google.maps.LatLng(33.45,-112.57), weight:1},
-{location: new google.maps.LatLng(33.45,-112.56), weight:2},
-{location: new google.maps.LatLng(33.45,-112.48), weight:2},
-{location: new google.maps.LatLng(33.45,-112.47), weight:3},
-{location: new google.maps.LatLng(33.45,-112.43), weight:2},
-{location: new google.maps.LatLng(33.45,-112.41), weight:2},
-{location: new google.maps.LatLng(33.45,-112.4), weight:1},
-{location: new google.maps.LatLng(33.45,-112.39), weight:3},
-{location: new google.maps.LatLng(33.45,-112.34), weight:1},
-{location: new google.maps.LatLng(33.45,-112.32), weight:1},
-{location: new google.maps.LatLng(33.45,-112.3), weight:2},
-{location: new google.maps.LatLng(33.45,-112.25), weight:1},
-{location: new google.maps.LatLng(33.45,-112.09), weight:1},
-{location: new google.maps.LatLng(33.45,-111.98), weight:1},
-{location: new google.maps.LatLng(33.46,-112.7), weight:1},
-{location: new google.maps.LatLng(33.46,-112.47), weight:1},
-{location: new google.maps.LatLng(33.46,-112.42), weight:1},
-{location: new google.maps.LatLng(33.46,-112.41), weight:1},
-{location: new google.maps.LatLng(33.46,-112.4), weight:1},
-{location: new google.maps.LatLng(33.46,-112.35), weight:2},
-{location: new google.maps.LatLng(33.46,-112.32), weight:1},
-{location: new google.maps.LatLng(33.46,-112.28), weight:1},
-{location: new google.maps.LatLng(33.46,-112.23), weight:2},
-{location: new google.maps.LatLng(33.46,-112.19), weight:1},
-{location: new google.maps.LatLng(33.46,-112.14), weight:3},
-{location: new google.maps.LatLng(33.46,-112.02), weight:1},
-{location: new google.maps.LatLng(33.46,-112), weight:1},
-{location: new google.maps.LatLng(33.47,-112.51), weight:4},
-{location: new google.maps.LatLng(33.47,-112.5), weight:1},
-{location: new google.maps.LatLng(33.47,-112.41), weight:1},
-{location: new google.maps.LatLng(33.47,-112.4), weight:4},
-{location: new google.maps.LatLng(33.47,-112.38), weight:2},
-{location: new google.maps.LatLng(33.47,-112.37), weight:4},
-{location: new google.maps.LatLng(33.47,-112.35), weight:3},
-{location: new google.maps.LatLng(33.47,-112.34), weight:4},
-{location: new google.maps.LatLng(33.47,-112.33), weight:2},
-{location: new google.maps.LatLng(33.47,-112.32), weight:1},
-{location: new google.maps.LatLng(33.47,-112.31), weight:2},
-{location: new google.maps.LatLng(33.47,-112.3), weight:2},
-{location: new google.maps.LatLng(33.47,-112.29), weight:3},
-{location: new google.maps.LatLng(33.47,-112.28), weight:6},
-{location: new google.maps.LatLng(33.47,-112.25), weight:1},
-{location: new google.maps.LatLng(33.47,-112.24), weight:2},
-{location: new google.maps.LatLng(33.47,-112.23), weight:1},
-{location: new google.maps.LatLng(33.47,-112.17), weight:1},
-{location: new google.maps.LatLng(33.47,-112.08), weight:2},
-{location: new google.maps.LatLng(33.47,-112.06), weight:1},
-{location: new google.maps.LatLng(33.47,-111.99), weight:1},
-{location: new google.maps.LatLng(33.47,-111.9), weight:1},
-{location: new google.maps.LatLng(33.48,-112.7), weight:1},
-{location: new google.maps.LatLng(33.48,-112.51), weight:9},
-{location: new google.maps.LatLng(33.48,-112.5), weight:6},
-{location: new google.maps.LatLng(33.48,-112.48), weight:1},
-{location: new google.maps.LatLng(33.48,-112.47), weight:3},
-{location: new google.maps.LatLng(33.48,-112.46), weight:1},
-{location: new google.maps.LatLng(33.48,-112.39), weight:4},
-{location: new google.maps.LatLng(33.48,-112.38), weight:3},
-{location: new google.maps.LatLng(33.48,-112.37), weight:3},
-{location: new google.maps.LatLng(33.48,-112.36), weight:3},
-{location: new google.maps.LatLng(33.48,-112.35), weight:1},
-{location: new google.maps.LatLng(33.48,-112.34), weight:3},
-{location: new google.maps.LatLng(33.48,-112.33), weight:3},
-{location: new google.maps.LatLng(33.48,-112.31), weight:3},
-{location: new google.maps.LatLng(33.48,-112.3), weight:5},
-{location: new google.maps.LatLng(33.48,-112.29), weight:2},
-{location: new google.maps.LatLng(33.48,-112.28), weight:1},
-{location: new google.maps.LatLng(33.48,-112.25), weight:1},
-{location: new google.maps.LatLng(33.48,-112.12), weight:1},
-{location: new google.maps.LatLng(33.49,-112.71), weight:1},
-{location: new google.maps.LatLng(33.49,-112.7), weight:1},
-{location: new google.maps.LatLng(33.49,-112.52), weight:1},
-{location: new google.maps.LatLng(33.49,-112.51), weight:10},
-{location: new google.maps.LatLng(33.49,-112.5), weight:7},
-{location: new google.maps.LatLng(33.49,-112.47), weight:1},
-{location: new google.maps.LatLng(33.49,-112.46), weight:1},
-{location: new google.maps.LatLng(33.49,-112.41), weight:1},
-{location: new google.maps.LatLng(33.49,-112.4), weight:5},
-{location: new google.maps.LatLng(33.49,-112.38), weight:1},
-{location: new google.maps.LatLng(33.49,-112.37), weight:14},
-{location: new google.maps.LatLng(33.49,-112.36), weight:6},
-{location: new google.maps.LatLng(33.49,-112.35), weight:3},
-{location: new google.maps.LatLng(33.49,-112.34), weight:2},
-{location: new google.maps.LatLng(33.49,-112.33), weight:1},
-{location: new google.maps.LatLng(33.49,-112.32), weight:3},
-{location: new google.maps.LatLng(33.49,-112.3), weight:9},
-{location: new google.maps.LatLng(33.49,-112.29), weight:1},
-{location: new google.maps.LatLng(33.49,-112.25), weight:1},
-{location: new google.maps.LatLng(33.49,-112.24), weight:2},
-{location: new google.maps.LatLng(33.49,-112.08), weight:1},
-{location: new google.maps.LatLng(33.5,-112.51), weight:7},
-{location: new google.maps.LatLng(33.5,-112.49), weight:3},
-{location: new google.maps.LatLng(33.5,-112.45), weight:3},
-{location: new google.maps.LatLng(33.5,-112.4), weight:5},
-{location: new google.maps.LatLng(33.5,-112.39), weight:5},
-{location: new google.maps.LatLng(33.5,-112.38), weight:5},
-{location: new google.maps.LatLng(33.5,-112.37), weight:3},
-{location: new google.maps.LatLng(33.5,-112.36), weight:2},
-{location: new google.maps.LatLng(33.5,-112.34), weight:9},
-{location: new google.maps.LatLng(33.5,-112.33), weight:8},
-{location: new google.maps.LatLng(33.5,-112.32), weight:2},
-{location: new google.maps.LatLng(33.5,-112.3), weight:5},
-{location: new google.maps.LatLng(33.5,-112.28), weight:5},
-{location: new google.maps.LatLng(33.5,-112.27), weight:4},
-{location: new google.maps.LatLng(33.5,-112.24), weight:1},
-{location: new google.maps.LatLng(33.5,-112.2), weight:2},
-{location: new google.maps.LatLng(33.5,-112.06), weight:1},
-{location: new google.maps.LatLng(33.5,-112.04), weight:1},
-{location: new google.maps.LatLng(33.5,-112.03), weight:1},
-{location: new google.maps.LatLng(33.5,-112.01), weight:1},
-{location: new google.maps.LatLng(33.51,-112.5), weight:3},
-{location: new google.maps.LatLng(33.51,-112.49), weight:1},
-{location: new google.maps.LatLng(33.51,-112.48), weight:6},
-{location: new google.maps.LatLng(33.51,-112.47), weight:2},
-{location: new google.maps.LatLng(33.51,-112.46), weight:1},
-{location: new google.maps.LatLng(33.51,-112.45), weight:1},
-{location: new google.maps.LatLng(33.51,-112.38), weight:1},
-{location: new google.maps.LatLng(33.51,-112.35), weight:5},
-{location: new google.maps.LatLng(33.51,-112.34), weight:4},
-{location: new google.maps.LatLng(33.51,-112.33), weight:6},
-{location: new google.maps.LatLng(33.51,-112.29), weight:1},
-{location: new google.maps.LatLng(33.51,-112.28), weight:4},
-{location: new google.maps.LatLng(33.51,-112.27), weight:3},
-{location: new google.maps.LatLng(33.51,-112.24), weight:2},
-{location: new google.maps.LatLng(33.51,-112.23), weight:1},
-{location: new google.maps.LatLng(33.51,-112.22), weight:1},
-{location: new google.maps.LatLng(33.51,-112.2), weight:2},
-{location: new google.maps.LatLng(33.51,-112.12), weight:1},
-{location: new google.maps.LatLng(33.51,-112.06), weight:1},
-{location: new google.maps.LatLng(33.51,-111.89), weight:2},
-{location: new google.maps.LatLng(33.52,-112.46), weight:2},
-{location: new google.maps.LatLng(33.52,-112.45), weight:3},
-{location: new google.maps.LatLng(33.52,-112.41), weight:1},
-{location: new google.maps.LatLng(33.52,-112.36), weight:6},
-{location: new google.maps.LatLng(33.52,-112.35), weight:16},
-{location: new google.maps.LatLng(33.52,-112.34), weight:1},
-{location: new google.maps.LatLng(33.52,-112.33), weight:12},
-{location: new google.maps.LatLng(33.52,-112.32), weight:1},
-{location: new google.maps.LatLng(33.52,-112.27), weight:3},
-{location: new google.maps.LatLng(33.52,-112.26), weight:1},
-{location: new google.maps.LatLng(33.52,-112.24), weight:2},
-{location: new google.maps.LatLng(33.52,-112.23), weight:2},
-{location: new google.maps.LatLng(33.52,-112.22), weight:1},
-{location: new google.maps.LatLng(33.52,-112.19), weight:1},
-{location: new google.maps.LatLng(33.52,-112.16), weight:2},
-{location: new google.maps.LatLng(33.52,-112.15), weight:1},
-{location: new google.maps.LatLng(33.52,-112.14), weight:1},
-{location: new google.maps.LatLng(33.52,-112.13), weight:1},
-{location: new google.maps.LatLng(33.53,-112.46), weight:2},
-{location: new google.maps.LatLng(33.53,-112.45), weight:1},
-{location: new google.maps.LatLng(33.53,-112.43), weight:2},
-{location: new google.maps.LatLng(33.53,-112.35), weight:12},
-{location: new google.maps.LatLng(33.53,-112.34), weight:10},
-{location: new google.maps.LatLng(33.53,-112.25), weight:2},
-{location: new google.maps.LatLng(33.53,-112.24), weight:3},
-{location: new google.maps.LatLng(33.53,-112.21), weight:2},
-{location: new google.maps.LatLng(33.53,-112.2), weight:1},
-{location: new google.maps.LatLng(33.53,-112.19), weight:1},
-{location: new google.maps.LatLng(33.53,-112.18), weight:1},
-{location: new google.maps.LatLng(33.53,-112.17), weight:1},
-{location: new google.maps.LatLng(33.53,-112.06), weight:1},
-{location: new google.maps.LatLng(33.54,-112.46), weight:2},
-{location: new google.maps.LatLng(33.54,-112.45), weight:1},
-{location: new google.maps.LatLng(33.54,-112.44), weight:4},
-{location: new google.maps.LatLng(33.54,-112.36), weight:3},
-{location: new google.maps.LatLng(33.54,-112.35), weight:24},
-{location: new google.maps.LatLng(33.54,-112.32), weight:1},
-{location: new google.maps.LatLng(33.54,-112.3), weight:4},
-{location: new google.maps.LatLng(33.54,-112.26), weight:2},
-{location: new google.maps.LatLng(33.54,-112.25), weight:4},
-{location: new google.maps.LatLng(33.54,-112.24), weight:3},
-{location: new google.maps.LatLng(33.54,-112.23), weight:4},
-{location: new google.maps.LatLng(33.54,-112.22), weight:2},
-{location: new google.maps.LatLng(33.54,-112.21), weight:3},
-{location: new google.maps.LatLng(33.54,-112.2), weight:1},
-{location: new google.maps.LatLng(33.54,-112.17), weight:2},
-{location: new google.maps.LatLng(33.54,-112.15), weight:3},
-{location: new google.maps.LatLng(33.54,-112.11), weight:1},
-{location: new google.maps.LatLng(33.54,-112.08), weight:1},
-{location: new google.maps.LatLng(33.54,-111.89), weight:2},
-{location: new google.maps.LatLng(33.55,-112.45), weight:4},
-{location: new google.maps.LatLng(33.55,-112.44), weight:3},
-{location: new google.maps.LatLng(33.55,-112.43), weight:1},
-{location: new google.maps.LatLng(33.55,-112.41), weight:2},
-{location: new google.maps.LatLng(33.55,-112.3), weight:7},
-{location: new google.maps.LatLng(33.55,-112.29), weight:8},
-{location: new google.maps.LatLng(33.55,-112.27), weight:2},
-{location: new google.maps.LatLng(33.55,-112.25), weight:1},
-{location: new google.maps.LatLng(33.55,-112.18), weight:1},
-{location: new google.maps.LatLng(33.55,-112.16), weight:1},
-{location: new google.maps.LatLng(33.55,-112.05), weight:1},
-{location: new google.maps.LatLng(33.56,-112.47), weight:2},
-{location: new google.maps.LatLng(33.56,-112.45), weight:33},
-{location: new google.maps.LatLng(33.56,-112.31), weight:1},
-{location: new google.maps.LatLng(33.56,-112.3), weight:14},
-{location: new google.maps.LatLng(33.56,-112.29), weight:5},
-{location: new google.maps.LatLng(33.56,-112.28), weight:6},
-{location: new google.maps.LatLng(33.56,-112.27), weight:1},
-{location: new google.maps.LatLng(33.56,-112.26), weight:1},
-{location: new google.maps.LatLng(33.56,-112.25), weight:2},
-{location: new google.maps.LatLng(33.56,-112.24), weight:6},
-{location: new google.maps.LatLng(33.56,-112.2), weight:1},
-{location: new google.maps.LatLng(33.56,-112.19), weight:1},
-{location: new google.maps.LatLng(33.56,-112.17), weight:1},
-{location: new google.maps.LatLng(33.56,-112.11), weight:1},
-{location: new google.maps.LatLng(33.57,-112.46), weight:40},
-{location: new google.maps.LatLng(33.57,-112.45), weight:55},
-{location: new google.maps.LatLng(33.57,-112.43), weight:1},
-{location: new google.maps.LatLng(33.57,-112.4), weight:3},
-{location: new google.maps.LatLng(33.57,-112.37), weight:1},
-{location: new google.maps.LatLng(33.57,-112.31), weight:9},
-{location: new google.maps.LatLng(33.57,-112.3), weight:3},
-{location: new google.maps.LatLng(33.57,-112.29), weight:9},
-{location: new google.maps.LatLng(33.57,-112.28), weight:3},
-{location: new google.maps.LatLng(33.57,-112.27), weight:4},
-{location: new google.maps.LatLng(33.57,-112.26), weight:1},
-{location: new google.maps.LatLng(33.57,-112.25), weight:12},
-{location: new google.maps.LatLng(33.57,-112.24), weight:3},
-{location: new google.maps.LatLng(33.57,-112.23), weight:1},
-{location: new google.maps.LatLng(33.57,-112.21), weight:1},
-{location: new google.maps.LatLng(33.57,-112.2), weight:1},
-{location: new google.maps.LatLng(33.57,-112.19), weight:4},
-{location: new google.maps.LatLng(33.57,-112.18), weight:1},
-{location: new google.maps.LatLng(33.57,-112.17), weight:2},
-{location: new google.maps.LatLng(33.57,-112.16), weight:2},
-{location: new google.maps.LatLng(33.57,-112.15), weight:1},
-{location: new google.maps.LatLng(33.57,-112.11), weight:1},
-{location: new google.maps.LatLng(33.58,-112.46), weight:14},
-{location: new google.maps.LatLng(33.58,-112.45), weight:9},
-{location: new google.maps.LatLng(33.58,-112.44), weight:4},
-{location: new google.maps.LatLng(33.58,-112.43), weight:3},
-{location: new google.maps.LatLng(33.58,-112.41), weight:22},
-{location: new google.maps.LatLng(33.58,-112.4), weight:20},
-{location: new google.maps.LatLng(33.58,-112.39), weight:15},
-{location: new google.maps.LatLng(33.58,-112.38), weight:2},
-{location: new google.maps.LatLng(33.58,-112.37), weight:18},
-{location: new google.maps.LatLng(33.58,-112.36), weight:1},
-{location: new google.maps.LatLng(33.58,-112.34), weight:1},
-{location: new google.maps.LatLng(33.58,-112.32), weight:3},
-{location: new google.maps.LatLng(33.58,-112.31), weight:13},
-{location: new google.maps.LatLng(33.58,-112.3), weight:6},
-{location: new google.maps.LatLng(33.58,-112.29), weight:1},
-{location: new google.maps.LatLng(33.58,-112.28), weight:4},
-{location: new google.maps.LatLng(33.58,-112.27), weight:3},
-{location: new google.maps.LatLng(33.58,-112.26), weight:1},
-{location: new google.maps.LatLng(33.58,-112.25), weight:6},
-{location: new google.maps.LatLng(33.58,-112.24), weight:2},
-{location: new google.maps.LatLng(33.58,-112.22), weight:4},
-{location: new google.maps.LatLng(33.58,-112.2), weight:2},
-{location: new google.maps.LatLng(33.58,-112.19), weight:1},
-{location: new google.maps.LatLng(33.58,-112.18), weight:10},
-{location: new google.maps.LatLng(33.58,-112.17), weight:2},
-{location: new google.maps.LatLng(33.58,-112.15), weight:1},
-{location: new google.maps.LatLng(33.58,-112.1), weight:1},
-{location: new google.maps.LatLng(33.58,-112.07), weight:2},
-{location: new google.maps.LatLng(33.58,-111.84), weight:1},
-{location: new google.maps.LatLng(33.59,-112.42), weight:6},
-{location: new google.maps.LatLng(33.59,-112.41), weight:29},
-{location: new google.maps.LatLng(33.59,-112.4), weight:55},
-{location: new google.maps.LatLng(33.59,-112.39), weight:95},
-{location: new google.maps.LatLng(33.59,-112.38), weight:105},
-{location: new google.maps.LatLng(33.59,-112.37), weight:71},
-{location: new google.maps.LatLng(33.59,-112.36), weight:7},
-{location: new google.maps.LatLng(33.59,-112.34), weight:11},
-{location: new google.maps.LatLng(33.59,-112.33), weight:26},
-{location: new google.maps.LatLng(33.59,-112.32), weight:5},
-{location: new google.maps.LatLng(33.59,-112.31), weight:14},
-{location: new google.maps.LatLng(33.59,-112.28), weight:2},
-{location: new google.maps.LatLng(33.59,-112.27), weight:3},
-{location: new google.maps.LatLng(33.59,-112.26), weight:1},
-{location: new google.maps.LatLng(33.59,-112.25), weight:9},
-{location: new google.maps.LatLng(33.59,-112.24), weight:1},
-{location: new google.maps.LatLng(33.59,-112.22), weight:1},
-{location: new google.maps.LatLng(33.59,-112.21), weight:1},
-{location: new google.maps.LatLng(33.59,-112.2), weight:3},
-{location: new google.maps.LatLng(33.59,-112.14), weight:1},
-{location: new google.maps.LatLng(33.59,-112.12), weight:1},
-{location: new google.maps.LatLng(33.59,-112.02), weight:1},
-{location: new google.maps.LatLng(33.59,-111.84), weight:1},
-{location: new google.maps.LatLng(33.6,-112.44), weight:34},
-{location: new google.maps.LatLng(33.6,-112.39), weight:67},
-{location: new google.maps.LatLng(33.6,-112.38), weight:96},
-{location: new google.maps.LatLng(33.6,-112.37), weight:22},
-{location: new google.maps.LatLng(33.6,-112.36), weight:24},
-{location: new google.maps.LatLng(33.6,-112.34), weight:45},
-{location: new google.maps.LatLng(33.6,-112.33), weight:45},
-{location: new google.maps.LatLng(33.6,-112.32), weight:34},
-{location: new google.maps.LatLng(33.6,-112.31), weight:14},
-{location: new google.maps.LatLng(33.6,-112.3), weight:2},
-{location: new google.maps.LatLng(33.6,-112.28), weight:13},
-{location: new google.maps.LatLng(33.6,-112.27), weight:2},
-{location: new google.maps.LatLng(33.6,-112.25), weight:1},
-{location: new google.maps.LatLng(33.6,-112.24), weight:4},
-{location: new google.maps.LatLng(33.6,-112.23), weight:2},
-{location: new google.maps.LatLng(33.6,-112.22), weight:1},
-{location: new google.maps.LatLng(33.6,-112.2), weight:1},
-{location: new google.maps.LatLng(33.6,-112.19), weight:1},
-{location: new google.maps.LatLng(33.6,-112.15), weight:1},
-{location: new google.maps.LatLng(33.6,-112.14), weight:1},
-{location: new google.maps.LatLng(33.6,-112), weight:1},
-{location: new google.maps.LatLng(33.61,-112.46), weight:2},
-{location: new google.maps.LatLng(33.61,-112.45), weight:7},
-{location: new google.maps.LatLng(33.61,-112.44), weight:28},
-{location: new google.maps.LatLng(33.61,-112.43), weight:4},
-{location: new google.maps.LatLng(33.61,-112.41), weight:17},
-{location: new google.maps.LatLng(33.61,-112.4), weight:28},
-{location: new google.maps.LatLng(33.61,-112.39), weight:61},
-{location: new google.maps.LatLng(33.61,-112.38), weight:43},
-{location: new google.maps.LatLng(33.61,-112.37), weight:48},
-{location: new google.maps.LatLng(33.61,-112.36), weight:18},
-{location: new google.maps.LatLng(33.61,-112.35), weight:42},
-{location: new google.maps.LatLng(33.61,-112.34), weight:31},
-{location: new google.maps.LatLng(33.61,-112.33), weight:31},
-{location: new google.maps.LatLng(33.61,-112.32), weight:9},
-{location: new google.maps.LatLng(33.61,-112.31), weight:1},
-{location: new google.maps.LatLng(33.61,-112.3), weight:3},
-{location: new google.maps.LatLng(33.61,-112.29), weight:1},
-{location: new google.maps.LatLng(33.61,-112.28), weight:4},
-{location: new google.maps.LatLng(33.61,-112.27), weight:1},
-{location: new google.maps.LatLng(33.61,-112.26), weight:1},
-{location: new google.maps.LatLng(33.61,-112.25), weight:1},
-{location: new google.maps.LatLng(33.61,-112.23), weight:1},
-{location: new google.maps.LatLng(33.61,-112.22), weight:3},
-{location: new google.maps.LatLng(33.61,-112.19), weight:2},
-{location: new google.maps.LatLng(33.61,-112.17), weight:2},
-{location: new google.maps.LatLng(33.62,-112.46), weight:12},
-{location: new google.maps.LatLng(33.62,-112.45), weight:29},
-{location: new google.maps.LatLng(33.62,-112.44), weight:54},
-{location: new google.maps.LatLng(33.62,-112.43), weight:51},
-{location: new google.maps.LatLng(33.62,-112.42), weight:3},
-{location: new google.maps.LatLng(33.62,-112.41), weight:35},
-{location: new google.maps.LatLng(33.62,-112.4), weight:47},
-{location: new google.maps.LatLng(33.62,-112.39), weight:47},
-{location: new google.maps.LatLng(33.62,-112.38), weight:58},
-{location: new google.maps.LatLng(33.62,-112.37), weight:65},
-{location: new google.maps.LatLng(33.62,-112.36), weight:58},
-{location: new google.maps.LatLng(33.62,-112.35), weight:52},
-{location: new google.maps.LatLng(33.62,-112.34), weight:33},
-{location: new google.maps.LatLng(33.62,-112.33), weight:20},
-{location: new google.maps.LatLng(33.62,-112.32), weight:11},
-{location: new google.maps.LatLng(33.62,-112.31), weight:7},
-{location: new google.maps.LatLng(33.62,-112.3), weight:6},
-{location: new google.maps.LatLng(33.62,-112.29), weight:4},
-{location: new google.maps.LatLng(33.62,-112.28), weight:1},
-{location: new google.maps.LatLng(33.62,-112.26), weight:2},
-{location: new google.maps.LatLng(33.62,-112.25), weight:1},
-{location: new google.maps.LatLng(33.62,-112.2), weight:1},
-{location: new google.maps.LatLng(33.62,-112.17), weight:1},
-{location: new google.maps.LatLng(33.62,-112.13), weight:1},
-{location: new google.maps.LatLng(33.62,-111.83), weight:1},
-{location: new google.maps.LatLng(33.63,-112.46), weight:9},
-{location: new google.maps.LatLng(33.63,-112.45), weight:21},
-{location: new google.maps.LatLng(33.63,-112.44), weight:44},
-{location: new google.maps.LatLng(33.63,-112.43), weight:64},
-{location: new google.maps.LatLng(33.63,-112.42), weight:51},
-{location: new google.maps.LatLng(33.63,-112.41), weight:40},
-{location: new google.maps.LatLng(33.63,-112.4), weight:35},
-{location: new google.maps.LatLng(33.63,-112.39), weight:32},
-{location: new google.maps.LatLng(33.63,-112.38), weight:30},
-{location: new google.maps.LatLng(33.63,-112.36), weight:16},
-{location: new google.maps.LatLng(33.63,-112.35), weight:41},
-{location: new google.maps.LatLng(33.63,-112.34), weight:6},
-{location: new google.maps.LatLng(33.63,-112.33), weight:14},
-{location: new google.maps.LatLng(33.63,-112.32), weight:4},
-{location: new google.maps.LatLng(33.63,-112.3), weight:3},
-{location: new google.maps.LatLng(33.63,-112.29), weight:1},
-{location: new google.maps.LatLng(33.63,-112.28), weight:1},
-{location: new google.maps.LatLng(33.63,-112.27), weight:3},
-{location: new google.maps.LatLng(33.63,-112.26), weight:1},
-{location: new google.maps.LatLng(33.63,-112.25), weight:1},
-{location: new google.maps.LatLng(33.63,-112.23), weight:1},
-{location: new google.maps.LatLng(33.63,-112.22), weight:2},
-{location: new google.maps.LatLng(33.63,-112.21), weight:1},
-{location: new google.maps.LatLng(33.63,-112.2), weight:1},
-{location: new google.maps.LatLng(33.63,-112.19), weight:1},
-{location: new google.maps.LatLng(33.63,-112.17), weight:1},
-{location: new google.maps.LatLng(33.63,-112.11), weight:1},
-{location: new google.maps.LatLng(33.64,-112.46), weight:15},
-{location: new google.maps.LatLng(33.64,-112.45), weight:14},
-{location: new google.maps.LatLng(33.64,-112.44), weight:9},
-{location: new google.maps.LatLng(33.64,-112.43), weight:35},
-{location: new google.maps.LatLng(33.64,-112.42), weight:16},
-{location: new google.maps.LatLng(33.64,-112.41), weight:6},
-{location: new google.maps.LatLng(33.64,-112.4), weight:29},
-{location: new google.maps.LatLng(33.64,-112.39), weight:42},
-{location: new google.maps.LatLng(33.64,-112.38), weight:23},
-{location: new google.maps.LatLng(33.64,-112.37), weight:6},
-{location: new google.maps.LatLng(33.64,-112.36), weight:14},
-{location: new google.maps.LatLng(33.64,-112.34), weight:1},
-{location: new google.maps.LatLng(33.64,-112.33), weight:4},
-{location: new google.maps.LatLng(33.64,-112.31), weight:5},
-{location: new google.maps.LatLng(33.64,-112.3), weight:3},
-{location: new google.maps.LatLng(33.64,-112.29), weight:1},
-{location: new google.maps.LatLng(33.64,-112.27), weight:2},
-{location: new google.maps.LatLng(33.64,-112.26), weight:1},
-{location: new google.maps.LatLng(33.64,-112.25), weight:1},
-{location: new google.maps.LatLng(33.64,-112.23), weight:1},
-{location: new google.maps.LatLng(33.64,-112.2), weight:2},
-{location: new google.maps.LatLng(33.64,-112.16), weight:1},
-{location: new google.maps.LatLng(33.64,-112.15), weight:1},
-{location: new google.maps.LatLng(33.64,-112.14), weight:1},
-{location: new google.maps.LatLng(33.64,-112.13), weight:2},
-{location: new google.maps.LatLng(33.64,-112.12), weight:1},
-{location: new google.maps.LatLng(33.64,-112.09), weight:2},
-{location: new google.maps.LatLng(33.64,-112.03), weight:1},
-{location: new google.maps.LatLng(33.65,-112.46), weight:3},
-{location: new google.maps.LatLng(33.65,-112.45), weight:14},
-{location: new google.maps.LatLng(33.65,-112.44), weight:8},
-{location: new google.maps.LatLng(33.65,-112.43), weight:12},
-{location: new google.maps.LatLng(33.65,-112.42), weight:18},
-{location: new google.maps.LatLng(33.65,-112.41), weight:3},
-{location: new google.maps.LatLng(33.65,-112.4), weight:3},
-{location: new google.maps.LatLng(33.65,-112.39), weight:9},
-{location: new google.maps.LatLng(33.65,-112.38), weight:38},
-{location: new google.maps.LatLng(33.65,-112.37), weight:9},
-{location: new google.maps.LatLng(33.65,-112.36), weight:4},
-{location: new google.maps.LatLng(33.65,-112.35), weight:1},
-{location: new google.maps.LatLng(33.65,-112.34), weight:1},
-{location: new google.maps.LatLng(33.65,-112.33), weight:6},
-{location: new google.maps.LatLng(33.65,-112.31), weight:10},
-{location: new google.maps.LatLng(33.65,-112.3), weight:5},
-{location: new google.maps.LatLng(33.65,-112.29), weight:1},
-{location: new google.maps.LatLng(33.65,-112.27), weight:1},
-{location: new google.maps.LatLng(33.65,-112.26), weight:1},
-{location: new google.maps.LatLng(33.65,-112.25), weight:1},
-{location: new google.maps.LatLng(33.65,-112.24), weight:2},
-{location: new google.maps.LatLng(33.65,-112.23), weight:3},
-{location: new google.maps.LatLng(33.65,-112.22), weight:1},
-{location: new google.maps.LatLng(33.65,-112.21), weight:2},
-{location: new google.maps.LatLng(33.65,-112.18), weight:1},
-{location: new google.maps.LatLng(33.65,-112.16), weight:2},
-{location: new google.maps.LatLng(33.65,-112.15), weight:2},
-{location: new google.maps.LatLng(33.65,-112.14), weight:1},
-{location: new google.maps.LatLng(33.65,-112.13), weight:1},
-{location: new google.maps.LatLng(33.65,-112.12), weight:1},
-{location: new google.maps.LatLng(33.65,-112.11), weight:1},
-{location: new google.maps.LatLng(33.65,-112.08), weight:1},
-{location: new google.maps.LatLng(33.65,-111.99), weight:1},
-{location: new google.maps.LatLng(33.66,-112.63), weight:2},
-{location: new google.maps.LatLng(33.66,-112.61), weight:6},
-{location: new google.maps.LatLng(33.66,-112.44), weight:1},
-{location: new google.maps.LatLng(33.66,-112.43), weight:8},
-{location: new google.maps.LatLng(33.66,-112.42), weight:2},
-{location: new google.maps.LatLng(33.66,-112.41), weight:7},
-{location: new google.maps.LatLng(33.66,-112.4), weight:4},
-{location: new google.maps.LatLng(33.66,-112.39), weight:4},
-{location: new google.maps.LatLng(33.66,-112.37), weight:1},
-{location: new google.maps.LatLng(33.66,-112.36), weight:1},
-{location: new google.maps.LatLng(33.66,-112.34), weight:4},
-{location: new google.maps.LatLng(33.66,-112.33), weight:4},
-{location: new google.maps.LatLng(33.66,-112.31), weight:3},
-{location: new google.maps.LatLng(33.66,-112.29), weight:3},
-{location: new google.maps.LatLng(33.66,-112.27), weight:1},
-{location: new google.maps.LatLng(33.66,-112.22), weight:4},
-{location: new google.maps.LatLng(33.66,-112.21), weight:1},
-{location: new google.maps.LatLng(33.66,-112.19), weight:1},
-{location: new google.maps.LatLng(33.66,-112.16), weight:2},
-{location: new google.maps.LatLng(33.66,-112.15), weight:2},
-{location: new google.maps.LatLng(33.66,-112.12), weight:1},
-{location: new google.maps.LatLng(33.66,-112.1), weight:1},
-{location: new google.maps.LatLng(33.66,-112.08), weight:1},
-{location: new google.maps.LatLng(33.66,-112.03), weight:1},
-{location: new google.maps.LatLng(33.67,-112.64), weight:3},
-{location: new google.maps.LatLng(33.67,-112.63), weight:7},
-{location: new google.maps.LatLng(33.67,-112.62), weight:7},
-{location: new google.maps.LatLng(33.67,-112.61), weight:6},
-{location: new google.maps.LatLng(33.67,-112.43), weight:3},
-{location: new google.maps.LatLng(33.67,-112.42), weight:12},
-{location: new google.maps.LatLng(33.67,-112.41), weight:7},
-{location: new google.maps.LatLng(33.67,-112.4), weight:4},
-{location: new google.maps.LatLng(33.67,-112.39), weight:1},
-{location: new google.maps.LatLng(33.67,-112.38), weight:2},
-{location: new google.maps.LatLng(33.67,-112.37), weight:6},
-{location: new google.maps.LatLng(33.67,-112.36), weight:3},
-{location: new google.maps.LatLng(33.67,-112.35), weight:2},
-{location: new google.maps.LatLng(33.67,-112.34), weight:3},
-{location: new google.maps.LatLng(33.67,-112.33), weight:2},
-{location: new google.maps.LatLng(33.67,-112.3), weight:2},
-{location: new google.maps.LatLng(33.67,-112.28), weight:1},
-{location: new google.maps.LatLng(33.67,-112.27), weight:1},
-{location: new google.maps.LatLng(33.67,-112.25), weight:1},
-{location: new google.maps.LatLng(33.67,-112.22), weight:1},
-{location: new google.maps.LatLng(33.67,-112.21), weight:1},
-{location: new google.maps.LatLng(33.67,-112.2), weight:1},
-{location: new google.maps.LatLng(33.67,-112.17), weight:1},
-{location: new google.maps.LatLng(33.67,-112.13), weight:1},
-{location: new google.maps.LatLng(33.67,-112.11), weight:1},
-{location: new google.maps.LatLng(33.67,-112.02), weight:1},
-{location: new google.maps.LatLng(33.68,-112.42), weight:1},
-{location: new google.maps.LatLng(33.68,-112.41), weight:3},
-{location: new google.maps.LatLng(33.68,-112.4), weight:1},
-{location: new google.maps.LatLng(33.68,-112.39), weight:2},
-{location: new google.maps.LatLng(33.68,-112.36), weight:1},
-{location: new google.maps.LatLng(33.68,-112.34), weight:6},
-{location: new google.maps.LatLng(33.68,-112.33), weight:5},
-{location: new google.maps.LatLng(33.68,-112.32), weight:1},
-{location: new google.maps.LatLng(33.68,-112.29), weight:2},
-{location: new google.maps.LatLng(33.68,-112.26), weight:1},
-{location: new google.maps.LatLng(33.68,-112.25), weight:3},
-{location: new google.maps.LatLng(33.68,-112.24), weight:2},
-{location: new google.maps.LatLng(33.68,-112.22), weight:1},
-{location: new google.maps.LatLng(33.68,-112.12), weight:1},
-{location: new google.maps.LatLng(33.69,-112.44), weight:1},
-{location: new google.maps.LatLng(33.69,-112.41), weight:1},
-{location: new google.maps.LatLng(33.69,-112.38), weight:3},
-{location: new google.maps.LatLng(33.69,-112.37), weight:3},
-{location: new google.maps.LatLng(33.69,-112.36), weight:2},
-{location: new google.maps.LatLng(33.69,-112.35), weight:5},
-{location: new google.maps.LatLng(33.69,-112.34), weight:2},
-{location: new google.maps.LatLng(33.69,-112.33), weight:1},
-{location: new google.maps.LatLng(33.69,-112.32), weight:2},
-{location: new google.maps.LatLng(33.69,-112.31), weight:3},
-{location: new google.maps.LatLng(33.69,-112.29), weight:1},
-{location: new google.maps.LatLng(33.69,-112.28), weight:1},
-{location: new google.maps.LatLng(33.69,-112.22), weight:1},
-{location: new google.maps.LatLng(33.7,-112.48), weight:1},
-{location: new google.maps.LatLng(33.7,-112.34), weight:3},
-{location: new google.maps.LatLng(33.7,-112.33), weight:2},
-{location: new google.maps.LatLng(33.7,-112.32), weight:2},
-{location: new google.maps.LatLng(33.7,-112.31), weight:3},
-{location: new google.maps.LatLng(33.7,-112.23), weight:1},
-{location: new google.maps.LatLng(33.7,-112.19), weight:2},
-{location: new google.maps.LatLng(33.7,-112.16), weight:2},
-{location: new google.maps.LatLng(33.7,-112.15), weight:3},
-{location: new google.maps.LatLng(33.7,-112.14), weight:1},
-{location: new google.maps.LatLng(33.71,-112.21), weight:1},
-{location: new google.maps.LatLng(33.71,-112.19), weight:1},
-{location: new google.maps.LatLng(33.71,-112.16), weight:1},
-{location: new google.maps.LatLng(33.71,-112.15), weight:1},
-{location: new google.maps.LatLng(33.72,-112.51), weight:1},
-{location: new google.maps.LatLng(33.72,-112.42), weight:10},
-{location: new google.maps.LatLng(33.72,-112.41), weight:2},
-{location: new google.maps.LatLng(33.72,-112.29), weight:2},
-{location: new google.maps.LatLng(33.72,-112.21), weight:1},
-{location: new google.maps.LatLng(33.72,-112.2), weight:1},
-{location: new google.maps.LatLng(33.72,-112.17), weight:1},
-{location: new google.maps.LatLng(33.73,-112.51), weight:1},
-{location: new google.maps.LatLng(33.73,-112.44), weight:11},
-{location: new google.maps.LatLng(33.73,-112.38), weight:2},
-{location: new google.maps.LatLng(33.73,-112.27), weight:1},
-{location: new google.maps.LatLng(33.73,-112.26), weight:1},
-{location: new google.maps.LatLng(33.73,-112.22), weight:1},
-{location: new google.maps.LatLng(33.73,-112.17), weight:1},
-{location: new google.maps.LatLng(33.73,-112.13), weight:1},
-{location: new google.maps.LatLng(33.74,-112.72), weight:1},
-{location: new google.maps.LatLng(33.74,-112.61), weight:2},
-{location: new google.maps.LatLng(33.74,-112.59), weight:6},
-{location: new google.maps.LatLng(33.74,-112.55), weight:1},
-{location: new google.maps.LatLng(33.74,-112.54), weight:2},
-{location: new google.maps.LatLng(33.74,-112.41), weight:1},
-{location: new google.maps.LatLng(33.74,-112.4), weight:2},
-{location: new google.maps.LatLng(33.74,-112.39), weight:3},
-{location: new google.maps.LatLng(33.74,-112.27), weight:1},
-{location: new google.maps.LatLng(33.74,-112.26), weight:1},
-{location: new google.maps.LatLng(33.74,-112.11), weight:1},
-{location: new google.maps.LatLng(33.75,-112.7), weight:1},
-{location: new google.maps.LatLng(33.75,-112.61), weight:2},
-{location: new google.maps.LatLng(33.75,-112.54), weight:1},
-{location: new google.maps.LatLng(33.75,-112.5), weight:2},
-{location: new google.maps.LatLng(33.75,-112.45), weight:1},
-{location: new google.maps.LatLng(33.75,-112.4), weight:3},
-{location: new google.maps.LatLng(33.75,-112.39), weight:2},
-{location: new google.maps.LatLng(33.75,-112.32), weight:1},
-{location: new google.maps.LatLng(33.75,-111.78), weight:1},
-{location: new google.maps.LatLng(33.76,-112.55), weight:2},
-{location: new google.maps.LatLng(33.76,-112.52), weight:1},
-{location: new google.maps.LatLng(33.76,-112.35), weight:1},
-{location: new google.maps.LatLng(33.76,-112.33), weight:2},
-{location: new google.maps.LatLng(33.76,-112.21), weight:1},
-{location: new google.maps.LatLng(33.77,-112.55), weight:3},
-{location: new google.maps.LatLng(33.77,-112.42), weight:2},
-{location: new google.maps.LatLng(33.78,-112.52), weight:1},
-{location: new google.maps.LatLng(33.78,-112.41), weight:2},
-{location: new google.maps.LatLng(33.79,-112.12), weight:1},
-{location: new google.maps.LatLng(33.8,-112.13), weight:1},
-{location: new google.maps.LatLng(33.85,-98.58), weight:1},
-{location: new google.maps.LatLng(33.86,-112.11), weight:1},
-{location: new google.maps.LatLng(33.87,-112.14), weight:1},
-{location: new google.maps.LatLng(33.88,-112.65), weight:1},
-{location: new google.maps.LatLng(33.89,-112.06), weight:1},
-{location: new google.maps.LatLng(33.95,-112.76), weight:1},
-{location: new google.maps.LatLng(33.96,-112.77), weight:1},
-{location: new google.maps.LatLng(33.96,-112.74), weight:1},
-{location: new google.maps.LatLng(33.97,-112.78), weight:1},
-{location: new google.maps.LatLng(33.97,-112.74), weight:1},
-{location: new google.maps.LatLng(33.97,-112.73), weight:3},
-{location: new google.maps.LatLng(33.98,-112.74), weight:1},
-{location: new google.maps.LatLng(33.99,-112.77), weight:1},
-{location: new google.maps.LatLng(34.09,-117.66), weight:1},
-{location: new google.maps.LatLng(34.11,-109.88), weight:1},
-{location: new google.maps.LatLng(34.13,-77.87), weight:1},
-{location: new google.maps.LatLng(34.18,-119.21), weight:1},
-{location: new google.maps.LatLng(34.22,-119.06), weight:1},
-{location: new google.maps.LatLng(34.48,-118.34), weight:1},
-{location: new google.maps.LatLng(34.55,-112.26), weight:1},
-{location: new google.maps.LatLng(34.57,-113.18), weight:1},
-{location: new google.maps.LatLng(34.58,-113.17), weight:1},
-{location: new google.maps.LatLng(34.61,-112.32), weight:1},
-{location: new google.maps.LatLng(34.71,-112.02), weight:1},
-{location: new google.maps.LatLng(34.77,-112.06), weight:1},
-{location: new google.maps.LatLng(34.79,-82.17), weight:1},
-{location: new google.maps.LatLng(35.12,-120.63), weight:1},
-{location: new google.maps.LatLng(35.17,-107.89), weight:1},
-{location: new google.maps.LatLng(35.2,-106.75), weight:1},
-{location: new google.maps.LatLng(35.21,-111.62), weight:1},
-{location: new google.maps.LatLng(35.22,-111.59), weight:1},
-{location: new google.maps.LatLng(35.34,-106.6), weight:1},
-{location: new google.maps.LatLng(35.65,-78.47), weight:1},
-{location: new google.maps.LatLng(35.68,-109.05), weight:1},
-{location: new google.maps.LatLng(35.74,-84.02), weight:1},
-{location: new google.maps.LatLng(36.24,-115.06), weight:1},
-{location: new google.maps.LatLng(37.03,-93.31), weight:1},
-{location: new google.maps.LatLng(37.1,-94.51), weight:1},
-{location: new google.maps.LatLng(37.99,-100.88), weight:1},
-{location: new google.maps.LatLng(38.53,-90), weight:1},
-{location: new google.maps.LatLng(38.74,-90.77), weight:1},
-{location: new google.maps.LatLng(38.97,-76.21), weight:1},
-{location: new google.maps.LatLng(39.19,-96.58), weight:1},
-{location: new google.maps.LatLng(39.47,-118.77), weight:1},
-{location: new google.maps.LatLng(39.53,-119.83), weight:1},
-{location: new google.maps.LatLng(39.79,-103.52), weight:1},
-{location: new google.maps.LatLng(39.89,-104.95), weight:1},
-{location: new google.maps.LatLng(39.98,-86.02), weight:1},
-{location: new google.maps.LatLng(40.25,-74.23), weight:1},
-{location: new google.maps.LatLng(40.35,-80.09), weight:1},
-{location: new google.maps.LatLng(40.36,-105.11), weight:1},
-{location: new google.maps.LatLng(40.85,-111.91), weight:1},
-{location: new google.maps.LatLng(40.95,-91.53), weight:1},
-{location: new google.maps.LatLng(40.99,-90.42), weight:1},
-{location: new google.maps.LatLng(41.22,-96.18), weight:1},
-{location: new google.maps.LatLng(41.71,-81.35), weight:1},
-{location: new google.maps.LatLng(41.81,-87.82), weight:1},
-{location: new google.maps.LatLng(42.12,-80.04), weight:2},
-{location: new google.maps.LatLng(42.41,-83.45), weight:1},
-{location: new google.maps.LatLng(42.46,-88.97), weight:1},
-{location: new google.maps.LatLng(42.98,-73.76), weight:1},
-{location: new google.maps.LatLng(43.03,-87.98), weight:1},
-{location: new google.maps.LatLng(44.57,-91.67), weight:1},
-{location: new google.maps.LatLng(46.6,-95.54), weight:1},
-{location: new google.maps.LatLng(46.82,-95.85), weight:1},
-{location: new google.maps.LatLng(47.03,-122.92), weight:1},
-{location: new google.maps.LatLng(47.54,-111.3), weight:1},
-{location: new google.maps.LatLng(47.67,-122.05), weight:1},
-{location: new google.maps.LatLng(47.74,-116.84), weight:1},
-{location: new google.maps.LatLng(32.24,-110.9), weight:1},
-{location: new google.maps.LatLng(32.37,-111.08), weight:1},
-{location: new google.maps.LatLng(32.76,-97.42), weight:1},
-{location: new google.maps.LatLng(33.25,-111.69), weight:1},
-{location: new google.maps.LatLng(33.27,-111.85), weight:1},
-{location: new google.maps.LatLng(33.29,-111.88), weight:1},
-{location: new google.maps.LatLng(33.29,-111.85), weight:1},
-{location: new google.maps.LatLng(33.3,-112.07), weight:1},
-{location: new google.maps.LatLng(33.3,-112.06), weight:3},
-{location: new google.maps.LatLng(33.3,-112.05), weight:1},
-{location: new google.maps.LatLng(33.3,-111.75), weight:1},
-{location: new google.maps.LatLng(33.31,-111.97), weight:1},
-{location: new google.maps.LatLng(33.31,-111.91), weight:1},
-{location: new google.maps.LatLng(33.32,-111.89), weight:1},
-{location: new google.maps.LatLng(33.34,-111.85), weight:1},
-{location: new google.maps.LatLng(33.34,-111.83), weight:1},
-{location: new google.maps.LatLng(33.34,-111.82), weight:1},
-{location: new google.maps.LatLng(33.35,-111.96), weight:2},
-{location: new google.maps.LatLng(33.35,-111.95), weight:1},
-{location: new google.maps.LatLng(33.35,-111.91), weight:1},
-{location: new google.maps.LatLng(33.35,-111.74), weight:2},
-{location: new google.maps.LatLng(33.35,-111.45), weight:1},
-{location: new google.maps.LatLng(33.36,-111.99), weight:1},
-{location: new google.maps.LatLng(33.36,-111.97), weight:1},
-{location: new google.maps.LatLng(33.36,-111.95), weight:3},
-{location: new google.maps.LatLng(33.36,-111.92), weight:1},
-{location: new google.maps.LatLng(33.36,-111.9), weight:1},
-{location: new google.maps.LatLng(33.36,-111.82), weight:1},
-{location: new google.maps.LatLng(33.37,-111.91), weight:1},
-{location: new google.maps.LatLng(33.37,-111.9), weight:1},
-{location: new google.maps.LatLng(33.37,-111.86), weight:1},
-{location: new google.maps.LatLng(33.37,-111.8), weight:1},
-{location: new google.maps.LatLng(33.37,-111.74), weight:1},
-{location: new google.maps.LatLng(33.37,-111.71), weight:1},
-{location: new google.maps.LatLng(33.38,-111.96), weight:1},
-{location: new google.maps.LatLng(33.38,-111.89), weight:1},
-{location: new google.maps.LatLng(33.38,-111.86), weight:1},
-{location: new google.maps.LatLng(33.39,-112.03), weight:1},
-{location: new google.maps.LatLng(33.39,-111.95), weight:1},
-{location: new google.maps.LatLng(33.39,-111.91), weight:1},
-{location: new google.maps.LatLng(33.39,-111.85), weight:1},
-{location: new google.maps.LatLng(33.39,-111.74), weight:1},
-{location: new google.maps.LatLng(33.4,-111.87), weight:1},
-{location: new google.maps.LatLng(33.4,-111.85), weight:1},
-{location: new google.maps.LatLng(33.4,-111.8), weight:1},
-{location: new google.maps.LatLng(33.4,-111.78), weight:1},
-{location: new google.maps.LatLng(33.41,-112.09), weight:1},
-{location: new google.maps.LatLng(33.41,-112.04), weight:1},
-{location: new google.maps.LatLng(33.41,-111.95), weight:1},
-{location: new google.maps.LatLng(33.41,-111.92), weight:1},
-{location: new google.maps.LatLng(33.41,-111.91), weight:1},
-{location: new google.maps.LatLng(33.41,-111.89), weight:1},
-{location: new google.maps.LatLng(33.41,-111.88), weight:1},
-{location: new google.maps.LatLng(33.42,-111.92), weight:1},
-{location: new google.maps.LatLng(33.42,-111.91), weight:1},
-{location: new google.maps.LatLng(33.43,-111.73), weight:1},
-{location: new google.maps.LatLng(33.44,-112.07), weight:1},
-{location: new google.maps.LatLng(33.44,-111.93), weight:1},
-{location: new google.maps.LatLng(33.44,-111.83), weight:1},
-{location: new google.maps.LatLng(33.44,-111.77), weight:1},
-{location: new google.maps.LatLng(33.45,-112.35), weight:1},
-{location: new google.maps.LatLng(33.45,-111.93), weight:2},
-{location: new google.maps.LatLng(33.45,-111.92), weight:4},
-{location: new google.maps.LatLng(33.45,-111.82), weight:1},
-{location: new google.maps.LatLng(33.46,-111.98), weight:1},
-{location: new google.maps.LatLng(33.46,-111.97), weight:3},
-{location: new google.maps.LatLng(33.46,-111.93), weight:3},
-{location: new google.maps.LatLng(33.46,-111.92), weight:3},
-{location: new google.maps.LatLng(33.46,-111.9), weight:4},
-{location: new google.maps.LatLng(33.47,-112.3), weight:1},
-{location: new google.maps.LatLng(33.47,-112.07), weight:1},
-{location: new google.maps.LatLng(33.47,-112.03), weight:1},
-{location: new google.maps.LatLng(33.47,-112), weight:1},
-{location: new google.maps.LatLng(33.47,-111.99), weight:1},
-{location: new google.maps.LatLng(33.47,-111.93), weight:1},
-{location: new google.maps.LatLng(33.47,-111.91), weight:3},
-{location: new google.maps.LatLng(33.47,-111.89), weight:3},
-{location: new google.maps.LatLng(33.47,-111.77), weight:1},
-{location: new google.maps.LatLng(33.48,-112.08), weight:1},
-{location: new google.maps.LatLng(33.48,-112.05), weight:1},
-{location: new google.maps.LatLng(33.48,-112.03), weight:1},
-{location: new google.maps.LatLng(33.48,-112.01), weight:1},
-{location: new google.maps.LatLng(33.48,-111.99), weight:1},
-{location: new google.maps.LatLng(33.48,-111.96), weight:2},
-{location: new google.maps.LatLng(33.48,-111.94), weight:2},
-{location: new google.maps.LatLng(33.48,-111.92), weight:3},
-{location: new google.maps.LatLng(33.48,-111.91), weight:2},
-{location: new google.maps.LatLng(33.48,-111.9), weight:1},
-{location: new google.maps.LatLng(33.48,-111.89), weight:2},
-{location: new google.maps.LatLng(33.49,-117.72), weight:1},
-{location: new google.maps.LatLng(33.49,-112.3), weight:1},
-{location: new google.maps.LatLng(33.49,-112.06), weight:1},
-{location: new google.maps.LatLng(33.49,-112.05), weight:2},
-{location: new google.maps.LatLng(33.49,-112.01), weight:1},
-{location: new google.maps.LatLng(33.49,-111.98), weight:2},
-{location: new google.maps.LatLng(33.49,-111.97), weight:2},
-{location: new google.maps.LatLng(33.49,-111.96), weight:3},
-{location: new google.maps.LatLng(33.49,-111.94), weight:3},
-{location: new google.maps.LatLng(33.49,-111.93), weight:4},
-{location: new google.maps.LatLng(33.49,-111.92), weight:2},
-{location: new google.maps.LatLng(33.49,-111.91), weight:8},
-{location: new google.maps.LatLng(33.49,-111.9), weight:1},
-{location: new google.maps.LatLng(33.49,-111.89), weight:1},
-{location: new google.maps.LatLng(33.5,-112.08), weight:1},
-{location: new google.maps.LatLng(33.5,-112.04), weight:1},
-{location: new google.maps.LatLng(33.5,-112.03), weight:2},
-{location: new google.maps.LatLng(33.5,-112.02), weight:2},
-{location: new google.maps.LatLng(33.5,-112), weight:2},
-{location: new google.maps.LatLng(33.5,-111.98), weight:2},
-{location: new google.maps.LatLng(33.5,-111.97), weight:1},
-{location: new google.maps.LatLng(33.5,-111.94), weight:1},
-{location: new google.maps.LatLng(33.5,-111.93), weight:2},
-{location: new google.maps.LatLng(33.5,-111.92), weight:5},
-{location: new google.maps.LatLng(33.5,-111.91), weight:8},
-{location: new google.maps.LatLng(33.5,-111.9), weight:1},
-{location: new google.maps.LatLng(33.5,-111.89), weight:1},
-{location: new google.maps.LatLng(33.51,-112.13), weight:4},
-{location: new google.maps.LatLng(33.51,-112.06), weight:1},
-{location: new google.maps.LatLng(33.51,-112.05), weight:4},
-{location: new google.maps.LatLng(33.51,-112.04), weight:1},
-{location: new google.maps.LatLng(33.51,-112.02), weight:1},
-{location: new google.maps.LatLng(33.51,-112.01), weight:3},
-{location: new google.maps.LatLng(33.51,-112), weight:2},
-{location: new google.maps.LatLng(33.51,-111.99), weight:3},
-{location: new google.maps.LatLng(33.51,-111.98), weight:1},
-{location: new google.maps.LatLng(33.51,-111.93), weight:1},
-{location: new google.maps.LatLng(33.51,-111.92), weight:2},
-{location: new google.maps.LatLng(33.51,-111.91), weight:2},
-{location: new google.maps.LatLng(33.51,-111.9), weight:3},
-{location: new google.maps.LatLng(33.52,-112.15), weight:1},
-{location: new google.maps.LatLng(33.52,-111.98), weight:1},
-{location: new google.maps.LatLng(33.52,-111.92), weight:1},
-{location: new google.maps.LatLng(33.52,-111.91), weight:3},
-{location: new google.maps.LatLng(33.52,-111.9), weight:6},
-{location: new google.maps.LatLng(33.52,-111.89), weight:4},
-{location: new google.maps.LatLng(33.53,-112.08), weight:2},
-{location: new google.maps.LatLng(33.53,-112.07), weight:1},
-{location: new google.maps.LatLng(33.53,-112.06), weight:1},
-{location: new google.maps.LatLng(33.53,-112.05), weight:1},
-{location: new google.maps.LatLng(33.53,-112.04), weight:1},
-{location: new google.maps.LatLng(33.53,-111.93), weight:1},
-{location: new google.maps.LatLng(33.53,-111.91), weight:1},
-{location: new google.maps.LatLng(33.53,-111.9), weight:3},
-{location: new google.maps.LatLng(33.53,-111.89), weight:1},
-{location: new google.maps.LatLng(33.54,-112.05), weight:2},
-{location: new google.maps.LatLng(33.54,-111.98), weight:1},
-{location: new google.maps.LatLng(33.54,-111.92), weight:2},
-{location: new google.maps.LatLng(33.54,-111.91), weight:2},
-{location: new google.maps.LatLng(33.54,-111.89), weight:1},
-{location: new google.maps.LatLng(33.55,-112.09), weight:1},
-{location: new google.maps.LatLng(33.55,-112.08), weight:1},
-{location: new google.maps.LatLng(33.55,-112.06), weight:1},
-{location: new google.maps.LatLng(33.55,-112.05), weight:1},
-{location: new google.maps.LatLng(33.55,-112.04), weight:2},
-{location: new google.maps.LatLng(33.55,-112.03), weight:1},
-{location: new google.maps.LatLng(33.55,-111.98), weight:1},
-{location: new google.maps.LatLng(33.55,-111.9), weight:7},
-{location: new google.maps.LatLng(33.55,-111.89), weight:1},
-{location: new google.maps.LatLng(33.56,-112.09), weight:1},
-{location: new google.maps.LatLng(33.56,-112.06), weight:2},
-{location: new google.maps.LatLng(33.56,-111.98), weight:1},
-{location: new google.maps.LatLng(33.56,-111.92), weight:1},
-{location: new google.maps.LatLng(33.56,-111.91), weight:3},
-{location: new google.maps.LatLng(33.56,-111.9), weight:2},
-{location: new google.maps.LatLng(33.56,-111.89), weight:2},
-{location: new google.maps.LatLng(33.57,-112.17), weight:1},
-{location: new google.maps.LatLng(33.57,-112.06), weight:1},
-{location: new google.maps.LatLng(33.57,-112.02), weight:1},
-{location: new google.maps.LatLng(33.57,-111.96), weight:1},
-{location: new google.maps.LatLng(33.57,-111.92), weight:1},
-{location: new google.maps.LatLng(33.57,-111.91), weight:2},
-{location: new google.maps.LatLng(33.57,-111.9), weight:6},
-{location: new google.maps.LatLng(33.57,-111.89), weight:3},
-{location: new google.maps.LatLng(33.57,-111.88), weight:1},
-{location: new google.maps.LatLng(33.57,-111.87), weight:1},
-{location: new google.maps.LatLng(33.57,-111.86), weight:4},
-{location: new google.maps.LatLng(33.57,-111.85), weight:1},
-{location: new google.maps.LatLng(33.57,-111.83), weight:1},
-{location: new google.maps.LatLng(33.57,-111.74), weight:2},
-{location: new google.maps.LatLng(33.57,-111.67), weight:1},
-{location: new google.maps.LatLng(33.58,-112.13), weight:1},
-{location: new google.maps.LatLng(33.58,-112.03), weight:2},
-{location: new google.maps.LatLng(33.58,-112.02), weight:4},
-{location: new google.maps.LatLng(33.58,-111.99), weight:1},
-{location: new google.maps.LatLng(33.58,-111.97), weight:2},
-{location: new google.maps.LatLng(33.58,-111.96), weight:1},
-{location: new google.maps.LatLng(33.58,-111.94), weight:1},
-{location: new google.maps.LatLng(33.58,-111.93), weight:9},
-{location: new google.maps.LatLng(33.58,-111.92), weight:2},
-{location: new google.maps.LatLng(33.58,-111.91), weight:2},
-{location: new google.maps.LatLng(33.58,-111.9), weight:1},
-{location: new google.maps.LatLng(33.58,-111.89), weight:3},
-{location: new google.maps.LatLng(33.58,-111.88), weight:1},
-{location: new google.maps.LatLng(33.58,-111.87), weight:3},
-{location: new google.maps.LatLng(33.58,-111.86), weight:3},
-{location: new google.maps.LatLng(33.58,-111.85), weight:2},
-{location: new google.maps.LatLng(33.58,-111.84), weight:2},
-{location: new google.maps.LatLng(33.58,-111.83), weight:1},
-{location: new google.maps.LatLng(33.58,-111.82), weight:1},
-{location: new google.maps.LatLng(33.58,-111.8), weight:1},
-{location: new google.maps.LatLng(33.58,-111.77), weight:1},
-{location: new google.maps.LatLng(33.58,-111.71), weight:1},
-{location: new google.maps.LatLng(33.59,-112.37), weight:2},
-{location: new google.maps.LatLng(33.59,-112.15), weight:1},
-{location: new google.maps.LatLng(33.59,-112.1), weight:1},
-{location: new google.maps.LatLng(33.59,-112.05), weight:4},
-{location: new google.maps.LatLng(33.59,-112.03), weight:2},
-{location: new google.maps.LatLng(33.59,-112.02), weight:2},
-{location: new google.maps.LatLng(33.59,-112.01), weight:2},
-{location: new google.maps.LatLng(33.59,-112), weight:3},
-{location: new google.maps.LatLng(33.59,-111.98), weight:3},
-{location: new google.maps.LatLng(33.59,-111.97), weight:1},
-{location: new google.maps.LatLng(33.59,-111.96), weight:1},
-{location: new google.maps.LatLng(33.59,-111.95), weight:4},
-{location: new google.maps.LatLng(33.59,-111.93), weight:3},
-{location: new google.maps.LatLng(33.59,-111.92), weight:1},
-{location: new google.maps.LatLng(33.59,-111.91), weight:1},
-{location: new google.maps.LatLng(33.59,-111.89), weight:2},
-{location: new google.maps.LatLng(33.59,-111.88), weight:9},
-{location: new google.maps.LatLng(33.59,-111.87), weight:2},
-{location: new google.maps.LatLng(33.59,-111.85), weight:11},
-{location: new google.maps.LatLng(33.59,-111.84), weight:6},
-{location: new google.maps.LatLng(33.59,-111.83), weight:9},
-{location: new google.maps.LatLng(33.59,-111.8), weight:2},
-{location: new google.maps.LatLng(33.59,-111.79), weight:3},
-{location: new google.maps.LatLng(33.59,-111.78), weight:2},
-{location: new google.maps.LatLng(33.6,-112.11), weight:1},
-{location: new google.maps.LatLng(33.6,-112.05), weight:4},
-{location: new google.maps.LatLng(33.6,-112.03), weight:3},
-{location: new google.maps.LatLng(33.6,-112), weight:2},
-{location: new google.maps.LatLng(33.6,-111.99), weight:5},
-{location: new google.maps.LatLng(33.6,-111.98), weight:6},
-{location: new google.maps.LatLng(33.6,-111.97), weight:2},
-{location: new google.maps.LatLng(33.6,-111.96), weight:4},
-{location: new google.maps.LatLng(33.6,-111.95), weight:3},
-{location: new google.maps.LatLng(33.6,-111.94), weight:2},
-{location: new google.maps.LatLng(33.6,-111.93), weight:1},
-{location: new google.maps.LatLng(33.6,-111.91), weight:1},
-{location: new google.maps.LatLng(33.6,-111.9), weight:3},
-{location: new google.maps.LatLng(33.6,-111.89), weight:5},
-{location: new google.maps.LatLng(33.6,-111.88), weight:4},
-{location: new google.maps.LatLng(33.6,-111.87), weight:4},
-{location: new google.maps.LatLng(33.6,-111.86), weight:1},
-{location: new google.maps.LatLng(33.6,-111.83), weight:1},
-{location: new google.maps.LatLng(33.6,-111.82), weight:1},
-{location: new google.maps.LatLng(33.6,-111.8), weight:1},
-{location: new google.maps.LatLng(33.6,-111.79), weight:1},
-{location: new google.maps.LatLng(33.6,-111.77), weight:1},
-{location: new google.maps.LatLng(33.6,-111.76), weight:1},
-{location: new google.maps.LatLng(33.61,-112.15), weight:4},
-{location: new google.maps.LatLng(33.61,-112.12), weight:1},
-{location: new google.maps.LatLng(33.61,-112.07), weight:1},
-{location: new google.maps.LatLng(33.61,-112.05), weight:1},
-{location: new google.maps.LatLng(33.61,-112.03), weight:1},
-{location: new google.maps.LatLng(33.61,-112.02), weight:4},
-{location: new google.maps.LatLng(33.61,-112.01), weight:3},
-{location: new google.maps.LatLng(33.61,-112), weight:2},
-{location: new google.maps.LatLng(33.61,-111.99), weight:6},
-{location: new google.maps.LatLng(33.61,-111.98), weight:5},
-{location: new google.maps.LatLng(33.61,-111.97), weight:9},
-{location: new google.maps.LatLng(33.61,-111.96), weight:3},
-{location: new google.maps.LatLng(33.61,-111.95), weight:5},
-{location: new google.maps.LatLng(33.61,-111.94), weight:2},
-{location: new google.maps.LatLng(33.61,-111.93), weight:5},
-{location: new google.maps.LatLng(33.61,-111.92), weight:1},
-{location: new google.maps.LatLng(33.61,-111.91), weight:1},
-{location: new google.maps.LatLng(33.61,-111.89), weight:4},
-{location: new google.maps.LatLng(33.61,-111.88), weight:18},
-{location: new google.maps.LatLng(33.61,-111.87), weight:3},
-{location: new google.maps.LatLng(33.61,-111.86), weight:3},
-{location: new google.maps.LatLng(33.61,-111.85), weight:2},
-{location: new google.maps.LatLng(33.61,-111.73), weight:3},
-{location: new google.maps.LatLng(33.61,-111.72), weight:1},
-{location: new google.maps.LatLng(33.61,-111.71), weight:2},
-{location: new google.maps.LatLng(33.62,-112.32), weight:1},
-{location: new google.maps.LatLng(33.62,-112.2), weight:1},
-{location: new google.maps.LatLng(33.62,-112.13), weight:1},
-{location: new google.maps.LatLng(33.62,-112.07), weight:4},
-{location: new google.maps.LatLng(33.62,-112.04), weight:1},
-{location: new google.maps.LatLng(33.62,-112.01), weight:2},
-{location: new google.maps.LatLng(33.62,-112), weight:8},
-{location: new google.maps.LatLng(33.62,-111.99), weight:6},
-{location: new google.maps.LatLng(33.62,-111.98), weight:5},
-{location: new google.maps.LatLng(33.62,-111.97), weight:3},
-{location: new google.maps.LatLng(33.62,-111.96), weight:2},
-{location: new google.maps.LatLng(33.62,-111.95), weight:10},
-{location: new google.maps.LatLng(33.62,-111.94), weight:4},
-{location: new google.maps.LatLng(33.62,-111.93), weight:4},
-{location: new google.maps.LatLng(33.62,-111.92), weight:1},
-{location: new google.maps.LatLng(33.62,-111.9), weight:1},
-{location: new google.maps.LatLng(33.62,-111.89), weight:2},
-{location: new google.maps.LatLng(33.62,-111.88), weight:21},
-{location: new google.maps.LatLng(33.62,-111.87), weight:9},
-{location: new google.maps.LatLng(33.62,-111.86), weight:8},
-{location: new google.maps.LatLng(33.62,-111.85), weight:2},
-{location: new google.maps.LatLng(33.62,-111.84), weight:3},
-{location: new google.maps.LatLng(33.62,-111.83), weight:1},
-{location: new google.maps.LatLng(33.62,-111.72), weight:2},
-{location: new google.maps.LatLng(33.63,-112.41), weight:1},
-{location: new google.maps.LatLng(33.63,-112.21), weight:1},
-{location: new google.maps.LatLng(33.63,-112.11), weight:2},
-{location: new google.maps.LatLng(33.63,-112.1), weight:1},
-{location: new google.maps.LatLng(33.63,-112.09), weight:1},
-{location: new google.maps.LatLng(33.63,-112.08), weight:1},
-{location: new google.maps.LatLng(33.63,-112.07), weight:3},
-{location: new google.maps.LatLng(33.63,-112.05), weight:2},
-{location: new google.maps.LatLng(33.63,-112.04), weight:1},
-{location: new google.maps.LatLng(33.63,-112.03), weight:1},
-{location: new google.maps.LatLng(33.63,-112.02), weight:3},
-{location: new google.maps.LatLng(33.63,-112.01), weight:4},
-{location: new google.maps.LatLng(33.63,-112), weight:4},
-{location: new google.maps.LatLng(33.63,-111.99), weight:1},
-{location: new google.maps.LatLng(33.63,-111.98), weight:6},
-{location: new google.maps.LatLng(33.63,-111.97), weight:2},
-{location: new google.maps.LatLng(33.63,-111.96), weight:3},
-{location: new google.maps.LatLng(33.63,-111.95), weight:3},
-{location: new google.maps.LatLng(33.63,-111.94), weight:7},
-{location: new google.maps.LatLng(33.63,-111.93), weight:4},
-{location: new google.maps.LatLng(33.63,-111.89), weight:5},
-{location: new google.maps.LatLng(33.63,-111.88), weight:14},
-{location: new google.maps.LatLng(33.63,-111.87), weight:1},
-{location: new google.maps.LatLng(33.63,-111.86), weight:13},
-{location: new google.maps.LatLng(33.63,-111.85), weight:4},
-{location: new google.maps.LatLng(33.63,-111.84), weight:3},
-{location: new google.maps.LatLng(33.63,-111.74), weight:1},
-{location: new google.maps.LatLng(33.64,-112.16), weight:1},
-{location: new google.maps.LatLng(33.64,-112.09), weight:1},
-{location: new google.maps.LatLng(33.64,-112.08), weight:3},
-{location: new google.maps.LatLng(33.64,-112.07), weight:5},
-{location: new google.maps.LatLng(33.64,-112.06), weight:1},
-{location: new google.maps.LatLng(33.64,-112.05), weight:3},
-{location: new google.maps.LatLng(33.64,-112.04), weight:10},
-{location: new google.maps.LatLng(33.64,-112.03), weight:2},
-{location: new google.maps.LatLng(33.64,-112.02), weight:1},
-{location: new google.maps.LatLng(33.64,-112.01), weight:2},
-{location: new google.maps.LatLng(33.64,-112), weight:3},
-{location: new google.maps.LatLng(33.64,-111.99), weight:5},
-{location: new google.maps.LatLng(33.64,-111.98), weight:9},
-{location: new google.maps.LatLng(33.64,-111.97), weight:3},
-{location: new google.maps.LatLng(33.64,-111.96), weight:15},
-{location: new google.maps.LatLng(33.64,-111.95), weight:9},
-{location: new google.maps.LatLng(33.64,-111.94), weight:3},
-{location: new google.maps.LatLng(33.64,-111.93), weight:5},
-{location: new google.maps.LatLng(33.64,-111.91), weight:5},
-{location: new google.maps.LatLng(33.64,-111.9), weight:3},
-{location: new google.maps.LatLng(33.64,-111.88), weight:3},
-{location: new google.maps.LatLng(33.64,-111.87), weight:6},
-{location: new google.maps.LatLng(33.64,-111.86), weight:4},
-{location: new google.maps.LatLng(33.64,-111.85), weight:3},
-{location: new google.maps.LatLng(33.64,-111.84), weight:1},
-{location: new google.maps.LatLng(33.64,-111.76), weight:1},
-{location: new google.maps.LatLng(33.65,-112.24), weight:1},
-{location: new google.maps.LatLng(33.65,-112.18), weight:1},
-{location: new google.maps.LatLng(33.65,-112.09), weight:1},
-{location: new google.maps.LatLng(33.65,-112.08), weight:2},
-{location: new google.maps.LatLng(33.65,-112.07), weight:5},
-{location: new google.maps.LatLng(33.65,-112.06), weight:2},
-{location: new google.maps.LatLng(33.65,-112.05), weight:3},
-{location: new google.maps.LatLng(33.65,-112.04), weight:9},
-{location: new google.maps.LatLng(33.65,-112.03), weight:3},
-{location: new google.maps.LatLng(33.65,-112.02), weight:4},
-{location: new google.maps.LatLng(33.65,-112.01), weight:2},
-{location: new google.maps.LatLng(33.65,-112), weight:1},
-{location: new google.maps.LatLng(33.65,-111.99), weight:6},
-{location: new google.maps.LatLng(33.65,-111.98), weight:12},
-{location: new google.maps.LatLng(33.65,-111.97), weight:2},
-{location: new google.maps.LatLng(33.65,-111.96), weight:6},
-{location: new google.maps.LatLng(33.65,-111.95), weight:2},
-{location: new google.maps.LatLng(33.65,-111.94), weight:4},
-{location: new google.maps.LatLng(33.65,-111.93), weight:14},
-{location: new google.maps.LatLng(33.65,-111.92), weight:1},
-{location: new google.maps.LatLng(33.65,-111.91), weight:4},
-{location: new google.maps.LatLng(33.65,-111.9), weight:3},
-{location: new google.maps.LatLng(33.65,-111.89), weight:3},
-{location: new google.maps.LatLng(33.65,-111.88), weight:21},
-{location: new google.maps.LatLng(33.65,-111.87), weight:2},
-{location: new google.maps.LatLng(33.65,-111.86), weight:2},
-{location: new google.maps.LatLng(33.66,-112.26), weight:1},
-{location: new google.maps.LatLng(33.66,-112.19), weight:3},
-{location: new google.maps.LatLng(33.66,-112.17), weight:2},
-{location: new google.maps.LatLng(33.66,-112.12), weight:2},
-{location: new google.maps.LatLng(33.66,-112.1), weight:1},
-{location: new google.maps.LatLng(33.66,-112.09), weight:3},
-{location: new google.maps.LatLng(33.66,-112.07), weight:2},
-{location: new google.maps.LatLng(33.66,-112.06), weight:2},
-{location: new google.maps.LatLng(33.66,-112.05), weight:5},
-{location: new google.maps.LatLng(33.66,-112.04), weight:3},
-{location: new google.maps.LatLng(33.66,-112.03), weight:4},
-{location: new google.maps.LatLng(33.66,-112.01), weight:4},
-{location: new google.maps.LatLng(33.66,-112), weight:4},
-{location: new google.maps.LatLng(33.66,-111.99), weight:4},
-{location: new google.maps.LatLng(33.66,-111.98), weight:5},
-{location: new google.maps.LatLng(33.66,-111.92), weight:4},
-{location: new google.maps.LatLng(33.66,-111.9), weight:2},
-{location: new google.maps.LatLng(33.66,-111.89), weight:6},
-{location: new google.maps.LatLng(33.66,-111.88), weight:15},
-{location: new google.maps.LatLng(33.66,-111.87), weight:1},
-{location: new google.maps.LatLng(33.66,-111.86), weight:1},
-{location: new google.maps.LatLng(33.67,-112.23), weight:2},
-{location: new google.maps.LatLng(33.67,-112.21), weight:1},
-{location: new google.maps.LatLng(33.67,-112.2), weight:1},
-{location: new google.maps.LatLng(33.67,-112.19), weight:1},
-{location: new google.maps.LatLng(33.67,-112.12), weight:1},
-{location: new google.maps.LatLng(33.67,-112.1), weight:1},
-{location: new google.maps.LatLng(33.67,-112.09), weight:4},
-{location: new google.maps.LatLng(33.67,-112.08), weight:1},
-{location: new google.maps.LatLng(33.67,-112.07), weight:6},
-{location: new google.maps.LatLng(33.67,-112.06), weight:6},
-{location: new google.maps.LatLng(33.67,-112.05), weight:5},
-{location: new google.maps.LatLng(33.67,-112.04), weight:1},
-{location: new google.maps.LatLng(33.67,-112.03), weight:12},
-{location: new google.maps.LatLng(33.67,-112.02), weight:8},
-{location: new google.maps.LatLng(33.67,-112.01), weight:2},
-{location: new google.maps.LatLng(33.67,-112), weight:4},
-{location: new google.maps.LatLng(33.67,-111.92), weight:13},
-{location: new google.maps.LatLng(33.67,-111.91), weight:16},
-{location: new google.maps.LatLng(33.67,-111.9), weight:9},
-{location: new google.maps.LatLng(33.67,-111.89), weight:12},
-{location: new google.maps.LatLng(33.67,-111.88), weight:15},
-{location: new google.maps.LatLng(33.67,-111.87), weight:4},
-{location: new google.maps.LatLng(33.67,-111.86), weight:1},
-{location: new google.maps.LatLng(33.68,-112.23), weight:1},
-{location: new google.maps.LatLng(33.68,-112.2), weight:1},
-{location: new google.maps.LatLng(33.68,-112.14), weight:1},
-{location: new google.maps.LatLng(33.68,-112.08), weight:1},
-{location: new google.maps.LatLng(33.68,-112.06), weight:3},
-{location: new google.maps.LatLng(33.68,-112.05), weight:2},
-{location: new google.maps.LatLng(33.68,-112.01), weight:1},
-{location: new google.maps.LatLng(33.68,-112), weight:7},
-{location: new google.maps.LatLng(33.68,-111.99), weight:3},
-{location: new google.maps.LatLng(33.68,-111.98), weight:11},
-{location: new google.maps.LatLng(33.68,-111.97), weight:5},
-{location: new google.maps.LatLng(33.68,-111.96), weight:14},
-{location: new google.maps.LatLng(33.68,-111.92), weight:15},
-{location: new google.maps.LatLng(33.68,-111.91), weight:3},
-{location: new google.maps.LatLng(33.68,-111.9), weight:5},
-{location: new google.maps.LatLng(33.68,-111.89), weight:2},
-{location: new google.maps.LatLng(33.68,-111.87), weight:2},
-{location: new google.maps.LatLng(33.69,-112.21), weight:1},
-{location: new google.maps.LatLng(33.69,-112.13), weight:2},
-{location: new google.maps.LatLng(33.69,-112.04), weight:4},
-{location: new google.maps.LatLng(33.69,-112), weight:12},
-{location: new google.maps.LatLng(33.69,-111.99), weight:15},
-{location: new google.maps.LatLng(33.69,-111.98), weight:13},
-{location: new google.maps.LatLng(33.69,-111.97), weight:1},
-{location: new google.maps.LatLng(33.69,-111.96), weight:3},
-{location: new google.maps.LatLng(33.69,-111.92), weight:13},
-{location: new google.maps.LatLng(33.69,-111.91), weight:2},
-{location: new google.maps.LatLng(33.69,-111.9), weight:2},
-{location: new google.maps.LatLng(33.69,-111.89), weight:2},
-{location: new google.maps.LatLng(33.69,-111.88), weight:1},
-{location: new google.maps.LatLng(33.69,-111.86), weight:1},
-{location: new google.maps.LatLng(33.7,-112.17), weight:1},
-{location: new google.maps.LatLng(33.7,-112.05), weight:1},
-{location: new google.maps.LatLng(33.7,-112.04), weight:6},
-{location: new google.maps.LatLng(33.7,-112.03), weight:4},
-{location: new google.maps.LatLng(33.7,-112.02), weight:5},
-{location: new google.maps.LatLng(33.7,-112), weight:1},
-{location: new google.maps.LatLng(33.7,-111.99), weight:2},
-{location: new google.maps.LatLng(33.7,-111.98), weight:4},
-{location: new google.maps.LatLng(33.7,-111.96), weight:1},
-{location: new google.maps.LatLng(33.7,-111.92), weight:3},
-{location: new google.maps.LatLng(33.7,-111.91), weight:6},
-{location: new google.maps.LatLng(33.7,-111.9), weight:6},
-{location: new google.maps.LatLng(33.7,-111.89), weight:4},
-{location: new google.maps.LatLng(33.7,-111.88), weight:1},
-{location: new google.maps.LatLng(33.7,-111.86), weight:1},
-{location: new google.maps.LatLng(33.7,-111.83), weight:1},
-{location: new google.maps.LatLng(33.7,-111.82), weight:3},
-{location: new google.maps.LatLng(33.71,-112.11), weight:2},
-{location: new google.maps.LatLng(33.71,-112.03), weight:1},
-{location: new google.maps.LatLng(33.71,-112.02), weight:1},
-{location: new google.maps.LatLng(33.71,-111.92), weight:1},
-{location: new google.maps.LatLng(33.71,-111.91), weight:3},
-{location: new google.maps.LatLng(33.71,-111.9), weight:1},
-{location: new google.maps.LatLng(33.71,-111.89), weight:2},
-{location: new google.maps.LatLng(33.71,-111.86), weight:3},
-{location: new google.maps.LatLng(33.71,-111.85), weight:1},
-{location: new google.maps.LatLng(33.71,-111.83), weight:9},
-{location: new google.maps.LatLng(33.72,-112.2), weight:1},
-{location: new google.maps.LatLng(33.72,-112.1), weight:1},
-{location: new google.maps.LatLng(33.72,-112), weight:1},
-{location: new google.maps.LatLng(33.72,-111.99), weight:5},
-{location: new google.maps.LatLng(33.72,-111.98), weight:3},
-{location: new google.maps.LatLng(33.72,-111.91), weight:4},
-{location: new google.maps.LatLng(33.72,-111.9), weight:3},
-{location: new google.maps.LatLng(33.72,-111.89), weight:1},
-{location: new google.maps.LatLng(33.72,-111.84), weight:1},
-{location: new google.maps.LatLng(33.72,-111.83), weight:1},
-{location: new google.maps.LatLng(33.73,-112.2), weight:1},
-{location: new google.maps.LatLng(33.73,-112.19), weight:1},
-{location: new google.maps.LatLng(33.73,-111.99), weight:5},
-{location: new google.maps.LatLng(33.73,-111.98), weight:3},
-{location: new google.maps.LatLng(33.73,-111.94), weight:1},
-{location: new google.maps.LatLng(33.73,-111.93), weight:1},
-{location: new google.maps.LatLng(33.73,-111.92), weight:1},
-{location: new google.maps.LatLng(33.73,-111.9), weight:1},
-{location: new google.maps.LatLng(33.73,-111.88), weight:1},
-{location: new google.maps.LatLng(33.73,-111.86), weight:1},
-{location: new google.maps.LatLng(33.73,-111.78), weight:1},
-{location: new google.maps.LatLng(33.73,-111.77), weight:1},
-{location: new google.maps.LatLng(33.74,-112.2), weight:1},
-{location: new google.maps.LatLng(33.74,-112.12), weight:1},
-{location: new google.maps.LatLng(33.74,-112.11), weight:1},
-{location: new google.maps.LatLng(33.74,-112.1), weight:2},
-{location: new google.maps.LatLng(33.74,-111.99), weight:1},
-{location: new google.maps.LatLng(33.74,-111.97), weight:1},
-{location: new google.maps.LatLng(33.74,-111.95), weight:1},
-{location: new google.maps.LatLng(33.74,-111.94), weight:3},
-{location: new google.maps.LatLng(33.74,-111.93), weight:2},
-{location: new google.maps.LatLng(33.74,-111.92), weight:2},
-{location: new google.maps.LatLng(33.74,-111.91), weight:1},
-{location: new google.maps.LatLng(33.74,-111.88), weight:2},
-{location: new google.maps.LatLng(33.74,-111.87), weight:1},
-{location: new google.maps.LatLng(33.74,-111.85), weight:3},
-{location: new google.maps.LatLng(33.74,-111.84), weight:5},
-{location: new google.maps.LatLng(33.74,-111.83), weight:1},
-{location: new google.maps.LatLng(33.74,-111.78), weight:1},
-{location: new google.maps.LatLng(33.74,-111.76), weight:1},
-{location: new google.maps.LatLng(33.74,-111.75), weight:1},
-{location: new google.maps.LatLng(33.74,-111.74), weight:1},
-{location: new google.maps.LatLng(33.75,-112.21), weight:1},
-{location: new google.maps.LatLng(33.75,-112.11), weight:2},
-{location: new google.maps.LatLng(33.75,-111.99), weight:3},
-{location: new google.maps.LatLng(33.75,-111.98), weight:3},
-{location: new google.maps.LatLng(33.75,-111.97), weight:7},
-{location: new google.maps.LatLng(33.75,-111.96), weight:2},
-{location: new google.maps.LatLng(33.75,-111.95), weight:1},
-{location: new google.maps.LatLng(33.75,-111.94), weight:2},
-{location: new google.maps.LatLng(33.75,-111.92), weight:2},
-{location: new google.maps.LatLng(33.75,-111.87), weight:1},
-{location: new google.maps.LatLng(33.75,-111.86), weight:1},
-{location: new google.maps.LatLng(33.75,-111.84), weight:2},
-{location: new google.maps.LatLng(33.75,-111.79), weight:1},
-{location: new google.maps.LatLng(33.75,-111.78), weight:1},
-{location: new google.maps.LatLng(33.75,-111.77), weight:2},
-{location: new google.maps.LatLng(33.75,-111.76), weight:3},
-{location: new google.maps.LatLng(33.75,-111.72), weight:1},
-{location: new google.maps.LatLng(33.76,-112.33), weight:1},
-{location: new google.maps.LatLng(33.76,-111.99), weight:8},
-{location: new google.maps.LatLng(33.76,-111.98), weight:5},
-{location: new google.maps.LatLng(33.76,-111.97), weight:7},
-{location: new google.maps.LatLng(33.76,-111.96), weight:2},
-{location: new google.maps.LatLng(33.76,-111.95), weight:3},
-{location: new google.maps.LatLng(33.76,-111.94), weight:4},
-{location: new google.maps.LatLng(33.76,-111.91), weight:1},
-{location: new google.maps.LatLng(33.76,-111.89), weight:1},
-{location: new google.maps.LatLng(33.76,-111.78), weight:1},
-{location: new google.maps.LatLng(33.76,-111.77), weight:3},
-{location: new google.maps.LatLng(33.77,-112.1), weight:1},
-{location: new google.maps.LatLng(33.77,-111.99), weight:4},
-{location: new google.maps.LatLng(33.77,-111.98), weight:1},
-{location: new google.maps.LatLng(33.77,-111.97), weight:1},
-{location: new google.maps.LatLng(33.77,-111.96), weight:2},
-{location: new google.maps.LatLng(33.77,-111.94), weight:1},
-{location: new google.maps.LatLng(33.77,-111.92), weight:2},
-{location: new google.maps.LatLng(33.77,-111.89), weight:2},
-{location: new google.maps.LatLng(33.78,-112.11), weight:3},
-{location: new google.maps.LatLng(33.78,-111.99), weight:5},
-{location: new google.maps.LatLng(33.78,-111.98), weight:6},
-{location: new google.maps.LatLng(33.78,-111.97), weight:2},
-{location: new google.maps.LatLng(33.78,-111.96), weight:9},
-{location: new google.maps.LatLng(33.78,-111.95), weight:2},
-{location: new google.maps.LatLng(33.78,-111.94), weight:2},
-{location: new google.maps.LatLng(33.78,-111.72), weight:1},
-{location: new google.maps.LatLng(33.79,-111.99), weight:1},
-{location: new google.maps.LatLng(33.79,-111.98), weight:7},
-{location: new google.maps.LatLng(33.79,-111.96), weight:1},
-{location: new google.maps.LatLng(33.79,-111.95), weight:1},
-{location: new google.maps.LatLng(33.79,-111.94), weight:1},
-{location: new google.maps.LatLng(33.79,-111.88), weight:1},
-{location: new google.maps.LatLng(33.79,-111.77), weight:1},
-{location: new google.maps.LatLng(33.8,-112.13), weight:1},
-{location: new google.maps.LatLng(33.8,-111.91), weight:1},
-{location: new google.maps.LatLng(33.8,-111.9), weight:1},
-{location: new google.maps.LatLng(33.8,-111.88), weight:2},
-{location: new google.maps.LatLng(33.8,-111.87), weight:2},
-{location: new google.maps.LatLng(33.8,-111.78), weight:1},
-{location: new google.maps.LatLng(33.81,-112.13), weight:1},
-{location: new google.maps.LatLng(33.81,-111.96), weight:2},
-{location: new google.maps.LatLng(33.81,-111.9), weight:1},
-{location: new google.maps.LatLng(33.81,-111.89), weight:3},
-{location: new google.maps.LatLng(33.81,-111.88), weight:1},
-{location: new google.maps.LatLng(33.82,-112.02), weight:1},
-{location: new google.maps.LatLng(33.82,-111.92), weight:2},
-{location: new google.maps.LatLng(33.82,-111.91), weight:1},
-{location: new google.maps.LatLng(33.82,-111.87), weight:2},
-{location: new google.maps.LatLng(33.83,-111.96), weight:1},
-{location: new google.maps.LatLng(33.84,-111.87), weight:1},
-{location: new google.maps.LatLng(33.85,-112.02), weight:1},
-{location: new google.maps.LatLng(33.85,-111.93), weight:1},
-{location: new google.maps.LatLng(33.86,-112.09), weight:1},
-{location: new google.maps.LatLng(33.86,-111.96), weight:1},
-{location: new google.maps.LatLng(33.86,-111.87), weight:1},
-{location: new google.maps.LatLng(33.86,-111.85), weight:1},
-{location: new google.maps.LatLng(33.88,-112.14), weight:2},
-{location: new google.maps.LatLng(33.88,-112.05), weight:1},
-{location: new google.maps.LatLng(33.88,-112.04), weight:1},
-{location: new google.maps.LatLng(34.26,-111.31), weight:1},
-{location: new google.maps.LatLng(34.63,-111.77), weight:1},
-{location: new google.maps.LatLng(39.3,-104.86), weight:1},
-{location: new google.maps.LatLng(39.77,-89.69), weight:1},
-{location: new google.maps.LatLng(39.96,-91.38), weight:1},
-{location: new google.maps.LatLng(40.37,-111.8), weight:1},
-{location: new google.maps.LatLng(41.8,-71.36), weight:1},
-{location: new google.maps.LatLng(41.86,-103.53), weight:1},
-{location: new google.maps.LatLng(42.46,-88.97), weight:1},
-{location: new google.maps.LatLng(43.04,-78.72), weight:1},
-{location: new google.maps.LatLng(43.19,-77.79), weight:1},
-{location: new google.maps.LatLng(43.56,-86.35), weight:1},
-{location: new google.maps.LatLng(44.11,-93.19), weight:1},
-{location: new google.maps.LatLng(46.83,-96.78), weight:1},
-{location: new google.maps.LatLng(47.61,-122.5), weight:2},
-{location: new google.maps.LatLng(48.48,-122.64), weight:1},
-{location: new google.maps.LatLng(48.9,-122.28), weight:1},
-{location: new google.maps.LatLng(31.4,-110.01), weight:1},
-{location: new google.maps.LatLng(31.44,-97.27), weight:1},
-{location: new google.maps.LatLng(31.99,-110.97), weight:1},
-{location: new google.maps.LatLng(32.22,-110.97), weight:1},
-{location: new google.maps.LatLng(32.22,-110.83), weight:1},
-{location: new google.maps.LatLng(32.26,-110.91), weight:1},
-{location: new google.maps.LatLng(32.32,-111.18), weight:1},
-{location: new google.maps.LatLng(32.37,-111.13), weight:1},
-{location: new google.maps.LatLng(32.49,-110.91), weight:2},
-{location: new google.maps.LatLng(32.72,-109.08), weight:1},
-{location: new google.maps.LatLng(32.76,-111.55), weight:1},
-{location: new google.maps.LatLng(32.88,-111.71), weight:1},
-{location: new google.maps.LatLng(32.89,-111.72), weight:1},
-{location: new google.maps.LatLng(32.89,-111.71), weight:1},
-{location: new google.maps.LatLng(32.94,-111.75), weight:1},
-{location: new google.maps.LatLng(33.05,-111.47), weight:1},
-{location: new google.maps.LatLng(33.05,-111.42), weight:2},
-{location: new google.maps.LatLng(33.06,-111.47), weight:1},
-{location: new google.maps.LatLng(33.06,-110.9), weight:1},
-{location: new google.maps.LatLng(33.07,-112.04), weight:1},
-{location: new google.maps.LatLng(33.07,-111.47), weight:2},
-{location: new google.maps.LatLng(33.09,-111.5), weight:1},
-{location: new google.maps.LatLng(33.1,-111.49), weight:3},
-{location: new google.maps.LatLng(33.13,-111.54), weight:1},
-{location: new google.maps.LatLng(33.14,-111.56), weight:2},
-{location: new google.maps.LatLng(33.14,-111.52), weight:2},
-{location: new google.maps.LatLng(33.15,-111.57), weight:1},
-{location: new google.maps.LatLng(33.15,-111.56), weight:4},
-{location: new google.maps.LatLng(33.15,-111.45), weight:1},
-{location: new google.maps.LatLng(33.15,-111.43), weight:2},
-{location: new google.maps.LatLng(33.16,-111.58), weight:1},
-{location: new google.maps.LatLng(33.16,-111.56), weight:4},
-{location: new google.maps.LatLng(33.16,-111.55), weight:4},
-{location: new google.maps.LatLng(33.17,-111.55), weight:1},
-{location: new google.maps.LatLng(33.18,-111.6), weight:3},
-{location: new google.maps.LatLng(33.18,-111.57), weight:2},
-{location: new google.maps.LatLng(33.19,-111.6), weight:2},
-{location: new google.maps.LatLng(33.19,-111.59), weight:1},
-{location: new google.maps.LatLng(33.19,-111.58), weight:1},
-{location: new google.maps.LatLng(33.2,-111.59), weight:2},
-{location: new google.maps.LatLng(33.2,-111.58), weight:2},
-{location: new google.maps.LatLng(33.2,-111.57), weight:3},
-{location: new google.maps.LatLng(33.2,-111.52), weight:1},
-{location: new google.maps.LatLng(33.2,-111.5), weight:1},
-{location: new google.maps.LatLng(33.21,-111.87), weight:1},
-{location: new google.maps.LatLng(33.21,-111.75), weight:1},
-{location: new google.maps.LatLng(33.21,-111.63), weight:1},
-{location: new google.maps.LatLng(33.21,-111.58), weight:4},
-{location: new google.maps.LatLng(33.21,-111.55), weight:4},
-{location: new google.maps.LatLng(33.21,-111.51), weight:1},
-{location: new google.maps.LatLng(33.22,-111.81), weight:1},
-{location: new google.maps.LatLng(33.22,-111.79), weight:1},
-{location: new google.maps.LatLng(33.22,-111.72), weight:1},
-{location: new google.maps.LatLng(33.22,-111.69), weight:1},
-{location: new google.maps.LatLng(33.22,-111.64), weight:1},
-{location: new google.maps.LatLng(33.22,-111.56), weight:3},
-{location: new google.maps.LatLng(33.22,-111.55), weight:4},
-{location: new google.maps.LatLng(33.23,-111.78), weight:1},
-{location: new google.maps.LatLng(33.23,-111.73), weight:1},
-{location: new google.maps.LatLng(33.23,-111.72), weight:1},
-{location: new google.maps.LatLng(33.23,-111.71), weight:1},
-{location: new google.maps.LatLng(33.23,-111.65), weight:1},
-{location: new google.maps.LatLng(33.23,-111.6), weight:1},
-{location: new google.maps.LatLng(33.23,-111.56), weight:4},
-{location: new google.maps.LatLng(33.23,-111.55), weight:2},
-{location: new google.maps.LatLng(33.23,-111.52), weight:2},
-{location: new google.maps.LatLng(33.23,-111.51), weight:1},
-{location: new google.maps.LatLng(33.24,-111.83), weight:1},
-{location: new google.maps.LatLng(33.24,-111.72), weight:1},
-{location: new google.maps.LatLng(33.24,-111.71), weight:1},
-{location: new google.maps.LatLng(33.24,-111.65), weight:1},
-{location: new google.maps.LatLng(33.24,-111.64), weight:1},
-{location: new google.maps.LatLng(33.24,-111.63), weight:1},
-{location: new google.maps.LatLng(33.24,-111.62), weight:4},
-{location: new google.maps.LatLng(33.24,-111.61), weight:3},
-{location: new google.maps.LatLng(33.24,-111.56), weight:3},
-{location: new google.maps.LatLng(33.24,-111.55), weight:5},
-{location: new google.maps.LatLng(33.24,-111.54), weight:6},
-{location: new google.maps.LatLng(33.24,-111.53), weight:1},
-{location: new google.maps.LatLng(33.24,-111.52), weight:1},
-{location: new google.maps.LatLng(33.24,-111.51), weight:4},
-{location: new google.maps.LatLng(33.25,-111.82), weight:1},
-{location: new google.maps.LatLng(33.25,-111.81), weight:4},
-{location: new google.maps.LatLng(33.25,-111.78), weight:1},
-{location: new google.maps.LatLng(33.25,-111.74), weight:1},
-{location: new google.maps.LatLng(33.25,-111.73), weight:1},
-{location: new google.maps.LatLng(33.25,-111.69), weight:1},
-{location: new google.maps.LatLng(33.25,-111.63), weight:4},
-{location: new google.maps.LatLng(33.25,-111.62), weight:1},
-{location: new google.maps.LatLng(33.25,-111.61), weight:1},
-{location: new google.maps.LatLng(33.25,-111.57), weight:3},
-{location: new google.maps.LatLng(33.25,-111.56), weight:3},
-{location: new google.maps.LatLng(33.25,-111.55), weight:12},
-{location: new google.maps.LatLng(33.25,-111.54), weight:4},
-{location: new google.maps.LatLng(33.25,-111.52), weight:3},
-{location: new google.maps.LatLng(33.25,-111.51), weight:2},
-{location: new google.maps.LatLng(33.26,-111.88), weight:1},
-{location: new google.maps.LatLng(33.26,-111.76), weight:1},
-{location: new google.maps.LatLng(33.26,-111.71), weight:1},
-{location: new google.maps.LatLng(33.26,-111.69), weight:2},
-{location: new google.maps.LatLng(33.26,-111.66), weight:1},
-{location: new google.maps.LatLng(33.26,-111.63), weight:1},
-{location: new google.maps.LatLng(33.26,-111.62), weight:3},
-{location: new google.maps.LatLng(33.26,-111.61), weight:1},
-{location: new google.maps.LatLng(33.26,-111.57), weight:3},
-{location: new google.maps.LatLng(33.26,-111.56), weight:7},
-{location: new google.maps.LatLng(33.26,-111.55), weight:8},
-{location: new google.maps.LatLng(33.27,-111.88), weight:1},
-{location: new google.maps.LatLng(33.27,-111.87), weight:1},
-{location: new google.maps.LatLng(33.27,-111.76), weight:1},
-{location: new google.maps.LatLng(33.27,-111.71), weight:5},
-{location: new google.maps.LatLng(33.27,-111.7), weight:1},
-{location: new google.maps.LatLng(33.27,-111.67), weight:6},
-{location: new google.maps.LatLng(33.27,-111.66), weight:1},
-{location: new google.maps.LatLng(33.27,-111.53), weight:1},
-{location: new google.maps.LatLng(33.28,-111.87), weight:1},
-{location: new google.maps.LatLng(33.28,-111.85), weight:1},
-{location: new google.maps.LatLng(33.28,-111.76), weight:1},
-{location: new google.maps.LatLng(33.28,-111.74), weight:1},
-{location: new google.maps.LatLng(33.28,-111.72), weight:2},
-{location: new google.maps.LatLng(33.28,-111.71), weight:4},
-{location: new google.maps.LatLng(33.28,-111.7), weight:2},
-{location: new google.maps.LatLng(33.28,-111.69), weight:5},
-{location: new google.maps.LatLng(33.28,-111.68), weight:3},
-{location: new google.maps.LatLng(33.28,-111.65), weight:1},
-{location: new google.maps.LatLng(33.28,-111.56), weight:5},
-{location: new google.maps.LatLng(33.28,-111.15), weight:1},
-{location: new google.maps.LatLng(33.28,-111.11), weight:1},
-{location: new google.maps.LatLng(33.29,-111.82), weight:1},
-{location: new google.maps.LatLng(33.29,-111.8), weight:2},
-{location: new google.maps.LatLng(33.29,-111.72), weight:2},
-{location: new google.maps.LatLng(33.29,-111.71), weight:2},
-{location: new google.maps.LatLng(33.29,-111.7), weight:1},
-{location: new google.maps.LatLng(33.29,-111.1), weight:1},
-{location: new google.maps.LatLng(33.3,-112.01), weight:2},
-{location: new google.maps.LatLng(33.3,-111.99), weight:1},
-{location: new google.maps.LatLng(33.3,-111.94), weight:1},
-{location: new google.maps.LatLng(33.3,-111.9), weight:1},
-{location: new google.maps.LatLng(33.3,-111.83), weight:2},
-{location: new google.maps.LatLng(33.3,-111.79), weight:2},
-{location: new google.maps.LatLng(33.3,-111.78), weight:1},
-{location: new google.maps.LatLng(33.3,-111.77), weight:1},
-{location: new google.maps.LatLng(33.3,-111.76), weight:2},
-{location: new google.maps.LatLng(33.3,-111.74), weight:2},
-{location: new google.maps.LatLng(33.3,-111.73), weight:1},
-{location: new google.maps.LatLng(33.3,-111.71), weight:3},
-{location: new google.maps.LatLng(33.31,-112.01), weight:1},
-{location: new google.maps.LatLng(33.31,-111.89), weight:2},
-{location: new google.maps.LatLng(33.31,-111.87), weight:1},
-{location: new google.maps.LatLng(33.31,-111.86), weight:1},
-{location: new google.maps.LatLng(33.31,-111.85), weight:1},
-{location: new google.maps.LatLng(33.31,-111.84), weight:1},
-{location: new google.maps.LatLng(33.31,-111.81), weight:2},
-{location: new google.maps.LatLng(33.31,-111.76), weight:1},
-{location: new google.maps.LatLng(33.31,-111.74), weight:1},
-{location: new google.maps.LatLng(33.31,-111.7), weight:2},
-{location: new google.maps.LatLng(33.31,-111.68), weight:1},
-{location: new google.maps.LatLng(33.31,-111.59), weight:2},
-{location: new google.maps.LatLng(33.31,-111.37), weight:3},
-{location: new google.maps.LatLng(33.32,-111.89), weight:1},
-{location: new google.maps.LatLng(33.32,-111.88), weight:1},
-{location: new google.maps.LatLng(33.32,-111.87), weight:1},
-{location: new google.maps.LatLng(33.32,-111.81), weight:2},
-{location: new google.maps.LatLng(33.32,-111.76), weight:1},
-{location: new google.maps.LatLng(33.32,-111.75), weight:1},
-{location: new google.maps.LatLng(33.32,-111.74), weight:1},
-{location: new google.maps.LatLng(33.32,-111.72), weight:1},
-{location: new google.maps.LatLng(33.32,-111.71), weight:3},
-{location: new google.maps.LatLng(33.32,-111.7), weight:9},
-{location: new google.maps.LatLng(33.32,-111.69), weight:4},
-{location: new google.maps.LatLng(33.32,-111.61), weight:1},
-{location: new google.maps.LatLng(33.32,-111.6), weight:2},
-{location: new google.maps.LatLng(33.32,-111.59), weight:3},
-{location: new google.maps.LatLng(33.32,-111.37), weight:1},
-{location: new google.maps.LatLng(33.33,-111.98), weight:1},
-{location: new google.maps.LatLng(33.33,-111.88), weight:1},
-{location: new google.maps.LatLng(33.33,-111.87), weight:1},
-{location: new google.maps.LatLng(33.33,-111.86), weight:1},
-{location: new google.maps.LatLng(33.33,-111.84), weight:1},
-{location: new google.maps.LatLng(33.33,-111.83), weight:1},
-{location: new google.maps.LatLng(33.33,-111.82), weight:1},
-{location: new google.maps.LatLng(33.33,-111.8), weight:3},
-{location: new google.maps.LatLng(33.33,-111.77), weight:3},
-{location: new google.maps.LatLng(33.33,-111.72), weight:1},
-{location: new google.maps.LatLng(33.33,-111.71), weight:5},
-{location: new google.maps.LatLng(33.33,-111.7), weight:4},
-{location: new google.maps.LatLng(33.33,-111.6), weight:13},
-{location: new google.maps.LatLng(33.33,-111.59), weight:23},
-{location: new google.maps.LatLng(33.33,-111.58), weight:2},
-{location: new google.maps.LatLng(33.34,-111.98), weight:1},
-{location: new google.maps.LatLng(33.34,-111.86), weight:1},
-{location: new google.maps.LatLng(33.34,-111.85), weight:1},
-{location: new google.maps.LatLng(33.34,-111.84), weight:1},
-{location: new google.maps.LatLng(33.34,-111.82), weight:2},
-{location: new google.maps.LatLng(33.34,-111.81), weight:4},
-{location: new google.maps.LatLng(33.34,-111.8), weight:5},
-{location: new google.maps.LatLng(33.34,-111.79), weight:4},
-{location: new google.maps.LatLng(33.34,-111.77), weight:1},
-{location: new google.maps.LatLng(33.34,-111.76), weight:1},
-{location: new google.maps.LatLng(33.34,-111.75), weight:3},
-{location: new google.maps.LatLng(33.34,-111.74), weight:1},
-{location: new google.maps.LatLng(33.34,-111.6), weight:3},
-{location: new google.maps.LatLng(33.34,-111.59), weight:26},
-{location: new google.maps.LatLng(33.34,-111.58), weight:2},
-{location: new google.maps.LatLng(33.34,-111.44), weight:3},
-{location: new google.maps.LatLng(33.34,-111.43), weight:6},
-{location: new google.maps.LatLng(33.35,-111.92), weight:1},
-{location: new google.maps.LatLng(33.35,-111.89), weight:2},
-{location: new google.maps.LatLng(33.35,-111.88), weight:1},
-{location: new google.maps.LatLng(33.35,-111.8), weight:1},
-{location: new google.maps.LatLng(33.35,-111.77), weight:1},
-{location: new google.maps.LatLng(33.35,-111.76), weight:2},
-{location: new google.maps.LatLng(33.35,-111.75), weight:1},
-{location: new google.maps.LatLng(33.35,-111.74), weight:2},
-{location: new google.maps.LatLng(33.35,-111.71), weight:1},
-{location: new google.maps.LatLng(33.35,-111.7), weight:1},
-{location: new google.maps.LatLng(33.35,-111.6), weight:1},
-{location: new google.maps.LatLng(33.35,-111.59), weight:25},
-{location: new google.maps.LatLng(33.35,-111.58), weight:1},
-{location: new google.maps.LatLng(33.35,-111.45), weight:2},
-{location: new google.maps.LatLng(33.36,-111.98), weight:1},
-{location: new google.maps.LatLng(33.36,-111.97), weight:1},
-{location: new google.maps.LatLng(33.36,-111.88), weight:1},
-{location: new google.maps.LatLng(33.36,-111.87), weight:1},
-{location: new google.maps.LatLng(33.36,-111.86), weight:2},
-{location: new google.maps.LatLng(33.36,-111.84), weight:2},
-{location: new google.maps.LatLng(33.36,-111.83), weight:1},
-{location: new google.maps.LatLng(33.36,-111.81), weight:1},
-{location: new google.maps.LatLng(33.36,-111.8), weight:3},
-{location: new google.maps.LatLng(33.36,-111.79), weight:7},
-{location: new google.maps.LatLng(33.36,-111.78), weight:1},
-{location: new google.maps.LatLng(33.36,-111.77), weight:2},
-{location: new google.maps.LatLng(33.36,-111.76), weight:4},
-{location: new google.maps.LatLng(33.36,-111.75), weight:2},
-{location: new google.maps.LatLng(33.36,-111.74), weight:2},
-{location: new google.maps.LatLng(33.36,-111.73), weight:2},
-{location: new google.maps.LatLng(33.36,-111.72), weight:3},
-{location: new google.maps.LatLng(33.36,-111.71), weight:2},
-{location: new google.maps.LatLng(33.36,-111.7), weight:5},
-{location: new google.maps.LatLng(33.36,-111.69), weight:2},
-{location: new google.maps.LatLng(33.36,-111.67), weight:4},
-{location: new google.maps.LatLng(33.36,-111.66), weight:15},
-{location: new google.maps.LatLng(33.36,-111.65), weight:22},
-{location: new google.maps.LatLng(33.36,-111.64), weight:15},
-{location: new google.maps.LatLng(33.36,-111.63), weight:27},
-{location: new google.maps.LatLng(33.36,-111.62), weight:21},
-{location: new google.maps.LatLng(33.36,-111.61), weight:28},
-{location: new google.maps.LatLng(33.36,-111.6), weight:6},
-{location: new google.maps.LatLng(33.36,-111.59), weight:7},
-{location: new google.maps.LatLng(33.36,-111.47), weight:1},
-{location: new google.maps.LatLng(33.36,-111.45), weight:5},
-{location: new google.maps.LatLng(33.36,-111.44), weight:4},
-{location: new google.maps.LatLng(33.36,-111.43), weight:1},
-{location: new google.maps.LatLng(33.37,-112.08), weight:1},
-{location: new google.maps.LatLng(33.37,-112.05), weight:1},
-{location: new google.maps.LatLng(33.37,-111.97), weight:1},
-{location: new google.maps.LatLng(33.37,-111.93), weight:1},
-{location: new google.maps.LatLng(33.37,-111.88), weight:1},
-{location: new google.maps.LatLng(33.37,-111.87), weight:3},
-{location: new google.maps.LatLng(33.37,-111.86), weight:1},
-{location: new google.maps.LatLng(33.37,-111.85), weight:1},
-{location: new google.maps.LatLng(33.37,-111.84), weight:3},
-{location: new google.maps.LatLng(33.37,-111.81), weight:1},
-{location: new google.maps.LatLng(33.37,-111.77), weight:1},
-{location: new google.maps.LatLng(33.37,-111.76), weight:6},
-{location: new google.maps.LatLng(33.37,-111.75), weight:2},
-{location: new google.maps.LatLng(33.37,-111.74), weight:4},
-{location: new google.maps.LatLng(33.37,-111.72), weight:4},
-{location: new google.maps.LatLng(33.37,-111.71), weight:2},
-{location: new google.maps.LatLng(33.37,-111.7), weight:5},
-{location: new google.maps.LatLng(33.37,-111.69), weight:1},
-{location: new google.maps.LatLng(33.37,-111.68), weight:11},
-{location: new google.maps.LatLng(33.37,-111.67), weight:12},
-{location: new google.maps.LatLng(33.37,-111.66), weight:1},
-{location: new google.maps.LatLng(33.37,-111.65), weight:8},
-{location: new google.maps.LatLng(33.37,-111.64), weight:4},
-{location: new google.maps.LatLng(33.37,-111.63), weight:26},
-{location: new google.maps.LatLng(33.37,-111.62), weight:31},
-{location: new google.maps.LatLng(33.37,-111.61), weight:12},
-{location: new google.maps.LatLng(33.37,-111.6), weight:10},
-{location: new google.maps.LatLng(33.37,-111.59), weight:2},
-{location: new google.maps.LatLng(33.37,-111.48), weight:1},
-{location: new google.maps.LatLng(33.37,-111.47), weight:3},
-{location: new google.maps.LatLng(33.37,-111.46), weight:1},
-{location: new google.maps.LatLng(33.37,-111.44), weight:2},
-{location: new google.maps.LatLng(33.38,-112.2), weight:1},
-{location: new google.maps.LatLng(33.38,-112.14), weight:1},
-{location: new google.maps.LatLng(33.38,-112.08), weight:1},
-{location: new google.maps.LatLng(33.38,-112.01), weight:1},
-{location: new google.maps.LatLng(33.38,-111.95), weight:1},
-{location: new google.maps.LatLng(33.38,-111.94), weight:3},
-{location: new google.maps.LatLng(33.38,-111.9), weight:1},
-{location: new google.maps.LatLng(33.38,-111.88), weight:1},
-{location: new google.maps.LatLng(33.38,-111.87), weight:2},
-{location: new google.maps.LatLng(33.38,-111.86), weight:4},
-{location: new google.maps.LatLng(33.38,-111.85), weight:1},
-{location: new google.maps.LatLng(33.38,-111.81), weight:1},
-{location: new google.maps.LatLng(33.38,-111.8), weight:1},
-{location: new google.maps.LatLng(33.38,-111.79), weight:7},
-{location: new google.maps.LatLng(33.38,-111.77), weight:1},
-{location: new google.maps.LatLng(33.38,-111.76), weight:3},
-{location: new google.maps.LatLng(33.38,-111.75), weight:3},
-{location: new google.maps.LatLng(33.38,-111.73), weight:3},
-{location: new google.maps.LatLng(33.38,-111.72), weight:3},
-{location: new google.maps.LatLng(33.38,-111.69), weight:1},
-{location: new google.maps.LatLng(33.38,-111.68), weight:8},
-{location: new google.maps.LatLng(33.38,-111.67), weight:6},
-{location: new google.maps.LatLng(33.38,-111.66), weight:8},
-{location: new google.maps.LatLng(33.38,-111.65), weight:13},
-{location: new google.maps.LatLng(33.38,-111.64), weight:4},
-{location: new google.maps.LatLng(33.38,-111.63), weight:28},
-{location: new google.maps.LatLng(33.38,-111.62), weight:28},
-{location: new google.maps.LatLng(33.38,-111.61), weight:47},
-{location: new google.maps.LatLng(33.38,-111.6), weight:6},
-{location: new google.maps.LatLng(33.38,-111.59), weight:2},
-{location: new google.maps.LatLng(33.38,-111.58), weight:1},
-{location: new google.maps.LatLng(33.38,-111.57), weight:9},
-{location: new google.maps.LatLng(33.38,-111.56), weight:5},
-{location: new google.maps.LatLng(33.38,-111.53), weight:15},
-{location: new google.maps.LatLng(33.38,-111.52), weight:24},
-{location: new google.maps.LatLng(33.38,-111.51), weight:2},
-{location: new google.maps.LatLng(33.38,-111.49), weight:1},
-{location: new google.maps.LatLng(33.38,-111.47), weight:1},
-{location: new google.maps.LatLng(33.38,-111.46), weight:5},
-{location: new google.maps.LatLng(33.38,-111.45), weight:1},
-{location: new google.maps.LatLng(33.38,-111.44), weight:1},
-{location: new google.maps.LatLng(33.39,-112.12), weight:1},
-{location: new google.maps.LatLng(33.39,-112.11), weight:1},
-{location: new google.maps.LatLng(33.39,-111.91), weight:1},
-{location: new google.maps.LatLng(33.39,-111.83), weight:1},
-{location: new google.maps.LatLng(33.39,-111.82), weight:2},
-{location: new google.maps.LatLng(33.39,-111.81), weight:1},
-{location: new google.maps.LatLng(33.39,-111.8), weight:4},
-{location: new google.maps.LatLng(33.39,-111.79), weight:1},
-{location: new google.maps.LatLng(33.39,-111.78), weight:1},
-{location: new google.maps.LatLng(33.39,-111.75), weight:3},
-{location: new google.maps.LatLng(33.39,-111.74), weight:2},
-{location: new google.maps.LatLng(33.39,-111.73), weight:1},
-{location: new google.maps.LatLng(33.39,-111.72), weight:3},
-{location: new google.maps.LatLng(33.39,-111.71), weight:4},
-{location: new google.maps.LatLng(33.39,-111.68), weight:5},
-{location: new google.maps.LatLng(33.39,-111.67), weight:11},
-{location: new google.maps.LatLng(33.39,-111.66), weight:16},
-{location: new google.maps.LatLng(33.39,-111.65), weight:2},
-{location: new google.maps.LatLng(33.39,-111.64), weight:9},
-{location: new google.maps.LatLng(33.39,-111.63), weight:10},
-{location: new google.maps.LatLng(33.39,-111.62), weight:12},
-{location: new google.maps.LatLng(33.39,-111.61), weight:5},
-{location: new google.maps.LatLng(33.39,-111.6), weight:21},
-{location: new google.maps.LatLng(33.39,-111.59), weight:6},
-{location: new google.maps.LatLng(33.39,-111.58), weight:10},
-{location: new google.maps.LatLng(33.39,-111.57), weight:7},
-{location: new google.maps.LatLng(33.39,-111.56), weight:2},
-{location: new google.maps.LatLng(33.39,-111.55), weight:4},
-{location: new google.maps.LatLng(33.39,-111.54), weight:10},
-{location: new google.maps.LatLng(33.39,-111.53), weight:19},
-{location: new google.maps.LatLng(33.39,-111.52), weight:9},
-{location: new google.maps.LatLng(33.39,-111.5), weight:1},
-{location: new google.maps.LatLng(33.39,-111.49), weight:1},
-{location: new google.maps.LatLng(33.39,-111.46), weight:2},
-{location: new google.maps.LatLng(33.39,-104.56), weight:1},
-{location: new google.maps.LatLng(33.4,-112.03), weight:2},
-{location: new google.maps.LatLng(33.4,-111.96), weight:1},
-{location: new google.maps.LatLng(33.4,-111.9), weight:2},
-{location: new google.maps.LatLng(33.4,-111.87), weight:3},
-{location: new google.maps.LatLng(33.4,-111.85), weight:3},
-{location: new google.maps.LatLng(33.4,-111.84), weight:2},
-{location: new google.maps.LatLng(33.4,-111.81), weight:1},
-{location: new google.maps.LatLng(33.4,-111.8), weight:2},
-{location: new google.maps.LatLng(33.4,-111.78), weight:3},
-{location: new google.maps.LatLng(33.4,-111.76), weight:3},
-{location: new google.maps.LatLng(33.4,-111.75), weight:4},
-{location: new google.maps.LatLng(33.4,-111.74), weight:1},
-{location: new google.maps.LatLng(33.4,-111.72), weight:7},
-{location: new google.maps.LatLng(33.4,-111.71), weight:7},
-{location: new google.maps.LatLng(33.4,-111.69), weight:1},
-{location: new google.maps.LatLng(33.4,-111.68), weight:3},
-{location: new google.maps.LatLng(33.4,-111.67), weight:8},
-{location: new google.maps.LatLng(33.4,-111.66), weight:3},
-{location: new google.maps.LatLng(33.4,-111.65), weight:4},
-{location: new google.maps.LatLng(33.4,-111.64), weight:6},
-{location: new google.maps.LatLng(33.4,-111.63), weight:6},
-{location: new google.maps.LatLng(33.4,-111.62), weight:48},
-{location: new google.maps.LatLng(33.4,-111.61), weight:37},
-{location: new google.maps.LatLng(33.4,-111.6), weight:50},
-{location: new google.maps.LatLng(33.4,-111.59), weight:41},
-{location: new google.maps.LatLng(33.4,-111.58), weight:15},
-{location: new google.maps.LatLng(33.4,-111.57), weight:14},
-{location: new google.maps.LatLng(33.4,-111.56), weight:26},
-{location: new google.maps.LatLng(33.4,-111.55), weight:20},
-{location: new google.maps.LatLng(33.4,-111.54), weight:13},
-{location: new google.maps.LatLng(33.4,-111.53), weight:4},
-{location: new google.maps.LatLng(33.4,-111.52), weight:1},
-{location: new google.maps.LatLng(33.4,-111.49), weight:3},
-{location: new google.maps.LatLng(33.4,-111.48), weight:2},
-{location: new google.maps.LatLng(33.4,-111.47), weight:1},
-{location: new google.maps.LatLng(33.4,-110.79), weight:2},
-{location: new google.maps.LatLng(33.41,-112.28), weight:1},
-{location: new google.maps.LatLng(33.41,-112.17), weight:1},
-{location: new google.maps.LatLng(33.41,-111.96), weight:1},
-{location: new google.maps.LatLng(33.41,-111.92), weight:1},
-{location: new google.maps.LatLng(33.41,-111.88), weight:3},
-{location: new google.maps.LatLng(33.41,-111.87), weight:1},
-{location: new google.maps.LatLng(33.41,-111.85), weight:1},
-{location: new google.maps.LatLng(33.41,-111.79), weight:1},
-{location: new google.maps.LatLng(33.41,-111.78), weight:3},
-{location: new google.maps.LatLng(33.41,-111.76), weight:2},
-{location: new google.maps.LatLng(33.41,-111.74), weight:1},
-{location: new google.maps.LatLng(33.41,-111.73), weight:2},
-{location: new google.maps.LatLng(33.41,-111.72), weight:3},
-{location: new google.maps.LatLng(33.41,-111.71), weight:4},
-{location: new google.maps.LatLng(33.41,-111.7), weight:1},
-{location: new google.maps.LatLng(33.41,-111.69), weight:3},
-{location: new google.maps.LatLng(33.41,-111.68), weight:3},
-{location: new google.maps.LatLng(33.41,-111.66), weight:2},
-{location: new google.maps.LatLng(33.41,-111.65), weight:13},
-{location: new google.maps.LatLng(33.41,-111.64), weight:18},
-{location: new google.maps.LatLng(33.41,-111.63), weight:14},
-{location: new google.maps.LatLng(33.41,-111.62), weight:28},
-{location: new google.maps.LatLng(33.41,-111.61), weight:43},
-{location: new google.maps.LatLng(33.41,-111.6), weight:31},
-{location: new google.maps.LatLng(33.41,-111.59), weight:16},
-{location: new google.maps.LatLng(33.41,-111.58), weight:11},
-{location: new google.maps.LatLng(33.41,-111.57), weight:9},
-{location: new google.maps.LatLng(33.41,-111.56), weight:9},
-{location: new google.maps.LatLng(33.41,-111.55), weight:17},
-{location: new google.maps.LatLng(33.41,-111.54), weight:11},
-{location: new google.maps.LatLng(33.41,-111.52), weight:7},
-{location: new google.maps.LatLng(33.41,-111.5), weight:1},
-{location: new google.maps.LatLng(33.41,-111.49), weight:1},
-{location: new google.maps.LatLng(33.41,-111.48), weight:5},
-{location: new google.maps.LatLng(33.42,-112.29), weight:1},
-{location: new google.maps.LatLng(33.42,-111.95), weight:1},
-{location: new google.maps.LatLng(33.42,-111.84), weight:2},
-{location: new google.maps.LatLng(33.42,-111.83), weight:1},
-{location: new google.maps.LatLng(33.42,-111.82), weight:1},
-{location: new google.maps.LatLng(33.42,-111.8), weight:1},
-{location: new google.maps.LatLng(33.42,-111.79), weight:5},
-{location: new google.maps.LatLng(33.42,-111.78), weight:4},
-{location: new google.maps.LatLng(33.42,-111.77), weight:1},
-{location: new google.maps.LatLng(33.42,-111.76), weight:3},
-{location: new google.maps.LatLng(33.42,-111.75), weight:3},
-{location: new google.maps.LatLng(33.42,-111.74), weight:9},
-{location: new google.maps.LatLng(33.42,-111.73), weight:2},
-{location: new google.maps.LatLng(33.42,-111.72), weight:1},
-{location: new google.maps.LatLng(33.42,-111.71), weight:2},
-{location: new google.maps.LatLng(33.42,-111.7), weight:5},
-{location: new google.maps.LatLng(33.42,-111.69), weight:7},
-{location: new google.maps.LatLng(33.42,-111.67), weight:16},
-{location: new google.maps.LatLng(33.42,-111.66), weight:11},
-{location: new google.maps.LatLng(33.42,-111.65), weight:8},
-{location: new google.maps.LatLng(33.42,-111.64), weight:11},
-{location: new google.maps.LatLng(33.42,-111.62), weight:10},
-{location: new google.maps.LatLng(33.42,-111.61), weight:32},
-{location: new google.maps.LatLng(33.42,-111.6), weight:18},
-{location: new google.maps.LatLng(33.42,-111.59), weight:8},
-{location: new google.maps.LatLng(33.42,-111.58), weight:7},
-{location: new google.maps.LatLng(33.42,-111.57), weight:9},
-{location: new google.maps.LatLng(33.42,-111.56), weight:10},
-{location: new google.maps.LatLng(33.42,-111.55), weight:9},
-{location: new google.maps.LatLng(33.42,-111.54), weight:4},
-{location: new google.maps.LatLng(33.42,-111.53), weight:2},
-{location: new google.maps.LatLng(33.42,-111.52), weight:1},
-{location: new google.maps.LatLng(33.42,-111.51), weight:1},
-{location: new google.maps.LatLng(33.42,-111.5), weight:2},
-{location: new google.maps.LatLng(33.42,-111.49), weight:4},
-{location: new google.maps.LatLng(33.42,-111.48), weight:3},
-{location: new google.maps.LatLng(33.43,-111.87), weight:2},
-{location: new google.maps.LatLng(33.43,-111.82), weight:1},
-{location: new google.maps.LatLng(33.43,-111.79), weight:5},
-{location: new google.maps.LatLng(33.43,-111.78), weight:1},
-{location: new google.maps.LatLng(33.43,-111.77), weight:2},
-{location: new google.maps.LatLng(33.43,-111.76), weight:2},
-{location: new google.maps.LatLng(33.43,-111.75), weight:1},
-{location: new google.maps.LatLng(33.43,-111.74), weight:3},
-{location: new google.maps.LatLng(33.43,-111.73), weight:1},
-{location: new google.maps.LatLng(33.43,-111.72), weight:4},
-{location: new google.maps.LatLng(33.43,-111.71), weight:2},
-{location: new google.maps.LatLng(33.43,-111.7), weight:3},
-{location: new google.maps.LatLng(33.43,-111.69), weight:3},
-{location: new google.maps.LatLng(33.43,-111.67), weight:3},
-{location: new google.maps.LatLng(33.43,-111.66), weight:5},
-{location: new google.maps.LatLng(33.43,-111.65), weight:1},
-{location: new google.maps.LatLng(33.43,-111.64), weight:5},
-{location: new google.maps.LatLng(33.43,-111.63), weight:14},
-{location: new google.maps.LatLng(33.43,-111.62), weight:18},
-{location: new google.maps.LatLng(33.43,-111.61), weight:4},
-{location: new google.maps.LatLng(33.43,-111.6), weight:5},
-{location: new google.maps.LatLng(33.43,-111.59), weight:19},
-{location: new google.maps.LatLng(33.43,-111.58), weight:12},
-{location: new google.maps.LatLng(33.43,-111.57), weight:2},
-{location: new google.maps.LatLng(33.43,-111.56), weight:5},
-{location: new google.maps.LatLng(33.43,-111.55), weight:5},
-{location: new google.maps.LatLng(33.43,-111.52), weight:5},
-{location: new google.maps.LatLng(33.43,-111.51), weight:1},
-{location: new google.maps.LatLng(33.43,-111.5), weight:2},
-{location: new google.maps.LatLng(33.43,-111.49), weight:3},
-{location: new google.maps.LatLng(33.43,-111.48), weight:4},
-{location: new google.maps.LatLng(33.44,-111.82), weight:2},
-{location: new google.maps.LatLng(33.44,-111.81), weight:1},
-{location: new google.maps.LatLng(33.44,-111.8), weight:1},
-{location: new google.maps.LatLng(33.44,-111.79), weight:1},
-{location: new google.maps.LatLng(33.44,-111.78), weight:1},
-{location: new google.maps.LatLng(33.44,-111.76), weight:1},
-{location: new google.maps.LatLng(33.44,-111.74), weight:1},
-{location: new google.maps.LatLng(33.44,-111.73), weight:2},
-{location: new google.maps.LatLng(33.44,-111.72), weight:1},
-{location: new google.maps.LatLng(33.44,-111.7), weight:6},
-{location: new google.maps.LatLng(33.44,-111.69), weight:2},
-{location: new google.maps.LatLng(33.44,-111.68), weight:2},
-{location: new google.maps.LatLng(33.44,-111.67), weight:3},
-{location: new google.maps.LatLng(33.44,-111.64), weight:7},
-{location: new google.maps.LatLng(33.44,-111.63), weight:8},
-{location: new google.maps.LatLng(33.44,-111.62), weight:6},
-{location: new google.maps.LatLng(33.44,-111.61), weight:2},
-{location: new google.maps.LatLng(33.44,-111.6), weight:3},
-{location: new google.maps.LatLng(33.44,-111.59), weight:1},
-{location: new google.maps.LatLng(33.44,-111.58), weight:2},
-{location: new google.maps.LatLng(33.44,-111.57), weight:13},
-{location: new google.maps.LatLng(33.44,-111.49), weight:2},
-{location: new google.maps.LatLng(33.45,-112.54), weight:1},
-{location: new google.maps.LatLng(33.45,-112.32), weight:3},
-{location: new google.maps.LatLng(33.45,-112.1), weight:1},
-{location: new google.maps.LatLng(33.45,-112.09), weight:1},
-{location: new google.maps.LatLng(33.45,-111.85), weight:1},
-{location: new google.maps.LatLng(33.45,-111.84), weight:2},
-{location: new google.maps.LatLng(33.45,-111.82), weight:6},
-{location: new google.maps.LatLng(33.45,-111.8), weight:2},
-{location: new google.maps.LatLng(33.45,-111.78), weight:4},
-{location: new google.maps.LatLng(33.45,-111.77), weight:1},
-{location: new google.maps.LatLng(33.45,-111.76), weight:2},
-{location: new google.maps.LatLng(33.45,-111.71), weight:2},
-{location: new google.maps.LatLng(33.45,-111.7), weight:2},
-{location: new google.maps.LatLng(33.45,-111.68), weight:4},
-{location: new google.maps.LatLng(33.45,-111.67), weight:1},
-{location: new google.maps.LatLng(33.45,-111.65), weight:2},
-{location: new google.maps.LatLng(33.45,-111.64), weight:2},
-{location: new google.maps.LatLng(33.45,-111.63), weight:5},
-{location: new google.maps.LatLng(33.45,-111.62), weight:13},
-{location: new google.maps.LatLng(33.45,-111.61), weight:1},
-{location: new google.maps.LatLng(33.45,-111.6), weight:2},
-{location: new google.maps.LatLng(33.45,-111.58), weight:2},
-{location: new google.maps.LatLng(33.45,-111.57), weight:1},
-{location: new google.maps.LatLng(33.45,-111.53), weight:1},
-{location: new google.maps.LatLng(33.46,-112.4), weight:2},
-{location: new google.maps.LatLng(33.46,-111.99), weight:1},
-{location: new google.maps.LatLng(33.46,-111.82), weight:1},
-{location: new google.maps.LatLng(33.46,-111.81), weight:1},
-{location: new google.maps.LatLng(33.46,-111.78), weight:1},
-{location: new google.maps.LatLng(33.46,-111.7), weight:2},
-{location: new google.maps.LatLng(33.46,-111.69), weight:5},
-{location: new google.maps.LatLng(33.46,-111.68), weight:1},
-{location: new google.maps.LatLng(33.46,-111.67), weight:6},
-{location: new google.maps.LatLng(33.46,-111.66), weight:1},
-{location: new google.maps.LatLng(33.46,-111.65), weight:3},
-{location: new google.maps.LatLng(33.46,-111.62), weight:5},
-{location: new google.maps.LatLng(33.46,-111.58), weight:4},
-{location: new google.maps.LatLng(33.46,-111.57), weight:2},
-{location: new google.maps.LatLng(33.46,-111.56), weight:7},
-{location: new google.maps.LatLng(33.46,-111.55), weight:3},
-{location: new google.maps.LatLng(33.46,-111.53), weight:2},
-{location: new google.maps.LatLng(33.47,-111.99), weight:1},
-{location: new google.maps.LatLng(33.47,-111.81), weight:1},
-{location: new google.maps.LatLng(33.47,-111.7), weight:4},
-{location: new google.maps.LatLng(33.47,-111.69), weight:1},
-{location: new google.maps.LatLng(33.47,-111.68), weight:2},
-{location: new google.maps.LatLng(33.47,-111.67), weight:4},
-{location: new google.maps.LatLng(33.47,-111.65), weight:1},
-{location: new google.maps.LatLng(33.48,-112.24), weight:1},
-{location: new google.maps.LatLng(33.48,-112.18), weight:1},
-{location: new google.maps.LatLng(33.48,-112.09), weight:2},
-{location: new google.maps.LatLng(33.48,-112), weight:1},
-{location: new google.maps.LatLng(33.48,-111.94), weight:1},
-{location: new google.maps.LatLng(33.48,-111.78), weight:1},
-{location: new google.maps.LatLng(33.48,-111.72), weight:1},
-{location: new google.maps.LatLng(33.48,-111.7), weight:5},
-{location: new google.maps.LatLng(33.48,-111.69), weight:5},
-{location: new google.maps.LatLng(33.48,-111.67), weight:1},
-{location: new google.maps.LatLng(33.48,-111.66), weight:4},
-{location: new google.maps.LatLng(33.49,-112.07), weight:1},
-{location: new google.maps.LatLng(33.49,-112.05), weight:1},
-{location: new google.maps.LatLng(33.49,-111.7), weight:2},
-{location: new google.maps.LatLng(33.49,-111.68), weight:1},
-{location: new google.maps.LatLng(33.49,-111.67), weight:1},
-{location: new google.maps.LatLng(33.49,-111.66), weight:2},
-{location: new google.maps.LatLng(33.49,-111.65), weight:1},
-{location: new google.maps.LatLng(33.5,-112.13), weight:1},
-{location: new google.maps.LatLng(33.5,-111.9), weight:1},
-{location: new google.maps.LatLng(33.51,-112.46), weight:1},
-{location: new google.maps.LatLng(33.51,-111.92), weight:1},
-{location: new google.maps.LatLng(33.51,-111.9), weight:1},
-{location: new google.maps.LatLng(33.52,-112.11), weight:1},
-{location: new google.maps.LatLng(33.52,-112.07), weight:1},
-{location: new google.maps.LatLng(33.53,-112.35), weight:1},
-{location: new google.maps.LatLng(33.53,-112.34), weight:1},
-{location: new google.maps.LatLng(33.53,-112.23), weight:1},
-{location: new google.maps.LatLng(33.54,-112.35), weight:1},
-{location: new google.maps.LatLng(33.54,-112.25), weight:1},
-{location: new google.maps.LatLng(33.55,-112.17), weight:1},
-{location: new google.maps.LatLng(33.57,-111.86), weight:1},
-{location: new google.maps.LatLng(33.58,-111.93), weight:1},
-{location: new google.maps.LatLng(33.58,-111.85), weight:1},
-{location: new google.maps.LatLng(33.59,-111.93), weight:1},
-{location: new google.maps.LatLng(33.6,-112.25), weight:1},
-{location: new google.maps.LatLng(33.6,-111.97), weight:1},
-{location: new google.maps.LatLng(33.61,-111.94), weight:1},
-{location: new google.maps.LatLng(33.62,-112.22), weight:1},
-{location: new google.maps.LatLng(33.62,-112), weight:2},
-{location: new google.maps.LatLng(33.63,-112.23), weight:1},
-{location: new google.maps.LatLng(33.63,-111.95), weight:1},
-{location: new google.maps.LatLng(33.63,-111.88), weight:1},
-{location: new google.maps.LatLng(33.64,-112.25), weight:1},
-{location: new google.maps.LatLng(33.65,-112.14), weight:1},
-{location: new google.maps.LatLng(33.65,-112.08), weight:1},
-{location: new google.maps.LatLng(33.65,-112.07), weight:1},
-{location: new google.maps.LatLng(33.66,-112.22), weight:1},
-{location: new google.maps.LatLng(33.66,-112.2), weight:1},
-{location: new google.maps.LatLng(33.66,-112.16), weight:1},
-{location: new google.maps.LatLng(33.66,-112.05), weight:1},
-{location: new google.maps.LatLng(33.66,-112.04), weight:1},
-{location: new google.maps.LatLng(33.67,-112), weight:1},
-{location: new google.maps.LatLng(33.68,-112.25), weight:1},
-{location: new google.maps.LatLng(33.68,-112.12), weight:2},
-{location: new google.maps.LatLng(33.69,-117.78), weight:1},
-{location: new google.maps.LatLng(33.69,-111.91), weight:1},
-{location: new google.maps.LatLng(33.7,-111.09), weight:1},
-{location: new google.maps.LatLng(33.73,-112.17), weight:1},
-{location: new google.maps.LatLng(33.74,-112.11), weight:1},
-{location: new google.maps.LatLng(33.83,-118.33), weight:1},
-{location: new google.maps.LatLng(33.85,-112.06), weight:1},
-{location: new google.maps.LatLng(33.89,-109.31), weight:1},
-{location: new google.maps.LatLng(33.92,-112.12), weight:1},
-{location: new google.maps.LatLng(34.11,-116.42), weight:1},
-{location: new google.maps.LatLng(34.22,-119.14), weight:1},
-{location: new google.maps.LatLng(34.23,-111.31), weight:1},
-{location: new google.maps.LatLng(34.26,-110.09), weight:1},
-{location: new google.maps.LatLng(35.15,-82.45), weight:1},
-{location: new google.maps.LatLng(36.22,-86.75), weight:1},
-{location: new google.maps.LatLng(39.11,-75.53), weight:1},
-{location: new google.maps.LatLng(41.73,-87.94), weight:1},
-{location: new google.maps.LatLng(41.75,-93.61), weight:1},
-{location: new google.maps.LatLng(42.51,-92.49), weight:1},
-{location: new google.maps.LatLng(42.9,-85.9), weight:1},
-{location: new google.maps.LatLng(44.08,-121.3), weight:1},
-{location: new google.maps.LatLng(47.35,-122.06), weight:1},
-{location: new google.maps.LatLng(47.66,-117.09), weight:1},
-{location: new google.maps.LatLng(48.26,-122.74), weight:1},
-{location: new google.maps.LatLng(32.95,-117.1), weight:1},
-{location: new google.maps.LatLng(33.27,-111.68), weight:1},
-{location: new google.maps.LatLng(33.29,-111.69), weight:1},
-{location: new google.maps.LatLng(33.3,-111.75), weight:1},
-{location: new google.maps.LatLng(33.31,-111.75), weight:1},
-{location: new google.maps.LatLng(33.38,-112.1), weight:1},
-{location: new google.maps.LatLng(33.39,-111.74), weight:1},
-{location: new google.maps.LatLng(33.42,-112.61), weight:1},
-{location: new google.maps.LatLng(33.46,-111.75), weight:1},
-{location: new google.maps.LatLng(33.47,-112.23), weight:1},
-{location: new google.maps.LatLng(33.48,-112), weight:1},
-{location: new google.maps.LatLng(33.51,-112.08), weight:2},
-{location: new google.maps.LatLng(33.51,-112.07), weight:1},
-{location: new google.maps.LatLng(33.55,-112.09), weight:1},
-{location: new google.maps.LatLng(33.56,-112.1), weight:1},
-{location: new google.maps.LatLng(33.57,-112.16), weight:2},
-{location: new google.maps.LatLng(33.59,-112.37), weight:1},
-{location: new google.maps.LatLng(33.59,-112.24), weight:2},
-{location: new google.maps.LatLng(33.59,-112.12), weight:1},
-{location: new google.maps.LatLng(33.59,-112.06), weight:1},
-{location: new google.maps.LatLng(33.61,-112.02), weight:1},
-{location: new google.maps.LatLng(33.62,-112.08), weight:1},
-{location: new google.maps.LatLng(33.62,-112), weight:1},
-{location: new google.maps.LatLng(33.63,-112.32), weight:1},
-{location: new google.maps.LatLng(33.63,-112.08), weight:1},
-{location: new google.maps.LatLng(33.64,-112.11), weight:1},
-{location: new google.maps.LatLng(33.64,-112.03), weight:1},
-{location: new google.maps.LatLng(33.65,-112.15), weight:1},
-{location: new google.maps.LatLng(33.65,-112.08), weight:1},
-{location: new google.maps.LatLng(33.65,-112.01), weight:2},
-{location: new google.maps.LatLng(33.66,-112.19), weight:1},
-{location: new google.maps.LatLng(33.66,-112.08), weight:1},
-{location: new google.maps.LatLng(33.67,-112.61), weight:1},
-{location: new google.maps.LatLng(33.67,-112.26), weight:1},
-{location: new google.maps.LatLng(33.67,-112.19), weight:1},
-{location: new google.maps.LatLng(33.67,-112.09), weight:1},
-{location: new google.maps.LatLng(33.68,-112.29), weight:2},
-{location: new google.maps.LatLng(33.68,-112.19), weight:1},
-{location: new google.maps.LatLng(33.69,-112.2), weight:2},
-{location: new google.maps.LatLng(33.69,-112.13), weight:1},
-{location: new google.maps.LatLng(33.69,-112.12), weight:2},
-{location: new google.maps.LatLng(33.7,-112.32), weight:1},
-{location: new google.maps.LatLng(33.7,-112.22), weight:1},
-{location: new google.maps.LatLng(33.7,-111.99), weight:1},
-{location: new google.maps.LatLng(33.71,-112.2), weight:1},
-{location: new google.maps.LatLng(33.71,-112.14), weight:1},
-{location: new google.maps.LatLng(33.71,-112.11), weight:1},
-{location: new google.maps.LatLng(33.72,-112.17), weight:1},
-{location: new google.maps.LatLng(33.73,-112.27), weight:4},
-{location: new google.maps.LatLng(33.73,-112.25), weight:1},
-{location: new google.maps.LatLng(33.73,-112.14), weight:1},
-{location: new google.maps.LatLng(33.73,-112.13), weight:1},
-{location: new google.maps.LatLng(33.73,-112.11), weight:2},
-{location: new google.maps.LatLng(33.73,-112.1), weight:3},
-{location: new google.maps.LatLng(33.73,-111.98), weight:1},
-{location: new google.maps.LatLng(33.74,-112.13), weight:2},
-{location: new google.maps.LatLng(33.74,-112.12), weight:3},
-{location: new google.maps.LatLng(33.74,-112.11), weight:8},
-{location: new google.maps.LatLng(33.74,-112.1), weight:3},
-{location: new google.maps.LatLng(33.74,-112.09), weight:2},
-{location: new google.maps.LatLng(33.75,-112.33), weight:1},
-{location: new google.maps.LatLng(33.75,-112.11), weight:5},
-{location: new google.maps.LatLng(33.75,-112.1), weight:8},
-{location: new google.maps.LatLng(33.75,-111.97), weight:1},
-{location: new google.maps.LatLng(33.77,-112.11), weight:5},
-{location: new google.maps.LatLng(33.77,-112.1), weight:7},
-{location: new google.maps.LatLng(33.78,-112.12), weight:2},
-{location: new google.maps.LatLng(33.78,-112.11), weight:9},
-{location: new google.maps.LatLng(33.78,-112.1), weight:8},
-{location: new google.maps.LatLng(33.78,-112.09), weight:1},
-{location: new google.maps.LatLng(33.79,-112.12), weight:12},
-{location: new google.maps.LatLng(33.79,-112.11), weight:6},
-{location: new google.maps.LatLng(33.79,-112.07), weight:2},
-{location: new google.maps.LatLng(33.79,-111.96), weight:1},
-{location: new google.maps.LatLng(33.8,-112.13), weight:11},
-{location: new google.maps.LatLng(33.8,-112.12), weight:4},
-{location: new google.maps.LatLng(33.8,-112.11), weight:1},
-{location: new google.maps.LatLng(33.8,-112.1), weight:1},
-{location: new google.maps.LatLng(33.8,-112.08), weight:1},
-{location: new google.maps.LatLng(33.8,-112.07), weight:6},
-{location: new google.maps.LatLng(33.8,-112), weight:1},
-{location: new google.maps.LatLng(33.81,-112.13), weight:20},
-{location: new google.maps.LatLng(33.81,-112.12), weight:13},
-{location: new google.maps.LatLng(33.81,-112.09), weight:1},
-{location: new google.maps.LatLng(33.81,-112.07), weight:1},
-{location: new google.maps.LatLng(33.82,-112.08), weight:1},
-{location: new google.maps.LatLng(33.82,-112.06), weight:1},
-{location: new google.maps.LatLng(33.82,-112.05), weight:3},
-{location: new google.maps.LatLng(33.82,-112.04), weight:2},
-{location: new google.maps.LatLng(33.82,-112.02), weight:1},
-{location: new google.maps.LatLng(33.83,-112.14), weight:16},
-{location: new google.maps.LatLng(33.83,-112.13), weight:1},
-{location: new google.maps.LatLng(33.83,-112.12), weight:3},
-{location: new google.maps.LatLng(33.83,-112.1), weight:1},
-{location: new google.maps.LatLng(33.83,-112.07), weight:2},
-{location: new google.maps.LatLng(33.84,-112.14), weight:15},
-{location: new google.maps.LatLng(33.84,-112.13), weight:12},
-{location: new google.maps.LatLng(33.84,-112.12), weight:6},
-{location: new google.maps.LatLng(33.84,-112.11), weight:13},
-{location: new google.maps.LatLng(33.84,-112.1), weight:6},
-{location: new google.maps.LatLng(33.84,-112.09), weight:1},
-{location: new google.maps.LatLng(33.84,-112.07), weight:3},
-{location: new google.maps.LatLng(33.84,-112.04), weight:1},
-{location: new google.maps.LatLng(33.85,-112.14), weight:22},
-{location: new google.maps.LatLng(33.85,-112.13), weight:64},
-{location: new google.maps.LatLng(33.85,-112.12), weight:33},
-{location: new google.maps.LatLng(33.85,-112.11), weight:58},
-{location: new google.maps.LatLng(33.85,-112.1), weight:30},
-{location: new google.maps.LatLng(33.85,-112.09), weight:25},
-{location: new google.maps.LatLng(33.85,-112.08), weight:2},
-{location: new google.maps.LatLng(33.85,-112.07), weight:2},
-{location: new google.maps.LatLng(33.85,-112.06), weight:1},
-{location: new google.maps.LatLng(33.86,-112.16), weight:3},
-{location: new google.maps.LatLng(33.86,-112.15), weight:1},
-{location: new google.maps.LatLng(33.86,-112.14), weight:33},
-{location: new google.maps.LatLng(33.86,-112.13), weight:17},
-{location: new google.maps.LatLng(33.86,-112.12), weight:41},
-{location: new google.maps.LatLng(33.86,-112.11), weight:19},
-{location: new google.maps.LatLng(33.86,-112.1), weight:22},
-{location: new google.maps.LatLng(33.86,-112.09), weight:7},
-{location: new google.maps.LatLng(33.86,-112.07), weight:1},
-{location: new google.maps.LatLng(33.87,-112.16), weight:21},
-{location: new google.maps.LatLng(33.87,-112.15), weight:12},
-{location: new google.maps.LatLng(33.87,-112.14), weight:44},
-{location: new google.maps.LatLng(33.87,-112.13), weight:6},
-{location: new google.maps.LatLng(33.87,-112.12), weight:3},
-{location: new google.maps.LatLng(33.87,-112.11), weight:10},
-{location: new google.maps.LatLng(33.87,-112.1), weight:10},
-{location: new google.maps.LatLng(33.87,-112.09), weight:5},
-{location: new google.maps.LatLng(33.87,-112.08), weight:1},
-{location: new google.maps.LatLng(33.87,-112.05), weight:1},
-{location: new google.maps.LatLng(33.88,-112.17), weight:8},
-{location: new google.maps.LatLng(33.88,-112.16), weight:11},
-{location: new google.maps.LatLng(33.88,-112.15), weight:19},
-{location: new google.maps.LatLng(33.88,-112.14), weight:13},
-{location: new google.maps.LatLng(33.88,-112.08), weight:3},
-{location: new google.maps.LatLng(33.88,-112.06), weight:1},
-{location: new google.maps.LatLng(33.88,-112.05), weight:3},
-{location: new google.maps.LatLng(33.89,-112.17), weight:1},
-{location: new google.maps.LatLng(33.89,-112.15), weight:1},
-{location: new google.maps.LatLng(33.89,-112.05), weight:2},
-{location: new google.maps.LatLng(33.9,-112.13), weight:1},
-{location: new google.maps.LatLng(33.9,-112.07), weight:1},
-{location: new google.maps.LatLng(33.91,-112.14), weight:1},
-{location: new google.maps.LatLng(33.91,-112.12), weight:1},
-{location: new google.maps.LatLng(33.92,-112.14), weight:4},
-{location: new google.maps.LatLng(33.92,-112.13), weight:3},
-{location: new google.maps.LatLng(33.92,-112.12), weight:5},
-{location: new google.maps.LatLng(33.92,-112.11), weight:3},
-{location: new google.maps.LatLng(33.93,-112.12), weight:1},
-{location: new google.maps.LatLng(33.93,-112.11), weight:1},
-{location: new google.maps.LatLng(33.93,-112.09), weight:1},
-{location: new google.maps.LatLng(33.94,-112.11), weight:1},
-{location: new google.maps.LatLng(33.97,-112.11), weight:1},
-{location: new google.maps.LatLng(34.05,-112.16), weight:1},
-{location: new google.maps.LatLng(34.07,-112.15), weight:1},
-{location: new google.maps.LatLng(34.32,-112.1), weight:1},
-{location: new google.maps.LatLng(34.47,-112.5), weight:1},
-{location: new google.maps.LatLng(34.56,-112.47), weight:1},
-{location: new google.maps.LatLng(34.56,-111.87), weight:1},
-{location: new google.maps.LatLng(34.64,-112.33), weight:1},
-{location: new google.maps.LatLng(34.66,-118.27), weight:1},
-{location: new google.maps.LatLng(34.7,-112.3), weight:1},
-{location: new google.maps.LatLng(44.08,-121.32), weight:1},
-{location: new google.maps.LatLng(45.71,-122.7), weight:1},
-{location: new google.maps.LatLng(45.74,-122.64), weight:1},
-{location: new google.maps.LatLng(47.22,-122.85), weight:1},
-{location: new google.maps.LatLng(32.75,-111.68), weight:1},
-{location: new google.maps.LatLng(32.99,-96.69), weight:1},
-{location: new google.maps.LatLng(33.3,-112.44), weight:1},
-{location: new google.maps.LatLng(33.32,-112.45), weight:1},
-{location: new google.maps.LatLng(33.32,-112.44), weight:2},
-{location: new google.maps.LatLng(33.33,-112.45), weight:1},
-{location: new google.maps.LatLng(33.33,-112.44), weight:1},
-{location: new google.maps.LatLng(33.33,-112.43), weight:3},
-{location: new google.maps.LatLng(33.34,-112.52), weight:1},
-{location: new google.maps.LatLng(33.34,-112.44), weight:1},
-{location: new google.maps.LatLng(33.34,-112.43), weight:1},
-{location: new google.maps.LatLng(33.34,-111.88), weight:1},
-{location: new google.maps.LatLng(33.35,-112.44), weight:1},
-{location: new google.maps.LatLng(33.36,-112.45), weight:1},
-{location: new google.maps.LatLng(33.36,-112.43), weight:1},
-{location: new google.maps.LatLng(33.37,-112.71), weight:1},
-{location: new google.maps.LatLng(33.37,-112.58), weight:1},
-{location: new google.maps.LatLng(33.37,-112.41), weight:1},
-{location: new google.maps.LatLng(33.37,-112.22), weight:1},
-{location: new google.maps.LatLng(33.37,-112.21), weight:1},
-{location: new google.maps.LatLng(33.37,-112.17), weight:1},
-{location: new google.maps.LatLng(33.37,-112.12), weight:1},
-{location: new google.maps.LatLng(33.37,-112.05), weight:1},
-{location: new google.maps.LatLng(33.38,-112.57), weight:2},
-{location: new google.maps.LatLng(33.38,-112.22), weight:3},
-{location: new google.maps.LatLng(33.38,-112.21), weight:2},
-{location: new google.maps.LatLng(33.38,-112.2), weight:2},
-{location: new google.maps.LatLng(33.38,-112.14), weight:1},
-{location: new google.maps.LatLng(33.38,-112.1), weight:1},
-{location: new google.maps.LatLng(33.38,-112.08), weight:1},
-{location: new google.maps.LatLng(33.39,-112.57), weight:1},
-{location: new google.maps.LatLng(33.39,-112.56), weight:2},
-{location: new google.maps.LatLng(33.39,-112.28), weight:2},
-{location: new google.maps.LatLng(33.39,-112.21), weight:1},
-{location: new google.maps.LatLng(33.39,-112.17), weight:2},
-{location: new google.maps.LatLng(33.39,-112.13), weight:3},
-{location: new google.maps.LatLng(33.4,-112.58), weight:1},
-{location: new google.maps.LatLng(33.4,-112.56), weight:2},
-{location: new google.maps.LatLng(33.4,-112.26), weight:1},
-{location: new google.maps.LatLng(33.4,-112.1), weight:2},
-{location: new google.maps.LatLng(33.41,-112.61), weight:1},
-{location: new google.maps.LatLng(33.41,-112.58), weight:1},
-{location: new google.maps.LatLng(33.41,-112.56), weight:3},
-{location: new google.maps.LatLng(33.41,-112.46), weight:2},
-{location: new google.maps.LatLng(33.41,-112.45), weight:1},
-{location: new google.maps.LatLng(33.41,-112.29), weight:2},
-{location: new google.maps.LatLng(33.41,-112.28), weight:4},
-{location: new google.maps.LatLng(33.41,-112.27), weight:1},
-{location: new google.maps.LatLng(33.41,-112.26), weight:2},
-{location: new google.maps.LatLng(33.41,-112.22), weight:2},
-{location: new google.maps.LatLng(33.41,-112.21), weight:1},
-{location: new google.maps.LatLng(33.42,-112.61), weight:1},
-{location: new google.maps.LatLng(33.42,-112.6), weight:1},
-{location: new google.maps.LatLng(33.42,-112.46), weight:1},
-{location: new google.maps.LatLng(33.42,-112.42), weight:1},
-{location: new google.maps.LatLng(33.42,-112.41), weight:2},
-{location: new google.maps.LatLng(33.42,-112.4), weight:4},
-{location: new google.maps.LatLng(33.42,-112.33), weight:2},
-{location: new google.maps.LatLng(33.42,-112.3), weight:4},
-{location: new google.maps.LatLng(33.42,-112.29), weight:1},
-{location: new google.maps.LatLng(33.42,-112.28), weight:7},
-{location: new google.maps.LatLng(33.42,-112.27), weight:7},
-{location: new google.maps.LatLng(33.42,-112.25), weight:5},
-{location: new google.maps.LatLng(33.42,-112.23), weight:1},
-{location: new google.maps.LatLng(33.42,-112.22), weight:2},
-{location: new google.maps.LatLng(33.42,-112.21), weight:1},
-{location: new google.maps.LatLng(33.42,-112.2), weight:2},
-{location: new google.maps.LatLng(33.42,-112.19), weight:1},
-{location: new google.maps.LatLng(33.42,-112.08), weight:1},
-{location: new google.maps.LatLng(33.43,-112.56), weight:2},
-{location: new google.maps.LatLng(33.43,-112.53), weight:2},
-{location: new google.maps.LatLng(33.43,-112.43), weight:2},
-{location: new google.maps.LatLng(33.43,-112.42), weight:3},
-{location: new google.maps.LatLng(33.43,-112.4), weight:1},
-{location: new google.maps.LatLng(33.43,-112.35), weight:1},
-{location: new google.maps.LatLng(33.43,-112.34), weight:1},
-{location: new google.maps.LatLng(33.43,-112.32), weight:11},
-{location: new google.maps.LatLng(33.43,-112.31), weight:3},
-{location: new google.maps.LatLng(33.43,-112.3), weight:4},
-{location: new google.maps.LatLng(33.43,-112.29), weight:5},
-{location: new google.maps.LatLng(33.43,-112.28), weight:1},
-{location: new google.maps.LatLng(33.43,-112.25), weight:1},
-{location: new google.maps.LatLng(33.43,-112.24), weight:3},
-{location: new google.maps.LatLng(33.43,-112.23), weight:4},
-{location: new google.maps.LatLng(33.43,-112.2), weight:3},
-{location: new google.maps.LatLng(33.44,-112.56), weight:1},
-{location: new google.maps.LatLng(33.44,-112.54), weight:1},
-{location: new google.maps.LatLng(33.44,-112.52), weight:1},
-{location: new google.maps.LatLng(33.44,-112.44), weight:2},
-{location: new google.maps.LatLng(33.44,-112.42), weight:2},
-{location: new google.maps.LatLng(33.44,-112.41), weight:3},
-{location: new google.maps.LatLng(33.44,-112.39), weight:5},
-{location: new google.maps.LatLng(33.44,-112.36), weight:1},
-{location: new google.maps.LatLng(33.44,-112.35), weight:1},
-{location: new google.maps.LatLng(33.44,-112.33), weight:5},
-{location: new google.maps.LatLng(33.44,-112.32), weight:4},
-{location: new google.maps.LatLng(33.44,-112.31), weight:9},
-{location: new google.maps.LatLng(33.44,-112.3), weight:6},
-{location: new google.maps.LatLng(33.44,-112.29), weight:2},
-{location: new google.maps.LatLng(33.44,-112.09), weight:1},
-{location: new google.maps.LatLng(33.45,-112.56), weight:1},
-{location: new google.maps.LatLng(33.45,-112.54), weight:1},
-{location: new google.maps.LatLng(33.45,-112.52), weight:1},
-{location: new google.maps.LatLng(33.45,-112.48), weight:3},
-{location: new google.maps.LatLng(33.45,-112.42), weight:7},
-{location: new google.maps.LatLng(33.45,-112.4), weight:1},
-{location: new google.maps.LatLng(33.45,-112.33), weight:1},
-{location: new google.maps.LatLng(33.45,-112.32), weight:4},
-{location: new google.maps.LatLng(33.45,-112.31), weight:6},
-{location: new google.maps.LatLng(33.45,-112.3), weight:4},
-{location: new google.maps.LatLng(33.45,-112.26), weight:1},
-{location: new google.maps.LatLng(33.45,-112.25), weight:5},
-{location: new google.maps.LatLng(33.45,-112.2), weight:2},
-{location: new google.maps.LatLng(33.46,-112.42), weight:1},
-{location: new google.maps.LatLng(33.46,-112.41), weight:2},
-{location: new google.maps.LatLng(33.46,-112.4), weight:1},
-{location: new google.maps.LatLng(33.46,-112.36), weight:1},
-{location: new google.maps.LatLng(33.46,-112.32), weight:2},
-{location: new google.maps.LatLng(33.46,-112.31), weight:2},
-{location: new google.maps.LatLng(33.46,-112.28), weight:1},
-{location: new google.maps.LatLng(33.46,-112.19), weight:2},
-{location: new google.maps.LatLng(33.46,-112.12), weight:1},
-{location: new google.maps.LatLng(33.47,-112.51), weight:1},
-{location: new google.maps.LatLng(33.47,-112.4), weight:11},
-{location: new google.maps.LatLng(33.47,-112.38), weight:3},
-{location: new google.maps.LatLng(33.47,-112.37), weight:1},
-{location: new google.maps.LatLng(33.47,-112.36), weight:6},
-{location: new google.maps.LatLng(33.47,-112.35), weight:4},
-{location: new google.maps.LatLng(33.47,-112.34), weight:5},
-{location: new google.maps.LatLng(33.47,-112.33), weight:6},
-{location: new google.maps.LatLng(33.47,-112.32), weight:4},
-{location: new google.maps.LatLng(33.47,-112.31), weight:1},
-{location: new google.maps.LatLng(33.47,-112.3), weight:7},
-{location: new google.maps.LatLng(33.47,-112.29), weight:11},
-{location: new google.maps.LatLng(33.47,-112.28), weight:6},
-{location: new google.maps.LatLng(33.47,-112.27), weight:3},
-{location: new google.maps.LatLng(33.47,-112.26), weight:7},
-{location: new google.maps.LatLng(33.47,-112.25), weight:2},
-{location: new google.maps.LatLng(33.47,-112.24), weight:6},
-{location: new google.maps.LatLng(33.47,-112.23), weight:10},
-{location: new google.maps.LatLng(33.47,-112.19), weight:1},
-{location: new google.maps.LatLng(33.47,-112.13), weight:1},
-{location: new google.maps.LatLng(33.47,-112.08), weight:2},
-{location: new google.maps.LatLng(33.48,-112.51), weight:4},
-{location: new google.maps.LatLng(33.48,-112.5), weight:5},
-{location: new google.maps.LatLng(33.48,-112.4), weight:1},
-{location: new google.maps.LatLng(33.48,-112.39), weight:1},
-{location: new google.maps.LatLng(33.48,-112.38), weight:3},
-{location: new google.maps.LatLng(33.48,-112.37), weight:5},
-{location: new google.maps.LatLng(33.48,-112.36), weight:2},
-{location: new google.maps.LatLng(33.48,-112.35), weight:1},
-{location: new google.maps.LatLng(33.48,-112.34), weight:6},
-{location: new google.maps.LatLng(33.48,-112.33), weight:4},
-{location: new google.maps.LatLng(33.48,-112.32), weight:2},
-{location: new google.maps.LatLng(33.48,-112.31), weight:13},
-{location: new google.maps.LatLng(33.48,-112.3), weight:8},
-{location: new google.maps.LatLng(33.48,-112.29), weight:12},
-{location: new google.maps.LatLng(33.48,-112.26), weight:1},
-{location: new google.maps.LatLng(33.48,-112.24), weight:1},
-{location: new google.maps.LatLng(33.48,-112.21), weight:1},
-{location: new google.maps.LatLng(33.48,-112.2), weight:1},
-{location: new google.maps.LatLng(33.48,-112.16), weight:1},
-{location: new google.maps.LatLng(33.48,-112.05), weight:1},
-{location: new google.maps.LatLng(33.49,-112.51), weight:1},
-{location: new google.maps.LatLng(33.49,-112.5), weight:5},
-{location: new google.maps.LatLng(33.49,-112.4), weight:1},
-{location: new google.maps.LatLng(33.49,-112.39), weight:2},
-{location: new google.maps.LatLng(33.49,-112.35), weight:2},
-{location: new google.maps.LatLng(33.49,-112.34), weight:3},
-{location: new google.maps.LatLng(33.49,-112.33), weight:5},
-{location: new google.maps.LatLng(33.49,-112.32), weight:1},
-{location: new google.maps.LatLng(33.49,-112.31), weight:1},
-{location: new google.maps.LatLng(33.49,-112.3), weight:12},
-{location: new google.maps.LatLng(33.49,-112.29), weight:5},
-{location: new google.maps.LatLng(33.49,-112.28), weight:1},
-{location: new google.maps.LatLng(33.49,-112.24), weight:2},
-{location: new google.maps.LatLng(33.49,-112.23), weight:2},
-{location: new google.maps.LatLng(33.49,-112.21), weight:1},
-{location: new google.maps.LatLng(33.49,-112.08), weight:1},
-{location: new google.maps.LatLng(33.5,-112.51), weight:1},
-{location: new google.maps.LatLng(33.5,-112.5), weight:1},
-{location: new google.maps.LatLng(33.5,-112.45), weight:1},
-{location: new google.maps.LatLng(33.5,-112.4), weight:2},
-{location: new google.maps.LatLng(33.5,-112.39), weight:2},
-{location: new google.maps.LatLng(33.5,-112.38), weight:4},
-{location: new google.maps.LatLng(33.5,-112.37), weight:1},
-{location: new google.maps.LatLng(33.5,-112.36), weight:2},
-{location: new google.maps.LatLng(33.5,-112.34), weight:4},
-{location: new google.maps.LatLng(33.5,-112.33), weight:7},
-{location: new google.maps.LatLng(33.5,-112.32), weight:1},
-{location: new google.maps.LatLng(33.5,-112.3), weight:7},
-{location: new google.maps.LatLng(33.5,-112.29), weight:1},
-{location: new google.maps.LatLng(33.5,-112.28), weight:2},
-{location: new google.maps.LatLng(33.5,-112.27), weight:2},
-{location: new google.maps.LatLng(33.5,-112.26), weight:3},
-{location: new google.maps.LatLng(33.5,-112.25), weight:1},
-{location: new google.maps.LatLng(33.5,-112.24), weight:2},
-{location: new google.maps.LatLng(33.5,-112.23), weight:1},
-{location: new google.maps.LatLng(33.5,-112.22), weight:1},
-{location: new google.maps.LatLng(33.5,-112.2), weight:1},
-{location: new google.maps.LatLng(33.5,-112.13), weight:2},
-{location: new google.maps.LatLng(33.5,-112.11), weight:1},
-{location: new google.maps.LatLng(33.51,-112.77), weight:1},
-{location: new google.maps.LatLng(33.51,-112.48), weight:1},
-{location: new google.maps.LatLng(33.51,-112.46), weight:1},
-{location: new google.maps.LatLng(33.51,-112.35), weight:1},
-{location: new google.maps.LatLng(33.51,-112.34), weight:1},
-{location: new google.maps.LatLng(33.51,-112.33), weight:3},
-{location: new google.maps.LatLng(33.51,-112.3), weight:2},
-{location: new google.maps.LatLng(33.51,-112.29), weight:2},
-{location: new google.maps.LatLng(33.51,-112.28), weight:1},
-{location: new google.maps.LatLng(33.51,-112.27), weight:5},
-{location: new google.maps.LatLng(33.51,-112.25), weight:4},
-{location: new google.maps.LatLng(33.51,-112.24), weight:1},
-{location: new google.maps.LatLng(33.51,-112.23), weight:3},
-{location: new google.maps.LatLng(33.51,-112.21), weight:1},
-{location: new google.maps.LatLng(33.51,-112.19), weight:1},
-{location: new google.maps.LatLng(33.51,-112.15), weight:2},
-{location: new google.maps.LatLng(33.51,-112.08), weight:1},
-{location: new google.maps.LatLng(33.52,-112.46), weight:1},
-{location: new google.maps.LatLng(33.52,-112.36), weight:1},
-{location: new google.maps.LatLng(33.52,-112.35), weight:1},
-{location: new google.maps.LatLng(33.52,-112.34), weight:1},
-{location: new google.maps.LatLng(33.52,-112.33), weight:6},
-{location: new google.maps.LatLng(33.52,-112.32), weight:1},
-{location: new google.maps.LatLng(33.52,-112.29), weight:1},
-{location: new google.maps.LatLng(33.52,-112.28), weight:1},
-{location: new google.maps.LatLng(33.52,-112.23), weight:1},
-{location: new google.maps.LatLng(33.52,-112.22), weight:1},
-{location: new google.maps.LatLng(33.52,-112.21), weight:2},
-{location: new google.maps.LatLng(33.53,-112.35), weight:1},
-{location: new google.maps.LatLng(33.53,-112.34), weight:5},
-{location: new google.maps.LatLng(33.53,-112.24), weight:2},
-{location: new google.maps.LatLng(33.53,-112.23), weight:2},
-{location: new google.maps.LatLng(33.53,-112.21), weight:2},
-{location: new google.maps.LatLng(33.53,-112.15), weight:1},
-{location: new google.maps.LatLng(33.53,-112.06), weight:2},
-{location: new google.maps.LatLng(33.54,-112.46), weight:1},
-{location: new google.maps.LatLng(33.54,-112.35), weight:1},
-{location: new google.maps.LatLng(33.54,-112.24), weight:2},
-{location: new google.maps.LatLng(33.54,-112.23), weight:1},
-{location: new google.maps.LatLng(33.54,-112.22), weight:1},
-{location: new google.maps.LatLng(33.54,-112.13), weight:1},
-{location: new google.maps.LatLng(33.55,-112.27), weight:1},
-{location: new google.maps.LatLng(33.55,-112.25), weight:2},
-{location: new google.maps.LatLng(33.55,-112.15), weight:2},
-{location: new google.maps.LatLng(33.56,-112.45), weight:1},
-{location: new google.maps.LatLng(33.56,-112.29), weight:1},
-{location: new google.maps.LatLng(33.56,-112.28), weight:1},
-{location: new google.maps.LatLng(33.56,-112.27), weight:2},
-{location: new google.maps.LatLng(33.56,-112.24), weight:2},
-{location: new google.maps.LatLng(33.57,-112.27), weight:1},
-{location: new google.maps.LatLng(33.57,-112.26), weight:2},
-{location: new google.maps.LatLng(33.57,-112.25), weight:2},
-{location: new google.maps.LatLng(33.57,-112.24), weight:1},
-{location: new google.maps.LatLng(33.57,-112.18), weight:1},
-{location: new google.maps.LatLng(33.58,-112.41), weight:2},
-{location: new google.maps.LatLng(33.58,-112.25), weight:2},
-{location: new google.maps.LatLng(33.58,-112.23), weight:1},
-{location: new google.maps.LatLng(33.58,-112.22), weight:2},
-{location: new google.maps.LatLng(33.59,-112.3), weight:1},
-{location: new google.maps.LatLng(33.59,-112.28), weight:1},
-{location: new google.maps.LatLng(33.59,-112.22), weight:1},
-{location: new google.maps.LatLng(33.59,-112.19), weight:1},
-{location: new google.maps.LatLng(33.6,-112.36), weight:1},
-{location: new google.maps.LatLng(33.6,-112.34), weight:1},
-{location: new google.maps.LatLng(33.6,-112.33), weight:1},
-{location: new google.maps.LatLng(33.6,-112.02), weight:1},
-{location: new google.maps.LatLng(33.61,-112.4), weight:1},
-{location: new google.maps.LatLng(33.61,-112.32), weight:2},
-{location: new google.maps.LatLng(33.61,-112.3), weight:1},
-{location: new google.maps.LatLng(33.61,-112.23), weight:1},
-{location: new google.maps.LatLng(33.61,-112.14), weight:1},
-{location: new google.maps.LatLng(33.62,-112.43), weight:1},
-{location: new google.maps.LatLng(33.62,-112.38), weight:2},
-{location: new google.maps.LatLng(33.62,-112.35), weight:1},
-{location: new google.maps.LatLng(33.62,-112.23), weight:1},
-{location: new google.maps.LatLng(33.62,-112.14), weight:1},
-{location: new google.maps.LatLng(33.62,-112), weight:1},
-{location: new google.maps.LatLng(33.63,-112.42), weight:1},
-{location: new google.maps.LatLng(33.63,-112.25), weight:1},
-{location: new google.maps.LatLng(33.63,-112.11), weight:1},
-{location: new google.maps.LatLng(33.64,-112.46), weight:1},
-{location: new google.maps.LatLng(33.65,-112.25), weight:1},
-{location: new google.maps.LatLng(33.65,-112.17), weight:1},
-{location: new google.maps.LatLng(33.65,-112.14), weight:1},
-{location: new google.maps.LatLng(33.66,-112.12), weight:1},
-{location: new google.maps.LatLng(33.67,-112.24), weight:2},
-{location: new google.maps.LatLng(33.68,-112.29), weight:1},
-{location: new google.maps.LatLng(33.69,-112.32), weight:2},
-{location: new google.maps.LatLng(33.7,-112.14), weight:1},
-{location: new google.maps.LatLng(33.73,-112.44), weight:1},
-{location: new google.maps.LatLng(33.85,-112.13), weight:1},
-{location: new google.maps.LatLng(33.95,-118.35), weight:1},
-{location: new google.maps.LatLng(33.99,-116.98), weight:1},
-{location: new google.maps.LatLng(39.94,-104.96), weight:1},
-{location: new google.maps.LatLng(40.77,-97.3), weight:1},
-";
+            List<LatLongWeighted> points = new List<LatLongWeighted>();
+            points.Add( new LatLongWeighted( 26.15, -80.14, 1 ) );
+
+            points.Add( new LatLongWeighted( 26.15, -80.14, 1 ) );
+            points.Add( new LatLongWeighted( 26.33, -80.13, 1 ) );
+            points.Add( new LatLongWeighted( 26.48, -81.83, 1 ) );
+            points.Add( new LatLongWeighted( 27, -82.02, 1 ) );
+            points.Add( new LatLongWeighted( 27.72, -82.48, 1 ) );
+            points.Add( new LatLongWeighted( 28.05, -80.65, 1 ) );
+            points.Add( new LatLongWeighted( 28.21, -80.7, 1 ) );
+            points.Add( new LatLongWeighted( 28.36, -80.66, 1 ) );
+            points.Add( new LatLongWeighted( 29.43, -98.7, 1 ) );
+            points.Add( new LatLongWeighted( 29.46, -98.49, 1 ) );
+            points.Add( new LatLongWeighted( 29.46, -98.36, 1 ) );
+            points.Add( new LatLongWeighted( 29.52, -98.81, 1 ) );
+            points.Add( new LatLongWeighted( 29.52, -98.34, 1 ) );
+            points.Add( new LatLongWeighted( 29.53, -98.28, 1 ) );
+            points.Add( new LatLongWeighted( 29.56, -95.54, 1 ) );
+            points.Add( new LatLongWeighted( 29.66, -98.47, 1 ) );
+            points.Add( new LatLongWeighted( 29.76, -94.99, 1 ) );
+            points.Add( new LatLongWeighted( 29.94, -89.95, 1 ) );
+            points.Add( new LatLongWeighted( 29.96, -90.37, 1 ) );
+            points.Add( new LatLongWeighted( 30.04, -95.17, 1 ) );
+            points.Add( new LatLongWeighted( 30.4, -89.05, 1 ) );
+            points.Add( new LatLongWeighted( 31.1, -97.39, 1 ) );
+            points.Add( new LatLongWeighted( 31.44, -110.24, 1 ) );
+            points.Add( new LatLongWeighted( 31.53, -110.28, 1 ) );
+            points.Add( new LatLongWeighted( 31.54, -110.24, 1 ) );
+            points.Add( new LatLongWeighted( 31.9, -111, 1 ) );
+            points.Add( new LatLongWeighted( 31.9, -106.44, 1 ) );
+            points.Add( new LatLongWeighted( 31.98, -110.97, 1 ) );
+            points.Add( new LatLongWeighted( 32.08, -110.69, 1 ) );
+            points.Add( new LatLongWeighted( 32.12, -111.11, 1 ) );
+            points.Add( new LatLongWeighted( 32.14, -110.92, 1 ) );
+            points.Add( new LatLongWeighted( 32.15, -110.97, 1 ) );
+            points.Add( new LatLongWeighted( 32.17, -97.74, 1 ) );
+            points.Add( new LatLongWeighted( 32.18, -110.78, 3 ) );
+            points.Add( new LatLongWeighted( 32.19, -110.84, 1 ) );
+            points.Add( new LatLongWeighted( 32.19, -81.23, 1 ) );
+            points.Add( new LatLongWeighted( 32.2, -110.95, 1 ) );
+            points.Add( new LatLongWeighted( 32.21, -110.82, 1 ) );
+            points.Add( new LatLongWeighted( 32.23, -110.9, 1 ) );
+            points.Add( new LatLongWeighted( 32.24, -110.96, 1 ) );
+            points.Add( new LatLongWeighted( 32.25, -110.82, 1 ) );
+            points.Add( new LatLongWeighted( 32.26, -111.02, 1 ) );
+            points.Add( new LatLongWeighted( 32.3, -96.94, 1 ) );
+            points.Add( new LatLongWeighted( 32.33, -111.09, 1 ) );
+            points.Add( new LatLongWeighted( 32.36, -111.12, 3 ) );
+            points.Add( new LatLongWeighted( 32.36, -111.07, 1 ) );
+            points.Add( new LatLongWeighted( 32.37, -111.11, 1 ) );
+            points.Add( new LatLongWeighted( 32.37, -106.73, 1 ) );
+            points.Add( new LatLongWeighted( 32.38, -111.09, 1 ) );
+            points.Add( new LatLongWeighted( 32.38, -111.05, 1 ) );
+            points.Add( new LatLongWeighted( 32.38, -104.22, 1 ) );
+            points.Add( new LatLongWeighted( 32.39, -110.98, 2 ) );
+            points.Add( new LatLongWeighted( 32.41, -110.99, 2 ) );
+            points.Add( new LatLongWeighted( 32.42, -109.93, 1 ) );
+            points.Add( new LatLongWeighted( 32.44, -111.21, 1 ) );
+            points.Add( new LatLongWeighted( 32.44, -111.08, 2 ) );
+            points.Add( new LatLongWeighted( 32.44, -110.99, 1 ) );
+            points.Add( new LatLongWeighted( 32.46, -110.98, 1 ) );
+            points.Add( new LatLongWeighted( 32.58, -93.65, 1 ) );
+            points.Add( new LatLongWeighted( 32.7, -117.17, 1 ) );
+            points.Add( new LatLongWeighted( 32.71, -117.15, 1 ) );
+            points.Add( new LatLongWeighted( 32.72, -117.13, 1 ) );
+            points.Add( new LatLongWeighted( 32.73, -117.17, 1 ) );
+            points.Add( new LatLongWeighted( 32.73, -117.1, 1 ) );
+            points.Add( new LatLongWeighted( 32.74, -117.06, 1 ) );
+            points.Add( new LatLongWeighted( 32.78, -117.16, 1 ) );
+            points.Add( new LatLongWeighted( 32.81, -96.8, 1 ) );
+            points.Add( new LatLongWeighted( 32.84, -109.75, 1 ) );
+            points.Add( new LatLongWeighted( 32.86, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 32.89, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 32.9, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 32.9, -109.85, 1 ) );
+            points.Add( new LatLongWeighted( 32.91, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 32.91, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 32.91, -111.62, 1 ) );
+            points.Add( new LatLongWeighted( 32.93, -111.73, 1 ) );
+            points.Add( new LatLongWeighted( 32.93, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 32.94, -117.24, 1 ) );
+            points.Add( new LatLongWeighted( 32.95, -96.48, 3 ) );
+            points.Add( new LatLongWeighted( 32.98, -117.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.02, -97.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.03, -117.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.03, -111.4, 1 ) );
+            points.Add( new LatLongWeighted( 33.04, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.04, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.04, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.05, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.05, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.05, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.05, -111.48, 1 ) );
+            points.Add( new LatLongWeighted( 33.06, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.06, -111.48, 1 ) );
+            points.Add( new LatLongWeighted( 33.07, -112.01, 1 ) );
+            points.Add( new LatLongWeighted( 33.07, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.08, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.08, -112.01, 1 ) );
+            points.Add( new LatLongWeighted( 33.13, -117.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.14, -117.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.15, -117.33, 1 ) );
+            points.Add( new LatLongWeighted( 33.16, -111.55, 1 ) );
+            points.Add( new LatLongWeighted( 33.17, -117.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.19, -111.57, 1 ) );
+            points.Add( new LatLongWeighted( 33.2, -112.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.2, -111.59, 1 ) );
+            points.Add( new LatLongWeighted( 33.21, -111.81, 1 ) );
+            points.Add( new LatLongWeighted( 33.21, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 33.21, -111.69, 2 ) );
+            points.Add( new LatLongWeighted( 33.21, -111.68, 1 ) );
+            points.Add( new LatLongWeighted( 33.21, -111.66, 1 ) );
+            points.Add( new LatLongWeighted( 33.21, -111.63, 1 ) );
+            points.Add( new LatLongWeighted( 33.22, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.22, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 33.22, -111.69, 1 ) );
+            points.Add( new LatLongWeighted( 33.22, -96.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.23, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.23, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.23, -111.67, 1 ) );
+            points.Add( new LatLongWeighted( 33.24, -112.46, 1 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.81, 1 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.87, 2 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.73, 2 ) );
+            points.Add( new LatLongWeighted( 33.26, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.26, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 33.27, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.27, -111.7, 1 ) );
+            points.Add( new LatLongWeighted( 33.27, -111.69, 1 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.88, 2 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.71, 2 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.69, 1 ) );
+            points.Add( new LatLongWeighted( 33.29, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.29, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.29, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.29, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.29, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.29, -111.81, 2 ) );
+            points.Add( new LatLongWeighted( 33.3, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.3, -111.89, 2 ) );
+            points.Add( new LatLongWeighted( 33.3, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -112.03, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.7, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -86.58, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -112.46, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -112.45, 2 ) );
+            points.Add( new LatLongWeighted( 33.32, -112.44, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.98, 2 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.9, 2 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.73, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.7, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -112.44, 2 ) );
+            points.Add( new LatLongWeighted( 33.33, -112.43, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.59, 2 ) );
+            points.Add( new LatLongWeighted( 33.34, -112.47, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -112.43, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.99, 4 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.6, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -112.44, 2 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.81, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.79, 2 ) );
+            points.Add( new LatLongWeighted( 33.36, -112.44, 2 ) );
+            points.Add( new LatLongWeighted( 33.36, -112.16, 2 ) );
+            points.Add( new LatLongWeighted( 33.36, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -112.08, 2 ) );
+            points.Add( new LatLongWeighted( 33.36, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.82, 2 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.81, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.79, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.66, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.62, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.6, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.59, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.57, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.18, 3 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.17, 3 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.16, 3 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.15, 2 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.07, 2 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.03, 2 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.85, 2 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.79, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.64, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.63, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.61, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -86.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.22, 2 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.21, 3 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.18, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.14, 2 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.04, 2 ) );
+            points.Add( new LatLongWeighted( 33.38, -112, 3 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.99, 2 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.95, 2 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.93, 2 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.85, 2 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.66, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.53, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.83, 2 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.48, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.21, 6 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.16, 3 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.15, 3 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.11, 3 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.94, 2 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.92, 2 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.75, 2 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.67, 3 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.62, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.58, 2 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.3, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.11, 3 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.08, 2 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.07, 2 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.04, 2 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.54, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.61, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.6, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.58, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.56, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.46, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.28, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.27, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.26, 4 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.23, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.22, 3 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.19, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.92, 3 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.77, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.54, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.42, 3 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.41, 3 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.4, 5 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.32, 3 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.31, 2 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.28, 4 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.27, 5 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.26, 7 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.25, 2 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.23, 4 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.21, 3 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.91, 2 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.9, 2 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.88, 3 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.75, 3 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.64, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.49, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.56, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.55, 2 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.53, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.52, 3 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.43, 5 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.42, 4 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.41, 5 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.4, 6 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.39, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.36, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.34, 3 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.32, 5 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.31, 4 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.3, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.23, 2 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.2, 3 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.88, 2 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.73, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.6, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.57, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.55, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.54, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.53, 3 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.52, 3 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.48, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.44, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.43, 3 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.42, 3 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.41, 5 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.4, 5 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.39, 6 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.36, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.35, 3 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.33, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.32, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.31, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.3, 7 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.14, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.82, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.73, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.64, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.56, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.54, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.53, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.46, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.43, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.42, 4 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.41, 3 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.36, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.35, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.33, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.32, 4 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.31, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.3, 8 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.29, 3 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.25, 4 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.21, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.08, 3 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.07, 4 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.06, 3 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.98, 3 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.97, 4 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.81, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.79, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.7, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.56, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.47, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.42, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.39, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.32, 3 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.31, 3 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.28, 4 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.23, 3 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.2, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.19, 3 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.18, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.09, 4 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.08, 7 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.07, 3 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.05, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.03, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -112, 4 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.99, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.98, 3 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.97, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.93, 3 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.68, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.57, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.51, 2 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.41, 4 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.37, 3 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.36, 2 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.34, 6 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.33, 7 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.32, 4 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.31, 2 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.3, 9 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.29, 7 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.28, 4 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.26, 8 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.25, 10 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.24, 9 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.23, 8 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.21, 3 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.18, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.17, 3 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.16, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.13, 4 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.12, 2 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.09, 4 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.08, 7 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.07, 3 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.06, 4 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.04, 2 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.01, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112, 3 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.99, 2 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.9, 2 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.48, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.4, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.39, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.38, 2 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.37, 4 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.36, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.35, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.34, 4 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.33, 8 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.32, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.31, 8 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.3, 6 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.29, 7 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.28, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.25, 2 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.24, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.22, 2 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.2, 2 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.19, 5 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.16, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.15, 2 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.12, 6 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.05, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.03, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.01, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.99, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.91, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -117.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -117.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.7, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.68, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.5, 3 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.47, 3 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.46, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.39, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.38, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.37, 8 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.36, 4 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.35, 4 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.33, 3 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.31, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.3, 12 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.29, 6 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.28, 5 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.25, 5 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.24, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.23, 6 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.22, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.21, 4 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.16, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.13, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.12, 3 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.11, 4 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.1, 3 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.09, 4 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.08, 3 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.07, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.06, 4 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.05, 3 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.04, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.03, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.02, 3 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.01, 3 ) );
+            points.Add( new LatLongWeighted( 33.49, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.99, 3 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.98, 5 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.67, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.51, 3 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.45, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.4, 5 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.39, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.38, 3 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.37, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.36, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.35, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.34, 6 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.33, 6 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.3, 6 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.29, 8 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.28, 7 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.27, 3 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.26, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.25, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.24, 5 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.23, 4 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.21, 4 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.18, 5 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.16, 6 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.14, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.12, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.11, 4 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.1, 4 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.09, 10 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.07, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.05, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.04, 3 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.03, 6 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.02, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.01, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112, 6 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.98, 3 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.96, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.93, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.91, 3 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.9, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.49, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.48, 4 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.45, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.35, 3 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.34, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.33, 8 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.3, 3 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.29, 5 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.28, 17 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.27, 10 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.26, 6 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.25, 3 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.24, 3 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.23, 6 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.22, 6 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.21, 4 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.19, 4 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.18, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.17, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.14, 5 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.13, 30 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.12, 3 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.11, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.1, 3 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.08, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.06, 9 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.05, 7 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.04, 3 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.03, 4 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.01, 7 ) );
+            points.Add( new LatLongWeighted( 33.51, -112, 7 ) );
+            points.Add( new LatLongWeighted( 33.51, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -111.93, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -111.9, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -101.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.46, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.45, 2 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.44, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.36, 2 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.35, 10 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.34, 7 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.33, 7 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.29, 2 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.28, 2 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.27, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.26, 2 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.25, 2 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.24, 7 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.23, 15 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.22, 5 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.21, 5 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.2, 4 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.19, 6 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.18, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.16, 8 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.15, 7 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.14, 9 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.13, 8 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.12, 7 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.11, 4 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.1, 3 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.09, 2 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.08, 2 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.06, 4 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.05, 4 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.04, 3 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.03, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.01, 3 ) );
+            points.Add( new LatLongWeighted( 33.52, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.46, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.44, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.36, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.35, 19 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.34, 3 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.26, 3 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.25, 18 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.24, 16 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.23, 14 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.22, 8 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.21, 8 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.2, 2 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.19, 3 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.18, 8 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.16, 8 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.15, 11 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.14, 8 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.13, 3 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.12, 8 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.11, 6 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.1, 10 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.09, 4 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.08, 7 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.06, 2 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.05, 11 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.04, 4 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.01, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.46, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.43, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.35, 12 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.33, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.3, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.29, 3 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.26, 10 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.25, 14 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.24, 13 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.23, 16 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.22, 9 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.21, 11 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.2, 8 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.19, 3 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.18, 6 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.17, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.16, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.15, 8 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.14, 8 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.13, 6 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.12, 3 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.1, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.09, 4 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.08, 13 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.07, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.06, 8 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.05, 5 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.04, 3 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.03, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -117.65, 2 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.46, 2 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.44, 2 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.3, 5 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.29, 11 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.28, 3 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.27, 7 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.25, 10 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.24, 3 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.23, 2 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.19, 11 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.18, 5 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.17, 7 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.16, 14 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.15, 10 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.14, 5 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.13, 6 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.12, 2 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.11, 6 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.1, 7 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.09, 6 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.08, 2 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.07, 7 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.06, 5 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.05, 6 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.04, 4 ) );
+            points.Add( new LatLongWeighted( 33.55, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -111.9, 3 ) );
+            points.Add( new LatLongWeighted( 33.55, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.47, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.45, 11 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.44, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.3, 8 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.29, 22 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.28, 15 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.27, 22 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.26, 5 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.25, 32 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.24, 15 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.21, 7 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.2, 15 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.19, 20 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.18, 15 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.17, 14 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.16, 17 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.15, 13 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.14, 9 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.13, 10 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.12, 9 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.11, 6 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.1, 10 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.09, 6 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.08, 5 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.07, 3 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.06, 10 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.05, 2 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -88.42, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.46, 6 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.45, 10 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.31, 22 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.3, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.29, 9 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.28, 4 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.27, 14 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.26, 37 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.25, 35 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.24, 30 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.23, 11 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.22, 10 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.21, 20 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.2, 21 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.19, 9 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.18, 13 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.17, 16 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.16, 25 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.15, 14 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.14, 15 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.13, 6 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.12, 4 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.11, 3 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.1, 7 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.09, 7 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.08, 3 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.07, 4 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.06, 2 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.05, 5 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.01, 4 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.88, 2 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.86, 2 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.85, 2 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.73, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.46, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.44, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.41, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.4, 6 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.37, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.31, 13 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.3, 3 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.29, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.28, 6 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.27, 9 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.26, 36 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.25, 37 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.24, 22 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.23, 20 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.22, 20 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.21, 32 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.2, 34 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.19, 13 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.18, 25 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.17, 18 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.16, 23 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.15, 14 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.14, 17 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.13, 18 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.12, 7 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.1, 4 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.09, 6 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.07, 6 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.06, 16 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.05, 3 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.03, 5 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.02, 10 ) );
+            points.Add( new LatLongWeighted( 33.58, -112, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.99, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.93, 4 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.79, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -117.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -117.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -117.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.42, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.41, 6 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.4, 8 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.39, 8 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.38, 7 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.37, 11 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.34, 6 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.33, 7 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.32, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.31, 8 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.3, 4 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.29, 6 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.28, 5 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.27, 15 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.26, 20 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.25, 20 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.24, 35 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.23, 34 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.22, 40 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.21, 38 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.2, 47 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.19, 35 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.18, 24 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.17, 31 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.16, 18 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.15, 21 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.14, 19 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.13, 16 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.12, 20 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.11, 7 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.1, 10 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.09, 6 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.06, 5 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.03, 3 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.02, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.01, 3 ) );
+            points.Add( new LatLongWeighted( 33.59, -112, 3 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.99, 3 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.98, 3 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.95, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.93, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.88, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.44, 7 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.39, 7 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.38, 11 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.37, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.34, 8 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.33, 11 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.32, 11 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.31, 7 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.3, 9 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.29, 4 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.28, 6 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.27, 13 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.26, 2 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.25, 61 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.24, 51 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.23, 57 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.22, 58 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.21, 47 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.2, 18 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.19, 21 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.18, 24 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.17, 25 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.16, 22 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.15, 24 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.14, 16 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.13, 17 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.12, 15 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.11, 21 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.1, 14 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.08, 2 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.07, 2 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.05, 6 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.04, 8 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.03, 8 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.02, 4 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.01, 3 ) );
+            points.Add( new LatLongWeighted( 33.6, -112, 5 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.99, 4 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.96, 4 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.95, 2 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.92, 3 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.91, 3 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.88, 3 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.72, 2 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.44, 11 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.4, 7 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.39, 6 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.38, 9 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.37, 7 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.36, 3 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.35, 10 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.34, 10 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.33, 10 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.32, 2 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.31, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.3, 14 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.29, 9 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.28, 5 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.27, 10 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.26, 21 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.25, 54 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.24, 47 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.23, 85 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.22, 73 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.21, 28 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.2, 9 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.19, 17 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.18, 27 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.17, 46 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.16, 17 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.15, 23 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.14, 25 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.13, 18 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.12, 13 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.11, 16 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.1, 23 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.09, 7 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.08, 10 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.07, 11 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.06, 5 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.05, 4 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.04, 6 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.03, 3 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.02, 5 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.01, 3 ) );
+            points.Add( new LatLongWeighted( 33.61, -112, 11 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.99, 6 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.98, 2 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.97, 2 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.96, 2 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.95, 3 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.94, 2 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.88, 6 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.87, 3 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.86, 3 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.73, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.45, 10 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.44, 11 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.43, 7 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.41, 6 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.4, 7 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.39, 10 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.38, 12 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.37, 13 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.36, 11 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.35, 19 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.34, 5 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.33, 11 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.32, 16 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.31, 5 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.3, 3 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.29, 8 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.28, 7 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.27, 13 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.26, 43 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.25, 60 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.24, 26 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.23, 30 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.22, 36 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.21, 13 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.2, 49 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.19, 57 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.18, 24 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.17, 38 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.16, 8 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.15, 11 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.14, 14 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.13, 37 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.12, 16 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.11, 17 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.1, 7 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.09, 2 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.08, 4 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.07, 9 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.06, 8 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.04, 8 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.03, 3 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.02, 3 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.01, 8 ) );
+            points.Add( new LatLongWeighted( 33.62, -112, 7 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.99, 3 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.98, 2 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.97, 4 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.96, 3 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.93, 4 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.88, 4 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.87, 3 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.46, 3 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.45, 6 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.44, 16 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.43, 12 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.42, 22 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.41, 17 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.4, 3 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.39, 9 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.38, 6 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.36, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.35, 18 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.34, 2 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.33, 4 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.32, 5 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.31, 3 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.3, 7 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.29, 3 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.28, 10 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.27, 6 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.26, 5 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.25, 87 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.24, 34 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.23, 51 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.22, 68 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.21, 36 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.2, 34 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.19, 39 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.18, 29 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.17, 31 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.16, 33 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.15, 18 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.14, 35 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.13, 28 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.12, 16 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.11, 25 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.1, 16 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.09, 13 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.08, 17 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.07, 17 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.06, 16 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.05, 7 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.04, 6 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.03, 12 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.02, 11 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.01, 6 ) );
+            points.Add( new LatLongWeighted( 33.63, -112, 9 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.99, 3 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.98, 7 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.97, 5 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.96, 3 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.95, 2 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.94, 2 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.93, 2 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.88, 4 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.86, 6 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.84, 2 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.46, 10 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.45, 7 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.44, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.43, 2 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.42, 7 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.4, 2 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.39, 9 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.38, 6 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.37, 3 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.36, 2 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.34, 2 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.33, 3 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.32, 5 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.31, 14 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.3, 18 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.29, 6 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.28, 12 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.27, 12 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.26, 22 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.25, 55 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.24, 26 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.23, 30 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.22, 6 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.21, 59 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.2, 37 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.19, 15 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.18, 36 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.17, 41 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.16, 40 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.15, 52 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.14, 33 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.13, 57 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.12, 23 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.11, 12 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.1, 10 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.09, 13 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.08, 11 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.07, 58 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.06, 12 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.05, 19 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.04, 23 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.03, 8 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.02, 6 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.01, 3 ) );
+            points.Add( new LatLongWeighted( 33.64, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.99, 2 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.98, 8 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.97, 6 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.96, 7 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.95, 4 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.94, 2 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.93, 3 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.88, 2 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -117.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.45, 2 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.43, 3 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.42, 11 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.4, 8 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.39, 3 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.38, 13 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.37, 2 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.36, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.35, 3 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.34, 4 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.33, 4 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.31, 37 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.3, 47 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.29, 4 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.28, 10 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.27, 8 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.26, 33 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.25, 91 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.24, 53 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.23, 79 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.22, 56 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.21, 63 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.2, 57 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.19, 33 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.18, 62 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.17, 41 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.16, 51 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.15, 90 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.14, 53 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.13, 33 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.12, 54 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.11, 13 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.1, 18 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.09, 12 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.08, 20 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.07, 28 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.06, 21 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.05, 17 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.04, 8 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.03, 6 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.02, 5 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.01, 5 ) );
+            points.Add( new LatLongWeighted( 33.65, -112, 5 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.99, 8 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.98, 6 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.96, 2 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.93, 3 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.88, 3 ) );
+            points.Add( new LatLongWeighted( 33.66, -117.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.43, 4 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.42, 6 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.4, 2 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.39, 3 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.38, 5 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.36, 4 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.35, 3 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.34, 6 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.33, 3 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.31, 8 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.3, 4 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.29, 12 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.28, 11 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.27, 13 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.26, 29 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.25, 16 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.24, 67 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.23, 76 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.22, 129 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.21, 84 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.2, 80 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.19, 94 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.18, 19 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.17, 92 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.16, 56 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.15, 34 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.14, 14 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.13, 42 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.12, 30 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.11, 14 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.1, 24 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.09, 20 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.08, 42 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.07, 20 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.06, 24 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.05, 24 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.04, 7 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.03, 16 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.02, 7 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.01, 17 ) );
+            points.Add( new LatLongWeighted( 33.66, -112, 6 ) );
+            points.Add( new LatLongWeighted( 33.66, -111.99, 11 ) );
+            points.Add( new LatLongWeighted( 33.66, -111.98, 2 ) );
+            points.Add( new LatLongWeighted( 33.66, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -111.87, 3 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.64, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.63, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.62, 4 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.61, 9 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.43, 2 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.42, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.39, 3 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.38, 5 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.37, 4 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.36, 3 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.33, 3 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.3, 2 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.29, 19 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.28, 61 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.27, 108 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.26, 124 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.25, 111 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.24, 130 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.23, 93 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.22, 96 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.21, 126 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.2, 113 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.19, 59 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.18, 53 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.17, 34 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.16, 37 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.15, 45 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.14, 19 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.13, 35 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.12, 20 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.11, 47 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.1, 23 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.09, 30 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.08, 22 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.07, 23 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.06, 25 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.05, 8 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.04, 16 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.03, 33 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.02, 16 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.01, 5 ) );
+            points.Add( new LatLongWeighted( 33.67, -112, 4 ) );
+            points.Add( new LatLongWeighted( 33.67, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -111.91, 4 ) );
+            points.Add( new LatLongWeighted( 33.67, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -111.88, 3 ) );
+            points.Add( new LatLongWeighted( 33.67, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -86.44, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.62, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.42, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.4, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.39, 5 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.38, 3 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.36, 4 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.35, 6 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.34, 7 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.33, 7 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.32, 61 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.31, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.29, 160 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.28, 43 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.27, 64 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.26, 124 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.25, 132 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.24, 84 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.23, 150 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.22, 123 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.21, 203 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.2, 107 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.19, 94 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.18, 41 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.17, 10 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.15, 2 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.14, 39 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.13, 69 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.12, 27 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.11, 11 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.1, 2 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.09, 5 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.08, 5 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.06, 7 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.03, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112, 7 ) );
+            points.Add( new LatLongWeighted( 33.68, -111.98, 6 ) );
+            points.Add( new LatLongWeighted( 33.68, -111.97, 2 ) );
+            points.Add( new LatLongWeighted( 33.68, -111.96, 7 ) );
+            points.Add( new LatLongWeighted( 33.68, -111.92, 5 ) );
+            points.Add( new LatLongWeighted( 33.68, -111.91, 2 ) );
+            points.Add( new LatLongWeighted( 33.68, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.39, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.38, 3 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.37, 7 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.36, 12 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.35, 9 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.34, 12 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.33, 9 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.32, 126 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.31, 64 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.29, 63 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.28, 95 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.27, 8 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.25, 41 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.24, 58 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.23, 78 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.22, 138 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.21, 114 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.2, 50 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.19, 19 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.18, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.14, 6 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.13, 84 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.12, 14 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.11, 9 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.04, 17 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.03, 6 ) );
+            points.Add( new LatLongWeighted( 33.69, -112, 8 ) );
+            points.Add( new LatLongWeighted( 33.69, -111.99, 4 ) );
+            points.Add( new LatLongWeighted( 33.69, -111.98, 6 ) );
+            points.Add( new LatLongWeighted( 33.69, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -111.96, 2 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.48, 2 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.41, 2 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.36, 2 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.35, 10 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.34, 4 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.33, 11 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.32, 88 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.31, 76 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.28, 22 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.27, 45 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.26, 51 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.25, 36 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.24, 43 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.23, 56 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.22, 24 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.21, 66 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.2, 43 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.19, 48 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.18, 26 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.17, 39 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.16, 39 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.15, 108 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.14, 92 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.13, 31 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.04, 14 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.03, 18 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.02, 3 ) );
+            points.Add( new LatLongWeighted( 33.7, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.99, 3 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.98, 6 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -117.79, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.38, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.31, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.29, 25 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.28, 19 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.27, 11 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.26, 11 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.25, 4 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.24, 5 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.23, 25 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.22, 41 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.21, 70 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.2, 95 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.19, 89 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.18, 73 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.17, 68 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.16, 69 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.15, 160 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.14, 163 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.11, 57 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.1, 6 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.03, 4 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.02, 5 ) );
+            points.Add( new LatLongWeighted( 33.71, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.72, -118, 1 ) );
+            points.Add( new LatLongWeighted( 33.72, -117.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.42, 18 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.41, 3 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.39, 2 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.38, 3 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.37, 1 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.32, 29 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.31, 4 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.3, 8 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.29, 39 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.28, 13 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.27, 2 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.26, 12 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.25, 31 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.24, 73 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.22, 93 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.21, 307 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.2, 211 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.18, 106 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.17, 132 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.16, 46 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.15, 138 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.14, 3 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.1, 6 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.09, 6 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.08, 2 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.07, 6 ) );
+            points.Add( new LatLongWeighted( 33.72, -111.98, 4 ) );
+            points.Add( new LatLongWeighted( 33.72, -111.91, 2 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.56, 2 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.44, 18 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.43, 4 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.38, 3 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.37, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.34, 23 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.33, 33 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.3, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.27, 140 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.26, 99 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.25, 193 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.24, 135 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.23, 51 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.22, 39 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.2, 93 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.19, 99 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.18, 120 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.17, 106 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.14, 26 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.13, 39 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.11, 54 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.1, 40 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.09, 5 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.08, 4 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.99, 5 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.98, 3 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.61, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.6, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.59, 3 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.55, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.54, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.45, 2 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.4, 3 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.39, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.34, 13 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.33, 18 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.27, 66 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.26, 29 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.25, 33 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.21, 20 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.2, 135 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.19, 54 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.18, 13 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.14, 5 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.13, 43 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.12, 38 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.11, 77 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.1, 18 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.09, 10 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.98, 3 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.73, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -117.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.6, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.52, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.5, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.41, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.4, 5 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.39, 3 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.34, 21 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.33, 107 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.32, 82 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.22, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.21, 143 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.2, 22 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.11, 85 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.1, 39 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.98, 7 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.97, 3 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.95, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.94, 3 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.93, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.87, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.76, -112.43, 1 ) );
+            points.Add( new LatLongWeighted( 33.76, -112.42, 3 ) );
+            points.Add( new LatLongWeighted( 33.76, -112.36, 2 ) );
+            points.Add( new LatLongWeighted( 33.76, -112.35, 11 ) );
+            points.Add( new LatLongWeighted( 33.76, -112.34, 72 ) );
+            points.Add( new LatLongWeighted( 33.76, -112.33, 118 ) );
+            points.Add( new LatLongWeighted( 33.76, -112.32, 30 ) );
+            points.Add( new LatLongWeighted( 33.76, -112.22, 84 ) );
+            points.Add( new LatLongWeighted( 33.76, -112.21, 80 ) );
+            points.Add( new LatLongWeighted( 33.76, -111.99, 2 ) );
+            points.Add( new LatLongWeighted( 33.76, -111.98, 3 ) );
+            points.Add( new LatLongWeighted( 33.76, -111.97, 3 ) );
+            points.Add( new LatLongWeighted( 33.76, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.76, -111.92, 2 ) );
+            points.Add( new LatLongWeighted( 33.76, -78.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.62, 1 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.56, 1 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.55, 2 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.53, 4 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.42, 3 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.36, 11 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.35, 75 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.34, 29 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.33, 1 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.11, 23 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.1, 16 ) );
+            points.Add( new LatLongWeighted( 33.77, -111.99, 2 ) );
+            points.Add( new LatLongWeighted( 33.77, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.77, -111.96, 2 ) );
+            points.Add( new LatLongWeighted( 33.77, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.77, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.78, -112.55, 1 ) );
+            points.Add( new LatLongWeighted( 33.78, -112.42, 1 ) );
+            points.Add( new LatLongWeighted( 33.78, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.78, -112.12, 14 ) );
+            points.Add( new LatLongWeighted( 33.78, -112.11, 34 ) );
+            points.Add( new LatLongWeighted( 33.78, -112.1, 15 ) );
+            points.Add( new LatLongWeighted( 33.78, -112.09, 7 ) );
+            points.Add( new LatLongWeighted( 33.78, -111.99, 4 ) );
+            points.Add( new LatLongWeighted( 33.78, -111.98, 2 ) );
+            points.Add( new LatLongWeighted( 33.78, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.78, -111.96, 2 ) );
+            points.Add( new LatLongWeighted( 33.78, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.79, -112.12, 23 ) );
+            points.Add( new LatLongWeighted( 33.79, -112.11, 23 ) );
+            points.Add( new LatLongWeighted( 33.79, -112.08, 3 ) );
+            points.Add( new LatLongWeighted( 33.79, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.79, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.79, -111.98, 4 ) );
+            points.Add( new LatLongWeighted( 33.79, -111.95, 2 ) );
+            points.Add( new LatLongWeighted( 33.79, -111.92, 3 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.52, 1 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.14, 4 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.13, 30 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.12, 33 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.11, 8 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.08, 3 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.07, 9 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.8, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.8, -111.99, 2 ) );
+            points.Add( new LatLongWeighted( 33.8, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.8, -111.97, 2 ) );
+            points.Add( new LatLongWeighted( 33.8, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.8, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.81, -112.13, 38 ) );
+            points.Add( new LatLongWeighted( 33.81, -112.12, 15 ) );
+            points.Add( new LatLongWeighted( 33.81, -112.09, 7 ) );
+            points.Add( new LatLongWeighted( 33.81, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.81, -112.07, 2 ) );
+            points.Add( new LatLongWeighted( 33.81, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.81, -112.05, 2 ) );
+            points.Add( new LatLongWeighted( 33.81, -112.03, 2 ) );
+            points.Add( new LatLongWeighted( 33.81, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.81, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.81, -111.97, 3 ) );
+            points.Add( new LatLongWeighted( 33.81, -111.96, 2 ) );
+            points.Add( new LatLongWeighted( 33.81, -111.95, 3 ) );
+            points.Add( new LatLongWeighted( 33.81, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.82, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.82, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.82, -112.1, 3 ) );
+            points.Add( new LatLongWeighted( 33.82, -112.09, 6 ) );
+            points.Add( new LatLongWeighted( 33.82, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.82, -112.06, 7 ) );
+            points.Add( new LatLongWeighted( 33.82, -112.05, 4 ) );
+            points.Add( new LatLongWeighted( 33.82, -112.03, 3 ) );
+            points.Add( new LatLongWeighted( 33.82, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.82, -111.84, 2 ) );
+            points.Add( new LatLongWeighted( 33.83, -117.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.83, -112.14, 5 ) );
+            points.Add( new LatLongWeighted( 33.83, -112.13, 2 ) );
+            points.Add( new LatLongWeighted( 33.83, -112.12, 3 ) );
+            points.Add( new LatLongWeighted( 33.83, -112.11, 5 ) );
+            points.Add( new LatLongWeighted( 33.83, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.83, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.83, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.83, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.83, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.83, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.83, -111.95, 2 ) );
+            points.Add( new LatLongWeighted( 33.83, -111.92, 2 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.14, 11 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.13, 4 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.12, 5 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.11, 5 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.1, 7 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.09, 2 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.08, 3 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.07, 10 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.84, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.84, -111.84, 2 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.25, 2 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.14, 13 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.13, 20 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.12, 24 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.11, 26 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.1, 17 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.09, 5 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.06, 5 ) );
+            points.Add( new LatLongWeighted( 33.85, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.86, -118.39, 1 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.16, 2 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.14, 20 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.13, 8 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.12, 10 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.11, 5 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.1, 8 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.09, 4 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.08, 3 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.16, 16 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.15, 8 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.14, 27 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.13, 3 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.12, 3 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.11, 4 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.1, 6 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.09, 3 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.17, 3 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.16, 2 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.15, 20 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.14, 11 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.04, 2 ) );
+            points.Add( new LatLongWeighted( 33.89, -118.39, 1 ) );
+            points.Add( new LatLongWeighted( 33.89, -112.16, 3 ) );
+            points.Add( new LatLongWeighted( 33.89, -112.06, 3 ) );
+            points.Add( new LatLongWeighted( 33.89, -112.05, 7 ) );
+            points.Add( new LatLongWeighted( 33.9, -117.38, 1 ) );
+            points.Add( new LatLongWeighted( 33.9, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.91, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.91, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.92, -112.12, 2 ) );
+            points.Add( new LatLongWeighted( 33.92, -112.11, 2 ) );
+            points.Add( new LatLongWeighted( 33.92, -112.1, 3 ) );
+            points.Add( new LatLongWeighted( 33.92, -112.09, 2 ) );
+            points.Add( new LatLongWeighted( 33.93, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.93, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.93, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.94, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.95, -112.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.95, -112.73, 2 ) );
+            points.Add( new LatLongWeighted( 33.96, -112.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.96, -112.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.97, -112.73, 2 ) );
+            points.Add( new LatLongWeighted( 33.98, -112.74, 2 ) );
+            points.Add( new LatLongWeighted( 33.98, -112.72, 1 ) );
+            points.Add( new LatLongWeighted( 34, -112.78, 1 ) );
+            points.Add( new LatLongWeighted( 34.02, -118.46, 1 ) );
+            points.Add( new LatLongWeighted( 34.02, -117.66, 1 ) );
+            points.Add( new LatLongWeighted( 34.03, -117.3, 1 ) );
+            points.Add( new LatLongWeighted( 34.03, -117.05, 1 ) );
+            points.Add( new LatLongWeighted( 34.05, -112.16, 2 ) );
+            points.Add( new LatLongWeighted( 34.06, -112.16, 1 ) );
+            points.Add( new LatLongWeighted( 34.06, -84.77, 1 ) );
+            points.Add( new LatLongWeighted( 34.07, -112.13, 2 ) );
+            points.Add( new LatLongWeighted( 34.08, -112.14, 3 ) );
+            points.Add( new LatLongWeighted( 34.1, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 34.11, -109.91, 1 ) );
+            points.Add( new LatLongWeighted( 34.11, -84.19, 1 ) );
+            points.Add( new LatLongWeighted( 34.13, -117.71, 1 ) );
+            points.Add( new LatLongWeighted( 34.15, -118.41, 1 ) );
+            points.Add( new LatLongWeighted( 34.16, -110, 1 ) );
+            points.Add( new LatLongWeighted( 34.18, -118.88, 1 ) );
+            points.Add( new LatLongWeighted( 34.18, -118.09, 1 ) );
+            points.Add( new LatLongWeighted( 34.19, -109.92, 1 ) );
+            points.Add( new LatLongWeighted( 34.2, -118.14, 1 ) );
+            points.Add( new LatLongWeighted( 34.2, -110.03, 1 ) );
+            points.Add( new LatLongWeighted( 34.23, -111.31, 1 ) );
+            points.Add( new LatLongWeighted( 34.24, -110.07, 1 ) );
+            points.Add( new LatLongWeighted( 34.25, -112.31, 1 ) );
+            points.Add( new LatLongWeighted( 34.26, -111.32, 1 ) );
+            points.Add( new LatLongWeighted( 34.26, -111.28, 1 ) );
+            points.Add( new LatLongWeighted( 34.27, -111.33, 1 ) );
+            points.Add( new LatLongWeighted( 34.28, -112.75, 1 ) );
+            points.Add( new LatLongWeighted( 34.28, -84.2, 2 ) );
+            points.Add( new LatLongWeighted( 34.34, -112.16, 3 ) );
+            points.Add( new LatLongWeighted( 34.34, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 34.35, -112.16, 1 ) );
+            points.Add( new LatLongWeighted( 34.39, -118.48, 1 ) );
+            points.Add( new LatLongWeighted( 34.4, -118.45, 1 ) );
+            points.Add( new LatLongWeighted( 34.41, -118.59, 2 ) );
+            points.Add( new LatLongWeighted( 34.41, -93.15, 1 ) );
+            points.Add( new LatLongWeighted( 34.46, -92.99, 1 ) );
+            points.Add( new LatLongWeighted( 34.47, -94.35, 1 ) );
+            points.Add( new LatLongWeighted( 34.48, -117.27, 1 ) );
+            points.Add( new LatLongWeighted( 34.49, -117.38, 1 ) );
+            points.Add( new LatLongWeighted( 34.5, -114.34, 1 ) );
+            points.Add( new LatLongWeighted( 34.52, -117.35, 1 ) );
+            points.Add( new LatLongWeighted( 34.52, -112.48, 1 ) );
+            points.Add( new LatLongWeighted( 34.52, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 34.53, -112.48, 1 ) );
+            points.Add( new LatLongWeighted( 34.53, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 34.54, -112.48, 1 ) );
+            points.Add( new LatLongWeighted( 34.55, -112.27, 1 ) );
+            points.Add( new LatLongWeighted( 34.55, -112.24, 1 ) );
+            points.Add( new LatLongWeighted( 34.56, -112.39, 1 ) );
+            points.Add( new LatLongWeighted( 34.56, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 34.56, -112.24, 1 ) );
+            points.Add( new LatLongWeighted( 34.56, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 34.57, -113.18, 1 ) );
+            points.Add( new LatLongWeighted( 34.57, -112.52, 1 ) );
+            points.Add( new LatLongWeighted( 34.57, -112.5, 2 ) );
+            points.Add( new LatLongWeighted( 34.57, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 34.57, -112.4, 1 ) );
+            points.Add( new LatLongWeighted( 34.57, -112.33, 1 ) );
+            points.Add( new LatLongWeighted( 34.57, -112.27, 1 ) );
+            points.Add( new LatLongWeighted( 34.57, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 34.58, -113.17, 1 ) );
+            points.Add( new LatLongWeighted( 34.58, -112.52, 1 ) );
+            points.Add( new LatLongWeighted( 34.58, -112.51, 1 ) );
+            points.Add( new LatLongWeighted( 34.58, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 34.58, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 34.6, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 34.6, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 34.6, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 34.61, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 34.61, -112.3, 1 ) );
+            points.Add( new LatLongWeighted( 34.61, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 34.63, -120.46, 1 ) );
+            points.Add( new LatLongWeighted( 34.63, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 34.63, -112.33, 1 ) );
+            points.Add( new LatLongWeighted( 34.63, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 34.63, -111.79, 1 ) );
+            points.Add( new LatLongWeighted( 34.64, -118.21, 1 ) );
+            points.Add( new LatLongWeighted( 34.64, -112.42, 1 ) );
+            points.Add( new LatLongWeighted( 34.66, -112.33, 1 ) );
+            points.Add( new LatLongWeighted( 34.67, -112.51, 1 ) );
+            points.Add( new LatLongWeighted( 34.68, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 34.69, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 34.7, -111.99, 2 ) );
+            points.Add( new LatLongWeighted( 34.71, -112.02, 2 ) );
+            points.Add( new LatLongWeighted( 34.72, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 34.73, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 34.76, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 34.77, -112.52, 1 ) );
+            points.Add( new LatLongWeighted( 34.78, -111.79, 1 ) );
+            points.Add( new LatLongWeighted( 34.79, -111.79, 2 ) );
+            points.Add( new LatLongWeighted( 34.8, -112.5, 1 ) );
+            points.Add( new LatLongWeighted( 34.8, -112.49, 1 ) );
+            points.Add( new LatLongWeighted( 34.84, -112.47, 1 ) );
+            points.Add( new LatLongWeighted( 34.86, -120.44, 1 ) );
+            points.Add( new LatLongWeighted( 34.86, -77.49, 1 ) );
+            points.Add( new LatLongWeighted( 34.87, -111.81, 1 ) );
+            points.Add( new LatLongWeighted( 34.9, -82.03, 1 ) );
+            points.Add( new LatLongWeighted( 34.94, -111.65, 1 ) );
+            points.Add( new LatLongWeighted( 34.94, -90, 1 ) );
+            points.Add( new LatLongWeighted( 35, -80.81, 1 ) );
+            points.Add( new LatLongWeighted( 35, -79.1, 1 ) );
+            points.Add( new LatLongWeighted( 35.03, -110.7, 1 ) );
+            points.Add( new LatLongWeighted( 35.11, -89.96, 1 ) );
+            points.Add( new LatLongWeighted( 35.16, -111.67, 1 ) );
+            points.Add( new LatLongWeighted( 35.16, -111.64, 1 ) );
+            points.Add( new LatLongWeighted( 35.17, -107.89, 1 ) );
+            points.Add( new LatLongWeighted( 35.18, -111.64, 1 ) );
+            points.Add( new LatLongWeighted( 35.19, -111.59, 1 ) );
+            points.Add( new LatLongWeighted( 35.19, -106.7, 1 ) );
+            points.Add( new LatLongWeighted( 35.2, -114.01, 1 ) );
+            points.Add( new LatLongWeighted( 35.2, -111.65, 2 ) );
+            points.Add( new LatLongWeighted( 35.2, -111.6, 1 ) );
+            points.Add( new LatLongWeighted( 35.21, -114.04, 1 ) );
+            points.Add( new LatLongWeighted( 35.21, -111.61, 1 ) );
+            points.Add( new LatLongWeighted( 35.22, -114.05, 1 ) );
+            points.Add( new LatLongWeighted( 35.22, -111.62, 2 ) );
+            points.Add( new LatLongWeighted( 35.22, -111.61, 1 ) );
+            points.Add( new LatLongWeighted( 35.22, -111.59, 1 ) );
+            points.Add( new LatLongWeighted( 35.23, -111.66, 1 ) );
+            points.Add( new LatLongWeighted( 35.24, -111.67, 1 ) );
+            points.Add( new LatLongWeighted( 35.24, -111.57, 2 ) );
+            points.Add( new LatLongWeighted( 35.24, -111.56, 1 ) );
+            points.Add( new LatLongWeighted( 35.25, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 35.26, -111.5, 1 ) );
+            points.Add( new LatLongWeighted( 35.28, -106.61, 1 ) );
+            points.Add( new LatLongWeighted( 35.3, -111.56, 2 ) );
+            points.Add( new LatLongWeighted( 35.3, -111.55, 1 ) );
+            points.Add( new LatLongWeighted( 35.31, -111.54, 1 ) );
+            points.Add( new LatLongWeighted( 35.58, -78.52, 2 ) );
+            points.Add( new LatLongWeighted( 35.66, -97.56, 1 ) );
+            points.Add( new LatLongWeighted( 35.87, -80.06, 1 ) );
+            points.Add( new LatLongWeighted( 35.9, -78.69, 1 ) );
+            points.Add( new LatLongWeighted( 35.99, -115.22, 1 ) );
+            points.Add( new LatLongWeighted( 36.01, -115.09, 1 ) );
+            points.Add( new LatLongWeighted( 36.03, -115.14, 2 ) );
+            points.Add( new LatLongWeighted( 36.03, -95.89, 1 ) );
+            points.Add( new LatLongWeighted( 36.05, -86.66, 1 ) );
+            points.Add( new LatLongWeighted( 36.09, -94.24, 1 ) );
+            points.Add( new LatLongWeighted( 36.11, -95.73, 1 ) );
+            points.Add( new LatLongWeighted( 36.12, -115.3, 1 ) );
+            points.Add( new LatLongWeighted( 36.19, -86.74, 1 ) );
+            points.Add( new LatLongWeighted( 36.2, -115.21, 1 ) );
+            points.Add( new LatLongWeighted( 36.2, -94.55, 1 ) );
+            points.Add( new LatLongWeighted( 36.27, -115.2, 1 ) );
+            points.Add( new LatLongWeighted( 36.28, -115.17, 1 ) );
+            points.Add( new LatLongWeighted( 36.3, -115.29, 1 ) );
+            points.Add( new LatLongWeighted( 36.31, -115.28, 1 ) );
+            points.Add( new LatLongWeighted( 36.44, -82.26, 1 ) );
+            points.Add( new LatLongWeighted( 36.65, -93.47, 1 ) );
+            points.Add( new LatLongWeighted( 36.74, -108.14, 1 ) );
+            points.Add( new LatLongWeighted( 36.76, -76.02, 1 ) );
+            points.Add( new LatLongWeighted( 36.77, -108.16, 1 ) );
+            points.Add( new LatLongWeighted( 36.82, -119.78, 1 ) );
+            points.Add( new LatLongWeighted( 36.83, -119.85, 1 ) );
+            points.Add( new LatLongWeighted( 36.84, -76.31, 1 ) );
+            points.Add( new LatLongWeighted( 36.86, -76.22, 1 ) );
+            points.Add( new LatLongWeighted( 37.11, -93.27, 1 ) );
+            points.Add( new LatLongWeighted( 37.12, -76.52, 1 ) );
+            points.Add( new LatLongWeighted( 37.15, -93.31, 1 ) );
+            points.Add( new LatLongWeighted( 37.17, -93.21, 1 ) );
+            points.Add( new LatLongWeighted( 37.29, -107.84, 1 ) );
+            points.Add( new LatLongWeighted( 37.32, -79.95, 1 ) );
+            points.Add( new LatLongWeighted( 37.38, -122.06, 1 ) );
+            points.Add( new LatLongWeighted( 37.41, -107.83, 1 ) );
+            points.Add( new LatLongWeighted( 37.66, -84.78, 1 ) );
+            points.Add( new LatLongWeighted( 37.67, -120.94, 1 ) );
+            points.Add( new LatLongWeighted( 37.67, -97.26, 2 ) );
+            points.Add( new LatLongWeighted( 37.77, -122.27, 1 ) );
+            points.Add( new LatLongWeighted( 37.78, -97.44, 1 ) );
+            points.Add( new LatLongWeighted( 37.78, -87.16, 1 ) );
+            points.Add( new LatLongWeighted( 38.2, -85.63, 1 ) );
+            points.Add( new LatLongWeighted( 38.24, -85.46, 1 ) );
+            points.Add( new LatLongWeighted( 38.28, -121.94, 1 ) );
+            points.Add( new LatLongWeighted( 38.32, -121.97, 1 ) );
+            points.Add( new LatLongWeighted( 38.36, -97.67, 1 ) );
+            points.Add( new LatLongWeighted( 38.37, -98.8, 1 ) );
+            points.Add( new LatLongWeighted( 38.45, -77.42, 1 ) );
+            points.Add( new LatLongWeighted( 38.48, -107.86, 1 ) );
+            points.Add( new LatLongWeighted( 38.55, -121.78, 1 ) );
+            points.Add( new LatLongWeighted( 38.55, -121.53, 1 ) );
+            points.Add( new LatLongWeighted( 38.56, -107.95, 1 ) );
+            points.Add( new LatLongWeighted( 38.59, -90.65, 1 ) );
+            points.Add( new LatLongWeighted( 38.59, -78.79, 1 ) );
+            points.Add( new LatLongWeighted( 38.6, -107.99, 1 ) );
+            points.Add( new LatLongWeighted( 38.69, -121.78, 1 ) );
+            points.Add( new LatLongWeighted( 38.69, -121.3, 1 ) );
+            points.Add( new LatLongWeighted( 38.75, -121.29, 1 ) );
+            points.Add( new LatLongWeighted( 38.79, -77.29, 1 ) );
+            points.Add( new LatLongWeighted( 38.79, -77.06, 1 ) );
+            points.Add( new LatLongWeighted( 38.83, -104.72, 1 ) );
+            points.Add( new LatLongWeighted( 38.83, -94.61, 1 ) );
+            points.Add( new LatLongWeighted( 38.89, -90.99, 1 ) );
+            points.Add( new LatLongWeighted( 38.92, -94.35, 1 ) );
+            points.Add( new LatLongWeighted( 38.94, -104.79, 1 ) );
+            points.Add( new LatLongWeighted( 38.94, -104.73, 1 ) );
+            points.Add( new LatLongWeighted( 38.94, -94.64, 1 ) );
+            points.Add( new LatLongWeighted( 38.95, -104.78, 1 ) );
+            points.Add( new LatLongWeighted( 38.97, -104.74, 1 ) );
+            points.Add( new LatLongWeighted( 38.97, -94.67, 1 ) );
+            points.Add( new LatLongWeighted( 39.02, -94.7, 1 ) );
+            points.Add( new LatLongWeighted( 39.05, -121.07, 1 ) );
+            points.Add( new LatLongWeighted( 39.06, -104.75, 1 ) );
+            points.Add( new LatLongWeighted( 39.07, -76.71, 1 ) );
+            points.Add( new LatLongWeighted( 39.11, -76.77, 1 ) );
+            points.Add( new LatLongWeighted( 39.12, -92.45, 1 ) );
+            points.Add( new LatLongWeighted( 39.14, -95.69, 1 ) );
+            points.Add( new LatLongWeighted( 39.16, -84.41, 1 ) );
+            points.Add( new LatLongWeighted( 39.18, -96.57, 1 ) );
+            points.Add( new LatLongWeighted( 39.19, -96.58, 5 ) );
+            points.Add( new LatLongWeighted( 39.26, -94.45, 1 ) );
+            points.Add( new LatLongWeighted( 39.27, -94.25, 1 ) );
+            points.Add( new LatLongWeighted( 39.42, -92.8, 1 ) );
+            points.Add( new LatLongWeighted( 39.46, -77.99, 1 ) );
+            points.Add( new LatLongWeighted( 39.47, -107.32, 1 ) );
+            points.Add( new LatLongWeighted( 39.52, -119.82, 1 ) );
+            points.Add( new LatLongWeighted( 39.53, -105.02, 1 ) );
+            points.Add( new LatLongWeighted( 39.54, -104.99, 1 ) );
+            points.Add( new LatLongWeighted( 39.54, -104.97, 1 ) );
+            points.Add( new LatLongWeighted( 39.59, -104.72, 1 ) );
+            points.Add( new LatLongWeighted( 39.6, -105.03, 1 ) );
+            points.Add( new LatLongWeighted( 39.61, -104.72, 1 ) );
+            points.Add( new LatLongWeighted( 39.62, -105.01, 1 ) );
+            points.Add( new LatLongWeighted( 39.62, -104.8, 1 ) );
+            points.Add( new LatLongWeighted( 39.64, -104.9, 1 ) );
+            points.Add( new LatLongWeighted( 39.64, -84.08, 1 ) );
+            points.Add( new LatLongWeighted( 39.72, -104.79, 1 ) );
+            points.Add( new LatLongWeighted( 39.79, -86.15, 1 ) );
+            points.Add( new LatLongWeighted( 39.83, -99.89, 1 ) );
+            points.Add( new LatLongWeighted( 39.85, -82.81, 1 ) );
+            points.Add( new LatLongWeighted( 39.88, -86.19, 1 ) );
+            points.Add( new LatLongWeighted( 39.89, -105.04, 1 ) );
+            points.Add( new LatLongWeighted( 39.92, -91.38, 1 ) );
+            points.Add( new LatLongWeighted( 39.93, -78, 1 ) );
+            points.Add( new LatLongWeighted( 39.98, -105.25, 1 ) );
+            points.Add( new LatLongWeighted( 39.99, -105.14, 1 ) );
+            points.Add( new LatLongWeighted( 40, -86.11, 1 ) );
+            points.Add( new LatLongWeighted( 40, -83.05, 1 ) );
+            points.Add( new LatLongWeighted( 40.01, -83.86, 1 ) );
+            points.Add( new LatLongWeighted( 40.07, -80.67, 1 ) );
+            points.Add( new LatLongWeighted( 40.11, -111.67, 1 ) );
+            points.Add( new LatLongWeighted( 40.15, -83.12, 1 ) );
+            points.Add( new LatLongWeighted( 40.16, -74.04, 1 ) );
+            points.Add( new LatLongWeighted( 40.27, -75.39, 1 ) );
+            points.Add( new LatLongWeighted( 40.28, -111.73, 1 ) );
+            points.Add( new LatLongWeighted( 40.29, -80.02, 1 ) );
+            points.Add( new LatLongWeighted( 40.32, -104.83, 1 ) );
+            points.Add( new LatLongWeighted( 40.37, -120.53, 1 ) );
+            points.Add( new LatLongWeighted( 40.49, -81.68, 1 ) );
+            points.Add( new LatLongWeighted( 40.5, -88.93, 1 ) );
+            points.Add( new LatLongWeighted( 40.53, -80.16, 1 ) );
+            points.Add( new LatLongWeighted( 40.55, -122.34, 1 ) );
+            points.Add( new LatLongWeighted( 40.55, -122.33, 1 ) );
+            points.Add( new LatLongWeighted( 40.56, -124.12, 1 ) );
+            points.Add( new LatLongWeighted( 40.56, -81.91, 1 ) );
+            points.Add( new LatLongWeighted( 40.58, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 40.58, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 40.77, -96.64, 1 ) );
+            points.Add( new LatLongWeighted( 40.78, -74.65, 1 ) );
+            points.Add( new LatLongWeighted( 40.82, -96.62, 1 ) );
+            points.Add( new LatLongWeighted( 40.83, -96.61, 1 ) );
+            points.Add( new LatLongWeighted( 40.98, -73.94, 2 ) );
+            points.Add( new LatLongWeighted( 40.99, -81.41, 1 ) );
+            points.Add( new LatLongWeighted( 41.08, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 41.14, -80.55, 1 ) );
+            points.Add( new LatLongWeighted( 41.28, -81.85, 1 ) );
+            points.Add( new LatLongWeighted( 41.38, -72.07, 1 ) );
+            points.Add( new LatLongWeighted( 41.4, -82.37, 1 ) );
+            points.Add( new LatLongWeighted( 41.41, -81.46, 1 ) );
+            points.Add( new LatLongWeighted( 41.55, -72.69, 1 ) );
+            points.Add( new LatLongWeighted( 41.6, -87.93, 1 ) );
+            points.Add( new LatLongWeighted( 41.6, -87.03, 1 ) );
+            points.Add( new LatLongWeighted( 41.62, -81.5, 1 ) );
+            points.Add( new LatLongWeighted( 41.64, -93.67, 1 ) );
+            points.Add( new LatLongWeighted( 41.72, -86.17, 1 ) );
+            points.Add( new LatLongWeighted( 41.74, -71.31, 1 ) );
+            points.Add( new LatLongWeighted( 41.82, -88.33, 1 ) );
+            points.Add( new LatLongWeighted( 41.82, -71.43, 1 ) );
+            points.Add( new LatLongWeighted( 41.85, -88.13, 1 ) );
+            points.Add( new LatLongWeighted( 41.86, -103.09, 1 ) );
+            points.Add( new LatLongWeighted( 41.87, -88.1, 1 ) );
+            points.Add( new LatLongWeighted( 41.93, -88.69, 1 ) );
+            points.Add( new LatLongWeighted( 41.93, -88.32, 1 ) );
+            points.Add( new LatLongWeighted( 41.94, -87.83, 1 ) );
+            points.Add( new LatLongWeighted( 41.95, -87.71, 1 ) );
+            points.Add( new LatLongWeighted( 42.01, -88.14, 1 ) );
+            points.Add( new LatLongWeighted( 42.02, -87.67, 1 ) );
+            points.Add( new LatLongWeighted( 42.04, -88.13, 1 ) );
+            points.Add( new LatLongWeighted( 42.19, -71.69, 1 ) );
+            points.Add( new LatLongWeighted( 42.2, -85.47, 1 ) );
+            points.Add( new LatLongWeighted( 42.22, -83.67, 1 ) );
+            points.Add( new LatLongWeighted( 42.33, -88.29, 1 ) );
+            points.Add( new LatLongWeighted( 42.34, -89.64, 1 ) );
+            points.Add( new LatLongWeighted( 42.36, -88.1, 1 ) );
+            points.Add( new LatLongWeighted( 42.43, -88.66, 1 ) );
+            points.Add( new LatLongWeighted( 42.46, -93.82, 1 ) );
+            points.Add( new LatLongWeighted( 42.5, -96.5, 1 ) );
+            points.Add( new LatLongWeighted( 42.57, -83.07, 1 ) );
+            points.Add( new LatLongWeighted( 42.66, -83.2, 1 ) );
+            points.Add( new LatLongWeighted( 42.75, -88.94, 1 ) );
+            points.Add( new LatLongWeighted( 42.8, -87.81, 1 ) );
+            points.Add( new LatLongWeighted( 42.81, -73.95, 1 ) );
+            points.Add( new LatLongWeighted( 42.82, -83.03, 1 ) );
+            points.Add( new LatLongWeighted( 42.83, -106.25, 1 ) );
+            points.Add( new LatLongWeighted( 42.94, -114.71, 1 ) );
+            points.Add( new LatLongWeighted( 42.96, -83.67, 1 ) );
+            points.Add( new LatLongWeighted( 43.06, -88.1, 1 ) );
+            points.Add( new LatLongWeighted( 43.08, -88.76, 1 ) );
+            points.Add( new LatLongWeighted( 43.1, -88.4, 1 ) );
+            points.Add( new LatLongWeighted( 43.38, -103.32, 1 ) );
+            points.Add( new LatLongWeighted( 43.46, -88.19, 1 ) );
+            points.Add( new LatLongWeighted( 43.59, -96.7, 1 ) );
+            points.Add( new LatLongWeighted( 43.6, -84.41, 1 ) );
+            points.Add( new LatLongWeighted( 43.63, -116.44, 1 ) );
+            points.Add( new LatLongWeighted( 43.64, -116.38, 1 ) );
+            points.Add( new LatLongWeighted( 43.74, -70.27, 1 ) );
+            points.Add( new LatLongWeighted( 44.05, -122.98, 1 ) );
+            points.Add( new LatLongWeighted( 44.71, -85.67, 1 ) );
+            points.Add( new LatLongWeighted( 44.73, -106.97, 1 ) );
+            points.Add( new LatLongWeighted( 44.76, -93.31, 1 ) );
+            points.Add( new LatLongWeighted( 44.78, -91.49, 1 ) );
+            points.Add( new LatLongWeighted( 44.81, -93.31, 1 ) );
+            points.Add( new LatLongWeighted( 44.88, -122.84, 1 ) );
+            points.Add( new LatLongWeighted( 44.91, -92.91, 1 ) );
+            points.Add( new LatLongWeighted( 44.94, -93.48, 1 ) );
+            points.Add( new LatLongWeighted( 44.96, -123.07, 1 ) );
+            points.Add( new LatLongWeighted( 45.19, -93.3, 1 ) );
+            points.Add( new LatLongWeighted( 45.31, -94.2, 1 ) );
+            points.Add( new LatLongWeighted( 45.37, -122.74, 1 ) );
+            points.Add( new LatLongWeighted( 45.43, -122.78, 1 ) );
+            points.Add( new LatLongWeighted( 45.53, -122.44, 1 ) );
+            points.Add( new LatLongWeighted( 45.54, -122.97, 1 ) );
+            points.Add( new LatLongWeighted( 45.63, -122.67, 1 ) );
+            points.Add( new LatLongWeighted( 45.65, -122.5, 1 ) );
+            points.Add( new LatLongWeighted( 45.65, -118.79, 1 ) );
+            points.Add( new LatLongWeighted( 46.05, -118.37, 1 ) );
+            points.Add( new LatLongWeighted( 46.23, -118.99, 1 ) );
+            points.Add( new LatLongWeighted( 46.57, -120.53, 1 ) );
+            points.Add( new LatLongWeighted( 46.6, -120.55, 1 ) );
+            points.Add( new LatLongWeighted( 46.73, -116.99, 1 ) );
+            points.Add( new LatLongWeighted( 46.74, -114.08, 1 ) );
+            points.Add( new LatLongWeighted( 46.8, -114.04, 1 ) );
+            points.Add( new LatLongWeighted( 46.82, -96.85, 1 ) );
+            points.Add( new LatLongWeighted( 46.93, -114.08, 1 ) );
+            points.Add( new LatLongWeighted( 46.94, -122.56, 2 ) );
+            points.Add( new LatLongWeighted( 47.06, -122.95, 1 ) );
+            points.Add( new LatLongWeighted( 47.1, -122.62, 1 ) );
+            points.Add( new LatLongWeighted( 47.21, -122.16, 1 ) );
+            points.Add( new LatLongWeighted( 47.25, -93.52, 1 ) );
+            points.Add( new LatLongWeighted( 47.26, -122.55, 1 ) );
+            points.Add( new LatLongWeighted( 47.3, -122.38, 1 ) );
+            points.Add( new LatLongWeighted( 47.31, -122.42, 1 ) );
+            points.Add( new LatLongWeighted( 47.31, -122.18, 1 ) );
+            points.Add( new LatLongWeighted( 47.33, -122.37, 1 ) );
+            points.Add( new LatLongWeighted( 47.41, -122.21, 1 ) );
+            points.Add( new LatLongWeighted( 47.47, -122.16, 1 ) );
+            points.Add( new LatLongWeighted( 47.49, -111.33, 1 ) );
+            points.Add( new LatLongWeighted( 47.71, -122.19, 1 ) );
+            points.Add( new LatLongWeighted( 47.73, -122.01, 1 ) );
+            points.Add( new LatLongWeighted( 47.8, -122.35, 2 ) );
+            points.Add( new LatLongWeighted( 47.8, -117.55, 1 ) );
+            points.Add( new LatLongWeighted( 47.91, -97.06, 1 ) );
+            points.Add( new LatLongWeighted( 48.01, -122.13, 1 ) );
+            points.Add( new LatLongWeighted( 48.23, -101.28, 1 ) );
+            points.Add( new LatLongWeighted( 48.25, -122.33, 1 ) );
+            points.Add( new LatLongWeighted( 48.78, -122.46, 1 ) );
+            points.Add( new LatLongWeighted( 48.83, -122.57, 1 ) );
+            points.Add( new LatLongWeighted( 48.9, -122.49, 1 ) );
+            points.Add( new LatLongWeighted( 48.94, -122.55, 1 ) );
+            points.Add( new LatLongWeighted( 48.96, -122.42, 1 ) );
+            points.Add( new LatLongWeighted( 53.46, -113.57, 1 ) );
+            points.Add( new LatLongWeighted( 61.19, -149.89, 1 ) );
+            points.Add( new LatLongWeighted( 27.87, -97.7, 1 ) );
+            points.Add( new LatLongWeighted( 28.62, -81.21, 1 ) );
+            points.Add( new LatLongWeighted( 28.63, -81.23, 1 ) );
+            points.Add( new LatLongWeighted( 29.52, -98.71, 1 ) );
+            points.Add( new LatLongWeighted( 30.06, -95.25, 1 ) );
+            points.Add( new LatLongWeighted( 30.64, -94.87, 1 ) );
+            points.Add( new LatLongWeighted( 32.34, -111.04, 1 ) );
+            points.Add( new LatLongWeighted( 32.41, -81.78, 1 ) );
+            points.Add( new LatLongWeighted( 32.71, -100.93, 1 ) );
+            points.Add( new LatLongWeighted( 32.76, -97.33, 1 ) );
+            points.Add( new LatLongWeighted( 32.8, -117.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.04, -116.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.18, -111.58, 1 ) );
+            points.Add( new LatLongWeighted( 33.21, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.23, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.64, 1 ) );
+            points.Add( new LatLongWeighted( 33.27, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -112.43, 2 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -112.43, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -112.47, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -112.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -112.45, 2 ) );
+            points.Add( new LatLongWeighted( 33.35, -112.44, 3 ) );
+            points.Add( new LatLongWeighted( 33.35, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -112.44, 2 ) );
+            points.Add( new LatLongWeighted( 33.36, -112.43, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.66, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.63, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.2, 2 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.6, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.57, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.61, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.56, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.61, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.6, 2 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.56, 3 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.55, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.56, 3 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.6, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.59, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.58, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.56, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.49, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.28, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.62, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.6, 3 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.42, 4 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.41, 4 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.4, 4 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.36, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.3, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.57, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.56, 4 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.55, 3 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.54, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.52, 4 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.51, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.43, 5 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.42, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.4, 4 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.3, 6 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.64, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.56, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.55, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.54, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.53, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.48, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.44, 5 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.43, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.39, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.36, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.33, 5 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.32, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.31, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.3, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.57, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.56, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.48, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.47, 3 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.43, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.41, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.4, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.39, 3 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.3, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.7, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.47, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.42, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.4, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.35, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.23, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.14, 3 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.51, 4 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.5, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.4, 4 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.38, 2 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.37, 4 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.35, 3 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.34, 4 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.33, 2 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.31, 2 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.3, 2 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.29, 3 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.28, 6 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.08, 2 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.7, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.51, 9 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.5, 6 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.48, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.47, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.46, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.39, 4 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.38, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.37, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.36, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.34, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.33, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.31, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.3, 5 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.29, 2 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.7, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.52, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.51, 10 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.5, 7 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.47, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.46, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.4, 5 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.38, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.37, 14 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.36, 6 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.35, 3 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.34, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.33, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.32, 3 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.3, 9 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.51, 7 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.49, 3 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.45, 3 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.4, 5 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.39, 5 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.38, 5 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.37, 3 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.36, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.34, 9 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.33, 8 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.32, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.3, 5 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.28, 5 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.27, 4 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.24, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.2, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.03, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.01, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.5, 3 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.49, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.48, 6 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.47, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.46, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.38, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.35, 5 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.34, 4 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.33, 6 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.28, 4 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.27, 3 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.2, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -111.89, 2 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.46, 2 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.45, 3 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.36, 6 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.35, 16 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.33, 12 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.27, 3 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.23, 2 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.16, 2 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.46, 2 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.43, 2 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.35, 12 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.34, 10 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.25, 2 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.24, 3 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.21, 2 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.18, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.46, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.44, 4 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.36, 3 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.35, 24 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.3, 4 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.26, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.25, 4 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.24, 3 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.23, 4 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.22, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.21, 3 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.17, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.15, 3 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -111.89, 2 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.45, 4 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.44, 3 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.43, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.41, 2 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.3, 7 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.29, 8 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.27, 2 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.18, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.16, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.47, 2 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.45, 33 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.31, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.3, 14 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.29, 5 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.28, 6 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.27, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.25, 2 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.24, 6 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.46, 40 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.45, 55 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.43, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.4, 3 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.37, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.31, 9 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.3, 3 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.29, 9 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.28, 3 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.27, 4 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.25, 12 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.24, 3 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.19, 4 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.18, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.17, 2 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.16, 2 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.46, 14 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.45, 9 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.44, 4 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.43, 3 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.41, 22 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.4, 20 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.39, 15 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.38, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.37, 18 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.36, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.32, 3 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.31, 13 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.3, 6 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.28, 4 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.27, 3 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.25, 6 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.22, 4 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.2, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.18, 10 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.17, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.07, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.42, 6 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.41, 29 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.4, 55 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.39, 95 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.38, 105 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.37, 71 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.36, 7 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.34, 11 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.33, 26 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.32, 5 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.31, 14 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.28, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.27, 3 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.25, 9 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.24, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.2, 3 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.44, 34 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.39, 67 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.38, 96 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.37, 22 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.36, 24 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.34, 45 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.33, 45 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.32, 34 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.31, 14 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.3, 2 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.28, 13 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.27, 2 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.24, 4 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.23, 2 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.46, 2 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.45, 7 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.44, 28 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.43, 4 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.41, 17 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.4, 28 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.39, 61 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.38, 43 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.37, 48 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.36, 18 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.35, 42 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.34, 31 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.33, 31 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.32, 9 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.31, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.3, 3 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.28, 4 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.27, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.22, 3 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.19, 2 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.17, 2 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.46, 12 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.45, 29 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.44, 54 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.43, 51 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.42, 3 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.41, 35 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.4, 47 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.39, 47 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.38, 58 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.37, 65 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.36, 58 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.35, 52 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.34, 33 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.33, 20 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.32, 11 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.31, 7 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.3, 6 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.29, 4 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.26, 2 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.46, 9 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.45, 21 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.44, 44 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.43, 64 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.42, 51 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.41, 40 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.4, 35 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.39, 32 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.38, 30 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.36, 16 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.35, 41 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.34, 6 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.33, 14 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.32, 4 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.3, 3 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.27, 3 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.22, 2 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.46, 15 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.45, 14 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.44, 9 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.43, 35 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.42, 16 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.41, 6 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.4, 29 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.39, 42 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.38, 23 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.37, 6 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.36, 14 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.33, 4 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.31, 5 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.3, 3 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.27, 2 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.2, 2 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.16, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.13, 2 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.09, 2 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.03, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.46, 3 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.45, 14 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.44, 8 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.43, 12 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.42, 18 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.41, 3 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.4, 3 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.39, 9 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.38, 38 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.37, 9 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.36, 4 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.33, 6 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.31, 10 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.3, 5 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.27, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.23, 3 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.21, 2 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.18, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.16, 2 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.15, 2 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.63, 2 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.61, 6 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.44, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.43, 8 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.42, 2 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.41, 7 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.4, 4 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.39, 4 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.37, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.36, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.34, 4 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.33, 4 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.31, 3 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.29, 3 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.27, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.22, 4 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.16, 2 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.15, 2 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.03, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.64, 3 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.63, 7 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.62, 7 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.61, 6 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.43, 3 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.42, 12 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.41, 7 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.4, 4 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.39, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.38, 2 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.37, 6 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.36, 3 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.35, 2 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.34, 3 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.33, 2 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.3, 2 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.27, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.42, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.41, 3 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.4, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.39, 2 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.36, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.34, 6 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.33, 5 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.29, 2 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.25, 3 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.44, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.38, 3 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.37, 3 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.36, 2 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.35, 5 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.34, 2 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.33, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.32, 2 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.31, 3 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.48, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.34, 3 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.33, 2 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.32, 2 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.31, 3 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.19, 2 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.16, 2 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.15, 3 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.16, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.51, 1 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.42, 10 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.41, 2 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.29, 2 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.51, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.44, 11 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.38, 2 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.27, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.61, 2 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.59, 6 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.55, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.54, 2 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.4, 2 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.39, 3 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.27, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.7, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.61, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.54, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.5, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.4, 3 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.39, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.76, -112.55, 2 ) );
+            points.Add( new LatLongWeighted( 33.76, -112.52, 1 ) );
+            points.Add( new LatLongWeighted( 33.76, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.76, -112.33, 2 ) );
+            points.Add( new LatLongWeighted( 33.76, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.55, 3 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.42, 2 ) );
+            points.Add( new LatLongWeighted( 33.78, -112.52, 1 ) );
+            points.Add( new LatLongWeighted( 33.78, -112.41, 2 ) );
+            points.Add( new LatLongWeighted( 33.79, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.85, -98.58, 1 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.65, 1 ) );
+            points.Add( new LatLongWeighted( 33.89, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.95, -112.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.96, -112.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.96, -112.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.97, -112.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.97, -112.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.97, -112.73, 3 ) );
+            points.Add( new LatLongWeighted( 33.98, -112.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.99, -112.77, 1 ) );
+            points.Add( new LatLongWeighted( 34.09, -117.66, 1 ) );
+            points.Add( new LatLongWeighted( 34.11, -109.88, 1 ) );
+            points.Add( new LatLongWeighted( 34.13, -77.87, 1 ) );
+            points.Add( new LatLongWeighted( 34.18, -119.21, 1 ) );
+            points.Add( new LatLongWeighted( 34.22, -119.06, 1 ) );
+            points.Add( new LatLongWeighted( 34.48, -118.34, 1 ) );
+            points.Add( new LatLongWeighted( 34.55, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 34.57, -113.18, 1 ) );
+            points.Add( new LatLongWeighted( 34.58, -113.17, 1 ) );
+            points.Add( new LatLongWeighted( 34.61, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 34.71, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 34.77, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 34.79, -82.17, 1 ) );
+            points.Add( new LatLongWeighted( 35.12, -120.63, 1 ) );
+            points.Add( new LatLongWeighted( 35.17, -107.89, 1 ) );
+            points.Add( new LatLongWeighted( 35.2, -106.75, 1 ) );
+            points.Add( new LatLongWeighted( 35.21, -111.62, 1 ) );
+            points.Add( new LatLongWeighted( 35.22, -111.59, 1 ) );
+            points.Add( new LatLongWeighted( 35.34, -106.6, 1 ) );
+            points.Add( new LatLongWeighted( 35.65, -78.47, 1 ) );
+            points.Add( new LatLongWeighted( 35.68, -109.05, 1 ) );
+            points.Add( new LatLongWeighted( 35.74, -84.02, 1 ) );
+            points.Add( new LatLongWeighted( 36.24, -115.06, 1 ) );
+            points.Add( new LatLongWeighted( 37.03, -93.31, 1 ) );
+            points.Add( new LatLongWeighted( 37.1, -94.51, 1 ) );
+            points.Add( new LatLongWeighted( 37.99, -100.88, 1 ) );
+            points.Add( new LatLongWeighted( 38.53, -90, 1 ) );
+            points.Add( new LatLongWeighted( 38.74, -90.77, 1 ) );
+            points.Add( new LatLongWeighted( 38.97, -76.21, 1 ) );
+            points.Add( new LatLongWeighted( 39.19, -96.58, 1 ) );
+            points.Add( new LatLongWeighted( 39.47, -118.77, 1 ) );
+            points.Add( new LatLongWeighted( 39.53, -119.83, 1 ) );
+            points.Add( new LatLongWeighted( 39.79, -103.52, 1 ) );
+            points.Add( new LatLongWeighted( 39.89, -104.95, 1 ) );
+            points.Add( new LatLongWeighted( 39.98, -86.02, 1 ) );
+            points.Add( new LatLongWeighted( 40.25, -74.23, 1 ) );
+            points.Add( new LatLongWeighted( 40.35, -80.09, 1 ) );
+            points.Add( new LatLongWeighted( 40.36, -105.11, 1 ) );
+            points.Add( new LatLongWeighted( 40.85, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 40.95, -91.53, 1 ) );
+            points.Add( new LatLongWeighted( 40.99, -90.42, 1 ) );
+            points.Add( new LatLongWeighted( 41.22, -96.18, 1 ) );
+            points.Add( new LatLongWeighted( 41.71, -81.35, 1 ) );
+            points.Add( new LatLongWeighted( 41.81, -87.82, 1 ) );
+            points.Add( new LatLongWeighted( 42.12, -80.04, 2 ) );
+            points.Add( new LatLongWeighted( 42.41, -83.45, 1 ) );
+            points.Add( new LatLongWeighted( 42.46, -88.97, 1 ) );
+            points.Add( new LatLongWeighted( 42.98, -73.76, 1 ) );
+            points.Add( new LatLongWeighted( 43.03, -87.98, 1 ) );
+            points.Add( new LatLongWeighted( 44.57, -91.67, 1 ) );
+            points.Add( new LatLongWeighted( 46.6, -95.54, 1 ) );
+            points.Add( new LatLongWeighted( 46.82, -95.85, 1 ) );
+            points.Add( new LatLongWeighted( 47.03, -122.92, 1 ) );
+            points.Add( new LatLongWeighted( 47.54, -111.3, 1 ) );
+            points.Add( new LatLongWeighted( 47.67, -122.05, 1 ) );
+            points.Add( new LatLongWeighted( 47.74, -116.84, 1 ) );
+            points.Add( new LatLongWeighted( 32.24, -110.9, 1 ) );
+            points.Add( new LatLongWeighted( 32.37, -111.08, 1 ) );
+            points.Add( new LatLongWeighted( 32.76, -97.42, 1 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.69, 1 ) );
+            points.Add( new LatLongWeighted( 33.27, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.29, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.29, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.3, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.3, -112.06, 3 ) );
+            points.Add( new LatLongWeighted( 33.3, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.3, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.96, 2 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.74, 2 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.95, 3 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.03, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.73, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.93, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.92, 4 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.97, 3 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.93, 3 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.92, 3 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.9, 4 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.3, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.03, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.91, 3 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.89, 3 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.03, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.01, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.96, 2 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.94, 2 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.92, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.91, 2 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.89, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -117.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.3, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.05, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.01, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.98, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.97, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.96, 3 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.94, 3 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.93, 4 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.92, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.91, 8 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.03, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.02, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.98, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.93, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.92, 5 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.91, 8 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.13, 4 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.05, 4 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.01, 3 ) );
+            points.Add( new LatLongWeighted( 33.51, -112, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -111.99, 3 ) );
+            points.Add( new LatLongWeighted( 33.51, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -111.92, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -111.91, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -111.9, 3 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -111.91, 3 ) );
+            points.Add( new LatLongWeighted( 33.52, -111.9, 6 ) );
+            points.Add( new LatLongWeighted( 33.52, -111.89, 4 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.08, 2 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -111.9, 3 ) );
+            points.Add( new LatLongWeighted( 33.53, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.05, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -111.92, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -111.91, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.04, 2 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.03, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -111.9, 7 ) );
+            points.Add( new LatLongWeighted( 33.55, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.06, 2 ) );
+            points.Add( new LatLongWeighted( 33.56, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -111.91, 3 ) );
+            points.Add( new LatLongWeighted( 33.56, -111.9, 2 ) );
+            points.Add( new LatLongWeighted( 33.56, -111.89, 2 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.91, 2 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.9, 6 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.89, 3 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.86, 4 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.74, 2 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.67, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.03, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.02, 4 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.97, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.93, 9 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.92, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.91, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.89, 3 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.87, 3 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.86, 3 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.85, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.84, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.37, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.05, 4 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.03, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.02, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.01, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -112, 3 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.98, 3 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.95, 4 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.93, 3 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.89, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.88, 9 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.87, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.85, 11 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.84, 6 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.83, 9 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.8, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.79, 3 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.78, 2 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.05, 4 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.03, 3 ) );
+            points.Add( new LatLongWeighted( 33.6, -112, 2 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.99, 5 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.98, 6 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.97, 2 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.96, 4 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.95, 3 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.94, 2 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.9, 3 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.89, 5 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.88, 4 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.87, 4 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.79, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.15, 4 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.03, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.02, 4 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.01, 3 ) );
+            points.Add( new LatLongWeighted( 33.61, -112, 2 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.99, 6 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.98, 5 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.97, 9 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.96, 3 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.95, 5 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.94, 2 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.93, 5 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.89, 4 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.88, 18 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.87, 3 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.86, 3 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.85, 2 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.73, 3 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.71, 2 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.07, 4 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.01, 2 ) );
+            points.Add( new LatLongWeighted( 33.62, -112, 8 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.99, 6 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.98, 5 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.97, 3 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.96, 2 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.95, 10 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.94, 4 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.93, 4 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.89, 2 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.88, 21 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.87, 9 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.86, 8 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.85, 2 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.84, 3 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -111.72, 2 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.11, 2 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.07, 3 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.05, 2 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.03, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.02, 3 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.01, 4 ) );
+            points.Add( new LatLongWeighted( 33.63, -112, 4 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.98, 6 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.97, 2 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.96, 3 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.95, 3 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.94, 7 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.93, 4 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.89, 5 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.88, 14 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.86, 13 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.85, 4 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.84, 3 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.16, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.08, 3 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.07, 5 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.05, 3 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.04, 10 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.03, 2 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.01, 2 ) );
+            points.Add( new LatLongWeighted( 33.64, -112, 3 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.99, 5 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.98, 9 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.97, 3 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.96, 15 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.95, 9 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.94, 3 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.93, 5 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.91, 5 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.9, 3 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.88, 3 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.87, 6 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.86, 4 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.85, 3 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.24, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.18, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.08, 2 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.07, 5 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.06, 2 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.05, 3 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.04, 9 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.03, 3 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.02, 4 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.01, 2 ) );
+            points.Add( new LatLongWeighted( 33.65, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.99, 6 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.98, 12 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.97, 2 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.96, 6 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.95, 2 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.94, 4 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.93, 14 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.91, 4 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.9, 3 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.89, 3 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.88, 21 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.87, 2 ) );
+            points.Add( new LatLongWeighted( 33.65, -111.86, 2 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.19, 3 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.17, 2 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.12, 2 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.09, 3 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.07, 2 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.06, 2 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.05, 5 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.04, 3 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.03, 4 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.01, 4 ) );
+            points.Add( new LatLongWeighted( 33.66, -112, 4 ) );
+            points.Add( new LatLongWeighted( 33.66, -111.99, 4 ) );
+            points.Add( new LatLongWeighted( 33.66, -111.98, 5 ) );
+            points.Add( new LatLongWeighted( 33.66, -111.92, 4 ) );
+            points.Add( new LatLongWeighted( 33.66, -111.9, 2 ) );
+            points.Add( new LatLongWeighted( 33.66, -111.89, 6 ) );
+            points.Add( new LatLongWeighted( 33.66, -111.88, 15 ) );
+            points.Add( new LatLongWeighted( 33.66, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.23, 2 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.09, 4 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.07, 6 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.06, 6 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.05, 5 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.03, 12 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.02, 8 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.01, 2 ) );
+            points.Add( new LatLongWeighted( 33.67, -112, 4 ) );
+            points.Add( new LatLongWeighted( 33.67, -111.92, 13 ) );
+            points.Add( new LatLongWeighted( 33.67, -111.91, 16 ) );
+            points.Add( new LatLongWeighted( 33.67, -111.9, 9 ) );
+            points.Add( new LatLongWeighted( 33.67, -111.89, 12 ) );
+            points.Add( new LatLongWeighted( 33.67, -111.88, 15 ) );
+            points.Add( new LatLongWeighted( 33.67, -111.87, 4 ) );
+            points.Add( new LatLongWeighted( 33.67, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.06, 3 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.05, 2 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.01, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112, 7 ) );
+            points.Add( new LatLongWeighted( 33.68, -111.99, 3 ) );
+            points.Add( new LatLongWeighted( 33.68, -111.98, 11 ) );
+            points.Add( new LatLongWeighted( 33.68, -111.97, 5 ) );
+            points.Add( new LatLongWeighted( 33.68, -111.96, 14 ) );
+            points.Add( new LatLongWeighted( 33.68, -111.92, 15 ) );
+            points.Add( new LatLongWeighted( 33.68, -111.91, 3 ) );
+            points.Add( new LatLongWeighted( 33.68, -111.9, 5 ) );
+            points.Add( new LatLongWeighted( 33.68, -111.89, 2 ) );
+            points.Add( new LatLongWeighted( 33.68, -111.87, 2 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.13, 2 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.04, 4 ) );
+            points.Add( new LatLongWeighted( 33.69, -112, 12 ) );
+            points.Add( new LatLongWeighted( 33.69, -111.99, 15 ) );
+            points.Add( new LatLongWeighted( 33.69, -111.98, 13 ) );
+            points.Add( new LatLongWeighted( 33.69, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -111.96, 3 ) );
+            points.Add( new LatLongWeighted( 33.69, -111.92, 13 ) );
+            points.Add( new LatLongWeighted( 33.69, -111.91, 2 ) );
+            points.Add( new LatLongWeighted( 33.69, -111.9, 2 ) );
+            points.Add( new LatLongWeighted( 33.69, -111.89, 2 ) );
+            points.Add( new LatLongWeighted( 33.69, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.04, 6 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.03, 4 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.02, 5 ) );
+            points.Add( new LatLongWeighted( 33.7, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.99, 2 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.98, 4 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.92, 3 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.91, 6 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.9, 6 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.89, 4 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.82, 3 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.11, 2 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.03, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -111.91, 3 ) );
+            points.Add( new LatLongWeighted( 33.71, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -111.89, 2 ) );
+            points.Add( new LatLongWeighted( 33.71, -111.86, 3 ) );
+            points.Add( new LatLongWeighted( 33.71, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -111.83, 9 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.72, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.72, -111.99, 5 ) );
+            points.Add( new LatLongWeighted( 33.72, -111.98, 3 ) );
+            points.Add( new LatLongWeighted( 33.72, -111.91, 4 ) );
+            points.Add( new LatLongWeighted( 33.72, -111.9, 3 ) );
+            points.Add( new LatLongWeighted( 33.72, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.72, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.72, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.99, 5 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.98, 3 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.1, 2 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.94, 3 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.93, 2 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.92, 2 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.88, 2 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.85, 3 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.84, 5 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.11, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.99, 3 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.98, 3 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.97, 7 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.96, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.94, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.92, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.84, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.79, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.77, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.76, 3 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.76, -112.33, 1 ) );
+            points.Add( new LatLongWeighted( 33.76, -111.99, 8 ) );
+            points.Add( new LatLongWeighted( 33.76, -111.98, 5 ) );
+            points.Add( new LatLongWeighted( 33.76, -111.97, 7 ) );
+            points.Add( new LatLongWeighted( 33.76, -111.96, 2 ) );
+            points.Add( new LatLongWeighted( 33.76, -111.95, 3 ) );
+            points.Add( new LatLongWeighted( 33.76, -111.94, 4 ) );
+            points.Add( new LatLongWeighted( 33.76, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.76, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.76, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.76, -111.77, 3 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.77, -111.99, 4 ) );
+            points.Add( new LatLongWeighted( 33.77, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.77, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.77, -111.96, 2 ) );
+            points.Add( new LatLongWeighted( 33.77, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.77, -111.92, 2 ) );
+            points.Add( new LatLongWeighted( 33.77, -111.89, 2 ) );
+            points.Add( new LatLongWeighted( 33.78, -112.11, 3 ) );
+            points.Add( new LatLongWeighted( 33.78, -111.99, 5 ) );
+            points.Add( new LatLongWeighted( 33.78, -111.98, 6 ) );
+            points.Add( new LatLongWeighted( 33.78, -111.97, 2 ) );
+            points.Add( new LatLongWeighted( 33.78, -111.96, 9 ) );
+            points.Add( new LatLongWeighted( 33.78, -111.95, 2 ) );
+            points.Add( new LatLongWeighted( 33.78, -111.94, 2 ) );
+            points.Add( new LatLongWeighted( 33.78, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.79, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.79, -111.98, 7 ) );
+            points.Add( new LatLongWeighted( 33.79, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.79, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.79, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.79, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.79, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.8, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.8, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.8, -111.88, 2 ) );
+            points.Add( new LatLongWeighted( 33.8, -111.87, 2 ) );
+            points.Add( new LatLongWeighted( 33.8, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.81, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.81, -111.96, 2 ) );
+            points.Add( new LatLongWeighted( 33.81, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.81, -111.89, 3 ) );
+            points.Add( new LatLongWeighted( 33.81, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.82, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.82, -111.92, 2 ) );
+            points.Add( new LatLongWeighted( 33.82, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.82, -111.87, 2 ) );
+            points.Add( new LatLongWeighted( 33.83, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.84, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.85, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.86, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.86, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.86, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.14, 2 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 34.26, -111.31, 1 ) );
+            points.Add( new LatLongWeighted( 34.63, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 39.3, -104.86, 1 ) );
+            points.Add( new LatLongWeighted( 39.77, -89.69, 1 ) );
+            points.Add( new LatLongWeighted( 39.96, -91.38, 1 ) );
+            points.Add( new LatLongWeighted( 40.37, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 41.8, -71.36, 1 ) );
+            points.Add( new LatLongWeighted( 41.86, -103.53, 1 ) );
+            points.Add( new LatLongWeighted( 42.46, -88.97, 1 ) );
+            points.Add( new LatLongWeighted( 43.04, -78.72, 1 ) );
+            points.Add( new LatLongWeighted( 43.19, -77.79, 1 ) );
+            points.Add( new LatLongWeighted( 43.56, -86.35, 1 ) );
+            points.Add( new LatLongWeighted( 44.11, -93.19, 1 ) );
+            points.Add( new LatLongWeighted( 46.83, -96.78, 1 ) );
+            points.Add( new LatLongWeighted( 47.61, -122.5, 2 ) );
+            points.Add( new LatLongWeighted( 48.48, -122.64, 1 ) );
+            points.Add( new LatLongWeighted( 48.9, -122.28, 1 ) );
+            points.Add( new LatLongWeighted( 31.4, -110.01, 1 ) );
+            points.Add( new LatLongWeighted( 31.44, -97.27, 1 ) );
+            points.Add( new LatLongWeighted( 31.99, -110.97, 1 ) );
+            points.Add( new LatLongWeighted( 32.22, -110.97, 1 ) );
+            points.Add( new LatLongWeighted( 32.22, -110.83, 1 ) );
+            points.Add( new LatLongWeighted( 32.26, -110.91, 1 ) );
+            points.Add( new LatLongWeighted( 32.32, -111.18, 1 ) );
+            points.Add( new LatLongWeighted( 32.37, -111.13, 1 ) );
+            points.Add( new LatLongWeighted( 32.49, -110.91, 2 ) );
+            points.Add( new LatLongWeighted( 32.72, -109.08, 1 ) );
+            points.Add( new LatLongWeighted( 32.76, -111.55, 1 ) );
+            points.Add( new LatLongWeighted( 32.88, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 32.89, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 32.89, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 32.94, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.05, -111.47, 1 ) );
+            points.Add( new LatLongWeighted( 33.05, -111.42, 2 ) );
+            points.Add( new LatLongWeighted( 33.06, -111.47, 1 ) );
+            points.Add( new LatLongWeighted( 33.06, -110.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.07, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.07, -111.47, 2 ) );
+            points.Add( new LatLongWeighted( 33.09, -111.5, 1 ) );
+            points.Add( new LatLongWeighted( 33.1, -111.49, 3 ) );
+            points.Add( new LatLongWeighted( 33.13, -111.54, 1 ) );
+            points.Add( new LatLongWeighted( 33.14, -111.56, 2 ) );
+            points.Add( new LatLongWeighted( 33.14, -111.52, 2 ) );
+            points.Add( new LatLongWeighted( 33.15, -111.57, 1 ) );
+            points.Add( new LatLongWeighted( 33.15, -111.56, 4 ) );
+            points.Add( new LatLongWeighted( 33.15, -111.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.15, -111.43, 2 ) );
+            points.Add( new LatLongWeighted( 33.16, -111.58, 1 ) );
+            points.Add( new LatLongWeighted( 33.16, -111.56, 4 ) );
+            points.Add( new LatLongWeighted( 33.16, -111.55, 4 ) );
+            points.Add( new LatLongWeighted( 33.17, -111.55, 1 ) );
+            points.Add( new LatLongWeighted( 33.18, -111.6, 3 ) );
+            points.Add( new LatLongWeighted( 33.18, -111.57, 2 ) );
+            points.Add( new LatLongWeighted( 33.19, -111.6, 2 ) );
+            points.Add( new LatLongWeighted( 33.19, -111.59, 1 ) );
+            points.Add( new LatLongWeighted( 33.19, -111.58, 1 ) );
+            points.Add( new LatLongWeighted( 33.2, -111.59, 2 ) );
+            points.Add( new LatLongWeighted( 33.2, -111.58, 2 ) );
+            points.Add( new LatLongWeighted( 33.2, -111.57, 3 ) );
+            points.Add( new LatLongWeighted( 33.2, -111.52, 1 ) );
+            points.Add( new LatLongWeighted( 33.2, -111.5, 1 ) );
+            points.Add( new LatLongWeighted( 33.21, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.21, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.21, -111.63, 1 ) );
+            points.Add( new LatLongWeighted( 33.21, -111.58, 4 ) );
+            points.Add( new LatLongWeighted( 33.21, -111.55, 4 ) );
+            points.Add( new LatLongWeighted( 33.21, -111.51, 1 ) );
+            points.Add( new LatLongWeighted( 33.22, -111.81, 1 ) );
+            points.Add( new LatLongWeighted( 33.22, -111.79, 1 ) );
+            points.Add( new LatLongWeighted( 33.22, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.22, -111.69, 1 ) );
+            points.Add( new LatLongWeighted( 33.22, -111.64, 1 ) );
+            points.Add( new LatLongWeighted( 33.22, -111.56, 3 ) );
+            points.Add( new LatLongWeighted( 33.22, -111.55, 4 ) );
+            points.Add( new LatLongWeighted( 33.23, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.23, -111.73, 1 ) );
+            points.Add( new LatLongWeighted( 33.23, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.23, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.23, -111.65, 1 ) );
+            points.Add( new LatLongWeighted( 33.23, -111.6, 1 ) );
+            points.Add( new LatLongWeighted( 33.23, -111.56, 4 ) );
+            points.Add( new LatLongWeighted( 33.23, -111.55, 2 ) );
+            points.Add( new LatLongWeighted( 33.23, -111.52, 2 ) );
+            points.Add( new LatLongWeighted( 33.23, -111.51, 1 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.65, 1 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.64, 1 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.63, 1 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.62, 4 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.61, 3 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.56, 3 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.55, 5 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.54, 6 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.53, 1 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.52, 1 ) );
+            points.Add( new LatLongWeighted( 33.24, -111.51, 4 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.81, 4 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.73, 1 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.69, 1 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.63, 4 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.62, 1 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.61, 1 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.57, 3 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.56, 3 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.55, 12 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.54, 4 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.52, 3 ) );
+            points.Add( new LatLongWeighted( 33.25, -111.51, 2 ) );
+            points.Add( new LatLongWeighted( 33.26, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.26, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.26, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.26, -111.69, 2 ) );
+            points.Add( new LatLongWeighted( 33.26, -111.66, 1 ) );
+            points.Add( new LatLongWeighted( 33.26, -111.63, 1 ) );
+            points.Add( new LatLongWeighted( 33.26, -111.62, 3 ) );
+            points.Add( new LatLongWeighted( 33.26, -111.61, 1 ) );
+            points.Add( new LatLongWeighted( 33.26, -111.57, 3 ) );
+            points.Add( new LatLongWeighted( 33.26, -111.56, 7 ) );
+            points.Add( new LatLongWeighted( 33.26, -111.55, 8 ) );
+            points.Add( new LatLongWeighted( 33.27, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.27, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.27, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.27, -111.71, 5 ) );
+            points.Add( new LatLongWeighted( 33.27, -111.7, 1 ) );
+            points.Add( new LatLongWeighted( 33.27, -111.67, 6 ) );
+            points.Add( new LatLongWeighted( 33.27, -111.66, 1 ) );
+            points.Add( new LatLongWeighted( 33.27, -111.53, 1 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.72, 2 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.71, 4 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.7, 2 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.69, 5 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.68, 3 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.65, 1 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.56, 5 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.28, -111.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.29, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.29, -111.8, 2 ) );
+            points.Add( new LatLongWeighted( 33.29, -111.72, 2 ) );
+            points.Add( new LatLongWeighted( 33.29, -111.71, 2 ) );
+            points.Add( new LatLongWeighted( 33.29, -111.7, 1 ) );
+            points.Add( new LatLongWeighted( 33.29, -111.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.3, -112.01, 2 ) );
+            points.Add( new LatLongWeighted( 33.3, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.3, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.3, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.3, -111.83, 2 ) );
+            points.Add( new LatLongWeighted( 33.3, -111.79, 2 ) );
+            points.Add( new LatLongWeighted( 33.3, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.3, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.3, -111.76, 2 ) );
+            points.Add( new LatLongWeighted( 33.3, -111.74, 2 ) );
+            points.Add( new LatLongWeighted( 33.3, -111.73, 1 ) );
+            points.Add( new LatLongWeighted( 33.3, -111.71, 3 ) );
+            points.Add( new LatLongWeighted( 33.31, -112.01, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.89, 2 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.81, 2 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.7, 2 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.68, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.59, 2 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.37, 3 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.89, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.81, 2 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.71, 3 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.7, 9 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.69, 4 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.61, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.6, 2 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.59, 3 ) );
+            points.Add( new LatLongWeighted( 33.32, -111.37, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.8, 3 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.77, 3 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.71, 5 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.7, 4 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.6, 13 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.59, 23 ) );
+            points.Add( new LatLongWeighted( 33.33, -111.58, 2 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.84, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.82, 2 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.81, 4 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.8, 5 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.79, 4 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.75, 3 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.6, 3 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.59, 26 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.58, 2 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.44, 3 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.43, 6 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.89, 2 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.76, 2 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.74, 2 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.7, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.6, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.59, 25 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.58, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -111.45, 2 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.86, 2 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.84, 2 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.81, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.8, 3 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.79, 7 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.77, 2 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.76, 4 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.75, 2 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.74, 2 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.73, 2 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.72, 3 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.71, 2 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.7, 5 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.69, 2 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.67, 4 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.66, 15 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.65, 22 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.64, 15 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.63, 27 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.62, 21 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.61, 28 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.6, 6 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.59, 7 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.47, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.45, 5 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.44, 4 ) );
+            points.Add( new LatLongWeighted( 33.36, -111.43, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.87, 3 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.84, 3 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.81, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.76, 6 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.75, 2 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.74, 4 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.72, 4 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.71, 2 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.7, 5 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.69, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.68, 11 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.67, 12 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.66, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.65, 8 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.64, 4 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.63, 26 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.62, 31 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.61, 12 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.6, 10 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.59, 2 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.48, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.47, 3 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.46, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -111.44, 2 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.01, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.94, 3 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.87, 2 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.86, 4 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.81, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.79, 7 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.76, 3 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.75, 3 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.73, 3 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.72, 3 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.69, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.68, 8 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.67, 6 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.66, 8 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.65, 13 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.64, 4 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.63, 28 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.62, 28 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.61, 47 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.6, 6 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.59, 2 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.58, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.57, 9 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.56, 5 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.53, 15 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.52, 24 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.51, 2 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.49, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.47, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.46, 5 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -111.44, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.82, 2 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.81, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.8, 4 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.79, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.75, 3 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.74, 2 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.73, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.72, 3 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.71, 4 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.68, 5 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.67, 11 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.66, 16 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.65, 2 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.64, 9 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.63, 10 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.62, 12 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.61, 5 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.6, 21 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.59, 6 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.58, 10 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.57, 7 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.56, 2 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.55, 4 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.54, 10 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.53, 19 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.52, 9 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.5, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.49, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.46, 2 ) );
+            points.Add( new LatLongWeighted( 33.39, -104.56, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.03, 2 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.9, 2 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.87, 3 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.85, 3 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.84, 2 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.81, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.8, 2 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.78, 3 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.76, 3 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.75, 4 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.72, 7 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.71, 7 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.69, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.68, 3 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.67, 8 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.66, 3 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.65, 4 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.64, 6 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.63, 6 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.62, 48 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.61, 37 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.6, 50 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.59, 41 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.58, 15 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.57, 14 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.56, 26 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.55, 20 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.54, 13 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.53, 4 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.52, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.49, 3 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.48, 2 ) );
+            points.Add( new LatLongWeighted( 33.4, -111.47, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -110.79, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.88, 3 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.79, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.78, 3 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.76, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.73, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.72, 3 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.71, 4 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.7, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.69, 3 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.68, 3 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.66, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.65, 13 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.64, 18 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.63, 14 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.62, 28 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.61, 43 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.6, 31 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.59, 16 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.58, 11 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.57, 9 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.56, 9 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.55, 17 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.54, 11 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.52, 7 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.5, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.49, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -111.48, 5 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.84, 2 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.83, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.79, 5 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.78, 4 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.76, 3 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.75, 3 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.74, 9 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.73, 2 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.71, 2 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.7, 5 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.69, 7 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.67, 16 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.66, 11 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.65, 8 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.64, 11 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.62, 10 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.61, 32 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.6, 18 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.59, 8 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.58, 7 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.57, 9 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.56, 10 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.55, 9 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.54, 4 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.53, 2 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.52, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.51, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.5, 2 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.49, 4 ) );
+            points.Add( new LatLongWeighted( 33.42, -111.48, 3 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.87, 2 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.79, 5 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.77, 2 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.76, 2 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.74, 3 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.73, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.72, 4 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.71, 2 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.7, 3 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.69, 3 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.67, 3 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.66, 5 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.65, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.64, 5 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.63, 14 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.62, 18 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.61, 4 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.6, 5 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.59, 19 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.58, 12 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.57, 2 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.56, 5 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.55, 5 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.52, 5 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.51, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.5, 2 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.49, 3 ) );
+            points.Add( new LatLongWeighted( 33.43, -111.48, 4 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.82, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.81, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.8, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.79, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.76, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.73, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.7, 6 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.69, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.68, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.67, 3 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.64, 7 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.63, 8 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.62, 6 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.61, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.6, 3 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.59, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.58, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.57, 13 ) );
+            points.Add( new LatLongWeighted( 33.44, -111.49, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.54, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.32, 3 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.84, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.82, 6 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.8, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.78, 4 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.76, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.71, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.7, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.68, 4 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.67, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.65, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.64, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.63, 5 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.62, 13 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.61, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.6, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.58, 2 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.57, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -111.53, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.4, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.82, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.81, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.7, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.69, 5 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.68, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.67, 6 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.66, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.65, 3 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.62, 5 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.58, 4 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.57, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.56, 7 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.55, 3 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.53, 2 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.81, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.7, 4 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.69, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.68, 2 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.67, 4 ) );
+            points.Add( new LatLongWeighted( 33.47, -111.65, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.24, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.18, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.09, 2 ) );
+            points.Add( new LatLongWeighted( 33.48, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.72, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.7, 5 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.69, 5 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.67, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -111.66, 4 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.7, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.68, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.67, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.66, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -111.65, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.46, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -111.92, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -111.9, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -111.86, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -111.85, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -111.93, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -111.94, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112, 2 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.95, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.16, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.12, 2 ) );
+            points.Add( new LatLongWeighted( 33.69, -117.78, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -111.91, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.83, -118.33, 1 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.89, -109.31, 1 ) );
+            points.Add( new LatLongWeighted( 33.92, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 34.11, -116.42, 1 ) );
+            points.Add( new LatLongWeighted( 34.22, -119.14, 1 ) );
+            points.Add( new LatLongWeighted( 34.23, -111.31, 1 ) );
+            points.Add( new LatLongWeighted( 34.26, -110.09, 1 ) );
+            points.Add( new LatLongWeighted( 35.15, -82.45, 1 ) );
+            points.Add( new LatLongWeighted( 36.22, -86.75, 1 ) );
+            points.Add( new LatLongWeighted( 39.11, -75.53, 1 ) );
+            points.Add( new LatLongWeighted( 41.73, -87.94, 1 ) );
+            points.Add( new LatLongWeighted( 41.75, -93.61, 1 ) );
+            points.Add( new LatLongWeighted( 42.51, -92.49, 1 ) );
+            points.Add( new LatLongWeighted( 42.9, -85.9, 1 ) );
+            points.Add( new LatLongWeighted( 44.08, -121.3, 1 ) );
+            points.Add( new LatLongWeighted( 47.35, -122.06, 1 ) );
+            points.Add( new LatLongWeighted( 47.66, -117.09, 1 ) );
+            points.Add( new LatLongWeighted( 48.26, -122.74, 1 ) );
+            points.Add( new LatLongWeighted( 32.95, -117.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.27, -111.68, 1 ) );
+            points.Add( new LatLongWeighted( 33.29, -111.69, 1 ) );
+            points.Add( new LatLongWeighted( 33.3, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.31, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -111.74, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.61, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -111.75, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.08, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.16, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.37, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.03, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.01, 2 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.61, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.29, 2 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.2, 2 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.12, 2 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.7, -111.99, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.71, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.72, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.27, 4 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.11, 2 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.1, 3 ) );
+            points.Add( new LatLongWeighted( 33.73, -111.98, 1 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.13, 2 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.12, 3 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.11, 8 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.1, 3 ) );
+            points.Add( new LatLongWeighted( 33.74, -112.09, 2 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.33, 1 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.11, 5 ) );
+            points.Add( new LatLongWeighted( 33.75, -112.1, 8 ) );
+            points.Add( new LatLongWeighted( 33.75, -111.97, 1 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.11, 5 ) );
+            points.Add( new LatLongWeighted( 33.77, -112.1, 7 ) );
+            points.Add( new LatLongWeighted( 33.78, -112.12, 2 ) );
+            points.Add( new LatLongWeighted( 33.78, -112.11, 9 ) );
+            points.Add( new LatLongWeighted( 33.78, -112.1, 8 ) );
+            points.Add( new LatLongWeighted( 33.78, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.79, -112.12, 12 ) );
+            points.Add( new LatLongWeighted( 33.79, -112.11, 6 ) );
+            points.Add( new LatLongWeighted( 33.79, -112.07, 2 ) );
+            points.Add( new LatLongWeighted( 33.79, -111.96, 1 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.13, 11 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.12, 4 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.8, -112.07, 6 ) );
+            points.Add( new LatLongWeighted( 33.8, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.81, -112.13, 20 ) );
+            points.Add( new LatLongWeighted( 33.81, -112.12, 13 ) );
+            points.Add( new LatLongWeighted( 33.81, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.81, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.82, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.82, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.82, -112.05, 3 ) );
+            points.Add( new LatLongWeighted( 33.82, -112.04, 2 ) );
+            points.Add( new LatLongWeighted( 33.82, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.83, -112.14, 16 ) );
+            points.Add( new LatLongWeighted( 33.83, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.83, -112.12, 3 ) );
+            points.Add( new LatLongWeighted( 33.83, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.83, -112.07, 2 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.14, 15 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.13, 12 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.12, 6 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.11, 13 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.1, 6 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.07, 3 ) );
+            points.Add( new LatLongWeighted( 33.84, -112.04, 1 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.14, 22 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.13, 64 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.12, 33 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.11, 58 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.1, 30 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.09, 25 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.08, 2 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.07, 2 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.16, 3 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.14, 33 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.13, 17 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.12, 41 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.11, 19 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.1, 22 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.09, 7 ) );
+            points.Add( new LatLongWeighted( 33.86, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.16, 21 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.15, 12 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.14, 44 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.13, 6 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.12, 3 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.11, 10 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.1, 10 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.09, 5 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.87, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.17, 8 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.16, 11 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.15, 19 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.14, 13 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.08, 3 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.06, 1 ) );
+            points.Add( new LatLongWeighted( 33.88, -112.05, 3 ) );
+            points.Add( new LatLongWeighted( 33.89, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.89, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.89, -112.05, 2 ) );
+            points.Add( new LatLongWeighted( 33.9, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.9, -112.07, 1 ) );
+            points.Add( new LatLongWeighted( 33.91, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.91, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.92, -112.14, 4 ) );
+            points.Add( new LatLongWeighted( 33.92, -112.13, 3 ) );
+            points.Add( new LatLongWeighted( 33.92, -112.12, 5 ) );
+            points.Add( new LatLongWeighted( 33.92, -112.11, 3 ) );
+            points.Add( new LatLongWeighted( 33.93, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.93, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.93, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.94, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.97, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 34.05, -112.16, 1 ) );
+            points.Add( new LatLongWeighted( 34.07, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 34.32, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 34.47, -112.5, 1 ) );
+            points.Add( new LatLongWeighted( 34.56, -112.47, 1 ) );
+            points.Add( new LatLongWeighted( 34.56, -111.87, 1 ) );
+            points.Add( new LatLongWeighted( 34.64, -112.33, 1 ) );
+            points.Add( new LatLongWeighted( 34.66, -118.27, 1 ) );
+            points.Add( new LatLongWeighted( 34.7, -112.3, 1 ) );
+            points.Add( new LatLongWeighted( 44.08, -121.32, 1 ) );
+            points.Add( new LatLongWeighted( 45.71, -122.7, 1 ) );
+            points.Add( new LatLongWeighted( 45.74, -122.64, 1 ) );
+            points.Add( new LatLongWeighted( 47.22, -122.85, 1 ) );
+            points.Add( new LatLongWeighted( 32.75, -111.68, 1 ) );
+            points.Add( new LatLongWeighted( 32.99, -96.69, 1 ) );
+            points.Add( new LatLongWeighted( 33.3, -112.44, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.32, -112.44, 2 ) );
+            points.Add( new LatLongWeighted( 33.33, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -112.44, 1 ) );
+            points.Add( new LatLongWeighted( 33.33, -112.43, 3 ) );
+            points.Add( new LatLongWeighted( 33.34, -112.52, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -112.44, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -112.43, 1 ) );
+            points.Add( new LatLongWeighted( 33.34, -111.88, 1 ) );
+            points.Add( new LatLongWeighted( 33.35, -112.44, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.36, -112.43, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.71, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.58, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.41, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.37, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.57, 2 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.22, 3 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.21, 2 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.2, 2 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.1, 1 ) );
+            points.Add( new LatLongWeighted( 33.38, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.57, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.56, 2 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.28, 2 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.17, 2 ) );
+            points.Add( new LatLongWeighted( 33.39, -112.13, 3 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.58, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.56, 2 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.4, -112.1, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.61, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.58, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.56, 3 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.46, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.29, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.28, 4 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.27, 1 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.26, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.22, 2 ) );
+            points.Add( new LatLongWeighted( 33.41, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.61, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.6, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.46, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.42, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.41, 2 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.4, 4 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.33, 2 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.3, 4 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.28, 7 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.27, 7 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.25, 5 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.22, 2 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.2, 2 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.42, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.56, 2 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.53, 2 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.43, 2 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.42, 3 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.4, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.32, 11 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.31, 3 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.3, 4 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.29, 5 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.24, 3 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.23, 4 ) );
+            points.Add( new LatLongWeighted( 33.43, -112.2, 3 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.56, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.54, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.52, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.44, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.42, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.41, 3 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.39, 5 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.36, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.33, 5 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.32, 4 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.31, 9 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.3, 6 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.29, 2 ) );
+            points.Add( new LatLongWeighted( 33.44, -112.09, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.56, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.54, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.52, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.48, 3 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.42, 7 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.4, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.33, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.32, 4 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.31, 6 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.3, 4 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.25, 5 ) );
+            points.Add( new LatLongWeighted( 33.45, -112.2, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.42, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.41, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.4, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.36, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.32, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.31, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.19, 2 ) );
+            points.Add( new LatLongWeighted( 33.46, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.51, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.4, 11 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.38, 3 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.37, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.36, 6 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.35, 4 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.34, 5 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.33, 6 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.32, 4 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.31, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.3, 7 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.29, 11 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.28, 6 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.27, 3 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.26, 7 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.25, 2 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.24, 6 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.23, 10 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.47, -112.08, 2 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.51, 4 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.5, 5 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.4, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.39, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.38, 3 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.37, 5 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.36, 2 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.34, 6 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.33, 4 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.32, 2 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.31, 13 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.3, 8 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.29, 12 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.26, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.24, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.16, 1 ) );
+            points.Add( new LatLongWeighted( 33.48, -112.05, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.51, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.5, 5 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.4, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.39, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.35, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.34, 3 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.33, 5 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.31, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.3, 12 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.29, 5 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.23, 2 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.49, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.51, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.5, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.4, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.39, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.38, 4 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.37, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.36, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.34, 4 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.33, 7 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.3, 7 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.28, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.27, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.26, 3 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.2, 1 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.13, 2 ) );
+            points.Add( new LatLongWeighted( 33.5, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.77, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.48, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.46, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.33, 3 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.3, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.29, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.27, 5 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.25, 4 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.24, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.23, 3 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.21, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.15, 2 ) );
+            points.Add( new LatLongWeighted( 33.51, -112.08, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.46, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.36, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.33, 6 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.32, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.52, -112.21, 2 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.34, 5 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.23, 2 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.21, 2 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.15, 1 ) );
+            points.Add( new LatLongWeighted( 33.53, -112.06, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.46, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.54, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.27, 1 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.25, 2 ) );
+            points.Add( new LatLongWeighted( 33.55, -112.15, 2 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.45, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.27, 2 ) );
+            points.Add( new LatLongWeighted( 33.56, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.27, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.26, 2 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.25, 2 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.24, 1 ) );
+            points.Add( new LatLongWeighted( 33.57, -112.18, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.41, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.25, 2 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.58, -112.22, 2 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.3, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.28, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.22, 1 ) );
+            points.Add( new LatLongWeighted( 33.59, -112.19, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.36, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.34, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.33, 1 ) );
+            points.Add( new LatLongWeighted( 33.6, -112.02, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.4, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.32, 2 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.3, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.61, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.43, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.38, 2 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.23, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.62, -112, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.42, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.63, -112.11, 1 ) );
+            points.Add( new LatLongWeighted( 33.64, -112.46, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.25, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.17, 1 ) );
+            points.Add( new LatLongWeighted( 33.65, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.66, -112.12, 1 ) );
+            points.Add( new LatLongWeighted( 33.67, -112.24, 2 ) );
+            points.Add( new LatLongWeighted( 33.68, -112.29, 1 ) );
+            points.Add( new LatLongWeighted( 33.69, -112.32, 2 ) );
+            points.Add( new LatLongWeighted( 33.7, -112.14, 1 ) );
+            points.Add( new LatLongWeighted( 33.73, -112.44, 1 ) );
+            points.Add( new LatLongWeighted( 33.85, -112.13, 1 ) );
+            points.Add( new LatLongWeighted( 33.95, -118.35, 1 ) );
+            points.Add( new LatLongWeighted( 33.99, -116.98, 1 ) );
+            points.Add( new LatLongWeighted( 39.94, -104.96, 1 ) );
+            points.Add( new LatLongWeighted( 40.77, -97.3, 1 ) );
+
+            this.HeatMapData = points.Select( a => a.Weight > 1 
+                ? string.Format( "{{location: new google.maps.LatLng({0}, {1}), weight: {2}}}", a.Lat, a.Long, a.Weight )
+                : string.Format( "new google.maps.LatLng({0}, {1})", a.Lat, a.Long)).ToList().AsDelimited( ",\n" );
 
             StyleCode = styleCode;
             hfPolygonColors.Value = polygonColors;
