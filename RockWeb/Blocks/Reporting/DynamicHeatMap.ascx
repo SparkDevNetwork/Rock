@@ -4,9 +4,6 @@
 
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
-    <Triggers>
-        <asp:PostBackTrigger ControlID="ddlUserDataView" />
-    </Triggers>
     <ContentTemplate>
 
         <Rock:NotificationBox ID="nbConfigurationWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
@@ -20,7 +17,13 @@
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlUserDataView" runat="server" Label="Dataview" Help="Select the dataview to use to filter the reults." Required="true" AutoPostBack="true" />
+                        <Rock:RockDropDownList ID="ddlUserDataView" runat="server" Label="Dataview" Help="Select the dataview to use to filter the reults." Required="true" />
+                        <asp:Panel ID="pnlFilter" runat="server">
+                            <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" Required="false" />
+                        </asp:Panel>
+                        <div class="actions margin-t-md">
+                            <asp:LinkButton ID="btnFilter" runat="server" AccessKey="m" Text="Filter" CssClass="btn btn-primary btn-sm" OnClick="btnFilter_Click" />
+                        </div>
                     </div>
                 </div>
 

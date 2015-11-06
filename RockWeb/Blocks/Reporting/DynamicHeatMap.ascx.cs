@@ -44,7 +44,8 @@ namespace RockWeb.Blocks.Reporting
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 3 )]
     [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "", 4 )]
     [TextField( "Polygon Colors", "Comma-Delimited list of colors to use when displaying multiple polygons (e.g. #f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc).", true, "#f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc", "", 5 )]
-    [DecimalField( "Point Grouping", "The number of miles per to use to group points that are close together. For example, enter 0.25 to group points in 1/4 mile blocks. Increase this if the heatmap has lots of points and is slow")]
+    [DecimalField( "Point Grouping", "The number of miles per to use to group points that are close together. For example, enter 0.25 to group points in 1/4 mile blocks. Increase this if the heatmap has lots of points and is slow", order: 6 )]
+    [BooleanField( "Show Filter", defaultValue: true )]
     public partial class DynamicHeatMap : RockBlockCustomSettings
     {
         /// <summary>
@@ -79,6 +80,8 @@ namespace RockWeb.Blocks.Reporting
                 LoadDropDowns();
             }
 
+            cpCampuses.Campuses = CampusCache.All();
+
             this.LoadGoogleMapsApi();
         }
 
@@ -101,8 +104,17 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnLoad( e );
 
-            lMessages.Text = string.Empty;
-            pnlMap.Visible = true;
+            if ( !this.IsPostBack )
+            {
+                var campusIds = this.GetUserPreference( GetUserPreferenceKey( "Campuses" ) ).SplitDelimitedValues().AsIntegerList();
+                var dataViewGuid = this.GetUserPreference( GetUserPreferenceKey( "DataView" ) ).AsGuidOrNull();
+                cpCampuses.SetValues( campusIds );
+                ddlUserDataView.SetValue( dataViewGuid );
+                lMessages.Text = string.Empty;
+                pnlMap.Visible = true;
+                pnlFilter.Visible = this.GetAttributeValue( "ShowFilter" ).AsBooleanOrNull() ?? true;
+            }
+            
             ShowMap();
         }
 
@@ -273,12 +285,22 @@ namespace RockWeb.Blocks.Reporting
             if ( qryPersonIds == null )
             {
                 // if no dataview was specified, show nothing
-                qryPersonIds = new PersonService( rockContext ).Queryable().Where( a => false).Select( a => a.Id );
+                qryPersonIds = new PersonService( rockContext ).Queryable().Where( a => false ).Select( a => a.Id );
             }
 
-            var qryLocationGroupMembers = groupMemberService.Queryable()
+            var qryGroupMembers = groupMemberService.Queryable();
+            
+            if ( pnlFilter.Visible )
+            {
+                var campusIds = cpCampuses.SelectedCampusIds;
+                if ( campusIds.Any() )
+                {
+                    qryGroupMembers = qryGroupMembers.Where( a => a.Group.CampusId.HasValue && campusIds.Contains( a.Group.CampusId.Value ) );
+                }
+            }
+
+            var qryLocationGroupMembers = qryGroupMembers
                 .Where( a => a.Group.GroupTypeId == groupTypeFamilyId )
-                .Where( a => a.GroupRoleId == groupRoleAdultId )
                 .Where( a => a.Group.IsActive )
                 .Select( a => new
                 {
@@ -302,7 +324,7 @@ namespace RockWeb.Blocks.Reporting
             List<LatLongWeighted> points = locationList;
 
             // cluster points that are close together
-            double? milesPerGrouping = this.GetAttributeValue("PointGrouping").AsDoubleOrNull();
+            double? milesPerGrouping = this.GetAttributeValue( "PointGrouping" ).AsDoubleOrNull();
             if ( milesPerGrouping.HasValue && milesPerGrouping > 0 )
             {
                 var metersPerLatitudePHX = 110886.79;
@@ -390,5 +412,28 @@ namespace RockWeb.Blocks.Reporting
                 ddlUserDataView.Items.Add( new ListItem( dataView.Name, dataView.Guid.ToString() ) );
             }
         }
-    }
+
+        /// <summary>
+        /// Gets the user preference key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        private string GetUserPreferenceKey( string key )
+        {
+            return string.Format( "{0}_{1}", this.BlockId, key );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnFilter_Click( object sender, EventArgs e )
+        {
+            // reload the full page to ensure the updated HeatMapData is rendered correctly
+            this.SetUserPreference( GetUserPreferenceKey( "Campuses" ), cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
+            this.SetUserPreference( GetUserPreferenceKey( "DataView" ), ddlUserDataView.SelectedValue );
+            NavigateToPage( this.CurrentPageReference );
+        }
+}
 }
