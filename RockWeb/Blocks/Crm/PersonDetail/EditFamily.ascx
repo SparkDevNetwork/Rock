@@ -52,8 +52,8 @@
                                             
                                         </div>
                                         <div class="actions">
-                                            <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-default btn-move btn-xs" CommandName="Move"><i class="fa fa-external-link"></i> Move to New Family</asp:LinkButton>
-                                            <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-xs" CommandName="Remove"><i class="fa fa-times"></i> Remove from Family</asp:LinkButton>
+                                            <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-default btn-move btn-xs" ToolTip="Move to New Family" CommandName="Move"><i class="fa fa-external-link"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-default btn-xs" Tooltip="Remove from Family" CommandName="Remove"><i class="fa fa-times"></i></asp:LinkButton>
                                         </div>
                                     </li>
                                 </ItemTemplate>

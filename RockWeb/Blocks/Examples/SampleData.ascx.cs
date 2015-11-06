@@ -198,6 +198,11 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         private static int _kioskDeviceId = 2;
 
+        /// <summary>
+        /// The marital status defined type.
+        /// </summary>
+        DefinedTypeCache _maritalStatusDefinedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
+
         #endregion
 
         #region Properties
@@ -291,7 +296,7 @@ namespace RockWeb.Blocks.Examples
                 nbMessage.Title = "Oops!";
                 nbMessage.NotificationBoxType = NotificationBoxType.Danger;
                 nbMessage.Text = string.Format(
-                    "That wasn't supposed to happen.  The error was:<br/>{0}<br/>{1}<br/>{2}",
+                    "That wasn't supposed to happen. The error was:<br/>{0}<br/>{1}<br/>{2}",
                     ex.Message.ConvertCrLfToHtmlBr(),
                     FlattenInnerExceptions( ex.InnerException ),
                     HttpUtility.HtmlEncode( ex.StackTrace ).ConvertCrLfToHtmlBr() );
@@ -505,6 +510,12 @@ namespace RockWeb.Blocks.Examples
                 ts = _stopwatch.Elapsed;
                 AppendFormat( "{0:00}:{1:00}.{2:00} notes added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
+                // Add Person Previous LastNames
+                AddPeoplesPreviousNames( elemFamilies, rockContext );
+                rockContext.SaveChanges( disablePrePostProcessing: true );
+                ts = _stopwatch.Elapsed;
+                AppendFormat( "{0:00}:{1:00}.{2:00} previous names added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
                 // Add Person Metaphone/Sounds-like stuff
                 AddMetaphone();
 
@@ -577,6 +588,45 @@ namespace RockWeb.Blocks.Examples
                 int personId = _peopleDictionary[ r.PersonGuid.AsGuid() ];
                 AddNote( personId, r.Type, r.Text, r.Date, r.ByPersonGuid, r.IsPrivate, r.IsAlert, rockContext );
 	        }
+        }
+
+        /// <summary>
+        /// Adds the peoples previous names.
+        /// </summary>
+        /// <param name="elemFamilies">The elem families.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void AddPeoplesPreviousNames( XElement elemFamilies, RockContext rockContext )
+        {
+            var peopleWithNotes = from n in elemFamilies.Elements( "family" ).Elements( "members" ).Elements( "person" ).Elements( "previousNames" ).Elements( "name" )
+                                  select new
+                                  {
+                                      PersonGuid = n.Parent.Parent.Attribute( "guid" ).Value,
+                                      LastName = n.Attribute( "lastName" ).Value,
+                                  };
+
+            foreach ( var r in peopleWithNotes )
+            {
+                int personId = _peopleDictionary[r.PersonGuid.AsGuid()];
+                int personAliasId = _peopleAliasDictionary[r.PersonGuid.AsGuid()];
+                AddPreviousName( personAliasId, r.LastName, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Adds the name of the previous.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="previousLastName">Last name of the previous.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void AddPreviousName( int personAliasId, string previousLastName, RockContext rockContext )
+        {
+                var personPreviousNameService = new PersonPreviousNameService( rockContext );
+                var previousName = new PersonPreviousName()
+                {
+                    LastName = previousLastName,
+                    PersonAliasId = personAliasId
+                };
+                personPreviousNameService.Add( previousName );
         }
 
         /// <summary>
@@ -1154,24 +1204,25 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// Adds a new defined value to a given DefinedType.
         /// </summary>
-        /// <param name="topic">the string value of the new defined value</param>
+        /// <param name="stringValue">the string value of the new defined value</param>
         /// <param name="definedTypeCache">a defined type cache to which the defined value will be added.</param>
         /// <param name="rockContext"></param>
         /// <returns></returns>
-        private DefinedValueCache AddDefinedTypeValue( string topic, DefinedTypeCache definedTypeCache, RockContext rockContext )
+        private DefinedValueCache AddDefinedTypeValue( string stringValue, DefinedTypeCache definedTypeCache, RockContext rockContext )
         {
             DefinedValueService definedValueService = new DefinedValueService( rockContext );
             
             DefinedValue definedValue = new DefinedValue {
                 Id = 0,
                 IsSystem = false,
-                Value = topic,
+                Value = stringValue,
                 Description = "",
                 CreatedDateTime = RockDateTime.Now,
                 DefinedTypeId = definedTypeCache.Id
             };
             definedValueService.Add( definedValue );
-            rockContext.SaveChanges();
+            rockContext.ChangeTracker.DetectChanges();
+            rockContext.SaveChanges( disablePrePostProcessing: true );
 
             Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
             Rock.Web.Cache.DefinedTypeCache.Flush( definedTypeCache.Id );
@@ -1248,6 +1299,7 @@ namespace RockWeb.Blocks.Examples
             CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
             FinancialBatchService financialBatchService = new FinancialBatchService( rockContext );
             FinancialTransactionService financialTransactionService = new FinancialTransactionService( rockContext );
+            PersonPreviousNameService personPreviousNameService = new PersonPreviousNameService( rockContext );
 
             // delete the batch data
             List<int> imageIds = new List<int>();
@@ -1323,6 +1375,12 @@ namespace RockWeb.Blocks.Examples
                             || (n.NoteType.EntityTypeId == _personEntityTypeId && n.EntityId == person.Id ) ) )
                         {
                             noteService.Delete( note );
+                        }
+
+                        // delete previous names on their records
+                        foreach ( var previousName in personPreviousNameService.Queryable().Where( r => r.PersonAlias.PersonId == person.Id ) )
+                        {
+                            personPreviousNameService.Delete( previousName );
                         }
 
                         //// delete any GroupMember records they have
@@ -1941,9 +1999,14 @@ namespace RockWeb.Blocks.Examples
                         person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                     }
 
-                    if ( personElem.Attribute( "maritalStatus" ) != null && personElem.Attribute( "maritalStatus" ).Value.Trim() == "married" )
+                    if ( personElem.Attribute( "maritalStatus" ) != null )
                     {
-                        person.MaritalStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
+                        person.MaritalStatusValueId = GetOrAddDefinedValueId( personElem.Attribute( "maritalStatus" ).Value, _maritalStatusDefinedType, rockContext );
+                    }
+
+                    if ( personElem.Attribute( "anniversaryDate" ) != null )
+                    {
+                        person.AnniversaryDate = DateTime.Parse( personElem.Attribute( "anniversaryDate" ).Value.Trim(), new CultureInfo( "en-US" ) );
                     }
 
                     switch ( personElem.Attribute( "recordStatus" ).Value.Trim() )
@@ -2079,6 +2142,26 @@ namespace RockWeb.Blocks.Examples
             }
 
             return familyMembers;
+        }
+
+
+        /// <summary>
+        /// Gets or adds a new DefinedValue to the given DefinedTypeCache and returns the Id of the value.
+        /// </summary>
+        /// <param name="theValue">The value.</param>
+        /// <param name="aDefinedType">a definedTypeCache.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>the id of the defined value</returns>
+        private int GetOrAddDefinedValueId( string theValue, DefinedTypeCache aDefinedType, RockContext rockContext )
+        {
+            DefinedValueCache theDefinedValue = aDefinedType.DefinedValues.FirstOrDefault( a => String.Equals( a.Value, theValue, StringComparison.CurrentCultureIgnoreCase ) );
+            // add it as new if we didn't find it.
+            if ( theDefinedValue == null )
+            {
+                theDefinedValue = AddDefinedTypeValue( theValue, aDefinedType, rockContext );
+            }
+
+            return theDefinedValue.Id;
         }
 
         /// <summary>

@@ -227,13 +227,26 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Gets the query.
+        /// Gets the query using the most appropriate type of dbContext 
         /// </summary>
         /// <param name="sortProperty">The sort property.</param>
         /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, int? databaseTimeoutSeconds,  out List<string> errorMessages )
+        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages )
+        {
+            return GetQuery( sortProperty, null, databaseTimeoutSeconds, out errorMessages );
+        }
+
+        /// <summary>
+        /// Gets the query using the specified dbContext 
+        /// </summary>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, System.Data.Entity.DbContext dbContext, int? databaseTimeoutSeconds, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -246,13 +259,17 @@ namespace Rock.Model
 
                     if ( entityType != null )
                     {
-                        System.Data.Entity.DbContext reportDbContext = Reflection.GetDbContextForEntityType( entityType );
-                        if ( databaseTimeoutSeconds.HasValue )
+                        if ( dbContext == null )
                         {
-                            reportDbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
+                            dbContext = Reflection.GetDbContextForEntityType( entityType );
                         }
 
-                        IService serviceInstance = Reflection.GetServiceForEntityType( entityType, reportDbContext );
+                        if ( databaseTimeoutSeconds.HasValue )
+                        {
+                            dbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
+                        }
+
+                        IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
 
                         if ( serviceInstance != null )
                         {
