@@ -4,6 +4,9 @@
 
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
+    <Triggers>
+        <asp:PostBackTrigger ControlID="ddlUserDataView" />
+    </Triggers>
     <ContentTemplate>
 
         <Rock:NotificationBox ID="nbConfigurationWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
@@ -12,11 +15,18 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-map-marker"></i>&nbsp;Dynamic Map</h1>
             </div>
+
+
             <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlUserDataView" runat="server" Label="Dataview" Help="Select the dataview to use to filter the reults." Required="true" AutoPostBack="true" />
+                    </div>
+                </div>
 
                 <asp:Literal ID="lMapStyling" runat="server" />
 
-                
+
                 <asp:Panel ID="pnlMap" runat="server">
                     <div id="map_wrapper">
                         <div id="map_canvas" class="mapping"></div>
@@ -38,7 +48,7 @@
         <asp:Panel ID="pnlConfigure" runat="server" Visible="false">
             <Rock:ModalDialog ID="mdConfigure" runat="server" ValidationGroup="vgConfigure" OnSaveClick="mdConfigure_SaveClick">
                 <Content>
-                    <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Dataview" Help="Select the dataview to use to filter the reults." Required="false" ValidationGroup="vgConfigure" />
+                    <Rock:RockDropDownList ID="ddlBlockConfigDataView" runat="server" Label="Dataview" Help="Select the dataview to use to filter the reults." Required="false" ValidationGroup="vgConfigure" />
                 </Content>
             </Rock:ModalDialog>
         </asp:Panel>

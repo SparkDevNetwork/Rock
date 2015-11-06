@@ -38,12 +38,13 @@ namespace RockWeb.Blocks.Reporting
     [Description( "Block to a map of the locations of people" )]
 
     // CustomSetting Dialog
-    [TextField( "DataView", "The dataview to filter the people shown on the map. Leave blank to have it determined by page param", false, "", "CustomSetting" )]
+    [TextField( "DataView", "The dataview to filter the people shown on the map. Leave blank to have it determined by the user or by page param", false, "", "CustomSetting" )]
 
     // Regular attributes
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 3 )]
     [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "", 4 )]
     [TextField( "Polygon Colors", "Comma-Delimited list of colors to use when displaying multiple polygons (e.g. #f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc).", true, "#f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc", "", 5 )]
+    [DecimalField( "Point Grouping", "The number of miles per to use to group points that are close together. For example, enter 0.25 to group points in 1/4 mile blocks. Increase this if the heatmap has lots of points and is slow")]
     public partial class DynamicHeatMap : RockBlockCustomSettings
     {
         /// <summary>
@@ -72,6 +73,12 @@ namespace RockWeb.Blocks.Reporting
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
+            ddlUserDataView.Visible = !( this.GetAttributeValue( "DataView" ).AsGuidOrNull().HasValue || this.PageParameter( "DataViewId" ).AsIntegerOrNull().HasValue );
+            if ( ddlUserDataView.Visible )
+            {
+                LoadDropDowns();
+            }
+
             this.LoadGoogleMapsApi();
         }
 
@@ -82,8 +89,8 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            pnlMap.Visible = true;
-            ShowMap();
+            // reload the full page to ensure the updated HeatMapData is rendered correctly
+            NavigateToPage( this.CurrentPageReference );
         }
 
         /// <summary>
@@ -96,11 +103,7 @@ namespace RockWeb.Blocks.Reporting
 
             lMessages.Text = string.Empty;
             pnlMap.Visible = true;
-
-            if ( !this.IsPostBack )
-            {
-                ShowMap();
-            }
+            ShowMap();
         }
 
         /// <summary>
@@ -200,8 +203,8 @@ namespace RockWeb.Blocks.Reporting
             var orgLocation = GlobalAttributesCache.Read().OrganizationLocation;
             if ( orgLocation != null && orgLocation.GeoPoint != null )
             {
-                latitude = orgLocation.GeoPoint.Latitude.ToString();
-                longitude = orgLocation.GeoPoint.Longitude.ToString();
+                latitude = orgLocation.GeoPoint.Latitude.Value.ToString( System.Globalization.CultureInfo.GetCultureInfo( "en-US" ) );
+                longitude = orgLocation.GeoPoint.Longitude.Value.ToString( System.Globalization.CultureInfo.GetCultureInfo( "en-US" ) );
                 zoom = "12";
             }
 
@@ -234,12 +237,44 @@ namespace RockWeb.Blocks.Reporting
 
             int recordStatusActiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
 
-            var qryPersonIds = new PersonService( rockContext ).Queryable().Where( a =>
-                a.IsDeceased == false
-                && a.ConnectionStatusValueId.HasValue
-                && connectionStatusValueIds.Contains( a.ConnectionStatusValueId.Value )
-                && a.RecordStatusValueId == recordStatusActiveId )
-                .Select( a => a.Id );
+            int? dataViewId = this.PageParameter( "DataViewId" ).AsIntegerOrNull();
+            Guid? dataViewGuid = null;
+            if ( !dataViewId.HasValue )
+            {
+                dataViewGuid = this.GetAttributeValue( "DataView" ).AsGuidOrNull();
+            }
+
+            if ( ddlUserDataView.Visible )
+            {
+                dataViewGuid = ddlUserDataView.SelectedValue.AsGuidOrNull();
+            }
+
+            IQueryable<int> qryPersonIds = null;
+
+            if ( dataViewId.HasValue || dataViewGuid.HasValue )
+            {
+                DataView dataView = null;
+                if ( dataViewId.HasValue )
+                {
+                    dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
+                }
+                else
+                {
+                    dataView = new DataViewService( rockContext ).Get( dataViewGuid.Value );
+                }
+
+                if ( dataView != null )
+                {
+                    List<string> errorMessages;
+                    qryPersonIds = dataView.GetQuery( null, rockContext, null, out errorMessages ).OfType<Person>().Select( a => a.Id );
+                }
+            }
+
+            if ( qryPersonIds == null )
+            {
+                // if no dataview was specified, show nothing
+                qryPersonIds = new PersonService( rockContext ).Queryable().Where( a => false).Select( a => a.Id );
+            }
 
             var qryLocationGroupMembers = groupMemberService.Queryable()
                 .Where( a => a.Group.GroupTypeId == groupTypeFamilyId )
@@ -266,17 +301,16 @@ namespace RockWeb.Blocks.Reporting
 
             List<LatLongWeighted> points = locationList;
 
-            if ( points.Count > 20000 )
+            // cluster points that are close together
+            double? milesPerGrouping = this.GetAttributeValue("PointGrouping").AsDoubleOrNull();
+            if ( milesPerGrouping.HasValue && milesPerGrouping > 0 )
             {
                 var metersPerLatitudePHX = 110886.79;
                 var metersPerLongitudePHX = 94493.11;
 
                 double metersPerMile = 1609.34;
 
-                // cluster points that are close together
-                var milesPerGrouping = .0001;
-
-                var squareLengthHeightMeters = metersPerMile * milesPerGrouping;
+                var squareLengthHeightMeters = metersPerMile * milesPerGrouping.Value;
 
                 var longitudeRoundFactor = metersPerLongitudePHX / squareLengthHeightMeters;
                 var latitudeRoundFactor = metersPerLatitudePHX / squareLengthHeightMeters;
@@ -314,7 +348,7 @@ namespace RockWeb.Blocks.Reporting
         {
             pnlConfigure.Visible = true;
             LoadDropDowns();
-            ddlDataView.SetValue( this.GetAttributeValue( "Dataview" ).AsGuidOrNull() );
+            ddlBlockConfigDataView.SetValue( this.GetAttributeValue( "DataView" ).AsGuidOrNull() );
             mdConfigure.Show();
         }
 
@@ -328,7 +362,7 @@ namespace RockWeb.Blocks.Reporting
             mdConfigure.Hide();
             pnlConfigure.Visible = false;
 
-            this.SetAttributeValue( "DataView", ddlDataView.SelectedValue.AsGuidOrNull().ToString() );
+            this.SetAttributeValue( "DataView", ddlBlockConfigDataView.SelectedValue.AsGuidOrNull().ToString() );
             SaveAttributeValues();
 
             this.Block_BlockUpdated( sender, e );
@@ -344,11 +378,16 @@ namespace RockWeb.Blocks.Reporting
             var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>() ?? 0;
             var dataViewQry = dataViewService.Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson ).OrderBy( a => a.Name ).Select( a => new { a.Name, a.Guid } );
 
-            ddlDataView.Items.Clear();
-            ddlDataView.Items.Add( new ListItem() );
+            ddlBlockConfigDataView.Items.Clear();
+            ddlBlockConfigDataView.Items.Add( new ListItem() );
+
+            ddlUserDataView.Items.Clear();
+            ddlUserDataView.Items.Add( new ListItem() );
+
             foreach ( var dataView in dataViewQry.ToList() )
             {
-                ddlDataView.Items.Add( new ListItem( dataView.Name, dataView.Guid.ToString() ) );
+                ddlBlockConfigDataView.Items.Add( new ListItem( dataView.Name, dataView.Guid.ToString() ) );
+                ddlUserDataView.Items.Add( new ListItem( dataView.Name, dataView.Guid.ToString() ) );
             }
         }
     }
