@@ -247,6 +247,11 @@ namespace RockWeb.Blocks.Core
                     if ( selectedEntityType.Equals( "category" ) )
                     {
                         selectedCategory = CategoryCache.Read( itemId.GetValueOrDefault() );
+                        if ( selectedCategory != null && !canEditBlock && selectedCategory.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                        {
+                            // Show the action buttons if user has edit rights to category
+                            divTreeviewActions.Visible = true;
+                        }
                     }
                     else
                     {
