@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DynamicMap.ascx.cs" Inherits="RockWeb.Blocks.Reporting.DynamicMap" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DynamicHeatMap.ascx.cs" Inherits="RockWeb.Blocks.Reporting.DynamicHeatMap" %>
 
 <script type="text/javascript" src="http://google-maps-utility-library-v3.googlecode.com/svn/trunk/maplabel/src/maplabel-compiled.js"></script>
 
@@ -92,13 +92,18 @@
                         new google.maps.Point(0,0),
                         new google.maps.Point(10, 34));
 
+                    var pinShadow = new google.maps.MarkerImage('//chart.googleapis.com/chart?chst=d_map_pin_shadow',
+                        new google.maps.Size(40, 37),
+                        new google.maps.Point(0, 0),
+                        new google.maps.Point(12, 35));
+
                     campusMarkersData.forEach( function (c) {
                         marker = new google.maps.Marker({
                             position: c.location,
                             map: map,
                             title: c.campusName,
                             icon: pinImage,
-                            //shadow: pinShadow
+                            shadow: pinShadow
                         });
                     });
 
