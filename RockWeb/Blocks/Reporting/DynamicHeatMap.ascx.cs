@@ -33,7 +33,7 @@ namespace RockWeb.Blocks.Reporting
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName( "Dynamic Map" )]
+    [DisplayName( "Dynamic Heat Map" )]
     [Category( "Reporting" )]
     [Description( "Block to a map of the locations of people" )]
 
@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Reporting
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 3 )]
     [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "", 4 )]
     [TextField( "Polygon Colors", "Comma-Delimited list of colors to use when displaying multiple polygons (e.g. #f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc).", true, "#f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc", "", 5 )]
-    public partial class DynamicMap : RockBlockCustomSettings
+    public partial class DynamicHeatMap : RockBlockCustomSettings
     {
         /// <summary>
         /// Gets the settings tool tip.
