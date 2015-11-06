@@ -356,8 +356,10 @@ namespace RockWeb
                         //
                     }
 
-
-                    SendNotification( ex );
+                    if ( !(ex is HttpRequestValidationException ) )
+                    {
+                        SendNotification( ex );
+                    }
 
                     object siteId = context.Items["Rock:SiteId"];
                     if ( context.Session != null )
