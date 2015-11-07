@@ -14,6 +14,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace com.centralaz.Prayer.Jobs
 {
@@ -55,7 +56,12 @@ namespace com.centralaz.Prayer.Jobs
                     }
 
                     // Get all prayer requests that expire today
-                    var prayerRequestQry = prayerRequestService.Queryable().Where( pr => pr.ExpirationDate != null && pr.ExpirationDate.Value.Date == DateTime.Now.Date );
+                    var prayerRequestQry = prayerRequestService.Queryable().Where( 
+                        pr => pr.ExpirationDate != null && 
+                            pr.ExpirationDate.Value.Day == DateTime.Now.Day &&
+                            pr.ExpirationDate.Value.Month == DateTime.Now.Month &&
+                            pr.ExpirationDate.Value.Year == DateTime.Now.Year
+                            );
 
                     var recipients = new List<RecipientData>();
 
@@ -68,9 +74,9 @@ namespace com.centralaz.Prayer.Jobs
                         Byte[] b = System.Text.Encoding.UTF8.GetBytes( prayerRequest.Email );
                         string encodedEmail = Convert.ToBase64String( b );
 
-                        String url = VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?Guid={1}&Key={1}", pageId, prayerRequest.Guid, encodedEmail ) );
+                        String relativeUrl =  String.Format( "/page/{0}?Guid={1}&Key={2}", pageId, prayerRequest.Guid, encodedEmail );
 
-                        mergeFields.Add( "MagicUrl", string.Format( "" ) );
+                        mergeFields.Add( "MagicUrl", relativeUrl );
 
                         var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
                         globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
