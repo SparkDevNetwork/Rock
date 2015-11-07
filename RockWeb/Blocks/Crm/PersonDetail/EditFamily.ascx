@@ -44,16 +44,18 @@
                             <asp:ListView ID="lvMembers" runat="server">
                                 <ItemTemplate>
                                     <li class="member">
-                                        <div class="person-image" id="divPersonImage" runat="server"></div>
-                                        <div class="member-information">
-                                            <h4><%# Eval("NickName") %> <%# Eval("LastName") %></h4>
+                                        <div class="clearfix">
+                                            <div class="person-image" id="divPersonImage" runat="server"></div>
+                                            <div class="member-information">
+                                                <h4><%# Eval("NickName") %> <%# Eval("LastName") %></h4>
                                             
-                                              <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" />
+                                                  <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" />
                                             
+                                            </div>
                                         </div>
                                         <div class="actions">
-                                            <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-default btn-move btn-xs" ToolTip="Move to New Family" CommandName="Move"><i class="fa fa-external-link"></i></asp:LinkButton>
-                                            <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-default btn-xs" Tooltip="Remove from Family" CommandName="Remove"><i class="fa fa-times"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-default btn-move btn-xs" ToolTip="Move to New Family" CommandName="Move"><i class="fa fa-fw fa-external-link"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-default btn-xs" Tooltip="Remove from Family" CommandName="Remove"><i class="fa fa-fw fa-times"></i></asp:LinkButton>
                                         </div>
                                     </li>
                                 </ItemTemplate>
