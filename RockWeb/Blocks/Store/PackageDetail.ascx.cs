@@ -41,7 +41,6 @@ namespace RockWeb.Blocks.Store
     [Category( "Store" )]
     [Description( "Manages the details of a package." )]
     [LinkedPage( "Install Page", "Page reference to use for the install / update page.", false, "", "", 1 )]
-    [LinkedPage( "Rating Page", "Page reference to use for the rating page.", false, "", "", 1 )]
     public partial class PackageDetail : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -133,11 +132,9 @@ namespace RockWeb.Blocks.Store
             {
                 packageId = Convert.ToInt32( PageParameter( "PackageId" ) );
 
-                var queryParams = new Dictionary<string, string>();
-                queryParams = new Dictionary<string, string>();
-                queryParams.Add( "PackageId", packageId.ToString() );
+                string ratingUrl = string.Format( "http://www.rockrms.com/Store/Rate?PackageId={0}", packageId.ToString() );
 
-                NavigateToLinkedPage( "RatingPage", queryParams );
+                Response.Redirect( ratingUrl );
             }
         }
 
