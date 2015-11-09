@@ -1396,10 +1396,8 @@ namespace RockWeb.Blocks.Connection
 
                 if ( connectionRequest.ConnectionOpportunity != null )
                 {
-
                     // Get the connectors from the connector groups
-                    if ( connectionRequest.ConnectionOpportunity != null &&
-                        connectionRequest.ConnectionOpportunity.ConnectionType != null )
+                    if ( connectionRequest.ConnectionOpportunity.ConnectionType != null )
                     {
                         connectionRequest.ConnectionOpportunity.ConnectionOpportunityConnectorGroups
                             .Where( g =>
@@ -1411,7 +1409,14 @@ namespace RockWeb.Blocks.Connection
                             .ToList()
                             .ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
                     }
+
+                    if ( !currentValue.HasValue && campusId.HasValue )
+                    {
+                        currentValue = connectionRequest.ConnectionOpportunity.GetDefaultConnectorPersonId( campusId.Value );
+                    }
+
                 }
+
             }
 
             // Add the current person as possible connector

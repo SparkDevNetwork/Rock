@@ -215,6 +215,19 @@ namespace RockWeb.Blocks.Connection
                         connectionRequest.ConnectionState = ConnectionState.Active;
                         connectionRequest.ConnectionStatusId = defaultStatusId;
                         connectionRequest.CampusId = campusId;
+                        connectionRequest.ConnectorPersonAliasId = opportunity.GetDefaultConnectorPersonAliasId( campusId.Value );
+                        if ( campusId.HasValue &&
+                            opportunity != null &&
+                            opportunity.ConnectionOpportunityCampuses != null )
+                        {
+                            var campus = opportunity.ConnectionOpportunityCampuses
+                                .Where( c => c.CampusId == campusId.Value )
+                                .FirstOrDefault();
+                            if ( campus != null )
+                            {
+                                connectionRequest.ConnectorPersonAliasId = campus.DefaultConnectorPersonAliasId;
+                            }
+                        }
 
                         if ( !connectionRequest.IsValid )
                         {

@@ -356,8 +356,28 @@ namespace RockWeb
                         //
                     }
 
+                    while (ex is HttpUnhandledException && ex.InnerException != null )
+                    {
+                        ex = ex.InnerException;
+                    }
 
-                    SendNotification( ex );
+                    // Check for EF error
+                    if ( ex is System.Data.Entity.Core.EntityCommandExecutionException )
+                    {
+                        try
+                        {
+                            throw new Exception( "An error occurred in Entity Framework when attempting to connect to your database. This could be caused by a missing 'MultipleActiveResultSets=true' parameter in your connection string settings.", ex );
+                        }
+                        catch ( Exception newEx )
+                        {
+                            ex = newEx;
+                        }
+                    }
+
+                    if ( !(ex is HttpRequestValidationException ) )
+                    {
+                        SendNotification( ex );
+                    }
 
                     object siteId = context.Items["Rock:SiteId"];
                     if ( context.Session != null )
