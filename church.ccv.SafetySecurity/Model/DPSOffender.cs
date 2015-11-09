@@ -17,6 +17,15 @@ namespace church.ccv.SafetySecurity.Model
         #region Entity Properties
 
         /// <summary>
+        /// Gets or sets the level (1-3) of offense for this offender
+        /// </summary>
+        /// <value>
+        /// The level.
+        /// </value>
+        [DataMember]
+        public int Level { get; set; }
+
+        /// <summary>
         /// Gets or sets the last name.
         /// </summary>
         /// <value>
@@ -114,28 +123,34 @@ namespace church.ccv.SafetySecurity.Model
         /// Gets or sets DPS's record of the offender's residential street address
         /// </summary>
         /// <value>
-        /// The resource address.
+        /// The address.
         /// </value>
         [DataMember]
         public string ResAddress { get; set; }
 
-        /// /// Gets or sets DPS's record of the offender's residential address (City)
-        /// Gets or sets the resource city.
+        /// Gets or sets DPS's record of the offender's residential address (City)
         /// </summary>
         /// <value>
-        /// The resource city.
+        /// The city.
         /// </value>
         [DataMember]
         public string ResCity { get; set; }
 
         /// Gets or sets DPS's record of the offender's residential address (Zip code)
-        /// Gets or sets the resource city.
         /// </summary>
         /// <value>
-        /// The resource city.
+        /// The zip
         /// </value>
         [DataMember]
         public string ResZip { get; set; }
+
+        /// Gets or sets DPS's record of the offender's residential address (state)
+        /// </summary>
+        /// <value>
+        /// The state
+        /// </value>
+        [DataMember]
+        public string ResState { get; set; }
 
         /// <summary>
         /// Gets or sets the offense.
@@ -154,7 +169,7 @@ namespace church.ccv.SafetySecurity.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        public DateTime DateConvicted { get; set; }
+        public DateTime? DateConvicted { get; set; }
 
         /// <summary>
         /// Gets or sets the 2 letter State (AZ, etc) of the conviction.
@@ -173,6 +188,19 @@ namespace church.ccv.SafetySecurity.Model
         /// </value>
         [DataMember]
         public bool Absconder { get; set; }
+
+        #endregion
+
+        #region Additional Fields for matching to Person records
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Person record was matched and confirmed to be a match
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [confirmed match]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ConfirmedMatch { get; set; }
 
         /// <summary>
         /// The PersonAliasId that the DPS record is matched to

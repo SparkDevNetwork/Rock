@@ -18,6 +18,7 @@ namespace church.ccv.SafetySecurity.Migrations
             Sql( @"
 CREATE TABLE [dbo].[_church_ccv_SafetySecurity_DPSOffender](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
+    [Level] [int] NOT NULL,
 	[LastName] [nvarchar](max) NULL,
 	[FirstName] [nvarchar](max) NULL,
 	[MiddleInitial] [nvarchar](max) NULL,
@@ -31,10 +32,12 @@ CREATE TABLE [dbo].[_church_ccv_SafetySecurity_DPSOffender](
 	[ResAddress] [nvarchar](max) NULL,
 	[ResCity] [nvarchar](max) NULL,
 	[ResZip] [nvarchar](max) NULL,
+    [ResState] [nvarchar](max) NULL,
 	[Offense] [nvarchar](max) NULL,
-	[DateConvicted] [date] NOT NULL,
+	[DateConvicted] [date] NULL,
 	[ConvictionState] [nvarchar](max) NULL,
 	[Absconder] [bit] NOT NULL,
+    [ConfirmedMatch] [bit] NOT NULL,
 	[PersonAliasId] [int] NULL,
 	[DpsLocationId] [int] NULL,
 	[Guid] [uniqueidentifier] NOT NULL,
