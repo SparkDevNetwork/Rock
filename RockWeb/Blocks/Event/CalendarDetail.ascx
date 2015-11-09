@@ -105,7 +105,7 @@
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgContentChannel" runat="server" Title="Content Channel" OnSaveClick="dlgContentChannel_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Channels">
+        <Rock:ModalDialog ID="dlgContentChannel" runat="server" Title="Content Channel" OnSaveClick="dlgContentChannel_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Channels" SaveButtonText="Select">
             <Content>
                 <Rock:RockDropDownList ID="ddlContentChannel" runat="server" Label="Channel" DataValueField="Guid" DataTextField="Name" />
             </Content>

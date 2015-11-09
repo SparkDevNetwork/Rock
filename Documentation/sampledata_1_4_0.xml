@@ -24,6 +24,7 @@
           firstName="Theodore" nickName="Ted" lastName="Decker" birthDate="2/10/1976" age="38" gender="male"
           email="ted@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          anniversaryDate="1/4/2001"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_ted.jpg"
           homePhone="6235553322" mobilePhone="6235553322" workPhone="6235552444" graduationDate="1/1/1994">
           <attributes>
@@ -56,12 +57,14 @@
             <note type="Personal Note" text="Ted has strong leadership skills."
                   byGuid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C" isPrivate="true" />
           </notes>
+          
         </person>
 
         <person guid="B71494DB-D809-451A-A950-28898D0FD92C"
           firstName="Cynthia" nickName="Cindy" lastName="Decker" birthDate="3/10/1977" age="37" gender="female"
           email="cindy@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          anniversaryDate="1/4/2001"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_cindy.png"
           homePhone="6235553323" mobilePhone="6235553323" workPhone="">
           <attributes>
@@ -155,7 +158,13 @@
           email="sarah.simmons@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/simmons_sarah.jpg"
-          homePhone="" mobilePhone="" workPhone=""/>
+          homePhone="" mobilePhone="" workPhone="">
+          
+            <previousNames>
+                <name lastName="Jones" />
+            </previousNames>
+          
+          </person>
 
         <person guid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" firstName="Brian"/>
 
@@ -457,7 +466,7 @@
         <person guid="9C609974-A8E1-4363-8F5E-51F61828E2BA"
           firstName="Francis" nickName="Frank" lastName="Dexter" birthDate="4/1/1973" age="42" gender="male"
           email="frank@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
-          recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
+          recordStatus="active" connectionStatus="member"  maritalStatus="Divorced" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/dexter_frank.jpg"
           homePhone="623-555-1123" mobilePhone="623-888-3211" workPhone="" graduationDate="1/1/1992">
           <attributes>
