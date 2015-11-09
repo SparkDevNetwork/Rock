@@ -47,7 +47,7 @@ td.wrap-contents { // keep cells from scrolling off screen
 }
 
 .grid {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 
     .grid-table {
         border: 1px solid @grid-border-color;
@@ -409,6 +409,10 @@ tr.row-highlight {
         color: @grid-column-header-bold-color;
         border-color: lighten(@grid-column-header-bold-bg, 5%);
         vertical-align: top !important;
+    }
+
+    &:hover td {
+        background-color: lighten(@grid-column-header-bold-bg, 10%);
     }
 }
 

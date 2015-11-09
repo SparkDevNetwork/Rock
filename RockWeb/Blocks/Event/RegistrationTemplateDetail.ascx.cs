@@ -1675,6 +1675,9 @@ namespace RockWeb.Blocks.Event
                 registrationTemplate.Notify = RegistrationNotify.None;
                 registrationTemplate.SuccessTitle = "Congratulations {{ Registration.FirstName }}";
                 registrationTemplate.SuccessText = GetAttributeValue( "DefaultSuccessText" );
+                registrationTemplate.AllowMultipleRegistrants = true;
+                registrationTemplate.MaxRegistrants = 10;
+                registrationTemplate.GroupMemberStatus = GroupMemberStatus.Active;
             }
 
             pnlDetails.Visible = true;
