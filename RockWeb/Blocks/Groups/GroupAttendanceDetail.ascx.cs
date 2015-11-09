@@ -81,6 +81,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( _group != null && _group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
+                lHeading.Text = _group.Name + " Attendance";
                 _canEdit = true;
             }
 
@@ -162,8 +163,21 @@ namespace RockWeb.Blocks.Groups
                 var personAliasService = new PersonAliasService( rockContext );
                 var locationService = new LocationService( rockContext );
 
+                bool dateAdjusted = false;
+
                 DateTime startDate = _occurrence.Date;
-                DateTime endDate = _occurrence.Date.AddDays( 1 );
+
+                // If this is a manuall entered occurrence, check to see if date was changed
+                if ( !_occurrence.ScheduleId.HasValue )
+                {
+                    DateTime? originalDate = PageParameter( "Date" ).AsDateTime();
+                    if ( originalDate.HasValue && originalDate.Value.Date != startDate.Date )
+                    {
+                        startDate = originalDate.Value.Date;
+                        dateAdjusted = true;
+                    }
+                }
+                DateTime endDate = startDate.AddDays( 1 );
 
                 var existingAttendees = attendanceService
                     .Queryable( "PersonAlias" )
@@ -173,6 +187,14 @@ namespace RockWeb.Blocks.Groups
                         a.ScheduleId == _occurrence.ScheduleId &&
                         a.StartDateTime >= startDate &&
                         a.StartDateTime < endDate );
+
+                if ( dateAdjusted )
+                {
+                    foreach( var attendee in existingAttendees )
+                    {
+                        attendee.StartDateTime = _occurrence.Date;
+                    }
+                }
 
                 // If did not meet was selected and this was a manually entered occurrence (not based on a schedule/location)
                 // then just delete all the attendance records instead of tracking a 'did not meet' value
@@ -450,7 +472,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( Page.IsPostBack && _allowAdd )
             {
-                if ( !occurrenceDate.HasValue && dpOccurrenceDate.SelectedDate.HasValue )
+                if ( dpOccurrenceDate.Visible && dpOccurrenceDate.SelectedDate.HasValue )
                 {
                     occurrenceDate = dpOccurrenceDate.SelectedDate;
                 }
@@ -471,16 +493,21 @@ namespace RockWeb.Blocks.Groups
                 // Try to find the selected occurrence based on group's schedule
                 if ( _group != null )
                 {
-                    lHeading.Text = _group.Name + " Attendance";
-
                     // Get all the occurrences for this group, and load the attendance so we can show Attendance Count
                     var occurrence = new ScheduleService( _rockContext )
-                        .GetGroupOccurrences( _group, occurrenceDate.Value.Date, occurrenceDate.Value.AddDays( 1 ), locationIds, scheduleIds, true )
+                        .GetGroupOccurrences( _group, occurrenceDate.Value.Date, occurrenceDate.Value.AddDays( 1 ), 
+                            locationIds, scheduleIds, true )
                         .OrderBy( o => o.Date )
                         .FirstOrDefault();
 
                     if ( occurrence != null )
                     {
+                        if ( occurrenceDate.Value.Date != occurrence.Date.Date )
+                        {
+                            occurrence.ScheduleId = null;
+                            occurrence.ScheduleName = string.Empty;
+                            occurrence.Date = occurrenceDate.Value;
+                        }
                         return occurrence;
                     }
                 }
@@ -581,9 +608,11 @@ namespace RockWeb.Blocks.Groups
             {
                 if ( existingOccurrence )
                 {
-                    lOccurrenceDate.Visible = true;
+                    lOccurrenceDate.Visible = _occurrence.ScheduleId.HasValue;
                     lOccurrenceDate.Text = _occurrence.Date.ToShortDateString();
-                    dpOccurrenceDate.Visible = false;
+
+                    dpOccurrenceDate.Visible = !_occurrence.ScheduleId.HasValue;
+                    dpOccurrenceDate.SelectedDate = _occurrence.Date;
 
                     if ( _occurrence.LocationId.HasValue )
                     {
