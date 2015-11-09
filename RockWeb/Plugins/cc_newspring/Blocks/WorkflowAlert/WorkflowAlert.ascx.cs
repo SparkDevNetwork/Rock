@@ -43,9 +43,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
     [LinkedPage( "Listing Page", "Page used to view all workflows assigned to the current user." )]
     public partial class WorkflowAlert : Rock.Web.UI.RockBlock
     {
-        protected override void OnInit( EventArgs e )
+        protected override void OnLoad( EventArgs e )
         {
-            base.OnInit( e );
+            base.OnLoad( e );
 
             // Check for current person
             if ( CurrentPersonAliasId.HasValue )
@@ -64,8 +64,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
 
                     var activeWorkflowString = new List<string>();
 
-                    string[] arrayOfStrings = activeWorkflowString.ToArray();
-
                     foreach ( var activeWorkflow in workflowActive ) {
 
                         var userActive = new WorkflowActivityService( rockContext )
@@ -81,7 +79,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
                         }
                     }
 
-                    workflowAlertNumber.Value = activeWorkflowString.ToArray().Length.ToString();
+                    workflowAlertNumber.Value = activeWorkflowString.Count.ToString();
 
                     //workflowAlertNumber.Value = new WorkflowActivityService( rockContext )
                     //    .Queryable()

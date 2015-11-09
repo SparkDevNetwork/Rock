@@ -8,6 +8,8 @@ _ReSharper.*
 *.v11.suo
 *.user
 *.suo
+*.dll
+*.pdb
 #*.Framework.XML
 
 #specific files
