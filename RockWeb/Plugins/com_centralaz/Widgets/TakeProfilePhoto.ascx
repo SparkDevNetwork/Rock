@@ -18,8 +18,10 @@
                 <div class="progress-bar progress-bar-striped active" style="width: 100%;"></div>
             </div>
             <div id="divPeople"></div>
+                
+            <input id="ipodInput" type="file" accept="image/*" style="display:none" onchange="showIphoneUpload(this);">
 
-            <div id="video_box">
+            <div id="video_box" style="display:none">
                     <video id="video" width="425" height="425" autoplay>Your browser does not support this streaming content.</video>
             </div>
             <canvas id="canvas" width="425" height="425" style="display:none"></canvas>
@@ -30,28 +32,94 @@
             </div>
             <div id="photoUploadMessage" class="alert alert-success" style="display: none; width: 80%;"></div>
 
-                <div class="well">
-            <div class="row">
-                <div class="col-md-6 col-sm-6 col-xs-6">
-                    <asp:Button runat="server" ID="btnStart" Text="Start" class="btn btn-primary btn-lg" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
-                    <asp:Button runat="server" ID="btnStop" Text="Cancel" class="btn btn-default btn-lg" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
-                    <a href="#" id="btnSwap" class="btn btn-default" style="display: none;">
-                        <img src='<%= ResolveRockUrl( "~/Plugins/com_centralaz/Widgets/Assets/Icons/camera-swap.png") %>' />
-                        Swap</a>
-                </div>
-                <div class="col-md-6 col-sm-6 col-xs-6">
-                    <asp:Button runat="server" ID="btnPhoto" Text="Take photo" class="btn btn-success btn-lg" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
-                    <asp:Button runat="server" ID="btnRedo" Text="Re-do" class="btn btn-default btn-lg" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
-                    <asp:Button runat="server" ID="btnUpload" Text="Upload" class="btn btn-warning btn-lg" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
+            
+
+            <div class="well" id="wellDiv" style="display:none">
+                <div class="row">
+                    <div class="col-md-6 col-sm-6 col-xs-6">
+                        <asp:Button runat="server" ID="btnStart" Text="Start" class="btn btn-primary btn-lg" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
+                        <asp:Button runat="server" ID="btnStop" Text="Cancel" class="btn btn-default btn-lg" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
+                        <a href="#" id="btnSwap" class="btn btn-default" style="display: none;">
+                            <img src='<%= ResolveRockUrl( "~/Plugins/com_centralaz/Widgets/Assets/Icons/camera-swap.png") %>' />
+                            Swap</a>
+                    </div>
+                    <div class="col-md-6 col-sm-6 col-xs-6">
+                        <asp:Button runat="server" ID="btnPhoto" Text="Take photo" class="btn btn-success btn-lg" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
+                        <asp:Button runat="server" ID="btnRedo" Text="Re-do" class="btn btn-default btn-lg" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
+                        <asp:Button runat="server" ID="btnUpload" Text="Upload" class="btn btn-warning btn-lg" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
+                    <asp:Button runat="server" ID="btnIphoneUpload" Text="Upload" class="btn btn-warning btn-lg" Style="display: none; cursor: pointer;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
+                    </div>
                 </div>
             </div>
-                </div>
             </center>
         </asp:Panel>
         <script type="text/javascript">
 
             var typingTimer;
             var doneTypingInterval = 600;
+            var btnIphoneUpload = document.getElementById('<%=btnIphoneUpload.ClientID %>');
+            function showIphoneUpload(e) {
+                $('div[id$="wellDiv"]').show();
+                $('input[id$="btnIphoneUpload"]').show();
+                $('input[id$="btnStart"]').hide();
+            }
+
+            btnIphoneUpload.addEventListener("click", function (e) {
+                // This png often errors out trying to parse base64 on the server.
+                //var dataUrl = canvas.toDataURL("png");
+                var dataUrl = null;
+                var file = ipodInput.files[0];
+                var reader = new FileReader();
+                reader.onloadend = function (e) {
+                    dataUrl = e.target.result;
+                    console.log(dataUrl);
+
+                    var personId = $('input[id="selectedPersonId"]').val();
+                    if (personId == "") {
+                        alert("Sorry, you have to pick a person first.");
+                        return false;
+                    }
+
+                    $('#uploadProgress').fadeIn('fast');
+                    var data = {
+                        img64: dataUrl
+                    }
+                    console.log(JSON.stringify(data));
+                    // post the photo image to the server for the selected person.
+                    var request = $.ajax({
+                        type: "POST",
+                        url: '<%=ResolveUrl("~/api/People/AddPhotoToPerson") %>?personId=' + personId,
+                        data: JSON.stringify(dataUrl),
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (result) {
+                            $('#uploadProgress').hide();
+
+                            $('#photoUploadMessage').removeClass('alert-error').addClass('alert-success').html('<i class="icon-ok"></i> Success');
+                            $('#photoUploadMessage').fadeIn('fast').delay(9000).fadeOut('slow');
+                            unselectPerson();
+                            $('div[id$="wellDiv"]').hide();
+                            $('input[id$="btnIphoneUpload"]').hide();
+                            var divPeople = $('div[id$="divPeople"]');
+                            divPeople.html('');
+                            $('input[id$="selectedPersonId"]').val('');
+                            $('input[id$="txtName"]').val('');
+                            ipodInput.show();
+                            return true;
+                        },
+                        error: function (req, status, err) {
+                            $('#uploadProgress').fadeOut('fast');
+                            console.log("something went wrong: " + status + " error " + err);
+                            $('#photoUploadMessage').removeClass('alert-success').addClass('alert-error').html(err).fadeIn('fast');
+                            return true;
+                        }
+                    });
+                }
+                if (file) {
+                    reader.readAsDataURL(file);
+                }
+
+            });
 
             ///
             /// Detect keystroke and only execute after the user has finish typing
@@ -117,10 +185,10 @@
                                 if (result[i].Address != null) {
                                     extraDetails = result[i].Address;
                                 }
-                                if (result[i].SpouseName != null ) {
-                                    extraDetails += ( extraDetails.length > 0 ? "; " : "" ) + "spouse: " + result[i].SpouseName;
+                                if (result[i].SpouseName != null) {
+                                    extraDetails += (extraDetails.length > 0 ? "; " : "") + "spouse: " + result[i].SpouseName;
                                 }
-                                if ( extraDetails.length > 0 ) {
+                                if (extraDetails.length > 0) {
                                     extraDetails = " (" + extraDetails + ")";
                                 }
 
@@ -160,6 +228,21 @@
                 $('input[id="selectedPersonId"]').val('');
                 $("li").removeClass('btn-primary');
                 $("li").addClass('btn-default');
+            }
+
+            function getMobileOperatingSystem() {
+                var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+                if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i) || userAgent.match(/iPod/i)) {
+                    return 'iOS';
+                }
+                else if (userAgent.match(/Android/i)) {
+
+                    return 'Android';
+                }
+                else {
+                    return 'unknown';
+                }
             }
 
             ///
@@ -281,6 +364,7 @@
                 /// Handles the start of video play for snapshot capture.
                 ///
                 btnStart.addEventListener("click", function (e) {
+
                     $('input[id$="btnPhoto"]').removeAttr('disabled');
                     $('input[id$="btnStart"]').hide();
                     $('input[id$="btnStop"]').show();
@@ -294,6 +378,7 @@
 
                     var localMediaStream;
                     getAndStartVideo(constraints);
+
                 });
 
                 ///
@@ -351,7 +436,14 @@
                 /// enable the take photo button, disable the upload button
                 ///
                 btnRedo.addEventListener("click", function () {
-                    hideCanvasAndShowVideo();
+                    var operatingSystem = getMobileOperatingSystem();
+                    if (operatingSystem = 'iOS') {
+                        $('#ipodInput').trigger('click');
+                        return false;
+                    }
+                    else {
+                        hideCanvasAndShowVideo();
+                    }
                 });
 
                 ///
@@ -387,8 +479,8 @@
                 function clearPeople() {
                     var divPeople = $('div[id$="divPeople"]');
                     divPeople.html('');
-                    $('input[id="selectedPersonId"]').val('');
-                    $('input[id="txtName"]').val('');
+                    $('input[id$="selectedPersonId"]').val('');
+                    $('input[id$="txtName"]').val('');
                 }
 
                 ///
@@ -397,7 +489,6 @@
                 /// Upload the photo to the photo save webservice.
                 ///
                 btnUpload.addEventListener("click", function () {
-
                     // This png often errors out trying to parse base64 on the server.
                     //var dataUrl = canvas.toDataURL("png");
                     var dataUrl = canvas.toDataURL("image/jpeg", 0.95);
@@ -440,12 +531,20 @@
                             return true;
                         }
                     });
-                });
+                });              
 
             };
-
+           
             // Why this and not $(function...), I was having some trouble and this way seemed to work consistantly.
             window.onload = function () {
+                var operatingSystem = getMobileOperatingSystem();
+                if (operatingSystem == 'iOS') {
+                    $('input[id$="ipodInput"]').show();
+                }
+                else {
+                    $('div[id$="wellDiv"]').show(); //Make div class well hidden
+                    $('#video_box').show();
+                }
                 initialize();
             }
         </script>
