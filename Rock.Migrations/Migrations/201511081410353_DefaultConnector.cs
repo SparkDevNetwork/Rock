@@ -48,6 +48,12 @@ namespace Rock.Migrations
         [DisplayInNavWhen] = 0
     WHERE [Guid] = 'B093E7A0-5E7E-4A5F-AEF3-CE397D342BFA'
 " );
+            RockMigrationHelper.AddSecurityAuthForCalendar( "8A444668-19AF-4417-9C74-09F842572974", 0, "Edit", true, "2C112948-FF4C-46E7-981A-0257681EADF4", Model.SpecialRole.None, "B4BD35EC-A18E-4D1E-8991-6A286F8DF9C7" );
+            RockMigrationHelper.AddSecurityAuthForCalendar( "8A444668-19AF-4417-9C74-09F842572974", 1, "Edit", true, "300BA2C8-49A3-44BA-A82A-82E3FD8C3745", Model.SpecialRole.None, "F94D29B4-CB0B-4F13-BFC9-5252DE92F677" );
+
+            RockMigrationHelper.AddSecurityAuthForCalendar( "8C7F7F4E-1C51-41D3-9AC3-02B3F4054798", 0, "Edit", true, "2C112948-FF4C-46E7-981A-0257681EADF4", Model.SpecialRole.None, "713D7B44-60DB-4EF0-8444-6DEC7DE5F9F9" );
+            RockMigrationHelper.AddSecurityAuthForCalendar( "8C7F7F4E-1C51-41D3-9AC3-02B3F4054798", 1, "Edit", true, "300BA2C8-49A3-44BA-A82A-82E3FD8C3745", Model.SpecialRole.None, "C529458E-A349-406C-9891-60746191C53B" );
+
         }
         
         /// <summary>
