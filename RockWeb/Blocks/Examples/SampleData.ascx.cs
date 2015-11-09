@@ -199,9 +199,24 @@ namespace RockWeb.Blocks.Examples
         private static int _kioskDeviceId = 2;
 
         /// <summary>
-        /// The marital status defined type.
+        /// The marital status DefinedType
         /// </summary>
-        DefinedTypeCache _maritalStatusDefinedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
+        DefinedType _maritalStatusDefinedType = null;
+
+        /// <summary>
+        /// The small group topic DefinedType
+        /// </summary>
+        DefinedType _smallGroupTopicDefinedType = null;
+
+        /// <summary>
+        /// The record status reason DefinedType
+        /// </summary>
+        DefinedType _recordStatusReasonDefinedType = null;
+
+        /// <summary>
+        /// The suffix DefinedType
+        /// </summary>
+        DefinedType _suffixDefinedType = null;
 
         #endregion
 
@@ -236,8 +251,11 @@ namespace RockWeb.Blocks.Examples
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            Server.ScriptTimeout = 300;
-            ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 300;
+
+            // Set timeout for up to 30 minutes (just like installer)
+            Server.ScriptTimeout = 1800;
+            ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 1800;
+
             if ( !IsPostBack )
             {
                 tbPassword.Focus();
@@ -292,6 +310,7 @@ namespace RockWeb.Blocks.Examples
             }
             catch ( Exception ex )
             {
+                _hubContext.Clients.All.showLog();
                 nbMessage.Visible = true;
                 nbMessage.Title = "Oops!";
                 nbMessage.NotificationBoxType = NotificationBoxType.Danger;
@@ -443,6 +462,12 @@ namespace RockWeb.Blocks.Examples
 
             RockContext rockContext = new RockContext();
             rockContext.Configuration.AutoDetectChangesEnabled = false;
+
+            DefinedTypeService definedTypeService = new DefinedTypeService( rockContext );
+            _maritalStatusDefinedType = definedTypeService.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
+            _smallGroupTopicDefinedType = definedTypeService.Get( Rock.SystemGuid.DefinedType.SMALL_GROUP_TOPIC.AsGuid() );
+            _recordStatusReasonDefinedType = definedTypeService.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
+            _suffixDefinedType = definedTypeService.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
 
             var elemFamilies = xdoc.Element( "data" ).Element( "families" );
             var elemGroups = xdoc.Element( "data" ).Element( "groups" );
@@ -888,6 +913,9 @@ namespace RockWeb.Blocks.Examples
 
             // Now save each person's attributevalues (who had them defined in the XML)
             // and add each person's ID to a dictionary for use later.
+            _stopwatch.Stop();
+            AppendFormat( "{0:00}:{1:00}.{2:00} saving attributes for everyone...<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
+            _stopwatch.Start();
             AttributeValueService attributeValueService = new AttributeValueService( rockContext );
             foreach ( var gm in allGroups.SelectMany( g => g.Members ) )
             {
@@ -914,9 +942,11 @@ namespace RockWeb.Blocks.Examples
                     }
                 }
             }
+            rockContext.ChangeTracker.DetectChanges();
+            rockContext.SaveChanges( disablePrePostProcessing: true );
 
             _stopwatch.Stop();
-            AppendFormat( "{0:00}:{1:00}.{2:00} saved attributes for everyone <br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
+            AppendFormat( "{0:00}:{1:00}.{2:00} attributes saved<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
             _stopwatch.Start();
 
             // Create person alias records for each person manually since we set disablePrePostProcessing=true on save
@@ -931,6 +961,10 @@ namespace RockWeb.Blocks.Examples
             rockContext.ChangeTracker.DetectChanges();
             rockContext.SaveChanges( disablePrePostProcessing: true );
 
+            _stopwatch.Stop();
+            AppendFormat( "{0:00}:{1:00}.{2:00} added person aliases<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
+            _stopwatch.Start();
+
             // Put the person alias ids into the people alias dictionary for later use.
             PersonAliasService personAliasService = new PersonAliasService( rockContext );
             foreach ( var personAlias in personAliasService.Queryable( "Person" )
@@ -940,10 +974,6 @@ namespace RockWeb.Blocks.Examples
             { 
                 _peopleAliasDictionary.Add( personAlias.Person.Guid, personAlias.Id );
             }
-
-            _stopwatch.Stop();
-            AppendFormat( "{0:00}:{1:00}.{2:00} added person aliases<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
-            _stopwatch.Start();
 
             // Now that person aliases have been saved, save the attendance records
             var attendanceService = new AttendanceService( rockContext );
@@ -1089,12 +1119,12 @@ namespace RockWeb.Blocks.Examples
                 if ( elemGroup.Attribute( "studyTopic" ) != null )
                 {
                     var topic = elemGroup.Attribute( "studyTopic" ).Value;
-                    DefinedValueCache smallGroupTopicDefinedValue = smallGroupTopicType.DefinedValues.FirstOrDefault( a => a.Value == topic );
+                    DefinedValue smallGroupTopicDefinedValue = _smallGroupTopicDefinedType.DefinedValues.FirstOrDefault( a => a.Value == topic );
 
                     // add it as new if we didn't find it.
                     if ( smallGroupTopicDefinedValue == null )
                     {
-                        smallGroupTopicDefinedValue = AddDefinedTypeValue( topic, smallGroupTopicType, rockContext );
+                        smallGroupTopicDefinedValue = AddDefinedTypeValue( topic, _smallGroupTopicDefinedType, rockContext );
                     }
 
                     group.SetAttributeValue( "Topic", smallGroupTopicDefinedValue.Guid.ToString() );
@@ -1205,29 +1235,28 @@ namespace RockWeb.Blocks.Examples
         /// Adds a new defined value to a given DefinedType.
         /// </summary>
         /// <param name="stringValue">the string value of the new defined value</param>
-        /// <param name="definedTypeCache">a defined type cache to which the defined value will be added.</param>
+        /// <param name="definedType">a defined type to which the defined value will be added.</param>
         /// <param name="rockContext"></param>
         /// <returns></returns>
-        private DefinedValueCache AddDefinedTypeValue( string stringValue, DefinedTypeCache definedTypeCache, RockContext rockContext )
+        private DefinedValue AddDefinedTypeValue( string stringValue, DefinedType definedType, RockContext rockContext )
         {
             DefinedValueService definedValueService = new DefinedValueService( rockContext );
-            
+            DefinedTypeService definedTypeService = new DefinedTypeService( rockContext );
+
             DefinedValue definedValue = new DefinedValue {
                 Id = 0,
                 IsSystem = false,
                 Value = stringValue,
                 Description = "",
                 CreatedDateTime = RockDateTime.Now,
-                DefinedTypeId = definedTypeCache.Id
+                DefinedTypeId = definedType.Id
             };
+
             definedValueService.Add( definedValue );
             rockContext.ChangeTracker.DetectChanges();
             rockContext.SaveChanges( disablePrePostProcessing: true );
 
-            Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
-            Rock.Web.Cache.DefinedTypeCache.Flush( definedTypeCache.Id );
-
-            return DefinedValueCache.Read( definedValue.Id, rockContext );
+            return definedValue;
         }
 
         /// <summary>
@@ -1934,9 +1963,18 @@ namespace RockWeb.Blocks.Examples
                     person = new Person();
                     person.Guid = guid;
                     person.FirstName = personElem.Attribute( "firstName" ).Value.Trim();
+                    if ( personElem.Attribute( "suffix") != null )
+                    {
+                        person.SuffixValueId = GetOrAddDefinedValueId( personElem.Attribute( "suffix" ).Value.Trim(), _suffixDefinedType, rockContext );
+                    }
+
                     if ( personElem.Attribute( "nickName" ) != null )
                     {
                         person.NickName = personElem.Attribute( "nickName" ).Value.Trim();
+                    }
+                    else
+                    {
+                        person.NickName = personElem.Attribute( "firstName" ).Value.Trim();
                     }
 
                     if ( personElem.Attribute( "lastName" ) != null )
@@ -1994,9 +2032,13 @@ namespace RockWeb.Blocks.Examples
                         person.Photo = SaveImage( personElem.Attribute( "photoUrl" ).Value.Trim(), _personImageBinaryFileType, _personImageBinaryFileTypeSettings, rockContext );
                     }
 
-                    if ( personElem.Attribute( "recordType" ) != null && personElem.Attribute( "recordType" ).Value.Trim() == "person" )
+                    if ( personElem.Attribute( "recordType" ) == null || ( personElem.Attribute( "recordType" ) != null && personElem.Attribute( "recordType" ).Value.Trim() == "person" ) )
                     {
                         person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                    }
+                    else
+                    {
+                        person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
                     }
 
                     if ( personElem.Attribute( "maritalStatus" ) != null )
@@ -2016,6 +2058,10 @@ namespace RockWeb.Blocks.Examples
                             break;
                         case "inactive":
                             person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
+                            if ( personElem.Attribute( "recordStatusReason") != null )
+                            {
+                                person.RecordStatusReasonValueId = GetOrAddDefinedValueId( personElem.Attribute( "recordStatusReason" ).Value.Trim(), _recordStatusReasonDefinedType, rockContext );
+                            }
                             break;
                         default:
                             person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
@@ -2152,9 +2198,9 @@ namespace RockWeb.Blocks.Examples
         /// <param name="aDefinedType">a definedTypeCache.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>the id of the defined value</returns>
-        private int GetOrAddDefinedValueId( string theValue, DefinedTypeCache aDefinedType, RockContext rockContext )
+        private int GetOrAddDefinedValueId( string theValue, DefinedType aDefinedType, RockContext rockContext )
         {
-            DefinedValueCache theDefinedValue = aDefinedType.DefinedValues.FirstOrDefault( a => String.Equals( a.Value, theValue, StringComparison.CurrentCultureIgnoreCase ) );
+            DefinedValue theDefinedValue = aDefinedType.DefinedValues.FirstOrDefault( a => String.Equals( a.Value, theValue, StringComparison.CurrentCultureIgnoreCase ) );
             // add it as new if we didn't find it.
             if ( theDefinedValue == null )
             {
