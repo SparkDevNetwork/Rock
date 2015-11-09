@@ -56,6 +56,15 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public int CampusId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the default connector person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The default connector person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? DefaultConnectorPersonAliasId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -76,6 +85,14 @@ namespace Rock.Model
         /// </value>
         public virtual Campus Campus { get; set; }
 
+        /// <summary>
+        /// Gets or sets the default connector person alias.
+        /// </summary>
+        /// <value>
+        /// The default connector person alias.
+        /// </value>
+        public virtual PersonAlias DefaultConnectorPersonAlias { get; set; }
+
         #endregion
     }
 
@@ -93,6 +110,7 @@ namespace Rock.Model
         {
             this.HasRequired( p => p.ConnectionOpportunity ).WithMany( p => p.ConnectionOpportunityCampuses ).HasForeignKey( p => p.ConnectionOpportunityId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.DefaultConnectorPersonAlias ).WithMany().HasForeignKey( p => p.DefaultConnectorPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 
