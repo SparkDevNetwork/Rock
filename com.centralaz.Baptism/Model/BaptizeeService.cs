@@ -23,17 +23,29 @@ namespace com.centralaz.Baptism.Model
         /// <summary>
         /// Creates a list of the baptizees within a certain date range
         /// </summary>
-        /// <param name="firstDay">The day baptisms need to be held after</param>
-        /// <param name="lastDay">The day baptisms need to be held before</param>
+        /// <param name="startDate">The day baptisms need to be held after</param>
+        /// <param name="endDate">The day baptisms need to be held before</param>
         /// <param name="groupId">the campus the baptisms must be held on</param>
         /// <returns>a list of baptizees that match the above criteria</returns>
-        public List<Baptizee> GetBaptizeesByDateRange( DateTime firstDay, DateTime lastDay, int groupId )
+        public List<Baptizee> GetBaptizeesByDateRange( DateTime startDate, DateTime endDate, int groupId )
         {
+            // For a little extra safety, since we are doing a Date comparison (not a DateTime comparison)
+            // get just the Date portion without the time (just in case).
+            startDate = startDate.Date;
+            endDate = endDate.Date;
+
+            // Get the records equal to and greater than the start date, but add a whole day to 
+            // the selected end date since users will expect to see all the stuff that happened 
+            // on the end date up until the very end of that day.
+
+            // calculate the query end date before including it in the qry statement to avoid Linq error
+            endDate = endDate.AddDays( 1 );
+
             List<Baptizee> baptizeeList = Queryable()
-                .Where( b => 
-                    ( b.BaptismDateTime.Day >= firstDay.Day && b.BaptismDateTime.Month >= firstDay.Month && b.BaptismDateTime.Year >= firstDay.Year )
-                    && ( b.BaptismDateTime.Day <= lastDay.Day && b.BaptismDateTime.Month <= lastDay.Month && b.BaptismDateTime.Year <= lastDay.Year )
+                .Where( b =>
+                    ( b.BaptismDateTime >= startDate && b.BaptismDateTime <= endDate )
                     && b.GroupId == groupId )
+                    .OrderBy( b => b.BaptismDateTime )
                 .ToList();
             return baptizeeList;
         }
