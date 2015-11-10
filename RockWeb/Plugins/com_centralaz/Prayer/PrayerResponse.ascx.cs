@@ -38,10 +38,35 @@ namespace RockWeb.Plugins.com_centralaz.Prayer
     [Category( "com_centralaz > Prayer" )]
     [Description( "Block for people who have requested prayer to submit an answer to said prayer." )]
     [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, "Features", 4, "ExpireDays" )]
-    [CodeEditorField( "Description", "Lava template to use to display information about the block", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Prayer/Lava/Description.lava' %}", "", 2 )]
-    [CodeEditorField( "Error", "Lava template to use to display an error message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Prayer/Lava/Error.lava' %}", "", 2 )]
-    [CodeEditorField( "Date Extended Message", "Lava template to use to display a success message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Prayer/Lava/PrayerExtended.lava' %}", "", 2 )]
-    [CodeEditorField( "Answer Submitted Message", "Lava template to use to display a success message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Prayer/Lava/PrayerAnswered.lava' %}", "", 2 )]
+    [CodeEditorField( "Description", "Lava template to use to display information about the block", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"<div>
+  We are encouraged to be able to pray for you. If you feel as though your prayer has been answered, feel welcome to fill out just how it has been answered. Otherwise, click the 'Extend Request' button for the prayer request to be extended another week.
+  </br>
+  </br>
+  First Name: {{PrayerRequest.FirstName}}
+  </br>
+  Last Name: {{PrayerRequest.LastName}}
+  </br>
+  Email Address: {{PrayerRequest.Email}}
+  </br>
+  Prayer Category: {{PrayerRequest.Category.Name}}
+  </br>
+  </br>
+  Request: {{PrayerRequest.Text}}
+  </br>
+  </br>
+
+</div>
+", "", 2 )]
+    [CodeEditorField( "Error", "Lava template to use to display an error message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"<div>
+<h3>Error</h3>
+Either the prayer you are looking to update has expired, or you do not have the right credentials for it. If you would like us to continue praying for you, we welcome you to fill out another prayer request.
+</div>", "", 2 )]
+    [CodeEditorField( "Date Extended Message", "Lava template to use to display a success message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"<div>
+Our team will continue praying for your request.
+</div>", "", 2 )]
+    [CodeEditorField( "Answer Submitted Message", "Lava template to use to display a success message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"<div>
+Thank you for sharing God's answer to your prayer with us.
+</div>", "", 2 )]
     public partial class PrayerResponse : Rock.Web.UI.RockBlock
     {
 
