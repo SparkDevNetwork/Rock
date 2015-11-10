@@ -26,7 +26,7 @@
                                             <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Label='<%# Eval("PublicName") %>' Text='<%# ((decimal)Eval("Amount")).ToString("N2") %>' Placeholder="0.00" CssClass="account-amount" />
                                         </ItemTemplate>
                                     </asp:Repeater>
-                                    <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" Visible="false" Label=" "
+                                    <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" Visible="false" Label=" "
                                         DataTextField="PublicName" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
 
                                     <div class="form-group">
@@ -39,6 +39,8 @@
                                             DataTextField="Value" DataValueField="Id" />
                                         <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Payment" />
                                     </div>
+
+                                    <Rock:RockTextBox ID="txtCommentEntry" runat="server" Required="true" Label="Comment" />
 
                                 </fieldset>
                             </div>
