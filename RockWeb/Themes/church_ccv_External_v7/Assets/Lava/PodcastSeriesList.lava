@@ -147,6 +147,21 @@ REQUIRED VARIABLES
 
 </div>
 
+
+{% if table1.rows.first.CurrentPage == 1 %}
+  <section class="bigblock bigblock-graylighter margin-t-lg">
+    <div class="container container-sm">
+      <h3 class="margin-t-sm">Podcasts</h3>
+      <p>Subscribe to either of our iTunes podcasts to have messages automatically delivered to your computer, phone, or tablet.</p>
+      <p>
+        <a href="https://itunes.apple.com/us/podcast/ccv-audio-messages-christs/id277300239?mt=2" class="btn btn-default"><i class="fa fa-headphones"></i> Audio Messages</a>
+        <a href="https://itunes.apple.com/us/podcast/ccv-video-messages-christs/id275611094?mt=2" class="btn btn-default"><i class="fa fa-television"></i> Video Messages</a>
+      </p>
+    </div>
+  </section>
+{% endif %}
+
+
 <script>
 
   $('.js-reverselist').each(function(){
