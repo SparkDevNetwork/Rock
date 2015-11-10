@@ -940,7 +940,7 @@ td.wrap-contents {
   margin-bottom: 0;
 }
 .grid {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 .grid .grid-table {
   border: 1px solid #dddddd;
@@ -1193,6 +1193,9 @@ tr.row-highlight td {
   color: #d5d5d5;
   border-color: #2f2f2f;
   vertical-align: top !important;
+}
+.table > tbody > tr.grid-row-bold:hover td {
+  background-color: #3c3c3c;
 }
 .table > tbody > tr.is-inactive > td {
   color: #ffffff;
