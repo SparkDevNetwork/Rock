@@ -35,7 +35,7 @@
                                     </div>
 
                                     <div id="divRepeatingPayments" runat="server" visible="false">
-                                        <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" Label="Frequency"
+                                        <Rock:ButtonDropDownList ID="btnFrequency" runat="server" Label="Frequency"
                                             DataTextField="Value" DataValueField="Id" />
                                         <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Payment" />
                                     </div>
