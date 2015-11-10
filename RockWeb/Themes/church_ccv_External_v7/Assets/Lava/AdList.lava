@@ -3,6 +3,7 @@
 {% comment %} {% assign showDivider = false %} {% endcomment %}
 {% comment %} {% assign useTopMargin = true %} {% endcomment %}
 {% comment %} {% assign maxItems = 4 %} {% endcomment %}
+{% comment %} {% assign useCampusContext = true %} {% endcomment %}
 
 {% comment %} {% assign blockStyle = 'contained' %} {% endcomment %}
 
@@ -34,6 +35,9 @@
 {% unless maxItems %}
   {% assign maxItems = 4 %}
 {% endunless %}
+{% unless useCampusContext or useCampusContext == false %}
+  {% assign useCampusContext = true %}
+{% endunless %}
 
 {% comment %} Init values {% endcomment %}
 {% assign hasVisibleItems = false %}
@@ -43,14 +47,20 @@
 {% for item in Items %}
   {% assign itemCampusesRaw = item | Attribute: 'Campuses' %}
   {% assign itemCampuses = itemCampusesRaw | Split: ',' %}
-  {% if itemCampusesRaw == empty %}
-    {% assign hasVisibleItems = true %}
-  {% else %}
-    {% for itemCampus in itemCampuses %}
-      {% if itemCampus == Context.Campus.Name %}
+  {% if itemCount < maxItems %}
+    {% if useCampusContext %}
+      {% if itemCampusesRaw == empty %}
         {% assign hasVisibleItems = true %}
+      {% else %}
+        {% for itemCampus in itemCampuses %}
+          {% if itemCampus == Context.Campus.Name %}
+            {% assign hasVisibleItems = true %}
+          {% endif %}
+        {% endfor %}
       {% endif %}
-    {% endfor %}
+    {% else %}
+      {% assign hasVisibleItems = true %}
+    {% endif %}
   {% endif %}
 {% endfor %}
 
@@ -72,14 +82,18 @@
           {% assign itemLink = externalUrl | Default: internalUrl %}
 
           {% if itemCount < maxItems %}
-            {% if itemCampusesRaw == empty %}
-              {% assign showItem = true %}
+            {% if useCampusContext %}
+              {% if itemCampusesRaw == empty %}
+                {% assign showItem = true %}
+              {% else %}
+                {% for itemCampus in itemCampuses %}
+                  {% if itemCampus == Context.Campus.Name %}
+                    {% assign showItem = true %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
             {% else %}
-              {% for itemCampus in itemCampuses %}
-                {% if itemCampus == Context.Campus.Name %}
-                  {% assign showItem = true %}
-                {% endif %}
-              {% endfor %}
+              {% assign showItem = true %}
             {% endif %}
           {% endif %}
 
