@@ -742,14 +742,14 @@ $(document).ready(function() {
                                             if ( direction == SortDirection.Ascending )
                                             {
                                                 orderedQry = ( columnIndex == 0 ) ?
-                                                    itemQry.OrderBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value ) :
-                                                    orderedQry.ThenBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value );
+                                                    itemQry.OrderBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.ValueAsType ) :
+                                                    orderedQry.ThenBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.ValueAsType );
                                             }
                                             else
                                             {
                                                 orderedQry = ( columnIndex == 0 ) ?
-                                                    itemQry.OrderByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value ) :
-                                                    orderedQry.ThenByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value );
+                                                    itemQry.OrderByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.ValueAsType ) :
+                                                    orderedQry.ThenByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.ValueAsType );
                                             }
                                         }
                                         else
