@@ -27,12 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for FinancialTransactionRefund that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for BackgroundCheck that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class FinancialTransactionRefundEntity
+    public partial class BackgroundCheckEntity
     {
         /// <summary />
         public int Id { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.BackgroundCheckStatus BackgroundCheckStatus { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -46,13 +49,22 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public int? OriginalTransactionId { get; set; }
+        public int PersonAliasId { get; set; }
 
         /// <summary />
-        public string RefundReasonSummary { get; set; }
+        public bool? RecordFound { get; set; }
 
         /// <summary />
-        public int? RefundReasonValueId { get; set; }
+        public DateTime RequestDate { get; set; }
+
+        /// <summary />
+        public DateTime ResponseDate { get; set; }
+
+        /// <summary />
+        public int? ResponseDocumentId { get; set; }
+
+        /// <summary />
+        public string ResponseXml { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -81,18 +93,22 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source FinancialTransactionRefund object
+        /// Copies the base properties from a source BackgroundCheck object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( FinancialTransactionRefund source )
+        public void CopyPropertiesFrom( BackgroundCheck source )
         {
             this.Id = source.Id;
+            this.BackgroundCheckStatus = source.BackgroundCheckStatus;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.OriginalTransactionId = source.OriginalTransactionId;
-            this.RefundReasonSummary = source.RefundReasonSummary;
-            this.RefundReasonValueId = source.RefundReasonValueId;
+            this.PersonAliasId = source.PersonAliasId;
+            this.RecordFound = source.RecordFound;
+            this.RequestDate = source.RequestDate;
+            this.ResponseDate = source.ResponseDate;
+            this.ResponseDocumentId = source.ResponseDocumentId;
+            this.ResponseXml = source.ResponseXml;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -104,19 +120,10 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for FinancialTransactionRefund that includes all the fields that are available for GETs. Use this for GETs (use FinancialTransactionRefundEntity for POST/PUTs)
+    /// Client model for BackgroundCheck that includes all the fields that are available for GETs. Use this for GETs (use BackgroundCheckEntity for POST/PUTs)
     /// </summary>
-    public partial class FinancialTransactionRefund : FinancialTransactionRefundEntity
+    public partial class BackgroundCheck : BackgroundCheckEntity
     {
-        /// <summary />
-        public FinancialTransaction FinancialTransaction { get; set; }
-
-        /// <summary />
-        public FinancialTransaction OriginalTransaction { get; set; }
-
-        /// <summary />
-        public DefinedValue RefundReasonValue { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

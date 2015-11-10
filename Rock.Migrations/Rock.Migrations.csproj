@@ -270,10 +270,6 @@
     <Compile Include="Migrations\201507051852159_EventRegistration3.Designer.cs">
       <DependentUpon>201507051852159_EventRegistration3.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507062330051_GroupRequirementsNotificationEmail.cs" />
-    <Compile Include="Migrations\201507062330051_GroupRequirementsNotificationEmail.Designer.cs">
-      <DependentUpon>201507062330051_GroupRequirementsNotificationEmail.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\201507072208323_WorkflowTriggerModelAddition.cs" />
     <Compile Include="Migrations\201507072208323_WorkflowTriggerModelAddition.Designer.cs">
       <DependentUpon>201507072208323_WorkflowTriggerModelAddition.cs</DependentUpon>
@@ -2090,9 +2086,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201507051852159_EventRegistration3.resx">
       <DependentUpon>201507051852159_EventRegistration3.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507062330051_GroupRequirementsNotificationEmail.resx">
-      <DependentUpon>201507062330051_GroupRequirementsNotificationEmail.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201507072208323_WorkflowTriggerModelAddition.resx">
       <DependentUpon>201507072208323_WorkflowTriggerModelAddition.cs</DependentUpon>
