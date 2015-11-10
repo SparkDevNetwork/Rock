@@ -679,17 +679,22 @@ namespace RockWeb
         private void LoadCacheObjects( RockContext rockContext )
         {
             // Cache all the entity types
-            foreach ( var entityType in new Rock.Model.EntityTypeService( rockContext ).Queryable() )
+            foreach ( var entityType in new Rock.Model.EntityTypeService( rockContext ).Queryable().AsNoTracking() )
             {
                 EntityTypeCache.Read( entityType );
             }
 
             // Cache all the Field Types
+            foreach ( var fieldType in new Rock.Model.FieldTypeService( rockContext ).Queryable().AsNoTracking() )
+            {
+                Rock.Web.Cache.FieldTypeCache.Read( fieldType );
+            }
+
             var all = Rock.Web.Cache.FieldTypeCache.All();
 
             // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
             var qualifiers = new Dictionary<int, Dictionary<string, string>>();
-            foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable() )
+            foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable().AsNoTracking() )
             {
                 try
                 {
@@ -706,8 +711,16 @@ namespace RockWeb
                 }
             }
 
-            // Cache all the attributes.
-            foreach ( var attribute in new Rock.Model.AttributeService( rockContext ).Queryable( "Categories" ).ToList() )
+            // Cache all the attributes, except for user preferences
+            
+            var attributeQuery = new Rock.Model.AttributeService( rockContext ).Queryable( "Categories" );
+            int? personUserValueEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( Person.USER_VALUE_ENTITY );
+            if (personUserValueEntityTypeId.HasValue)
+            {
+                attributeQuery = attributeQuery.Where(a => !a.EntityTypeId.HasValue || a.EntityTypeId.Value != personUserValueEntityTypeId);
+            }
+
+            foreach ( var attribute in attributeQuery.AsNoTracking().ToList() )
             {
                 if ( qualifiers.ContainsKey( attribute.Id ) )
                     Rock.Web.Cache.AttributeCache.Read( attribute, qualifiers[attribute.Id] );
@@ -716,7 +729,7 @@ namespace RockWeb
             }
 
             // cache all the Country Defined Values since those can be loaded in just a few millisecond here, but take around 1-2 seconds if first loaded when formatting an address
-            foreach (var definedValue in new Rock.Model.DefinedValueService(rockContext).GetByDefinedTypeGuid(Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid()))
+            foreach ( var definedValue in new Rock.Model.DefinedValueService( rockContext ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() ).AsNoTracking() )
             {
                 DefinedValueCache.Read( definedValue, rockContext );
             }
