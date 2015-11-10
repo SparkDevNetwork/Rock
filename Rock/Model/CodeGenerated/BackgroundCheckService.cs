@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Person Service class
+    /// BackgroundCheck Service class
     /// </summary>
-    public partial class PersonService : Service<Person>
+    public partial class BackgroundCheckService : Service<BackgroundCheck>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersonService"/> class
+        /// Initializes a new instance of the <see cref="BackgroundCheckService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public PersonService(RockContext context) : base(context)
+        public BackgroundCheckService(RockContext context) : base(context)
         {
         }
 
@@ -48,15 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Person item, out string errorMessage )
+        public bool CanDelete( BackgroundCheck item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<PersonAlias>( Context ).Queryable().Any( a => a.PersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, PersonAlias.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -64,69 +58,45 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class PersonExtensionMethods
+    public static partial class BackgroundCheckExtensionMethods
     {
         /// <summary>
-        /// Clones this Person object to a new Person object
+        /// Clones this BackgroundCheck object to a new BackgroundCheck object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Person Clone( this Person source, bool deepCopy )
+        public static BackgroundCheck Clone( this BackgroundCheck source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Person;
+                return source.Clone() as BackgroundCheck;
             }
             else
             {
-                var target = new Person();
+                var target = new BackgroundCheck();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another Person object to this Person object
+        /// Copies the properties from another BackgroundCheck object to this BackgroundCheck object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this Person target, Person source )
+        public static void CopyPropertiesFrom( this BackgroundCheck target, BackgroundCheck source )
         {
             target.Id = source.Id;
-            target.AnniversaryDate = source.AnniversaryDate;
-            target.BirthDay = source.BirthDay;
-            target.BirthMonth = source.BirthMonth;
-            target.BirthYear = source.BirthYear;
-            target.ConnectionStatusValueId = source.ConnectionStatusValueId;
-            target.Email = source.Email;
-            target.EmailNote = source.EmailNote;
-            target.EmailPreference = source.EmailPreference;
-            target.FirstName = source.FirstName;
+            target.BackgroundCheckStatus = source.BackgroundCheckStatus;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.Gender = source.Gender;
-            target.GivingGroupId = source.GivingGroupId;
-            target.GraduationYear = source.GraduationYear;
-            target.InactiveReasonNote = source.InactiveReasonNote;
-            target.IsDeceased = source.IsDeceased;
-            target.IsEmailActive = source.IsEmailActive;
-            target.IsSystem = source.IsSystem;
-            target.LastName = source.LastName;
-            target.MaritalStatusValueId = source.MaritalStatusValueId;
-            target.MiddleName = source.MiddleName;
-            target.NickName = source.NickName;
-            target.PhotoId = source.PhotoId;
-            target.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
-            target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
-            target.RecordStatusValueId = source.RecordStatusValueId;
-            target.RecordTypeValueId = source.RecordTypeValueId;
-            target.ReviewReasonNote = source.ReviewReasonNote;
-            target.ReviewReasonValueId = source.ReviewReasonValueId;
-            target.SuffixValueId = source.SuffixValueId;
-            target.SystemNote = source.SystemNote;
-            target.TitleValueId = source.TitleValueId;
-            target.ViewedCount = source.ViewedCount;
+            target.PersonAliasId = source.PersonAliasId;
+            target.RecordFound = source.RecordFound;
+            target.RequestDate = source.RequestDate;
+            target.ResponseDate = source.ResponseDate;
+            target.ResponseDocumentId = source.ResponseDocumentId;
+            target.ResponseXml = source.ResponseXml;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
