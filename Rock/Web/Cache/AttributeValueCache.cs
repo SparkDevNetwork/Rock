@@ -85,6 +85,25 @@ namespace Rock.Web.Cache
         public string Value { get; set; }
 
         /// <summary>
+        /// Gets the field type value.
+        /// </summary>
+        /// <value>
+        /// The field type value.
+        /// </value>
+        public object ValueAsType
+        {
+            get
+            {
+                var attribute = AttributeCache.Read( this.AttributeId );
+                if ( attribute != null )
+                {
+                    return attribute.FieldType.Field.ValueAsFieldType( null, Value, attribute.QualifierValues );
+                }
+                return Value;
+            }
+        }
+
+        /// <summary>
         /// Gets the value formatted.
         /// </summary>
         /// <value>
