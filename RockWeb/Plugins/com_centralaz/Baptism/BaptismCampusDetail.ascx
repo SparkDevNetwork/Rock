@@ -1,7 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BaptismCampusDetail.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.Baptism.BaptismCampusDetail" %>
 
 <script type="text/javascript">
-    Sys.Application.add_load( function () {
+    Sys.Application.add_load(function () {
         $('.js-baptism-status').tooltip();
     });
 </script>
@@ -56,6 +56,7 @@
                         <h1 class="panel-title">
                             <asp:Literal ID="lPanelHeadingDateRange" runat="server"></asp:Literal>
                         </h1>
+                        <asp:LinkButton ID="btnShowDeleted" CssClass="pull-right" runat="server" Text="Show Deleted" OnClick="btnShowDeleted_Click" Visible="false"/>
                     </div>
                     <div class="panel-body">
                         <Rock:NotificationBox ID="nbNoBaptisms" NotificationBoxType="Info" runat="server"></Rock:NotificationBox>

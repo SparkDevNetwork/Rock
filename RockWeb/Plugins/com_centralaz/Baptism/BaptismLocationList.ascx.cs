@@ -110,7 +110,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
 
             if ( group != null )
             {
-                if ( !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                if ( !group.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
                 {
                     mdGridWarning.Show( "You are not authorized to delete this group", ModalAlertType.Information );
                     return;

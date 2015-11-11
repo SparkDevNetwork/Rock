@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 using com.centralaz.Baptism.Data;
 using com.centralaz.Baptism.Model;
 using iTextSharp.text;
@@ -16,6 +17,7 @@ using Rock.Model;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Security;
 
 namespace RockWeb.Plugins.com_centralaz.Baptism
 {
@@ -33,14 +35,42 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
     {
         #region Properties
 
+        /// <summary>
+        /// The _blackout dates
+        /// </summary>
         protected List<Schedule> _blackoutDates;
+
+        /// <summary>
+        /// A list of baptizees that is used by the baptism details section
+        /// </summary>
         protected List<Baptizee> _baptizeeList;
+
+        /// <summary>
+        /// A list of baptizees that is used by the calendar
+        /// </summary>
         protected List<Baptizee> _baptizees;
+
+        /// <summary>
+        /// The _blackout date
+        /// </summary>
         protected Schedule _blackoutDate;
+
+        private bool ShowDeleted { get; set; }
 
         #endregion
 
         #region Base Control Methods
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            ShowDeleted = ViewState["ShowDeleted"] as bool? ?? false;
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -69,6 +99,12 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             base.OnLoad( e );
             GetBlackoutDates();
             UpdateBaptizees();
+            if ( IsUserAuthorized( Authorization.EDIT ) )
+            {
+                btnShowDeleted.Visible = true;
+            }
+
+            UpdateShowDeletedButtonText();
 
             if ( !Page.IsPostBack )
             {
@@ -81,6 +117,25 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                     BindCalendar();
                 }
             }
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            var jsonSetting = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
+
+            ViewState["ShowDeleted"] = ShowDeleted;
+
+            return base.SaveViewState();
         }
 
         /// <summary>
@@ -172,6 +227,8 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             //Get the data
             DateTime[] dateRange = GetTheDateRange( calBaptism.SelectedDate );
             Group group = new GroupService( new RockContext() ).Get( PageParameter( "GroupId" ).AsInteger() );
+
+            // Will never print out deleted Baptisms - No need.
             _baptizeeList = new BaptizeeService( new BaptismContext() ).GetBaptizeesByDateRange( dateRange[0], dateRange[1], group.Id );
             String font = GetAttributeValue( "ReportFont" );
 
@@ -191,7 +248,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             {
                 string logoUri = GetAttributeValue( "ReportLogo" );
                 string fileUrl = string.Empty;
-                iTextSharp.text.Image logo; 
+                iTextSharp.text.Image logo;
                 if ( logoUri.ToLower().StartsWith( "http" ) )
                 {
                     logo = iTextSharp.text.Image.GetInstance( new Uri( logoUri ) );
@@ -275,6 +332,18 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
 
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnShowDeleted control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnShowDeleted_Click( object sender, EventArgs e )
+        {
+            ShowDeleted = !ShowDeleted;
+            UpdateShowDeletedButtonText();
+            UpdateSchedulePanel();
+        }
+
         #endregion
 
         #region Methods
@@ -284,6 +353,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         /// </summary>
         protected void UpdateBaptizees()
         {
+            // Used to format calendar. No need for deleted baptisms to be shown here.
             _baptizees = new BaptizeeService( new BaptismContext() ).GetAllBaptizees( PageParameter( "GroupId" ).AsInteger() );
         }
 
@@ -321,6 +391,21 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         }
 
         /// <summary>
+        /// Updates the show deleted button text.
+        /// </summary>
+        private void UpdateShowDeletedButtonText()
+        {
+            if ( ShowDeleted )
+            {
+                btnShowDeleted.Text = "Hide Deleted";
+            }
+            else
+            {
+                btnShowDeleted.Text = "Show Deleted";
+            }
+        }
+
+        /// <summary>
         /// Updates the baptism schedule panel
         /// </summary>
         protected void UpdateSchedulePanel()
@@ -348,7 +433,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
                 {
                     lbEditBlackout.Visible = false;
                     nbBlackOutWeek.Visible = false;
-                    _baptizeeList = new BaptizeeService( new BaptismContext() ).GetBaptizeesByDateRange( dateRange[0], dateRange[1], group.Id );
+                    _baptizeeList = new BaptizeeService( new BaptismContext() ).GetBaptizeesByDateRange( dateRange[0], dateRange[1], group.Id, ShowDeleted );
                     if ( _baptizeeList.Count == 0 )
                     {
                         nbNoBaptisms.Text = "No baptisms scheduled for the selected week!";
@@ -468,19 +553,26 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         /// <param name="baptizee">The baptizee</param>
         protected void BuildListItem( Baptizee baptizee )
         {
+            var strikePrefix = "";
+            var strikePostfix = "";
+            if ( baptizee.IsDeleted )
+            {
+                strikePrefix = "<s>";
+                strikePostfix = "</s>";
+            }
             phBaptismList.Controls.Add( new LiteralControl( string.Format( "<div class='row js-baptism-status' data-toggle='tooltip' data-placement='top' title=\"scheduled by {0} on {1}\" >", baptizee.CreatedByPersonAlias.Person.FullName, baptizee.CreatedDateTime ) ) );
             string url = ResolveUrl( string.Format( "~/Person/{0}", baptizee.Person.PersonId ) );
-            String theString = String.Format( "<div class='col-md-2'><a href=\"{0}\">{1}</a></div>", url, baptizee.Person.Person.FullName );
+            String theString = String.Format( "<div class='col-md-2'><a href=\"{0}\">{1}{2}{3}</a></div>", url, strikePrefix, baptizee.Person.Person.FullName, strikePostfix );
             phBaptismList.Controls.Add( new LiteralControl( theString ) );
 
-            theString = String.Format( "<div class='col-md-2'>{0}</div>", baptizee.Person.Person.PhoneNumbers.FirstOrDefault() );
+            theString = String.Format( "<div class='col-md-2'>{0}{1}{2}</div>", strikePrefix, baptizee.Person.Person.PhoneNumbers.FirstOrDefault(), strikePostfix );
             phBaptismList.Controls.Add( new LiteralControl( theString ) );
 
             phBaptismList.Controls.Add( new LiteralControl( "<div class='col-md-2'>" ) );
             if ( baptizee.Baptizer1 != null )
             {
                 url = ResolveUrl( string.Format( "~/Person/{0}", baptizee.Baptizer1.PersonId ) );
-                phBaptismList.Controls.Add( new LiteralControl( string.Format( "<li><a href=\"{0}\">{1}</a></li>", url, baptizee.Baptizer1.Person.FullName ?? "" ) ) );
+                phBaptismList.Controls.Add( new LiteralControl( string.Format( "<li><a href=\"{0}\">{1}{2}{3}</a></li>", url, strikePrefix, baptizee.Baptizer1.Person.FullName ?? "", strikePostfix ) ) );
             }
             else
             {
@@ -490,7 +582,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             if ( baptizee.Baptizer2 != null )
             {
                 url = ResolveUrl( string.Format( "~/Person/{0}", baptizee.Baptizer2.PersonId ) );
-                phBaptismList.Controls.Add( new LiteralControl( string.Format( "<li><a href=\"{0}\">{1}</a></li>", url, baptizee.Baptizer2.Person.FullName ?? "" ) ) );
+                phBaptismList.Controls.Add( new LiteralControl( string.Format( "<li><a href=\"{0}\">{1}{2}{3}</a></li>", url, strikePrefix, baptizee.Baptizer2.Person.FullName ?? "", strikePostfix ) ) );
             }
             else
             {
@@ -500,7 +592,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             if ( baptizee.Approver != null )
             {
                 url = ResolveUrl( string.Format( "~/Person/{0}", baptizee.Approver.PersonId ) );
-                theString = String.Format( "<div class='col-md-2'><a href=\"{0}\">{1}</a></div>", url, baptizee.Approver.Person.FullName ?? "" );
+                theString = String.Format( "<div class='col-md-2'><a href=\"{0}\">{1}{2}{3}</a></div>", url, strikePrefix, baptizee.Approver.Person.FullName ?? "", strikePostfix );
             }
             else
             {
@@ -595,5 +687,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         }
 
         #endregion
+
     }
 }

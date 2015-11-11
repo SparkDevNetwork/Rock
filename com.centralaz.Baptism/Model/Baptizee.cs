@@ -62,6 +62,15 @@ namespace com.centralaz.Baptism.Model
         public bool IsConfirmed { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is deleted.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is deleted; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsDeleted { get; set; }
+
+        /// <summary>
         /// The baptism time
         /// </summary>
         [DataMember]

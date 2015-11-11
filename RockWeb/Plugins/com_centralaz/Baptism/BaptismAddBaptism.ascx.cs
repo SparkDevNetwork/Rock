@@ -54,7 +54,6 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 if ( PageParameter( "BaptizeeId" ).AsIntegerOrNull() == null )
@@ -161,6 +160,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             {
                 _baptizee = new Baptizee { Id = 0 };
                 _baptizee.GroupId = PageParameter( "GroupId" ).AsInteger();
+                _baptizee.IsDeleted = false;
                 History.EvaluateChange( changes, "Baptism Date/Time", "", dtpBaptismDate.SelectedDateTime.Value.ToString( "g" ) );
             }
             else
@@ -201,7 +201,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             if ( _baptizee.Id.Equals( 0 ) )
             {
                 baptizeeService.Add( _baptizee );
-            }
+            }            
 
             baptismContext.SaveChanges();
 
@@ -232,22 +232,30 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
 
             if ( _baptizee != null )
             {
-                baptizeeService.Delete( _baptizee );
-                baptismContext.SaveChanges();
+                if ( _baptizee.IsDeleted )
+                {
+                    _baptizee.IsDeleted = false;
+                    baptismContext.SaveChanges();
+                }
+                else
+                {
+                    _baptizee.IsDeleted = true;
+                    baptismContext.SaveChanges();
 
-                // Create the history records
-                var changes = new List<string>();
+                    // Create the history records
+                    var changes = new List<string>();
 
-                History.EvaluateChange( changes, "Baptizer 1", ( _baptizee.Baptizer1 != null ) ? _baptizee.Baptizer1.Person.FullName : "", "" );
-                History.EvaluateChange( changes, "Baptizer 2", ( _baptizee.Baptizer2 != null ) ? _baptizee.Baptizer2.Person.FullName : "", "" );
-                History.EvaluateChange( changes, "Approver", ( _baptizee.Approver != null ) ? _baptizee.Approver.Person.FullName : "", "" );
-                History.EvaluateChange( changes, "Confirmed", _baptizee.IsConfirmed, false );
-                History.EvaluateChange( changes, "Baptism Date/Time", _baptizee.BaptismDateTime.ToString( "g" ), "" );
+                    History.EvaluateChange( changes, "Baptizer 1", ( _baptizee.Baptizer1 != null ) ? _baptizee.Baptizer1.Person.FullName : "", "" );
+                    History.EvaluateChange( changes, "Baptizer 2", ( _baptizee.Baptizer2 != null ) ? _baptizee.Baptizer2.Person.FullName : "", "" );
+                    History.EvaluateChange( changes, "Approver", ( _baptizee.Approver != null ) ? _baptizee.Approver.Person.FullName : "", "" );
+                    History.EvaluateChange( changes, "Confirmed", _baptizee.IsConfirmed, false );
+                    History.EvaluateChange( changes, "Baptism Date/Time", _baptizee.BaptismDateTime.ToString( "g" ), "" );
 
-                RockContext rockContext = new RockContext();
-                HistoryService.AddChanges( rockContext, typeof( Person ), com.centralaz.Baptism.SystemGuid.Category.HISTORY_PERSON_BAPTISM_CHANGES.AsGuid(),
-                        (int)ppBaptizee.PersonId, changes );
-                rockContext.SaveChanges();
+                    RockContext rockContext = new RockContext();
+                    HistoryService.AddChanges( rockContext, typeof( Person ), com.centralaz.Baptism.SystemGuid.Category.HISTORY_PERSON_BAPTISM_CHANGES.AsGuid(),
+                            (int)ppBaptizee.PersonId, changes );
+                    rockContext.SaveChanges();
+                }
             }
             ReturnToParentPage();
         }
@@ -359,6 +367,12 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
             }
 
             cbIsConfirmed.Checked = baptizee.IsConfirmed;
+
+            if ( baptizee.IsDeleted )
+            {
+                btnDelete.CssClass = "btn btn-success";
+                btnDelete.Text = "Restore";
+            }
         }
 
         /// <summary>
