@@ -119,14 +119,16 @@ Request:
                        ,'92B866DB-A941-4238-A34D-31B68C3B5965')
           " );
 
-            RockMigrationHelper.AddEntityAttribute( "ServiceJob", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Class", "com.centralaz.Prayer.Jobs.SendRequestUpdateEmail", "Request Update Page", "", "The page that the link directs the user to.", 0, "", "71CCBFD5-24ED-4580-A9C1-6E955BBB9D90", "RequestUpdatePage" );
-            RockMigrationHelper.AddAttributeValue( "71CCBFD5-24ED-4580-A9C1-6E955BBB9D90", 20, "a2a3d942-d1c3-4451-a71c-cb550f156910", "F5A4D92D-88D3-4786-B9EC-E4929B0698E2" );
-           
+            RockMigrationHelper.AddEntityAttribute( "Rock.Model.ServiceJob", "08F3003B-F3E2-41EC-BDF1-A2B7AC2908CF", "Class", "com.centralaz.Prayer.Jobs.SendRequestUpdateEmail", "Request Expired Email", "", "The system email to send.", 0, "4ADFA0F5-E6E1-4208-A6E1-BF69FA29ADF0", "3D55298A-C3DE-405C-A423-1CFDDC927C96" );
+            RockMigrationHelper.AddEntityAttribute( "Rock.Model.ServiceJob", "309460EF-0CC5-41C6-9161-B3837BA3D374", "Class", "com.centralaz.Prayer.Jobs.SendRequestUpdateEmail", "Category", "", "The category of prayer request the email will be sent out to.", 2, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "C5A429C5-FE02-4D19-A7D5-0066798FD70B" );
+            RockMigrationHelper.AddEntityAttribute( "Rock.Model.ServiceJob", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Class", "com.centralaz.Prayer.Jobs.SendRequestUpdateEmail", "Request Update Page", "", "The page that the link directs the user to.", 0, "A2A3D942-D1C3-4451-A71C-CB550F156910", "6CC4788A-A47E-4101-A787-9DA7873890F0" );
         }
 
         public override void Down()
         {
-            RockMigrationHelper.DeleteAttribute( "71CCBFD5-24ED-4580-A9C1-6E955BBB9D90" ); // Deletes the ServiceJob attribute
+            RockMigrationHelper.DeleteAttribute( "3D55298A-C3DE-405C-A423-1CFDDC927C96" );    // Rock.Model.ServiceJob: Request Expired Email
+            RockMigrationHelper.DeleteAttribute( "C5A429C5-FE02-4D19-A7D5-0066798FD70B" );    // Rock.Model.ServiceJob: Category
+            RockMigrationHelper.DeleteAttribute( "6CC4788A-A47E-4101-A787-9DA7873890F0" );    // Rock.Model.ServiceJob: Request Update Page
 
             RockMigrationHelper.DeleteAttribute( "558416C0-6F58-429C-859A-FC687B6AE50D" );
             RockMigrationHelper.DeleteAttribute( "5722EA2F-1CBE-4BBD-8E17-9834A5B7E72E" );
