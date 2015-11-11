@@ -2,3 +2,5 @@
 /release/*
 *.xml
 *.Rest.dll.config
+*.pdb
+*.dll
