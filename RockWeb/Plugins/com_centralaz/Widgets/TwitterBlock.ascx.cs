@@ -30,7 +30,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [TextField( "Twitter Username" )]
     [IntegerField( "Number Of Tweets", required: true )]
     [TextField( "Twitter Widget Id", "The twitter widget Id.", true, "626813522828132352" )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the package details.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/TwitterLava.lava' %}", "", 2 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the package details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/TwitterLava.lava' %}", "", 2 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     public partial class TwitterBlock : RockBlock
     {

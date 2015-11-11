@@ -37,7 +37,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
     [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 10 )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the search results.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/LifeGroupFinder/Lava/LifeGroupList.lava' %}", "", 6 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the search results.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/LifeGroupFinder/Lava/LifeGroupList.lava' %}", "", 6 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 7 )]
     public partial class LifeGroupList : RockBlock
     {

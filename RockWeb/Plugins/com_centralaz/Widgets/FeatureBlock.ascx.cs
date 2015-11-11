@@ -41,7 +41,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/Headers/", false, "", "", 2 )]
     [TextField( "Feature Title" )]
 
-    [CodeEditorField( "Lava Template", "Lava template to use to display the header.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/FeatureBlock.lava' %}", "", 2 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the header.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/FeatureBlock.lava' %}", "", 2 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
 
     public partial class FeatureBlock : RockBlockCustomSettings

@@ -39,7 +39,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
     [EventCalendarField( "Event Calendar", "The event calendar to be displayed", true, "1", order: 0 )]
     [LinkedPage( "Details Page", "Detail page for events", order: 2 )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the search results.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/PopupCalendar.lava' %}", "", 3)]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the search results.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/PopupCalendar.lava' %}", "", 3)]
     [DayOfWeekField( "Start of Week Day", "Determines what day is the start of day", true, DayOfWeek.Sunday, order: 4 )]
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 5 )]
 

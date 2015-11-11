@@ -43,7 +43,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [Description( "Displays groups that the user is following." )]
     [CustomRadioListField( "Sort Property", "How to sort ", "1^GroupType then Campus, 2^Campus then GroupType", true, "1" )]
     [TextField( "Link URL", "The address to use for the link. The text '[Id]' will be replaced with the Id of the entity '[Guid]' will be replaced with the Guid.", false, "/samplepage/[Id]", "", 1, "LinkUrl" )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/FollowingGroups.lava' %}", "", 2, "LavaTemplate" )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/FollowingGroups.lava' %}", "", 2, "LavaTemplate" )]
     [BooleanField( "Enable Debug", "Show merge data to help you see what's available to you.", order: 3 )]
     [IntegerField( "Max Results", "The maximum number of results to display.", true, 100, order: 4 )]
     public partial class FollowingGroups : Rock.Web.UI.RockBlock
