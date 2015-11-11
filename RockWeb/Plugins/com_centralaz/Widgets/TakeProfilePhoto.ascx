@@ -19,7 +19,7 @@
             </div>
             <div id="divPeople"></div>
                 
-            <input id="ipodInput" type="file" accept="image/*" style="display:none" onchange="showIphoneUpload(this);">
+            <input id="ipodInput" type="file" accept="image/*" style="display:none" onchange="photoToCanvas(this);">
 
             <div id="video_box" style="display:none">
                     <video id="video" width="425" height="425" autoplay>Your browser does not support this streaming content.</video>
@@ -58,67 +58,169 @@
             var typingTimer;
             var doneTypingInterval = 600;
             var btnIphoneUpload = document.getElementById('<%=btnIphoneUpload.ClientID %>');
-            function showIphoneUpload(e) {
+
+            function photoToCanvas(e) {
                 $('div[id$="wellDiv"]').show();
                 $('input[id$="btnIphoneUpload"]').show();
                 $('input[id$="btnStart"]').hide();
+                if (e.files.length === 0) return;
+                var imageFile = e.files[0];
+
+                var img = new Image();
+                var url = window.URL ? window.URL : window.webkitURL;
+                img.src = url.createObjectURL(imageFile);
+                img.onload = function (e) {
+                    url.revokeObjectURL(this.src);
+                    var width;
+                    var height;
+                    var binaryReader = new FileReader();
+                    var transform = "unchanged";
+                    EXIF.getData(imageFile, function () {
+                        var exif = EXIF.getTag(this, "Orientation");
+                        if (exif == undefined) {
+                            width = img.width;
+                            height = img.height;
+                        }
+                        else {
+                            if (exif === 8) {
+                                width = img.height;
+                                height = img.width;
+                                transform = "left";
+                            } else if (exif === 6) {
+                                width = img.height;
+                                height = img.width;
+                                transform = "right";
+                            } else if (exif === 1) {
+                                width = img.width;
+                                height = img.height;
+                            } else if (exif === 3) {
+                                width = img.width;
+                                height = img.height;
+                                transform = "flip";
+                            } else {
+                                width = img.width;
+                                height = img.height;
+                            }
+                        }
+                        var MAX_WIDTH = 425;
+                        var MAX_HEIGHT = 425;
+                        if (width / MAX_WIDTH > height / MAX_HEIGHT) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+                        var canvas = $('#canvas')[0];
+                        canvas.width = width;
+                        canvas.height = height;
+                        var ctx = canvas.getContext("2d");
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(0, 0, width, height);
+                        alert(transform);
+                        if (transform === 'left') {
+                            ctx.setTransform(0, -1, 1, 0, 0, height);
+                            ctx.drawImage(img, 0, (img.height - img.width) / 2, img.width, (img.height + img.width) / 2, 0, 0, width, height);
+                        } else if (transform === 'right') {
+                            //ctx.setTransform(0, 1, -1, 0, width, 0);
+                            ctx.drawImage(img, 0, (img.height - img.width) / 2, img.width, (img.height + img.width) / 2, 0, 0, 425, 425);
+                        } else if (transform === 'flip') {
+                            ctx.setTransform(1, 0, 0, -1, 0, height);
+                            ctx.drawImage(img, (img.width - img.height) / 2, 0, (img.width + img.height) / 2, img.height, 0, 0, 425, 425);
+                        } else {
+                            ctx.setTransform(1, 0, 0, 1, 0, 0);
+                            ctx.drawImage(img, (img.width - img.height) / 2, 0, (img.width + img.height) / 2, img.height, 0, 0, 425, 425);
+                        }
+                        ctx.setTransform(1, 0, 0, 1, 0, 0);
+                        var pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        var r, g, b, i;
+                        for (var py = 0; py < pixels.height; py += 1) {
+                            for (var px = 0; px < pixels.width; px += 1) {
+                                i = (py * pixels.width + px) * 4;
+                                r = pixels.data[i];
+                                g = pixels.data[i + 1];
+                                b = pixels.data[i + 2];
+                                if (g > 100 && g > r * 1.35 && g > b * 1.6) pixels.data[i + 3] = 0;
+                            }
+                        }
+                        ctx.putImageData(pixels, 0, 0);
+                        $('canvas[id$="canvas"]').fadeIn();
+                    });
+
+                };
             }
 
+            var createBinaryFile = function (uintArray) {
+                var data = new Uint8Array(uintArray);
+                var file = new BinaryFile(data);
+                file.getByteAt = function (iOffset) {
+                    return data[iOffset];
+                };
+                file.getBytesAt = function (iOffset, iLength) {
+                    var aBytes = [];
+                    for (var i = 0; i < iLength; i++) {
+                        aBytes[i] = data[iOffset + i];
+                    }
+                    return aBytes;
+                };
+                file.getLength = function () {
+                    return data.length;
+                };
+                return file;
+            };
+
             btnIphoneUpload.addEventListener("click", function (e) {
-                // This png often errors out trying to parse base64 on the server.
-                //var dataUrl = canvas.toDataURL("png");
-                var dataUrl = null;
-                var file = ipodInput.files[0];
-                var reader = new FileReader();
-                reader.onloadend = function (e) {
-                    dataUrl = e.target.result;
-                    console.log(dataUrl);
 
-                    var personId = $('input[id="selectedPersonId"]').val();
-                    if (personId == "") {
-                        alert("Sorry, you have to pick a person first.");
-                        return false;
-                    }
+                var dataURL = canvas.toDataURL('image/png');
+                setTimeout(function () { alert("Modified Image Data: " + data.substring(0, 30) + "..."); }, 100);
+                // Do something with the image file now...
+                return false;
 
-                    $('#uploadProgress').fadeIn('fast');
-                    var data = {
-                        img64: dataUrl
-                    }
-                    console.log(JSON.stringify(data));
-                    // post the photo image to the server for the selected person.
-                    var request = $.ajax({
-                        type: "POST",
-                        url: '<%=ResolveUrl("~/api/People/AddPhotoToPerson") %>?personId=' + personId,
-                        data: JSON.stringify(dataUrl),
-                        contentType: "application/json",
-                        dataType: "json",
-                        success: function (result) {
-                            $('#uploadProgress').hide();
-
-                            $('#photoUploadMessage').removeClass('alert-error').addClass('alert-success').html('<i class="icon-ok"></i> Success');
-                            $('#photoUploadMessage').fadeIn('fast').delay(9000).fadeOut('slow');
-                            unselectPerson();
-                            $('div[id$="wellDiv"]').hide();
-                            $('input[id$="btnIphoneUpload"]').hide();
-                            var divPeople = $('div[id$="divPeople"]');
-                            divPeople.html('');
-                            $('input[id$="selectedPersonId"]').val('');
-                            $('input[id$="txtName"]').val('');
-                            ipodInput.show();
-                            return true;
-                        },
-                        error: function (req, status, err) {
-                            $('#uploadProgress').fadeOut('fast');
-                            console.log("something went wrong: " + status + " error " + err);
-                            $('#photoUploadMessage').removeClass('alert-success').addClass('alert-error').html(err).fadeIn('fast');
-                            return true;
-                        }
-                    });
-                }
-                if (file) {
-                    reader.readAsDataURL(file);
+                var personId = $('input[id="selectedPersonId"]').val();
+                if (personId == "") {
+                    alert("Sorry, you have to pick a person first.");
+                    return false;
                 }
 
+                $('#uploadProgress').fadeIn('fast');
+                var data = {
+                    img64: dataUrl
+                }
+                console.log(JSON.stringify(data));
+                // post the photo image to the server for the selected person.
+                var request = $.ajax({
+                    type: "POST",
+                    url: '<%=ResolveUrl("~/api/People/AddPhotoToPerson") %>?personId=' + personId,
+                    data: JSON.stringify(dataUrl),
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (result) {
+                        $('#uploadProgress').hide();
+
+                        $('#photoUploadMessage').removeClass('alert-error').addClass('alert-success').html('<i class="icon-ok"></i> Success');
+                        $('#photoUploadMessage').fadeIn('fast').delay(9000).fadeOut('slow');
+                        $('canvas[id$="canvas"]').fadeOut("slow");
+                        unselectPerson();
+                        $('div[id$="wellDiv"]').hide();
+                        $('input[id$="btnIphoneUpload"]').hide();
+                        var divPeople = $('div[id$="divPeople"]');
+                        divPeople.html('');
+                        $('input[id$="selectedPersonId"]').val('');
+                        $('input[id$="txtName"]').val('');
+                        ipodInput.show();
+                        return true;
+                    },
+                    error: function (req, status, err) {
+                        $('#uploadProgress').fadeOut('fast');
+                        console.log("something went wrong: " + status + " error " + err);
+                        $('#photoUploadMessage').removeClass('alert-success').addClass('alert-error').html(err).fadeIn('fast');
+                        return true;
+                    }
+                });
             });
 
             ///
@@ -219,6 +321,10 @@
                 $('input[id="selectedPersonId"]').val(e.id);
                 $(e).removeClass('btn-default');
                 $(e).addClass('btn-primary');
+                //var operatingSystem = getMobileOperatingSystem();
+                //if (operatingSystem == 'iOS') {
+                $('input[id$="ipodInput"]').show();
+                //}
             }
 
             ///
@@ -531,20 +637,17 @@
                             return true;
                         }
                     });
-                });              
+                });
 
             };
-           
+
             // Why this and not $(function...), I was having some trouble and this way seemed to work consistantly.
             window.onload = function () {
-                var operatingSystem = getMobileOperatingSystem();
-                if (operatingSystem == 'iOS') {
-                    $('input[id$="ipodInput"]').show();
-                }
-                else {
-                    $('div[id$="wellDiv"]').show(); //Make div class well hidden
-                    $('#video_box').show();
-                }
+                //var operatingSystem = getMobileOperatingSystem();
+                //if (operatingSystem != 'iOS') {
+                //    $('div[id$="wellDiv"]').show(); //Make div class well hidden
+                //    $('#video_box').show();
+                //}
                 initialize();
             }
         </script>

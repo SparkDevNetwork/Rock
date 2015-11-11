@@ -47,6 +47,9 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         {
             base.OnInit( e );
             RockPage.AddCSSLink( ResolveRockUrl( "~/Plugins/com_centralaz/Widgets/Styles/TakeProfilePhoto.css" ) );
+            RockPage.AddScriptLink( "~/Plugins/com_centralaz/Widgets/Scripts/piexif.js" );
+            RockPage.AddScriptLink( "~/Plugins/com_centralaz/Widgets/Scripts/exif.js" );
+            RockPage.AddScriptLink( "~/Plugins/com_centralaz/Widgets/Scripts/binaryajax.js" );
 
             string cameraIcon = ResolveRockUrl( "~/Plugins/com_centralaz/Widgets/Assets/Icons/camera-icon-128x128.png" );
             HtmlMeta metaDescription = new HtmlMeta();
