@@ -128,18 +128,20 @@ namespace church.ccv.SafetySecurity.Model
         [DataMember]
         public string ResAddress { get; set; }
 
-        /// Gets or sets DPS's record of the offender's residential address (City)
+        /// <summary>
+        /// Gets or sets the resource city.
         /// </summary>
         /// <value>
-        /// The city.
+        /// The resource city.
         /// </value>
         [DataMember]
         public string ResCity { get; set; }
 
-        /// Gets or sets DPS's record of the offender's residential address (Zip code)
+        /// <summary>
+        /// Gets or sets the resource zip.
         /// </summary>
         /// <value>
-        /// The zip
+        /// The resource zip.
         /// </value>
         [DataMember]
         public string ResZip { get; set; }
