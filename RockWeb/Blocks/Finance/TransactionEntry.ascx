@@ -3,6 +3,8 @@
 <asp:UpdatePanel ID="upPayment" runat="server">
     <ContentTemplate>
 
+        <h1>Some Test Content to Act as a Hook</h1>
+
         <asp:Panel ID="pnlPaymentInfo" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
