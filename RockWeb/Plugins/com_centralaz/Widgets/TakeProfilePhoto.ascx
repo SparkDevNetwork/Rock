@@ -47,7 +47,7 @@
                         <asp:Button runat="server" ID="btnPhoto" Text="Take photo" class="btn btn-success btn-lg" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
                         <asp:Button runat="server" ID="btnRedo" Text="Re-do" class="btn btn-default btn-lg" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
                         <asp:Button runat="server" ID="btnUpload" Text="Upload" class="btn btn-warning btn-lg" Style="display: none;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
-                    <asp:Button runat="server" ID="btnIphoneUpload" Text="Upload" class="btn btn-warning btn-lg" Style="display: none; cursor: pointer;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
+                        <asp:Button runat="server" ID="btnIphoneUpload" Text="Upload" class="btn btn-warning btn-lg" Style="display: none; cursor: pointer;" OnClientClick="return false;" UseSubmitBehavior="false" CausesValidation="false" />
                     </div>
                 </div>
             </div>
@@ -71,49 +71,19 @@
                 img.src = url.createObjectURL(imageFile);
                 img.onload = function (e) {
                     url.revokeObjectURL(this.src);
-                    var width;
-                    var height;
+                    var width = 425;
+                    var height = 425;
                     var binaryReader = new FileReader();
                     var transform = "unchanged";
                     EXIF.getData(imageFile, function () {
                         var exif = EXIF.getTag(this, "Orientation");
-                        if (exif == undefined) {
-                            width = img.width;
-                            height = img.height;
-                        }
-                        else {
-                            if (exif === 8) {
-                                width = img.height;
-                                height = img.width;
-                                transform = "left";
-                            } else if (exif === 6) {
-                                width = img.height;
-                                height = img.width;
-                                transform = "right";
-                            } else if (exif === 1) {
-                                width = img.width;
-                                height = img.height;
-                            } else if (exif === 3) {
-                                width = img.width;
-                                height = img.height;
-                                transform = "flip";
-                            } else {
-                                width = img.width;
-                                height = img.height;
-                            }
-                        }
-                        var MAX_WIDTH = 425;
-                        var MAX_HEIGHT = 425;
-                        if (width / MAX_WIDTH > height / MAX_HEIGHT) {
-                            if (width > MAX_WIDTH) {
-                                height *= MAX_WIDTH / width;
-                                width = MAX_WIDTH;
-                            }
-                        } else {
-                            if (height > MAX_HEIGHT) {
-                                width *= MAX_HEIGHT / height;
-                                height = MAX_HEIGHT;
-                            }
+
+                        if (exif === 8) {
+                            transform = "left";
+                        } else if (exif === 6) {
+                            transform = "right";
+                        } else if (exif === 3) {
+                            transform = "flip";
                         }
                         var canvas = $('#canvas')[0];
                         canvas.width = width;
@@ -121,20 +91,28 @@
                         var ctx = canvas.getContext("2d");
                         ctx.fillStyle = 'white';
                         ctx.fillRect(0, 0, width, height);
-                        alert(transform);
+                        var minDimension;
+                        if (img.height >= img.width) {
+                            minDimension = img.width;
+                        }
+                        else {
+                            minDimension = img.height;
+                        }
+
                         if (transform === 'left') {
                             ctx.setTransform(0, -1, 1, 0, 0, height);
-                            ctx.drawImage(img, 0, (img.height - img.width) / 2, img.width, (img.height + img.width) / 2, 0, 0, width, height);
+                            ctx.drawImage(img, (img.width - minDimension) / 2, (img.height - minDimension) / 2, minDimension, minDimension, 0, 0, canvas.height, canvas.width);
                         } else if (transform === 'right') {
-                            //ctx.setTransform(0, 1, -1, 0, width, 0);
-                            ctx.drawImage(img, 0, (img.height - img.width) / 2, img.width, (img.height + img.width) / 2, 0, 0, 425, 425);
+                            ctx.setTransform(0, 1, -1, 0, width, 0);
+                            ctx.drawImage(img, (img.width - minDimension) / 2, (img.height - minDimension) / 2, minDimension, minDimension, 0, 0, canvas.height, canvas.width);
                         } else if (transform === 'flip') {
                             ctx.setTransform(1, 0, 0, -1, 0, height);
-                            ctx.drawImage(img, (img.width - img.height) / 2, 0, (img.width + img.height) / 2, img.height, 0, 0, 425, 425);
+                            ctx.drawImage(img, (img.width - minDimension) / 2, (img.height - minDimension) / 2, minDimension, minDimension, 0, 0, canvas.height, canvas.width);
                         } else {
                             ctx.setTransform(1, 0, 0, 1, 0, 0);
-                            ctx.drawImage(img, (img.width - img.height) / 2, 0, (img.width + img.height) / 2, img.height, 0, 0, 425, 425);
+                            ctx.drawImage(img, (img.width - minDimension) / 2, (img.height - minDimension) / 2, minDimension, minDimension, 0, 0, canvas.height, canvas.width);
                         }
+
                         ctx.setTransform(1, 0, 0, 1, 0, 0);
                         var pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
                         var r, g, b, i;
@@ -154,31 +132,13 @@
                 };
             }
 
-            var createBinaryFile = function (uintArray) {
-                var data = new Uint8Array(uintArray);
-                var file = new BinaryFile(data);
-                file.getByteAt = function (iOffset) {
-                    return data[iOffset];
-                };
-                file.getBytesAt = function (iOffset, iLength) {
-                    var aBytes = [];
-                    for (var i = 0; i < iLength; i++) {
-                        aBytes[i] = data[iOffset + i];
-                    }
-                    return aBytes;
-                };
-                file.getLength = function () {
-                    return data.length;
-                };
-                return file;
-            };
-
             btnIphoneUpload.addEventListener("click", function (e) {
+                alert('this');
+                // This png often errors out trying to parse base64 on the server.
+                //var dataUrl = canvas.toDataURL("png");
+                var dataUrl = canvas.toDataURL("image/jpeg", 0.95);
 
-                var dataURL = canvas.toDataURL('image/png');
-                setTimeout(function () { alert("Modified Image Data: " + data.substring(0, 30) + "..."); }, 100);
-                // Do something with the image file now...
-                return false;
+                console.log(dataUrl);
 
                 var personId = $('input[id="selectedPersonId"]').val();
                 if (personId == "") {
@@ -200,7 +160,6 @@
                     dataType: "json",
                     success: function (result) {
                         $('#uploadProgress').hide();
-
                         $('#photoUploadMessage').removeClass('alert-error').addClass('alert-success').html('<i class="icon-ok"></i> Success');
                         $('#photoUploadMessage').fadeIn('fast').delay(9000).fadeOut('slow');
                         $('canvas[id$="canvas"]').fadeOut("slow");
@@ -321,10 +280,10 @@
                 $('input[id="selectedPersonId"]').val(e.id);
                 $(e).removeClass('btn-default');
                 $(e).addClass('btn-primary');
-                //var operatingSystem = getMobileOperatingSystem();
-                //if (operatingSystem == 'iOS') {
-                $('input[id$="ipodInput"]').show();
-                //}
+                var operatingSystem = getMobileOperatingSystem();
+                if (operatingSystem == 'iOS') {
+                    $('input[id$="ipodInput"]').show();
+                }
             }
 
             ///
@@ -542,14 +501,7 @@
                 /// enable the take photo button, disable the upload button
                 ///
                 btnRedo.addEventListener("click", function () {
-                    var operatingSystem = getMobileOperatingSystem();
-                    if (operatingSystem = 'iOS') {
-                        $('#ipodInput').trigger('click');
-                        return false;
-                    }
-                    else {
-                        hideCanvasAndShowVideo();
-                    }
+                    hideCanvasAndShowVideo();
                 });
 
                 ///
@@ -643,11 +595,11 @@
 
             // Why this and not $(function...), I was having some trouble and this way seemed to work consistantly.
             window.onload = function () {
-                //var operatingSystem = getMobileOperatingSystem();
-                //if (operatingSystem != 'iOS') {
-                //    $('div[id$="wellDiv"]').show(); //Make div class well hidden
-                //    $('#video_box').show();
-                //}
+                var operatingSystem = getMobileOperatingSystem();
+                if (operatingSystem != 'iOS') {
+                    $('div[id$="wellDiv"]').show(); //Make div class well hidden
+                    $('#video_box').show();
+                }
                 initialize();
             }
         </script>
