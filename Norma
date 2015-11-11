@@ -27,3 +27,8 @@ tasks:
     ext: [
       "dll"
     ]
+
+  "browser-sync":
+    "xip": true
+    "proxy": "rock.dev:6229"
+    "files": ["./RockWeb/**/*"]

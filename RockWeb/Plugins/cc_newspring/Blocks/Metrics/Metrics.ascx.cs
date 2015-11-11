@@ -50,7 +50,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     //[SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", Order = 9 )]
     //[CustomRadioListField( "Custom Dates", "If not using date range, please select a custom date from here", "This Week Last Year", Order = 9 )]
     //[CustomCheckboxListField( "Compare Against Last Year", "", "Yes", Order = 10 )]
-    public partial class MinistryMetrics : RockBlock
+    public partial class Metrics : RockBlock
     {
         #region Fields
 

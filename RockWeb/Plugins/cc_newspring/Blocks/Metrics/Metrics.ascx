@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MinistryMetrics.ascx.cs" Inherits="RockWeb.Plugins.cc_newspring.Blocks.Metrics.MinistryMetrics" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Metrics.ascx.cs" Inherits="RockWeb.Plugins.cc_newspring.Blocks.Metrics.Metrics" %>
 
 <div class="col-md-<%= metricWidth.Value %>">
 

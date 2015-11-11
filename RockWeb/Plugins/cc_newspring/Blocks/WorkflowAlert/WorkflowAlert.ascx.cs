@@ -43,52 +43,25 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
     [LinkedPage( "Listing Page", "Page used to view all workflows assigned to the current user." )]
     public partial class WorkflowAlert : Rock.Web.UI.RockBlock
     {
-        protected override void OnInit( EventArgs e )
+        protected override void OnLoad( EventArgs e )
         {
-            base.OnInit( e );
+            base.OnLoad( e );
 
             // Check for current person
-            if ( CurrentPersonAliasId.HasValue )
+            if ( !Page.IsPostBack && CurrentPersonAliasId != null )
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
                     // Search the DB for active workflows assigned to the current user, and return the count
+                    var count = new WorkflowActivityService( rockContext ).Queryable().AsNoTracking()
+                        .Where( a =>
+                            a.AssignedPersonAliasId == CurrentPersonAliasId 
+                            && !a.CompletedDateTime.HasValue
+                            && !a.Workflow.Status.Equals( "Completed" ) 
+                        )
+                        .Count();
 
-                    var workflowActive = new WorkflowService( rockContext )
-                        .Queryable()
-                        .AsNoTracking()
-                        .Where( a => a.Status.ToString() != "Completed" )
-                        .Select( a => a.Id )
-                        .ToArray();
-
-                    var activeWorkflowString = new List<string>();
-
-                    string[] arrayOfStrings = activeWorkflowString.ToArray();
-
-                    foreach ( var activeWorkflow in workflowActive ) {
-
-                        var userActive = new WorkflowActivityService( rockContext )
-                            .Queryable()
-                            .AsNoTracking()
-                            .Where( w => w.WorkflowId == activeWorkflow && w.AssignedPersonAliasId == personId && !w.CompletedDateTime.HasValue )
-                            .Select( w => w.WorkflowId )
-                            .ToList();
-
-                        if ( userActive.Any() )
-                        {
-                            activeWorkflowString.Add( userActive[0].ToString() );
-                        }
-                    }
-
-                    workflowAlertNumber.Value = activeWorkflowString.ToArray().Length.ToString();
-
-                    //workflowAlertNumber.Value = new WorkflowActivityService( rockContext )
-                    //    .Queryable()
-                    //    .AsNoTracking()
-                    //    .Where( w => !w.CompletedDateTime.HasValue && w.AssignedPersonAliasId == personId )
-                    //    .Count()
-                    //    .ToString();
+                    workflowAlertNumber.Value = count.ToString();
                 }
             }
         }
