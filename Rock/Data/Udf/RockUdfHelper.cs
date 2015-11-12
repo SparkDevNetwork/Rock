@@ -70,9 +70,9 @@ namespace Rock.Data
             City = 3,
 
             /// <summary>
-            /// Region
+            /// State
             /// </summary>
-            Region = 4,
+            State = 4,
 
             /// <summary>
             /// Postal code
