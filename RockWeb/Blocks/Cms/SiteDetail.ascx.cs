@@ -266,7 +266,9 @@ namespace RockWeb.Blocks.Cms
 
                     if ( newSite )
                     {
-                        Rock.Security.Authorization.CopyAuthorization( RockPage.Layout.Site, site, rockContext );
+                        Rock.Security.Authorization.CopyAuthorization( RockPage.Layout.Site, site, rockContext, Authorization.EDIT );
+                        Rock.Security.Authorization.CopyAuthorization( RockPage.Layout.Site, site, rockContext, Authorization.ADMINISTRATE );
+                        Rock.Security.Authorization.CopyAuthorization( RockPage.Layout.Site, site, rockContext, Authorization.APPROVE );
                     }
                 } );
 
