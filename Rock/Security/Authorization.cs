@@ -318,6 +318,28 @@ namespace Rock.Security
         }
 
         /// <summary>
+        /// Allows all users.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void AllowAllUsers( ISecured entity, string action, RockContext rockContext = null )
+        {
+            if ( rockContext != null )
+            {
+                MyAllowAllUsers( entity, action, rockContext );
+            }
+            else
+            {
+                using ( var myRockContext = new RockContext() )
+                {
+                    MyAllowAllUsers( entity, action, myRockContext );
+                }
+            }
+        }
+
+        /// <summary>
         /// Makes the entity private by setting up two authorization rules, one granting the selected person, and
         /// then another that denies all other users.
         /// </summary>
@@ -448,10 +470,11 @@ namespace Rock.Security
         /// <param name="sourceEntity">The source entity.</param>
         /// <param name="targetEntity">The target entity.</param>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="action">Optional action (if ommitted or left blank, all actions will be copied).</param>
         /// <remarks>
         /// This method will save any previous changes made to the context
         /// </remarks>
-        public static void CopyAuthorization( ISecured sourceEntity, ISecured targetEntity, RockContext rockContext )
+        public static void CopyAuthorization( ISecured sourceEntity, ISecured targetEntity, RockContext rockContext, string action = "" )
         {
             Load();
 
@@ -463,7 +486,10 @@ namespace Rock.Security
             // Delete the current authorizations for the target entity
             foreach ( Auth auth in authService.Get( targetEntityTypeId, targetEntity.Id ).ToList() )
             {
-                authService.Delete( auth );
+                if ( string.IsNullOrWhiteSpace( action ) || auth.Action.Equals( action, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    authService.Delete( auth );
+                }
             }
             rockContext.SaveChanges();
 
@@ -472,7 +498,8 @@ namespace Rock.Security
             int order = 0;
             foreach( Auth sourceAuth in authService.Get( sourceEntityTypeId, sourceEntity.Id ).ToList() )
             {
-                if ( targetEntity.SupportedActions.ContainsKey( sourceAuth.Action ) )
+                if ( ( string.IsNullOrWhiteSpace( action ) || sourceAuth.Action.Equals( action, StringComparison.OrdinalIgnoreCase ) ) &&
+                    targetEntity.SupportedActions.ContainsKey( sourceAuth.Action ) )
                 {
                     Auth auth = new Auth();
                     auth.EntityTypeId = targetEntityTypeId;
@@ -502,9 +529,9 @@ namespace Rock.Security
                     entityType.AddOrReplace( targetEntity.Id, new Dictionary<string, List<AuthRule>>() );
                     var entity = entityType[targetEntity.Id];
 
-                    foreach ( var action in newActions )
+                    foreach ( var newAction in newActions )
                     {
-                        entity.Add( action.Key, action.Value );
+                        entity.Add( newAction.Key, newAction.Value );
                     }
                 }
             }
@@ -782,6 +809,41 @@ namespace Rock.Security
             }
 
             return parentAuthorized;
+        }
+
+        /// <summary>
+        /// Mies the allow all users.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private static void MyAllowAllUsers( ISecured entity, string action, RockContext rockContext )
+        {
+            var authService = new AuthService( rockContext );
+
+            // Delete any existing rules in database
+            foreach ( Auth auth in authService
+                .GetAuths( entity.TypeId, entity.Id, action ) )
+            {
+                authService.Delete( auth );
+            }
+
+            rockContext.SaveChanges();
+
+            // Create the rule in the database
+            Auth auth1 = new Auth();
+            auth1.EntityTypeId = entity.TypeId;
+            auth1.EntityId = entity.Id;
+            auth1.Order = 0;
+            auth1.Action = action;
+            auth1.AllowOrDeny = "A";
+            auth1.SpecialRole = SpecialRole.AllUsers;
+            authService.Add( auth1 );
+
+            rockContext.SaveChanges();
+
+            // Reload the static dictionary for this action
+            ReloadAction( entity.TypeId, entity.Id, action, rockContext );
         }
 
         /// <summary>

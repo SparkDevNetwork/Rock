@@ -1892,6 +1892,10 @@ namespace RockWeb.Blocks.Finance
         }});
     }});
 
+    // sets the scroll position to the top of the page after partial postbacks
+    // without this the scroll position is the bottom of the page.
+    setTimeout('window.scrollTo(0,0)',0);
+
 ";
             string script = string.Format( 
                 scriptFormat,

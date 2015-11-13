@@ -282,20 +282,24 @@ namespace RockWeb.Blocks.Event
                         linkage = new EventItemOccurrenceGroupMap();
                         eventItemOccurrence.Linkages.Add( linkage );
                     }
-
                     linkage.CopyPropertiesFrom( LinkageState );
 
                     // update registration instance 
                     if ( LinkageState.RegistrationInstance != null )
                     {
-                        RegistrationInstance registrationInstance = linkage.RegistrationInstance;
-                        if ( registrationInstance == null )
+                        if ( LinkageState.RegistrationInstance.Id != 0 )
                         {
-                            registrationInstance = new RegistrationInstance();
-                            registrationInstanceService.Add( registrationInstance );
+                            linkage.RegistrationInstance = registrationInstanceService.Get( LinkageState.RegistrationInstance.Id );
                         }
-                        registrationInstance.CopyPropertiesFrom( LinkageState.RegistrationInstance );
-                        linkage.RegistrationInstance = registrationInstance;
+
+                        if ( linkage.RegistrationInstance == null )
+                        {
+                            var registrationInstance = new RegistrationInstance();
+                            registrationInstanceService.Add( registrationInstance );
+                            linkage.RegistrationInstance = registrationInstance;
+                        }
+
+                        linkage.RegistrationInstance.CopyPropertiesFrom( LinkageState.RegistrationInstance );
                     }
 
                 }
