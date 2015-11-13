@@ -115,9 +115,7 @@
                         <asp:Panel ID="pnlResultsGrid" runat="server">
                             <div class="panel-body">
                                 <div class="grid grid-panel">
-                                    <div class="grid">
-                                        <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
-                                    </div>
+                                    <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
                                 </div>
                             </div>
                         </asp:Panel>

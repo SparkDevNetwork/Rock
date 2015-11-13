@@ -206,6 +206,63 @@ namespace Rock.PayFlowPro
         }
 
         /// <summary>
+        /// Credits (Refunds) the specified transaction.
+        /// </summary>
+        /// <param name="origTransaction">The original transaction.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override FinancialTransaction Credit( FinancialTransaction origTransaction, decimal amount, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            Response ppResponse = null;
+
+            if ( origTransaction != null &&
+                !string.IsNullOrWhiteSpace( origTransaction.TransactionCode ) &&
+                origTransaction.FinancialGateway != null )
+            {
+                var ppInvoice = new Invoice();
+                ppInvoice.Amt = new Currency( amount );
+                ppInvoice.Comment1 = "Refund";
+
+                var ppTransaction = new CreditTransaction( origTransaction.TransactionCode, GetUserInfo( origTransaction.FinancialGateway ), GetConnection( origTransaction.FinancialGateway ), ppInvoice, PayflowUtility.RequestId );
+
+                ppResponse = ppTransaction.SubmitTransaction();
+
+                if ( ppResponse != null )
+                {
+                    TransactionResponse txnResponse = ppResponse.TransactionResponse;
+                    if ( txnResponse != null )
+                    {
+                        if ( txnResponse.Result == 0 ) // Success
+                        {
+                            var transaction = new FinancialTransaction();
+                            transaction.TransactionCode = txnResponse.Pnref;
+                            return transaction;
+                        }
+                        else
+                        {
+                            errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
+                        }
+                    }
+                    else
+                    {
+                        errorMessage = "Invalid transaction response from the financial gateway";
+                    }
+                }
+                else
+                {
+                    errorMessage = "Invalid response from the financial gateway.";
+                }
+            }
+            else
+            {
+                errorMessage = "Invalid original transaction, transaction code, or gateway.";
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Adds the scheduled payment.
         /// </summary>
         /// <param name="financialGateway"></param>

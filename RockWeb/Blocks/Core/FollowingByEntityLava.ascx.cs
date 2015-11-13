@@ -130,13 +130,12 @@ namespace RockWeb.Blocks.Core
 
                 RockContext rockContext = new RockContext();
 
-                int entityTypeId = EntityTypeCache.GetId<Group>().Value;
                 int personId = this.CurrentPersonId.Value;
 
                 var followingService = new FollowingService( rockContext );
-                IQueryable<IEntity> qryFollowedItems = followingService.GetFollowedItems( entityTypeId, personId );
+                IQueryable<IEntity> qryFollowedItems = followingService.GetFollowedItems( entityType.Id, personId );
 
-                mergeFields.Add( "FollowingItems", qryFollowedItems );
+                mergeFields.Add( "FollowingItems", qryFollowedItems.ToList() );
 
                 mergeFields.Add( "EntityType", entityType.FriendlyName );
                 mergeFields.Add( "LinkUrl", GetAttributeValue( "LinkUrl" ) );

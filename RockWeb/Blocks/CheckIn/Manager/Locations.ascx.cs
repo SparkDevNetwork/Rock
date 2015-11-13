@@ -475,8 +475,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     var location = new LocationService( rockContext ).Get( id.Value );
                     if ( location != null )
                     {
-                        location.IsActive = tgl.Checked;
-                        rockContext.SaveChanges();
+                        if ( location.IsActive != tgl.Checked )
+                        {
+                            location.IsActive = tgl.Checked;
+                            rockContext.SaveChanges();
+                            Rock.CheckIn.KioskDevice.FlushAll();
+                        }
                     }
                 }
                 NavData.Locations.Where( l => l.Id == id.Value ).ToList().ForEach( l => l.IsActive = tgl.Checked );

@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -40,6 +41,7 @@ namespace RockWeb.Blocks.Groups
     [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
     [LinkedPage( "Detail Page" )]
     [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
+    [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 3 )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
@@ -47,7 +49,7 @@ namespace RockWeb.Blocks.Groups
         private DefinedValueCache _inactiveStatus = null;
         private Group _group = null;
         private bool _canView = false;
-        private List<int> _groupMembersWithRegistrations = new List<int>();
+        private Dictionary<int, Dictionary<int, string>> _groupMembersWithRegistrations = new Dictionary<int, Dictionary<int, string>>();
 
         #endregion
 
@@ -85,6 +87,8 @@ namespace RockWeb.Blocks.Groups
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            this.BlockUpdated += GroupMemberList_BlockUpdated;
 
             string script = @"
     $('.js-person-popover').popover({
@@ -124,7 +128,7 @@ namespace RockWeb.Blocks.Groups
 
    // $('.js-person-popover').popover('show'); // uncomment for styling
 ";
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "person-link-popover", script, true);
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "person-link-popover", script, true );
 
             // if this block has a specific GroupId set, use that, otherwise, determine it from the PageParameters
             Guid groupGuid = GetAttributeValue( "Group" ).AsGuid();
@@ -201,6 +205,16 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Handles the BlockUpdated event of the GroupMemberList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        public void GroupMemberList_BlockUpdated( object sender, EventArgs e )
+        {
+            BindGroupMembersGrid();
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -249,9 +263,26 @@ namespace RockWeb.Blocks.Groups
 
                 if ( groupMember != null )
                 {
-                    if ( _groupMembersWithRegistrations.Contains( groupMember.Id ) )
+                    int groupMemberId = groupMember.Id;
+
+                    if ( _groupMembersWithRegistrations.ContainsKey( groupMemberId ) )
                     {
                         e.Row.AddCssClass( "js-has-registration" );
+                        
+                        var lRegistration = e.Row.FindControl( "lRegistration" ) as Literal;
+                        if ( lRegistration != null )
+                        {
+                            var regLinks = new List<string>();
+                            
+                            foreach( var reg in _groupMembersWithRegistrations[ groupMemberId ] )
+                            {
+                                regLinks.Add( string.Format( "<a href='{0}'>{1}</a>",
+                                    LinkedPageUrl( "RegistrationPage", new Dictionary<string, string> { { "RegistrationId", reg.Key.ToString() } } ),
+                                    reg.Value ) );
+                            }
+
+                            lRegistration.Text = regLinks.AsDelimited( "<br/>" );   
+                        }
                     }
 
                     if ( groupMember != null && groupMember.IsDeceased )
@@ -282,7 +313,7 @@ namespace RockWeb.Blocks.Groups
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "First Name" ), "First Name", tbFirstName.Text );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Last Name" ), "Last Name", tbLastName.Text );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Role" ), "Role", cblRole.SelectedValues.AsDelimited( ";" ) );
-            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Status" ), "Status", cblStatus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Status" ), "Status", cblGroupMemberStatus.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Campus" ), "Campus", cpCampusFilter.SelectedCampusId.ToString() );
 
             if ( AvailableAttributes != null )
@@ -347,7 +378,7 @@ namespace RockWeb.Blocks.Groups
             }
             else if ( e.Key == MakeKeyUniqueToGroup( "Status" ) )
             {
-                e.Value = ResolveValues( e.Value, cblStatus );
+                e.Value = ResolveValues( e.Value, cblGroupMemberStatus );
             }
             else if ( e.Key == MakeKeyUniqueToGroup( "Campus" ) )
             {
@@ -390,7 +421,7 @@ namespace RockWeb.Blocks.Groups
 
                 int groupId = groupMember.GroupId;
 
-                foreach( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId == groupMember.Id ))
+                foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId == groupMember.Id ) )
                 {
                     registrant.GroupMemberId = null;
                 }
@@ -458,7 +489,7 @@ namespace RockWeb.Blocks.Groups
                 cblRole.DataBind();
             }
 
-            cblStatus.BindToEnum<GroupMemberStatus>();
+            cblGroupMemberStatus.BindToEnum<GroupMemberStatus>();
 
             cpCampusFilter.Campuses = CampusCache.All();
 
@@ -478,7 +509,7 @@ namespace RockWeb.Blocks.Groups
             string statusValue = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Status" ) );
             if ( !string.IsNullOrWhiteSpace( statusValue ) )
             {
-                cblStatus.SetValues( statusValue.Split( ';' ).ToList() );
+                cblGroupMemberStatus.SetValues( statusValue.Split( ';' ).ToList() );
             }
         }
 
@@ -754,7 +785,6 @@ namespace RockWeb.Blocks.Groups
                         return;
                     }
 
-                    
                     var trigger = _group.GetGroupMemberWorkflowTriggers().FirstOrDefault( a => a.Id == hfPlaceElsewhereTriggerId.Value.AsInteger() );
                     if ( trigger != null )
                     {
@@ -817,15 +847,11 @@ namespace RockWeb.Blocks.Groups
                     // Filter by role
                     var validGroupTypeRoles = _group.GroupType.Roles.Select( r => r.Id ).ToList();
                     var roles = new List<int>();
-                    foreach ( string role in cblRole.SelectedValues )
+                    foreach ( var roleId in cblRole.SelectedValues.AsIntegerList() )
                     {
-                        if ( !string.IsNullOrWhiteSpace( role ) )
+                        if ( validGroupTypeRoles.Contains( roleId ) )
                         {
-                            int roleId = int.MinValue;
-                            if ( int.TryParse( role, out roleId ) && validGroupTypeRoles.Contains( roleId ) )
-                            {
-                                roles.Add( roleId );
-                            }
+                            roles.Add( roleId );
                         }
                     }
 
@@ -834,9 +860,9 @@ namespace RockWeb.Blocks.Groups
                         qry = qry.Where( m => roles.Contains( m.GroupRoleId ) );
                     }
 
-                    // Filter by Status
+                    // Filter by Group Member Status
                     var statuses = new List<GroupMemberStatus>();
-                    foreach ( string status in cblStatus.SelectedValues )
+                    foreach ( string status in cblGroupMemberStatus.SelectedValues )
                     {
                         if ( !string.IsNullOrWhiteSpace( status ) )
                         {
@@ -926,35 +952,61 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     var groupMemberIds = groupMembersList.Select( m => m.Id ).ToList();
+
+                    // Get all the group members with any associated registrations
                     _groupMembersWithRegistrations = new RegistrationRegistrantService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( r =>
+                            r.Registration != null &&
+                            r.Registration.RegistrationInstance != null &&
                             r.GroupMemberId.HasValue &&
                             groupMemberIds.Contains( r.GroupMemberId.Value ) )
-                        .Select( r => r.GroupMemberId.Value )
-                        .ToList();
+                        .ToList()
+                        .GroupBy( r => r.GroupMemberId.Value )
+                        .Select( g => new
+                        {
+                            GroupMemberId = g.Key,
+                            Registrations = g.ToList()
+                                .Select( r => new {
+                                    Id = r.Registration.Id,
+                                    Name = r.Registration.RegistrationInstance.Name } )
+                                .ToDictionary( r => r.Id, r => r.Name )
+                        } )
+                        .ToDictionary( r => r.GroupMemberId, r => r.Registrations );
+
+                    var registrationField = gGroupMembers.ColumnsOfType<RockTemplateFieldUnselected>().FirstOrDefault();
+                    if ( registrationField != null )
+                    {
+                        registrationField.Visible = _groupMembersWithRegistrations.Any();
+                    }
+
+                    var connectionStatusField = gGroupMembers.ColumnsOfType<DefinedValueField>().FirstOrDefault( a => a.DataField == "Person.ConnectionStatusValueId" );
+                    if ( connectionStatusField != null )
+                    {
+                        connectionStatusField.Visible = _group.GroupType.ShowConnectionStatus;
+                    } 
 
                     gGroupMembers.DataSource = groupMembersList.Select( m => new
                     {
                         m.Id,
                         m.Guid,
                         m.PersonId,
-                        Name = 
-                        (selectAll ? m.Person.LastName + ", " + m.Person.NickName : (m.Person.PhotoId.HasValue ? "<i class='fa fa-fw fa-user photo-icon has-photo js-person-popover' personid=" + m.PersonId.ToString() + "></i> " : "<i class='fa fa-fw photo-icon js-person-popover' personid=" + m.PersonId.ToString() + "></i> ") +
+                        Name =
+                        ( selectAll ? m.Person.LastName + ", " + m.Person.NickName : ( m.Person.PhotoId.HasValue ? "<i class='fa fa-fw fa-user photo-icon has-photo js-person-popover' personid=" + m.PersonId.ToString() + "></i> " : "<i class='fa fa-fw photo-icon js-person-popover' personid=" + m.PersonId.ToString() + "></i> " ) +
                         m.Person.NickName + " " + m.Person.LastName
                             + ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id )
                                 ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
                                 : string.Empty )
                             + ( !string.IsNullOrEmpty( m.Note )
                             ? " <i class='fa fa-file-text-o text-info'></i>"
-                            : string.Empty) ),
+                            : string.Empty ) ),
                         Email = m.Person.Email,
-                        HomePhone = homePhoneType != null ?
+                        HomePhone = selectAll && homePhoneType != null ?
                             m.Person.PhoneNumbers
                                 .Where( p => p.NumberTypeValueId.HasValue && p.NumberTypeValueId.Value == homePhoneType.Id )
                                 .Select( p => p.NumberFormatted )
                                 .FirstOrDefault() : string.Empty,
-                        CellPhone = cellPhoneType != null ?
+                        CellPhone = selectAll && cellPhoneType != null ?
                             m.Person.PhoneNumbers
                                 .Where( p => p.NumberTypeValueId.HasValue && p.NumberTypeValueId.Value == cellPhoneType.Id )
                                 .Select( p => p.NumberFormatted )
@@ -968,8 +1020,10 @@ namespace RockWeb.Blocks.Groups
                         GroupRole = m.GroupRole.Name,
                         m.GroupMemberStatus,
                         RecordStatusValueId = m.Person.RecordStatusValueId,
+                        m.Person,
                         IsDeceased = m.Person.IsDeceased
                     } ).ToList();
+
                     gGroupMembers.DataBind();
                 }
                 else
@@ -1042,7 +1096,5 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
-
-
     }
 }

@@ -356,8 +356,28 @@ namespace RockWeb
                         //
                     }
 
+                    while (ex is HttpUnhandledException && ex.InnerException != null )
+                    {
+                        ex = ex.InnerException;
+                    }
 
-                    SendNotification( ex );
+                    // Check for EF error
+                    if ( ex is System.Data.Entity.Core.EntityCommandExecutionException )
+                    {
+                        try
+                        {
+                            throw new Exception( "An error occurred in Entity Framework when attempting to connect to your database. This could be caused by a missing 'MultipleActiveResultSets=true' parameter in your connection string settings.", ex );
+                        }
+                        catch ( Exception newEx )
+                        {
+                            ex = newEx;
+                        }
+                    }
+
+                    if ( !(ex is HttpRequestValidationException ) )
+                    {
+                        SendNotification( ex );
+                    }
 
                     object siteId = context.Items["Rock:SiteId"];
                     if ( context.Session != null )
@@ -659,17 +679,22 @@ namespace RockWeb
         private void LoadCacheObjects( RockContext rockContext )
         {
             // Cache all the entity types
-            foreach ( var entityType in new Rock.Model.EntityTypeService( rockContext ).Queryable() )
+            foreach ( var entityType in new Rock.Model.EntityTypeService( rockContext ).Queryable().AsNoTracking() )
             {
                 EntityTypeCache.Read( entityType );
             }
 
             // Cache all the Field Types
+            foreach ( var fieldType in new Rock.Model.FieldTypeService( rockContext ).Queryable().AsNoTracking() )
+            {
+                Rock.Web.Cache.FieldTypeCache.Read( fieldType );
+            }
+
             var all = Rock.Web.Cache.FieldTypeCache.All();
 
             // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
             var qualifiers = new Dictionary<int, Dictionary<string, string>>();
-            foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable() )
+            foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable().AsNoTracking() )
             {
                 try
                 {
@@ -686,8 +711,16 @@ namespace RockWeb
                 }
             }
 
-            // Cache all the attributes.
-            foreach ( var attribute in new Rock.Model.AttributeService( rockContext ).Queryable( "Categories" ).ToList() )
+            // Cache all the attributes, except for user preferences
+            
+            var attributeQuery = new Rock.Model.AttributeService( rockContext ).Queryable( "Categories" );
+            int? personUserValueEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( Person.USER_VALUE_ENTITY );
+            if (personUserValueEntityTypeId.HasValue)
+            {
+                attributeQuery = attributeQuery.Where(a => !a.EntityTypeId.HasValue || a.EntityTypeId.Value != personUserValueEntityTypeId);
+            }
+
+            foreach ( var attribute in attributeQuery.AsNoTracking().ToList() )
             {
                 if ( qualifiers.ContainsKey( attribute.Id ) )
                     Rock.Web.Cache.AttributeCache.Read( attribute, qualifiers[attribute.Id] );
@@ -696,7 +729,7 @@ namespace RockWeb
             }
 
             // cache all the Country Defined Values since those can be loaded in just a few millisecond here, but take around 1-2 seconds if first loaded when formatting an address
-            foreach (var definedValue in new Rock.Model.DefinedValueService(rockContext).GetByDefinedTypeGuid(Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid()))
+            foreach ( var definedValue in new Rock.Model.DefinedValueService( rockContext ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() ).AsNoTracking() )
             {
                 DefinedValueCache.Read( definedValue, rockContext );
             }
@@ -840,8 +873,8 @@ namespace RockWeb
             string message = string.Empty;
 
             message += "<h2>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h2>";
-            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Message</strong><br>" + ex.Message + "</div>";
-            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Stack Trace</strong><br>" + ex.StackTrace.ConvertCrLfToHtmlBr() + "</p>";
+            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Message</strong><br>" + HttpUtility.HtmlEncode( ex.Message ) + "</div>";
+            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Stack Trace</strong><br>" + HttpUtility.HtmlEncode( ex.StackTrace ).ConvertCrLfToHtmlBr() + "</p>";
 
             // check for inner exception
             if ( ex.InnerException != null )

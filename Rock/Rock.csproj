@@ -470,6 +470,12 @@
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupMemberAttributeSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupStatusSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupRoleSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\PersonLinkSelect.cs" />
+    <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberAttributesFilter.cs" />
     <Compile Include="Reporting\DataComponentSettingsHelper.cs" />
     <Compile Include="Reporting\DataFilter\BaseAccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\ContentChannelItem\ContentChannelItemAttributesFilter.cs" />
@@ -479,6 +485,7 @@
     <Compile Include="Reporting\DataFilter\FinancialTransactionDetail\AccountFilter.cs" />
     <Compile Include="Reporting\DataFilter\FinancialTransaction\TotalAmountFilter.cs" />
     <Compile Include="Reporting\DataFilter\GroupMembers\ContainsPeopleFilter.cs" />
+    <Compile Include="Reporting\DataFilter\GroupMembers\GroupDataViewFilter.cs" />    
     <Compile Include="Reporting\DataFilter\Group\ContainsGroupMembersFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\ContainsPeopleFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\GroupBranchFilter.cs" />
@@ -501,6 +508,7 @@
     <Compile Include="Reporting\DataSelect\Group\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\ParticipationRateSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\ParentGroupSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\LastAttendedGroupOfType.cs" />
     <Compile Include="Reporting\DataSelect\Person\ParentPhoneNumberSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InGroupGeofenceGroupTypeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\LastNoteSelect.cs" />

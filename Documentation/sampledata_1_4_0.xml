@@ -24,6 +24,7 @@
           firstName="Theodore" nickName="Ted" lastName="Decker" birthDate="2/10/1976" age="38" gender="male"
           email="ted@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          anniversaryDate="1/4/2001"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_ted.jpg"
           homePhone="6235553322" mobilePhone="6235553322" workPhone="6235552444" graduationDate="1/1/1994">
           <attributes>
@@ -56,12 +57,14 @@
             <note type="Personal Note" text="Ted has strong leadership skills."
                   byGuid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C" isPrivate="true" />
           </notes>
+          
         </person>
 
         <person guid="B71494DB-D809-451A-A950-28898D0FD92C"
           firstName="Cynthia" nickName="Cindy" lastName="Decker" birthDate="3/10/1977" age="37" gender="female"
           email="cindy@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          anniversaryDate="1/4/2001"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_cindy.png"
           homePhone="6235553323" mobilePhone="6235553323" workPhone="">
           <attributes>
@@ -155,7 +158,13 @@
           email="sarah.simmons@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/simmons_sarah.jpg"
-          homePhone="" mobilePhone="" workPhone=""/>
+          homePhone="" mobilePhone="" workPhone="">
+          
+            <previousNames>
+                <name lastName="Jones" />
+            </previousNames>
+          
+          </person>
 
         <person guid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" firstName="Brian"/>
 
@@ -440,6 +449,66 @@
 
     </family>
     
+    <!-- Frank Dexter is an upstanding member at the church but two years ago he was
+    convicted of a misdemeanor (fighting) which happened as a result of his divorce 
+    and his ex-wifes new husband.  As a result, his recent backgound check
+    failed and it needs to be reviewed by the involvment or security officer so
+    they can determine if (or where) he can serve at the church.
+    -->
+    <family name="Dexter Family" guid="a4f835f5-b956-4581-96bf-c79d7b9457f8" campus="main campus"
+            startingAttendance="12/25/2008" endingAttendanceWeeksAgo="0" percentAttendance="70"
+            percentAttendedRegularService="70" attendingScheduleId="3" attendingAltScheduleId="4">
+      <addresses>
+        <address type="home" street1="10623 N 18th Dr" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5829163" long="-112.0983353" />
+      </addresses>
+
+      <members>
+        <person guid="9C609974-A8E1-4363-8F5E-51F61828E2BA"
+          firstName="Francis" nickName="Frank" lastName="Dexter" birthDate="4/1/1973" age="42" gender="male"
+          email="frank@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="Divorced" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/dexter_frank.jpg"
+          homePhone="623-555-1123" mobilePhone="623-888-3211" workPhone="" graduationDate="1/1/1992">
+          <attributes>
+            <attribute BaptismDate="2009-02-11"/>
+            <attribute FirstVisit="2008-12-24"/>
+            <attribute Employer="First Bank of Main"/>
+            <attribute Position="Analyst"/>
+            <attribute BackgroundCheckDate="10/4/2015"/>
+            <attribute BackgroundCheckResult="Fail"/>
+
+            <attribute AdaptiveD="46"/>
+            <attribute AdaptiveI="20"/>
+            <attribute AdaptiveS="19"/>
+            <attribute AdaptiveC="8"/>
+            <attribute NaturalD="30"/>
+            <attribute NaturalI="18"/>
+            <attribute NaturalS="15"/>
+            <attribute NaturalC="10"/>
+            <attribute LastSaveDate="2/2/2015"/>
+            <attribute PersonalityType="D"/>
+            
+          </attributes>
+          <logins>
+            <login userName="fdexter"/>
+          </logins>
+          <notes>
+            <note type="Personal Note" text="Talked to Frank about his misdemeanor to determine if he can serve."
+                  date="5/3/2015 6:03 PM" byGuid="69DC0FDC-B451-4303-BD91-EF17C0015D23" />
+          </notes>
+        </person>
+
+      </members>
+      
+      <giving startGiving="1/6/2013" frequency="monthly" endingGivingWeeksAgo="0" 
+        percentGive="70" accountAmount="General Fund:50,Building Fund:10" growRatePercent="5"
+        growFrequencyWeeks="52" specialGiftPercent="50" 
+        personGuid="9C609974-A8E1-4363-8F5E-51F61828E2BA"
+        imageUrls="http://storage.rockrms.com/sampledata/check-images/decker-01.png,http://storage.rockrms.com/sampledata/check-images/decker-02.png,http://storage.rockrms.com/sampledata/check-images/decker-03.png,http://storage.rockrms.com/sampledata/check-images/decker-04.png,http://storage.rockrms.com/sampledata/check-images/decker-05.png,http://storage.rockrms.com/sampledata/check-images/decker-06.png">
+      </giving>
+      
+    </family>
+    
   </families>
 
   <relationships>
@@ -488,6 +557,7 @@
       <person fullname="Peter Foster" guid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C" isLeader="true"/>
       <person fullname="Thomas Miller" guid="955BF3E9-D38A-4DCB-A6F2-EDF5EC2571C5"/>
       <person fullname="James Simmons" guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"/>
+      <person fullname="Frank Dexter" guid="9C609974-A8E1-4363-8F5E-51F61828E2BA"/>
     </group>
 
     <group type="smallgroup" name="ASU Student Group" guid="CD65C668-B324-4F41-BBB7-BEC9C62233F1" parentGroupGuid="3CBC1A3F-DD26-430A-9B53-B476CB385ABC"

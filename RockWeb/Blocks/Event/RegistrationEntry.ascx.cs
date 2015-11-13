@@ -73,6 +73,7 @@ namespace RockWeb.Blocks.Event
         private const string CURRENT_PANEL_KEY = "CurrentPanel";
         private const string CURRENT_REGISTRANT_INDEX_KEY = "CurrentRegistrantIndex";
         private const string CURRENT_FORM_INDEX_KEY = "CurrentFormIndex";
+        private const string MINIMUM_PAYMENT_KEY = "MinimumPayment";
 
         // protected variables
         public double PercentComplete = 0;
@@ -98,6 +99,9 @@ namespace RockWeb.Blocks.Event
 
         // The current form index
         private int CurrentFormIndex { get; set; }
+
+        // The minimum payment that is due 
+        private decimal? minimumPayment { get; set; }
 
         // The registration template.
         private RegistrationTemplate RegistrationTemplate
@@ -302,6 +306,7 @@ namespace RockWeb.Blocks.Event
             CurrentPanel = ViewState[CURRENT_PANEL_KEY] as int? ?? 0;
             CurrentRegistrantIndex = ViewState[CURRENT_REGISTRANT_INDEX_KEY] as int? ?? 0;
             CurrentFormIndex = ViewState[CURRENT_FORM_INDEX_KEY] as int? ?? 0;
+            minimumPayment = ViewState[MINIMUM_PAYMENT_KEY] as decimal?;
 
             CreateDynamicControls( false );
         }
@@ -435,6 +440,7 @@ namespace RockWeb.Blocks.Event
             ViewState[CURRENT_PANEL_KEY] = CurrentPanel;
             ViewState[CURRENT_REGISTRANT_INDEX_KEY] = CurrentRegistrantIndex;
             ViewState[CURRENT_FORM_INDEX_KEY] = CurrentFormIndex;
+            ViewState[MINIMUM_PAYMENT_KEY] = minimumPayment;
 
             return base.SaveViewState();
         }
@@ -1104,12 +1110,11 @@ namespace RockWeb.Blocks.Event
         {
             var validationErrors = new List<string>();
 
-            if ( RegistrationTemplate.MinimumInitialPayment.HasValue )
+            if ( minimumPayment.HasValue && minimumPayment > 0.0M )
             {
-                var minPayment = RegistrationTemplate.MinimumInitialPayment.Value - RegistrationState.PreviousPaymentTotal;
-                if ( RegistrationState.PaymentAmount < minPayment )
+                if ( RegistrationState.PaymentAmount < minimumPayment )
                 {
-                    validationErrors.Add( string.Format( "Amount To Pay Today must be at least {0:C2}", minPayment ) );
+                    validationErrors.Add( string.Format( "Amount To Pay Today must be at least {0:C2}", minimumPayment ) );
                 }
 
                 if ( RegistrationState.PaymentAmount > 0.0M )
@@ -1410,6 +1415,7 @@ namespace RockWeb.Blocks.Event
                     registrationChanges )
             );
 
+
             // Get each registrant
             foreach ( var registrantInfo in RegistrationState.Registrants.ToList() )
             {
@@ -1427,6 +1433,39 @@ namespace RockWeb.Blocks.Event
                 if ( personMatches.Count() == 1 )
                 {
                     person = personMatches.First();
+                }
+
+                // Try to find a matching person based on name within same family as registrar
+                if ( person == null && registrar != null )
+                {
+                    var familyMembers = registrar.GetFamilyMembers( true, rockContext )
+                        .Where( m =>
+                            ( m.Person.FirstName == firstName || m.Person.NickName == firstName ) &&
+                            m.Person.LastName == lastName )
+                        .Select( m => m.Person )
+                        .ToList();
+
+                    if ( familyMembers.Count() == 1 )
+                    {
+                        person = familyMembers.First();
+                        if ( !string.IsNullOrWhiteSpace( email ) )
+                        {
+                            person.Email = email;
+                        }
+                    }
+
+                    if ( familyMembers.Count() > 1 && !string.IsNullOrWhiteSpace(email) )
+                    {
+                        familyMembers = familyMembers
+                            .Where( m => 
+                                m.Email != null &&
+                                m.Email.Equals( email, StringComparison.OrdinalIgnoreCase ) )
+                            .ToList();
+                        if ( familyMembers.Count() == 1 )
+                        {
+                            person = familyMembers.First();
+                        }
+                    }
                 }
 
                 if ( person == null )
@@ -1757,7 +1796,7 @@ namespace RockWeb.Blocks.Event
                     var noteText = new StringBuilder();
                     if ( registrar == null || registrar.Id != person.Id )
                     {
-                        noteText.AppendFormat( "Registered for {0} ({1})", RegistrationInstanceState.Name, RegistrationInstanceState.Id );
+                        noteText.AppendFormat( "Registered for {0}", RegistrationInstanceState.Name );
                         if ( registrar != null )
                         {
                             noteText.AppendFormat( " by {0}", registrar.FullName );
@@ -1822,7 +1861,7 @@ namespace RockWeb.Blocks.Event
                 note.IsPrivateNote = false;
                 note.EntityId = registrar.Id;
                 note.Caption = string.Empty;
-                note.Text = string.Format( "Registered {0}for {1} ({2})", namesText, RegistrationInstanceState.Name, RegistrationInstanceState.Id );
+                note.Text = string.Format( "Registered {0} for {1}", namesText, RegistrationInstanceState.Name );
                 noteService.Add( note );
             }
 
@@ -3389,13 +3428,15 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
+                minimumPayment = 0.0M;
+
                 // If there were any costs
                 if ( costs.Any() )
                 {
                     pnlMoney.Visible = true;
 
                     // Get the total min payment for all costs and fees
-                    decimal minPayment = costs.Sum( c => c.MinPayment );
+                    minimumPayment = costs.Sum( c => c.MinPayment );
 
                     // Add row for amount discount
                     if ( RegistrationState.DiscountAmount > 0.0m )
@@ -3415,7 +3456,7 @@ namespace RockWeb.Blocks.Event
                     RegistrationState.DiscountedCost = costs.Sum( c => c.DiscountedCost );
 
                     // If minimum payment is greater than total discounted cost ( which is possible with discounts ), adjust the minimum payment
-                    minPayment = minPayment > RegistrationState.DiscountedCost ? RegistrationState.DiscountedCost : minPayment;
+                    minimumPayment = minimumPayment.Value > RegistrationState.DiscountedCost ? RegistrationState.DiscountedCost : minimumPayment;
 
                     // Add row for totals
                     costs.Add( new RegistrationCostSummaryInfo
@@ -3437,23 +3478,23 @@ namespace RockWeb.Blocks.Event
                     lPreviouslyPaid.Visible = RegistrationState.PreviousPaymentTotal != 0.0m;
                     hfPreviouslyPaid.Value = RegistrationState.PreviousPaymentTotal.ToString();
                     lPreviouslyPaid.Text = RegistrationState.PreviousPaymentTotal.FormatAsCurrency();
-                    minPayment = minPayment - RegistrationState.PreviousPaymentTotal;
+                    minimumPayment = minimumPayment.Value - RegistrationState.PreviousPaymentTotal;
 
                     // if min payment is less than 0, set it to 0
-                    minPayment = minPayment < 0 ? 0 : minPayment;
+                    minimumPayment = minimumPayment.Value < 0 ? 0 : minimumPayment.Value;
 
                     // Calculate balance due, and if a partial payment is still allowed
                     decimal balanceDue = RegistrationState.DiscountedCost - RegistrationState.PreviousPaymentTotal;
-                    bool allowPartialPayment = balanceDue > 0 && minPayment < balanceDue;
+                    bool allowPartialPayment = balanceDue > 0 && minimumPayment.Value < balanceDue;
 
                     // If partial payment is allowed, show the minimum payment due
                     lMinimumDue.Visible = allowPartialPayment;
-                    hfMinimumDue.Value = minPayment.ToString();
-                    lMinimumDue.Text = minPayment.FormatAsCurrency();
+                    hfMinimumDue.Value = minimumPayment.Value.ToString();
+                    lMinimumDue.Text = minimumPayment.Value.FormatAsCurrency();
 
                     // Make sure payment amount is within minumum due and balance due. If not, set to balance due
                     if ( !RegistrationState.PaymentAmount.HasValue ||
-                        RegistrationState.PaymentAmount.Value < minPayment ||
+                        RegistrationState.PaymentAmount.Value < minimumPayment.Value ||
                         RegistrationState.PaymentAmount.Value > balanceDue )
                     {
                         RegistrationState.PaymentAmount = balanceDue;
