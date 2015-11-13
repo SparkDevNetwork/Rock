@@ -136,6 +136,8 @@ namespace Rock.Workflow.Action
             connectionRequest.ConnectionState = ConnectionState.Active;
             connectionRequest.ConnectionStatusId = status.Id;
             connectionRequest.CampusId = campusId;
+            connectionRequest.ConnectorPersonAliasId = opportunity.GetDefaultConnectorPersonAliasId( campusId.Value );
+
             connectionRequestService.Add( connectionRequest );
             rockContext.SaveChanges();
 

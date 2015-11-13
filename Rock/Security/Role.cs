@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Caching;
 using Rock.Data;
@@ -54,25 +56,30 @@ namespace Rock.Security
         public bool IsSecurityTypeGroup { get; private set; }
 
         /// <summary>
-        /// Gets the Guids of the Persons in this role
+        /// Gets the people.
         /// </summary>
-        public HashSet<Guid> PersonGuids { get; private set; }
+        /// <value>
+        /// The people.
+        /// </value>
+        public ConcurrentDictionary<Guid, bool> People { get; private set; }
 
         /// <summary>
         /// Is user in role
         /// </summary>
-        /// <param name="user"></param>
+        /// <param name="personGuid">The person unique identifier.</param>
         /// <returns></returns>
         public bool IsPersonInRole( Guid? personGuid )
         {
             if ( personGuid.HasValue )
             {
-                return PersonGuids.Contains( personGuid.Value );
+                bool inRole = false;
+                if ( People.TryGetValue( personGuid.Value, out inRole ) )
+                {
+                    return inRole;
+                }
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         #region Static Methods
@@ -95,48 +102,70 @@ namespace Rock.Security
         /// <returns></returns>
         public static Role Read( int id )
         {
-            string cacheKey = Role.CacheKey( id );
+            return GetOrAddExisting( Role.CacheKey( id ),
+                () => LoadById( id ) );
+        }
 
-            ObjectCache cache = Rock.Web.Cache.RockMemoryCache.Default;
-            Role role = cache[cacheKey] as Role;
+        /// <summary>
+        /// Gets the or add existing.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="valueFactory">The value factory.</param>
+        /// <returns></returns>
+        public static Role GetOrAddExisting( string key, Func<Role> valueFactory )
+        {
+            RockMemoryCache cache = RockMemoryCache.Default;
 
-            if ( role != null )
+            object cacheValue = cache.Get( key );
+            if ( cacheValue != null )
             {
-                return role;
+                return (Role)cacheValue;
             }
-            else
+
+            Role value = valueFactory();
+            cache.Set( key, value, new CacheItemPolicy() );
+            return value;
+        }
+
+        /// <summary>
+        /// Loads the by identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public static Role LoadById( int id )
+        {
+            using ( var rockContext = new RockContext() )
             {
-                using ( var rockContext = new RockContext() )
+                Rock.Model.GroupService groupService = new Rock.Model.GroupService( rockContext );
+                Rock.Model.Group groupModel = groupService.Get( id );
+
+                if ( groupModel != null && groupModel.IsSecurityRole == true )
                 {
-                    Rock.Model.GroupService groupService = new Rock.Model.GroupService( rockContext );
-                    Rock.Model.Group groupModel = groupService.Get( id );
+                    var role = new Role();
+                    role.Id = groupModel.Id;
+                    role.Name = groupModel.Name;
+                    role.People = new ConcurrentDictionary<Guid,bool>();
 
-                    if ( groupModel != null && groupModel.IsSecurityRole == true )
+                    // Add the members
+                    foreach ( var personGuid in groupModel.Members 
+                        .Where( m => 
+                            m.Person != null &&
+                            m.GroupMemberStatus == Model.GroupMemberStatus.Active )
+                        .Select( m => m.Person.Guid )
+                        .ToList()
+                        .Distinct() )
                     {
-                        role = new Role();
-                        role.Id = groupModel.Id;
-                        role.Name = groupModel.Name;
-                        role.PersonGuids = new HashSet<Guid>();
-                        var groupTypeCache = GroupTypeCache.Read( groupModel.GroupTypeId, rockContext );
-                        role.IsSecurityTypeGroup = groupTypeCache != null && groupTypeCache.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
-                        
-                        Rock.Model.GroupMemberService groupMemberService = new Rock.Model.GroupMemberService( rockContext );
-                        var groupMemberPersonGuids = groupMemberService.Queryable().Where( a => a.GroupId == groupModel.Id ).Select( a => a.Person.Guid ).ToList();
-
-                        foreach ( var personGuid in groupMemberPersonGuids )
-                        {
-                            role.PersonGuids.Add( personGuid );
-                        }
-
-                        cache.Set( cacheKey, role, new CacheItemPolicy() );
-
-                        return role;
+                        role.People.TryAdd( personGuid, true );
                     }
+
+                    var groupTypeCache = GroupTypeCache.Read( groupModel.GroupTypeId, rockContext );
+                    role.IsSecurityTypeGroup = groupTypeCache != null && groupTypeCache.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+                        
+                    return role;
                 }
             }
 
             return null;
-
         }
 
         /// <summary>

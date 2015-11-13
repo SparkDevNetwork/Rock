@@ -11,6 +11,9 @@
 </script>
 
 <asp:UpdatePanel ID="upnlConnectionOpportunityDetail" runat="server">
+    <Triggers>
+        <asp:AsyncPostBackTrigger ControlID="cblCampus" />
+    </Triggers>
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server">
             <asp:HiddenField ID="hfConnectionOpportunityId" runat="server" />
@@ -67,7 +70,13 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />
-                                <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
+                                <%-- Note: RockControlWrapper/Div/CheckboxList is being used instead of just a RockCheckBoxList, because autopostback does not currently work for RockControlCheckbox--%>
+                                <Rock:RockControlWrapper ID="rcwCampus" runat="server" Label="Campuses">
+                                    <div class="controls">
+                                        <asp:CheckBoxList ID="cblCampus" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal"
+                                            AutoPostBack="true" OnSelectedIndexChanged="cblCampus_SelectedIndexChanged" />
+                                    </div>
+                                </Rock:RockControlWrapper>
                             </div>
                             <div class="col-md-6">
                                 <div class="well">
@@ -97,15 +106,27 @@
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpConnectionOpportunityConnectorGroups" runat="server" Title="Connector Groups">
-                            <div class="grid">
-                                <Rock:Grid ID="gConnectionOpportunityConnectorGroups" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Campus Connector Group" ShowConfirmDeleteDialog="false">
-                                    <Columns>
-                                        <Rock:RockBoundField DataField="GroupName" HeaderText="Group" />
-                                        <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
-                                        <Rock:EditField OnClick="gConnectionOpportunityConnectorGroups_Edit" />
-                                        <Rock:DeleteField OnClick="gConnectionOpportunityConnectorGroups_Delete" />
-                                    </Columns>
-                                </Rock:Grid>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="grid">
+                                        <Rock:Grid ID="gConnectionOpportunityConnectorGroups" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Campus Connector Group" ShowConfirmDeleteDialog="false">
+                                            <Columns>
+                                                <Rock:RockBoundField DataField="GroupName" HeaderText="Group" />
+                                                <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
+                                                <Rock:EditField OnClick="gConnectionOpportunityConnectorGroups_Edit" />
+                                                <Rock:DeleteField OnClick="gConnectionOpportunityConnectorGroups_Delete" />
+                                            </Columns>
+                                        </Rock:Grid>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <asp:ListView ID="lvDefaultConnectors" runat="server">
+                                        <ItemTemplate>
+                                            <asp:HiddenField ID="hfDefaultConnector" runat="server" />
+                                            <Rock:RockDropDownList ID="ddlDefaultConnector" runat="server" DataValueField="Key" DataTextField="Value" />
+                                        </ItemTemplate>
+                                    </asp:ListView>
+                                </div>
                             </div>
                         </Rock:PanelWidget>
 

@@ -400,13 +400,13 @@ namespace Rock.Data
                             var attribute = this.Attributes[attributeKey];
                             if ( attribute.IsAuthorized( Authorization.VIEW, null ) )
                             {
-                                var field = attribute.FieldType.Field;
-                                string value = GetAttributeValue( attribute.Key );
-
                                 if ( unformatted )
                                 {
-                                    return value;
+                                    return GetAttributeValueAsType( attribute.Key );
                                 }
+
+                                var field = attribute.FieldType.Field;
+                                string value = GetAttributeValue( attribute.Key );
 
                                 if ( url && field is Rock.Field.ILinkableFieldType )
                                 {
@@ -533,6 +533,28 @@ namespace Rock.Data
                 this.Attributes.ContainsKey( key ) )
             {
                 return this.Attributes[key].DefaultValue;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the type of the attribute value as.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object GetAttributeValueAsType( string key )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) )
+            {
+                return this.AttributeValues[key].ValueAsType;
+            }
+
+            if ( this.Attributes != null &&
+                this.Attributes.ContainsKey( key ) )
+            {
+                return this.Attributes[key].DefaultValueAsType;
             }
 
             return null;

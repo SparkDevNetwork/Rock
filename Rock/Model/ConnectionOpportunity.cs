@@ -20,6 +20,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
 
@@ -322,6 +323,64 @@ namespace Rock.Model
             {
                 return VirtualPathUtility.ToAbsolute( virtualPath );
             }
+        }
+
+        /// <summary>
+        /// Gets the default connector person alias.
+        /// </summary>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <returns></returns>
+        private PersonAlias GetDefaultConnectorPersonAlias( int? campusId )
+        {
+            if ( campusId.HasValue &&
+                ConnectionOpportunityCampuses != null )
+            {
+                var connectionOpportunityCampus = this.ConnectionOpportunityCampuses
+                    .Where( c => c.CampusId == campusId.Value )
+                    .FirstOrDefault();
+                if ( connectionOpportunityCampus != null )
+                {
+                    return connectionOpportunityCampus.DefaultConnectorPersonAlias;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the default connector person identifier.
+        /// </summary>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <returns></returns>
+        public int? GetDefaultConnectorPersonId( int? campusId )
+        {
+            var personAlias = GetDefaultConnectorPersonAlias( campusId );
+            {
+                if ( personAlias != null )
+                {
+                    return personAlias.PersonId;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the default connector.
+        /// </summary>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <returns></returns>
+        public int? GetDefaultConnectorPersonAliasId( int? campusId )
+        {
+            var personAlias = GetDefaultConnectorPersonAlias( campusId );
+            {
+                if ( personAlias != null )
+                {
+                    return personAlias.Id;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

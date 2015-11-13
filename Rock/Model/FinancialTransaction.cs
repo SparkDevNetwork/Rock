@@ -277,7 +277,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.FinancialTransactionRefund">refund transaction</see> associated with this transaction. This will be null if the transaction
         /// is not a refund transaction.
         /// </value>
-        public virtual FinancialTransactionRefund Refund { get; set; }
+        public virtual FinancialTransactionRefund RefundDetails { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FinancialScheduledTransaction">Scheduled Transaction</see> that initiated this transaction.
@@ -308,7 +308,6 @@ namespace Rock.Model
             get { return _transactionDetails ?? ( _transactionDetails = new Collection<FinancialTransactionDetail>() ); }
             set { _transactionDetails = value; }
         }
-
         private ICollection<FinancialTransactionDetail> _transactionDetails;
 
         /// <summary>
@@ -324,8 +323,20 @@ namespace Rock.Model
             get { return _images ?? ( _images = new Collection<FinancialTransactionImage>() ); }
             set { _images = value; }
         }
-
         private ICollection<FinancialTransactionImage> _images;
+
+        /// <summary>
+        /// Gets or sets the refunds.
+        /// </summary>
+        /// <value>
+        /// The refunds.
+        /// </value>
+        public virtual ICollection<FinancialTransactionRefund> Refunds
+        {
+            get { return _refunds ?? ( _refunds = new Collection<FinancialTransactionRefund>() ); }
+            set { _refunds = value; }
+        }
+        private ICollection<FinancialTransactionRefund> _refunds;
 
         /// <summary>
         /// Gets the total amount.
@@ -431,7 +442,7 @@ namespace Rock.Model
             this.HasOptional( t => t.FinancialPaymentDetail ).WithMany().HasForeignKey( t => t.FinancialPaymentDetailId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.Refund ).WithRequired().WillCascadeOnDelete( true );
+            this.HasOptional( t => t.RefundDetails ).WithRequired( r => r.FinancialTransaction ).WillCascadeOnDelete( true );
             this.HasOptional( t => t.ScheduledTransaction ).WithMany( s => s.Transactions ).HasForeignKey( t => t.ScheduledTransactionId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.ProcessedByPersonAlias ).WithMany().HasForeignKey( t => t.ProcessedByPersonAliasId ).WillCascadeOnDelete( false );
         }

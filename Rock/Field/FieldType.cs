@@ -127,6 +127,18 @@ namespace Rock.Field
             return FormatValue( parentControl, value, configurationValues, condensed );
         }
 
+        /// <summary>
+        /// Values the type of as field.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public virtual object ValueAsFieldType(  Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value;
+        }
+
         #endregion
 
         #region Edit Control

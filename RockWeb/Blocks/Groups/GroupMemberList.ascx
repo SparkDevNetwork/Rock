@@ -29,7 +29,7 @@
                                 <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
                                 <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
                                 <Rock:RockCheckBoxList ID="cblRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
-                                <Rock:RockCheckBoxList ID="cblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
+                                <Rock:RockCheckBoxList ID="cblGroupMemberStatus" runat="server" Label="Group Member Status" RepeatDirection="Horizontal" />
                                 <Rock:CampusPicker ID="cpCampusFilter" runat="server" />
                                 <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                             </Rock:GridFilter>
@@ -37,8 +37,14 @@
                                 <Columns>
                                     <Rock:SelectField></Rock:SelectField>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Person.LastName,Person.NickName" HtmlEncode="false" />
+                                    <Rock:DefinedValueField DataField="Person.ConnectionStatusValueId" HeaderText="Connection Status" SortExpression="Person.ConnectionStatusValue.Value" />
+                                    <Rock:RockTemplateFieldUnselected HeaderText="Registration">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lRegistration" runat="server"></asp:Literal>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateFieldUnselected>
                                     <Rock:RockBoundField DataField="GroupRole" HeaderText="Role" SortExpression="GroupRole.Name" />
-                                    <Rock:RockBoundField DataField="GroupMemberStatus" HeaderText="Status" SortExpression="GroupMemberStatus" />
+                                    <Rock:RockBoundField DataField="GroupMemberStatus" HeaderText="Member Status" SortExpression="GroupMemberStatus" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

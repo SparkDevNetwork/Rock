@@ -142,8 +142,8 @@ namespace Rock.CheckIn
                         }
 
                         var cachePolicy = new CacheItemPolicy();
-                        cachePolicy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( 60 );
-                        cache.Set( cacheKey, locationAttendance, cachePolicy );
+                        cachePolicy.AbsoluteExpiration = DateTimeOffset.Now.AddHours( 1 );
+                        cache.Set( cacheKey, locationAttendance, new CacheItemPolicy() );
 
                         return locationAttendance;
                     }

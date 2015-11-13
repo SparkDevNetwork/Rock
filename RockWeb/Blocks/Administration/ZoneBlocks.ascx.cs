@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -508,7 +509,7 @@ namespace RockWeb.Blocks.Administration
             catch (Exception ex)
             {
                 nbMessage.Text = "Error registering one or more block types";
-                nbMessage.Details = ex.Message + "<code>" + ex.StackTrace + "</code>";
+                nbMessage.Details = ex.Message + "<code>" + HttpUtility.HtmlEncode( ex.StackTrace ) + "</code>";
                 nbMessage.Visible = true;
             }
 

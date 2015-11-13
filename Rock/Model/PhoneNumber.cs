@@ -117,19 +117,6 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public bool IsMessagingEnabled { get; set; }
 
-        #endregion
-
-        #region Virtual Properties
-
-        /// <summary>
-        /// Gets or sets the Phone Number's NumberType <see cref="Rock.Model.DefinedValue"/>
-        /// </summary>
-        /// <value>
-        /// The Number Type <see cref="Rock.Model.DefinedValue"/> of the phone number.
-        /// </value>
-        [DataMember]
-        public virtual Model.DefinedValue NumberTypeValue { get; set; }
-
         /// <summary>
         /// Gets or sets a flag indicating whether the PhoneNumber is unlisted or not.
         /// </summary>
@@ -146,8 +133,22 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing an optional description of the PhoneNumber.
         /// </value>
         [DataMember]
+        [LavaIgnore]
         public string Description { get; set; }
         
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the Phone Number's NumberType <see cref="Rock.Model.DefinedValue"/>
+        /// </summary>
+        /// <value>
+        /// The Number Type <see cref="Rock.Model.DefinedValue"/> of the phone number.
+        /// </value>
+        [DataMember]
+        public virtual Model.DefinedValue NumberTypeValue { get; set; }
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Person"/> who the PhoneNumber belongs to.
         /// </summary>

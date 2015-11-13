@@ -24,7 +24,7 @@ using Rock.Model;
 namespace Rock.Search.Group
 {
     /// <summary>
-    /// Searches for people with matching names
+    /// Searches for groups with matching names
     /// </summary>
     [Description("Group Name Search")]
     [Export(typeof(SearchComponent))]
@@ -48,7 +48,7 @@ namespace Rock.Search.Group
         }
 
         /// <summary>
-        /// Returns a list of matching people
+        /// Returns a list of matching groups
         /// </summary>
         /// <param name="searchterm"></param>
         /// <returns></returns>
