@@ -310,7 +310,12 @@ ul.rocktree ul {
   .rocktree-item {
 
     &.is-inactive {
-        opacity: .6;
+        color: lighten(@text-color, 20%);
+        opacity: 1;
+    }
+
+    &:not(.is-inactive){
+        color: @text-color;
     }
 
     white-space: nowrap;
