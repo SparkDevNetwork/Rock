@@ -6003,7 +6003,6 @@ div.aspNetDisabled {
     The accent colors are deprecated and should not be used in new theme development. They will be
     removed in Rock v 6.0.
 */
-/* Custom CSS */
 .note-safetyandsecurity article {
   border-color: #b5a7c7;
   background-color: #d3ccdb;
@@ -6011,6 +6010,19 @@ div.aspNetDisabled {
 }
 .note-safetyandsecurity .actions a {
   color: #7f6d94;
+}
+@media (min-width: 768px) {
+  .rocktips {
+    display: flex;
+  }
+}
+.rocktips-main {
+  flex-grow: 1;
+}
+@media (min-width: 768px) {
+  .rocktips-image {
+    margin-left: 15px;
+  }
 }
 /*#region
 // Fonts                       */
