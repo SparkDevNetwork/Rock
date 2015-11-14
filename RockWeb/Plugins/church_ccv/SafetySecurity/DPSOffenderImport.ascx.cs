@@ -46,7 +46,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         /// This holds the reference to the RockMessageHub SignalR Hub context.
         /// </summary>
         private IHubContext _hubContext = GlobalHost.ConnectionManager.GetHubContext<RockMessageHub>();
-        
+
         #region Base Control Methods
 
         /// <summary>
@@ -160,14 +160,12 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                     a.ResAddress == dpsOffender.ResAddress &&
                     a.ResCity == dpsOffender.ResCity &&
                     a.ResState == dpsOffender.ResState &&
-                    a.ResZip == dpsOffender.ResZip
-                    ).Any();
+                    a.ResZip == dpsOffender.ResZip ).Any();
 
                 if ( !existingRecord )
                 {
                     rowsInserted++;
                     rowsToInsert.Add( dpsOffender );
-
                 }
                 else
                 {
@@ -183,7 +181,6 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             nbResult.Text = string.Format( "Records added: {0}<br />Records already existed: {1}", rowsInserted, rowsAlreadyExist );
             nbResult.NotificationBoxType = NotificationBoxType.Success;
             nbResult.Visible = true;
-
         }
 
         /// <summary>
@@ -208,7 +205,6 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                     if ( lookupLocation != null )
                     {
                         dpsOffender.DpsLocationId = lookupLocation.Id;
-
                     }
 
                     progress++;
@@ -239,14 +235,10 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             var groupTypeFamilyId = GroupTypeCache.GetFamilyGroupType().Id;
             var qryPerson = new PersonService( rockContext ).Queryable();
             var qryGroupLocations = new GroupLocationService( rockContext ).Queryable();
-            var groupLocationTypeValueHomeId = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid()).Id;
+            var groupLocationTypeValueHomeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;
             var groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
             var qryHomeAddress = new GroupLocationService( rockContext ).Queryable()
-                .Where( a => a.GroupLocationTypeValueId == groupLocationTypeValueHomeId && a.Group.GroupTypeId == groupTypeIdFamily )
-                .Select(a => new {
-                    PersonIds = a.Group.Members.Select(m=>m.PersonId),
-                    a.Location
-                });
+                .Where( a => a.GroupLocationTypeValueId == groupLocationTypeValueHomeId && a.Group.GroupTypeId == groupTypeIdFamily && !string.IsNullOrEmpty( a.Location.PostalCode ) );
 
             bool matchZip = cbMatchZip.Checked;
             bool matchAge = cbAge.Checked;
@@ -271,19 +263,19 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 a.ResCity,
                 a.ResState,
                 a.ResZip,
+                a.DpsLocationId,
                 a.DpsLocation,
                 a.Level,
-                FamiliesAtAddress = qryGroupLocations.Where(gl => gl.LocationId == a.DpsLocationId).Count(),
+                FamiliesAtAddress = qryGroupLocations.Where( gl => gl.LocationId == a.DpsLocationId ).Count(),
                 PotentialMatches = qryPerson
-                    .Where( p => (!p.BirthDate.HasValue || (SqlFunctions.DateDiff("year", p.BirthDate.Value, today) > 17)))
-                    .Where( p => p.FirstName.StartsWith(a.FirstName.Substring( 0, 1 )) || p.NickName.StartsWith(a.FirstName.Substring( 0, 1 )) )
+                    .Where( p => ( !p.BirthDate.HasValue || ( SqlFunctions.DateDiff( "year", p.BirthDate.Value, today ) > 17 ) ) )
+                    .Where( p => p.FirstName.StartsWith( a.FirstName.Substring( 0, 1 ) ) || p.NickName.StartsWith( a.FirstName.Substring( 0, 1 ) ) )
                     .Where( p => a.LastName == p.LastName )
-                    .Where( p => (p.Gender == Gender.Unknown) || a.Gender == (p.Gender == Gender.Male ? "M" : "F"))
-                    .Where( p => !matchZip || qryHomeAddress.Any( x => x.Location.PostalCode.StartsWith( a.ResZip ) && x.PersonIds.Contains( p.Id ) ) )
-                    .Where( p => !matchAge || !p.BirthDate.HasValue || (p.BirthDate.HasValue && a.Age.HasValue && 
-                        ((SqlFunctions.DateDiff("year", p.BirthDate.Value, today)) > (a.Age.Value - 3) && (SqlFunctions.DateDiff("year", p.BirthDate.Value, today)) < (a.Age.Value + 3))
-                        ))
-                    ,
+                    .Where( p => ( p.Gender == Gender.Unknown ) || a.Gender == ( p.Gender == Gender.Male ? "M" : "F" ) )
+                    .Where( p => !matchZip || qryHomeAddress.Any( x => x.Group.Members.Any( gm => gm.PersonId == p.Id ) && x.Location.City.Equals( a.ResCity ) && x.Location.PostalCode.StartsWith( a.ResZip ) ) )
+                    .Where( p => !matchAge || !p.BirthDate.HasValue || ( p.BirthDate.HasValue && a.Age.HasValue &&
+                        ( ( SqlFunctions.DateDiff( "year", p.BirthDate.Value, today ) ) > ( a.Age.Value - 3 ) && ( SqlFunctions.DateDiff( "year", p.BirthDate.Value, today ) ) < ( a.Age.Value + 3 ) )
+                        ) ),
                 a.DateConvicted,
                 a.ConvictionState,
                 a.Absconder
@@ -293,7 +285,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             {
                 if ( gDpsOffender.SortProperty.Property == "PotentialMatches" )
                 {
-                    qryDpsOffender = qryDpsOffender.OrderBy(a => a.PotentialMatches.Count()).ThenBy( a => a.LastName ).ThenBy( a => a.FirstName );
+                    qryDpsOffender = qryDpsOffender.OrderBy( a => a.PotentialMatches.Count() ).ThenBy( a => a.LastName ).ThenBy( a => a.FirstName );
                 }
                 else
                 {
@@ -305,10 +297,9 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 qryDpsOffender = qryDpsOffender.OrderBy( a => a.LastName ).ThenBy( a => a.FirstName );
             }
 
-            //qryDpsOffender = qryDpsOffender.Where( a => a.LastName == "Dettloff" );
             if ( cbLimitToLocationMatches.Checked )
             {
-                qryDpsOffender = qryDpsOffender.Where( a => a.FamiliesAtAddress > 0);
+                qryDpsOffender = qryDpsOffender.Where( a => a.FamiliesAtAddress > 0 );
             }
 
             if ( cbLimitToPotentialMatches.Checked )
@@ -316,69 +307,91 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 qryDpsOffender = qryDpsOffender.Where( a => a.PotentialMatches.Count() > 0 );
             }
 
-            DebugHelper.SQLLoggingStart( rockContext );
             rockContext.Database.CommandTimeout = 180;
-            //using ( new QueryHintScope( rockContext, QueryHintType.OPTIMIZE_FOR_UNKNOWN ) )
-            {
-                gDpsOffender.SetLinqDataSource( qryDpsOffender );
-                gDpsOffender.DataBind();
-            }
-            DebugHelper.SQLLoggingStop();
+            gDpsOffender.SetLinqDataSource( qryDpsOffender );
+            gDpsOffender.DataBind();
         }
 
         #endregion
-        
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gDpsOffender control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gDpsOffender_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            if (e.Row.DataItem != null)
+            string matchIcon = "<i class='fa fa-check-square-o'></i> ";
+            if ( e.Row.DataItem != null )
             {
                 var potentialMatches = e.Row.DataItem.GetPropertyValue( "PotentialMatches" ) as IEnumerable<Person>;
-                var firstName = e.Row.DataItem.GetPropertyValue("FirstName") as string;
-                var lastName = e.Row.DataItem.GetPropertyValue("LastName") as string;
-                var dpsLocationId = e.Row.DataItem.GetPropertyValue( "DPSLocationId" ) as int?;
-                if (potentialMatches != null)
+                var firstName = e.Row.DataItem.GetPropertyValue( "FirstName" ) as string;
+                var lastName = e.Row.DataItem.GetPropertyValue( "LastName" ) as string;
+                var age = e.Row.DataItem.GetPropertyValue( "Age" ) as int?;
+                var dpsLocationId = e.Row.DataItem.GetPropertyValue( "DpsLocationId" ) as int?;
+                if ( potentialMatches != null )
                 {
                     Literal lPersonMatches = e.Row.FindControl( "lPersonMatches" ) as Literal;
                     string resultHtml = string.Empty;
                     var personList = potentialMatches.ToList();
-                    var sortedPersonList = personList.Where(a => (a.FirstName == firstName) || (a.NickName == firstName)).ToList();
-                    sortedPersonList.AddRange(personList.Where( a => ( a.FirstName != firstName ) && ( a.NickName != firstName ) ));
-                    foreach (var person in sortedPersonList )
+
+                    var fullNameMatches = personList.Where( a => ( ( a.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) ) || ( a.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) ) ) ).ToList();
+                    var fullNameAndAddressMatches = new List<Person>();
+                    foreach ( var person in fullNameMatches )
                     {
-                        var address = person.GetHomeLocation(new RockContext());
-                        var addressHtml = string.Empty;
-                        if (address != null && address.Id == dpsLocationId)
+                        var address = person.GetHomeLocation( new RockContext() );
+                        if ( address != null && address.Id == dpsLocationId )
                         {
-                            addressHtml = "<strong>" + address.ToString() + "</strong>";
+                            fullNameAndAddressMatches.Add( person );
+                            resultHtml += string.Format(
+                                "<li><h4{0}{1} - {2}<h4> <h5>{0}{3}</h5> {4}</li>",
+                                matchIcon, // {0} 
+                                GetPersonName( person ), // {1}
+                                person.Age == age ? matchIcon + age.ToString() : person.Age.ToString(), // {2}
+                                address, // {3}
+                                Person.GetPhotoImageTag( person, 100, 100 ) ); // {4}
                         }
-                        else
-                        {
-                            addressHtml = string.Format( "{0}", address );
-                        }
-                        resultHtml += string.Format( "<li><h4>{0} - {1}<h4> <h5>{2}</h5> {3}</li>", 
-                            GetPersonName(person), 
-                            person.Age,
-                            addressHtml,
-                            Person.GetPhotoImageTag(person, 100, 100)
-                             );
                     }
-                    
+
+                    foreach ( var person in fullNameMatches.Where( a => !fullNameAndAddressMatches.Any( x => x.Id == a.Id ) ) )
+                    {
+                        var address = person.GetHomeLocation( new RockContext() );
+                        resultHtml += string.Format(
+                            "<li><h4>{0}{1} - {2}<h4> <h5>{3}</h5> {4}</li>",
+                            matchIcon, // {0} 
+                            GetPersonName( person ), // {1}
+                            person.Age == age ? matchIcon + age.ToString() : person.Age.ToString(), // {2}
+                            address, // {3}
+                            Person.GetPhotoImageTag( person, 100, 100 ) ); // {4}
+                    }
+
+                    int otherCount = personList.Where( a => !fullNameMatches.Any( x => x.Id == a.Id ) ).Count();
+                    if ( otherCount > 0 )
+                    {
+                        resultHtml += string.Format( "<li>{0}</li> other potential matches", otherCount );
+                    }
 
                     lPersonMatches.Text = "<ul>" + resultHtml + "</ul>";
                 }
             }
         }
 
+        /// <summary>
+        /// Gets the name of the person including both NickName and FirstName if they are different
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
         private string GetPersonName( Person person )
         {
             if ( person.NickName != person.FirstName )
             {
-                return string.Format("{0} \"{1}\" {2}", person.FirstName, person.NickName, person.LastName);
+                var firstAndNick = string.Format( "{0} \"{1}\"", person.FirstName, person.NickName );
+                return Person.FormatFullName( firstAndNick, person.LastName, person.SuffixValueId );
             }
             else
             {
                 return person.FullName;
             }
         }
-}
+    }
 }
