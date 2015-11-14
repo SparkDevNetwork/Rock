@@ -26,46 +26,58 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI.Controls;
-
-namespace RockWeb.Blocks.Prayer
+namespace RockWeb.Blocks.Event
 {
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName( "Prayer Request List Lava" )]
-    [Category( "Prayer" )]
-    [Description( "List Prayer Requests using a Lava template." )]
-    
-    [CategoryField( "Category", "The category (or parent category) to limit the listed prayer requests to.", true, "Rock.Model.PrayerRequest", order: 0 )]
-    [LinkedPage( "Prayer Request Detail Page", "The Page Request Detail Page to use for the LinkUrl merge field.  The LinkUrl field will include a [Id] which can be replaced by the prayerrequestitem.Id.", order: 1 )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
-<div class='panel panel-block'> 
-    <div class='panel-heading'>
-       <h4 class='panel-title'>Prayer Requests</h4>
-    </div>
-    <div class='panel-body'>
+    [DisplayName( "Registration List Lava" )]
+    [Category( "Event" )]
+    [Description( "List recent registrations using a Lava template." )]
 
-        <ul>
-        {% for prayerrequestitem in PrayerRequestItems %}
-            {% if LinkUrl != '' %}
-                <li>{{ prayerrequestitem.EnteredDateTime | Date:'M/d/yyyy'}} - <a href='{{ LinkUrl | Replace:'[Id]',prayerrequestitem.Id }}'>{{ prayerrequestitem.Text }}</a></li>
-            {% else %}
-                <li>{{ prayerrequestitem.EnteredDateTime | Date:'M/d/yyyy'}} - {{ prayerrequestitem.Text }}</li>
-            {% endif %}
-        {% endfor %}
-        </ul>
-        
-    </div>
-</div>",
+    [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
+{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
+{% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
+
+{% for registration in Registrations %}
+
+    {% assign registrantCount = registration.Registrants | Size %}
+
+    <p>
+        The following {{ registration.RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+        {% if registrantCount > 1 %}have{% else %}has{% endif %} been registered for {{ registration.RegistrationInstance.Name }}:
+    </p>
+
+    <p>
+        {{ registration.RegistrationInstance.AdditionalReminderDetails }}
+    </p>
+
+    <ul>
+    {% for registrant in registration.Registrants %}
+        <li>{{ registrant.PersonAlias.Person.FullName }}</li>
+    {% endfor %}
+    </ul>
+
+    {% if registration.BalanceDue > 0 %}
+    <p>
+        This {{ registration.RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} has a remaining balance 
+        of {{ currencySymbol }}{{ registration.BalanceDue | Format:'#,##0.00' }}.
+        You can complete the payment for this {{ registration.RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
+        using our <a href='{{ externalSite }}/Registration?RegistrationInstanceId={{ registration.RegistrationInstanceId }}'>
+        online registration page</a>.
+    </p>
+    {% endif %}
+
+{% endfor %}
+",
        "", 2, "LavaTemplate" )]
-    
+
     [IntegerField( "Max Results", "The maximum number of results to display.", false, 100, order: 3 )]
-    [CustomDropdownListField( "Sort by", "", "0^Entered Date Descending,1^Entered Date Ascending,2^Text", false, "0", order: 4 )]
-    [CustomDropdownListField("Approval Status", "Which statuses to display.", "1^Approved,2^Unapproved,3^All", true, "1", order: 5)]
-    [BooleanField( "Show Expired", "Includes expired prayer requests.", false, order: 6)]
     [SlidingDateRangeField( "Date Range", "Date range to limit by.", false, "", enabledSlidingDateRangeTypes: "Last,Previous,Current", order: 7 )]
-    [BooleanField( "Enable Debug", "Show merge data to help you see what's available to you.", order: 8 )]
-    public partial class PrayerRequestListLava : Rock.Web.UI.RockBlock
+    [BooleanField("Limit to registrations where money is still owed", "", true, "", 8, "LimitToOwed")]
+    [BooleanField( "Enable Debug", "Show merge data to help you see what's available to you.", order: 9 )]
+    
+    public partial class RegistrationListLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
 
@@ -121,90 +133,63 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         protected void LoadContent()
         {
-            var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-            var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-            globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
             RockContext rockContext = new RockContext();
 
-            var prayerRequestService = new PrayerRequestService( rockContext );
-            var qryPrayerRequests = prayerRequestService.Queryable();
+            var registrationService = new RegistrationService( rockContext );
+            var qryRegistrations = registrationService.Queryable();
 
-            // filter out expired
-            if ( !GetAttributeValue( "Show Expired" ).AsBoolean() )
+            // only show Active registrations
+            qryRegistrations = qryRegistrations.Where( a => a.RegistrationInstance.IsActive == true );
+
+            // limit to the current person
+            int currentPersonId = this.CurrentPersonId ?? 0;
+            qryRegistrations = qryRegistrations.Where( a => a.PersonAlias.PersonId == currentPersonId );
+
+            
+
+            // bring into a list so we can filter on non-database columns
+            var registrationList  = qryRegistrations.ToList();
+
+            if (this.GetAttributeValue("LimitToOwed").AsBooleanOrNull() ?? true)
             {
-                qryPrayerRequests = qryPrayerRequests.Where( r => r.ExpirationDate >= RockDateTime.Now );
+                registrationList = registrationList.Where( a=> a.BalanceDue != 0).ToList();
             }
 
             // filter by date range
+            /*
             var requestDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "DateRange" ) ?? "-1||" );
-
-            if ( requestDateRange.Start != null && requestDateRange.End != null )
+            if ( requestDateRange.Start != null )
             {
-                qryPrayerRequests = qryPrayerRequests.Where( r => r.EnteredDateTime >= requestDateRange.Start && r.EnteredDateTime <= requestDateRange.End );
+                registrationList = registrationList.Where( r => r.RegistrationInstance.Linkages.Where(a => a.EventItemOccurrenceId.HasValue).Any( a => !a.EventItemOccurrence.NextStartDateTime.HasValue || ( a.Item ) );
             }
 
-            var categoryGuids = ( GetAttributeValue( "Category" ) ?? string.Empty ).SplitDelimitedValues().AsGuidList();
-            if ( categoryGuids.Any() )
+            if ( requestDateRange.End != null )
             {
-                qryPrayerRequests = qryPrayerRequests.Where( a => a.CategoryId.HasValue && ( categoryGuids.Contains( a.Category.Guid ) || ( a.Category.ParentCategoryId.HasValue && categoryGuids.Contains( a.Category.ParentCategory.Guid ) ) ) );
+                registrationList = registrationList.Where( r => r.RegistrationInstance.StartDateTime < requestDateRange.End );
             }
 
-            // filter by status
-            int? statusFilterType = GetAttributeValue( "ApprovalStatus" ).AsIntegerOrNull();
+            registrationList = registrationList.OrderBy( a => a.RegistrationInstance.StartDateTime );
+             */
 
-            if ( statusFilterType.HasValue )
-            {
-                switch ( statusFilterType.Value )
-                {
-                    case 1: 
-                        {
-                            qryPrayerRequests = qryPrayerRequests.Where( a => a.IsApproved == true );
-                            break;
-                        }
-                    case 2:
-                        {
-                            qryPrayerRequests = qryPrayerRequests.Where( a => a.IsApproved == false );
-                            break;
-                        }
-                }
-            }
+            List<Registration> hasDates = registrationList.Where(a => a.RegistrationInstance.Linkages.Any(x => x.EventItemOccurrenceId.HasValue && x.EventItemOccurrence.NextStartDateTime.HasValue)).ToList();
+            hasDates = hasDates.OrderBy(a => a.RegistrationInstance.Linkages.OrderBy(b => b.EventItemOccurrence.NextStartDateTime).FirstOrDefault().EventItemOccurrence.NextStartDateTime).ToList();
+            registrationList = hasDates;
 
+            var noDates = registrationList.Where(a => !hasDates.Any(d => d.Id == a.Id)).OrderBy(x => x.RegistrationInstance.Name);
 
-            int sortBy = GetAttributeValue( "Sortby" ).AsInteger();
-            switch ( sortBy )
-            {
-                case 0: qryPrayerRequests = qryPrayerRequests.OrderBy( a => a.EnteredDateTime );
-                    break;
-
-                case 1: qryPrayerRequests = qryPrayerRequests.OrderByDescending( a => a.EnteredDateTime );
-                    break;
-
-                case 2: qryPrayerRequests = qryPrayerRequests.OrderBy( a => a.Text );
-                    break;
-
-                default: qryPrayerRequests = qryPrayerRequests.OrderBy( a => a.EnteredDateTime );
-                    break;
-            }
+            registrationList.AddRange(noDates);
+            
 
             int? maxResults = GetAttributeValue( "MaxResults" ).AsIntegerOrNull();
             if ( maxResults.HasValue && maxResults > 0 )
             {
-                qryPrayerRequests = qryPrayerRequests.Take( maxResults.Value );
+                registrationList = registrationList.Take( maxResults.Value ).ToList();
             }
 
-            mergeFields.Add( "PrayerRequestItems", qryPrayerRequests );
-
-            var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "PrayerRequestId", "_PrayerRequestIdParam_" );
-            string url = LinkedPageUrl( "PrayerRequestDetailPage", queryParams );
-            if ( !string.IsNullOrWhiteSpace( url ) )
-            {
-                url = url.Replace( "_PrayerRequestIdParam_", "[Id]" );
-            }
-
-            mergeFields.Add( "LinkUrl", url );
+            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+            mergeFields.Add( "CurrentPerson", CurrentPerson );
+            mergeFields.Add( "Registrations", registrationList );
 
             string template = GetAttributeValue( "LavaTemplate" );
             lContent.Text = template.ResolveMergeFields( mergeFields );
