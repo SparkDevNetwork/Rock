@@ -238,4 +238,7 @@
   <data name="_201510141725294_GroupTypeShowConnectionStatus_spCheckin_WeeksAttendedInDuration" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201510141725294_grouptypeshowconnectionstatus_spcheckin_weeksattendedinduration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
+  <data name="_201511162216129_RecentRegistrationsLava_MergeTemplateUpdates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201511162216129_recentregistrationslava_mergetemplateupdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>
