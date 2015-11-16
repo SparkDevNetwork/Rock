@@ -32,7 +32,7 @@
     <script src="<%# ResolveRockUrl("~~/Scripts/min/main.min.js", true) %>" ></script>
 
     <!-- Set the viewport width to device width for mobile -->
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
