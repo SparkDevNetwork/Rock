@@ -1,10 +1,12 @@
+{% assign albumPreUrl = albumPreUrl | Default: "/music/album/" %}
+
 <section class="bigblock bigblock-graylighter">
   <div class="container">
     <h2 class="margin-t-none margin-b-lg">Albums from CCV</h2>
     <div class="row">
       {% for album in Items %}
         <div class="col-sm-6 margin-b-md">
-          <a href="/music/{{ album.AlbumSlug }}" title="{{ album.Title }}">
+          <a href="{{ albumPreUrl }}{{ album.AlbumSlug }}" title="{{ album.Title }}">
             <img src="{{ album | Attribute: 'Cover', 'Url' }}&width=1110" alt="Album Artwork for {{ album.Title }}">
           </a>
         </div>
