@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Core
     [TextField( "Dropdown Item Template", "Lava template for items in the dropdown. The only merge field is {{ CampusName }}.", true, "{{ CampusName }}", order: 2 )]
     [TextField( "No Campus Text", "The text displayed when no campus context is selected.", true, "Select Campus", order: 3 )]
     [TextField( "Clear Selection Text", "The text displayed when a campus can be unselected. This will not display when the text is empty.", true, "", order: 4 )]
+    [BooleanField( "Display Query Strings", "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.", false, "", order: 5 )]
     public partial class CampusContextSetter : RockBlock
     {
         #region Base Control Methods
@@ -168,10 +169,10 @@ namespace RockWeb.Blocks.Core
             // set context and refresh below with the correct query string if needed
             RockPage.SetContextCookie( campus, pageScope, false );
 
-            // Only redirect if refreshPage is true, and there already is a query string parameter for campus id
+            // Only redirect if refreshPage is true
             if ( refreshPage )
             {
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "campusId" ) ) )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "campusId" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
                     queryString.Set( "campusId", campusId.ToString() );
