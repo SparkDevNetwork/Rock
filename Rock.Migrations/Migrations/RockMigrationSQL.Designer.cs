@@ -921,5 +921,19 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201510141725294_GroupTypeShowConnectionStatus_spCheckin_WeeksAttendedInDuration", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to   DECLARE @EnvelopeBinaryFileId int = (SELECT TOP 1 [TemplateBinaryFileId] FROM [MergeTemplate] WHERE [Guid] = &apos;111E35D5-57B9-44A9-4934-B234CF9AFAF1&apos;)
+        ///  DECLARE @LabelsBinaryFileId int = (SELECT TOP 1 [TemplateBinaryFileId] FROM [MergeTemplate] WHERE [Guid] = &apos;7730FDA8-3A1F-79AF-4F79-1F7AEE5BCB9C&apos;)
+        ///  
+        ///  -- envelope
+        ///  UPDATE [BinaryFileData]
+        ///		SET [Content] = 0x504B030414000600080000002100DFA4D26C5A01000020050000130008025B436F6E74656E745F54797065735D2E786D6C20A2040228A00002000000000000000000000000000000 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201511162216129_RecentRegistrationsLava_MergeTemplateUpdates {
+            get {
+                return ResourceManager.GetString("_201511162216129_RecentRegistrationsLava_MergeTemplateUpdates", resourceCulture);
+            }
+        }
     }
 }
