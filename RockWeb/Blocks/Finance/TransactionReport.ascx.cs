@@ -17,18 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -39,25 +37,11 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block that reports transactions for the currently logged in user with filters." )]
     [TextField( "Transaction Label", "The label to use to describe the transactions (e.g. 'Gifts', 'Donations', etc.)", true, "Gifts", "", 1 )]
-    [TextField("Account Label", "The label to use to describe accounts.", true, "Accounts", "", 2)]
-    [AccountsField("Accounts", "List of accounts to allow the person to view", false, "", "", 3)]
+    [TextField( "Account Label", "The label to use to describe accounts.", true, "Accounts", "", 2 )]
+    [AccountsField( "Accounts", "List of accounts to allow the person to view", false, "", "", 3 )]
     public partial class TransactionReport : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
-
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -90,7 +74,7 @@ namespace RockWeb.Blocks.Finance
                 // set default date range
                 drpFilterDates.LowerValue = new DateTime( DateTime.Now.Year, 1, 1 );
                 drpFilterDates.UpperValue = DateTime.Now;
-                
+
                 // load account list
                 LoadAccounts();
 
@@ -111,7 +95,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
+            //
         }
 
         /// <summary>
@@ -138,28 +122,43 @@ namespace RockWeb.Blocks.Finance
 
         #region Methods
 
+        /// <summary>
+        /// Loads the accounts.
+        /// </summary>
         private void LoadAccounts()
         {
             var rockContext = new RockContext();
-            FinancialAccountService accountService = new FinancialAccountService(rockContext);
+            FinancialAccountService accountService = new FinancialAccountService( rockContext );
 
-            List<Guid> selectedAccounts = new List<Guid>(); ;
+            List<Guid> selectedAccounts = new List<Guid>();
 
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) ) )
             {
-                selectedAccounts = GetAttributeValue( "Accounts" ).Split( ',' ).Select( Guid.Parse ).ToList();
+                selectedAccounts = GetAttributeValue( "Accounts" ).Split( ',' ).AsGuidList();
             }
 
-            var accounts = accountService.Queryable()
+            var accountList = accountService.Queryable()
                                 .Where( a => selectedAccounts.Contains( a.Guid ) )
-                                .OrderBy( a => a.Order );
+                                .OrderBy( a => a.Order )
+                                .Select( a => new
+                                {
+                                    a.Id,
+                                    a.PublicName
+                                } ).ToList();
 
-            foreach ( var account in accounts.ToList() )
+            if ( accountList.Any() )
             {
-                ListItem checkbox = new ListItem(account.PublicName, account.Id.ToString(), true);
-                checkbox.Selected = true;
+                foreach ( var account in accountList )
+                {
+                    ListItem checkbox = new ListItem( account.PublicName, account.Id.ToString(), true );
+                    checkbox.Selected = true;
 
-                cblAccounts.Items.Add( checkbox );
+                    cblAccounts.Items.Add( checkbox );
+                }
+            }
+            else
+            {
+                cblAccounts.Items.Clear();
             }
         }
 
@@ -179,20 +178,21 @@ namespace RockWeb.Blocks.Finance
             string currentPersonGivingId = CurrentPerson.GivingId;
 
             var qry = transService.Queryable( "TransactionDetails.Account,FinancialPaymentDetail" )
-                        .Where( t => 
-                            t.TransactionDetails.Any( d => selectedAccountIds.Contains( d.AccountId ) ) && 
+                        .Where( t =>
+                            t.TransactionDetails.Any( d => selectedAccountIds.Contains( d.AccountId ) ) &&
                             t.AuthorizedPersonAlias != null &&
                             t.AuthorizedPersonAlias.Person != null &&
                             t.AuthorizedPersonAlias.Person.GivingId == currentPersonGivingId );
 
-            if (drpFilterDates.LowerValue.HasValue) {
-                qry = qry.Where(t => t.TransactionDateTime.Value >= drpFilterDates.LowerValue.Value);
+            if ( drpFilterDates.LowerValue.HasValue )
+            {
+                qry = qry.Where( t => t.TransactionDateTime.Value >= drpFilterDates.LowerValue.Value );
             }
 
             if ( drpFilterDates.UpperValue.HasValue )
             {
                 var lastDate = drpFilterDates.UpperValue.Value.AddDays( 1 ); // add one day to ensure we get all transactions till midnight
-                qry = qry.Where( t => t.TransactionDateTime.Value < lastDate ); 
+                qry = qry.Where( t => t.TransactionDateTime.Value < lastDate );
             }
 
             var txns = qry.ToList();
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Finance
                 pnlSummary.Visible = true;
                 foreach ( var key in accountTotals.Keys )
                 {
-                    lAccountSummary.Text += String.Format( "<li>{0}: {2}{1}</li>", key, accountTotals[key], GlobalAttributesCache.Value( "CurrencySymbol" ) );
+                    lAccountSummary.Text += string.Format( "<li>{0}: {2}{1}</li>", key, accountTotals[key], GlobalAttributesCache.Value( "CurrencySymbol" ) );
                 }
             }
             else
@@ -238,10 +238,15 @@ namespace RockWeb.Blocks.Finance
                 Summary = FormatSummary( t ),
                 t.TotalAmount
             } ).ToList();
-            gTransactions.DataBind();
 
+            gTransactions.DataBind();
         }
 
+        /// <summary>
+        /// Formats the type of the currency.
+        /// </summary>
+        /// <param name="txn">The TXN.</param>
+        /// <returns></returns>
         protected string FormatCurrencyType( FinancialTransaction txn )
         {
             string currencyType = string.Empty;
@@ -253,7 +258,6 @@ namespace RockWeb.Blocks.Finance
 
                 var currencyTypeValue = DefinedValueCache.Read( currencyTypeId );
                 currencyType = currencyTypeValue != null ? currencyTypeValue.Value : string.Empty;
-
 
                 if ( txn.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
                 {
@@ -268,7 +272,11 @@ namespace RockWeb.Blocks.Finance
             return currencyType;
         }
 
-
+        /// <summary>
+        /// Formats the summary.
+        /// </summary>
+        /// <param name="txn">The TXN.</param>
+        /// <returns></returns>
         private string FormatSummary( FinancialTransaction txn )
         {
             var sb = new StringBuilder();
@@ -276,10 +284,10 @@ namespace RockWeb.Blocks.Finance
             {
                 sb.AppendFormat( "{0} ({2}{1})<br>", transactionDetail.Account, transactionDetail.Amount, GlobalAttributesCache.Value( "CurrencySymbol" ) );
             }
+
             return sb.ToString();
         }
 
         #endregion
-        
-}
+    }
 }
