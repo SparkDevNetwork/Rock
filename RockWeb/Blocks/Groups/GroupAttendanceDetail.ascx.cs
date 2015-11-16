@@ -553,7 +553,10 @@ namespace RockWeb.Blocks.Groups
                         parentLocationPath = locationPaths[locId];
                     }
 
-                    locations.Add( location.Id, new List<string> { parentLocationPath, location.Name }.AsDelimited( " > " ) );
+                    if ( !locations.ContainsKey( location.Id ) )
+                    {
+                        locations.Add( location.Id, new List<string> { parentLocationPath, location.Name }.AsDelimited( " > " ) );
+                    }
                 }
             }
 
