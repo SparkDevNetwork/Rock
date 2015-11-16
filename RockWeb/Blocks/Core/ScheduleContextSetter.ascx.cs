@@ -42,6 +42,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
     [TextField( "Dropdown Item Template", "Lava template for items in the dropdown. The only merge field is {{ ScheduleName }}.", true, "{{ ScheduleName }}", order: 2 )]
     [TextField( "No Schedule Text", "The text to show when there is no schedule in the context.", true, "Select Schedule", order: 3 )]
     [TextField( "Clear Selection Text", "The text displayed when a schedule can be unselected. This will not display when the text is empty.", true, "", order: 4 )]
+    [BooleanField( "Display Query Strings", "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.", false, "", order: 5 )]
     public partial class ScheduleContextSetter : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -175,8 +176,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
 
             if ( refreshPage )
             {
-                // Only redirect if refreshPage is true, and there already is a query string parameter for schedule id
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "scheduleId" ) ) )
+                // Only redirect if refreshPage is true
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "scheduleId" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
                     queryString.Set( "scheduleId", scheduleId.ToString() );
