@@ -12,7 +12,7 @@
 
             <div class="panel-body">
                 <div class="row">
-                    <div class="pull-left">
+                    <div class="lifegrouplist-backbutton pull-left">
                         <asp:LinkButton ID="lbReturn" runat="server" OnClick="lbReturn_Click" Text='<< Back' />
                     </div>
                 </div>
