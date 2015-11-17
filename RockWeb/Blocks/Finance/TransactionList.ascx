@@ -58,7 +58,7 @@
                             </Columns>
                         </Rock:Grid>
 
-                        <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" Dismissable="true"></Rock:NotificationBox>
+                        <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" CssClass="margin-b-none" Dismissable="true"></Rock:NotificationBox>
 
                     </div>
 
