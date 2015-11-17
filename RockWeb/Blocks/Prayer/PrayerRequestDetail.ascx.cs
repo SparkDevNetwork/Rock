@@ -38,6 +38,8 @@ namespace RockWeb.Blocks.Prayer
     [IntegerField( "Expires After (Days)", "Default number of days until the request will expire.", false, 14, "", 0, "ExpireDays" )]
     [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "", 1, "DefaultCategory" )]
     [BooleanField( "Set Current Person To Requester", "Will set the current person as the requester. This is useful in self-entry situiations.", false, order: 2 )]
+
+    [BooleanField( "Require Last Name", "Require that a last name be entered", true, "", 3 )]
     public partial class PrayerRequestDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -116,6 +118,8 @@ namespace RockWeb.Blocks.Prayer
 
             string script = string.Format( scriptFormat, pnlStatus.ClientID, hfApprovedStatus.ClientID );
             ScriptManager.RegisterStartupScript( pnlStatus, pnlStatus.GetType(), "status-script-" + this.BlockId.ToString(), script, true );
+
+            tbLastName.Required = GetAttributeValue( "RequireLastName" ).AsBooleanOrNull() ?? true;
         }
 
         /// <summary>
@@ -189,8 +193,8 @@ namespace RockWeb.Blocks.Prayer
                             LastName = p.LastName
                         } ).FirstOrDefault();
 
-                    dtbFirstName.Text = requester.FirstName;
-                    dtbLastName.Text = requester.LastName;
+                    tbFirstName.Text = requester.FirstName;
+                    tbLastName.Text = requester.LastName;
                 }
             }
         }
@@ -305,8 +309,8 @@ namespace RockWeb.Blocks.Prayer
 
             catpCategory.SetValue( prayerRequest.Category );
 
-            dtbFirstName.Text = prayerRequest.FirstName;
-            dtbLastName.Text = prayerRequest.LastName;
+            tbFirstName.Text = prayerRequest.FirstName;
+            tbLastName.Text = prayerRequest.LastName;
             dtbText.Text = prayerRequest.Text;
             dtbAnswer.Text = prayerRequest.Answer;
 
@@ -495,8 +499,8 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.IsUrgent = cbIsUrgent.Checked;
             prayerRequest.AllowComments = cbAllowComments.Checked;
             prayerRequest.IsPublic = cbIsPublic.Checked;
-            prayerRequest.FirstName = dtbFirstName.Text;
-            prayerRequest.LastName = dtbLastName.Text;
+            prayerRequest.FirstName = tbFirstName.Text;
+            prayerRequest.LastName = tbLastName.Text;
             prayerRequest.Text = dtbText.Text.Trim();
             prayerRequest.Answer = dtbAnswer.Text.Trim();
 
