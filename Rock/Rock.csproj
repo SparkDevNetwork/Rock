@@ -521,6 +521,7 @@
     <Compile Include="Reporting\ReportingHelper.cs" />
     <Compile Include="Reporting\DataSelect\Person\GroupParticipationSelect.cs" />
     <Compile Include="Security\Authentication\Twitter.cs" />
+    <Compile Include="Store\PackageVersionRatingService.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReciepts.cs" />
     <Compile Include="Transactions\UpdatePaymentStatusTransaction.cs" />

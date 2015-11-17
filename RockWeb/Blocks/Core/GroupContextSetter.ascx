@@ -5,7 +5,7 @@
 
         <Rock:NotificationBox runat="server" ID="nbSelectGroupTypeWarning" NotificationBoxType="Warning" Text="Select a group type or root group from the block settings" />
 
-        <ul class="nav navbar-nav group-context-setter">
+        <ul class="nav navbar-nav contextsetter group-context-setter">
             <li class="dropdown">
 
                 <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">

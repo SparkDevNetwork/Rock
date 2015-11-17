@@ -178,6 +178,20 @@ namespace Rock.Web.Cache
         public string DefaultValue { get; set; }
 
         /// <summary>
+        /// Gets the default type of the value as.
+        /// </summary>
+        /// <value>
+        /// The default type of the value as.
+        /// </value>
+        public object DefaultValueAsType
+        {
+            get
+            {
+                return FieldType.Field.ValueAsFieldType( null, DefaultValue, QualifierValues );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is multi value.
         /// </summary>
         /// <value>
