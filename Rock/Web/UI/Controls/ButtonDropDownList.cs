@@ -394,7 +394,7 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
 
             _divControl = new HtmlGenericControl( "div" );
-            _divControl.Attributes["class"] = "btn-group";
+            _divControl.Attributes["class"] = "btn-group " + this.FormGroupCssClass;
             _divControl.ClientIDMode = ClientIDMode.Static;
             _divControl.ID = string.Format( "ButtonDropDown_{0}", this.ID );
 
