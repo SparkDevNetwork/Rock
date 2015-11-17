@@ -951,7 +951,7 @@ namespace RockWeb.Blocks.Examples
 
             // Create person alias records for each person manually since we set disablePrePostProcessing=true on save
             PersonService personService = new PersonService( rockContext );
-            foreach ( var person in personService.Queryable( "Aliases" )
+            foreach ( var person in personService.Queryable( "Aliases", true )
                 .Where( p =>
                     _peopleDictionary.Keys.Contains( p.Guid ) &&
                     !p.Aliases.Any() ) )
@@ -1329,6 +1329,7 @@ namespace RockWeb.Blocks.Examples
             FinancialBatchService financialBatchService = new FinancialBatchService( rockContext );
             FinancialTransactionService financialTransactionService = new FinancialTransactionService( rockContext );
             PersonPreviousNameService personPreviousNameService = new PersonPreviousNameService( rockContext );
+            
 
             // delete the batch data
             List<int> imageIds = new List<int>();
@@ -1354,7 +1355,7 @@ namespace RockWeb.Blocks.Examples
                 if ( family != null )
                 {
                     var groupMemberService = new GroupMemberService( rockContext );
-                    var members = groupMemberService.GetByGroupId( family.Id );
+                    var members = groupMemberService.GetByGroupId( family.Id, true );
 
                     // delete the people records
                     string errorMessage;
@@ -1412,11 +1413,11 @@ namespace RockWeb.Blocks.Examples
                             personPreviousNameService.Delete( previousName );
                         }
 
-                        //// delete any GroupMember records they have
-                        //foreach ( var groupMember in groupMemberService.Queryable().Where( gm => gm.PersonId == person.Id ) )
-                        //{
-                        //    groupMemberService.Delete( groupMember );
-                        //}
+                        // delete any GroupMember records they have
+                        foreach ( var groupMember in groupMemberService.Queryable().Where( gm => gm.PersonId == person.Id ) )
+                        {
+                            groupMemberService.Delete( groupMember );
+                        }
 
                         //// delete any Authorization data
                         //foreach ( var auth in authService.Queryable().Where( a => a.PersonId == person.Id ) )
@@ -2061,6 +2062,10 @@ namespace RockWeb.Blocks.Examples
                             if ( personElem.Attribute( "recordStatusReason") != null )
                             {
                                 person.RecordStatusReasonValueId = GetOrAddDefinedValueId( personElem.Attribute( "recordStatusReason" ).Value.Trim(), _recordStatusReasonDefinedType, rockContext );
+                                if ( person.RecordStatusReasonValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() ).Id )
+                                {
+                                    person.IsDeceased = true;
+                                }
                             }
                             break;
                         default:
@@ -2099,6 +2104,9 @@ namespace RockWeb.Blocks.Examples
                                 break;
                             case "attendee":
                                 person.ConnectionStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_ATTENDEE.AsGuid() ).Id;
+                                break;
+                            case "web prospect":
+                                person.ConnectionStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT.AsGuid() ).Id;
                                 break;
                             case "visitor":
                             default:
@@ -2226,7 +2234,6 @@ namespace RockWeb.Blocks.Examples
 
             if ( noteType != null )
             {
-
                 // Find the person's alias
                 int? createdByPersonAliasId = null;
                 if ( byPersonGuid != null )
