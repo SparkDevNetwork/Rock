@@ -208,7 +208,14 @@ namespace RockWeb.Blocks.Core
 
         protected string EncodeHtml( object obj )
         {
-            return obj.ToString().EncodeHtml();
+            if ( obj != null )
+            {
+                return obj.ToString().EncodeHtml();
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
 
         #endregion

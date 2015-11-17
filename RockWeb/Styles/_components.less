@@ -310,7 +310,12 @@ ul.rocktree ul {
   .rocktree-item {
 
     &.is-inactive {
-        opacity: .6;
+        color: lighten(@text-color, 20%);
+        opacity: 1;
+    }
+
+    &:not(.is-inactive){
+        color: @text-color;
     }
 
     white-space: nowrap;
@@ -1136,7 +1141,7 @@ fieldset .actions {
 // 16. Time Picker
 // -------------------------
 
-/*.timepicker-input  {
+.timepicker-input  {
   .clearfix();
 
   .input-group {
@@ -1163,7 +1168,7 @@ fieldset .actions {
 
 .touch .timepicker-input i.fa-times {
   opacity: 1;
-}*/
+}
 
 .bootstrap-timepicker {
   position: relative;

@@ -34,6 +34,7 @@ namespace RockWeb.Blocks.Finance
     [Description( "Generic list of all pledges in the system." )]
 
     [LinkedPage( "Detail Page" )]
+    [BooleanField("Hide Account Column", "Allows the account column to be hidden", false, "", 1)]
     [ContextAware]
     public partial class PledgeList : RockBlock
     {
@@ -67,6 +68,16 @@ namespace RockWeb.Blocks.Finance
             gPledges.IsDeleteEnabled = canAddEditDelete;
 
             TargetPerson = ContextEntity<Person>();
+
+            // hide the person column and filter if a person context exists 
+            if ( TargetPerson != null )
+            {
+                gPledges.Columns[0].Visible = false;
+                gfPledges.Visible = false;
+            }
+
+            // show/hide the account column
+            gPledges.Columns[1].Visible = !GetAttributeValue( "HideAccountColumn" ).AsBoolean();
         }
 
         /// <summary>
