@@ -22,7 +22,7 @@
       <members>
         <person guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"
           firstName="Theodore" nickName="Ted" lastName="Decker" birthDate="2/10/1976" age="38" gender="male"
-          email="ted@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="ted@rocksolidchurchdemo.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           anniversaryDate="1/4/2001"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_ted.jpg"
@@ -62,7 +62,7 @@
 
         <person guid="B71494DB-D809-451A-A950-28898D0FD92C"
           firstName="Cynthia" nickName="Cindy" lastName="Decker" birthDate="3/10/1977" age="37" gender="female"
-          email="cindy@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="cindy@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           anniversaryDate="1/4/2001"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_cindy.png"
@@ -116,14 +116,14 @@
       <members>
         <person guid="3C402382-3BD2-4337-A996-9E62F1BAB09D"
           firstName="Benjamin" nickName="Ben" lastName="Jones" birthDate="7/10/1978" age="36" gender="male"
-          email="ben.jones@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="ben.jones@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/jones_ben.jpg"
           homePhone="" mobilePhone="" workPhone=""/>
 
         <person guid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E"
           firstName="Brian" nickName="Brian" lastName="Jones" birthDate="6/9/2008" age="6" gender="male"
-          email="brian.jones@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="brian.jones@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="child"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/jones_brian.jpg"
           homePhone="" mobilePhone="" workPhone="" grade="1">
@@ -148,14 +148,14 @@
       <members>
         <person guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"
           firstName="James" nickName="Jim" lastName="Simmons" birthDate="6/1/1979" age="35" gender="male"
-          email="jim.simmons@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="jim.simmons@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/simmons_jim.jpg"
           homePhone="" mobilePhone="" workPhone=""/>
 
         <person guid="FC6B9819-EF2E-44C9-93DB-05571B39E58F"
           firstName="Sarah" nickName="Sarah" lastName="Simmons" birthDate="5/3/1980" age="34" gender="female"
-          email="sarah.simmons@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="sarah.simmons@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/simmons_sarah.jpg"
           homePhone="" mobilePhone="" workPhone="">
@@ -184,14 +184,14 @@
       <members>
         <person guid="9C2A020B-CF34-403E-A948-3E91FDFB958B"
           firstName="Mariah" nickName="Mariah" lastName="Jackson" birthDate="1/11/1970" age="37" gender="female"
-          email="mariah.jackson@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="mariah.jackson@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/jackson_mariah.jpg"
           homePhone="" mobilePhone="" workPhone=""/>
 
         <person guid="C398A8E3-C9BC-4017-A3F6-7C2BFF654056"
           firstName="Madison" nickName="Maddie" lastName="Lowe" birthDate="10/4/2006" age="7" gender="female"
-          email="madison.lowe@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="madison.lowe@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="child"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/lowe_madison.jpg"
           homePhone="" mobilePhone="" workPhone="" grade="2">
@@ -213,14 +213,14 @@
       <members>
         <person guid="B701E5D2-ADBD-4C66-91E8-3D6CD298D9A0"
           firstName="Craig" nickName="Craig" lastName="Lowe" birthDate="8/1/1970" age="37" gender="male"
-          email="craig.lowe@rocksoliddemochurch.com" emailIsActive="false" emailDoNotEmail="true" recordType="person"
+          email="craig.lowe@fakeinbox.com" emailIsActive="false" emailDoNotEmail="true" recordType="person"
           recordStatus="active" connectionStatus="visitor"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/lowe_craig.jpg"
           homePhone="" mobilePhone="" workPhone=""/>
 
         <person guid="20A2C167-D16E-43B3-A5B0-80CE912589AF"
          firstName="Tricia" nickName="Trish" lastName="Lowe" birthDate="9/15/1970" age="35" gender="female"
-         email="trish.lowe@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+         email="trish.lowe@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
          recordStatus="active" connectionStatus="visitor"  maritalStatus="married" familyRole="adult"
          photoUrl="http://storage.rockrms.com/sampledata/person-images/lowe_tricia.jpg"
          homePhone="" mobilePhone="" workPhone=""/>
@@ -248,7 +248,7 @@
       <members>
         <person guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"
           firstName="Alisha" nickName="Alisha" lastName="Marble" birthDate="5/29/1967" age="48" gender="female"
-          email="alisha.marble@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="alisha.marble@rocksolidchurchdemo.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/marble_alisha.jpg"
           homePhone="" mobilePhone="" workPhone="6235552444">
@@ -263,7 +263,7 @@
         
         <person guid="1EA811BB-3118-42D1-B020-32A82BC8081A"
          firstName="William" nickName="Bill" lastName="Marble" birthDate="2/29/1964" gender="male"
-         email="bill.marble@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+         email="bill.marble@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
          photoUrl="http://storage.rockrms.com/sampledata/person-images/marble_bill.jpg"
          homePhone="" mobilePhone="" workPhone=""/>
@@ -294,7 +294,7 @@
       <members>
         <person guid="47A42BD0-38A3-49D6-A32A-0FCD5E386CC3"
           firstName="Tom" nickName="Tom" lastName="Miller" birthDate="4/1/1979" gender="male"
-          email="tom.miller@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="tom.miller@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/miller_tom.jpg"
           homePhone="6235550909" mobilePhone="" workPhone=""/>
@@ -309,7 +309,7 @@
       <members>
         <person guid="955BF3E9-D38A-4DCB-A6F2-EDF5EC2571C5"
           firstName="Thomas" nickName="Thomas" lastName="Miller" gender="male"
-          email="tom.miller@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="tom.miller@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="web prospect"  maritalStatus="single" familyRole="adult"
           homePhone="6235550909" mobilePhone="" workPhone=""/>
       </members>
@@ -328,7 +328,7 @@
       <members>
         <person guid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C"
           firstName="Peter" nickName="Pete" lastName="Foster" birthDate="1/7/1976" age="50" gender="male"
-          email="peter@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="peter@rocksolidchurchdemo.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/foster_peter.jpg"
           homePhone="4805551234" mobilePhone="6025554321" workPhone="6235552444">
@@ -343,7 +343,7 @@
         
         <person guid="F4450E80-F221-4556-881D-CB92B008C2DA"
           firstName="Adelle" nickName="Pamela" lastName="Foster" birthDate="7/4/1976" age="50" gender="female"
-          email="pamela@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="pamela@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/foster_pamela.jpg"
           homePhone="4805551234" mobilePhone="" workPhone="">
@@ -391,7 +391,7 @@
       <members>
         <person guid="D7CE30DF-58F8-4268-BA19-56FDF17D3890"
           firstName="Paul" nickName="Paul" lastName="Smith" birthDate="2/27/1995" age="20" gender="male"
-          email="paul@rocksolidchurchdemo.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="paul@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="attendee" maritalStatus="single" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/smith_paul.jpg"
           homePhone="" mobilePhone="623-555-9981" workPhone="">
@@ -424,7 +424,7 @@
       <members>
         <person guid="A08C02C7-ED75-4F24-8F75-FB3956521804"
           firstName="Taylor" nickName="Ty" lastName="McClintock" birthDate="7/1/1995" age="20" gender="male"
-          email="taylor@rocksolidchurchdemo.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="taylor@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="attendee" maritalStatus="single" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/mcclintock_taylor.jpg"
           homePhone="" mobilePhone="623-555-9876" workPhone="">
@@ -465,7 +465,7 @@
       <members>
         <person guid="9C609974-A8E1-4363-8F5E-51F61828E2BA"
           firstName="Francis" nickName="Frank" lastName="Dexter" birthDate="4/1/1973" age="42" gender="male"
-          email="frank@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          email="frank@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="Divorced" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/dexter_frank.jpg"
           homePhone="623-555-1123" mobilePhone="623-888-3211" workPhone="" graduationDate="1/1/1992">
@@ -508,7 +508,197 @@
       </giving>
       
     </family>
+
+    <!--The Robert Greggs family lost their first child, Jenny, when she was three years old. They have since had two other children. Jenny's record was pulled out of the Greggs family and then added to Robert and Lorraine as a relationship (parent).-->
+    <family name="Greggs" guid="e51d3363-13fc-4479-8283-c7b9a2f22ab6">
+      <addresses>
+        <address type="home" street1="10638 N 16th Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5835953" long="-112.09478" />
+      </addresses>
+      <members>
+        <person guid="28c4f2c0-0691-468f-b40e-550bd2976b9e" lastName="Greggs" firstName="Robert" nickName="Bob" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="member" birthDate="6/9/1987" maritalStatus="Married" anniversaryDate="7/1/2007" email="rgreggs@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235554450" cellPhone="6025558748" photoUrl="http://storage.rockrms.com/sampledata/person-images/greggs_bob_is_tonypeterson.jpg">
+          <attributes>
+            <attribute Baptized="No" />
+            <attribute Employer="Motorola" />
+            <attribute Position="Electrical Engineer" />
+          </attributes>
+          <notes />
+        </person>
+        <person guid="1a5a4e5f-e0a4-4efa-b7d7-6698153ed718" lastName="Greggs" firstName="Lorraine" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="member" birthDate="12/9/1987" maritalStatus="Married" anniversaryDate="7/1/2007" email="lgreggs@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235554450" cellPhone="6025556320" photoUrl="http://storage.rockrms.com/sampledata/person-images/greggs_lorraine_is_kfriedson.jpg">
+          <attributes>
+            <attribute Baptized="No" />
+            <attribute Employer="Motorola" />
+            <attribute Position="Financial Analyst" />
+          </attributes>
+          <notes>
+            <note type="Personal Note" text="Lorraine's daughter, Jenny, went to be with the Lord on Sept 11. Remember to be sensitive to Lorraine on this day." isAlert="true" date="2011-09-12T09:01" byGuid="69DC0FDC-B451-4303-BD91-EF17C0015D23" />
+          </notes>        
+        </person>
+        <person guid="5db35e3c-8a84-488b-9738-fb3cacd4c517" lastName="Greggs" firstName="Timothy" nickName="Tim" middleName="" gender="male" familyRole="child" recordStatus="active" connectionStatus="member" birthDate="5/9/2013" maritalStatus="Unknown" email="tgreggs@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false">
+          <attributes />
+          <notes />
+        </person>
+        <person guid="bdf4a42d-5c22-4e73-868d-17def16280d9" lastName="Greggs" firstName="Jordan" nickName="Jordan" middleName="" gender="female" familyRole="child" recordStatus="active" connectionStatus="member" birthDate="11/9/2014" maritalStatus="Unknown">
+          <attributes />
+          <notes />
+        </person>
+      </members>
+    </family>
     
+    <family name="Greggs" guid="0e0edc8f-cb8f-4457-88d4-651de3904550">
+      <members>
+        <person guid="146b2103-fb28-49c6-b1a4-218c397b739e" lastName="Greggs" firstName="Jenny" middleName="" gender="female" familyRole="child" recordStatus="inactive" recordStatusReason="Deceased" connectionStatus="inactive" birthDate="8/1/2008" maritalStatus="Unknown" email="jgreggs@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false">
+          <attributes />
+          <notes>
+            <note type="Personal Note" text="Jenny went to be with the Lord yesterday.  She was three years old." isAlert="true" date="2011-09-12T09:02:00" byGuid="69DC0FDC-B451-4303-BD91-EF17C0015D23" />
+          </notes>
+        </person>
+      </members>
+    </family>
+    
+    <family name="Webb" guid="0d590ba7-9a5b-456c-b919-fd25f01e1427">
+      <addresses>
+        <address type="home" street1="10806 N 33rd Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5844955" long="-112.1309509" />
+      </addresses>
+      <members>
+        <person guid="00e0dbb3-5451-456e-adab-e12c5ef4c285" lastName="Webb" firstName="Martin" nickName="Marty" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="8/8/1987" maritalStatus="Married" anniversaryDate="8/2/2006" email="mwebb@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" cellPhone="6025554495" photoUrl="http://storage.rockrms.com/sampledata/person-images/webb_martin_is_dustinlamont.jpg">
+          <attributes />
+          <notes />
+        </person>
+        <person guid="6c42bb46-67f7-4d58-93f3-73a7fbe1adbb" lastName="Webb" firstName="Debbie" nickName="Deb" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="1/9/1987" maritalStatus="Married" anniversaryDate="8/2/2006" email="dwebb@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" cellPhone="6025556417" photoUrl="http://storage.rockrms.com/sampledata/person-images/webb_debbie_is_madysondesigns.jpg">
+          <attributes />
+          <notes />
+        </person>
+      </members>
+    </family>
+    <family name="Richards" guid="01060616-9878-406b-bd8d-10ee3545938a">
+      <addresses>
+        <address type="home" street1="11016 N 28th Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5856743" long="-112.1217728" />
+      </addresses>
+      <members>
+        <person guid="b5fcba2e-765c-4b46-9913-8fe83cd2874b" lastName="Richards" firstName="Daniel" nickName="Dan" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="10/9/1995" maritalStatus="Single" email="drichards@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" cellPhone="6025555819" photoUrl="http://storage.rockrms.com/sampledata/person-images/richards_daniel_is_danbenoni.jpg">
+          <attributes />
+          <notes />
+        </person>
+      </members>
+    </family>
+    
+    <!--Phil Coffee first attended because his friend and neighbor Allie Song invited him to Easter services at church. He then became interested in learning about baptism and was later baptized that same year (along with Allie).-->
+    <family name="Coffee" guid="a06710a1-48e0-448b-aedf-285535f76574">
+      <addresses>
+        <address type="home" street1="3725 W Shangri la Rd" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5865364" long="-112.1394348" />
+      </addresses>
+      <members>
+        <person guid="3459286f-18c8-4548-9938-53dac8483d01" lastName="Coffee" firstName="Philip" nickName="Phil" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="member" birthDate="10/1/1983" maritalStatus="Single" email="pcoffee@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" cellPhone="6025554948" photoUrl="http://storage.rockrms.com/sampledata/person-images/coffee_phil_is_philcoffman.jpg">
+          <attributes>
+            <attribute Baptized="Yes" />
+            <attribute BaptismDate="11/1/2014" />
+            <attribute FirstVisit="4/1/2014" />
+            <attribute SecondVisit="4/8/2014" />
+          </attributes>
+          <notes>
+            <note type="Personal Note" text="Is interested in learning about baptism." date="2014-05-01T00:00:00" byGuid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" isAlert="true"/>
+            <note type="Personal Note" text="Phil Coffee is good friends with Allie Song." date="2014-05-04T00:00:00" byGuid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" />            
+          </notes>
+        </person>
+      </members>
+    </family>
+    
+    <family name="Song" guid="d31ee9e4-4dc0-4152-80d8-aac7ee736781">
+      <addresses>
+        <address type="home" street1="3730 W Shangri la Rd" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5869675" long="-112.1396484" />
+      </addresses>
+      <members>
+        <person guid="d593f194-9dc3-4936-a1c3-fb7e5cb09145" lastName="Song" firstName="Allison" nickName="Allie" middleName="" gender="unknown" familyRole="adult" recordStatus="active" connectionStatus="member" birthDate="9/27/1987" maritalStatus="Single" email="asong@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="4805553083" cellPhone="6235556778" photoUrl="http://storage.rockrms.com/sampledata/person-images/song_allison_is_allisongrayce.jpg">
+          <attributes>
+            <attribute Baptized="Yes" />
+            <attribute BaptismDate="11/1/2014" />
+            <attribute Employer="First Bank of Union" />
+            <attribute Position="Bank Teller" />
+            <attribute FirstVisit="12/25/2013" />
+            <attribute SecondVisit="4/1/2014" />
+          </attributes>
+          <notes />
+        </person>
+      </members>
+    </family>
+    
+    <family name="Stone" guid="594a1aec-7052-43da-a819-29088abd9930">
+      <addresses>
+        <address type="home" street1="10822 N 17th Dr" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5841959" long="-112.0966105" />
+      </addresses>
+      <members>
+        <person guid="ae45a615-d55e-4749-b2db-47bbc9fbd885" lastName="Stone" firstName="Cora" nickName="Corrie" middleName="M" gender="female" familyRole="adult" recordStatus="active" connectionStatus="attendee" birthDate="8/1/1992" maritalStatus="Single" email="cstone@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235555308" cellPhone="6025554502" photoUrl="http://storage.rockrms.com/sampledata/person-images/stone_cora_is_uxceo.jpg">
+          <attributes />
+          <notes />
+        </person>
+      </members>
+    </family>
+    
+    <!--Helen Evans came to a VLE (very large event) on campus and she's someone who should be followed up with.-->
+    <family name="Evans" guid="89b175ad-6bf1-4590-b936-1cf42014a337">
+      <addresses>
+        <address type="home" street1="10828 N Biltmore Dr" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5855064" long="-112.1186981" />
+      </addresses>
+      <members>
+        <person guid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" lastName="Evans" firstName="Helen" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="4/2/1979" maritalStatus="Single" email="hevans@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235552540" cellPhone="4805558410" photoUrl="http://storage.rockrms.com/sampledata/person-images/evans_helen_is_stylecampaign.jpg">
+          <attributes>
+            <attribute FirstVisit="10/11/2015" />
+          </attributes>
+          <notes />
+        </person>
+      </members>
+    </family>
+    
+    <!--Once you started promoting the website to sign-up to serve, requests to get connected have been flowing in regularly.  Be sure to set up your connectors and get them following up with people like Sean Hansen and Michele Turner.-->
+    <family name="Hansen" guid="7c8c6808-1e08-46d0-aa0a-84227e22aa8e">
+      <addresses>
+        <address type="home" street1="11012 N 34th Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5861397" long="-112.132782" />
+      </addresses>
+      <members>
+        <person guid="fa38a268-6744-4507-9cdc-69a7ac6cc0e5" lastName="Hansen" firstName="Sean" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="7/23/1988" maritalStatus="Single" email="shansen@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" cellPhone="6235556747" photoUrl="http://storage.rockrms.com/sampledata/person-images/hansen_sean_is_nucliweb.jpg">
+          <attributes>
+            <attribute Employer="Arizona State University" />
+            <attribute Position="Research Assistant" />
+          </attributes>
+          <notes />
+        </person>
+      </members>
+    </family>
+    
+    <family name="Turner" guid="0c0c7970-a3b1-47cb-be38-d4bb2aca46be">
+      <addresses>
+        <address type="home" street1="11016 N 28th Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5856743" long="-112.1217728" />
+      </addresses>
+      <members>
+        <person guid="3bb26a8b-f004-43e4-82bb-620d1e657af9" lastName="Turner" firstName="Michele" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="3/26/1990" maritalStatus="Single" email="mturner@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6025558175" cellPhone="4805559229" photoUrl="http://storage.rockrms.com/sampledata/person-images/turner_michele_is_marktimemedia.jpg">
+          <attributes />
+          <notes />
+        </person>
+      </members>
+    </family>
+    
+    <family name="Gilbert" guid="e167cdb7-06ff-40ef-a731-498fe7410829">
+      <addresses>
+        <address type="home" street1="11022 N 35th Dr" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.58622" long="-112.135094" />
+      </addresses>
+      <members>
+        <person guid="92d04619-3f97-4eff-932e-61da56441995" lastName="Gilbert" firstName="Brian" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="7/11/1975" maritalStatus="Married" anniversaryDate="5/13/1997" email="bgilbert@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235552395" cellPhone="6235556987" photoUrl="http://storage.rockrms.com/sampledata/person-images/gilbert_brian_is_bgilmah.jpg">
+          <attributes>
+            <attribute Employer="State of Arizona" />
+            <attribute Position="Office Clerk" />
+          </attributes>
+          <notes />
+        </person>
+        <person guid="d35b865d-bf50-4a7d-848f-6c0ed7a2ae67" lastName="Gilbert" firstName="Wendy" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="6/21/1977" maritalStatus="Married" anniversaryDate="5/13/1997" email="wgilbert@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235552395" cellPhone="6025552529" photoUrl="http://storage.rockrms.com/sampledata/person-images/gilbert_wendy_is_mtnmissy.jpg">
+          <attributes>
+            <attribute Employer="State of Arizona" />
+            <attribute Position="District Manager" />
+          </attributes>
+          <notes />
+        </person>
+      </members>
+    </family>
+
   </families>
 
   <relationships>
@@ -517,6 +707,10 @@
 
     <relationship a="Craig" personGuid="B701E5D2-ADBD-4C66-91E8-3D6CD298D9A0" has="can-check-in" forGuid="C398A8E3-C9BC-4017-A3F6-7C2BFF654056" name="Madison Lowe"/>
     <relationship a="Madison" personGuid="C398A8E3-C9BC-4017-A3F6-7C2BFF654056" has="allow-check-in-by" forGuid="B701E5D2-ADBD-4C66-91E8-3D6CD298D9A0" name="Craig"/>
+    
+    <relationship a="Jenny" personGuid="146b2103-fb28-49c6-b1a4-218c397b739e" has="parent" forGuid="28c4f2c0-0691-468f-b40e-550bd2976b9e" name="Robert"/>
+    <relationship a="Jenny" personGuid="146b2103-fb28-49c6-b1a4-218c397b739e" has="parent" forGuid="1a5a4e5f-e0a4-4efa-b7d7-6698153ed718" name="Lorraine"/>
+    
   </relationships>
 
   <groups>
@@ -561,15 +755,50 @@
     </group>
 
     <group type="smallgroup" name="ASU Student Group" guid="CD65C668-B324-4F41-BBB7-BEC9C62233F1" parentGroupGuid="3CBC1A3F-DD26-430A-9B53-B476CB385ABC"
-
         studyTopic="Students of the Bible" groupSchedule="weekly,Saturday,13:00:00"
         description ="We hang out and study the bible in an informal way.">
       <person fullname="Paul Smith" guid="D7CE30DF-58F8-4268-BA19-56FDF17D3890"/>
       <person fullname="Taylor McClintock" guid="A08C02C7-ED75-4F24-8F75-FB3956521804"/>
     </group>
     
+
+    <group type="smallgroup" name="Greggs Group" guid="2c8dd5b2-84da-4591-8b07-91468001868d" parentGroupGuid="3CBC1A3F-DD26-430A-9B53-B476CB385ABC"
+        meetsAtHomeOfFamily="e51d3363-13fc-4479-8283-c7b9a2f22ab6" meetsAtHomeOfPerson="28c4f2c0-0691-468f-b40e-550bd2976b9e"
+        studyTopic="The Story Bible" groupSchedule="weekly,Monday,20:00:00"
+        description ="We're reading through The Story and discussing each chapter.">
+        
+        <person fullname="Robert Greggs" guid="28c4f2c0-0691-468f-b40e-550bd2976b9e" />
+        <person fullname="Lorraine Greggs" guid="1a5a4e5f-e0a4-4efa-b7d7-6698153ed718" />
+        <person fullname="Martin Webb" guid="00e0dbb3-5451-456e-adab-e12c5ef4c285" />
+        <person fullname="Debbie Webb" guid="6c42bb46-67f7-4d58-93f3-73a7fbe1adbb" />
+        <person fullname="Daniel Richards" guid="b5fcba2e-765c-4b46-9913-8fe83cd2874b" />
+        <person fullname="Philip Coffee" guid="3459286f-18c8-4548-9938-53dac8483d01" />
+        <person fullname="Allison Song" guid="d593f194-9dc3-4936-a1c3-fb7e5cb09145" />        
+    </group>
+    
+    <group type="smallgroup" name="Gilbert Group" guid="3f61d174-d271-4f96-b5e1-ca98faac60bb" parentGroupGuid="3CBC1A3F-DD26-430A-9B53-B476CB385ABC"
+        meetsAtHomeOfFamily="e167cdb7-06ff-40ef-a731-498fe7410829" meetsAtHomeOfPerson="92d04619-3f97-4eff-932e-61da56441995"
+        studyTopic="The Story Bible" groupSchedule="weekly,Tuesday,20:00:00"
+        description ="We're reading through The Story and discussing each chapter.">
+        
+        <person fullname="Brian Gilbert" guid="92d04619-3f97-4eff-932e-61da56441995" />
+        <person fullname="Wendy Gilbert" guid="d35b865d-bf50-4a7d-848f-6c0ed7a2ae67" />        
+        <person fullname="Cora Stone" guid="ae45a615-d55e-4749-b2db-47bbc9fbd885" />
+        <person fullname="Helen Evans" guid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" />
+        <person fullname="Sean Hansen" guid="fa38a268-6744-4507-9cdc-69a7ac6cc0e5" />
+        <person fullname="Michele Turner" guid="3bb26a8b-f004-43e4-82bb-620d1e657af9" />
+    </group>
+    
   </groups>
 
+  <connections>
+    <connection type="Involvement" opportunity="Children's" comment="I would love to help teach kids about Jesus." date="2015-10-11T00:00:00" personGuid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" />
+    <connection type="Involvement" opportunity="Usher" comment="I can help if needed." date="2015-09-25T00:00:00" personGuid="fa38a268-6744-4507-9cdc-69a7ac6cc0e5" />
+    <connection type="Involvement" opportunity="Usher" comment="I can help people find seats in a crowded place." date="2015-09-25T00:00:00" personGuid="3bb26a8b-f004-43e4-82bb-620d1e657af9" />
+    <connection type="Involvement" opportunity="Greeter" comment="Me and my wife would like to serve together on the greeters team." date="2015-10-01T00:00:00" personGuid="92d04619-3f97-4eff-932e-61da56441995" />
+    <connection type="Involvement" opportunity="Greeter" comment="Me and my husband would like to serve together on the greeters team." date="2015-10-01T00:00:00" personGuid="d35b865d-bf50-4a7d-848f-6c0ed7a2ae67" />
+  </connections>
+  
   <securityRoles>
     <group name="Communication Administrators" guid="B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B" >
       <members>
