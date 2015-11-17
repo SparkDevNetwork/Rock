@@ -160,6 +160,9 @@ namespace RockWeb.Blocks.Finance
             {
                 cblAccounts.Items.Clear();
             }
+
+            // only show Account Checkbox list if there are accounts are configured for the block
+            cblAccounts.Visible = accountList.Any();
         }
 
         /// <summary>
@@ -169,20 +172,24 @@ namespace RockWeb.Blocks.Finance
         {
             RockContext rockContext = new RockContext();
             FinancialTransactionService transService = new FinancialTransactionService( rockContext );
-
-            // get list of selected accounts
-            List<int> selectedAccountIds = cblAccounts.Items.Cast<ListItem>()
-                                            .Where( i => i.Selected == true )
-                                            .Select( i => int.Parse( i.Value ) ).ToList();
+            var qry = transService.Queryable( "TransactionDetails.Account,FinancialPaymentDetail" );
 
             string currentPersonGivingId = CurrentPerson.GivingId;
 
-            var qry = transService.Queryable( "TransactionDetails.Account,FinancialPaymentDetail" )
-                        .Where( t =>
-                            t.TransactionDetails.Any( d => selectedAccountIds.Contains( d.AccountId ) ) &&
-                            t.AuthorizedPersonAlias != null &&
+            qry = qry.Where( t => t.AuthorizedPersonAlias != null &&
                             t.AuthorizedPersonAlias.Person != null &&
                             t.AuthorizedPersonAlias.Person.GivingId == currentPersonGivingId );
+
+            
+            // if the Account Checkboxlist is visible, filter to what was selected.  Otherwise, show all the accounts that the person contributed to
+            if ( cblAccounts.Visible )
+            {
+                // get list of selected accounts
+                List<int> selectedAccountIds = cblAccounts.Items.Cast<ListItem>()
+                                                .Where( i => i.Selected == true )
+                                                .Select( i => int.Parse( i.Value ) ).ToList();
+                qry = qry.Where( t => t.TransactionDetails.Any( d => selectedAccountIds.Contains( d.AccountId ) ) );
+            }
 
             if ( drpFilterDates.LowerValue.HasValue )
             {
