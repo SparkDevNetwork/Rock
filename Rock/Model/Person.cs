@@ -652,7 +652,17 @@ namespace Rock.Model
                 {
                     try
                     {
-                        DateTime thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                        DateTime thisYearsBirthdate;
+                        if ( BirthMonth == 2 && BirthDay == 29 && !DateTime.IsLeapYear( RockDateTime.Now.Year ) )
+                        {
+                            // if their birthdate is 2/29 and the current year is NOT a leapyear, have their birthday be 2/28
+                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, 28, 0, 0, 0 );
+                        }
+                        else
+                        {
+                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                        }
+
                         birthdayDayOfWeek = thisYearsBirthdate.ToString( "dddd" );
                     }
                     catch
@@ -688,7 +698,17 @@ namespace Rock.Model
                 {
                     try
                     {
-                        DateTime thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                        DateTime thisYearsBirthdate;
+                        if ( BirthMonth == 2 && BirthDay == 29 && !DateTime.IsLeapYear( RockDateTime.Now.Year ) )
+                        {
+                            // if their birthdate is 2/29 and the current year is NOT a leapyear, have their birthday be 2/28
+                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, 28, 0, 0, 0 );
+                        }
+                        else
+                        {
+                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                        }
+
                         birthdayDayOfWeek = thisYearsBirthdate.ToString( "ddd" );
                     }
                     catch

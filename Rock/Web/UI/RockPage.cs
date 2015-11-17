@@ -49,6 +49,8 @@ namespace Rock.Web.UI
         private ScriptManager _scriptManager;
         private PageCache _pageCache = null;
 
+        private string _clientType = null;
+
         #endregion
 
         #region Protected Variables
@@ -385,6 +387,39 @@ namespace Rock.Web.UI
             get
             {
                 return this.ControlsOfTypeRecursive<RockBlock>();
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the client.
+        /// </summary>
+        /// <value>
+        /// The type of the client.
+        /// </value>
+        public string ClientType
+        {
+            get
+            {
+                if ( _clientType == null )
+                {
+                    _clientType = PageViewUserAgent.GetClientType( Request.UserAgent ?? "" );
+                }
+                return _clientType;
+            }
+
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is mobile request.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is mobile request; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsMobileRequest
+        {
+            get
+            {
+                return this.ClientType == "Mobile";
             }
         }
 

@@ -150,7 +150,7 @@ namespace Rock.Reporting.DataSelect.Person
                     .Where( m => m.GroupRole.Guid == adultGuid )
                     .Where( m => m.Person.Gender != p.Gender )
                     .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
-                    .Select( m => m.Person.FirstName ).FirstOrDefault() );
+                    .Select( m => m.Person.NickName ).FirstOrDefault() );
 
             var selectSpouseExpression = SelectExpressionExtractor.Extract( personSpouseQuery, entityIdProperty, "p" );
 

@@ -96,7 +96,7 @@
                 <asp:ValidationSummary ID="vsNewLinkage" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="NewLinkage" />
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlNewLinkageTemplate" runat="server" Label="Registration Template" ValidationGroup="NewLinkage" Required="true" />
+                        <Rock:RockDropDownList ID="ddlNewLinkageTemplate" runat="server" Label="Registration Template" ValidationGroup="NewLinkage" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlNewLinkageTemplate_SelectedIndexChanged" />
                     </div>
                     <div class="col-md-6">
                         <Rock:GroupPicker ID="gpNewLinkageGroup" runat="server" Label="Group" ValidationGroup="NewLinkage" />

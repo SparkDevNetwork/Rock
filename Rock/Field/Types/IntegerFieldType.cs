@@ -47,6 +47,18 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Values the type of as field.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object ValueAsFieldType( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value.AsDecimalOrNull();
+        }
+
+        /// <summary>
         /// Gets the align value that should be used when displaying value
         /// </summary>
         public override System.Web.UI.WebControls.HorizontalAlign AlignValue
