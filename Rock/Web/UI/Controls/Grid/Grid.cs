@@ -1925,13 +1925,20 @@ namespace Rock.Web.UI.Controls
                         try
                         {
                             var aNode = HtmlAgilityPack.HtmlNode.CreateNode( propValue.ToString() );
+                            if (aNode != null && aNode.NodeType != HtmlAgilityPack.HtmlNodeType.Element)
+                            {
+                                aNode = aNode.NextSibling;
+                            }
                             
                             // Select the hyperlink tag
-                            string url = string.Format( "{0}{1}", this.RockBlock().RootPath, aNode.Attributes["href"].Value );
-                            cell.Hyperlink = new ExcelHyperLink( url ) { Display = aNode.InnerText, ToolTip = url };
-                            return aNode.InnerText;
+                            if ( aNode.Attributes["href"] != null )
+                            {
+                                string url = string.Format( "{0}{1}", this.RockBlock().RootPath, aNode.Attributes["href"].Value );
+                                cell.Hyperlink = new ExcelHyperLink( url ) { Display = aNode.InnerText, ToolTip = url };
+                                return aNode.InnerText;
+                            }
                         }
-                        catch ( System.Xml.XmlException ) 
+                        catch ( Exception ex ) 
                         { 
                             // ignore
                         }
