@@ -100,7 +100,12 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 {
                     var settings = GetSettings( rockContext );
                     SetSettingValue( rockContext, settings, "UserName", tbUserNameNew.Text );
-                    SetSettingValue( rockContext, settings, "Password", tbPasswordNew.Text );
+                    SetSettingValue( rockContext, settings, "Password", tbPasswordNew.Text, true );
+
+                    string defaultReturnUrl = string.Format( "{0}Webhooks/ProtectMyMinistry.ashx",
+                        GlobalAttributesCache.Value( "PublicApplicationRoot" ).EnsureTrailingForwardslash() );
+                    SetSettingValue( rockContext, settings, "ReturnURL", defaultReturnUrl );
+
                     rockContext.SaveChanges();
 
                     ShowView( settings );
@@ -139,7 +144,8 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 {
                     var settings = GetSettings( rockContext );
                     SetSettingValue( rockContext, settings, "UserName", tbUserName.Text );
-                    SetSettingValue( rockContext, settings, "Password", tbPassword.Text );
+                    SetSettingValue( rockContext, settings, "Password", tbPassword.Text, true );
+                    SetSettingValue( rockContext, settings, "ReturnURL", urlWebHook.Text );
                     SetSettingValue( rockContext, settings, "TestMode", cbTestMode.Checked.ToString() );
                     SetSettingValue( rockContext, settings, "Active", cbActive.Checked.ToString() );
                     rockContext.SaveChanges();
@@ -331,9 +337,8 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 {
                     string username = GetSettingValue( settings, "UserName" );
                     string password = GetSettingValue( settings, "Password" );
-
                     if ( !string.IsNullOrWhiteSpace( username ) ||
-                        !string.IsNullOrWhiteSpace( password ))
+                        !string.IsNullOrWhiteSpace( password ) )
                     {
                         ShowView( settings );
                     }
@@ -408,7 +413,8 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             ShowHighlightLabels( settings );
 
             tbUserName.Text = GetSettingValue( settings, "UserName" );
-            tbPassword.Text = GetSettingValue( settings, "Password" );
+            tbPassword.Text = GetSettingValue( settings, "Password", true );
+            urlWebHook.Text = GetSettingValue( settings, "ReturnURL" );
             cbActive.Checked = GetSettingValue( settings, "Active" ).AsBoolean();
             cbTestMode.Checked = GetSettingValue( settings, "TestMode" ).AsBoolean();
 
@@ -579,12 +585,19 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="values">The values.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        private string GetSettingValue( List<AttributeValue> values, string key )
+        private string GetSettingValue( List<AttributeValue> values, string key, bool encryptedValue = false )
         {
-            return values
+            string value = values
                 .Where( v => v.AttributeKey == key )
                 .Select( v => v.Value )
                 .FirstOrDefault();
+            if ( encryptedValue && !string.IsNullOrWhiteSpace( value ))
+            {
+                try { value = Encryption.DecryptString( value ); }
+                catch { }
+            }
+
+            return value;
         }
 
         /// <summary>
@@ -594,8 +607,14 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="values">The values.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        private void SetSettingValue( RockContext rockContext, List<AttributeValue> values, string key, string value )
+        private void SetSettingValue( RockContext rockContext, List<AttributeValue> values, string key, string value, bool encryptValue = false )
         {
+            if ( encryptValue && !string.IsNullOrWhiteSpace( value ) )
+            {
+                try { value = Encryption.EncryptString( value ); }
+                catch { }
+            }
+
             var attributeValue = values
                 .Where( v => v.AttributeKey == key )
                 .FirstOrDefault();

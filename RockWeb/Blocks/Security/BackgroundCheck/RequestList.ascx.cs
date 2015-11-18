@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -55,6 +56,8 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             gRequest.Actions.ShowAdd = false;
             gRequest.IsDeleteEnabled = false;
             gRequest.GridRebind += gRequest_GridRebind;
+            gRequest.RowDataBound += gRequest_RowDataBound;
+            gRequest.RowSelected += gRequest_RowSelected;
         }
 
         /// <summary>
@@ -74,7 +77,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
         #endregion
 
-        #region Grid Events (main grid)
+        #region Events
 
         /// <summary>
         /// Handles the ApplyFilterClick event of the fRequest control.
@@ -83,8 +86,11 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void fRequest_ApplyFilterClick( object sender, EventArgs e )
         {
+            fRequest.SaveUserPreference( "First Name", tbFirstName.Text );
+            fRequest.SaveUserPreference( "Last Name", tbLastName.Text );
             fRequest.SaveUserPreference( "Request Date Range", drpRequestDates.DelimitedValues );
             fRequest.SaveUserPreference( "Response Date Range", drpResponseDates.DelimitedValues );
+            fRequest.SaveUserPreference( "Record Found", ddlRecordFound.SelectedValue );
 
             BindGrid();
         }
@@ -116,6 +122,72 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gRequest control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        void gRequest_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                dynamic request = e.Row.DataItem;
+
+                if ( !request.HasResponseXml )
+                {
+                    foreach( var lb in e.Row.Cells[4].ControlsOfTypeRecursive<LinkButton>() )
+                    {
+                        lb.Visible = false;
+                    }
+                }
+
+            }
+        }
+
+        void gRequest_RowSelected( object sender, RowEventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var bc = new BackgroundCheckService( rockContext ).Get( e.RowKeyId );
+                if ( bc != null && bc.PersonAlias != null )
+                {
+                    int personId = e.RowKeyId;
+                    Response.Redirect( string.Format( "~/Person/{0}", bc.PersonAlias.PersonId ), false );
+                    Context.ApplicationInstance.CompleteRequest();
+                    return;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Handles the XML event of the gRequest control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gRequest_XML( object sender, RowEventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var bc = new BackgroundCheckService( rockContext ).Get( e.RowKeyId );
+                if ( bc != null )
+                {
+                    tbResponseXml.Text = bc.ResponseXml;
+                    dlgResponse.Show();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Document event of the gRequest control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gRequest_Document( object sender, RowEventArgs e )
+        {
+
+        }
+
         #endregion
 
         #region Internal Methods
@@ -125,8 +197,11 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// </summary>
         private void BindFilter()
         {
+            tbFirstName.Text = fRequest.GetUserPreference( "First Name" );
+            tbLastName.Text = fRequest.GetUserPreference( "Last Name" );
             drpRequestDates.DelimitedValues = fRequest.GetUserPreference( "Request Date Range" );
             drpResponseDates.DelimitedValues = fRequest.GetUserPreference( "Response Date Range" );
+            ddlRecordFound.SetValue( fRequest.GetUserPreference( "ddlRecordFound" ) );
         }
 
         /// <summary>
@@ -137,7 +212,27 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             using ( var rockContext = new RockContext() )
             {
                 var qry = new BackgroundCheckService( rockContext )
-                    .Queryable().AsNoTracking();
+                    .Queryable("PersonAlias.Person").AsNoTracking()
+                    .Where( g => 
+                        g.PersonAlias != null && 
+                        g.PersonAlias.Person != null );
+
+                // FirstName
+                string firstName = fRequest.GetUserPreference( "First Name" );
+                if ( !string.IsNullOrWhiteSpace( firstName ) )
+                {
+                    qry = qry.Where( t =>
+                        t.PersonAlias.Person.FirstName.StartsWith( firstName ) ||
+                        t.PersonAlias.Person.NickName.StartsWith( firstName ) );
+                }
+
+                // LastName
+                string lastName = fRequest.GetUserPreference( "Last Name" );
+                if ( !string.IsNullOrWhiteSpace( lastName ) )
+                {
+                    qry = qry.Where( t =>
+                        t.PersonAlias.Person.LastName.StartsWith( lastName ) );
+                }
 
                 // Request Date Range
                 var drpRequestDates = new DateRangePicker();
@@ -153,39 +248,81 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     qry = qry.Where( t => t.RequestDate < upperDate );
                 }
 
-
-                // Request Date Range
+                // Response Date Range
                 var drpResponseDates = new DateRangePicker();
                 drpResponseDates.DelimitedValues = fRequest.GetUserPreference( "Response Date Range" );
                 if ( drpResponseDates.LowerValue.HasValue )
                 {
-                    qry = qry.Where( t => t.RequestDate >= drpResponseDates.LowerValue.Value );
+                    qry = qry.Where( t => t.ResponseDate >= drpResponseDates.LowerValue.Value );
                 }
 
                 if ( drpResponseDates.UpperValue.HasValue )
                 {
                     DateTime upperDate = drpResponseDates.UpperValue.Value.Date.AddDays( 1 );
-                    qry = qry.Where( t => t.RequestDate < upperDate );
+                    qry = qry.Where( t => t.ResponseDate < upperDate );
                 }
 
+                // Record Found
+                string recordFound = fRequest.GetUserPreference( "Record Found" );
+                if ( !string.IsNullOrWhiteSpace( recordFound ) )
+                {
+                    if ( recordFound == "Yes" )
+                    {
+                        qry = qry.Where( t => 
+                            t.RecordFound.HasValue &&
+                            t.RecordFound.Value );
+                    }
+                    else if ( recordFound == "No" )
+                    {
+                        qry = qry.Where( t => 
+                            t.RecordFound.HasValue &&
+                            !t.RecordFound.Value );
+                    }
+                }
+
+                List<Rock.Model.BackgroundCheck> items = null;
                 SortProperty sortProperty = gRequest.SortProperty;
                 if ( sortProperty != null )
                 {
-                    gRequest.DataSource = qry.Sort( sortProperty ).ToList();
+                    items = qry.Sort( sortProperty ).ToList();
                 }
                 else
                 {
-                    gRequest.DataSource = qry.OrderByDescending( d => d.RequestDate ).ToList();
+                    items = qry.OrderByDescending( d => d.RequestDate ).ToList();
                 }
+
+                gRequest.DataSource = items.Select( b => new
+                    {
+                        Name = b.PersonAlias.Person.LastName + ", " + b.PersonAlias.Person.NickName,
+                        b.Id,
+                        PersonId = b.PersonAlias.PersonId,
+                        b.RequestDate,
+                        b.ResponseDate,
+                        b.RecordFound,
+                        RecordFoundLabel = b.RecordFound.HasValue ? (
+                            b.RecordFound.Value ? 
+                                "<span class='label label-warning'>Yes</span>" : 
+                                "<span class='label label-success'>No</span>" ) : 
+                            string.Empty,
+                        HasResponseXml = !string.IsNullOrWhiteSpace( b.ResponseXml ),
+                        ResponseDocumentText = b.ResponseDocumentId.HasValue ? "View" : "",
+                        ResponseDocumentId = b.ResponseDocumentId ?? 0
+                    } ).ToList();
+
                 gRequest.DataBind();
             }
         }
 
-        #endregion
-
+        /// <summary>
+        /// Sets the visible.
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
             pnlContent.Visible = visible;
         }
-    }
+
+        #endregion
+
+}
 }
