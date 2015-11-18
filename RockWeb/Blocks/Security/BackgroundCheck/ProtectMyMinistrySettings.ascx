@@ -35,8 +35,8 @@
                     <div class="col-md-1">
                     </div>
                     <div class="col-md-5">
-                        <Rock:RockTextBox ID="tbUserNameNew" runat="server" Label="Username" />
-                        <Rock:RockTextBox ID="tbPasswordNew" runat="server" Label="Password" TextMode="Password" />
+                        <Rock:RockTextBox ID="tbUserNameNew" runat="server" Label="Username" Required="true" />
+                        <Rock:RockTextBox ID="tbPasswordNew" runat="server" Label="Password" Required="true" TextMode="Password" />
                         <div class="actions">
                             <asp:LinkButton ID="lbSaveNew" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSaveNew_Click" />
                         </div>
@@ -61,10 +61,12 @@
                 <div id="pnlEditDetails" runat="server" visible="false">
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" />
-                            <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" TextMode="Password" />
+                            <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" />
+                            <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" TextMode="Password" />
                         </div>
                         <div class="col-md-6">
+                            <Rock:UrlLinkBox ID="urlWebHook" runat="server" Label="Result Webhook" Required="true"
+                                Help="The URL that Protect My Ministry should use when sending background check results back to your server." />
                             <Rock:RockCheckBox id="cbActive" runat="server" Label="Active" />
                             <Rock:RockCheckBox ID="cbTestMode" runat="server" Label="Test Mode" />
                         </div>

@@ -834,7 +834,9 @@ namespace RockWeb.Blocks.Groups
                     string firstName = tbFirstName.Text;
                     if ( !string.IsNullOrWhiteSpace( firstName ) )
                     {
-                        qry = qry.Where( m => m.Person.FirstName.StartsWith( firstName ) );
+                        qry = qry.Where( m => 
+                            m.Person.FirstName.StartsWith( firstName ) ||
+                            m.Person.NickName.StartsWith( firstName ) );
                     }
 
                     // Filter by Last Name

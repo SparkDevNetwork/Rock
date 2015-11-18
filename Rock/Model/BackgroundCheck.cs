@@ -99,15 +99,6 @@ namespace Rock.Model
         [DataMember]
         public int? ResponseDocumentId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the background check status.
-        /// </summary>
-        /// <value>
-        /// The background check status.
-        /// </value>
-        [DataMember]
-        public BackgroundCheckStatus BackgroundCheckStatus { get; set; }
-        
         #endregion
 
         #region Virtual Properties
@@ -137,12 +128,6 @@ namespace Rock.Model
         public virtual Model.BinaryFile ResponseDocument { get; set; }
 
         #endregion
-
-        #region Methods
-
-
-        #endregion
-
     }
 
     #region Entity Configuration
@@ -158,34 +143,9 @@ namespace Rock.Model
         public BackgroundCheckConfiguration()
         {
             this.HasRequired( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete(true);
-            this.HasOptional( p => p.Workflow ).WithMany().HasForeignKey( p => p.WorkflowId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Workflow ).WithMany().HasForeignKey( p => p.WorkflowId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.ResponseDocument ).WithMany().HasForeignKey( p => p.ResponseDocumentId ).WillCascadeOnDelete( false );
         }
-    }
-
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// Background Check Status
-    /// </summary>
-    public enum BackgroundCheckStatus
-    {
-        /// <summary>
-        /// No Status
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// Passed background check
-        /// </summary>
-        Passed = 1,
-
-        /// <summary>
-        /// Failed background check
-        /// </summary>
-        Failed = 2,
     }
 
     #endregion

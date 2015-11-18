@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class BackgroundCheckModel : IMigrationMetadata
+    public sealed partial class ProtectMyMinistry : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(BackgroundCheckModel));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(ProtectMyMinistry));
         
         string IMigrationMetadata.Id
         {
-            get { return "201511162315104_BackgroundCheckModel"; }
+            get { return "201511182310362_ProtectMyMinistry"; }
         }
         
         string IMigrationMetadata.Source

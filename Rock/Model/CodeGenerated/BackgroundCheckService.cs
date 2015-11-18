@@ -88,7 +88,6 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this BackgroundCheck target, BackgroundCheck source )
         {
             target.Id = source.Id;
-            target.BackgroundCheckStatus = source.BackgroundCheckStatus;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.PersonAliasId = source.PersonAliasId;

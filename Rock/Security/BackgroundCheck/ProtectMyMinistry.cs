@@ -228,7 +228,7 @@ namespace Rock.Security.BackgroundCheck
                             }
 
                             if ( !string.IsNullOrWhiteSpace( homelocation.State ) &&
-                                pkgTypeDefinedValue.GetAttributeValue("SendHomState").AsBoolean() )
+                                pkgTypeDefinedValue.GetAttributeValue("SendHomeState").AsBoolean() )
                             {
                                 state = homelocation.State;
                             }
@@ -256,13 +256,13 @@ namespace Rock.Security.BackgroundCheck
                 {
                     orderElement.Add( new XElement( "OrderDetail",
                         new XAttribute( "OrderId", workflow.Id.ToString() ),
-                        new XAttribute( "ServiceCode", "CountyCrim" ) ),
+                        new XAttribute( "ServiceCode", string.IsNullOrWhiteSpace(county) ? "StateCriminal" : "CountyCrim" ),
                         new XElement( "County", county ),
-                        new XElement( "State", county ),
-                        new XElement( "YearsToSearch", county ),
-                        new XElement( "CourtDocsRequested", county ),
-                        new XElement( "RushRequested", county ),
-                        new XElement( "SpecialInstructions", county )
+                        new XElement( "State", state ),
+                        new XElement( "YearsToSearch", 7 ),
+                        new XElement( "CourtDocsRequested", "NO" ),
+                        new XElement( "RushRequested", "NO" ),
+                        new XElement( "SpecialInstructions", "" ) )
                     );
                 }
 
@@ -282,7 +282,6 @@ namespace Rock.Security.BackgroundCheck
                             backgroundCheck.PersonAliasId = personAliasId.Value;
                             backgroundCheck.WorkflowId = workflow.Id;
                             backgroundCheck.RequestDate = RockDateTime.Now;
-                            backgroundCheck.BackgroundCheckStatus = BackgroundCheckStatus.None;
                             new BackgroundCheckService( newRockContext ).Add( backgroundCheck );
                             newRockContext.SaveChanges();
                         }
@@ -410,86 +409,113 @@ namespace Rock.Security.BackgroundCheck
         /// <param name="rockContext">The rock context.</param>
         public static void SaveResults( XDocument xResult, Rock.Model.Workflow workflow, RockContext rockContext )
         {
-            // Check if there are any alerts 
-            string reportStatus = "Pass";
-            var xAlerts = xResult.Descendants( "Alerts" ).FirstOrDefault();
-            if ( xAlerts != null )
+            var xOrderXML = xResult.Elements( "OrderXML" ).FirstOrDefault();
+            if ( xOrderXML != null )
             {
-                if ( xAlerts.Descendants( "OrderId" ).Any() )
+                var xOrder = xOrderXML.Elements( "Order" ).FirstOrDefault();
+                if ( xOrder != null )
                 {
-                    reportStatus = "Review";
-                }
-            }
+                    bool resultFound = false;
 
-            // or any of the arder details had a status other than 'NO RECORD' (MVR, Employment, etc would have a status of 'Complete')
-            foreach( var xOrderDetail in xResult.Descendants( "OrderDetail" ) )
-            {
-                string status = xOrderDetail.Descendants( "Status" ).Select( d => d.Value ).FirstOrDefault();
-                if ( status != "NO RECORD" )
-                {
-                    reportStatus = "Review";
-                    break;
-                }
-            }
-
-            string reportLink = ( from o in xResult.Descendants( "ReportLink" ) select o.Value ).FirstOrDefault();
-            string recommendation = ( from o in xResult.Descendants( "Recommendation" ) select o.Value ).FirstOrDefault();
-            Guid? binaryFileGuid = SaveFile( workflow.Attributes["Report"], reportLink, workflow.Id.ToString() + ".pdf" );
-
-            // Save the status
-            SaveAttributeValue( workflow, "ReportStatus", reportStatus,
-                FieldTypeCache.Read( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
-                new Dictionary<string, string> { { "fieldtype", "ddl" }, { "values", "Pass,Fail,Review" } } );
-
-            // Save the report link 
-            SaveAttributeValue( workflow, "ReportLink", reportLink, 
-                FieldTypeCache.Read( Rock.SystemGuid.FieldType.URL_LINK.AsGuid() ), rockContext );
-
-            // Save the recommendation 
-            SaveAttributeValue( workflow, "ReportRecommendation", recommendation,
-                FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
-                new Dictionary<string, string> { { "ispassword", "false" } } );
-
-            // Save the report
-            if ( binaryFileGuid.HasValue )
-            {
-                SaveAttributeValue( workflow, "Report", binaryFileGuid.Value.ToString(),
-                    FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ), rockContext,
-                    new Dictionary<string, string> { { "binaryFileType", "" } } );
-            }
-
-            // Update the background check file
-            using ( var newRockContext = new RockContext())
-            {
-                var service = new BackgroundCheckService( newRockContext );
-                var backgroundCheck = service.Queryable()
-                    .Where( c =>
-                        c.WorkflowId.HasValue &&
-                        c.WorkflowId.Value == workflow.Id )
-                    .FirstOrDefault();
-                if ( backgroundCheck != null )
-                {
-                    // Clear any SSN nodes before saving XML to record
-                    foreach ( var xSSNElement in xResult.Descendants( "SSN" ) )
+                    // Find any order details with a status element
+                    string reportStatus = "Pass";
+                    foreach ( var xOrderDetail in xOrder.Elements( "OrderDetail" ) )
                     {
-                        xSSNElement.Value = "XXX-XX-XXXX";
-                    }
-                    backgroundCheck.ResponseXml = xResult.ToString();
-
-                    backgroundCheck.ResponseDate = RockDateTime.Now;
-                    backgroundCheck.RecordFound = reportStatus == "Review";
-                    if ( binaryFileGuid.HasValue )
-                    {
-                        var binaryFile = new BinaryFileService( newRockContext ).Get( binaryFileGuid.Value );
-                        if ( binaryFile != null )
+                        var xStatus = xOrderDetail.Elements( "Status" ).FirstOrDefault();
+                        if ( xStatus != null )
                         {
-                            backgroundCheck.ResponseDocumentId = binaryFile.Id;
+                            resultFound = true;
+                            if ( xStatus.Value != "NO RECORD" )
+                            {
+                                reportStatus = "Review";
+                                break;
+                            }
                         }
                     }
-                    newRockContext.SaveChanges();
+
+                    if ( resultFound )
+                    {
+                        // If no records found, still double-check for any alerts
+                        if ( reportStatus != "Review" )
+                        {
+                            var xAlerts = xOrder.Elements( "Alerts" ).FirstOrDefault();
+                            if ( xAlerts != null )
+                            {
+                                if ( xAlerts.Elements( "OrderId" ).Any() )
+                                {
+                                    reportStatus = "Review";
+                                }
+                            }
+                        }
+
+                        // Save the recommendation 
+                        string recommendation = ( from o in xOrder.Elements( "Recommendation" ) select o.Value ).FirstOrDefault();
+                        if ( !string.IsNullOrWhiteSpace( recommendation ) )
+                        {
+                            SaveAttributeValue( workflow, "ReportRecommendation", recommendation,
+                                FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
+                                new Dictionary<string, string> { { "ispassword", "false" } } );
+                        }
+
+                        // Save the report link 
+                        Guid? binaryFileGuid = null;
+                        string reportLink = ( from o in xOrder.Elements( "ReportLink" ) select o.Value ).FirstOrDefault();
+                        if ( !string.IsNullOrWhiteSpace( reportLink ) )
+                        {
+                            SaveAttributeValue( workflow, "ReportLink", reportLink,
+                                FieldTypeCache.Read( Rock.SystemGuid.FieldType.URL_LINK.AsGuid() ), rockContext );
+
+                            // Save the report
+                            binaryFileGuid = SaveFile( workflow.Attributes["Report"], reportLink, workflow.Id.ToString() + ".pdf" );
+                            if ( binaryFileGuid.HasValue )
+                            {
+                                SaveAttributeValue( workflow, "Report", binaryFileGuid.Value.ToString(),
+                                    FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ), rockContext,
+                                    new Dictionary<string, string> { { "binaryFileType", "" } } );
+                            }
+                        }
+
+                        // Save the status
+                        SaveAttributeValue( workflow, "ReportStatus", reportStatus,
+                            FieldTypeCache.Read( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
+                            new Dictionary<string, string> { { "fieldtype", "ddl" }, { "values", "Pass,Fail,Review" } } );
+
+                        // Update the background check file
+                        using ( var newRockContext = new RockContext() )
+                        {
+                            var service = new BackgroundCheckService( newRockContext );
+                            var backgroundCheck = service.Queryable()
+                                .Where( c =>
+                                    c.WorkflowId.HasValue &&
+                                    c.WorkflowId.Value == workflow.Id )
+                                .FirstOrDefault();
+                            if ( backgroundCheck != null )
+                            {
+                                // Clear any SSN nodes before saving XML to record
+                                foreach ( var xSSNElement in xResult.Descendants( "SSN" ) )
+                                {
+                                    xSSNElement.Value = "XXX-XX-XXXX";
+                                }
+                                backgroundCheck.ResponseXml = xResult.ToString();
+
+                                backgroundCheck.ResponseDate = RockDateTime.Now;
+                                backgroundCheck.RecordFound = reportStatus == "Review";
+
+                                if ( binaryFileGuid.HasValue )
+                                {
+                                    var binaryFile = new BinaryFileService( newRockContext ).Get( binaryFileGuid.Value );
+                                    if ( binaryFile != null )
+                                    {
+                                        backgroundCheck.ResponseDocumentId = binaryFile.Id;
+                                    }
+                                }
+
+                                newRockContext.SaveChanges();
+                            }
+                        }
+                    }
                 }
             }
-
         }
 
         /// <summary>
