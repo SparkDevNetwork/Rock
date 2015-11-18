@@ -37,7 +37,6 @@
             <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well">
                 <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" DataTextField="Value" DataValueField="Key" />
             </asp:Panel>
-            
         </div>
         
         <asp:PlaceHolder ID="phRegistrantControls" runat="server" />
@@ -73,6 +72,9 @@
                     <Rock:EmailBox ID="tbConfirmationEmail" runat="server" Label="Send Confirmation Emails To" Required="true" />
                 </div>
                 <div class="col-md-6">
+                    <asp:Panel ID="pnlRegistrarFamilyOptions" runat="server" CssClass="well">
+                        <Rock:RockRadioButtonList ID="rblRegistrarFamilyOptions" runat="server" Label="You are in the same family as" RepeatDirection="Horizontal" Required="true" DataTextField="Value" DataValueField="Key" />
+                    </asp:Panel>
                 </div>
             </div>
         </div>
