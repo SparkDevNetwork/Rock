@@ -158,6 +158,11 @@ namespace RockWeb.Blocks.Examples
         private Dictionary<Guid, int> _peopleDictionary = new Dictionary<Guid, int>();
 
         /// <summary>
+        /// Holds a cached copy of the Id for each group Guid
+        /// </summary>
+        private Dictionary<Guid, int> _groupDictionary = new Dictionary<Guid, int>();
+
+        /// <summary>
         /// Holds a cached copy of the attribute Id for each person Guid
         /// </summary>
         private Dictionary<Guid, int> _peopleAliasDictionary = new Dictionary<Guid, int>();
@@ -472,6 +477,8 @@ namespace RockWeb.Blocks.Examples
             var elemFamilies = xdoc.Element( "data" ).Element( "families" );
             var elemGroups = xdoc.Element( "data" ).Element( "groups" );
             var elemRelationships = xdoc.Element( "data" ).Element( "relationships" );
+            var elemConnections = xdoc.Element( "data" ).Element( "connections" );
+            var elemFollowing = xdoc.Element( "data" ).Element( "following" );
             var elemSecurityGroups = xdoc.Element( "data" ).Element( "securityRoles" );
             TimeSpan ts;
 
@@ -511,6 +518,14 @@ namespace RockWeb.Blocks.Examples
                 AddGroups( elemGroups, rockContext );
                 ts = _stopwatch.Elapsed;
                 AppendFormat( "{0:00}:{1:00}.{2:00} groups added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
+                AddConnections( elemConnections, rockContext );
+                ts = _stopwatch.Elapsed;
+                AppendFormat( "{0:00}:{1:00}.{2:00} people connection requests added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
+                AddFollowing( elemFollowing, rockContext );
+                ts = _stopwatch.Elapsed;
+                AppendFormat( "{0:00}:{1:00}.{2:00} people following added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
                 AddToSecurityGroups( elemSecurityGroups, rockContext );
                 ts = _stopwatch.Elapsed;
@@ -622,14 +637,14 @@ namespace RockWeb.Blocks.Examples
         /// <param name="rockContext">The rock context.</param>
         private void AddPeoplesPreviousNames( XElement elemFamilies, RockContext rockContext )
         {
-            var peopleWithNotes = from n in elemFamilies.Elements( "family" ).Elements( "members" ).Elements( "person" ).Elements( "previousNames" ).Elements( "name" )
+            var previousNames = from n in elemFamilies.Elements( "family" ).Elements( "members" ).Elements( "person" ).Elements( "previousNames" ).Elements( "name" )
                                   select new
                                   {
                                       PersonGuid = n.Parent.Parent.Attribute( "guid" ).Value,
                                       LastName = n.Attribute( "lastName" ).Value,
                                   };
 
-            foreach ( var r in peopleWithNotes )
+            foreach ( var r in previousNames )
             {
                 int personId = _peopleDictionary[r.PersonGuid.AsGuid()];
                 int personAliasId = _peopleAliasDictionary[r.PersonGuid.AsGuid()];
@@ -1177,6 +1192,11 @@ namespace RockWeb.Blocks.Examples
                 rockContext.SaveChanges();
                 group.SaveAttributeValues( rockContext );
 
+                if ( !_groupDictionary.ContainsKey( group.Guid ) )
+                {
+                    _groupDictionary.Add( group.Guid, group.Id );
+                }
+
                 // Now add any group location schedules
                 LocationService locationService = new LocationService( rockContext );
                 ScheduleService scheduleService = new ScheduleService( rockContext );
@@ -1260,6 +1280,120 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
+        /// Adds the following records from the given XML element.
+        /// </summary>
+        /// <example>
+        ///   &lt;following&gt;
+        ///       &lt;follows personGuid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" followsGuid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" type="person" /&gt;
+        ///   &lt;/connections&gt;
+        /// </example>
+        /// <param name="elemFollowing">The element with the following XML fragment.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void AddFollowing( XElement elemFollowing, RockContext rockContext )
+        {
+            if ( elemFollowing == null )
+            {
+                return;
+            }
+
+            FollowingService followingService = new FollowingService( rockContext );
+
+            int entityTypeId;
+            int entityId;
+
+            // Find the type and it's corresponding opportunity and then add a connection request for the given person.
+            foreach ( var element in elemFollowing.Elements( "follows" ) )
+            {
+                Guid personGuid = element.Attribute( "personGuid" ).Value.Trim().AsGuid();
+                Guid entityGuid = element.Attribute( "followsGuid" ).Value.Trim().AsGuid();
+
+                string entityTypeName = element.Attribute( "type" ).Value.Trim();
+                // only person (person aliases) are supported now.
+                if ( entityTypeName.ToLower() == "person" )
+                {
+                    entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.PersonAlias ) ).Id;
+                    entityId =  _peopleAliasDictionary[entityGuid];
+                }
+                else if ( entityTypeName.ToLower() == "group" )
+                {
+                    entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Group ) ).Id;
+                    entityId = _groupDictionary[entityGuid];
+                }
+
+                else
+                {
+                    // only person (person aliases) are supported as of now.
+                    continue;
+                }
+
+                Following following = new Following()
+                {
+                    PersonAliasId = _peopleAliasDictionary[personGuid],
+                    EntityTypeId = entityTypeId,
+                    EntityId = entityId,
+                    CreatedByPersonAliasId = _peopleAliasDictionary[personGuid],
+                    CreatedDateTime = RockDateTime.Now,
+                    ModifiedDateTime = RockDateTime.Now,
+                    ModifiedByPersonAliasId = _peopleAliasDictionary[personGuid]
+                };
+
+                followingService.Add( following );
+            }
+        }
+
+        /// <summary>
+        /// Adds the connections requests to the system from the given XML element.
+        /// </summary>
+        /// <example>
+        ///   &lt;connections&gt;
+        ///       &lt;connection type="Involvement" opportunity="Children's" comment="I would love to help teach kids about Jesus." date="2015-10-11T00:00:00" personGuid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" /&gt;
+        ///   &lt;/connections&gt;
+        /// </example>
+        /// <param name="elemConnections">The elem connections.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void AddConnections( XElement elemConnections, RockContext rockContext )
+        {
+            if ( elemConnections == null )
+            {
+                return;
+            }
+
+            ConnectionRequestService crService = new ConnectionRequestService( rockContext );
+            ConnectionOpportunityService coService = new ConnectionOpportunityService( rockContext );
+            ConnectionTypeService typeService = new ConnectionTypeService( rockContext );
+            ConnectionStatusService connectionStatusService = new ConnectionStatusService( rockContext );
+            ConnectionStatus noContact = connectionStatusService.Get( "901e1a6a-0e91-4f42-880f-47c061c24e0c".AsGuid() );
+
+            // Find the type and it's corresponding opportunity and then add a connection request for the given person.
+            foreach ( var element in elemConnections.Elements( "connection" ) )
+            {
+                string connectionTypeName = element.Attribute( "type" ).Value.Trim();
+                string opportunityName = element.Attribute( "opportunity" ).Value.Trim();
+                string comment = element.Attribute( "comment" ).Value.Trim();
+                DateTime date = DateTime.Parse( element.Attribute( "date" ).Value.Trim(), new CultureInfo( "en-US" ) );
+                Guid personGuid = element.Attribute( "personGuid" ).Value.Trim().AsGuid();
+
+                var connectionOpportunity = coService.Queryable( "ConnectionType" ).AsNoTracking().Where( co => co.ConnectionType.Name == connectionTypeName && co.Name == opportunityName ).FirstOrDefault();
+                
+                // make sure we found a matching connection opportunity
+                if ( connectionOpportunity != null )
+                {
+                    ConnectionRequest connectionRequest = new ConnectionRequest()
+                    {
+                        ConnectionOpportunityId = connectionOpportunity.Id,
+                        PersonAliasId = _peopleAliasDictionary[personGuid],
+                        Comments = comment,
+                        ConnectionStatus = noContact,
+                        ConnectionState = global::ConnectionState.Active,
+                        CreatedDateTime = date
+                    };
+
+                    crService.Add( connectionRequest );
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles adding people to the security groups from the given XML element snippet.
         /// </summary>
         /// <param name="elemSecurityGroups">The elem security groups.</param>
@@ -1329,7 +1463,7 @@ namespace RockWeb.Blocks.Examples
             FinancialBatchService financialBatchService = new FinancialBatchService( rockContext );
             FinancialTransactionService financialTransactionService = new FinancialTransactionService( rockContext );
             PersonPreviousNameService personPreviousNameService = new PersonPreviousNameService( rockContext );
-            
+            ConnectionRequestService connectionRequestService = new ConnectionRequestService( rockContext );
 
             // delete the batch data
             List<int> imageIds = new List<int>();
@@ -1434,6 +1568,12 @@ namespace RockWeb.Blocks.Examples
                             }
 
                             personAliasService.Delete( alias );
+                        }
+
+                        // delete any connection requests tied to them
+                        foreach ( var request in connectionRequestService.Queryable().Where( r => r.PersonAlias.PersonId == person.Id || r.ConnectorPersonAlias.PersonId == person.Id ) )
+                        {
+                            connectionRequestService.Delete( request );
                         }
 
                         // Save these changes so the CanDelete passes the check...
