@@ -523,7 +523,7 @@
           </attributes>
           <notes />
         </person>
-        <person guid="1a5a4e5f-e0a4-4efa-b7d7-6698153ed718" lastName="Greggs" firstName="Lorraine" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="member" birthDate="12/9/1987" maritalStatus="Married" anniversaryDate="7/1/2007" email="lgreggs@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235554450" cellPhone="6025556320" photoUrl="http://storage.rockrms.com/sampledata/person-images/greggs_lorraine_is_kfriedson.jpg">
+        <person guid="1a5a4e5f-e0a4-4efa-b7d7-6698153ed718" lastName="Greggs" firstName="Lorraine" nickName="Lorraine" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="member" birthDate="12/9/1987" maritalStatus="Married" anniversaryDate="7/1/2007" email="lgreggs@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235554450" cellPhone="6025556320" photoUrl="http://storage.rockrms.com/sampledata/person-images/greggs_lorraine_is_kfriedson.jpg">
           <attributes>
             <attribute Baptized="No" />
             <attribute Employer="Motorola" />
@@ -546,10 +546,10 @@
     
     <family name="Greggs" guid="0e0edc8f-cb8f-4457-88d4-651de3904550">
       <members>
-        <person guid="146b2103-fb28-49c6-b1a4-218c397b739e" lastName="Greggs" firstName="Jenny" middleName="" gender="female" familyRole="child" recordStatus="inactive" recordStatusReason="Deceased" connectionStatus="inactive" birthDate="8/1/2008" maritalStatus="Unknown" email="jgreggs@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false">
+        <person guid="146b2103-fb28-49c6-b1a4-218c397b739e" lastName="Greggs" firstName="Jenny" nickName="Jenny" middleName="" gender="female" familyRole="child" recordStatus="inactive" recordStatusReason="Deceased" connectionStatus="inactive" birthDate="8/1/2008" maritalStatus="Unknown" email="jgreggs@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false">
           <attributes />
           <notes>
-            <note type="Personal Note" text="Jenny went to be with the Lord yesterday.  She was three years old." isAlert="true" date="2011-09-12T09:02:00" byGuid="69DC0FDC-B451-4303-BD91-EF17C0015D23" />
+            <note type="Personal Note" text="Jenny went to be with the Lord yesterday. She was three years old." isAlert="true" date="2011-09-12T09:02:00" byGuid="69DC0FDC-B451-4303-BD91-EF17C0015D23" />
           </notes>
         </person>
       </members>
@@ -640,7 +640,7 @@
         <address type="home" street1="10828 N Biltmore Dr" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5855064" long="-112.1186981" />
       </addresses>
       <members>
-        <person guid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" lastName="Evans" firstName="Helen" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="4/2/1979" maritalStatus="Single" email="hevans@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235552540" cellPhone="4805558410" photoUrl="http://storage.rockrms.com/sampledata/person-images/evans_helen_is_stylecampaign.jpg">
+        <person guid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" lastName="Evans" firstName="Helen" nickName="Helen" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="4/2/1979" maritalStatus="Single" email="hevans@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235552540" cellPhone="4805558410" photoUrl="http://storage.rockrms.com/sampledata/person-images/evans_helen_is_stylecampaign.jpg">
           <attributes>
             <attribute FirstVisit="10/11/2015" />
           </attributes>
@@ -649,13 +649,13 @@
       </members>
     </family>
     
-    <!--Once you started promoting the website to sign-up to serve, requests to get connected have been flowing in regularly.  Be sure to set up your connectors and get them following up with people like Sean Hansen and Michele Turner.-->
+    <!--Once you started promoting the website to sign-up to serve, requests to get connected have been flowing in regularly.  Be sure to set up your connectors and get them following up with people like Sean Hansen and Nancy Turner.-->
     <family name="Hansen" guid="7c8c6808-1e08-46d0-aa0a-84227e22aa8e">
       <addresses>
         <address type="home" street1="11012 N 34th Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5861397" long="-112.132782" />
       </addresses>
       <members>
-        <person guid="fa38a268-6744-4507-9cdc-69a7ac6cc0e5" lastName="Hansen" firstName="Sean" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="7/23/1988" maritalStatus="Single" email="shansen@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" cellPhone="6235556747" photoUrl="http://storage.rockrms.com/sampledata/person-images/hansen_sean_is_nucliweb.jpg">
+        <person guid="fa38a268-6744-4507-9cdc-69a7ac6cc0e5" lastName="Hansen" firstName="Sean" nickName="Sean" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="7/23/1988" maritalStatus="Single" email="shansen@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" cellPhone="6235556747" photoUrl="http://storage.rockrms.com/sampledata/person-images/hansen_sean_is_nucliweb.jpg">
           <attributes>
             <attribute Employer="Arizona State University" />
             <attribute Position="Research Assistant" />
@@ -670,7 +670,7 @@
         <address type="home" street1="11016 N 28th Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5856743" long="-112.1217728" />
       </addresses>
       <members>
-        <person guid="3bb26a8b-f004-43e4-82bb-620d1e657af9" lastName="Turner" firstName="Michele" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="3/26/1990" maritalStatus="Single" email="mturner@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6025558175" cellPhone="4805559229" photoUrl="http://storage.rockrms.com/sampledata/person-images/turner_michele_is_marktimemedia.jpg">
+        <person guid="3bb26a8b-f004-43e4-82bb-620d1e657af9" lastName="Turner" firstName="Nancy" nickName="Nancy" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="3/26/1990" maritalStatus="Single" email="mturner@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6025558175" cellPhone="4805559229" photoUrl="http://storage.rockrms.com/sampledata/person-images/turner_nancy_is_marktimemedia.jpg">
           <attributes />
           <notes />
         </person>
@@ -682,14 +682,14 @@
         <address type="home" street1="11022 N 35th Dr" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.58622" long="-112.135094" />
       </addresses>
       <members>
-        <person guid="92d04619-3f97-4eff-932e-61da56441995" lastName="Gilbert" firstName="Brian" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="7/11/1975" maritalStatus="Married" anniversaryDate="5/13/1997" email="bgilbert@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235552395" cellPhone="6235556987" photoUrl="http://storage.rockrms.com/sampledata/person-images/gilbert_brian_is_bgilmah.jpg">
+        <person guid="92d04619-3f97-4eff-932e-61da56441995" lastName="Gilbert" firstName="Brian" nickName="Brian" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="7/11/1975" maritalStatus="Married" anniversaryDate="5/13/1997" email="bgilbert@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235552395" cellPhone="6235556987" photoUrl="http://storage.rockrms.com/sampledata/person-images/gilbert_brian_is_bgilmah.jpg">
           <attributes>
             <attribute Employer="State of Arizona" />
             <attribute Position="Office Clerk" />
           </attributes>
           <notes />
         </person>
-        <person guid="d35b865d-bf50-4a7d-848f-6c0ed7a2ae67" lastName="Gilbert" firstName="Wendy" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="6/21/1977" maritalStatus="Married" anniversaryDate="5/13/1997" email="wgilbert@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235552395" cellPhone="6025552529" photoUrl="http://storage.rockrms.com/sampledata/person-images/gilbert_wendy_is_mtnmissy.jpg">
+        <person guid="d35b865d-bf50-4a7d-848f-6c0ed7a2ae67" lastName="Gilbert" firstName="Wendy" nickName="Wendy" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="6/21/1977" maritalStatus="Married" anniversaryDate="5/13/1997" email="wgilbert@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235552395" cellPhone="6025552529" photoUrl="http://storage.rockrms.com/sampledata/person-images/gilbert_wendy_is_mtnmissy.jpg">
           <attributes>
             <attribute Employer="State of Arizona" />
             <attribute Position="District Manager" />
@@ -786,7 +786,7 @@
         <person fullname="Cora Stone" guid="ae45a615-d55e-4749-b2db-47bbc9fbd885" />
         <person fullname="Helen Evans" guid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" />
         <person fullname="Sean Hansen" guid="fa38a268-6744-4507-9cdc-69a7ac6cc0e5" />
-        <person fullname="Michele Turner" guid="3bb26a8b-f004-43e4-82bb-620d1e657af9" />
+        <person fullname="Nancy Turner" guid="3bb26a8b-f004-43e4-82bb-620d1e657af9" />
     </group>
     
   </groups>
@@ -798,6 +798,14 @@
     <connection type="Involvement" opportunity="Greeter" comment="Me and my wife would like to serve together on the greeters team." date="2015-10-01T00:00:00" personGuid="92d04619-3f97-4eff-932e-61da56441995" />
     <connection type="Involvement" opportunity="Greeter" comment="Me and my husband would like to serve together on the greeters team." date="2015-10-01T00:00:00" personGuid="d35b865d-bf50-4a7d-848f-6c0ed7a2ae67" />
   </connections>
+  
+  <following>
+    <follows personGuid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" followsGuid="3C402382-3BD2-4337-A996-9E62F1BAB09D" type="person" />
+    <follows personGuid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" followsGuid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33" type="person" />
+    <follows personGuid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" followsGuid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" type="person" />
+    <follows personGuid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" followsGuid="CD65C668-B324-4F41-BBB7-BEC9C62233F1" type="group" />
+    <follows personGuid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" followsGuid="3f61d174-d271-4f96-b5e1-ca98faac60bb" type="group" />
+  </following>
   
   <securityRoles>
     <group name="Communication Administrators" guid="B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B" >
