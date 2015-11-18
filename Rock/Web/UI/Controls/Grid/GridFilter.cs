@@ -312,32 +312,36 @@ namespace Rock.Web.UI.Controls
 
                 foreach ( Control child in Controls )
                 {
-                    // write new row
-                    if ( cellCount >= cellsPerRow )
+                    if ( child.Visible )
                     {
-                        writer.RenderEndTag();
-                        writer.AddAttribute("class", "row");
-                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                        cellCount = 0;
-                    }
 
-                    if ( child != _lbFilter && child != _lbClearFilter && child != _hfVisible )
-                    {
-                        // add column
-                        if (child.Visible)
-                        {
-                            writer.AddAttribute("class", "col-lg-4");
-                            writer.RenderBeginTag(HtmlTextWriterTag.Div);
-                        }
-
-                        child.RenderControl( writer );
-
-                        if (child.Visible)
+                        // write new row
+                        if ( cellCount >= cellsPerRow )
                         {
                             writer.RenderEndTag();
+                            writer.AddAttribute( "class", "row" );
+                            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                            cellCount = 0;
                         }
 
-                        cellCount++;
+                        if ( child != _lbFilter && child != _lbClearFilter && child != _hfVisible )
+                        {
+                            // add column
+                            if ( child.Visible )
+                            {
+                                writer.AddAttribute( "class", "col-lg-4" );
+                                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                            }
+
+                            child.RenderControl( writer );
+
+                            if ( child.Visible )
+                            {
+                                writer.RenderEndTag();
+                            }
+
+                            cellCount++;
+                        }
                     }
                 }
 
