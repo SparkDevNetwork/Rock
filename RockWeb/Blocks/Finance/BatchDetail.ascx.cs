@@ -500,7 +500,7 @@ namespace RockWeb.Blocks.Finance
                 hlCampus.Visible = false;
             }
 
-            hlBatchId.Text = string.Format("Id: {0}", batch.Id.ToString());
+            hlBatchId.Text = string.Format("Batch #{0}", batch.Id.ToString());
             hlBatchId.Visible = (batch.Id != 0);
         }
 
