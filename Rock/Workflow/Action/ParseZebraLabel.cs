@@ -65,7 +65,7 @@ namespace Rock.Workflow.Action
                 var contentString = binaryFile.ContentsToString();
                 foreach ( Match match in Regex.Matches( 
                     contentString,
-                    @"(?<=\^FD)[^\^FS]*(?=\^FS)" ) )
+                    @"(?<=\^FD)((?!\^FS).)*(?=\^FS)" ) )
                 {
                     sb.AppendFormat( "{0}^|", match.Value );
                 }
