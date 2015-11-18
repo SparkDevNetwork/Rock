@@ -699,6 +699,101 @@
       </members>
     </family>
 
+    <family name="Harper Family" guid="723669a0-4f73-47e7-87ef-aa11cf2eff8a">
+      <addresses>
+        <address type="home" street1="11609 N 31st Ln" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.592419" long="-112.1291037" />
+      </addresses>
+      <members>
+        <person guid="9b2cdbbf-9144-4be4-80ef-05ada0e63ed2" lastName="Harper" firstName="Jackson" nickName="Jack" middleName="" gender="male" familyRole="adult" recordStatus="pending" connectionStatus="attendee" birthDate="8/15/1969" maritalStatus="Single" email="jharper@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235550006" cellPhone="6235559111" photoUrl="http://storage.rockrms.com/sampledata/person-images/harper_jack_is_sauro.jpg">
+          <attributes>
+            <attribute BaptismDate="8/1/1989" />
+            <attribute Employer="Smittys Groceries" />
+            <attribute Position="Assistant Manager" />
+          </attributes>
+          <notes />
+        </person>
+      </members>
+    </family>
+    <family name="Jones Family" guid="b3844f78-367f-4b58-af16-726b1349c7af">
+      <addresses>
+        <address type="home" street1="3029 W Lupine Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.590935" long="-112.1268847" />
+      </addresses>
+      <members>
+        <person guid="160a4747-9d65-44dd-97b6-91a0e583c1bc" lastName="Jones" firstName="William" nickName="Will" middleName="" gender="male" familyRole="adult" recordStatus="pending" connectionStatus="attendee" birthDate="10/4/1967" maritalStatus="Single" email="wjones@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235557798" cellPhone="6025550161" workPhone="6025557691" photoUrl="http://storage.rockrms.com/sampledata/person-images/jones_will_is_ritu.jpg">
+          <attributes>
+            <attribute Employer="Phoenix Orchestra" />
+            <attribute Position="Conductor" />
+          </attributes>
+          <notes />
+        </person>
+      </members>
+    </family>
+    <family name="Tucker Family" guid="2bf1ba50-a9cf-4da7-a60b-475f0dd187ef">
+      <addresses>
+        <address type="home" street1="3009 W Lupine Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.590935" long="-112.1260627" />
+      </addresses>
+      <members>
+        <person guid="52f2bd19-573b-485c-836a-9562389af2e4" lastName="Tucker" firstName="Dale" nickName="Dale" middleName="" gender="male" familyRole="adult" recordStatus="pending" connectionStatus="attendee" birthDate="2/7/1968" maritalStatus="Single" email="dtucker@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6025553507" cellPhone="4805553926" workPhone="6025551680" photoUrl="http://storage.rockrms.com/sampledata/person-images/tucker_dale_is_bramk.jpg">
+          <attributes>
+            <attribute Employer="Video Connections Limited" />
+            <attribute Position="Owner" />
+          </attributes>
+          <notes />
+        </person>
+      </members>
+    </family>
+    <family name="Peterson Family" guid="11f489e2-27b0-4f8b-b378-5a9442c25453">
+      <addresses>
+        <address type="home" street1="3028 W Lupine Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.591271" long="-112.1268317" />
+      </addresses>
+      <members>
+        <person guid="c28dd35e-e58a-4d5f-81a9-47877b9ae03b" lastName="Peterson" firstName="Brian" nickName="Brian" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="attendee" birthDate="11/12/1970" maritalStatus="Married" anniversaryDate="11/1/1993" email="bpeterson@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="4805551625" cellPhone="6235552245" photoUrl="http://storage.rockrms.com/sampledata/person-images/peterson_brian_is_tonychester.jpg">
+          <attributes />
+          <notes />
+        </person>
+        <person guid="3e52cd9d-79d4-40fc-ac71-26688c084a27" lastName="Peterson" firstName="Becky" nickName="Becky" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="attendee" birthDate="12/25/1970" maritalStatus="Married" anniversaryDate="11/1/1993" homePhone="4805551625" cellPhone="6235552470" photoUrl="http://storage.rockrms.com/sampledata/person-images/peterson_becky_is_yemaija.jpg">
+          <attributes />
+          <notes />
+        </person>
+      </members>
+    </family>
+    <family name="Sweeney Family" guid="4b38d838-68cb-494c-8527-72ae85031944">
+      <addresses>
+        <address type="home" street1="11428 N 30th Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.590403" long="-112.1259797" />
+      </addresses>
+      <members>
+        <person guid="dbae45c0-1980-48fa-8201-41c08910f654" lastName="Sweeney" firstName="James" nickName="James" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="attendee" birthDate="2/22/1969" maritalStatus="Married" anniversaryDate="6/1/1996" email="jsweeney@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="4805559691" cellPhone="4805556590" photoUrl="http://storage.rockrms.com/sampledata/person-images/sweeney_james_is_jasongaylor.jpg">
+          <attributes />
+          <notes />
+        </person>
+        <person guid="988195a3-1895-492e-839b-653c35307862" lastName="Sweeney" firstName="Nancy" nickName="Nancy" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="attendee" birthDate="12/22/1969" maritalStatus="Married" anniversaryDate="6/1/1996" email="nsweeney@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="4805559691" cellPhone="6235552266" photoUrl="http://storage.rockrms.com/sampledata/person-images/sweeney_nancy_is_cynthiasavard.jpg">
+          <attributes />
+          <notes />
+        </person>
+      </members>
+    </family>
+    <family name="Tennant Family" guid="3b148e44-bfc3-4a5d-9782-00be59127a87">
+      <addresses>
+        <address type="home" street1="11462 N 30th Ln" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.591448" long="-112.1272517" />
+      </addresses>
+      <members>
+        <person guid="8de6710b-bdab-4617-ae0c-83e77d3e77cc" lastName="Tennant" firstName="Robert" nickName="Rob" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="attendee" birthDate="3/16/1967" maritalStatus="Married" anniversaryDate="1/1/2000" email="rtennant@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6025559143" cellPhone="6235550316" photoUrl="http://storage.rockrms.com/sampledata/person-images/tennant_rob_is_halans.jpg">
+          <attributes>
+            <attribute Employer="University of Phoenix" />
+            <attribute Position="Supply Manager" />
+          </attributes>
+          <notes />
+        </person>
+        <person guid="773ad0f9-369a-47bc-bebb-2e8ee4c5fef5" lastName="Tennant" firstName="Sheryl" nickName="Sheryl" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="attendee" birthDate="5/16/1965" maritalStatus="Married" anniversaryDate="1/1/2000" email="stennant@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6025559143" cellPhone="4805554355" photoUrl="http://storage.rockrms.com/sampledata/person-images/tennant_sheryl_is_kathleenkrucoff.jpg">
+          <attributes>
+            <attribute Employer="ACME Art" />
+            <attribute Position="Art Director" />
+          </attributes>
+          <notes />
+        </person>
+      </members>
+    </family>
+    
   </families>
 
   <relationships>
@@ -741,6 +836,24 @@
           studyTopic="Women of the Bible" groupSchedule="weekly,Wednesday,19:00:00"
           description ="Small group topics involve studying the women of the Bible.">
       <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23" isLeader="true"/>
+      <person fullname="Jenny Michaels" guid="82309081-A110-496F-8295-CE6A4720D7A8"/>
+    </group>
+    
+    <group type="smallgroup" name="Marble Group" guid="90b2ceda-ae3a-4c10-a2e1-b987020379ad" parentGroupGuid="3CBC1A3F-DD26-430A-9B53-B476CB385ABC"
+          meetsAtHomeOfFamily="6F2E6B64-3592-4543-8D8E-6BA4040CDC4E" meetsAtHomeOfPerson="1EA811BB-3118-42D1-B020-32A82BC8081A"
+          studyTopic="General Bible Study" groupSchedule="weekly,Tuesday,18:00:00"
+          description ="A general Bible study group perfect for people who are new to Christianity. We meet near W Cactus and 31st Ave.">
+      <person fullname="Bill Marble" guid="1EA811BB-3118-42D1-B020-32A82BC8081A" isLeader="true"/>
+      <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23" />
+      <person fullname="Jackson Harper" guid="9b2cdbbf-9144-4be4-80ef-05ada0e63ed2" />
+      <person fullname="William Jones" guid="160a4747-9d65-44dd-97b6-91a0e583c1bc" />
+      <person fullname="Dale Tucker" guid="52f2bd19-573b-485c-836a-9562389af2e4" />
+      <person fullname="Brian Peterson" guid="c28dd35e-e58a-4d5f-81a9-47877b9ae03b" />
+      <person fullname="Becky Peterson" guid="3e52cd9d-79d4-40fc-ac71-26688c084a27" />
+      <person fullname="James Sweeney" guid="dbae45c0-1980-48fa-8201-41c08910f654" />
+      <person fullname="Nancy Sweeney" guid="988195a3-1895-492e-839b-653c35307862" />
+      <person fullname="Robert Tennant" guid="8de6710b-bdab-4617-ae0c-83e77d3e77cc" />
+      <person fullname="Sheryl Tennant" guid="773ad0f9-369a-47bc-bebb-2e8ee4c5fef5" />
       <person fullname="Jenny Michaels" guid="82309081-A110-496F-8295-CE6A4720D7A8"/>
     </group>
 
