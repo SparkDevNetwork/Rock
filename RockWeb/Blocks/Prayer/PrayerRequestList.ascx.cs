@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Prayer
 
     [LinkedPage( "Detail Page", Order = 0 )]
     [IntegerField( "Expires After (Days)", "Number of days until the request will expire.", false, 14, "", 1, "ExpireDays" )]
-    [BooleanField("Show Prayer Count", "If enabled, the block will show the current prayer count for each request in the list.", false, "", 2)]
+    [BooleanField( "Show Prayer Count", "If enabled, the block will show the current prayer count for each request in the list.", false, "", 2 )]
     public partial class PrayerRequestList : RockBlock
     {
         #region Fields
