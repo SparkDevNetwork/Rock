@@ -65,4 +65,4 @@ using System.Runtime.InteropServices;
 // JICK - J(on) / (N)ick versioning system.
 [assembly: AssemblyInformationalVersion( "Rock McKinley 4.0" )]
 //[assembly: AssemblyInformationalVersion( "Rock McKinley 0.7 (beta)" )]    // 1.0.10
-//[assembly: AssemblyInformationalVersion( "Rock McKinley 1.0" )]           // 1.3.4
+//[assembly: AssemblyInformationalVersion( "Rock McKinley 1.0" )]           // 1.3.5

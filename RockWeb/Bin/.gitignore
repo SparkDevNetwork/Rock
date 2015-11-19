@@ -10,6 +10,8 @@
 /Rock.Rest.dll
 /Rock.Version.dll
 /Rock.dll
+/com.reallifeministries.GroupMatching.dll
+/com.reallifeministries.RockExtensions.dll
 
 /Rock.Plugin.dll
 *.PayFlowPro.dll
