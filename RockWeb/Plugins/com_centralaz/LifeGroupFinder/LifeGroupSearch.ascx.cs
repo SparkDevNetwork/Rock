@@ -157,7 +157,6 @@ $('.groupsearch-filter > .panel-body').on('validation-error', function() {
         {
             ParameterState.AddOrReplace( "Children", cblChildren.SelectedValues.AsDelimited( ";" ) );
             ParameterState.AddOrReplace( "Days", cblDays.SelectedValues.AsDelimited( ";" ) );
-            ParameterState.AddOrReplace( "Pets", cbPets.Checked.ToTrueFalse() );
             ParameterState.AddOrReplace( "Campus", ddlCampus.SelectedValue );
             ParameterState.AddOrReplace( "StreetAddress1", acAddress.Street1 );
             ParameterState.AddOrReplace( "StreetAddress2", acAddress.Street2 );
@@ -201,11 +200,6 @@ $('.groupsearch-filter > .panel-body').on('validation-error', function() {
         /// </summary>
         private void LoadDropDowns()
         {
-            if ( ParameterState.ContainsKey("Pets") )
-            {
-                cbPets.Checked = ParameterState["Pets"].AsBoolean();
-            }
-
             cblDays.Items.Clear();
             foreach ( var dow in Enum.GetValues( typeof( DayOfWeek ) ).OfType<DayOfWeek>().ToList() )
             {

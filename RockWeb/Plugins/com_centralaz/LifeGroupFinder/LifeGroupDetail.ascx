@@ -18,11 +18,7 @@
         </asp:Panel>
         <asp:Panel ID="pnlView" runat="server" Visible="true">
             <div class="row">
-                <h2>
-                    <center>
                     <Rock:RockLiteral ID="lGroupName" runat="server" CssClass="lifegroupdetail-groupname"/>
-                    </center>
-                </h2>
             </div>
             <hr />
             <div class="row">
@@ -38,7 +34,7 @@
                 <div class="lifegroupdetail-videoboxdiv col-md-4 text-center">
                     <asp:Literal ID="lMainMedia" runat="server" />
                 </div>
-                <div class="col-md-4">
+                <div class="lifegroupdetail-contactdiv col-md-4">
                     <div class="lifegroupdetail-registerdiv row text-center">
                         <asp:LinkButton ID="lbRegister" runat="server" Text="Sign up!" CssClass="btn btn-primary" OnClick="lbRegister_Click" CausesValidation="false" />
                     </div>
@@ -53,19 +49,10 @@
             <div class="lifegroupdetail-descriptiondiv row">
                 <asp:Literal ID="lDescription" runat="server" />
             </div>
-            <hr />
-            <div class="lifegroupdetail-photogallerydiv row">
-                <div class="col-md-4">
-                    <asp:Literal ID="lGroupPhoto1" runat="server" />
-                </div>
-                <div class="col-md-4">
-                    <asp:Literal ID="lGroupPhoto2" runat="server" />
-                </div>
-                <div class="col-md-4">
-                    <asp:Literal ID="lGroupPhoto3" runat="server" />
-                </div>
-            </div>
-            <hr />
+
+            <asp:Literal ID="lPhotoOutput" runat="server" />
+            <asp:Literal ID="lPhotoDebug" Visible="false" runat="server" />
+
             <div class="lifegroupdetail-validationdiv">
                 <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
             </div>
@@ -73,7 +60,7 @@
         <asp:Panel ID="pnlSignup" runat="server" Visible="true">
             <div class="lifegroupdetail-errordiv">
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
-            </div>           
+            </div>
 
             <div class="lifegroupdetail-firstnamediv row">
                 <div class="col-md-6">

@@ -82,13 +82,7 @@
                         </div>
                         <hr />
                         <div class="row">
-                            <div class="col-md-6">
-                                Would pets take away from your experience?
-                            </div>
-                            <div class="col-md-3">
-                                <Rock:RockCheckBox ID="cbPets" runat="server" Text="Yes" Help="This will remove groups that have pets from your search" />
-                            </div>
-                            <div class="col-md-3">
+                            <div class="col-md-3 col-md-offset-9">
                                 <asp:LinkButton ID="lbSearch" CssClass="btn btn-primary" runat="server" Text="Search" OnClick="btnSearch_Click" />
                             </div>
                         </div>

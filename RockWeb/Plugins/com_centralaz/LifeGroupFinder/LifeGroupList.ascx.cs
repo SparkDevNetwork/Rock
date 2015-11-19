@@ -174,16 +174,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                     qry = qry.Where( g => daysList.Contains( g.Schedule.WeeklyDayOfWeek.Value ) );
                 }
             }
-
-            bool? hasPets = ParameterState["Pets"].AsBooleanOrNull();
-            if ( hasPets != null && hasPets.Value )
-            {
-                var attributeValues = attributeValueService
-                                        .Queryable()
-                                        .Where( v => v.Attribute.Key == "HasPets" && v.Value == "False" );
-
-                qry = qry.Where( g => attributeValues.Select( v => v.EntityId ).Contains( g.Id ) );
-            }
             
             if ( !String.IsNullOrWhiteSpace( ParameterState["Children"] ) )
             {
@@ -224,7 +214,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                     LeaderImageUrl = leader != null ? leader.Person.PhotoUrl : "",
                     Distance = GetDistance( group, personLocation ),
                     HasKids = group.GetAttributeValues( "HasChildren" ).Any(),
-                    HasPets = group.GetAttributeValue( "HasPets" ).AsBoolean(),
                     Crossroads = group.GetAttributeValue( "Crossroads" ) ?? "",
                     ListDescription = group.GetAttributeValue( "ListDescription" ) ?? "",
                     Schedule = group.Schedule != null ? group.Schedule.ToString() : "No Schedule"
@@ -331,7 +320,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         /// <summary>
         /// A class to store event item occurrence data for liquid
         /// </summary>
-        [DotLiquid.LiquidType( "LeaderImageUrl", "HasPets", "HasKids", "Name", "ListDescription", "Schedule", "Crossroads", "Distance", "Id" )]
+        [DotLiquid.LiquidType( "LeaderImageUrl", "HasKids", "Name", "ListDescription", "Schedule", "Crossroads", "Distance", "Id" )]
         public class LifeGroupSummary
         {
 
@@ -342,14 +331,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             /// The LeaderImageUrl.
             /// </value>
             public String LeaderImageUrl { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether this instance has pets.
-            /// </summary>
-            /// <value>
-            ///   <c>true</c> if this instance has pets; otherwise, <c>false</c>.
-            /// </value>
-            public bool HasPets { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating whether this instance has kids.

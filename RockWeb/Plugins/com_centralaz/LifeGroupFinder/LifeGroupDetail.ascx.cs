@@ -44,8 +44,10 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 2 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 3 )]
     [WorkflowTypeField( "Workflow", "An optional workflow to start when registration is created. The GroupMember will set as the workflow 'Entity' when processing is started.", false, false, "", "", 4 )]
-    [WorkflowTypeField( "Email Workflow", "An optional workflow to start when an email request is created. The GroupMember will set as the workflow 'Entity' when processing is started.", false, false, "", "", 4 )]
-    [LinkedPage( "Result Page", "An optional page to redirect user to after they have been registered for the group.", false, "", "", 7 )]
+    [WorkflowTypeField( "Email Workflow", "An optional workflow to start when an email request is created. The GroupMember will set as the workflow 'Entity' when processing is started.", false, false, "", "", 5 )]
+    [LinkedPage( "Result Page", "An optional page to redirect user to after they have been registered for the group.", false, "", "", 6 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the group photos.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"", "", 7 )]
+    [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 8 )]
     public partial class LifeGroupDetail : RockBlock
     {
         #region Fields
@@ -540,7 +542,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
             if ( _group != null )
             {
-                lGroupName.Text = _group.Name;
+                lGroupName.Text = String.Format( "The {0} Life Group", _group.Name );
                 _group.LoadAttributes();
                 string vidTag = GetVideoTag( _group.GetAttributeValue( "MainVideo" ), 350, 200 );
                 if ( !string.IsNullOrWhiteSpace( _group.GetAttributeValue( "MainVideo" ) ) )
@@ -576,25 +578,22 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                     }
                 }
 
-                string groupPhotoTag1 = GetImageTag( _group.GetAttributeValue( "GroupPhoto1" ), 350, 200 );
-                if ( !string.IsNullOrWhiteSpace( _group.GetAttributeValue( "GroupPhoto1" ) ) )
-                {
-                    string imageUrl = ResolveRockUrl( String.Format( "~/GetImage.ashx?guid={0}", _group.GetAttributeValue( "GroupPhoto1" ) ) );
-                    lGroupPhoto1.Text = string.Format( "<a href='{0}'>{1}</a>", imageUrl, groupPhotoTag1 );
-                }
+                var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "PhotoGuid1", _group.GetAttributeValue( "GroupPhoto1" ) );
+                mergeFields.Add( "PhotoGuid2", _group.GetAttributeValue( "GroupPhoto2" ) );
+                mergeFields.Add( "PhotoGuid3", _group.GetAttributeValue( "GroupPhoto3" ) );
+                lPhotoOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
-                string groupPhotoTag2 = GetImageTag( _group.GetAttributeValue( "GroupPhoto2" ), 350, 200 );
-                if ( !string.IsNullOrWhiteSpace( _group.GetAttributeValue( "GroupPhoto2" ) ) )
+                // show debug info
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
                 {
-                    string imageUrl = ResolveRockUrl( String.Format( "~/GetImage.ashx?guid={0}", _group.GetAttributeValue( "GroupPhoto2" ) ) );
-                    lGroupPhoto2.Text = string.Format( "<a href='{0}'>{1}</a>", imageUrl, groupPhotoTag2 );
+                    lPhotoDebug.Visible = true;
+                    lPhotoDebug.Text = mergeFields.lavaDebugInfo();
                 }
-
-                string groupPhotoTag3 = GetImageTag( _group.GetAttributeValue( "GroupPhoto3" ), 350, 200 );
-                if ( !string.IsNullOrWhiteSpace( _group.GetAttributeValue( "GroupPhoto3" ) ) )
+                else
                 {
-                    string imageUrl = ResolveRockUrl( String.Format( "~/GetImage.ashx?guid={0}", _group.GetAttributeValue( "GroupPhoto3" ) ) );
-                    lGroupPhoto3.Text = string.Format( "<a href='{0}'>{1}</a>", imageUrl, groupPhotoTag3 );
+                    lPhotoDebug.Visible = false;
+                    lPhotoDebug.Text = string.Empty;
                 }
 
                 lDescription.Text = _group.Description;
