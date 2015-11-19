@@ -36,39 +36,22 @@
                 <asp:LinkButton ID="btnMatchAddresses" runat="server" CssClass="btn btn-action" Text="Match Addresses" OnClick="btnMatchAddresses_Click" />
                 <asp:LinkButton ID="btnMatchPeople" runat="server" CssClass="btn btn-action" Text="Match People" OnClick="btnMatchPeople_Click" />
 
-                <Rock:RockCheckBox ID="cbMatchZip" runat="server" Text="ZipCode" />
-                <Rock:RockCheckBox ID="cbAge" runat="server" Text="Age" />
-                <Rock:RockCheckBox ID="cbLimitToPotentialMatches" runat="server" Text="Limit to Potential Matches" />
+                <Rock:RockCheckBox ID="cbMatchZip" runat="server" Text="ZipCode" Help="Limit to records that have the same zip code for the home address" Checked="true" />
+                <Rock:RockCheckBox ID="cbAge" runat="server" Text="Age" Help="Limit to records that are same age +-2 years " Checked="true" />
+
+                <Rock:RockCheckBox ID="cbLimitToPotentialMatches" runat="server" Text="Limit to Potential Matches" Checked="true"/>
                 <Rock:RockCheckBox ID="cbLimitToLocationMatches" runat="server" Text="Limit to Location Matches" />
 
                 <div class="js-notification"></div>
 
-                <Rock:Grid ID="gDpsOffender" runat="server" DataKeyNames="Id" AllowSorting="true" OnRowDataBound="gDpsOffender_RowDataBound">
+                <Rock:Grid ID="gDpsOffender" runat="server" DataKeyNames="Id" AllowSorting="true" OnRowDataBound="gDpsOffender_RowDataBound" OnRowSelected="gDpsOffender_RowSelected">
                     <Columns>
-                        <Rock:PersonField DataField="Person" />
-                        <asp:BoundField DataField="DpsLocation" HeaderText="DPS Location" />
-                        <asp:BoundField DataField="FamiliesAtAddress" HeaderText="FamiliesAtAddress" SortExpression="FamiliesAtAddress" />
-                        <Rock:RockLiteralField ID="lPersonMatches" HeaderText="Potential Matches" SortExpression="PotentialMatches" ItemStyle-Wrap="false" />
                         <asp:BoundField DataField="FirstName" HeaderText="First Name" SortExpression="FirstName" />
                         <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
                         <asp:BoundField DataField="Age" HeaderText="Age" SortExpression="Age" />
-                        <asp:BoundField DataField="Height" HeaderText="Height" SortExpression="Height" />
-                        <asp:BoundField DataField="Weight" HeaderText="Weight" SortExpression="Weight" />
-                        <asp:BoundField DataField="Race" HeaderText="Race" SortExpression="Race" />
-                        <asp:BoundField DataField="Gender" HeaderText="Gender" SortExpression="Gender" />
-                        <asp:BoundField DataField="Hair" HeaderText="Hair Color" SortExpression="Hair" />
-                        <asp:BoundField DataField="Eyes" HeaderText="Eye Color" SortExpression="Eyes" />
-                        <asp:BoundField DataField="ResAddress" HeaderText="ResAddress" SortExpression="ResAddress" Visible="false" />
-                        <asp:BoundField DataField="ResCity" HeaderText="ResCity" SortExpression="ResCity" Visible="false"/>
-                        <asp:BoundField DataField="ResState" HeaderText="ResState" SortExpression="ResState" Visible="false"/>
-                        <asp:BoundField DataField="ResZip" HeaderText="ResZip" SortExpression="ResZip" Visible="false"/>
-                        <asp:BoundField DataField="Level" HeaderText="Level" SortExpression="Level" Visible="true"/>
-                        <Rock:DateField DataField="DateConvicted" HeaderText="DateConvicted" SortExpression="DateConvicted" />
-                        <asp:BoundField DataField="ConvictionState" HeaderText="ConvictionState" SortExpression="ConvictionState" />
-                        <Rock:BoolField DataField="Absconder" HeaderText="Absconder" SortExpression="Absconder" />
-
-
-
+                        <asp:BoundField DataField="DpsLocation" HeaderText="DPS Location" />
+                        <asp:BoundField DataField="FamiliesAtAddress" HeaderText="FamiliesAtAddress" SortExpression="FamiliesAtAddress" />
+                        <Rock:RockLiteralField ID="lPersonMatches" HeaderText="Potential Matches" SortExpression="PotentialMatches" ItemStyle-Wrap="false" />
                     </Columns>
                 </Rock:Grid>
 
