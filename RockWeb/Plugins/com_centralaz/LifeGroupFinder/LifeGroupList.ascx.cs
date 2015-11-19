@@ -111,6 +111,36 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             NavigateToParentPage();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnBack control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnBack_Click( object sender, EventArgs e )
+        {
+            int offset = PageParameter( "Offset" ).AsIntegerOrNull() ?? 0;
+            int numberOfResults = PageParameter( "Results" ).AsIntegerOrNull() ?? 20;
+            int newOffset = (offset-numberOfResults) >= 0 ? (offset - numberOfResults) : 0;
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "Offset", newOffset.ToString() );
+            qryParams.Add( "Results", numberOfResults.ToString() );
+            NavigateToPage( RockPage.Guid, qryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnNext_Click( object sender, EventArgs e )
+        {
+            int offset = PageParameter( "Offset" ).AsIntegerOrNull() ?? 0;
+            int numberOfResults = PageParameter( "Results" ).AsIntegerOrNull() ?? 20;
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "Offset", ( offset + numberOfResults ).ToString() );
+            qryParams.Add( "Results", numberOfResults.ToString() );
+            NavigateToPage( RockPage.Guid, qryParams );
+        }
         #endregion
 
         #region Internal Methods
@@ -121,13 +151,14 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         private void LoadList()
         {
             // Build qry
+            //TODO fix these
             int smallGroupTypeId = GroupTypeCache.Read( "7F76AE15-C5C4-490E-BF3A-50FB0591A60F" ).Id;
             RockContext rockContext = new RockContext();
             AttributeValueService attributeValueService = new AttributeValueService( rockContext );
             var qry = new GroupService( rockContext ).Queryable()
                 .Where( g => smallGroupTypeId == g.GroupTypeId );
 
-            qry = qry.Where( g => g.Members.Any( m => m.GroupRole.IsLeader == true ) );
+            qry = qry.Where( g => g.IsPublic && g.IsActive && g.Members.Any( m => m.GroupRole.IsLeader == true ) );
 
 
             if ( ParameterState["Campus"].AsIntegerOrNull() != null )
@@ -140,7 +171,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 List<DayOfWeek> daysList = ParameterState["Days"].Split( ';' ).ToList().Select( i => (DayOfWeek)( i.AsInteger() ) ).ToList();
                 if ( daysList.Any() )
                 {
-                    //TODO: find out how days works
                     qry = qry.Where( g => daysList.Contains( g.Schedule.WeeklyDayOfWeek.Value ) );
                 }
             }
@@ -154,64 +184,57 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
                 qry = qry.Where( g => attributeValues.Select( v => v.EntityId ).Contains( g.Id ) );
             }
+            
+            if ( !String.IsNullOrWhiteSpace( ParameterState["Children"] ) )
+            {
+                List<String> childrenList = ParameterState["Children"].Split( ';' ).ToList();
+                var attributeChildValues = attributeValueService.Queryable().Where( v =>
+                    v.Attribute.Key == "HasChildren" &&
+                    childrenList.Any( c => ( ";" + v.Value + ";" ).Contains( ";" + c + ";" ) )
+                    );
+                qry = qry.Where( g => attributeChildValues.Any( v => v.EntityId == g.Id ) );
+            }
 
-            // Construct List
-            var attributeChildValues = attributeValueService
-                                        .Queryable()
-                                        .Where( v => v.Attribute.Key == "HasChildren" );
+            Location personLocation = GetPersonLocation( rockContext );
+
+            //TODO Untag these
+            //qry = qry.Where( g => g.GroupLocations.FirstOrDefault() != null && g.GroupLocations.FirstOrDefault().Location.GeoPoint != null );
+            //qry = qry.OrderBy( g => g.GroupLocations.FirstOrDefault().Location.GeoPoint.Distance( personLocation.GeoPoint ) );
+            qry = qry.OrderBy( g => g.Name );
+            int offset = PageParameter( "Offset" ).AsIntegerOrNull() ?? 0;
+            int numberOfResults = PageParameter( "Results" ).AsIntegerOrNull() ?? 20;
+            qry = qry.Skip( offset ).Take( numberOfResults );
+            if ( offset > 0 )
+            {
+                btnBack.Visible = true;
+            }
+
+            // Construct List            
             var lifeGroupSummaries = new List<LifeGroupSummary>();
             foreach ( Group group in qry )
             {
-                bool displayGroup = true;
-                if ( !String.IsNullOrWhiteSpace( ParameterState["Children"] ) )
-                {
-                    List<String> childrenList = ParameterState["Children"].Split( ';' ).ToList();
-                    if ( !childrenList.Intersect( attributeChildValues.FirstOrDefault( v => v.EntityId == group.Id ).Value.Split( ',' ).ToList() ).Any() )
-                    {
-                        displayGroup = false;
-                    }
-                }
+                // {{ group.Image }}
+                GroupMember leader = group.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true );
 
-                if ( displayGroup )
+                group.LoadAttributes();
+                lifeGroupSummaries.Add( new LifeGroupSummary
                 {
-                    // {{ group.Image }}
-                    GroupMember leader = group.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true );
-                    string groupImage = null;
-                    if ( leader != null )
-                    {
-                        Person person = leader.Person;
-                        string imgTag = Rock.Model.Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 200, 200 );
-                        if ( person.PhotoId.HasValue )
-                        {
-                            groupImage = String.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, imgTag );
-                        }
-                        else
-                        {
-                            groupImage = "imgTag";
-                        }
-                    }
-
-                    group.LoadAttributes();
-                    lifeGroupSummaries.Add( new LifeGroupSummary
-                    {
-                        Id = group.Id,
-                        Name = group.Name,
-                        Image = groupImage,
-                        Distance = GetDistance( group ),
-                        HasKids = group.GetAttributeValues( "HasChildren" ).Any(),
-                        HasPets = group.GetAttributeValue( "HasPets" ).AsBoolean(),
-                        Crossroads = group.GetAttributeValue( "Crossroads" ) ?? "",
-                        ListDescription = group.GetAttributeValue( "ListDescription" ) ?? "",
-                        Schedule = group.Schedule != null ? group.Schedule.ToString() : "No Schedule"                                               
-                    } );
-                }
+                    Id = group.Id,
+                    Name = group.Name,
+                    LeaderImageUrl = leader != null ? leader.Person.PhotoUrl : "",
+                    Distance = GetDistance( group, personLocation ),
+                    HasKids = group.GetAttributeValues( "HasChildren" ).Any(),
+                    HasPets = group.GetAttributeValue( "HasPets" ).AsBoolean(),
+                    Crossroads = group.GetAttributeValue( "Crossroads" ) ?? "",
+                    ListDescription = group.GetAttributeValue( "ListDescription" ) ?? "",
+                    Schedule = group.Schedule != null ? group.Schedule.ToString() : "No Schedule"
+                } );
             }
 
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
             mergeFields.Add( "Groups", lifeGroupSummaries );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
-
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
             // show debug info
@@ -227,14 +250,8 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             }
         }
 
-        /// <summary>
-        /// Gets the distance.
-        /// </summary>
-        /// <param name="group">The group.</param>
-        /// <returns></returns>
-        protected string GetDistance( Group group )
+        private Location GetPersonLocation( RockContext rockContext )
         {
-            RockContext rockContext = new RockContext();
             Location personLocation = new LocationService( rockContext )
                         .Get( ParameterState["StreetAddress1"], ParameterState["StreetAddress2"], ParameterState["City"],
                             ParameterState["State"], ParameterState["PostalCode"], ParameterState["Country"] );
@@ -243,7 +260,16 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 SetGeoPointFromAddress( personLocation );
                 rockContext.SaveChanges();
             }
+            return personLocation;
+        }
 
+        /// <summary>
+        /// Gets the distance.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns></returns>
+        protected string GetDistance( Group group, Location personLocation )
+        {
             double? closestLocation = null;
             foreach ( var groupLocation in group.GroupLocations
                         .Where( gl => gl.Location.GeoPoint != null ) )
@@ -305,17 +331,17 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         /// <summary>
         /// A class to store event item occurrence data for liquid
         /// </summary>
-        [DotLiquid.LiquidType( "Image", "HasPets", "HasKids", "Name", "ListDescription", "Schedule", "Crossroads", "Distance", "Id" )]
+        [DotLiquid.LiquidType( "LeaderImageUrl", "HasPets", "HasKids", "Name", "ListDescription", "Schedule", "Crossroads", "Distance", "Id" )]
         public class LifeGroupSummary
         {
 
             /// <summary>
-            /// Gets or sets the image.
+            /// Gets or sets the LeaderImageUrl.
             /// </summary>
             /// <value>
-            /// The image.
+            /// The LeaderImageUrl.
             /// </value>
-            public String Image { get; set; }
+            public String LeaderImageUrl { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating whether this instance has pets.

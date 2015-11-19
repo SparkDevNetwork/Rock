@@ -12,13 +12,17 @@
 
             <div class="panel-body">
                 <div class="row">
-                    <div class="lifegrouplist-backbutton pull-left">
+                    <div class="lifegrouplist-returnbutton pull-left">
                         <asp:LinkButton ID="lbReturn" runat="server" OnClick="lbReturn_Click" Text='<< Back' />
                     </div>
                 </div>
                 <asp:Literal ID="lOutput" runat="server"></asp:Literal>
 
                 <asp:Literal ID="lDebug" Visible="false" runat="server"></asp:Literal>
+                <div class="lifegrouplist-paginationbuttons">
+                    <asp:LinkButton ID="btnBack" runat="server" CssClass="btn btn-default" Text="Back" Visible="false" OnClick="btnBack_Click"/>
+                    <asp:LinkButton ID="btnNext" runat="server" CssClass="btn btn-primary" Text="Next" OnClick="btnNext_Click" />
+                </div>
             </div>
         </div>
 

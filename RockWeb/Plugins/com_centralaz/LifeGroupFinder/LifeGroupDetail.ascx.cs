@@ -540,7 +540,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
             if ( _group != null )
             {
-
+                lGroupName.Text = _group.Name;
                 _group.LoadAttributes();
                 string vidTag = GetVideoTag( _group.GetAttributeValue( "MainVideo" ), 350, 200 );
                 if ( !string.IsNullOrWhiteSpace( _group.GetAttributeValue( "MainVideo" ) ) )
