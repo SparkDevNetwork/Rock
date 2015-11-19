@@ -980,7 +980,7 @@ namespace RockWeb.Blocks.Groups
                         registrationField.Visible = _groupMembersWithRegistrations.Any();
                     }
 
-                    var connectionStatusField = gGroupMembers.ColumnsOfType<BoundField>().FirstOrDefault( a => a.DataField == "PersonConnectionStatus" );
+                    var connectionStatusField = gGroupMembers.ColumnsOfType<DefinedValueField>().FirstOrDefault( a => a.DataField == "Person.ConnectionStatusValueId" );
                     if ( connectionStatusField != null )
                     {
                         connectionStatusField.Visible = _group.GroupType.ShowConnectionStatus;

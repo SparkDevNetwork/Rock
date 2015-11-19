@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.Compilation;
 
@@ -26,7 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Service/Data access class for <see cref="Rock.Model.WorkflowActionType"/> entity objects
     /// </summary>
-    public partial class WorkflowActionService 
+    public partial class WorkflowActionService
     {
         /// <summary>
         /// Gets the active forms.
@@ -34,7 +35,9 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<WorkflowAction> GetActiveForms()
         {
-            return Queryable( "ActionType.ActivityType.WorkflowType, Activity.Workflow, Activity.AssignedPersonAlias, Activity.AssignedGroup" )
+            var rockContext = this.Context as RockContext;
+
+            return Queryable()
                 .Where( a =>
                     a.ActionType.WorkflowFormId.HasValue &&
                     ( a.ActionType.ActivityType.IsActive ?? true ) &&
@@ -54,37 +57,38 @@ namespace Rock.Model
         /// <returns></returns>
         public List<WorkflowAction> GetActiveForms( Person person )
         {
-            // Get all of the active form actions
-            var formActions = GetActiveForms().ToList();
+            // Get all of the active form actions with an activity that assigned to the current user
+            var formActionsQry = GetActiveForms().Where( a =>
+                        ( a.Activity.AssignedPersonAliasId.HasValue && a.Activity.AssignedPersonAlias.PersonId == person.Id ) ||
+                        ( a.Activity.AssignedGroupId.HasValue && a.Activity.AssignedGroup.Members.Any( m => m.PersonId == person.Id ) )
+                 );
 
             // Check security for the action's activity type and workflow type
             var workflowTypeIds = new Dictionary<int, bool>();
             var activityTypeIds = new Dictionary<int, bool>();
-            foreach( var action in formActions)
+
+            var result = formActionsQry.Include( a => a.ActionType.ActivityType.WorkflowType ).Include( a => a.Activity.Workflow ).ToList();
+
+            var assignedActivityTypes = result.Select( a => a.ActionType.ActivityType ).Distinct().ToList();
+
+            foreach ( var assignedActivityType in assignedActivityTypes )
             {
-                if ( !workflowTypeIds.ContainsKey(action.ActionType.ActivityType.WorkflowTypeId))
+                if ( !workflowTypeIds.ContainsKey( assignedActivityType.WorkflowTypeId ) )
                 {
-                    workflowTypeIds.Add( action.ActionType.ActivityType.WorkflowTypeId, action.ActionType.ActivityType.WorkflowType.IsAuthorized(Rock.Security.Authorization.VIEW, person));
+                    workflowTypeIds.Add( assignedActivityType.WorkflowTypeId, assignedActivityType.WorkflowType.IsAuthorized( Rock.Security.Authorization.VIEW, person ) );
                 }
 
-                if ( workflowTypeIds[action.ActionType.ActivityType.WorkflowTypeId] && !activityTypeIds.ContainsKey(action.ActionType.ActivityTypeId))
+                if ( workflowTypeIds[assignedActivityType.WorkflowTypeId] && !activityTypeIds.ContainsKey( assignedActivityType.Id ) )
                 {
-                    activityTypeIds.Add( action.ActionType.ActivityTypeId, action.ActionType.ActivityType.IsAuthorized(Rock.Security.Authorization.VIEW, person));
+                    activityTypeIds.Add( assignedActivityType.Id, assignedActivityType.IsAuthorized( Rock.Security.Authorization.VIEW, person ) );
                 }
             }
 
             // Get just the authorized activity types
-            var authorizedActivityTypeIds = activityTypeIds.Where( w => w.Value ).Select( w => w.Key).ToList();
+            var authorizedActivityTypeIds = activityTypeIds.Where( w => w.Value ).Select( w => w.Key ).ToList();
 
-            // Get the actions that user is authorized to see and that the activity is assigned to the current user
-            return formActions
-                .Where( a => 
-                    authorizedActivityTypeIds.Contains( a.ActionType.ActivityTypeId ) &&
-                    (
-                        ( a.Activity.AssignedPersonAlias != null && a.Activity.AssignedPersonAlias.PersonId == person.Id ) ||
-                        ( a.Activity.AssignedGroup != null && a.Activity.AssignedGroup.Members.Any( m => m.PersonId == person.Id ) ) 
-                    )
-                 )
+            // Get the actions that user is authorized to see and that 
+            return result.Where( a => authorizedActivityTypeIds.Contains( a.ActionType.ActivityTypeId ) )
                 .ToList();
         }
     }

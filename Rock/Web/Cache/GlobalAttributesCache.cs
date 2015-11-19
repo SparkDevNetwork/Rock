@@ -452,7 +452,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the organization location.
+        /// Gets the organization location (OrganizationAddress)
         /// </summary>
         /// <value>
         /// The organization location.

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -53,6 +54,7 @@ namespace RockWeb.Blocks.Connection
 
         public List<GroupStateObj> GroupsState { get; set; }
         public List<GroupStateObj> ConnectorGroupsState { get; set; }
+        public Dictionary<int, int> DefaultConnectors { get; set; }
         public List<WorkflowTypeStateObj> WorkflowsState { get; set; }
 
         #endregion
@@ -136,6 +138,8 @@ namespace RockWeb.Blocks.Connection
             gConnectionOpportunityConnectorGroups.Actions.AddClick += gConnectionOpportunityConnectorGroups_Add;
             gConnectionOpportunityConnectorGroups.GridRebind += gConnectionOpportunityConnectorGroups_GridRebind;
 
+            lvDefaultConnectors.ItemDataBound += lvDefaultConnectors_ItemDataBound;
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlConnectionOpportunityDetail );
@@ -170,6 +174,23 @@ namespace RockWeb.Blocks.Connection
                 nbNotAllowedToEdit.Visible = false;
                 nbInvalidGroupType.Visible = false;
                 nbInvalidGroupTypes.Visible = false;
+
+                DefaultConnectors = new Dictionary<int, int>();
+                foreach ( var item in lvDefaultConnectors.Items )
+                {
+                    var hfDefaultConnector = item.FindControl( "hfDefaultConnector" ) as HiddenField;
+                    var ddlDefaultConnector = item.FindControl( "ddlDefaultConnector" ) as RockDropDownList;
+                    if ( hfDefaultConnector != null && ddlDefaultConnector != null )
+                    {
+                        int? campusId = hfDefaultConnector.Value.AsIntegerOrNull();
+                        int? defaultConnectorPersonAliasId = ddlDefaultConnector.SelectedValueAsInt();
+
+                        if ( campusId.HasValue && defaultConnectorPersonAliasId.HasValue )
+                        {
+                            DefaultConnectors.AddOrReplace( campusId.Value, defaultConnectorPersonAliasId.Value );
+                        }
+                    }
+                }
 
                 ShowOpportunityAttributes();
             }
@@ -375,7 +396,7 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 // remove any campuses that removed in the UI
-                var uiCampuses = cblCampus.SelectedValuesAsInt;
+                var uiCampuses = cblSelectedItemsAsInt( cblCampus );
                 foreach ( var connectionOpportunityCampus in connectionOpportunity.ConnectionOpportunityCampuses.Where( c => !uiCampuses.Contains( c.CampusId ) ).ToList() )
                 {
                     connectionOpportunity.ConnectionOpportunityCampuses.Remove( connectionOpportunityCampus );
@@ -393,6 +414,7 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     connectionOpportunityCampus.CampusId = campusId;
+                    connectionOpportunityCampus.DefaultConnectorPersonAliasId = DefaultConnectors.ContainsKey( campusId ) ? DefaultConnectors[campusId] : (int?)null;
                 }
 
                 // Remove any groups that were removed in the UI
@@ -509,6 +531,11 @@ namespace RockWeb.Blocks.Connection
 
         #region ConnectionOpportunityGroup Grid/Dialog Events
 
+        protected void cblCampus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            BindDefaultConnectors();
+        }
+
         /// <summary>
         /// Handles the Delete event of the gConnectionOpportunityGroups control.
         /// </summary>
@@ -586,6 +613,30 @@ namespace RockWeb.Blocks.Connection
         {
             gpOpportunityGroup.SetValue( null );
             ShowDialog( "GroupDetails", true );
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the lvDefaultConnectors control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ListViewItemEventArgs"/> instance containing the event data.</param>
+        void lvDefaultConnectors_ItemDataBound( object sender, ListViewItemEventArgs e )
+        {
+            var defaultConnector = e.Item.DataItem as DefaultConnector;
+            if ( defaultConnector != null )
+            {
+                var hfDefaultConnector = e.Item.FindControl( "hfDefaultConnector" ) as HiddenField;
+                var ddlDefaultConnector = e.Item.FindControl( "ddlDefaultConnector" ) as RockDropDownList;
+                if ( hfDefaultConnector != null && ddlDefaultConnector != null )
+                {
+                    hfDefaultConnector.Value = defaultConnector.CampusId.ToString();
+                    ddlDefaultConnector.Label = defaultConnector.CampusName + " Default Connector";
+                    ddlDefaultConnector.DataSource = defaultConnector.Options;
+                    ddlDefaultConnector.DataBind();
+                    ddlDefaultConnector.Items.Insert( 0, new ListItem( "", "" ) );
+                    ddlDefaultConnector.SetValue( defaultConnector.PersonAliasId );
+                }
+            }
         }
 
         /// <summary>
@@ -728,6 +779,77 @@ namespace RockWeb.Blocks.Connection
         {
             gConnectionOpportunityConnectorGroups.DataSource = ConnectorGroupsState;
             gConnectionOpportunityConnectorGroups.DataBind();
+
+            BindDefaultConnectors();
+        }
+
+        /// <summary>
+        /// Binds the default connectors.
+        /// </summary>
+        private void BindDefaultConnectors()
+        {
+            var defaultConnectors = new List<DefaultConnector>();
+            foreach (var campusId in cblSelectedItemsAsInt( cblCampus) )
+            {
+                var connectorGroups = ConnectorGroupsState
+                    .Where( g => !g.CampusId.HasValue || g.CampusId.Value == campusId )
+                    .ToList();
+                if ( connectorGroups.Any() )
+                {
+                    var groupIds = connectorGroups.Select( g => g.GroupId );
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var people = new GroupMemberService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( m => 
+                                groupIds.Contains( m.GroupId ) &&
+                                m.GroupMemberStatus == GroupMemberStatus.Active )
+                            .Select( m => m.Person )
+                            .ToList();
+                        if ( people.Any() )
+                        {
+                            var defaultConnector = new DefaultConnector();
+
+                            var campus = CampusCache.Read( campusId );
+                            defaultConnector.CampusId = campus.Id;
+                            defaultConnector.CampusName = campus.Name;
+                            defaultConnector.PersonAliasId = DefaultConnectors.ContainsKey( campusId ) ? DefaultConnectors[campusId] : (int?)null;
+                            defaultConnector.Options = new Dictionary<int, string>();
+
+                            foreach( var person in people )
+                            {
+                                int? personAliasId = person.PrimaryAliasId;
+                                if( personAliasId.HasValue )
+                                {
+                                    defaultConnector.Options.AddOrIgnore(personAliasId.Value, person.FullName);
+                                }
+                            }
+
+                            defaultConnectors.Add(defaultConnector);
+                        }
+                    }
+                }
+            }
+
+            lvDefaultConnectors.DataSource = defaultConnectors;
+            lvDefaultConnectors.DataBind();
+        }
+
+
+        private List<int> cblSelectedItemsAsInt( CheckBoxList cbl )
+        {
+            var values = new List<int>();
+
+            foreach ( string stringValue in cbl.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value ).ToList() )
+            {
+                int numValue = int.MinValue;
+                if ( int.TryParse( stringValue, out numValue ) )
+                {
+                    values.Add( numValue );
+                }
+            }
+
+            return values;
         }
 
         #endregion
@@ -1207,6 +1329,19 @@ namespace RockWeb.Blocks.Connection
 
             imgupPhoto.BinaryFileId = connectionOpportunity.PhotoId;
 
+            DefaultConnectors = new Dictionary<int, int>();
+            foreach( var campus in connectionOpportunity.ConnectionOpportunityCampuses
+                .Where( c => 
+                    c.DefaultConnectorPersonAlias != null &&
+                    c.DefaultConnectorPersonAlias.Person != null ) )
+            {
+                var personAlias = campus.DefaultConnectorPersonAlias.Person.PrimaryAlias;
+                if (personAlias != null )
+                {
+                    DefaultConnectors.AddOrReplace( campus.CampusId, personAlias.Id );
+                }
+            }
+
             LoadDropDowns( connectionOpportunity );
 
             ShowOpportunityAttributes();
@@ -1483,6 +1618,15 @@ namespace RockWeb.Blocks.Connection
             }
         }
 
+        public class DefaultConnector
+        {
+            public int CampusId { get; set; }
+            public string CampusName { get; set; }
+            public int? PersonAliasId { get; set; }
+            public Dictionary<int, string> Options { get; set; }
+        }
+
         #endregion
-    }
+
+}
 }
