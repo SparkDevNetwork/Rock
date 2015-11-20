@@ -1139,7 +1139,7 @@ namespace RockWeb.Blocks.WorkFlow
                 workflowType.IsSystem = false;
                 workflowType.CategoryId = parentCategoryId;
                 workflowType.IconCssClass = "fa fa-list-ol";
-                workflowType.ActivityTypes.Add( new WorkflowActivityType { Guid = Guid.NewGuid(), IsActive = true } );
+                workflowType.ActivityTypes.Add( new WorkflowActivityType { Guid = Guid.NewGuid(), IsActive = true, IsActivatedWithWorkflow = true } );
                 workflowType.WorkTerm = "Work";            
             }
             else
