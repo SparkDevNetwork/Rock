@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -36,6 +37,10 @@ namespace RockWeb.Blocks.Security
     [DisplayName( "Account Edit" )]
     [Category( "Security" )]
     [Description( "Allows a person to edit their account information." )]
+
+    [BooleanField("Show Address", "Allows hiding the address field.", false, order: 0)]
+    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Location Type",
+        "The type of location that address should use", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 1 )]
     public partial class AccountEdit : RockBlock
     {
         /// <summary>

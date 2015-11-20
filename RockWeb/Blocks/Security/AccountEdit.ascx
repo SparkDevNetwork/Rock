@@ -60,7 +60,16 @@
 
                     <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
 
+                    
+
                 </fieldset>
+
+                <asp:Panel ID="pnlAddresses" runat="server">
+                <fieldset>
+                    <legend>Addresses</legend>
+                    <Rock:AddressControl id="acHomeAddress" Label="Home Address" runat="server" />
+                </fieldset>
+                </asp:Panel>
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
