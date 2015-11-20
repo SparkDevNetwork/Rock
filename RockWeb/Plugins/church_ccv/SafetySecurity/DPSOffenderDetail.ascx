@@ -27,8 +27,8 @@
                 </div>
 
                 <h2>Potential Matches</h2>
-                
-                <Rock:RockCheckBox ID="cbMatchZip" runat="server" Text="ZipCode" Help="Limit to records that have the same zip code for the home address" Checked="true" AutoPostBack="true" OnCheckedChanged="cbMatchZip_CheckedChanged"/>
+
+                <Rock:RockCheckBox ID="cbMatchZip" runat="server" Text="ZipCode" Help="Limit to records that have the same zip code for the home address" Checked="true" AutoPostBack="true" OnCheckedChanged="cbMatchZip_CheckedChanged" />
                 <Rock:RockCheckBox ID="cbAge" runat="server" Text="Age" Help="Limit to records that are same age +-2 years " Checked="true" AutoPostBack="true" OnCheckedChanged="cbAge_CheckedChanged" />
 
                 <Rock:Grid ID="gPotentialMatches" runat="server" DataKeyNames="Id" AllowSorting="true" OnRowDataBound="gPotentialMatches_RowDataBound">
@@ -45,22 +45,17 @@
                         <Rock:RockLiteralField ID="lAddressInfo" HeaderText="Address" />
                         <Rock:AttributeField DataField="SO" HeaderText="SO" />
                         <Rock:RockTemplateField ItemStyle-HorizontalAlign="Right">
-                                <ItemTemplate>
-                                    <p>
-                                        <asp:LinkButton runat="server" ID="btnIsConfirmMatch" CssClass="btn btn-default " data-toggle="tooltip" title="Confirm Match" OnClick="btnIsConfirmMatch_Click" CommandName="ConfirmMatch" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-flag fa-fw"></i></asp:LinkButton>
-                                    </p>
-                                    <p>
-                                        <asp:LinkButton runat="server" ID="btnSetSOAttribute" CssClass="btn btn-default " data-toggle="tooltip" title="Set SO Attribute" OnClick="btnSetSOAttribute_Click" CommandName="SetSOAttribute" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-asterisk fa-fw"></i></asp:LinkButton>
-                                    </p>
-                                </ItemTemplate>
-                            </Rock:RockTemplateField>
+                            <ItemTemplate>
+                                <p>
+                                    <asp:LinkButton runat="server" ID="btnIsConfirmMatch" CssClass="btn btn-default " data-toggle="tooltip" title="Confirm Match" OnClick="btnIsConfirmMatch_Click" CommandName="ConfirmMatch" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-flag fa-fw"></i></asp:LinkButton>
+                                </p>
+                                <p>
+                                    <asp:LinkButton runat="server" ID="btnSetSOAttribute" CssClass="btn btn-default " data-toggle="tooltip" title="Set SO Attribute" OnClick="btnSetSOAttribute_Click" CommandName="SetSOAttribute" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-asterisk fa-fw"></i></asp:LinkButton>
+                                </p>
+                            </ItemTemplate>
+                        </Rock:RockTemplateField>
                     </Columns>
                 </Rock:Grid>
-
-                <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
-                </div>
 
             </div>
 

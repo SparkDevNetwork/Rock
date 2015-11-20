@@ -1,25 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using church.ccv.SampleProject.Data;
-using church.ccv.SampleProject.Model;
-
+using church.ccv.SafetySecurity.Model;
 using Rock;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using church.ccv.SafetySecurity.Model;
-using System.Data.Entity.SqlServer;
-using Rock.Web;
 
 namespace RockWeb.Plugins.church_ccv.SafetySecurity
 {
@@ -60,27 +53,6 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             //
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            NavigateToParentPage();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnSave control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
-        {
-            // todo
-            NavigateToParentPage();
         }
 
         #endregion
@@ -141,13 +113,13 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                     .Where( p => p.FirstName.StartsWith( dpsOffender.FirstName.Substring( 0, 1 ) ) || p.NickName.StartsWith( dpsOffender.FirstName.Substring( 0, 1 ) ) )
                     .Where( p => dpsOffender.LastName == p.LastName )
                     .Where( p => ( p.Gender == Gender.Unknown ) || dpsOffender.Gender == ( p.Gender == Gender.Male ? "M" : "F" ) )
-                    .Where( p => !matchZip || dpsOffender.ResZip != "0" && qryHomeAddress.Any( x => x.Group.Members.Any( gm => gm.PersonId == p.Id ) && x.Location.PostalCode.StartsWith( dpsOffender.ResZip ) ) )
+                    .Where( p => !matchZip || ( dpsOffender.ResZip != "0" && qryHomeAddress.Any( x => x.Group.Members.Any( gm => gm.PersonId == p.Id ) && x.Location.PostalCode.StartsWith( dpsOffender.ResZip ) ) ) )
                     .Where( p => !matchAge || !p.BirthDate.HasValue || ( p.BirthDate.HasValue && dpsOffender.Age.HasValue &&
-                        ( ( SqlFunctions.DateDiff( "year", p.BirthDate.Value, today ) ) > ( dpsOffender.Age.Value - 3 ) && ( SqlFunctions.DateDiff( "year", p.BirthDate.Value, today ) ) < ( dpsOffender.Age.Value + 3 ) )
-                        ) );
+                        SqlFunctions.DateDiff( "year", p.BirthDate.Value, today ) > ( dpsOffender.Age.Value - 3 ) && SqlFunctions.DateDiff( "year", p.BirthDate.Value, today ) < ( dpsOffender.Age.Value + 3 ) ) );
 
                 var potentialMatchList = qryPotentialMatches.ToList();
-                var fullNameMatches = potentialMatchList.Where( a => ( ( a.FirstName.Equals( dpsOffender.FirstName, StringComparison.OrdinalIgnoreCase ) ) || ( a.NickName.Equals( dpsOffender.FirstName, StringComparison.OrdinalIgnoreCase ) ) ) ).ToList();
+                var fullNameMatches = potentialMatchList.Where( a => a.FirstName.Equals( dpsOffender.FirstName, StringComparison.OrdinalIgnoreCase )
+                    || a.NickName.Equals( dpsOffender.FirstName, StringComparison.OrdinalIgnoreCase ) ).ToList();
 
                 var fullNameAndAddressMatches = new List<Person>();
                 foreach ( var person in fullNameMatches )
@@ -171,7 +143,6 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 gPotentialMatches.DataSource = sortedList;
                 gPotentialMatches.DataBind();
             }
-
         }
 
         /// <summary>
@@ -326,5 +297,5 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         {
             ShowDetail( hfDPSOffenderId.Value.AsInteger() );
         }
-}
+    }
 }

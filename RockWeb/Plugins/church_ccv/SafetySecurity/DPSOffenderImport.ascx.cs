@@ -1,25 +1,10 @@
-﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// </copyright>
-//
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using church.ccv.SafetySecurity.Model;
 using Microsoft.AspNet.SignalR;
 using OfficeOpenXml;
@@ -191,29 +176,44 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnMatchAddresses_Click( object sender, EventArgs e )
         {
-            System.Threading.Tasks.Task.Run( () =>
+            var rockContext = new RockContext();
+            var locationService = new LocationService( rockContext );
+            var qryDpsOffender = new DPSOffenderService( rockContext ).Queryable();
+            var dpsOffenderList = qryDpsOffender.Where( a => !a.DpsLocationId.HasValue ).ToList();
+            var country = GlobalAttributesCache.Read().OrganizationCountry;
+            int progress = 0;
+            int count = dpsOffenderList.Count();
+            if ( count > 0 )
             {
-                var rockContext = new RockContext();
-                var locationService = new LocationService( rockContext );
-                var qryDpsOffender = new DPSOffenderService( rockContext ).Queryable();
-                var dpsOffenderList = qryDpsOffender.Where( a => !a.DpsLocationId.HasValue ).ToList();
-                var country = GlobalAttributesCache.Read().OrganizationCountry;
-                int progress = 0;
-                int count = dpsOffenderList.Count();
-                foreach ( var dpsOffender in dpsOffenderList )
-                {
-                    var lookupLocation = locationService.Get( dpsOffender.ResAddress, string.Empty, dpsOffender.ResCity, dpsOffender.ResState, dpsOffender.ResZip, country );
-                    if ( lookupLocation != null )
+
+                System.Threading.Tasks.Task.Run( () =>
                     {
-                        dpsOffender.DpsLocationId = lookupLocation.Id;
-                    }
+                        foreach ( var dpsOffender in dpsOffenderList )
+                        {
 
-                    progress++;
-                    _hubContext.Clients.All.receiveNotification( string.Format( "{0}:{1}", progress, count ) );
-                }
+                            var lookupLocation = locationService.Get( dpsOffender.ResAddress, string.Empty, dpsOffender.ResCity, dpsOffender.ResState, dpsOffender.ResZip, country );
+                            if ( lookupLocation != null )
+                            {
+                                dpsOffender.DpsLocationId = lookupLocation.Id;
+                            }
 
-                rockContext.SaveChanges();
-            } );
+                            progress++;
+
+                            var percent = (double)( progress * 100 ) / count;
+                            _hubContext.Clients.All.receiveNotification( string.Format( "matching addresses: {0}%", (int)percent ) );
+                        }
+
+                        rockContext.SaveChanges();
+
+                        _hubContext.Clients.All.hideProgressBar();
+                    } );
+            }
+            else
+            {
+                nbResult.Text = "All DPS Address records already matched.";
+                nbResult.NotificationBoxType = NotificationBoxType.Success;
+                nbResult.Visible = true;
+            }
         }
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             var groupRoleIdAdult = familyGroupType.Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).First().Id;
 
             var qryGroupMembers = new GroupMemberService( rockContext ).Queryable();
-            
+
             var qryHomeAddress = new GroupLocationService( rockContext ).Queryable()
                 .Where( a => a.GroupLocationTypeValueId.HasValue && a.GroupLocationTypeValueId.Value == groupLocationTypeValueHomeId && a.Group.GroupTypeId == groupTypeIdFamily );
 
@@ -302,17 +302,13 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 qryDpsOffender = qryDpsOffender.Where( a => a.PotentialMatches.Any() );
             }
 
-            rockContext.Database.CommandTimeout = 180;
-            DebugHelper.SQLLoggingStart( rockContext );
             using ( new QueryHintScope( rockContext, QueryHintType.RECOMPILE ) )
             {
                 gDpsOffender.SetLinqDataSource( qryDpsOffender );
             }
-            DebugHelper.SQLLoggingStop();
+
             gDpsOffender.DataBind();
         }
-
-        #endregion
 
         /// <summary>
         /// Handles the RowDataBound event of the gDpsOffender control.
@@ -412,5 +408,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         {
             NavigateToLinkedPage( "DetailPage", "DPSOffenderId", e.RowKeyId );
         }
+
+        #endregion
     }
 }

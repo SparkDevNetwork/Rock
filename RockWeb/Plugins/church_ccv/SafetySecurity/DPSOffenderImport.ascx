@@ -5,17 +5,16 @@
     $(function () {
         var proxy = $.connection.rockMessageHub;
 
-        proxy.client.showLog = function () {
-            $('.js-notification').fadeIn();
+        proxy.client.hideProgressBar = function () {
+            $('.js-notification').fadeOut();
         }
 
         proxy.client.receiveNotification = function (message) {
+
             $('.js-notification').text(message);
         }
 
-        $.connection.hub.start().done(function () {
-            // hub started... do stuff here if you want to let the user know something
-        });
+        $.connection.hub.start().done(function () { });
     })
 </script>
 
@@ -29,20 +28,18 @@
             </div>
             <div class="panel-body">
 
-
                 <Rock:FileUploader ID="fuImport" runat="server" Label="Import File" OnFileUploaded="fuImport_FileUploaded" />
                 <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" />
 
+                <div class="js-notification"></div>
                 <asp:LinkButton ID="btnMatchAddresses" runat="server" CssClass="btn btn-action" Text="Match Addresses" OnClick="btnMatchAddresses_Click" />
                 <asp:LinkButton ID="btnMatchPeople" runat="server" CssClass="btn btn-action" Text="Match People" OnClick="btnMatchPeople_Click" />
 
                 <Rock:RockCheckBox ID="cbMatchZip" runat="server" Text="ZipCode" Help="Limit to records that have the same zip code for the home address" Checked="true" />
                 <Rock:RockCheckBox ID="cbAge" runat="server" Text="Age" Help="Limit to records that are same age +-2 years " Checked="true" />
 
-                <Rock:RockCheckBox ID="cbLimitToPotentialMatches" runat="server" Text="Limit to Potential Matches" Checked="true"/>
+                <Rock:RockCheckBox ID="cbLimitToPotentialMatches" runat="server" Text="Limit to Potential Matches" Checked="true" />
                 <Rock:RockCheckBox ID="cbLimitToLocationMatches" runat="server" Text="Limit to Location Matches" />
-
-                <div class="js-notification"></div>
 
                 <Rock:Grid ID="gDpsOffender" runat="server" DataKeyNames="Id" AllowSorting="true" OnRowDataBound="gDpsOffender_RowDataBound" OnRowSelected="gDpsOffender_RowSelected">
                     <Columns>
