@@ -43,7 +43,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
     /// Creates an RSS feed of the items in the requested folder.  For use with RiseVision.
     /// </summary>
     [DisplayName( "RSS Folder Files" )]
-    [Category( "Utility" )]
+    [Category( "com_centralaz > Utility" )]
     [Description( "Creates an RSS feed of the items in the requested folder.  For use with RiseVision." )]
     [TextField( "Base Content Folder", "The base content folder (under the ~/Content folder) where the requested folders are found.", true, @"External Site\CampusAnnouncements" )]
     [MemoField( "RSS Template", "Don't change this unless you know what you're doing.", true, @"{% assign timezone = 'Now' | Date:'zzz' | Replace:':','' -%}

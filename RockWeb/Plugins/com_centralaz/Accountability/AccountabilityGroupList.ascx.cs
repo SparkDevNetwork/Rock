@@ -18,7 +18,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Plugins.com_centralaz.Accountability
 {
     [DisplayName( "Accountability Group List" )]
-    [Category( "com_central > Accountability" )]
+    [Category( "com_centralaz > Accountability" )]
     [Description( "Lists all accountability groups for the configured group types." )]
 
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]

@@ -30,7 +30,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
     /// Manage UP Team Books.
     /// </summary>
     [DisplayName( "Book Management" )]
-    [Category( "centralaz > Prayerbook" )]
+    [Category( "com_centralaz > Prayerbook" )]
     [Description( "Manage Books; Open, Close, Publish, etc." )]
     [LinkedPage( "UP Team Prayerbook Homepage", "The homepage of the Prayerbook App", false )]
     public partial class BookManagement : Rock.Web.UI.RockBlock

@@ -32,7 +32,7 @@ using Rock.Web.UI;
 namespace RockWeb.Plugins.com_CentralAZ.Utility
 {
     [DisplayName( "Contribution Statement Preference" )]
-    [Category( "CentralAZ.com > Utility" )]
+    [Category( "com_centralaz > Utility" )]
     [Description( "Displays and or sets the user's statement preference such as quarterly, yearly, none." )]
 
     // List of all possible/documented Block Atributes:

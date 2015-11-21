@@ -34,7 +34,7 @@ namespace RockWeb.Plugins.com_CentralAZ.Utility
     /// Template block for developers to use to start a new block.
     /// </summary>
     [DisplayName( "Auto Assign Number" )]
-    [Category( "CentralAZ.com > Utility" )]
+    [Category( "com_centralaz > Utility" )]
     [Description( "Context aware block that assigns the next sequential number (on an integer Attribute) if none is already set." )]
 
     [ContextAware( typeof( Person ) )]

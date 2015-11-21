@@ -35,7 +35,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
     /// Edit and Add Prayer Book Entries
     /// </summary>
     [DisplayName( "Edit Entry" )]
-    [Category( "centralaz > Prayerbook" )]
+    [Category( "com_centralaz > Prayerbook" )]
     [Description( "Edit and Add Prayerbook Entries" )]
     public partial class EditEntry : Rock.Web.UI.RockBlock
     {

@@ -33,7 +33,7 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
     /// Sidebar for Prayerbook Home Page.
     /// </summary>
     [DisplayName( "Homepage Sidebar" )]
-    [Category( "centralaz > Prayerbook" )]
+    [Category( "com_centralaz > Prayerbook" )]
     [Description( "Sidebar to UP Team Prayerbook Home Page" )]
     [LinkedPage( "Edit Entry Page" )]
     public partial class HomepageSidebar : Rock.Web.UI.RockBlock
