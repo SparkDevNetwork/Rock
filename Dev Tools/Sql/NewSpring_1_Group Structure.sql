@@ -502,7 +502,7 @@ VALUES
 ('Guest Services Attendee', 'VIP Room Attendee', 'VIP Room Attendee'), 
 ('Guest Services Attendee', 'Special Event Attendee', 'Special Event Attendee'), 
 ('Guest Services Attendee', 'Special Event Volunteer', 'Special Event Volunteer'), 
-('Guest Services Attendee', 'Auditorium ReSET Team', 'Auditorium ReSET Team'), 
+('Guest Services Attendee', 'Auditorium Reset Team', 'Auditorium Reset Team'), 
 ('Guest Services Attendee', 'Awake Team', 'Awake Team'), 
 ('Guest Services Attendee', 'Facility Cleaning Crew', 'Facility Cleaning Crew'), 
 ('Guest Services Attendee', 'Greeting Team', 'Greeting Team'), 
