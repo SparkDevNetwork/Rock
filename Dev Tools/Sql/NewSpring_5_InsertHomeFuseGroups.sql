@@ -24,8 +24,14 @@ DECLARE @F1 nvarchar(255) = 'F1'
 /* ====================================================== */
 DECLARE @IsSystem int = 0, @Order int = 0,  @TextFieldTypeId int = 1, @True int = 1, @False int = 0, @Output nvarchar(255)
 
-DECLARE @FuseGroupTypeId int, @FuseGroupMemberId int, @FuseGroupId int
-DECLARE @HomeGroupTypeId int, @HomeGroupMemberId int, @HomeGroupId int
+DECLARE @SmallGroupTypeId int, @SmallGroupMemberId int, @FuseGroupTypeId int, @FuseGroupMemberId int, @FuseGroupId int, @HomeGroupId int
+
+SELECT @SmallGroupTypeId = Id, 
+	@SmallGroupMemberId = DefaultGroupRoleId
+FROM [GroupType]
+WHERE [Name] = 'Small Group'
+
+
 SELECT @FuseGroupTypeId = Id, 
 	@FuseGroupMemberId = DefaultGroupRoleId
 FROM [GroupType]
@@ -62,38 +68,15 @@ BEGIN
 	select @FuseGroupId = SCOPE_IDENTITY()
 end
 
-SELECT @HomeGroupTypeId = Id, 
-	@HomeGroupMemberId = DefaultGroupRoleId
-FROM [GroupType]
-WHERE [Name] = 'Home Group'
-
-if @HomeGroupTypeId is null
-begin
-	INSERT [GroupType] ( [IsSystem], [Name], [Description], [GroupTerm], [GroupMemberTerm], [AllowMultipleLocations], [ShowInGroupList], [ShowInNavigation], [TakesAttendance], 
-		[AttendanceRule], [AttendancePrintTo], [Order], [InheritedGroupTypeId], [LocationSelectionMode], [AllowedScheduleTypes], [SendAttendanceReminder], [Guid] ) 
-	VALUES ( @IsSystem, 'Home Group', 'Grouptype for Home groups.', 'Group', 'Member', @True, @True, @True, @True, 1, 0, 0, 15, 0, 0, 0, NEWID() );
-
-	SET @HomeGroupTypeId = SCOPE_IDENTITY()
-
-	INSERT [GroupTypeRole] ( [IsSystem], [GroupTypeId], [Name], [Order], [IsLeader], [CanView], [CanEdit], [Guid] )
-	VALUES ( @IsSystem, @HomeGroupTypeId, 'Member', 0, @False, @False, @False, NEWID() )
-
-	SET @HomeGroupMemberId = SCOPE_IDENTITY()
-
-	UPDATE [GroupType]
-	SET DefaultGroupRoleId = @HomeGroupMemberId
-	WHERE [Id] = @HomeGroupTypeId
-end
-
 select @HomeGroupId = ID
 from [Group] 
 where Name = 'Home Groups'
-and GroupTypeId = @HomeGroupTypeId
+and GroupTypeId = @SmallGroupTypeId
 
 if @HomeGroupId is null
 begin
 	insert [Group] (IsSystem, ParentGroupId, GroupTypeId, CampusId, Name, [Description], IsSecurityRole, IsActive, [Order], IsPublic, [Guid])
-	select @False, NULL, @HomeGroupTypeId, NULL, 'Home Groups', 'Parent group for Home Groups', @False, @True, @Order, @True, NEWID()
+	select @False, NULL, @SmallGroupTypeId, NULL, 'Home Groups', 'Parent group for Home Groups', @False, @True, @Order, @True, NEWID()
 
 	select @HomeGroupId = SCOPE_IDENTITY()
 end
@@ -130,6 +113,7 @@ begin
 	select @CampusFuseGroupId = Id from [Group]
 	where Name = @CampusName
 	and CampusId = @CampusId
+	and ParentGroupId = @FuseGroupId
 	and GroupTypeId = @FuseGroupTypeId
 	
 	if @CampusFuseGroupId is null
@@ -144,12 +128,13 @@ begin
 	select @CampusHomeGroupId = Id from [Group]
 	where Name = @CampusName
 	and CampusId = @CampusId
-	and GroupTypeId = @HomeGroupTypeId
+	and ParentGroupId = @HomeGroupId
+	and GroupTypeId = @SmallGroupTypeId
 	
 	if @CampusHomeGroupId is null
 	begin
 		insert [Group] (IsSystem, ParentGroupId, GroupTypeId, CampusId, Name, [Description], IsSecurityRole, IsActive, [Order], IsPublic, [Guid])
-		select @False, @HomeGroupid, @HomeGroupTypeId, @CampusId, @CampusName, @CampusName + ' Home Groups', @False, @True, @Order, @True, NEWID()
+		select @False, @HomeGroupid, @SmallGroupTypeId, @CampusId, @CampusName, @CampusName + ' Home Groups', @False, @True, @Order, @True, NEWID()
 
 		select @CampusHomeGroupId = SCOPE_IDENTITY()
 	end
@@ -194,14 +179,15 @@ begin
 		end
 		else if @GroupTypeName like '%Home%'
 		begin
-			select @GroupTypeId = @HomeGroupTypeId
+			select @GroupTypeId = @SmallGroupTypeId
 			select @ParentGroupId = @CampusHomeGroupId
-			select @GroupRoleId = @HomeGroupMemberId
+			select @GroupRoleId = @SmallGroupMemberId
 		end
 
 		select @ChildGroupId = Id from [Group]
 		where Name = @GroupName 
 		and CampusId = @CampusId
+		and ParentGroupId = @ParentGroupId
 		and GroupTypeId = @GroupTypeId
 
 		select @Output = 'Starting ' + @CampusName + ' / ' + @GroupTypeName + ' / ' + @GroupName
