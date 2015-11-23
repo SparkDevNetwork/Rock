@@ -491,6 +491,61 @@ namespace RockWeb.Blocks.Event
 
         #region Registration Detail Events
 
+        protected void lbShowMoveRegistrationDialog_Click( object sender, EventArgs e )
+        {
+            if ( RegistrationId.HasValue )
+            {
+                // add current registration instance name
+                lCurrentRegistrationInstance.Text = Registration.RegistrationInstance.Name;
+
+                // list other registration instances
+                using ( var rockContext = new RockContext() )
+                {
+                    var otherRegistrationInstances = new RegistrationInstanceService( rockContext ).Queryable()
+                            .Where( i =>
+                                i.RegistrationTemplateId == Registration.RegistrationInstance.RegistrationTemplateId
+                                && i.IsActive == true
+                                && i.Id != Registration.RegistrationInstanceId
+                                && (i.EndDateTime >= RockDateTime.Now || i.EndDateTime == null) )
+                            .Select( i => new
+                            {
+                                Value = i.Id,
+                                Text = i.Name
+                            } )
+                            .ToList();
+                    ddlNewRegistrationInstance.DataValueField = "Value";
+                    ddlNewRegistrationInstance.DataTextField = "Text";
+                    ddlNewRegistrationInstance.DataSource = otherRegistrationInstances;
+                    ddlNewRegistrationInstance.DataBind();
+
+                    ddlNewRegistrationInstance.Items.Insert( 0, new ListItem( String.Empty, String.Empty ) );
+                    ddlNewRegistrationInstance.SelectedIndex = 0;
+
+                }
+                mdMoveRegistration.Show();
+            }
+        }
+
+        protected void btnMoveRegistration_Click( object sender, EventArgs e )
+        {
+            // set the new registration id
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationService = new RegistrationService( rockContext );
+
+                var registration = registrationService.Get( Registration.Id );
+                registration.RegistrationInstanceId = ddlNewRegistrationInstance.SelectedValue.AsInteger();
+                rockContext.SaveChanges();
+
+                // Reload registration
+                Registration = GetRegistration( Registration.Id );
+
+                lWizardInstanceName.Text = Registration.RegistrationInstance.Name;
+            }
+            
+            mdMoveRegistration.Hide();
+        }
+
         protected void ppPerson_SelectPerson( object sender, EventArgs e )
         {
             if ( ppPerson.PersonId.HasValue )
@@ -1941,6 +1996,5 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #endregion
-
-}
+    }
 }

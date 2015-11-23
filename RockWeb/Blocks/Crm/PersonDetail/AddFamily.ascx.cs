@@ -64,6 +64,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private bool _confirmMaritalStatus = true;
         private int _childRoleId = 0;
         private List<NewFamilyAttributes> attributeControls = new List<NewFamilyAttributes>();
+        private Dictionary<string, int?> _verifiedLocations = null;
         private DefinedValueCache _homePhone = null;
         private DefinedValueCache _cellPhone = null;
         private bool _SMSEnabled = false;
@@ -129,6 +130,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 Duplicates = JsonConvert.DeserializeObject<Dictionary<Guid, List<Person>>>( json );
             }
+
+            _verifiedLocations = ViewState["VerifiedLocations"] as Dictionary<string, int?>;
 
             CreateControls( false );
         }
@@ -216,6 +219,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 FamilyMembers = new List<GroupMember>();
                 Duplicates = new Dictionary<Guid, List<Person>>();
+                _verifiedLocations = new Dictionary<string, int?>();
                 AddFamilyMember();
                 CreateControls( true );
             }
@@ -242,6 +246,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ViewState["CurrentPageIndex"] = CurrentPageIndex;
             ViewState["FamilyMembers"] = JsonConvert.SerializeObject( FamilyMembers, Formatting.None, jsonSetting );
             ViewState["Duplicates"] = JsonConvert.SerializeObject( Duplicates, Formatting.None, jsonSetting );
+            ViewState["VerifiedLocations"] = _verifiedLocations;
 
             return base.SaveViewState();
         }
@@ -315,6 +320,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( Page.IsValid )
             {
+                if ( CurrentPageIndex == 0 )
+                {
+                    string locationKey = GetLocationKey();
+                    if ( !string.IsNullOrEmpty( locationKey ) && !_verifiedLocations.ContainsKey( locationKey ) )
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
+                            _verifiedLocations.AddOrIgnore( locationKey, ( location != null ? location.Id : (int?)null ) );
+                        }
+                    }
+                }
+
                 if ( CurrentPageIndex < ( attributeControls.Count + 1 ) )
                 {
                     CurrentPageIndex++;
@@ -337,8 +355,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 var familyGroup = GroupService.SaveNewFamily( rockContext, FamilyMembers, cpCampus.SelectedValueAsInt(), true );
                                 if ( familyGroup != null )
                                 {
-                                    GroupService.AddNewFamilyAddress( rockContext, familyGroup, GetAttributeValue( "LocationType" ),
-                                        acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
+                                    string locationKey = GetLocationKey();
+                                    if ( !string.IsNullOrEmpty( locationKey ) && _verifiedLocations.ContainsKey( locationKey ) )
+                                    {
+                                        GroupService.AddNewFamilyAddress( rockContext, familyGroup, GetAttributeValue( "LocationType" ), _verifiedLocations[locationKey] );
+                                    }
                                 }
                             } );
 
@@ -398,7 +419,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             int adultRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
             var homeLocationGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
 
-            var location = locationService.Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
+            var location = new Location();
+            acAddress.GetValues( location );
 
             foreach ( var familyMember in FamilyMembers )
             {
@@ -772,6 +794,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
+        private string GetLocationKey()
+        {
+            var location = new Location();
+            acAddress.GetValues( location );
+            return location.GetFullStreetAddress().Trim();
+        }
+
         private void AddFamilyMember()
         {
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
@@ -809,17 +838,26 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             // Find any other family members (any family) that have same location
             var othersAtAddress = new List<int>();
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
-            var location = locationService.Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
-            if ( location != null )
-            {
-                othersAtAddress = groupService
-                    .Queryable().AsNoTracking()
-                    .Where( g =>
-                        g.GroupTypeId == familyGroupType.Id &&
-                        g.GroupLocations.Any( l => l.LocationId == location.Id ) )
-                    .SelectMany( g => g.Members )
-                    .Select( m => m.PersonId )
-                    .ToList();
+
+            string locationKey = GetLocationKey();
+            if ( !string.IsNullOrWhiteSpace(locationKey) && _verifiedLocations.ContainsKey( locationKey))
+            { 
+                int? locationId = _verifiedLocations[locationKey];
+                if ( locationId.HasValue )
+                {
+                    var location = locationService.Get( locationId.Value );
+                    if ( location != null )
+                    {
+                        othersAtAddress = groupService
+                            .Queryable().AsNoTracking()
+                            .Where( g =>
+                                g.GroupTypeId == familyGroupType.Id &&
+                                g.GroupLocations.Any( l => l.LocationId == location.Id ) )
+                            .SelectMany( g => g.Members )
+                            .Select( m => m.PersonId )
+                            .ToList();
+                    }
+                }
             }
 
             foreach ( var person in FamilyMembers
@@ -903,7 +941,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     Duplicates.Add( person.Guid, dups );
                 }
-
             }
 
             return Duplicates.Any();

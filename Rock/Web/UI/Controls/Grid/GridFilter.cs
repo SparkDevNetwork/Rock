@@ -316,7 +316,7 @@ namespace Rock.Web.UI.Controls
                     if ( cellCount >= cellsPerRow )
                     {
                         writer.RenderEndTag();
-                        writer.AddAttribute("class", "row");
+                        writer.AddAttribute( "class", "row" );
                         writer.RenderBeginTag( HtmlTextWriterTag.Div );
                         cellCount = 0;
                     }
@@ -324,20 +324,19 @@ namespace Rock.Web.UI.Controls
                     if ( child != _lbFilter && child != _lbClearFilter && child != _hfVisible )
                     {
                         // add column
-                        if (child.Visible)
+                        if ( child.Visible )
                         {
-                            writer.AddAttribute("class", "col-lg-4");
-                            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+                            writer.AddAttribute( "class", "col-lg-4" );
+                            writer.RenderBeginTag( HtmlTextWriterTag.Div );
                         }
 
                         child.RenderControl( writer );
 
-                        if (child.Visible)
+                        if ( child.Visible )
                         {
                             writer.RenderEndTag();
+                            cellCount++;
                         }
-
-                        cellCount++;
                     }
                 }
 

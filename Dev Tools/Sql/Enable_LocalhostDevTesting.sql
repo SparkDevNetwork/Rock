@@ -59,8 +59,41 @@ BEGIN
            ,'A416AD46-028C-4EEC-A23D-FB2093AEB1A8'
            ,GetDate()
            ,GetDate()
-           ,1
-           ,1)
+           ,null
+           ,null)
+END
+
+DECLARE @InternalApplicationRootId int = (select Id from [Attribute] WHERE [Key] = 'InternalApplicationRoot')
+
+IF EXISTS ( SELECT [Id] FROM [AttributeValue]  WHERE [AttributeId] = @InternalApplicationRootId )
+BEGIN
+	UPDATE [AttributeValue]
+	SET
+		[Value] = 'http://localhost:6229/'
+	WHERE [AttributeId] = @InternalApplicationRootId
+END
+ELSE
+BEGIN
+	INSERT INTO [AttributeValue]
+           ([IsSystem]
+           ,[AttributeId]
+           ,[EntityId]
+           ,[Value]
+           ,[Guid]
+           ,[CreatedDateTime]
+           ,[ModifiedDateTime]
+           ,[CreatedByPersonAliasId]
+           ,[ModifiedByPersonAliasId])
+     VALUES
+           (1
+           ,@InternalApplicationRootId
+           ,null
+           ,'http://localhost:6229/'
+           ,'06E0E3FC-9A1C-43AF-8B3B-C760F9951012'
+           ,GetDate()
+           ,GetDate()
+           ,null
+           ,null)
 END
 
 DECLARE @CommChannelServerId int = (SELECT Id from [Attribute] WHERE [Guid] = '6CFFDF99-E93A-49B8-B440-0EF93878A51F')
@@ -91,6 +124,6 @@ BEGIN
            ,'BD18DBE8-E8C0-4A5E-823D-BECBCDABF419'
            ,GetDate()
            ,GetDate()
-           ,1
-           ,1)
+           ,null
+           ,null)
 END

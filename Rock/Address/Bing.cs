@@ -135,6 +135,7 @@ namespace Rock.Address
                                     if ( address != null )
                                     {
                                         location.Street1 = address.AddressLine;
+                                        location.County = address.AdminDistrict2;
                                         location.City = address.Locality;
                                         location.State = address.AdminDistrict;
                                         if ( !String.IsNullOrWhiteSpace( address.PostalCode ) &&
