@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
                 if ( !request.HasResponseXml )
                 {
-                    foreach( var lb in e.Row.Cells[4].ControlsOfTypeRecursive<LinkButton>() )
+                    foreach( var lb in e.Row.Cells[5].ControlsOfTypeRecursive<LinkButton>() )
                     {
                         lb.Visible = false;
                     }
@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                                 "<span class='label label-success'>No</span>" ) : 
                             string.Empty,
                         HasResponseXml = !string.IsNullOrWhiteSpace( b.ResponseXml ),
-                        ResponseDocumentText = b.ResponseDocumentId.HasValue ? "View" : "",
+                        ResponseDocumentText = b.ResponseDocumentId.HasValue ? "<i class='fa fa-file-pdf-o fa-lg'></i>" : "",
                         ResponseDocumentId = b.ResponseDocumentId ?? 0
                     } ).ToList();
 
