@@ -34,6 +34,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
     [Category( "com_centralaz > Groups" )]
     [Description( "Central custom group search block." )]
     [LinkedPage( "Life Group List Page", "The page to navigate to for the group list.", false, "", "", 0 )]
+    [LinkedPage( "Life Group Map Page", "The page to navigate to for the group list.", false, "", "", 0 )]
     [LinkedPage( "Information Security Page", "The page describing why your information is safe with us.", false, "", "", 0 )]
 
     public partial class LifeGroupSearch : Rock.Web.UI.RockBlock
@@ -191,6 +192,12 @@ $('.groupsearch-filter > .panel-body').on('validation-error', function() {
             NavigateToLinkedPage( "InformationSecurityPage" );
         }
 
+        protected void lbGroupMap_Click( object sender, EventArgs e )
+        {
+            ParameterState.AddOrReplace( "Campus", ddlCampus.SelectedValue );
+            NavigateToLinkedPage( "LifeGroupMapPage", "CampusId", ddlCampus.SelectedValue.AsInteger() );
+        }
+
         #endregion
 
         #region Internal Methods
@@ -218,10 +225,13 @@ $('.groupsearch-filter > .panel-body').on('validation-error', function() {
                 cblChildren.SetValues( ParameterState["Children"].Split( ';' ).ToList() );
             }
 
-            ddlCampus.DataSource = CampusCache.All();
-            ddlCampus.DataBind();
+            ddlCampus.Items.Clear();
+            foreach ( var campus in CampusCache.All() )
+            {
+                ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString().ToUpper() ) );
+            }
         }
 
         #endregion
-    }
+}
 }

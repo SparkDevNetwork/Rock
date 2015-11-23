@@ -13,7 +13,7 @@
 
                 <div class="form-inline clearfix">
                     <div class="lifegroupmap-campusselector">
-                        <Rock:RockDropDownList ID="ddlCampus" runat="server" OnSelectedIndexChanged="ddlCampus_SelectedIndexChanged" Label="Select Campus" />
+                        <Rock:RockDropDownList ID="ddlCampus" runat="server" OnSelectedIndexChanged="ddlCampus_SelectedIndexChanged" Label="Select Campus" AutoPostBack="true" />
                     </div>
                 </div>
 

@@ -151,7 +151,8 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         private void LoadList()
         {
             // Build qry
-            //TODO fix these
+            ParameterState.AddOrReplace( "DetailSource", RockPage.Guid.ToString() );
+
             int smallGroupTypeId = GroupTypeCache.Read( "7F76AE15-C5C4-490E-BF3A-50FB0591A60F" ).Id;
             RockContext rockContext = new RockContext();
             AttributeValueService attributeValueService = new AttributeValueService( rockContext );

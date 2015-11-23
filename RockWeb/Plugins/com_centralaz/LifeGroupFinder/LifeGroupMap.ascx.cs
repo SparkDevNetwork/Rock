@@ -58,6 +58,32 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the parameter state.
+        /// </summary>
+        /// <value>
+        /// The state of the parameter.
+        /// </value>
+        public Dictionary<string, string> ParameterState
+        {
+            get
+            {
+                var parameterState = Session["ParameterState"] as Dictionary<string, string>;
+                if ( parameterState == null )
+                {
+                    parameterState = new Dictionary<string, string>();
+
+                    Session["ParameterState"] = parameterState;
+                }
+                return parameterState;
+            }
+
+            set
+            {
+                Session["ParameterState"] = value;
+            }
+        }
+
         #endregion
 
         #region Base Control Methods
@@ -115,6 +141,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         {
             var qryParams = new Dictionary<string, string>();
             qryParams.Add( "CampusId", ddlCampus.SelectedValue );
+            ParameterState.AddOrReplace( "Campus", ddlCampus.SelectedValue );
             NavigateToPage( RockPage.Guid, qryParams );
         }
 
@@ -127,10 +154,22 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             int? campusId = PageParameter( "CampusId" ).AsIntegerOrNull();
             if ( !campusId.HasValue )
             {
-                pnlMap.Visible = false;
-                lMessages.Text = "<div class='alert alert-warning'><strong>Group Map</strong> A Campus ID is required to display the map.</div>";
-                return;
+                if ( !String.IsNullOrWhiteSpace( ParameterState["Campus"] ) )
+                {
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams.Add( "CampusId", ParameterState["Campus"] );
+                    NavigateToPage( RockPage.Guid, qryParams );
+                    return;
+                }
+                else
+                {
+                    pnlMap.Visible = false;
+                    lMessages.Text = "<div class='alert alert-warning'><strong>Group Map</strong> A Campus ID is required to display the map.</div>";
+                    return;
+                }
             }
+
+            ParameterState.AddOrReplace( "DetailSource", RockPage.Guid.ToString() );
 
             List<MapItem> groupMapItems = new List<MapItem>();
             var rockContext = new RockContext();
@@ -143,8 +182,8 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             }
             ddlCampus.SelectedValue = campusId.ToString().ToUpper();
 
-            var groupTypeGuid = "7F76AE15-C5C4-490E-BF3A-50FB0591A60F".AsGuid();
-            var qry = new GroupService( rockContext ).Queryable().Where( g => g.CampusId == campusId && g.GroupType.Guid == groupTypeGuid );
+            var groupTypeGuid = "7F76AE15-C5C4-490E-BF3A-50FB0591A60F".AsGuid(); 
+            var qry = new GroupService( rockContext ).Queryable( "GroupType.DefaultGroupRole" ).Where( g => g.CampusId == campusId && g.GroupType.Guid == groupTypeGuid && g.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true ) != null && g.IsPublic);
             foreach ( Group group in qry )
             {
                 var groupLocation = group.GroupLocations.FirstOrDefault();

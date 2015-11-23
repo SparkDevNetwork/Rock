@@ -20,6 +20,11 @@
                     <div class="col-md-4">
                         <Rock:RockDropDownList ID="ddlCampus" runat="server" />
                     </div>
+                    <div class="col-md-4">
+                        View a 
+                            <asp:LinkButton ID="lbGroupMap" runat="server" Text="Map" OnClick="lbGroupMap_Click" CausesValidation="false" />
+                           of all groups from this campus.
+                        </div>
                 </div>
 
                 <div class="row">

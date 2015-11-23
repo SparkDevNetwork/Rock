@@ -88,6 +88,32 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             }
         }
 
+        /// <summary>
+        /// Gets or sets the parameter state.
+        /// </summary>
+        /// <value>
+        /// The state of the parameter.
+        /// </value>
+        public Dictionary<string, string> ParameterState
+        {
+            get
+            {
+                var parameterState = Session["ParameterState"] as Dictionary<string, string>;
+                if ( parameterState == null )
+                {
+                    parameterState = new Dictionary<string, string>();
+
+                    Session["ParameterState"] = parameterState;
+                }
+                return parameterState;
+            }
+
+            set
+            {
+                Session["ParameterState"] = value;
+            }
+        }
+
         #endregion
 
         #region Control Methods
@@ -350,7 +376,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbGoBack_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            NavigateToPage( ParameterState["DetailSource"].AsGuid(), new Dictionary<string,string>() );
         }
 
         /// <summary>
