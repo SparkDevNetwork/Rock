@@ -322,7 +322,6 @@ namespace Rock.Security
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
         public static void AllowAllUsers( ISecured entity, string action, RockContext rockContext = null )
         {

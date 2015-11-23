@@ -1938,7 +1938,7 @@ namespace Rock.Web.UI.Controls
                                 return aNode.InnerText;
                             }
                         }
-                        catch ( Exception ex ) 
+                        catch 
                         { 
                             // ignore
                         }
