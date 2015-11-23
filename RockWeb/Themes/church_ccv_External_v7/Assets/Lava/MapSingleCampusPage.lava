@@ -105,7 +105,7 @@
         <p class="hidden-xs">&nbsp;</p>
 
         <h3>Students</h3>
-        <p>Jr High and High School students meet for seperate weekend services.</p>
+        <p>Jr High and High School students meet for separate weekend services.</p>
         <p>
           <strong>7th - 8th Grade</strong> {{ campus | Attribute: 'JrHighTime' }}<br>
           <strong>9th - 12th Grade</strong> {{ campus | Attribute: 'HighSchoolTime' }}
