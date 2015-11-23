@@ -315,6 +315,7 @@ namespace RockWeb.Blocks.Groups
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Role" ), "Role", cblRole.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Status" ), "Status", cblGroupMemberStatus.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Campus" ), "Campus", cpCampusFilter.SelectedCampusId.ToString() );
+            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Gender" ), "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
 
             if ( AvailableAttributes != null )
             {
@@ -379,6 +380,10 @@ namespace RockWeb.Blocks.Groups
             else if ( e.Key == MakeKeyUniqueToGroup( "Status" ) )
             {
                 e.Value = ResolveValues( e.Value, cblGroupMemberStatus );
+            }
+            else if ( e.Key == MakeKeyUniqueToGroup( "Gender" ) )
+            {
+                e.Value = ResolveValues( e.Value, cblGenderFilter );
             }
             else if ( e.Key == MakeKeyUniqueToGroup( "Campus" ) )
             {
@@ -499,6 +504,12 @@ namespace RockWeb.Blocks.Groups
             tbFirstName.Text = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "First Name" ) );
             tbLastName.Text = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Last Name" ) );
             cpCampusFilter.SelectedCampusId = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Campus" ) ).AsIntegerOrNull();
+            
+            string genderValue = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Gender" ) );
+            if ( !string.IsNullOrWhiteSpace( genderValue ) )
+            {
+                cblGenderFilter.SetValues( genderValue.Split( ';' ).ToList() );
+            }
 
             string roleValue = rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Role" ) );
             if ( !string.IsNullOrWhiteSpace( roleValue ) )
@@ -875,6 +886,18 @@ namespace RockWeb.Blocks.Groups
                     if ( statuses.Any() )
                     {
                         qry = qry.Where( m => statuses.Contains( m.GroupMemberStatus ) );
+                    }
+
+                    var genders = new List<Gender>();
+                    foreach ( var item in cblGenderFilter.SelectedValues )
+                    {
+                        var gender = item.ConvertToEnum<Gender>();
+                        genders.Add( gender );
+                    }
+
+                    if ( genders.Any() )
+                    {
+                        qry = qry.Where(m => genders.Contains( m.Person.Gender));
                     }
 
                     // Filter by Campus
