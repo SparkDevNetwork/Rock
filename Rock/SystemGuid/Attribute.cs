@@ -24,6 +24,11 @@ namespace Rock.SystemGuid
     public class Attribute
     {
         /// <summary>
+        /// The global email link preference
+        /// </summary>
+        public const string GLOBAL_EMAIL_LINK_PREFERENCE = "F1BECEF9-1047-E89F-4CC8-8F856750E5D0";
+
+        /// <summary>
         /// The Facebook link attribute
         /// </summary>
         public const string PERSON_FACEBOOK = "2B8A03D3-B7DC-4DA3-A31E-826D655435D5";
