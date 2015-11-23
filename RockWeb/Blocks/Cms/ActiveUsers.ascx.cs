@@ -245,23 +245,23 @@ namespace RockWeb.Blocks.Cms
                         var last5Minutes = RockDateTime.Now.AddMinutes( -5 );
                         var last15Minutes = RockDateTime.Now.AddMinutes( -15 );
 
-                        // get a ref to our PageViewSessions table
-                        var qryPageViewSessions = new PageViewSessionService( rockContext ).Queryable().AsNoTracking();
-
                         var qryGuests = new PageViewService( rockContext ).Queryable().AsNoTracking()
                                           .Where( p => p.SiteId == site.Id && p.DateTimeViewed > last15Minutes && p.PersonAliasId == null )
-                                          .Distinct();
+                                          .GroupBy( p => p.PageViewSessionId )
+                                          .Select( g => new
+                                          {
+                                              SessionId = g.Key,
+                                              LastVisit = g.Max( p => p.DateTimeViewed )
+                                          } )
+                                          .ToList();
 
-                        var qryActiveGuests = qryGuests.Where( g => g.DateTimeViewed >= last5Minutes );
-                        var qryInactiveGuests = qryGuests.Where( g => g.DateTimeViewed < last5Minutes );
-
-                        int numRecentGuests = qryActiveGuests.Count();
-                        int numInactiveGuests = qryInactiveGuests.Count();
+                        var numRecentGuests = qryGuests.Where( g => g.LastVisit >= last5Minutes ).Count();
+                        var numInactiveGuests = qryGuests.Where( g => g.LastVisit < last5Minutes ).Count();
 
                         // now build the formatted entry, which is "Current Guests (0) (1)" where the first is a green badge, and the second yellow.
                         if ( numRecentGuests > 0 || numInactiveGuests > 0 )
                         {
-                            guestVisitorsStr = "Current Guests";
+                            guestVisitorsStr = "Current Guests:";
                             if ( numRecentGuests > 0 )
                             {
                                 guestVisitorsStr += string.Format( " <span class=\"badge badge-success\">{0}</span>", numRecentGuests );
