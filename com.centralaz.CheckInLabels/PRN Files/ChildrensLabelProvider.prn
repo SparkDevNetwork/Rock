@@ -1,0 +1,9 @@
+Assembly:com.centralaz.CheckInLabels,ChildrensLabelProvider
+^FDCentralAZ.AttendanceLabelTitle^FS
+^FDCentralAZ.BirthdayImageFile^FS
+^FDCentralAZ.ClaimCardTitle^FS
+^FDCentralAZ.ClaimCardFooter^FS
+^FDCentralAZ.HealthNotesTitle^FS
+^FDCentralAZ.LogoImageFile^FS
+^FDCentralAZ.ParentsInitialsTitle^FS
+^FDCentralAZ.ServicesLabel^FS
