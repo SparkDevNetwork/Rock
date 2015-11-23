@@ -22,15 +22,16 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class GroupRequirementsNotificationEmail : Rock.Migrations.RockMigration
+    public partial class ClearPreviousMigrations4 : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            Sql( MigrationSQL._201507062330051_GroupRequirementsNotificationEmail );
-            
+            Sql( @"
+    UPDATE [__MigrationHistory] SET [Model] = 0x
+" );
         }
         
         /// <summary>
