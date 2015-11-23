@@ -1510,6 +1510,9 @@ namespace Rock.Lava
                                 case "City":
                                     qualifier = qualifier.Replace( match.ToString(), location.City );
                                     break;
+                                case "County":
+                                    qualifier = qualifier.Replace( match.ToString(), location.County );
+                                    break;
                                 case "State":
                                     qualifier = qualifier.Replace( match.ToString(), location.State );
                                     break;

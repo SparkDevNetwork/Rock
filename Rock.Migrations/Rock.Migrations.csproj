@@ -56,431 +56,439 @@
   <ItemGroup>
     <Compile Include="HotFixMigrations\003_AddAttendanceIndex.cs" />
     <Compile Include="HotFixMigrations\002_FixAttendanceEmail.cs" />
-    <Compile Include="Migrations\201504091807354_MergeTemplates.cs" />
-    <Compile Include="Migrations\201504091807354_MergeTemplates.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
+      <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504091807354_MergeTemplates.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504091807354_MergeTemplates.Designer.cs">
       <DependentUpon>201504091807354_MergeTemplates.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201504092126443_BadgeFixes.cs" />
-    <Compile Include="Migrations\201504092126443_BadgeFixes.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504092126443_BadgeFixes.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504092126443_BadgeFixes.Designer.cs">
       <DependentUpon>201504092126443_BadgeFixes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201504092142301_GroupSync.cs" />
-    <Compile Include="Migrations\201504092142301_GroupSync.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504092142301_GroupSync.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504092142301_GroupSync.Designer.cs">
       <DependentUpon>201504092142301_GroupSync.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201504102058357_FinancialAccountUrl.cs" />
-    <Compile Include="Migrations\201504102058357_FinancialAccountUrl.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504102058357_FinancialAccountUrl.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504102058357_FinancialAccountUrl.Designer.cs">
       <DependentUpon>201504102058357_FinancialAccountUrl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201504102155550_AddFinancialGateway.cs" />
-    <Compile Include="Migrations\201504102155550_AddFinancialGateway.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504102155550_AddFinancialGateway.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504102155550_AddFinancialGateway.Designer.cs">
       <DependentUpon>201504102155550_AddFinancialGateway.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201504102222449_BenevolencePages.cs" />
-    <Compile Include="Migrations\201504102222449_BenevolencePages.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504102222449_BenevolencePages.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504102222449_BenevolencePages.Designer.cs">
       <DependentUpon>201504102222449_BenevolencePages.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201504131119451_AddForeignIdIndex.cs" />
-    <Compile Include="Migrations\201504131119451_AddForeignIdIndex.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504131119451_AddForeignIdIndex.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504131119451_AddForeignIdIndex.Designer.cs">
       <DependentUpon>201504131119451_AddForeignIdIndex.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201504132125186_VolunteerCheckin.cs" />
-    <Compile Include="Migrations\201504132125186_VolunteerCheckin.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504132125186_VolunteerCheckin.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504132125186_VolunteerCheckin.Designer.cs">
       <DependentUpon>201504132125186_VolunteerCheckin.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201504220055167_BenevolenceResultCascade.cs" />
-    <Compile Include="Migrations\201504220055167_BenevolenceResultCascade.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504220055167_BenevolenceResultCascade.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504220055167_BenevolenceResultCascade.Designer.cs">
       <DependentUpon>201504220055167_BenevolenceResultCascade.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201504222320060_BenevolenceSecurityAndPersonProfile.cs" />
-    <Compile Include="Migrations\201504222320060_BenevolenceSecurityAndPersonProfile.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504222320060_BenevolenceSecurityAndPersonProfile.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504222320060_BenevolenceSecurityAndPersonProfile.Designer.cs">
       <DependentUpon>201504222320060_BenevolenceSecurityAndPersonProfile.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201504271640047_GroupRequirements.cs" />
-    <Compile Include="Migrations\201504271640047_GroupRequirements.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504271640047_GroupRequirements.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504271640047_GroupRequirements.Designer.cs">
       <DependentUpon>201504271640047_GroupRequirements.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201504281832485_GroupRequirementsJob.cs" />
-    <Compile Include="Migrations\201504281832485_GroupRequirementsJob.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504281832485_GroupRequirementsJob.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504281832485_GroupRequirementsJob.Designer.cs">
       <DependentUpon>201504281832485_GroupRequirementsJob.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201504282223529_PersonPreviousName.cs" />
-    <Compile Include="Migrations\201504282223529_PersonPreviousName.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504282223529_PersonPreviousName.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504282223529_PersonPreviousName.Designer.cs">
       <DependentUpon>201504282223529_PersonPreviousName.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201504290136417_GroupGeofenceFunctions.cs" />
-    <Compile Include="Migrations\201504290136417_GroupGeofenceFunctions.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504290136417_GroupGeofenceFunctions.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201504290136417_GroupGeofenceFunctions.Designer.cs">
       <DependentUpon>201504290136417_GroupGeofenceFunctions.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201505052324260_KioskPages.cs" />
-    <Compile Include="Migrations\201505052324260_KioskPages.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505052324260_KioskPages.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505052324260_KioskPages.Designer.cs">
       <DependentUpon>201505052324260_KioskPages.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201505082032285_GeofencingGroupMembers.cs" />
-    <Compile Include="Migrations\201505082032285_GeofencingGroupMembers.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505082032285_GeofencingGroupMembers.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505082032285_GeofencingGroupMembers.Designer.cs">
       <DependentUpon>201505082032285_GeofencingGroupMembers.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201505112208051_CheckinOverride.cs" />
-    <Compile Include="Migrations\201505112208051_CheckinOverride.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505112208051_CheckinOverride.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505112208051_CheckinOverride.Designer.cs">
       <DependentUpon>201505112208051_CheckinOverride.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201505120621198_AttendanceDateTimeIndex.cs" />
-    <Compile Include="Migrations\201505120621198_AttendanceDateTimeIndex.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505120621198_AttendanceDateTimeIndex.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505120621198_AttendanceDateTimeIndex.Designer.cs">
       <DependentUpon>201505120621198_AttendanceDateTimeIndex.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201505142322514_GroupMemberWorkflowTrigger.cs" />
-    <Compile Include="Migrations\201505142322514_GroupMemberWorkflowTrigger.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505142322514_GroupMemberWorkflowTrigger.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505142322514_GroupMemberWorkflowTrigger.Designer.cs">
       <DependentUpon>201505142322514_GroupMemberWorkflowTrigger.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201505191924369_LoginForCheckinManager.cs" />
-    <Compile Include="Migrations\201505191924369_LoginForCheckinManager.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505191924369_LoginForCheckinManager.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505191924369_LoginForCheckinManager.Designer.cs">
       <DependentUpon>201505191924369_LoginForCheckinManager.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201505192248108_GroupMemberTriggerOrder.cs" />
-    <Compile Include="Migrations\201505192248108_GroupMemberTriggerOrder.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505192248108_GroupMemberTriggerOrder.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505192248108_GroupMemberTriggerOrder.Designer.cs">
       <DependentUpon>201505192248108_GroupMemberTriggerOrder.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201505211643009_EventCalendarModel.cs" />
-    <Compile Include="Migrations\201505211643009_EventCalendarModel.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505211643009_EventCalendarModel.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505211643009_EventCalendarModel.Designer.cs">
       <DependentUpon>201505211643009_EventCalendarModel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201505260347124_PersonGivingId.cs" />
-    <Compile Include="Migrations\201505260347124_PersonGivingId.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505260347124_PersonGivingId.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505260347124_PersonGivingId.Designer.cs">
       <DependentUpon>201505260347124_PersonGivingId.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201505271629551_BackgroundCheckGroupRequirement.cs" />
-    <Compile Include="Migrations\201505271629551_BackgroundCheckGroupRequirement.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505271629551_BackgroundCheckGroupRequirement.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505271629551_BackgroundCheckGroupRequirement.Designer.cs">
       <DependentUpon>201505271629551_BackgroundCheckGroupRequirement.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201505272036198_GroupIsPublic.cs" />
-    <Compile Include="Migrations\201505272036198_GroupIsPublic.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505272036198_GroupIsPublic.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505272036198_GroupIsPublic.Designer.cs">
       <DependentUpon>201505272036198_GroupIsPublic.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201505282233265_CheckinUpdateData.cs" />
-    <Compile Include="Migrations\201505282233265_CheckinUpdateData.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505282233265_CheckinUpdateData.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201505282233265_CheckinUpdateData.Designer.cs">
       <DependentUpon>201505282233265_CheckinUpdateData.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506012143213_EventCalendarModelUpdate.cs" />
-    <Compile Include="Migrations\201506012143213_EventCalendarModelUpdate.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506012143213_EventCalendarModelUpdate.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506012143213_EventCalendarModelUpdate.Designer.cs">
       <DependentUpon>201506012143213_EventCalendarModelUpdate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506021134294_NoteTypeReDo.cs" />
-    <Compile Include="Migrations\201506021134294_NoteTypeReDo.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506021134294_NoteTypeReDo.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506021134294_NoteTypeReDo.Designer.cs">
       <DependentUpon>201506021134294_NoteTypeReDo.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506051725071_CalendarPagesAndRegistrationConfig.cs" />
-    <Compile Include="Migrations\201506051725071_CalendarPagesAndRegistrationConfig.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506051725071_CalendarPagesAndRegistrationConfig.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506051725071_CalendarPagesAndRegistrationConfig.Designer.cs">
       <DependentUpon>201506051725071_CalendarPagesAndRegistrationConfig.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506051749054_AddSampleMergeDocs.cs" />
-    <Compile Include="Migrations\201506051749054_AddSampleMergeDocs.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506051749054_AddSampleMergeDocs.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506051749054_AddSampleMergeDocs.Designer.cs">
       <DependentUpon>201506051749054_AddSampleMergeDocs.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506092003544_LabelUpdateGroupMemberIsNotified.cs" />
-    <Compile Include="Migrations\201506092003544_LabelUpdateGroupMemberIsNotified.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506092003544_LabelUpdateGroupMemberIsNotified.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506092003544_LabelUpdateGroupMemberIsNotified.Designer.cs">
       <DependentUpon>201506092003544_LabelUpdateGroupMemberIsNotified.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506101334446_GivingLeaderId.cs" />
-    <Compile Include="Migrations\201506101334446_GivingLeaderId.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506101334446_GivingLeaderId.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506101334446_GivingLeaderId.Designer.cs">
       <DependentUpon>201506101334446_GivingLeaderId.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506101814103_CheckinWelcomeManager.cs" />
-    <Compile Include="Migrations\201506101814103_CheckinWelcomeManager.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506101814103_CheckinWelcomeManager.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506101814103_CheckinWelcomeManager.Designer.cs">
       <DependentUpon>201506101814103_CheckinWelcomeManager.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506111550188_PledgeAnalytics.cs" />
-    <Compile Include="Migrations\201506111550188_PledgeAnalytics.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506111550188_PledgeAnalytics.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506111550188_PledgeAnalytics.Designer.cs">
       <DependentUpon>201506111550188_PledgeAnalytics.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506112030400_PersonDaysUntilBirthday.cs" />
-    <Compile Include="Migrations\201506112030400_PersonDaysUntilBirthday.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506112030400_PersonDaysUntilBirthday.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506112030400_PersonDaysUntilBirthday.Designer.cs">
       <DependentUpon>201506112030400_PersonDaysUntilBirthday.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506121300596_FinancialAnalyticsProcs.cs" />
-    <Compile Include="Migrations\201506121300596_FinancialAnalyticsProcs.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506121300596_FinancialAnalyticsProcs.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506121300596_FinancialAnalyticsProcs.Designer.cs">
       <DependentUpon>201506121300596_FinancialAnalyticsProcs.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex.cs" />
-    <Compile Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506130028565_AttributeValueAsDateTimeIndex.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506130028565_AttributeValueAsDateTimeIndex.Designer.cs">
       <DependentUpon>201506130028565_AttributeValueAsDateTimeIndex.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506131732236_FinancialHistory.cs" />
-    <Compile Include="Migrations\201506131732236_FinancialHistory.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506131732236_FinancialHistory.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506131732236_FinancialHistory.Designer.cs">
       <DependentUpon>201506131732236_FinancialHistory.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506162223455_EnsurePersonAlias.cs" />
-    <Compile Include="Migrations\201506162223455_EnsurePersonAlias.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506162223455_EnsurePersonAlias.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506162223455_EnsurePersonAlias.Designer.cs">
       <DependentUpon>201506162223455_EnsurePersonAlias.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506170003272_UpdateCalendarBlocks.cs" />
-    <Compile Include="Migrations\201506170003272_UpdateCalendarBlocks.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506170003272_UpdateCalendarBlocks.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506170003272_UpdateCalendarBlocks.Designer.cs">
       <DependentUpon>201506170003272_UpdateCalendarBlocks.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506242325188_GeoSpatialIndexes.cs" />
-    <Compile Include="Migrations\201506242325188_GeoSpatialIndexes.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506242325188_GeoSpatialIndexes.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506242325188_GeoSpatialIndexes.Designer.cs">
       <DependentUpon>201506242325188_GeoSpatialIndexes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506251213475_EventRegistration.cs" />
-    <Compile Include="Migrations\201506251213475_EventRegistration.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506251213475_EventRegistration.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506251213475_EventRegistration.Designer.cs">
       <DependentUpon>201506251213475_EventRegistration.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506252108267_EventRegistration2.cs" />
-    <Compile Include="Migrations\201506252108267_EventRegistration2.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506252108267_EventRegistration2.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506252108267_EventRegistration2.Designer.cs">
       <DependentUpon>201506252108267_EventRegistration2.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506261611122_DeceasedNotNull.cs" />
-    <Compile Include="Migrations\201506261611122_DeceasedNotNull.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506261611122_DeceasedNotNull.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506261611122_DeceasedNotNull.Designer.cs">
       <DependentUpon>201506261611122_DeceasedNotNull.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506271652457_ConnectionModel.cs" />
-    <Compile Include="Migrations\201506271652457_ConnectionModel.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506271652457_ConnectionModel.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506271652457_ConnectionModel.Designer.cs">
       <DependentUpon>201506271652457_ConnectionModel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506271657585_ConnectionPages.cs" />
-    <Compile Include="Migrations\201506271657585_ConnectionPages.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506271657585_ConnectionPages.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506271657585_ConnectionPages.Designer.cs">
       <DependentUpon>201506271657585_ConnectionPages.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201506281615197_GivingAnalyticsEmail.cs" />
-    <Compile Include="Migrations\201506281615197_GivingAnalyticsEmail.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506281615197_GivingAnalyticsEmail.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201506281615197_GivingAnalyticsEmail.Designer.cs">
       <DependentUpon>201506281615197_GivingAnalyticsEmail.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507022028551_InvolvementSignup.cs" />
-    <Compile Include="Migrations\201507022028551_InvolvementSignup.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507022028551_InvolvementSignup.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507022028551_InvolvementSignup.Designer.cs">
       <DependentUpon>201507022028551_InvolvementSignup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507022137466_AddReceiveRequirementsNotificationField.cs" />
-    <Compile Include="Migrations\201507022137466_AddReceiveRequirementsNotificationField.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507022137466_AddReceiveRequirementsNotificationField.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507022137466_AddReceiveRequirementsNotificationField.Designer.cs">
       <DependentUpon>201507022137466_AddReceiveRequirementsNotificationField.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507022249057_ConnectionRename.cs" />
-    <Compile Include="Migrations\201507022249057_ConnectionRename.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507022249057_ConnectionRename.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507022249057_ConnectionRename.Designer.cs">
       <DependentUpon>201507022249057_ConnectionRename.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507040004588_GroupRequirementsCommunicationApproval.cs" />
-    <Compile Include="Migrations\201507040004588_GroupRequirementsCommunicationApproval.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507040004588_GroupRequirementsCommunicationApproval.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507040004588_GroupRequirementsCommunicationApproval.Designer.cs">
       <DependentUpon>201507040004588_GroupRequirementsCommunicationApproval.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507051315095_GroupRequirementsCommunicationApproval2.cs" />
-    <Compile Include="Migrations\201507051315095_GroupRequirementsCommunicationApproval2.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507051315095_GroupRequirementsCommunicationApproval2.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507051315095_GroupRequirementsCommunicationApproval2.Designer.cs">
       <DependentUpon>201507051315095_GroupRequirementsCommunicationApproval2.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507051852159_EventRegistration3.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507051852159_EventRegistration3.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Migrations\201507051852159_EventRegistration3.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507051852159_EventRegistration3.Designer.cs">
       <DependentUpon>201507051852159_EventRegistration3.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507062330051_GroupRequirementsNotificationEmail.cs" />
-    <Compile Include="Migrations\201507062330051_GroupRequirementsNotificationEmail.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507062330051_GroupRequirementsNotificationEmail.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507062330051_GroupRequirementsNotificationEmail.Designer.cs">
       <DependentUpon>201507062330051_GroupRequirementsNotificationEmail.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507072208323_WorkflowTriggerModelAddition.cs" />
-    <Compile Include="Migrations\201507072208323_WorkflowTriggerModelAddition.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507072208323_WorkflowTriggerModelAddition.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507072208323_WorkflowTriggerModelAddition.Designer.cs">
       <DependentUpon>201507072208323_WorkflowTriggerModelAddition.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507081827047_SampleCalendarEvents.cs" />
-    <Compile Include="Migrations\201507081827047_SampleCalendarEvents.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507081827047_SampleCalendarEvents.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507081827047_SampleCalendarEvents.Designer.cs">
       <DependentUpon>201507081827047_SampleCalendarEvents.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507090009307_ExternalCalendarPageChanges.cs" />
-    <Compile Include="Migrations\201507090009307_ExternalCalendarPageChanges.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507090009307_ExternalCalendarPageChanges.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507090009307_ExternalCalendarPageChanges.Designer.cs">
       <DependentUpon>201507090009307_ExternalCalendarPageChanges.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507092222013_EventDetailPage.cs" />
-    <Compile Include="Migrations\201507092222013_EventDetailPage.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507092222013_EventDetailPage.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507092222013_EventDetailPage.Designer.cs">
       <DependentUpon>201507092222013_EventDetailPage.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507101513117_Thing.cs" />
-    <Compile Include="Migrations\201507101513117_Thing.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507101513117_Thing.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507101513117_Thing.Designer.cs">
       <DependentUpon>201507101513117_Thing.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507101742120_GroupAlternatePlacement.cs" />
-    <Compile Include="Migrations\201507101742120_GroupAlternatePlacement.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507101742120_GroupAlternatePlacement.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507101742120_GroupAlternatePlacement.Designer.cs">
       <DependentUpon>201507101742120_GroupAlternatePlacement.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507102258155_ExternalCalendarBlockAttributeChange.cs" />
-    <Compile Include="Migrations\201507102258155_ExternalCalendarBlockAttributeChange.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507102258155_ExternalCalendarBlockAttributeChange.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507102258155_ExternalCalendarBlockAttributeChange.Designer.cs">
       <DependentUpon>201507102258155_ExternalCalendarBlockAttributeChange.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507110056350_GroupMemberNote.cs" />
-    <Compile Include="Migrations\201507110056350_GroupMemberNote.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507110056350_GroupMemberNote.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507110056350_GroupMemberNote.Designer.cs">
       <DependentUpon>201507110056350_GroupMemberNote.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507121943445_RegistrationEmails.cs" />
-    <Compile Include="Migrations\201507121943445_RegistrationEmails.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507121943445_RegistrationEmails.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507121943445_RegistrationEmails.Designer.cs">
       <DependentUpon>201507121943445_RegistrationEmails.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507132112274_PublicAccountFields.cs" />
-    <Compile Include="Migrations\201507132112274_PublicAccountFields.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507132112274_PublicAccountFields.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507132112274_PublicAccountFields.Designer.cs">
       <DependentUpon>201507132112274_PublicAccountFields.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507132121233_RegistrationReminder.cs" />
-    <Compile Include="Migrations\201507132121233_RegistrationReminder.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507132121233_RegistrationReminder.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507132121233_RegistrationReminder.Designer.cs">
       <DependentUpon>201507132121233_RegistrationReminder.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507171137229_RegistrationInstanceContactPhone.cs" />
-    <Compile Include="Migrations\201507171137229_RegistrationInstanceContactPhone.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507171137229_RegistrationInstanceContactPhone.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507171137229_RegistrationInstanceContactPhone.Designer.cs">
       <DependentUpon>201507171137229_RegistrationInstanceContactPhone.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507181918494_ConnectionChangesAndSampleData.cs" />
-    <Compile Include="Migrations\201507181918494_ConnectionChangesAndSampleData.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507181918494_ConnectionChangesAndSampleData.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507181918494_ConnectionChangesAndSampleData.Designer.cs">
       <DependentUpon>201507181918494_ConnectionChangesAndSampleData.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507200334416_RegistrationNavigationWizard.cs" />
-    <Compile Include="Migrations\201507200334416_RegistrationNavigationWizard.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507200334416_RegistrationNavigationWizard.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507200334416_RegistrationNavigationWizard.Designer.cs">
       <DependentUpon>201507200334416_RegistrationNavigationWizard.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507201757258_MyDashboard.cs" />
-    <Compile Include="Migrations\201507201757258_MyDashboard.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507201757258_MyDashboard.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507201757258_MyDashboard.Designer.cs">
       <DependentUpon>201507201757258_MyDashboard.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507212236398_BatchNote.cs" />
-    <Compile Include="Migrations\201507212236398_BatchNote.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507212236398_BatchNote.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507212236398_BatchNote.Designer.cs">
       <DependentUpon>201507212236398_BatchNote.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507232010232_EventItemOccurrence.cs" />
-    <Compile Include="Migrations\201507232010232_EventItemOccurrence.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507232010232_EventItemOccurrence.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507232010232_EventItemOccurrence.Designer.cs">
       <DependentUpon>201507232010232_EventItemOccurrence.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507281546100_CalendarContentChannel.cs" />
-    <Compile Include="Migrations\201507281546100_CalendarContentChannel.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507281546100_CalendarContentChannel.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507281546100_CalendarContentChannel.Designer.cs">
       <DependentUpon>201507281546100_CalendarContentChannel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507291132307_ConnectionOppDesc.cs" />
-    <Compile Include="Migrations\201507291132307_ConnectionOppDesc.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507291132307_ConnectionOppDesc.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507291132307_ConnectionOppDesc.Designer.cs">
       <DependentUpon>201507291132307_ConnectionOppDesc.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201507292137440_ExternalConnectionRename.cs" />
-    <Compile Include="Migrations\201507292137440_ExternalConnectionRename.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507292137440_ExternalConnectionRename.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201507292137440_ExternalConnectionRename.Designer.cs">
       <DependentUpon>201507292137440_ExternalConnectionRename.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201508010008536_BackgroundCheckExpiringSoon.cs" />
-    <Compile Include="Migrations\201508010008536_BackgroundCheckExpiringSoon.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508010008536_BackgroundCheckExpiringSoon.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508010008536_BackgroundCheckExpiringSoon.Designer.cs">
       <DependentUpon>201508010008536_BackgroundCheckExpiringSoon.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201508041124356_RegistrationContact.cs" />
-    <Compile Include="Migrations\201508041124356_RegistrationContact.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508041124356_RegistrationContact.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508041124356_RegistrationContact.Designer.cs">
       <DependentUpon>201508041124356_RegistrationContact.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201508041445328_RemoveEventItemSchedules.cs" />
-    <Compile Include="Migrations\201508041445328_RemoveEventItemSchedules.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508041445328_RemoveEventItemSchedules.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508041445328_RemoveEventItemSchedules.Designer.cs">
       <DependentUpon>201508041445328_RemoveEventItemSchedules.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201508041652255_RenameCalendarItemBlocks.cs" />
-    <Compile Include="Migrations\201508041652255_RenameCalendarItemBlocks.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508041652255_RenameCalendarItemBlocks.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508041652255_RenameCalendarItemBlocks.Designer.cs">
       <DependentUpon>201508041652255_RenameCalendarItemBlocks.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201508051711051_ConnectorGroup.cs" />
-    <Compile Include="Migrations\201508051711051_ConnectorGroup.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508051711051_ConnectorGroup.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508051711051_ConnectorGroup.Designer.cs">
       <DependentUpon>201508051711051_ConnectorGroup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201508111253454_SiteMobilePage.cs" />
-    <Compile Include="Migrations\201508111253454_SiteMobilePage.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508111253454_SiteMobilePage.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508111253454_SiteMobilePage.Designer.cs">
       <DependentUpon>201508111253454_SiteMobilePage.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201508111636214_FinancialPaymentDetails.cs" />
-    <Compile Include="Migrations\201508111636214_FinancialPaymentDetails.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508111636214_FinancialPaymentDetails.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508111636214_FinancialPaymentDetails.Designer.cs">
       <DependentUpon>201508111636214_FinancialPaymentDetails.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201508112300341_FinancialTransactionMICRUpdates.cs" />
-    <Compile Include="Migrations\201508112300341_FinancialTransactionMICRUpdates.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508112300341_FinancialTransactionMICRUpdates.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508112300341_FinancialTransactionMICRUpdates.Designer.cs">
       <DependentUpon>201508112300341_FinancialTransactionMICRUpdates.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201508162108504_FollowingEventsSuggestions.cs" />
-    <Compile Include="Migrations\201508162108504_FollowingEventsSuggestions.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508162108504_FollowingEventsSuggestions.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508162108504_FollowingEventsSuggestions.Designer.cs">
       <DependentUpon>201508162108504_FollowingEventsSuggestions.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201508171751190_FollowingEventNotification.cs" />
-    <Compile Include="Migrations\201508171751190_FollowingEventNotification.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508171751190_FollowingEventNotification.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508171751190_FollowingEventNotification.Designer.cs">
       <DependentUpon>201508171751190_FollowingEventNotification.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201508211242545_OpportunitySummary.cs" />
-    <Compile Include="Migrations\201508211242545_OpportunitySummary.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508211242545_OpportunitySummary.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508211242545_OpportunitySummary.Designer.cs">
       <DependentUpon>201508211242545_OpportunitySummary.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201508241735382_RegistrationPersonNote.cs" />
-    <Compile Include="Migrations\201508241735382_RegistrationPersonNote.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508241735382_RegistrationPersonNote.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508241735382_RegistrationPersonNote.Designer.cs">
       <DependentUpon>201508241735382_RegistrationPersonNote.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201508311621277_ContentChannelIncludeTime.cs" />
-    <Compile Include="Migrations\201508311621277_ContentChannelIncludeTime.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508311621277_ContentChannelIncludeTime.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201508311621277_ContentChannelIncludeTime.Designer.cs">
       <DependentUpon>201508311621277_ContentChannelIncludeTime.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201509022116398_EntitySetPurpose.cs" />
-    <Compile Include="Migrations\201509022116398_EntitySetPurpose.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509022116398_EntitySetPurpose.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509022116398_EntitySetPurpose.Designer.cs">
       <DependentUpon>201509022116398_EntitySetPurpose.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201509032145388_PersonMergeRequests.cs" />
-    <Compile Include="Migrations\201509032145388_PersonMergeRequests.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509032145388_PersonMergeRequests.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509032145388_PersonMergeRequests.Designer.cs">
       <DependentUpon>201509032145388_PersonMergeRequests.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201509032344556_FollowingOrder.cs" />
-    <Compile Include="Migrations\201509032344556_FollowingOrder.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509032344556_FollowingOrder.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509032344556_FollowingOrder.Designer.cs">
       <DependentUpon>201509032344556_FollowingOrder.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201509051336165_ForeignKeys.cs" />
-    <Compile Include="Migrations\201509051336165_ForeignKeys.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509051336165_ForeignKeys.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509051336165_ForeignKeys.Designer.cs">
       <DependentUpon>201509051336165_ForeignKeys.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201509081615443_PersonIsEmailActive.cs" />
-    <Compile Include="Migrations\201509081615443_PersonIsEmailActive.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509081615443_PersonIsEmailActive.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509081615443_PersonIsEmailActive.Designer.cs">
       <DependentUpon>201509081615443_PersonIsEmailActive.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201509100552294_ExternalGivingPageCleanup.cs" />
-    <Compile Include="Migrations\201509100552294_ExternalGivingPageCleanup.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509100552294_ExternalGivingPageCleanup.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509100552294_ExternalGivingPageCleanup.Designer.cs">
       <DependentUpon>201509100552294_ExternalGivingPageCleanup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201509142356209_InternalPrayerPagesReorg.cs" />
-    <Compile Include="Migrations\201509142356209_InternalPrayerPagesReorg.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509142356209_InternalPrayerPagesReorg.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509142356209_InternalPrayerPagesReorg.Designer.cs">
       <DependentUpon>201509142356209_InternalPrayerPagesReorg.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201509182248342_ExtendWorkflowName.cs" />
-    <Compile Include="Migrations\201509182248342_ExtendWorkflowName.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509182248342_ExtendWorkflowName.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509182248342_ExtendWorkflowName.Designer.cs">
       <DependentUpon>201509182248342_ExtendWorkflowName.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201509221742129_PageViewNormalized.cs" />
-    <Compile Include="Migrations\201509221742129_PageViewNormalized.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509221742129_PageViewNormalized.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509221742129_PageViewNormalized.Designer.cs">
       <DependentUpon>201509221742129_PageViewNormalized.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201509242206062_GroupAttendanceRoster.cs" />
-    <Compile Include="Migrations\201509242206062_GroupAttendanceRoster.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509242206062_GroupAttendanceRoster.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509242206062_GroupAttendanceRoster.Designer.cs">
       <DependentUpon>201509242206062_GroupAttendanceRoster.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201509282250466_PageViewLoggingDefaults.cs" />
-    <Compile Include="Migrations\201509282250466_PageViewLoggingDefaults.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509282250466_PageViewLoggingDefaults.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201509282250466_PageViewLoggingDefaults.Designer.cs">
       <DependentUpon>201509282250466_PageViewLoggingDefaults.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201510052102211_ConnectionRequests.cs" />
-    <Compile Include="Migrations\201510052102211_ConnectionRequests.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201510052102211_ConnectionRequests.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201510052102211_ConnectionRequests.Designer.cs">
       <DependentUpon>201510052102211_ConnectionRequests.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201510082215386_ComputedSundayDate.cs" />
-    <Compile Include="Migrations\201510082215386_ComputedSundayDate.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201510082215386_ComputedSundayDate.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201510082215386_ComputedSundayDate.Designer.cs">
       <DependentUpon>201510082215386_ComputedSundayDate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201510141725294_GroupTypeShowConnectionStatus.cs" />
-    <Compile Include="Migrations\201510141725294_GroupTypeShowConnectionStatus.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201510141725294_GroupTypeShowConnectionStatus.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201510141725294_GroupTypeShowConnectionStatus.Designer.cs">
       <DependentUpon>201510141725294_GroupTypeShowConnectionStatus.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201510161148387_IncreaseAttributeNameLen.cs" />
-    <Compile Include="Migrations\201510161148387_IncreaseAttributeNameLen.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201510161148387_IncreaseAttributeNameLen.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201510161148387_IncreaseAttributeNameLen.Designer.cs">
       <DependentUpon>201510161148387_IncreaseAttributeNameLen.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201510212201505_TransactionRefund.cs" />
-    <Compile Include="Migrations\201510212201505_TransactionRefund.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201510212201505_TransactionRefund.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201510212201505_TransactionRefund.Designer.cs">
       <DependentUpon>201510212201505_TransactionRefund.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201511030007406_AllowSearchTrue.cs" />
-    <Compile Include="Migrations\201511030007406_AllowSearchTrue.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511030007406_AllowSearchTrue.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511030007406_AllowSearchTrue.Designer.cs">
       <DependentUpon>201511030007406_AllowSearchTrue.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201511081410353_DefaultConnector.cs" />
-    <Compile Include="Migrations\201511081410353_DefaultConnector.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511081410353_DefaultConnector.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511081410353_DefaultConnector.Designer.cs">
       <DependentUpon>201511081410353_DefaultConnector.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201511162216129_RecentRegistrationsLava.cs" />
-    <Compile Include="Migrations\201511162216129_RecentRegistrationsLava.Designer.cs">
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511162216129_RecentRegistrationsLava.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511162216129_RecentRegistrationsLava.Designer.cs">
       <DependentUpon>201511162216129_RecentRegistrationsLava.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511182310362_ProtectMyMinistry.cs" />
+    <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511182310362_ProtectMyMinistry.Designer.cs">
+      <DependentUpon>201511182310362_ProtectMyMinistry.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -1936,323 +1944,329 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201504091807354_MergeTemplates.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
+      <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201504091807354_MergeTemplates.resx">
       <DependentUpon>201504091807354_MergeTemplates.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201504092126443_BadgeFixes.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201504092126443_BadgeFixes.resx">
       <DependentUpon>201504092126443_BadgeFixes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201504092142301_GroupSync.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201504092142301_GroupSync.resx">
       <DependentUpon>201504092142301_GroupSync.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201504102058357_FinancialAccountUrl.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201504102058357_FinancialAccountUrl.resx">
       <DependentUpon>201504102058357_FinancialAccountUrl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201504102155550_AddFinancialGateway.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201504102155550_AddFinancialGateway.resx">
       <DependentUpon>201504102155550_AddFinancialGateway.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201504102222449_BenevolencePages.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201504102222449_BenevolencePages.resx">
       <DependentUpon>201504102222449_BenevolencePages.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201504131119451_AddForeignIdIndex.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201504131119451_AddForeignIdIndex.resx">
       <DependentUpon>201504131119451_AddForeignIdIndex.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201504132125186_VolunteerCheckin.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201504132125186_VolunteerCheckin.resx">
       <DependentUpon>201504132125186_VolunteerCheckin.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201504220055167_BenevolenceResultCascade.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201504220055167_BenevolenceResultCascade.resx">
       <DependentUpon>201504220055167_BenevolenceResultCascade.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201504222320060_BenevolenceSecurityAndPersonProfile.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201504222320060_BenevolenceSecurityAndPersonProfile.resx">
       <DependentUpon>201504222320060_BenevolenceSecurityAndPersonProfile.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201504271640047_GroupRequirements.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201504271640047_GroupRequirements.resx">
       <DependentUpon>201504271640047_GroupRequirements.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201504281832485_GroupRequirementsJob.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201504281832485_GroupRequirementsJob.resx">
       <DependentUpon>201504281832485_GroupRequirementsJob.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201504282223529_PersonPreviousName.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201504282223529_PersonPreviousName.resx">
       <DependentUpon>201504282223529_PersonPreviousName.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201504290136417_GroupGeofenceFunctions.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201504290136417_GroupGeofenceFunctions.resx">
       <DependentUpon>201504290136417_GroupGeofenceFunctions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201505052324260_KioskPages.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201505052324260_KioskPages.resx">
       <DependentUpon>201505052324260_KioskPages.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201505082032285_GeofencingGroupMembers.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201505082032285_GeofencingGroupMembers.resx">
       <DependentUpon>201505082032285_GeofencingGroupMembers.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201505112208051_CheckinOverride.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201505112208051_CheckinOverride.resx">
       <DependentUpon>201505112208051_CheckinOverride.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201505120621198_AttendanceDateTimeIndex.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201505120621198_AttendanceDateTimeIndex.resx">
       <DependentUpon>201505120621198_AttendanceDateTimeIndex.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201505142322514_GroupMemberWorkflowTrigger.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201505142322514_GroupMemberWorkflowTrigger.resx">
       <DependentUpon>201505142322514_GroupMemberWorkflowTrigger.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201505191924369_LoginForCheckinManager.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201505191924369_LoginForCheckinManager.resx">
       <DependentUpon>201505191924369_LoginForCheckinManager.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201505192248108_GroupMemberTriggerOrder.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201505192248108_GroupMemberTriggerOrder.resx">
       <DependentUpon>201505192248108_GroupMemberTriggerOrder.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201505211643009_EventCalendarModel.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201505211643009_EventCalendarModel.resx">
       <DependentUpon>201505211643009_EventCalendarModel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201505260347124_PersonGivingId.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201505260347124_PersonGivingId.resx">
       <DependentUpon>201505260347124_PersonGivingId.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201505271629551_BackgroundCheckGroupRequirement.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201505271629551_BackgroundCheckGroupRequirement.resx">
       <DependentUpon>201505271629551_BackgroundCheckGroupRequirement.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201505272036198_GroupIsPublic.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201505272036198_GroupIsPublic.resx">
       <DependentUpon>201505272036198_GroupIsPublic.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201505282233265_CheckinUpdateData.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201505282233265_CheckinUpdateData.resx">
       <DependentUpon>201505282233265_CheckinUpdateData.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506012143213_EventCalendarModelUpdate.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506012143213_EventCalendarModelUpdate.resx">
       <DependentUpon>201506012143213_EventCalendarModelUpdate.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506021134294_NoteTypeReDo.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506021134294_NoteTypeReDo.resx">
       <DependentUpon>201506021134294_NoteTypeReDo.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506051725071_CalendarPagesAndRegistrationConfig.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506051725071_CalendarPagesAndRegistrationConfig.resx">
       <DependentUpon>201506051725071_CalendarPagesAndRegistrationConfig.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506051749054_AddSampleMergeDocs.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506051749054_AddSampleMergeDocs.resx">
       <DependentUpon>201506051749054_AddSampleMergeDocs.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506092003544_LabelUpdateGroupMemberIsNotified.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506092003544_LabelUpdateGroupMemberIsNotified.resx">
       <DependentUpon>201506092003544_LabelUpdateGroupMemberIsNotified.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506101334446_GivingLeaderId.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506101334446_GivingLeaderId.resx">
       <DependentUpon>201506101334446_GivingLeaderId.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506101814103_CheckinWelcomeManager.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506101814103_CheckinWelcomeManager.resx">
       <DependentUpon>201506101814103_CheckinWelcomeManager.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506111550188_PledgeAnalytics.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506111550188_PledgeAnalytics.resx">
       <DependentUpon>201506111550188_PledgeAnalytics.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506112030400_PersonDaysUntilBirthday.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506112030400_PersonDaysUntilBirthday.resx">
       <DependentUpon>201506112030400_PersonDaysUntilBirthday.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506121300596_FinancialAnalyticsProcs.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506121300596_FinancialAnalyticsProcs.resx">
       <DependentUpon>201506121300596_FinancialAnalyticsProcs.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506130028565_AttributeValueAsDateTimeIndex.resx">
       <DependentUpon>201506130028565_AttributeValueAsDateTimeIndex.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506131732236_FinancialHistory.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506131732236_FinancialHistory.resx">
       <DependentUpon>201506131732236_FinancialHistory.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506162223455_EnsurePersonAlias.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506162223455_EnsurePersonAlias.resx">
       <DependentUpon>201506162223455_EnsurePersonAlias.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506170003272_UpdateCalendarBlocks.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506170003272_UpdateCalendarBlocks.resx">
       <DependentUpon>201506170003272_UpdateCalendarBlocks.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506242325188_GeoSpatialIndexes.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506242325188_GeoSpatialIndexes.resx">
       <DependentUpon>201506242325188_GeoSpatialIndexes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506251213475_EventRegistration.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506251213475_EventRegistration.resx">
       <DependentUpon>201506251213475_EventRegistration.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506252108267_EventRegistration2.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506252108267_EventRegistration2.resx">
       <DependentUpon>201506252108267_EventRegistration2.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506261611122_DeceasedNotNull.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506261611122_DeceasedNotNull.resx">
       <DependentUpon>201506261611122_DeceasedNotNull.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506271652457_ConnectionModel.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506271652457_ConnectionModel.resx">
       <DependentUpon>201506271652457_ConnectionModel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506271657585_ConnectionPages.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506271657585_ConnectionPages.resx">
       <DependentUpon>201506271657585_ConnectionPages.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201506281615197_GivingAnalyticsEmail.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201506281615197_GivingAnalyticsEmail.resx">
       <DependentUpon>201506281615197_GivingAnalyticsEmail.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507022028551_InvolvementSignup.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507022028551_InvolvementSignup.resx">
       <DependentUpon>201507022028551_InvolvementSignup.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507022137466_AddReceiveRequirementsNotificationField.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507022137466_AddReceiveRequirementsNotificationField.resx">
       <DependentUpon>201507022137466_AddReceiveRequirementsNotificationField.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507022249057_ConnectionRename.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507022249057_ConnectionRename.resx">
       <DependentUpon>201507022249057_ConnectionRename.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507040004588_GroupRequirementsCommunicationApproval.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507040004588_GroupRequirementsCommunicationApproval.resx">
       <DependentUpon>201507040004588_GroupRequirementsCommunicationApproval.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507051315095_GroupRequirementsCommunicationApproval2.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507051315095_GroupRequirementsCommunicationApproval2.resx">
       <DependentUpon>201507051315095_GroupRequirementsCommunicationApproval2.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507051852159_EventRegistration3.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507051852159_EventRegistration3.resx">
       <DependentUpon>201507051852159_EventRegistration3.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507062330051_GroupRequirementsNotificationEmail.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507062330051_GroupRequirementsNotificationEmail.resx">
       <DependentUpon>201507062330051_GroupRequirementsNotificationEmail.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507072208323_WorkflowTriggerModelAddition.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507072208323_WorkflowTriggerModelAddition.resx">
       <DependentUpon>201507072208323_WorkflowTriggerModelAddition.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507081827047_SampleCalendarEvents.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507081827047_SampleCalendarEvents.resx">
       <DependentUpon>201507081827047_SampleCalendarEvents.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507090009307_ExternalCalendarPageChanges.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507090009307_ExternalCalendarPageChanges.resx">
       <DependentUpon>201507090009307_ExternalCalendarPageChanges.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507092222013_EventDetailPage.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507092222013_EventDetailPage.resx">
       <DependentUpon>201507092222013_EventDetailPage.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507101513117_Thing.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507101513117_Thing.resx">
       <DependentUpon>201507101513117_Thing.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507101742120_GroupAlternatePlacement.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507101742120_GroupAlternatePlacement.resx">
       <DependentUpon>201507101742120_GroupAlternatePlacement.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507102258155_ExternalCalendarBlockAttributeChange.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507102258155_ExternalCalendarBlockAttributeChange.resx">
       <DependentUpon>201507102258155_ExternalCalendarBlockAttributeChange.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507110056350_GroupMemberNote.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507110056350_GroupMemberNote.resx">
       <DependentUpon>201507110056350_GroupMemberNote.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507121943445_RegistrationEmails.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507121943445_RegistrationEmails.resx">
       <DependentUpon>201507121943445_RegistrationEmails.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507132112274_PublicAccountFields.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507132112274_PublicAccountFields.resx">
       <DependentUpon>201507132112274_PublicAccountFields.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507132121233_RegistrationReminder.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507132121233_RegistrationReminder.resx">
       <DependentUpon>201507132121233_RegistrationReminder.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507171137229_RegistrationInstanceContactPhone.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507171137229_RegistrationInstanceContactPhone.resx">
       <DependentUpon>201507171137229_RegistrationInstanceContactPhone.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507181918494_ConnectionChangesAndSampleData.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507181918494_ConnectionChangesAndSampleData.resx">
       <DependentUpon>201507181918494_ConnectionChangesAndSampleData.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507200334416_RegistrationNavigationWizard.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507200334416_RegistrationNavigationWizard.resx">
       <DependentUpon>201507200334416_RegistrationNavigationWizard.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507201757258_MyDashboard.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507201757258_MyDashboard.resx">
       <DependentUpon>201507201757258_MyDashboard.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507212236398_BatchNote.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507212236398_BatchNote.resx">
       <DependentUpon>201507212236398_BatchNote.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507232010232_EventItemOccurrence.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507232010232_EventItemOccurrence.resx">
       <DependentUpon>201507232010232_EventItemOccurrence.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507281546100_CalendarContentChannel.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507281546100_CalendarContentChannel.resx">
       <DependentUpon>201507281546100_CalendarContentChannel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507291132307_ConnectionOppDesc.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507291132307_ConnectionOppDesc.resx">
       <DependentUpon>201507291132307_ConnectionOppDesc.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507292137440_ExternalConnectionRename.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201507292137440_ExternalConnectionRename.resx">
       <DependentUpon>201507292137440_ExternalConnectionRename.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201508010008536_BackgroundCheckExpiringSoon.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201508010008536_BackgroundCheckExpiringSoon.resx">
       <DependentUpon>201508010008536_BackgroundCheckExpiringSoon.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201508041124356_RegistrationContact.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201508041124356_RegistrationContact.resx">
       <DependentUpon>201508041124356_RegistrationContact.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201508041445328_RemoveEventItemSchedules.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201508041445328_RemoveEventItemSchedules.resx">
       <DependentUpon>201508041445328_RemoveEventItemSchedules.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201508041652255_RenameCalendarItemBlocks.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201508041652255_RenameCalendarItemBlocks.resx">
       <DependentUpon>201508041652255_RenameCalendarItemBlocks.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201508051711051_ConnectorGroup.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201508051711051_ConnectorGroup.resx">
       <DependentUpon>201508051711051_ConnectorGroup.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201508111253454_SiteMobilePage.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201508111253454_SiteMobilePage.resx">
       <DependentUpon>201508111253454_SiteMobilePage.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201508111636214_FinancialPaymentDetails.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201508111636214_FinancialPaymentDetails.resx">
       <DependentUpon>201508111636214_FinancialPaymentDetails.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201508112300341_FinancialTransactionMICRUpdates.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201508112300341_FinancialTransactionMICRUpdates.resx">
       <DependentUpon>201508112300341_FinancialTransactionMICRUpdates.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201508162108504_FollowingEventsSuggestions.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201508162108504_FollowingEventsSuggestions.resx">
       <DependentUpon>201508162108504_FollowingEventsSuggestions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201508171751190_FollowingEventNotification.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201508171751190_FollowingEventNotification.resx">
       <DependentUpon>201508171751190_FollowingEventNotification.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201508211242545_OpportunitySummary.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201508211242545_OpportunitySummary.resx">
       <DependentUpon>201508211242545_OpportunitySummary.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201508241735382_RegistrationPersonNote.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201508241735382_RegistrationPersonNote.resx">
       <DependentUpon>201508241735382_RegistrationPersonNote.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201508311621277_ContentChannelIncludeTime.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201508311621277_ContentChannelIncludeTime.resx">
       <DependentUpon>201508311621277_ContentChannelIncludeTime.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201509022116398_EntitySetPurpose.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201509022116398_EntitySetPurpose.resx">
       <DependentUpon>201509022116398_EntitySetPurpose.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201509032145388_PersonMergeRequests.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201509032145388_PersonMergeRequests.resx">
       <DependentUpon>201509032145388_PersonMergeRequests.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201509032344556_FollowingOrder.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201509032344556_FollowingOrder.resx">
       <DependentUpon>201509032344556_FollowingOrder.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201509051336165_ForeignKeys.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201509051336165_ForeignKeys.resx">
       <DependentUpon>201509051336165_ForeignKeys.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201509081615443_PersonIsEmailActive.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201509081615443_PersonIsEmailActive.resx">
       <DependentUpon>201509081615443_PersonIsEmailActive.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201509100552294_ExternalGivingPageCleanup.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201509100552294_ExternalGivingPageCleanup.resx">
       <DependentUpon>201509100552294_ExternalGivingPageCleanup.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201509142356209_InternalPrayerPagesReorg.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201509142356209_InternalPrayerPagesReorg.resx">
       <DependentUpon>201509142356209_InternalPrayerPagesReorg.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201509182248342_ExtendWorkflowName.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201509182248342_ExtendWorkflowName.resx">
       <DependentUpon>201509182248342_ExtendWorkflowName.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201509221742129_PageViewNormalized.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201509221742129_PageViewNormalized.resx">
       <DependentUpon>201509221742129_PageViewNormalized.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201509242206062_GroupAttendanceRoster.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201509242206062_GroupAttendanceRoster.resx">
       <DependentUpon>201509242206062_GroupAttendanceRoster.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201509282250466_PageViewLoggingDefaults.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201509282250466_PageViewLoggingDefaults.resx">
       <DependentUpon>201509282250466_PageViewLoggingDefaults.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201510052102211_ConnectionRequests.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201510052102211_ConnectionRequests.resx">
       <DependentUpon>201510052102211_ConnectionRequests.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201510082215386_ComputedSundayDate.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201510082215386_ComputedSundayDate.resx">
       <DependentUpon>201510082215386_ComputedSundayDate.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201510141725294_GroupTypeShowConnectionStatus.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201510141725294_GroupTypeShowConnectionStatus.resx">
       <DependentUpon>201510141725294_GroupTypeShowConnectionStatus.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201510161148387_IncreaseAttributeNameLen.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201510161148387_IncreaseAttributeNameLen.resx">
       <DependentUpon>201510161148387_IncreaseAttributeNameLen.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201510212201505_TransactionRefund.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201510212201505_TransactionRefund.resx">
       <DependentUpon>201510212201505_TransactionRefund.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201511030007406_AllowSearchTrue.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511030007406_AllowSearchTrue.resx">
       <DependentUpon>201511030007406_AllowSearchTrue.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201511081410353_DefaultConnector.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511081410353_DefaultConnector.resx">
       <DependentUpon>201511081410353_DefaultConnector.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201511162216129_RecentRegistrationsLava.resx">
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511162216129_RecentRegistrationsLava.resx">
       <DependentUpon>201511162216129_RecentRegistrationsLava.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511182310362_ProtectMyMinistry.resx">
+      <DependentUpon>201511182310362_ProtectMyMinistry.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 3.0\Version 1.3.0\201503091713044_FixBirthDateCol.resx">
       <DependentUpon>201503091713044_FixBirthDateCol.cs</DependentUpon>
@@ -3334,46 +3348,47 @@
     <None Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase_PopulateData.sql" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Migrations\201506051749054_AddSampleMergeDocs.sql" />
-    <Content Include="Migrations\201506112030400_PersonDaysUntilBirthday.sql" />
-    <Content Include="Migrations\201506281615197_GivingAnalyticsEmail_1.sql" />
-    <Content Include="Migrations\201506121300596_FinancialAnalyticsProcs_1.sql" />
-    <Content Include="Migrations\201506281615197_GivingAnalyticsEmail_2.sql" />
-    <Content Include="Migrations\201506121300596_FinancialAnalyticsProcs_2.sql" />
-    <Content Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex_CreateColumns.sql" />
-    <Content Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex_UpdateValues.sql" />
-    <Content Include="Migrations\201506130028565_AttributeValueAsDateTimeIndex_CreateTrigger.sql" />
-    <Content Include="Migrations\201506162223455_EnsurePersonAlias_UpdateCheckinLabels.sql" />
-    <Content Include="Migrations\201506170003272_UpdateCalendarBlocks.sql" />
-    <Content Include="Migrations\201506242325188_GeoSpatialIndexes_AddSystemEmail.sql" />
-    <Content Include="Migrations\201507081827047_SampleCalendarEvents.sql" />
-    <Content Include="Migrations\201507062330051_GroupRequirementsNotificationEmail.sql" />
-    <Content Include="Migrations\201507281546100_CalendarContentChannel.sql" />
-    <Content Include="Migrations\201507181918494_ConnectionChangesAndSampleData.sql" />
-    <Content Include="Migrations\201507171137229_RegistrationInstanceContactPhone.sql" />
-    <Content Include="Migrations\201507121943445_RegistrationEmails.sql" />
-    <Content Include="Migrations\201508041124356_RegistrationContact.sql" />
-    <Content Include="Migrations\201508010008536_BackgroundCheckExpiringSoon.sql" />
-    <Content Include="Migrations\201508111253454_SiteMobilePage.sql" />
-    <Content Include="Migrations\201508241735382_RegistrationPersonNote.sql" />
-    <Content Include="Migrations\201508171751190_FollowingEventNotification.sql" />
-    <Content Include="Migrations\201508162108504_FollowingEventsSuggestions.sql" />
-    <Content Include="Migrations\201508111636214_FinancialPaymentDetails.sql" />
-    <Content Include="Migrations\201509022116398_EntitySetPurpose.sql" />
-    <Content Include="Migrations\201509022116398_EntitySetPurpose_spFinance_ContributionStatementQuery.sql" />
-    <Content Include="Migrations\201509022116398_EntitySetPurpose_ufnCrm_GetFamilyTitle.sql" />
-    <Content Include="Migrations\201509032145388_PersonMergeRequests.sql" />
-    <Content Include="Migrations\201509242206062_GroupAttendanceRoster_AddGroupRosterMergeTemplate.sql" />
-    <Content Include="Migrations\201509242206062_GroupAttendanceRoster_SecondaryAudience.sql" />
-    <Content Include="Migrations\201510082215386_ComputedSundayDate_spCrm_PersonMerge.sql" />
-    <Content Include="Migrations\201510082215386_ComputedSundayDate_SecurityForGroupMemberNotes.sql" />
-    <Content Include="Migrations\201510082215386_ComputedSundayDate_PrivateNoteMigration.sql" />
-    <Content Include="Migrations\201510082215386_ComputedSundayDate_ufnUtility_GetSundayDate.sql" />
-    <Content Include="Migrations\201509242206062_GroupAttendanceRoster_spCrm_PersonDuplicateFinder.sql" />
-    <Content Include="Migrations\201510141725294_GroupTypeShowConnectionStatus_BenevolenceSecurity.sql" />
-    <Content Include="Migrations\201510141725294_GroupTypeShowConnectionStatus_spCheckin_BadgeAttendance.sql" />
-    <Content Include="Migrations\201510141725294_GroupTypeShowConnectionStatus_spCheckin_WeeksAttendedInDuration.sql" />
-    <Content Include="Migrations\201511162216129_RecentRegistrationsLava_MergeTemplateUpdates.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201506051749054_AddSampleMergeDocs.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201506112030400_PersonDaysUntilBirthday.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201506281615197_GivingAnalyticsEmail_1.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201506121300596_FinancialAnalyticsProcs_1.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201506281615197_GivingAnalyticsEmail_2.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201506121300596_FinancialAnalyticsProcs_2.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201506130028565_AttributeValueAsDateTimeIndex_CreateColumns.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201506130028565_AttributeValueAsDateTimeIndex_UpdateValues.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201506130028565_AttributeValueAsDateTimeIndex_CreateTrigger.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201506162223455_EnsurePersonAlias_UpdateCheckinLabels.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201506170003272_UpdateCalendarBlocks.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201506242325188_GeoSpatialIndexes_AddSystemEmail.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201507081827047_SampleCalendarEvents.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201507062330051_GroupRequirementsNotificationEmail.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201507281546100_CalendarContentChannel.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201507181918494_ConnectionChangesAndSampleData.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201507171137229_RegistrationInstanceContactPhone.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201507121943445_RegistrationEmails.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201508041124356_RegistrationContact.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201508010008536_BackgroundCheckExpiringSoon.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201508111253454_SiteMobilePage.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201508241735382_RegistrationPersonNote.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201508171751190_FollowingEventNotification.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201508162108504_FollowingEventsSuggestions.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201508111636214_FinancialPaymentDetails.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201509022116398_EntitySetPurpose.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201509022116398_EntitySetPurpose_spFinance_ContributionStatementQuery.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201509022116398_EntitySetPurpose_ufnCrm_GetFamilyTitle.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201509032145388_PersonMergeRequests.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201509242206062_GroupAttendanceRoster_AddGroupRosterMergeTemplate.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201509242206062_GroupAttendanceRoster_SecondaryAudience.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201510082215386_ComputedSundayDate_spCrm_PersonMerge.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201510082215386_ComputedSundayDate_SecurityForGroupMemberNotes.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201510082215386_ComputedSundayDate_PrivateNoteMigration.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201510082215386_ComputedSundayDate_ufnUtility_GetSundayDate.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201509242206062_GroupAttendanceRoster_spCrm_PersonDuplicateFinder.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201510141725294_GroupTypeShowConnectionStatus_BenevolenceSecurity.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201510141725294_GroupTypeShowConnectionStatus_spCheckin_BadgeAttendance.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201510141725294_GroupTypeShowConnectionStatus_spCheckin_WeeksAttendedInDuration.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201511162216129_RecentRegistrationsLava_MergeTemplateUpdates.sql" />
+    <Content Include="Migrations\Version 4.0\Version 1.4.0\201511182310362_ProtectMyMinistry.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

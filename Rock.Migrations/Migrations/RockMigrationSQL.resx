@@ -122,121 +122,127 @@
     <value>Version 0.0 (Pre Beta)\Version 0.0.2\201311251734059_CreateDatabase_PopulateData.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201506051749054_AddSampleMergeDocs" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201506051749054_AddSampleMergeDocs.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201506051749054_addsamplemergedocs.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201506112030400_PersonDaysUntilBirthday" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201506112030400_PersonDaysUntilBirthday.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201506112030400_persondaysuntilbirthday.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201506121300596_FinancialAnalyticsProcs_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201506121300596_financialanalyticsprocs_1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201506121300596_financialanalyticsprocs_1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201506121300596_FinancialAnalyticsProcs_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201506121300596_financialanalyticsprocs_2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201506121300596_financialanalyticsprocs_2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201506130028565_AttributeValueAsDateTimeIndex_CreateColumns" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201506130028565_attributevalueasdatetimeindex_createcolumns.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 4.0\version 1.4.0\201506130028565_attributevalueasdatetimeindex_createcolumns.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201506130028565_AttributeValueAsDateTimeIndex_CreateTrigger" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201506130028565_attributevalueasdatetimeindex_createtrigger.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201506130028565_attributevalueasdatetimeindex_createtrigger.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201506130028565_AttributeValueAsDateTimeIndex_UpdateValues" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201506130028565_attributevalueasdatetimeindex_updatevalues.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201506130028565_attributevalueasdatetimeindex_updatevalues.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201506162223455_EnsurePersonAlias_UpdateCheckinLabels" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201506162223455_ensurepersonalias_updatecheckinlabels.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 4.0\version 1.4.0\201506162223455_ensurepersonalias_updatecheckinlabels.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201506170003272_UpdateCalendarBlocks" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201506170003272_updatecalendarblocks.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201506170003272_updatecalendarblocks.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201506242325188_GeoSpatialIndexes_AddSystemEmail" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201506242325188_geospatialindexes_addsystememail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 4.0\version 1.4.0\201506242325188_geospatialindexes_addsystememail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201506281615197_GivingAnalyticsEmail_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201506281615197_givinganalyticsemail_1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201506281615197_givinganalyticsemail_1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201506281615197_GivingAnalyticsEmail_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201506281615197_givinganalyticsemail_2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201506281615197_givinganalyticsemail_2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201507062330051_GroupRequirementsNotificationEmail" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201507062330051_GroupRequirementsNotificationEmail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201507062330051_grouprequirementsnotificationemail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201507081827047_SampleCalendarEvents" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201507081827047_samplecalendarevents.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201507081827047_samplecalendarevents.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201507121943445_RegistrationEmails" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201507121943445_registrationemails.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201507121943445_registrationemails.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201507171137229_RegistrationInstanceContactPhone" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201507171137229_registrationinstancecontactphone.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201507171137229_registrationinstancecontactphone.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201507181918494_ConnectionChangesAndSampleData" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201507181918494_connectionchangesandsampledata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201507181918494_connectionchangesandsampledata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201507281546100_CalendarContentChannel" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201507281546100_calendarcontentchannel.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201507281546100_calendarcontentchannel.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201508010008536_BackgroundCheckExpiringSoon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201508010008536_backgroundcheckexpiringsoon.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201508010008536_backgroundcheckexpiringsoon.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201508041124356_RegistrationContact" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201508041124356_registrationcontact.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201508041124356_registrationcontact.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201508111253454_SiteMobilePage" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201508111253454_sitemobilepage.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201508111253454_sitemobilepage.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201508111636214_FinancialPaymentDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201508111636214_financialpaymentdetails.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201508111636214_financialpaymentdetails.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201508162108504_FollowingEventsSuggestions" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201508162108504_followingeventssuggestions.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201508162108504_followingeventssuggestions.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201508171751190_FollowingEventNotification" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201508171751190_followingeventnotification.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201508171751190_followingeventnotification.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201508241735382_RegistrationPersonNote" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201508241735382_registrationpersonnote.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201508241735382_registrationpersonnote.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201509022116398_EntitySetPurpose" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201509022116398_entitysetpurpose.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 4.0\version 1.4.0\201509022116398_entitysetpurpose.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201509022116398_EntitySetPurpose_spFinance_ContributionStatementQuery" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201509022116398_entitysetpurpose_spfinance_contributionstatementquery.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>version 4.0\version 1.4.0\201509022116398_entitysetpurpose_spfinance_contributionstatementquery.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_201509022116398_EntitySetPurpose_ufnCrm_GetFamilyTitle" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201509022116398_entitysetpurpose_ufncrm_getfamilytitle.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201509022116398_entitysetpurpose_ufncrm_getfamilytitle.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201509032145388_PersonMergeRequests" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201509032145388_personmergerequests.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 4.0\version 1.4.0\201509032145388_personmergerequests.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201509242206062_GroupAttendanceRoster_AddGroupRosterMergeTemplate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201509242206062_groupattendanceroster_addgrouprostermergetemplate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201509242206062_groupattendanceroster_addgrouprostermergetemplate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201509242206062_GroupAttendanceRoster_SecondaryAudience" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201509242206062_groupattendanceroster_secondaryaudience.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201509242206062_groupattendanceroster_secondaryaudience.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201509242206062_GroupAttendanceRoster_spCrm_PersonDuplicateFinder" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201509242206062_groupattendanceroster_spcrm_personduplicatefinder.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201509242206062_groupattendanceroster_spcrm_personduplicatefinder.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201510082215386_ComputedSundayDate_PrivateNoteMigration" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201510082215386_computedsundaydate_privatenotemigration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201510082215386_computedsundaydate_privatenotemigration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201510082215386_ComputedSundayDate_SecurityForGroupMemberNotes" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201510082215386_computedsundaydate_securityforgroupmembernotes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201510082215386_computedsundaydate_securityforgroupmembernotes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201510082215386_ComputedSundayDate_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201510082215386_computedsundaydate_spcrm_personmerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201510082215386_computedsundaydate_spcrm_personmerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201510082215386_ComputedSundayDate_ufnUtility_GetSundayDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201510082215386_computedsundaydate_ufnutility_getsundaydate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>version 4.0\version 1.4.0\201510082215386_computedsundaydate_ufnutility_getsundaydate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201510141725294_GroupTypeShowConnectionStatus_BenevolenceSecurity" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201510141725294_grouptypeshowconnectionstatus_benevolencesecurity.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 4.0\version 1.4.0\201510141725294_grouptypeshowconnectionstatus_benevolencesecurity.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201510141725294_GroupTypeShowConnectionStatus_spCheckin_BadgeAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201510141725294_grouptypeshowconnectionstatus_spcheckin_badgeattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>version 4.0\version 1.4.0\201510141725294_grouptypeshowconnectionstatus_spcheckin_badgeattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_201510141725294_GroupTypeShowConnectionStatus_spCheckin_WeeksAttendedInDuration" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201510141725294_grouptypeshowconnectionstatus_spcheckin_weeksattendedinduration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>version 4.0\version 1.4.0\201510141725294_grouptypeshowconnectionstatus_spcheckin_weeksattendedinduration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201511162216129_RecentRegistrationsLava_MergeTemplateUpdates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 4.0\version 1.4.0\201511162216129_recentregistrationslava_mergetemplateupdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201511182310362_ProtectMyMinistry" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 4.0\version 1.4.0\201511182310362_protectmyministry.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_201511162216129_RecentRegistrationsLava_MergeTemplateUpdates" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201511162216129_recentregistrationslava_mergetemplateupdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>

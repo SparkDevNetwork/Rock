@@ -429,6 +429,14 @@ Registration By: {0} Total Cost/Fees:{1}
         public string LastName { get; set; }
 
         /// <summary>
+        /// Gets or sets the family unique identifier.
+        /// </summary>
+        /// <value>
+        /// The family unique identifier.
+        /// </value>
+        public Guid FamilyGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the confirmation email.
         /// </summary>
         /// <value>
@@ -516,6 +524,7 @@ Registration By: {0} Total Cost/Fees:{1}
         /// </summary>
         public RegistrationInfo()
         {
+            FamilyGuid = Guid.Empty;
             Registrants = new List<RegistrantInfo>();
         }
 

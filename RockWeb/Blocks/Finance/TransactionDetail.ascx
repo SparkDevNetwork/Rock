@@ -19,6 +19,7 @@
                     <i class="fa fa-credit-card"></i> Financial Transaction
                 </h1>
                 <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlBatchId" LabelType="Info" runat="server" />
                     <Rock:HighlightLabel ID="hlType" runat="server" />
                 </div>
             </div>
