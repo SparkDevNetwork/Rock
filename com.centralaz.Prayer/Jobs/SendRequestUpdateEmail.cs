@@ -18,7 +18,7 @@ using Rock.Web.UI;
 
 namespace com.centralaz.Prayer.Jobs
 {
-    [LinkedPage( "Request Update Page", "The page that the link directs the user to.", true, "A2A3D942-D1C3-4451-A71C-CB550F156910" )]
+    [LinkedPage( "Request Update Page", "The page that the link directs the user to.", true )]
     [SystemEmailField( "Request Expired Email", "The system email to send.", true, com.centralaz.Prayer.SystemGuid.SystemEmail.PRAYER_REQUEST_UPDATE_TEMPLATE )]
     [CategoryField( "Category", "The category of prayer request the email will be sent out to.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "Category Selection", 2, "Category" )]
     [DisallowConcurrentExecution]
