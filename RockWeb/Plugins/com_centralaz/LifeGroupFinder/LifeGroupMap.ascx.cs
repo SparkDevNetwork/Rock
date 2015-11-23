@@ -177,7 +177,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                     mapItem.Name = group.Name;
                     mapItem.InfoWindow = HttpUtility.HtmlEncode( infoWindow.Replace( Environment.NewLine, string.Empty ).Replace( "\n", string.Empty ).Replace( "\t", string.Empty ) );
                     groupMapItems.Add( mapItem );
-                }            
+                }
             }
 
             pnlMap.Visible = true;
@@ -444,14 +444,14 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
             string mapScript = string.Format( mapScriptFormat,
                 groupsJson, styleCode, polygonColors, _groupColor, _childGroupColor, _memberColor,
-                latitude, longitude, zoom);
+                latitude, longitude, zoom );
 
             ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-map-script", mapScript, false );
 
         }
 
-
         #endregion
+
         /// <summary>
         /// A map item class specific to group finder
         /// </summary>
@@ -475,6 +475,5 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
             }
         }
-
-}
+    }
 }
