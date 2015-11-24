@@ -101,7 +101,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
         protected IEntity GroupTypeContext = null;
 
-        protected IEntity DateContext = null;
+        protected IEntity DateRangeContext = null;
 
         protected string PrimaryMetricKey = string.Empty;
 
@@ -138,6 +138,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
                     // Get Current GroupType Context
                     GroupTypeContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( GroupType ) ) );
+
+                    // Get Date Range Context
+                    DateRangeContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( DateRange ) ) );
                 }
 
                 // Output variables direct to the ascx
@@ -172,6 +175,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 List<int> comparisonMetricSource = metricService.GetByGuids( comparisonSourceGuids )
                     .Select( a => a.Id ).ToList();
 
+                // use DateRangeContext (whatever data type it is) to set the dateRange
                 DateRange dateRange = new DateRange( DateTime.Now.AddMonths( -6 ), DateTime.Now );
 
                 // Show data if metric source is selected
