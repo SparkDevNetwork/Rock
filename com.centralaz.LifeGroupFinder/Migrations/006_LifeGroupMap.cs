@@ -93,7 +93,7 @@ namespace com.centralaz.LifeGroupFinder.Migrations
             Where [Guid] = '9DA055F3-9B8A-4399-BB93-9783502273DF'
 " );
 
-            RockMigrationHelper.UpdateBlockType( "FireWorkflowButton", "Allows a user to fire off a workflow", "~/Plugins/com_centralaz/LifeGroupFinder/FireWorkflowButton.ascx", "com_centralaz > Groups", "33677897-2A3C-46BF-81C7-F5A61788B63C" );
+            RockMigrationHelper.UpdateBlockType( "Fire Workflow Button", "Allows a user to fire off a workflow", "~/Plugins/com_centralaz/LifeGroupFinder/FireWorkflowButton.ascx", "com_centralaz > Groups", "33677897-2A3C-46BF-81C7-F5A61788B63C" );
             RockMigrationHelper.AddBlockTypeAttribute( "33677897-2A3C-46BF-81C7-F5A61788B63C", "1D50399B-0D6E-480B-A71A-E7BD37DD83F0", "Workflow Actions", "WorkflowActions", "", "The workflows to make available as actions.", 1, @"", "B662ADD2-96DE-43CA-91F4-B2B2EE431B71" );
 
 

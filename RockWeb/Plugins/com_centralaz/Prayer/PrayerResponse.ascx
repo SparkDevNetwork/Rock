@@ -7,7 +7,7 @@
 
                 <asp:Literal ID="lDescription" runat="server" />
 
-                <Rock:DataTextBox ID="dtbAnswer" runat="server" Label="Answer" TextMode="MultiLine" Rows="3" MaxLength="10" ValidateRequestMode="Disabled" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Text" Placeholder="Please pray that..."></Rock:DataTextBox>
+                <Rock:DataTextBox ID="dtbAnswer" runat="server" Label="Answer" TextMode="MultiLine" Rows="3" MaxLength="10" ValidateRequestMode="Disabled" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Text" Placeholder="My prayer was answered when..."></Rock:DataTextBox>
                 <asp:LinkButton ID="lbSave" runat="server" AccessKey="s" Text="Save Answer" OnClick="lbSave_Click" CssClass="btn btn-primary" />
                 <asp:LinkButton ID="lbExtend" runat="server" Text="Extend Request" OnClick="lbExtend_Click" CssClass="btn btn-default" CausesValidation="false" />
 
