@@ -11,13 +11,11 @@
                     <b class="fa fa-caret-down"></b>
                 </a>
 
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menu" style="min-width: 400px !important; padding: 10px">
                     <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"/>
 
                     <div class="actions text-right">
-
                         <asp:LinkButton ID="btnSelect" runat="server" CssClass="btn btn-primary" ToolTip="Select" OnClick="btnSelect_Click" Text="Select" />
-
                     </div>
                 </ul>
             </li>
