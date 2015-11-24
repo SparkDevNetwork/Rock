@@ -59,8 +59,17 @@
                                         <Rock:RockCheckBox ID="cbAddPersonNote" runat="server" Label="Add Person Note" Help="Should a note be added to a person's record whenever they register?" Text="Yes" />
                                     </div>
                                 </div>
-                                <Rock:RockCheckBox ID="cbLoginRequired" runat="server" Label="Login Required" Text="Yes"
-                                    Help="Is user required to be logged in when registering?" />
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbLoginRequired" runat="server" Label="Login Required" Text="Yes"
+                                            Help="Is user required to be logged in when registering?" />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbAllowGroupPlacement" runat="server" Label="Allow Group Placement" Text="Yes"
+                                            Help="If enabled, the registration instance will include a Group Placement option for 
+                                                adding registrants to specific child groups of a selected parent group." />
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="row">

@@ -38,6 +38,20 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        public int? RootGroupId
+        {
+            get
+            {
+                return ViewState["RootGroupId"] as int?;
+            }
+
+            set
+            {
+                ViewState["RootGroupId"] = value;
+                SetExtraRestParams();
+            }
+        }
+
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
@@ -62,7 +76,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            ItemRestUrlExtraParams = "";
+            SetExtraRestParams();
             this.IconCssClass = "fa fa-users";
             base.OnInit( e );
         }
@@ -199,6 +213,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the extra rest parameters.
+        /// </summary>
+        private void SetExtraRestParams( bool includeInactiveGroups = false )
+        {
+            ItemRestUrlExtraParams = "?includeInactiveGroups=" + includeInactiveGroups.ToTrueFalse();
+            if ( RootGroupId.HasValue )
+            {
+                ItemRestUrlExtraParams += string.Format( "&rootGroupId={0}", RootGroupId.Value );
+            }
+        }
+
+        /// <summary>
         /// Handles the CheckedChanged event of the _cbShowInactiveGroups control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -206,7 +232,7 @@ namespace Rock.Web.UI.Controls
         public void _cbShowInactiveGroups_CheckedChanged( object sender, EventArgs e )
         {
             ShowDropDown = true;
-            this.ItemRestUrlExtraParams = "?includeInactiveGroups=" + _cbShowInactiveGroups.Checked.ToTrueFalse();
+            SetExtraRestParams( _cbShowInactiveGroups.Checked );
         }
     }
 }

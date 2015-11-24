@@ -64,15 +64,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum BackgroundCheckStatus
-    {
-        None = 0x0,
-        Passed = 0x1,
-        Failed = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum BatchStatus
     {
         Pending = 0x0,

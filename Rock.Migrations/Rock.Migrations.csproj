@@ -56,6 +56,10 @@
   <ItemGroup>
     <Compile Include="HotFixMigrations\003_AddAttendanceIndex.cs" />
     <Compile Include="HotFixMigrations\002_FixAttendanceEmail.cs" />
+    <Compile Include="Migrations\201511231524340_GroupPlacement.cs" />
+    <Compile Include="Migrations\201511231524340_GroupPlacement.Designer.cs">
+      <DependentUpon>201511231524340_GroupPlacement.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -1944,6 +1948,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\201511231524340_GroupPlacement.resx">
+      <DependentUpon>201511231524340_GroupPlacement.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
     </EmbeddedResource>

@@ -38,6 +38,9 @@ namespace Rock.Client
         public bool AddPersonNote { get; set; }
 
         /// <summary />
+        public bool AllowGroupPlacement { get; set; }
+
+        /// <summary />
         public bool AllowMultipleRegistrants { get; set; }
 
         /// <summary />
@@ -169,6 +172,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AddPersonNote = source.AddPersonNote;
+            this.AllowGroupPlacement = source.AllowGroupPlacement;
             this.AllowMultipleRegistrants = source.AllowMultipleRegistrants;
             this.CategoryId = source.CategoryId;
             this.ConfirmationEmailTemplate = source.ConfirmationEmailTemplate;
