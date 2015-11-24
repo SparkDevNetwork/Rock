@@ -560,8 +560,8 @@ Registration By: {0} Total Cost/Fees:{1}
                     LastName = registration.PersonAlias.Person.LastName;
                     ConfirmationEmail = registration.ConfirmationEmail;
                 }
-
-                DiscountCode = registration.DiscountCode.Trim();
+                                
+                DiscountCode = registration.DiscountCode != null ? registration.DiscountCode.Trim() : string.Empty;
                 DiscountPercentage = registration.DiscountPercentage;
                 DiscountAmount = registration.DiscountAmount;
                 TotalCost = registration.TotalCost;

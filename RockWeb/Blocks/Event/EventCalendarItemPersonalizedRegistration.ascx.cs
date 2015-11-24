@@ -43,8 +43,7 @@ namespace RockWeb.Blocks.Event
     [BooleanField("Include Family Members", "Lists family members of the individual to select for registration.", true, "", 0)]
     [IntegerField("Days In Range", "The number of days in the future to show events for.", true, 60, "", 1)]
     [IntegerField("Max Display Events", "The maximum number of events to display.", true, 4, "", 2)]
-    [GroupRoleField(null, "Group Member Role", "The role to use when adding the individuals to the group.", true, "", "", 3)]
-    [EnumField( "Group Member Status", "The group member status to add the person with.", typeof( GroupMemberStatus ), true, "Pending", "", 4)]
+    [LinkedPage("Registration Page", "The registration page to redirect to.", true, "", "", 3)]
     public partial class EventCalendarItemPersonalizedRegistration : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -115,98 +114,85 @@ namespace RockWeb.Blocks.Event
 
         protected void lbRegister_Click( object sender, EventArgs e )
         {
-            // get registered group
+            var rockContext = new RockContext();
+
+            // get the person who was passed in for the registration registar
+            Person person = null;
+
+            Guid personGuid = Guid.Empty;
+            if ( Request["PersonGuid"] != null )
+            {
+                personGuid = Request["PersonGuid"].AsGuid();
+
+                person = new PersonService( _rockContext ).Get( personGuid );
+            }
+
+            if ( person == null )
+            {
+                lErrors.Text = "<div class='alert alert-warning'>Invalid person guid was passed.</div>";
+                return;
+            }
+
+            // get event item
             int eventItemOccurrenceId = hfSelectedEventId.Value.AsInteger();
 
-            // look for the group for this event item
+            // find registration
             var eventGroup = new EventItemOccurrenceGroupMapService( _rockContext ).Queryable()
                                 .Where( m => m.EventItemOccurrenceId == eventItemOccurrenceId )
-                                .Select(m => m.Group)
+                                .Select( m => m.Group )
                                 .FirstOrDefault();
 
-            if ( eventGroup != null )
+            var registrationLinkages = eventGroup.Linkages.ToList();
+
+
+            if ( registrationLinkages.Count() == 0 )
             {
-                var groupMemberStats = this.GetAttributeValue( "GroupMemberStatus" ).ConvertToEnum<GroupMemberStatus>( GroupMemberStatus.Pending );
-
-                Guid groupRoleGuid = GetAttributeValue( "GroupMemberRole" ).AsGuid();
-
-                // check that the role is in the group
-                var groupRoleId = new GroupTypeRoleService( _rockContext ).Queryable()
-                                    .Where( r => r.Guid == groupRoleGuid && r.GroupType.Id == eventGroup.GroupTypeId )
-                                    .Select( r => r.Id )
-                                    .FirstOrDefault();
-
-                if ( groupRoleId != 0 )
-                {
-                    List<string> registrantsAdded = new List<string>();
-                    List<string> registransNotAdded = new List<string>();
-                    
-                    foreach ( int registrantId in cblRegistrants.SelectedValuesAsInt )
-                    {
-                        var registrant = new PersonService( _rockContext ).Get( registrantId );
-                        
-                        // check that the person is not already in the group with the current role
-                        var inGroup = new GroupMemberService( _rockContext ).Queryable()
-                                        .Where( m => m.PersonId == registrantId
-                                                    && m.GroupRoleId == groupRoleId
-                                                    && m.GroupId == eventGroup.Id )
-                                        .Any();
-
-                        if ( !inGroup )
-                        {
-                            GroupMember registrantGroupMember = new GroupMember();
-                            registrantGroupMember.PersonId = registrantId;
-                            registrantGroupMember.GroupId = eventGroup.Id;
-                            registrantGroupMember.GroupRoleId = groupRoleId;
-                            registrantGroupMember.GroupMemberStatus = groupMemberStats;
-                            eventGroup.Members.Add( registrantGroupMember );
-
-                            registrantsAdded.Add( registrant.NickName );
-                        } else
-                        {
-                            registransNotAdded.Add( registrant.NickName );
-                        }
-                    }
-
-                    _rockContext.SaveChanges();
-
-                    string registeredMessage = string.Empty;
-                    string notRegisteredMessage = string.Empty;
-                    
-                    if ( registrantsAdded.Count > 0 )
-                    {
-                        string registerAction = "has";
-                        if ( registrantsAdded.Count > 1 )
-                        {
-                            registerAction = "have";
-                        }
-                        registeredMessage = string.Format( "{0} {1} been registered.", registrantsAdded.Humanize(), registerAction );
-                    }
-
-                    if (registransNotAdded.Count > 0) {
-                        string registerAction = "was";
-
-                        if ( registransNotAdded.Count > 1 )
-                        {
-                            registerAction = "were";
-                        }
-                        notRegisteredMessage = string.Format( "{0} {1} already registered.", registransNotAdded.Humanize(), registerAction );
-                    }
-
-                    lCompleteMessage.Text = string.Format("<div class='alert alert-success'>{0} {1}</div>",
-                                                    registeredMessage,
-                                                    notRegisteredMessage );
-                }
-                else
-                {
-                    lCompleteMessage.Text = "<div class='alert alert-warning'>The role configured to use for adding the group member is not a part of this group.</div>";
-                }
-            }
-            else
-            {
-                lCompleteMessage.Text = "<div class='alert alert-warning'>There is no group configured for this event.</div>";
+                lErrors.Text = "<div class='alert alert-warning'>No registration instances exists for this event.</div>";
+                return;
             }
 
+            EventItemOccurrenceGroupMap registrationLinkage = registrationLinkages.First(); 
+
+            // create new registration
+            var registrationService = new RegistrationService( rockContext );
+
+            Registration registration = new Registration();
+            registrationService.Add( registration );
+
+            registration.RegistrationInstanceId = registrationLinkage.RegistrationInstanceId.Value;
+            registration.ConfirmationEmail = ebEmailReminder.Text;
+            registration.PersonAliasId = person.PrimaryAliasId;
+            registration.FirstName = person.NickName;
+            registration.LastName = person.LastName;
+
+            // add registrants
+            foreach ( int registrantId in cblRegistrants.SelectedValuesAsInt )
+            {
+                RegistrationRegistrant registrant = new RegistrationRegistrant();
+                registrant.PersonAliasId = registrantId;
+                registration.Registrants.Add( registrant );
+            }
+
+            rockContext.SaveChanges();
+
+            // redirect to registration page
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add( "RegistrationInstanceId", registrationLinkage.RegistrationInstanceId.ToString());
+            queryParams.Add( "RegistrationId", registration.Id.ToString() );
+            queryParams.Add( "StartAtBeginning", "True" );
+
+            if ( !string.IsNullOrWhiteSpace( registrationLinkage.UrlSlug ) )
+            {
+                queryParams.Add( "Slug", registrationLinkage.UrlSlug );
+            }
+
+            if (registrationLinkage.Group != null)
+            {
+                queryParams.Add( "GroupId", registrationLinkage.GroupId.ToString() );
+            }
+
+            NavigateToLinkedPage( "RegistrationPage", queryParams );
+            
         }
         protected void cpCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
@@ -270,22 +256,36 @@ namespace RockWeb.Blocks.Event
             var families = person.GetFamilies();
             var familyMembers = person.GetFamilyMembers().ToList();
 
+            // sort family members
+            familyMembers = familyMembers.OrderBy( f => f.GroupRole.Order )
+                                    .OrderBy( f => f.Person.Gender ).ToList();
+
             if ( _campusId == 0 )
             {
                 _campusId = families.FirstOrDefault().CampusId ?? 1;
                 cpCampus.SelectedCampusId = _campusId;
             }
 
+            // enter reminder email
+            if (! string.IsNullOrWhiteSpace(person.Email))
+            {
+                ebEmailReminder.Text = person.Email;
+            } else
+            {
+                // find email from one of the family members
+                ebEmailReminder.Text = familyMembers.Where( f => f.Person.Email != "" ).Select( f => f.Person.Email ).FirstOrDefault();     
+            }
+
             // add family registrants
             if ( GetAttributeValue( "IncludeFamilyMembers" ).AsBoolean() )
             {
                 cblRegistrants.DataSource = familyMembers.Select( f => f.Person );
-                cblRegistrants.DataValueField = "Id";
+                cblRegistrants.DataValueField = "PrimaryAliasId";
                 cblRegistrants.DataTextField = "FullName";
                 cblRegistrants.DataBind();
             }
 
-            cblRegistrants.Items.Insert( 0, new ListItem( person.FullName, person.Id.ToString() ) );
+            cblRegistrants.Items.Insert( 0, new ListItem( person.FullName, person.PrimaryAliasId.ToString() ) );
             cblRegistrants.SelectedIndex = 0;
 
             if ( cblRegistrants.Items.Count == 1 )
