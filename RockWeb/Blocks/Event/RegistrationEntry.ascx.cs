@@ -61,6 +61,7 @@ namespace RockWeb.Blocks.Event
         // Page (query string) parameter names
         private const string REGISTRATION_ID_PARAM_NAME = "RegistrationId";
         private const string SLUG_PARAM_NAME = "Slug";
+        private const string START_AT_BEGINNING = "StartAtBeginning";
         private const string REGISTRATION_INSTANCE_ID_PARAM_NAME = "RegistrationInstanceId";
         private const string EVENT_OCCURRENCE_ID_PARAM_NAME = "EventOccurrenceId";
         private const string GROUP_ID_PARAM_NAME = "GroupId";
@@ -580,6 +581,11 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     ShowRegistrant();
+
+                    if ( CurrentRegistrantIndex == 0 && PageParameter( START_AT_BEGINNING ).AsBoolean() )
+                    {
+                        lbRegistrantPrev.Visible = false;
+                    }
                 }
             }
             else
@@ -623,6 +629,8 @@ namespace RockWeb.Blocks.Event
             {
                 ShowHowMany();
             }
+
+            lbRegistrantPrev.Visible = true;
 
             PercentComplete = ( ( (double)2 + ( (CurrentFormIndex + 1) * CurrentRegistrantIndex ) ) / (double)ProgressBarSteps ) * 100;
 
@@ -953,6 +961,10 @@ namespace RockWeb.Blocks.Event
                     RegistrationState = new RegistrationInfo( registration, rockContext );
                     RegistrationState.PreviousPaymentTotal = registrationService.GetTotalPayments( registration.Id );
                 }
+
+                // set the max number of steps in the progress bar
+                numHowMany.Value = registration.Registrants.Count();
+                this.ProgressBarSteps = numHowMany.Value * FormCount + 2;
             }
 
             // A registration slug was specified
@@ -2235,7 +2247,7 @@ namespace RockWeb.Blocks.Event
             lRegistrantTerm.Text =RegistrantTerm.Pluralize().ToLower();
 
             // If this is an existing registration, go directly to the summary
-            if ( RegistrationState != null && RegistrationState.RegistrationId.HasValue )
+            if ( RegistrationState != null && RegistrationState.RegistrationId.HasValue && !PageParameter( START_AT_BEGINNING ).AsBoolean() )
             {
                 ShowSummary();
             }
