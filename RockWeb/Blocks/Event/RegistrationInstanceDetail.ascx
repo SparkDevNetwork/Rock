@@ -289,7 +289,7 @@
                             </div>
                         </div>
                         <Rock:ModalAlert ID="mdGroupPlacementGridWarning" runat="server" />
-                        <Rock:Grid ID="gGroupPlacements" runat="server" DisplayType="Light" AllowSorting="false" RowItemText="Registrant" ExportSource="ColumnOutput">
+                        <Rock:Grid ID="gGroupPlacements" runat="server" DisplayType="Light" EnableResponsiveTable="false" AllowSorting="false" RowItemText="Registrant" ExportSource="ColumnOutput">
                             <Columns>
                                 <Rock:RockTemplateField HeaderText="Registrant" SortExpression="PersonAlias.Person.LastName, PersonAlias.Person.NickName">
                                     <ItemTemplate>
