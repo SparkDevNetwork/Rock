@@ -3,10 +3,10 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <ul class="nav contextsetter contextsetter-date">
+        <ul class="nav navbar-nav contextsetter contextsetter-date">
             <li class="dropdown">
 
-                <a class="dropdown-toggle" href="#" data-toggle="dropdown">
+                <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
                     <asp:Literal ID="lCurrentSelection" runat="server" />
                     <b class="fa fa-caret-down"></b>
                 </a>
