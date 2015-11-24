@@ -151,10 +151,21 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
         private void ShowDetails()
         {
+            List<MapItem> groupMapItems = new List<MapItem>();
+            var rockContext = new RockContext();
+            ParameterState.AddOrReplace( "DetailSource", RockPage.Guid.ToString() );
+            var groupTypeGuid = "7F76AE15-C5C4-490E-BF3A-50FB0591A60F".AsGuid();
+
+            ddlCampus.Items.Clear();
+            foreach ( var campus in CampusCache.All() )
+            {
+                ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString().ToUpper() ) );
+            }
+
             int? campusId = PageParameter( "CampusId" ).AsIntegerOrNull();
             if ( !campusId.HasValue )
             {
-                if ( !String.IsNullOrWhiteSpace( ParameterState["Campus"] ) )
+                if ( ParameterState.Keys.Contains( "Campus" ) && !String.IsNullOrWhiteSpace( ParameterState["Campus"] ) )
                 {
                     var qryParams = new Dictionary<string, string>();
                     qryParams.Add( "CampusId", ParameterState["Campus"] );
@@ -163,27 +174,27 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 }
                 else
                 {
-                    pnlMap.Visible = false;
-                    lMessages.Text = "<div class='alert alert-warning'><strong>Group Map</strong> A Campus ID is required to display the map.</div>";
-                    return;
+                    if ( ddlCampus.SelectedValue.AsIntegerOrNull() != null )
+                    {
+                        var qryParams = new Dictionary<string, string>();
+                        qryParams.Add( "CampusId", ddlCampus.SelectedValue );
+                        ParameterState.AddOrReplace( "Campus", ddlCampus.SelectedValue );
+                        NavigateToPage( RockPage.Guid, qryParams );
+                        return;
+                    }
+                    else
+                    {
+                        pnlMap.Visible = false;
+                        lMessages.Text = "<div class='alert alert-warning'><strong>Group Map</strong> A Campus ID is required to display the map.</div>";
+                        return;
+                    }
                 }
             }
 
-            ParameterState.AddOrReplace( "DetailSource", RockPage.Guid.ToString() );
-
-            List<MapItem> groupMapItems = new List<MapItem>();
-            var rockContext = new RockContext();
-
             var selectedCampus = new CampusService( rockContext ).Get( campusId.Value );
-            ddlCampus.Items.Clear();
-            foreach ( var campus in CampusCache.All() )
-            {
-                ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString().ToUpper() ) );
-            }
             ddlCampus.SelectedValue = campusId.ToString().ToUpper();
 
-            var groupTypeGuid = "7F76AE15-C5C4-490E-BF3A-50FB0591A60F".AsGuid(); 
-            var qry = new GroupService( rockContext ).Queryable( "GroupType.DefaultGroupRole" ).Where( g => g.CampusId == campusId && g.GroupType.Guid == groupTypeGuid && g.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true ) != null && g.IsPublic);
+            var qry = new GroupService( rockContext ).Queryable( "GroupType.DefaultGroupRole" ).Where( g => g.CampusId == campusId && g.GroupType.Guid == groupTypeGuid && g.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true ) != null && g.IsPublic );
             foreach ( Group group in qry )
             {
                 var groupLocation = group.GroupLocations.FirstOrDefault();
