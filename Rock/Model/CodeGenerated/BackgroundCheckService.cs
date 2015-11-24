@@ -96,6 +96,7 @@ namespace Rock.Model
             target.ResponseDate = source.ResponseDate;
             target.ResponseDocumentId = source.ResponseDocumentId;
             target.ResponseXml = source.ResponseXml;
+            target.WorkflowId = source.WorkflowId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

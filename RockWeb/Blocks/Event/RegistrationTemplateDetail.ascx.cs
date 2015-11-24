@@ -625,6 +625,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.Notify = notify;
             RegistrationTemplate.AddPersonNote = cbAddPersonNote.Checked;
             RegistrationTemplate.LoginRequired = cbLoginRequired.Checked;
+            RegistrationTemplate.AllowGroupPlacement = cbAllowGroupPlacement.Checked;
             RegistrationTemplate.AllowMultipleRegistrants = cbMultipleRegistrants.Checked;
             RegistrationTemplate.MaxRegistrants = nbMaxRegistrants.Text.AsInteger();
             RegistrationTemplate.RegistrantsSameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
@@ -1857,6 +1858,7 @@ namespace RockWeb.Blocks.Event
 
             cbAddPersonNote.Checked = RegistrationTemplate.AddPersonNote;
             cbLoginRequired.Checked = RegistrationTemplate.LoginRequired;
+            cbAllowGroupPlacement.Checked = RegistrationTemplate.AllowGroupPlacement;
             cbMultipleRegistrants.Checked = RegistrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Visible = RegistrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Text = RegistrationTemplate.MaxRegistrants.ToString();

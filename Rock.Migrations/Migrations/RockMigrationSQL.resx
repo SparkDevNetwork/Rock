@@ -244,7 +244,4 @@
   <data name="_201511182310362_ProtectMyMinistry" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 4.0\version 1.4.0\201511182310362_protectmyministry.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
-  <data name="_201511162216129_RecentRegistrationsLava_MergeTemplateUpdates" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201511162216129_recentregistrationslava_mergetemplateupdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
 </root>
