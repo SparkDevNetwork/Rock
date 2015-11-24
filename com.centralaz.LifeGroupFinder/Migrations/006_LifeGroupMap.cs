@@ -93,6 +93,10 @@ namespace com.centralaz.LifeGroupFinder.Migrations
             Where [Guid] = '9DA055F3-9B8A-4399-BB93-9783502273DF'
 " );
 
+            RockMigrationHelper.UpdateBlockType( "FireWorkflowButton", "Allows a user to fire off a workflow", "~/Plugins/com_centralaz/LifeGroupFinder/FireWorkflowButton.ascx", "com_centralaz > Groups", "33677897-2A3C-46BF-81C7-F5A61788B63C" );
+            RockMigrationHelper.AddBlockTypeAttribute( "33677897-2A3C-46BF-81C7-F5A61788B63C", "1D50399B-0D6E-480B-A71A-E7BD37DD83F0", "Workflow Actions", "WorkflowActions", "", "The workflows to make available as actions.", 1, @"", "B662ADD2-96DE-43CA-91F4-B2B2EE431B71" );
+
+
         }
 
         /// <summary>
@@ -100,6 +104,9 @@ namespace com.centralaz.LifeGroupFinder.Migrations
         /// </summary>
         public override void Down()
         {
+            RockMigrationHelper.DeleteAttribute( "B662ADD2-96DE-43CA-91F4-B2B2EE431B71" );
+            RockMigrationHelper.DeleteBlockType( "33677897-2A3C-46BF-81C7-F5A61788B63C" );
+
             RockMigrationHelper.DeleteAttribute( "DE4315D1-135D-4764-BE7D-BF2A9C49CC36" );
             RockMigrationHelper.DeleteAttribute( "BFE5BB78-A7B2-4CA9-B011-E1E408A862DC" );
             RockMigrationHelper.DeleteAttribute( "991C2F17-C9CA-48A3-A41D-9BB5E8DA3E18" );
