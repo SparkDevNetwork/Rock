@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ScheduleContextSetter.ascx.cs" Inherits="RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter.ScheduleContextSetter" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ScheduleContextSetter.ascx.cs" Inherits="RockWeb.Blocks.Core.ScheduleContextSetter" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
