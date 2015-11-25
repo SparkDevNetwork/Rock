@@ -93,13 +93,13 @@ name: NewSpringRockKit
 #     deployment configuration    #
 #---------------------------------#
 
-deploy:
-
-- provider: Environment
-name: Alpha (alpha-rock.newspring.cc)
-on:
-branch: alpha
-
+# deploy:
+#
+# - provider: Environment
+# name: Alpha (alpha-rock.newspring.cc)
+# on:
+# branch: alpha
+#
 # - provider: Environment
 # name: Gauntlet (gauntlet.newspring.cc)
 # on:
