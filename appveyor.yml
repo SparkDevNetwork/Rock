@@ -100,10 +100,10 @@ name: Alpha (alpha-rock.newspring.cc)
 on:
 branch: alpha
 
-- provider: Environment
-name: Gauntlet (gauntlet.newspring.cc)
-on:
-branch: pre-alpha-release
+# - provider: Environment
+# name: Gauntlet (gauntlet.newspring.cc)
+# on:
+# branch: pre-alpha-release
 
 
 #---------------------------------#
