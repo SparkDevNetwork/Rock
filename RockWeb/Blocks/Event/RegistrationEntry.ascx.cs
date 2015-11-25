@@ -970,6 +970,31 @@ namespace RockWeb.Blocks.Event
                     // set the max number of steps in the progress bar
                     numHowMany.Value = registration.Registrants.Count();
                     this.ProgressBarSteps = numHowMany.Value * FormCount + 2;
+
+                    // set group id
+                    if ( groupId.HasValue )
+                    {
+                        GroupId = groupId;
+                    }
+                    else if ( !string.IsNullOrWhiteSpace( registrationSlug ) )
+                    {
+                        var dateTime = RockDateTime.Now;
+                        var linkage = new EventItemOccurrenceGroupMapService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( l =>
+                                l.UrlSlug == registrationSlug &&
+                                l.RegistrationInstance != null &&
+                                l.RegistrationInstance.IsActive &&
+                                l.RegistrationInstance.RegistrationTemplate != null &&
+                                l.RegistrationInstance.RegistrationTemplate.IsActive &&
+                                (!l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime) &&
+                                (!l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime) )
+                            .FirstOrDefault();
+                        if ( linkage != null )
+                        {
+                            GroupId = linkage.GroupId;
+                        }
+                    }
                 }
                 else
                 {

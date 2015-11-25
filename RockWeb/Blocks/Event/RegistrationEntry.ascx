@@ -72,7 +72,7 @@
                     <Rock:EmailBox ID="tbConfirmationEmail" runat="server" Label="Send Confirmation Emails To" Required="true" />
                 </div>
                 <div class="col-md-6">
-                    <asp:Panel ID="pnlRegistrarFamilyOptions" runat="server" CssClass="well">
+                    <asp:Panel ID="pnlRegistrarFamilyOptions" runat="server">
                         <Rock:RockRadioButtonList ID="rblRegistrarFamilyOptions" runat="server" Label="You are in the same family as" RepeatDirection="Horizontal" Required="true" DataTextField="Value" DataValueField="Key" />
                     </asp:Panel>
                 </div>
