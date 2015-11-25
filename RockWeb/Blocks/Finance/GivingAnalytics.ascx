@@ -13,7 +13,7 @@
                     </a>
                     <button id="btnCopyToClipboard" runat="server" disabled="disabled" 
                         data-toggle="tooltip" data-placement="top" data-title="Copy Report Link to Clipboard" 
-                        class="btn btn-link padding-all-none " 
+                        class="btn btn-link btn-copy-to-clipboard padding-all-none " 
                         onmouseover="$(this).tooltip('hide').attr('data-original-title','Copy Report Link to Clipboard').tooltip('fixTitle').tooltip('show');"
                         onclick="$(this).tooltip('hide').attr('data-original-title','Copied').tooltip('fixTitle').tooltip('show');return false;">
                         <i class='fa fa-clipboard'></i>
