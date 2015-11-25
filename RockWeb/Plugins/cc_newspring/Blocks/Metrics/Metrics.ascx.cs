@@ -55,6 +55,12 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         #region Fields
 
         /// <summary>
+        /// The string used for setting a Date Range Context
+        /// Set via RockWeb.Blocks.Core.DateRangeContextSetter
+        /// </summary>
+        protected static string ContextPreferenceName = "context-date-range";
+
+        /// <summary>
         /// Gets or sets the metric block values.
         /// </summary>
         /// <value>
@@ -101,7 +107,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
         protected IEntity GroupTypeContext = null;
 
-        protected IEntity DateRangeContext = null;
+        protected string DateRangeContext = null;
 
         protected string PrimaryMetricKey = string.Empty;
 
@@ -140,7 +146,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     GroupTypeContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( GroupType ) ) );
 
                     // Get Date Range Context
-                    DateRangeContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( DateRange ) ) );
+                    DateRangeContext = RockPage.GetUserPreference( ContextPreferenceName );
                 }
 
                 // Output variables direct to the ascx
@@ -175,8 +181,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 List<int> comparisonMetricSource = metricService.GetByGuids( comparisonSourceGuids )
                     .Select( a => a.Id ).ToList();
 
-                // use DateRangeContext (whatever data type it is) to set the dateRange
-                DateRange dateRange = new DateRange( DateTime.Now.AddMonths( -6 ), DateTime.Now );
+                // set date range according to the context
+                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( DateRangeContext );
 
                 // Show data if metric source is selected
                 if ( primaryMetricSource.Any() || !string.IsNullOrEmpty( PrimaryMetricKey ) )
