@@ -20,6 +20,7 @@ skip_tags: true
 #---------------------------------#
 #    environment configuration    #
 #---------------------------------#
+
 # Operating system (build VM template)
 os: Windows Server 2012 R2
 
@@ -50,6 +51,8 @@ install:
   - ps: git submodule -q update --init --recursive
 
 
+
+
 #---------------------------------#
 #       build configuration       #
 #---------------------------------#
@@ -57,28 +60,30 @@ install:
 # build Configuration, i.e. Debug, Release, etc.
 configuration: Release
 
+# scripts to run before build
+before_build:
+  - cmd: npm i --silent --production
+  - cmd: ./node_modules/normajs/bin/norma.js build  # use cached version of norma
+  - cmd: git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
+
+
 build:
   project: Rock.sln
   publish_wap: true               # package Web Application Projects (WAP) for Web Deploy
-
-  # MSBuild verbosity level
   verbosity: minimal
-
-  # scripts to run before build
-  before_build:
-    - cmd: npm i --silent --production
-    - cmd: ./node_modules/normajs/bin/norma.js build  # use cached version of norma
-    - cmd: git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
-
 
 matrix:
   fast_finish: true    # set this flag to immediately finish build once one of the jobs fails
+
+
 
 #---------------------------------#
 #       tests configuration       #
 #---------------------------------#
 # to disable automatic tests
 test: off
+
+
 
 
 #---------------------------------#
