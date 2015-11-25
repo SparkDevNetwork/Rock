@@ -92,6 +92,12 @@ namespace RockWeb.Blocks.Event
 
             if ( !Page.IsPostBack )
             {
+                // load campuses
+                cpCampus.DataSource = CampusCache.All();
+                cpCampus.DataValueField = "Id";
+                cpCampus.DataTextField = "Name";
+                cpCampus.DataBind();
+
                 LoadContent();
             }
         }
@@ -211,12 +217,6 @@ namespace RockWeb.Blocks.Event
         private void LoadContent() {
             Person person = null;
             EventItem eventItem = null;
-
-            // load campuses
-            cpCampus.DataSource = CampusCache.All();
-            cpCampus.DataValueField = "Id";
-            cpCampus.DataTextField = "Name";
-            cpCampus.DataBind();
 
             // get person
             Guid personGuid = Guid.Empty;

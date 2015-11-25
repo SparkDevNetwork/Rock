@@ -81,7 +81,7 @@
             </div>
         </div>
         
-        <asp:Panel ID="pnlRegistrantsReview" runat="server" Visible="false">
+        <asp:Panel ID="pnlRegistrantsReview" CssClass="margin-b-md" runat="server" Visible="false">
             <asp:Literal ID="lRegistrantsReview" runat="server" />
             <ul>
                 <asp:Repeater ID="rptrRegistrantReview" runat="server">
@@ -197,7 +197,7 @@
 
         <div class="actions">
             <asp:LinkButton ID="lbSummaryPrev" runat="server" AccessKey="p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbSummaryPrev_Click" />
-            <Rock:BootstrapButton ID="lbSummaryNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbSummaryNext_Click" />
+            <Rock:BootstrapButton ID="lbSummaryNext" runat="server" AccessKey="n" Text="Finish" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbSummaryNext_Click" />
         </div>
 
     </asp:Panel>
