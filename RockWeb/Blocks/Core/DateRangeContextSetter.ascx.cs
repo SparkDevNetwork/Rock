@@ -39,10 +39,15 @@ namespace RockWeb.Blocks.Core
     [Description( "Block that can be used to set the default date range for the site." )]
     [CustomRadioListField( "Context Scope", "The scope of context to set", "Site,Page", true, "Site", order: 0 )]
     [TextField( "No Date Range Text", "The text to show when there is no date range in the context.", true, "Select Date Range", order: 1 )]
-    [IntegerFieldAttribute("Default Range", "The number of days to include from the current date. The default is 7 (previous week)", false, 7, order: 2)]
-    [TextField( "Clear Selection Text", "The text displayed when a date range can be unselected. This will not display when the text is empty.", true, "", order: 3 )]
+    [SlidingDateRangeField("Default Date Range","The default range to start with if context and query string have not been set", order: 2 )]
+    [BooleanField( "Display Query Strings", "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.", order: 3 )]
     public partial class DateRangeContextSetter : Rock.Web.UI.RockBlock
     {
+        /// <summary>
+        /// The context preference name
+        /// </summary>
+        protected static string ContextPreferenceName = "context-date-range";
+
         #region Base Control Methods
 
         /// <summary>
@@ -66,7 +71,10 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
-            LoadDropdowns();
+            if ( !Page.IsPostBack )
+            {
+                LoadDropdowns();
+            }
         }
 
         /// <summary>
@@ -84,40 +92,26 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadDropdowns()
         {
-            var dateRangeEntityType = EntityTypeCache.Read( typeof( DateRangeItem ) );
-            var currentRange = RockPage.GetCurrentContext( dateRangeEntityType ) as DateRangeItem;
-
-            drpSlidingDateRange.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.Current;
-            drpSlidingDateRange.TimeUnit = SlidingDateRangePicker.TimeUnitType.Week;
-
-            var startDateString = Request.QueryString["startDate"];
-            var endDateString = Request.QueryString["endDate"];
-            if ( startDateString != null && endDateString != null )
+            var currentRange = RockPage.GetUserPreference( ContextPreferenceName );
+            var dateRangeString = Request.QueryString["dateRange"];
+            if ( !string.IsNullOrEmpty( dateRangeString ) && currentRange != dateRangeString )
             {
-                var queryDateRange = new DateRangeItem()  
-                {
-                    Start = Convert.ToDateTime(startDateString), 
-                    End = Convert.ToDateTime(endDateString)
-                };
-
-                if ( currentRange != null && currentRange.Start != queryDateRange.Start && currentRange.End != queryDateRange.End )
-                {
-                    currentRange = SetDateRangeContext( queryDateRange, false );
-                }
+                // set context to query string
+                SetDateRangeContext( dateRangeString, false );
+                currentRange = dateRangeString;
             }
 
-            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
-
-
-            lCurrentSelection.Text = GetAttributeValue( "NoDateRangeText" );
-
-            if ( currentRange != null )
-            {   
-                //lCurrentSelection.Text = GetAttributeValue( "CurrentItemTemplate" ).ResolveMergeFields( mergeObjects );
+            // if current range is selected, show a tooltip, otherwise show the default
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( currentRange );
+            if ( dateRange != null && dateRange.Start != null && dateRange.End != null )
+            {
+                lCurrentSelection.Text = dateRange.ToStringAutomatic();
+                drpSlidingDateRange.DelimitedValues = currentRange;
             }
             else
             {
-                //drpDateRange.DelimitedValues = gfPledges.GetUserPreference( "Date Range" );
+            	lCurrentSelection.Text = GetAttributeValue( "NoDateRangeText" );
+                drpSlidingDateRange.DelimitedValues = GetAttributeValue( "DefaultDateRange" );
             }
         }
 
@@ -127,21 +121,20 @@ namespace RockWeb.Blocks.Core
         /// <param name="queryDateRange">The schedule identifier.</param>
         /// <param name="refreshPage">if set to <c>true</c> [refresh page].</param>
         /// <returns></returns>
-        protected DateRangeItem SetDateRangeContext( DateRangeItem queryDateRange, bool refreshPage = false )
+        protected void SetDateRangeContext( string dateRangeValues, bool refreshPage = false )
         {
             bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
-
+            
             // set context and refresh below with the correct query string if needed
-            //RockPage.SetContextCookie( queryDateRange, pageScope, false );
+            RockPage.SetUserPreference( ContextPreferenceName, dateRangeValues, true );
 
             if ( refreshPage )
             {
                 // Only redirect if refreshPage is true
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "startDate" ) ) )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "dateRange" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
-                    queryString.Set( "startDate", queryDateRange.Start.ToString() );
-                    queryString.Set( "startDate", queryDateRange.End.ToString() );
+                    queryString.Set( "dateRange", dateRangeValues );
                     Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ), false );
                 }
                 else
@@ -151,8 +144,6 @@ namespace RockWeb.Blocks.Core
 
                 Context.ApplicationInstance.CompleteRequest();
             }
-
-            return queryDateRange;
         }
 
         #endregion
@@ -166,43 +157,15 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSelect_Click( object sender, EventArgs e )
         {
-            // set the context here when the user is finished editing
+            // set context here when the user is finished editing
+            var dateRange = drpSlidingDateRange.DelimitedValues;
+            if ( dateRange != null )
+            {
+                SetDateRangeContext( dateRange, true );
+            }
         }
 
-
-        
         #endregion
 
-        /// <summary>
-        /// Date Range Item
-        /// </summary>
-        public class DateRangeItem
-        {
-            /// <summary>
-            /// Gets or sets the name.
-            /// </summary>
-            /// <value>
-            /// The name.
-            /// </value>
-            public string Name { get; set; }
-
-            /// <summary>
-            /// Gets or sets the start date.
-            /// </summary>
-            /// <value>
-            /// The start.
-            /// </value>
-            public DateTime Start { get; set; }
-
-            /// <summary>
-            /// Gets or sets the end date.
-            /// </summary>
-            /// <value>
-            /// The end.
-            /// </value>
-            public DateTime End { get; set; }
-
-        }
-       
-}
+    }
 }
