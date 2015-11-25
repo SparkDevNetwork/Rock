@@ -1880,6 +1880,37 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Adds the defined value.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="description">The description.</param>
+        public void AddDefinedValue( string definedTypeGuid, string value, string description )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                DECLARE @Order int
+                SELECT @Order = ISNULL(MAX([order])+1,0) FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId
+
+                INSERT INTO [DefinedValue] (
+                    [IsSystem],[DefinedTypeId],[Order],
+                    [Value],[Description],
+                    [Guid])
+                VALUES(
+                    0,@DefinedTypeId,@Order,
+                    '{1}','{2}',
+                    NEWID() )
+",
+                    definedTypeGuid,
+                    value,
+                    description.Replace( "'", "''" )
+                    ) );
+        }
+
+        /// <summary>
         /// Updates (or Adds) the defined value for the given DefinedType.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type GUID.</param>

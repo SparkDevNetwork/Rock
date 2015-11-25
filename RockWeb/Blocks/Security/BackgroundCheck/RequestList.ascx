@@ -38,6 +38,7 @@
                                 <Rock:RockBoundField ItemStyle-HorizontalAlign="Center" DataField="RecordFoundLabel" HeaderText="Record Found" SortExpression="RecordFound" HtmlEncode="false" />
                                 <asp:HyperLinkField HeaderText="Report" DataNavigateUrlFields="ResponseDocumentId" DataNavigateUrlFormatString="~/GetFile.ashx?id={0}" DataTextField="ResponseDocumentText" ItemStyle-HorizontalAlign="Center"  />
                                 <Rock:LinkButtonField HeaderText="Response XML" Text="<i class='fa fa-file-code-o fa-lg'></i>" OnClick="gRequest_XML" HeaderStyle-CssClass="" ItemStyle-CssClass="" ColumnPriority="DesktopLarge" />
+                                <Rock:EditField OnClick="gRequest_ViewWorkflow" IconCssClass="fa fa-cogs" ToolTip="View Workflow" />
 
                             </Columns>
                         </Rock:Grid>
