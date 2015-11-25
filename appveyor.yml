@@ -86,9 +86,9 @@ test: off
 #---------------------------------#
 
 artifacts:
-  # pushing entire folder as a zip archive
-  - path: RockWeb
-      name: NewSpringRockKit
+  name: NewSpringRockKit
+    # pushing entire folder as a zip archive
+    - path: RockWeb
 
 
 
