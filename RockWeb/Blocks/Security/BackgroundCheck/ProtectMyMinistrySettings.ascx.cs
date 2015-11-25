@@ -299,12 +299,24 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
                     definedValue.LoadAttributes( rockContext );
 
+                    Guid? dvJurisdicationCodeGuid = null;
+                    int? dvJurisdictionCodeId = ddlMVRJurisdication.SelectedValueAsInt();
+                    if ( dvJurisdictionCodeId.HasValue && dvJurisdictionCodeId.Value > 0 )
+                    {
+                        var dvJurisdicationCode = DefinedValueCache.Read( dvJurisdictionCodeId.Value );
+                        if ( dvJurisdicationCode != null )
+                        {
+                            dvJurisdicationCodeGuid = dvJurisdicationCode.Guid;
+                        }
+                    }
+
                     definedValue.SetAttributeValue( "PMMPackageName", tbPackageName.Text );
                     definedValue.SetAttributeValue( "DefaultCounty", tbDefaultCounty.Text );
                     definedValue.SetAttributeValue( "SendHomeCounty", cbSendCounty.Checked.ToString() );
                     definedValue.SetAttributeValue( "DefaultState", tbDefaultState.Text );
                     definedValue.SetAttributeValue( "SendHomeState", cbSendState.Checked.ToString() );
-                    definedValue.SetAttributeValue( "IncludeMVR", cbIncludeMVR.Checked.ToString() );
+                    definedValue.SetAttributeValue( "MVRJurisdiction", dvJurisdicationCodeGuid.HasValue ? dvJurisdicationCodeGuid.Value.ToString() : string.Empty );
+                    definedValue.SetAttributeValue( "SendHomeStateMVR", cbSendStateMVR.Checked.ToString() );
                     definedValue.SaveAttributeValues( rockContext );
 
                     DefinedTypeCache.Flush( definedType.Id );
@@ -332,6 +344,12 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         {
             using ( var rockContext = new RockContext() )
             {
+                var mvrJurisdicationCodes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES.AsGuid() );
+                if ( mvrJurisdicationCodes != null )
+                {
+                    ddlMVRJurisdication.BindToDefinedType( mvrJurisdicationCodes, true, true );
+                }
+
                 var settings = GetSettings( rockContext );
                 if ( settings != null )
                 {
@@ -454,7 +472,8 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     SendAddressCounty = v.GetAttributeValue( "SendHomeCounty" ).AsBoolean(),
                     DefaultState = v.GetAttributeValue( "DefaultState" ),
                     SendAddressState = v.GetAttributeValue( "SendHomeState" ).AsBoolean(),
-                    IncludeMVRInfo = v.GetAttributeValue( "IncludeMVR" ).AsBoolean()
+                    MVRJurisdication = v.GetAttributeValue("MVRJurisdiction"),
+                    SendAddressStateMVR = v.GetAttributeValue( "SendHomeStateMVR" ).AsBoolean()
                 } )
                 .ToList();
                 gDefinedValues.DataBind();
@@ -494,12 +513,23 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
                 definedValue.LoadAttributes();
 
+                ddlMVRJurisdication.SetValue( 0 );
+                Guid? mvrJurisdicationGuid = definedValue.GetAttributeValue( "MVRJurisdiction" ).AsGuidOrNull();
+                if ( mvrJurisdicationGuid.HasValue )
+                {
+                    var mvrJurisdication = DefinedValueCache.Read( mvrJurisdicationGuid.Value );
+                    if ( mvrJurisdication != null )
+                    {
+                        ddlMVRJurisdication.SetValue( mvrJurisdication.Id );
+                    }
+                }
+
                 tbPackageName.Text = definedValue.GetAttributeValue( "PMMPackageName" );
                 tbDefaultCounty.Text = definedValue.GetAttributeValue( "DefaultCounty" );
                 cbSendCounty.Checked = definedValue.GetAttributeValue( "SendHomeCounty" ).AsBoolean();
                 tbDefaultState.Text = definedValue.GetAttributeValue( "DefaultState" );
                 cbSendState.Checked = definedValue.GetAttributeValue( "SendHomeState" ).AsBoolean();
-                cbIncludeMVR.Checked = definedValue.GetAttributeValue( "IncludeMVR" ).AsBoolean( false );
+                cbSendStateMVR.Checked = definedValue.GetAttributeValue( "SendHomeStateMVR" ).AsBoolean();
 
                 ShowDialog( "Package" );
             }

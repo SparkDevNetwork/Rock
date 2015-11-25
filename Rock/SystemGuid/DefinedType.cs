@@ -200,6 +200,11 @@ namespace Rock.SystemGuid
         public const string PERSON_ABILITY_LEVEL_TYPE = "7BEEF4D4-0860-4913-9A3D-857634D1BF7C";
 
         /// <summary>
+        /// Protect My Ministry MVR jurisdiction codes
+        /// </summary>
+        public const string PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES = "2F8821E8-05B9-4CD5-9FA4-303662AAC85D";
+
+        /// <summary>
         /// Protect My Ministry background package types
         /// </summary>
         public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";

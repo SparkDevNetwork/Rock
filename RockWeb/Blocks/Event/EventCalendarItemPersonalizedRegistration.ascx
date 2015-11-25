@@ -85,9 +85,16 @@
                          </ItemTemplate>
                     </asp:Repeater>
                     
-                    <Rock:RockCheckBoxList ID="cblRegistrants" runat="server" Label="Register" RepeatDirection="Horizontal" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockCheckBoxList ID="cblRegistrants" runat="server" Label="Register" RepeatDirection="Horizontal" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:EmailBox ID="ebEmailReminder" runat="server" Label="Email Reminder Address" />
+                        </div>
+                    </div>
 
-                    <asp:LinkButton ID="lbRegister" runat="server" Text="Register" CssClass="btn btn-primary margin-b-md" OnClick="lbRegister_Click" />
+                    <asp:LinkButton ID="lbRegister" runat="server" Text="Register" CssClass="btn btn-primary margin-b-md margin-t-md" OnClick="lbRegister_Click" />
 
                     <asp:Literal ID="lMessages" runat="server" />
                 </asp:Panel>

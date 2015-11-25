@@ -56,8 +56,10 @@
     <asp:Panel ID="pnlSummaryAndPayment" runat="server" Visible="false" CssClass="registrationentry-summary">
         
         <h1>Review <asp:Literal ID="lRegistrationTerm" runat="server" /></h1>
-        
+
+   
         <div class="well">
+            
             <h4>Your Information</h4>
             <div class="row">
                 <div class="col-md-6">
@@ -72,14 +74,23 @@
                     <Rock:EmailBox ID="tbConfirmationEmail" runat="server" Label="Send Confirmation Emails To" Required="true" />
                 </div>
                 <div class="col-md-6">
-                    <asp:Panel ID="pnlRegistrarFamilyOptions" runat="server" CssClass="well">
+                    <asp:Panel ID="pnlRegistrarFamilyOptions" runat="server">
                         <Rock:RockRadioButtonList ID="rblRegistrarFamilyOptions" runat="server" Label="You are in the same family as" RepeatDirection="Horizontal" Required="true" DataTextField="Value" DataValueField="Key" />
                     </asp:Panel>
                 </div>
             </div>
         </div>
         
-        
+        <asp:Panel ID="pnlRegistrantsReview" CssClass="margin-b-md" runat="server" Visible="false">
+            <asp:Literal ID="lRegistrantsReview" runat="server" />
+            <ul>
+                <asp:Repeater ID="rptrRegistrantReview" runat="server">
+                    <ItemTemplate>
+                        <li><strong> <%# Eval("RegistrantName")  %></strong></li>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </ul>
+        </asp:Panel>     
         
         <asp:Panel ID="pnlMoney" runat="server">
 
@@ -186,7 +197,7 @@
 
         <div class="actions">
             <asp:LinkButton ID="lbSummaryPrev" runat="server" AccessKey="p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbSummaryPrev_Click" />
-            <Rock:BootstrapButton ID="lbSummaryNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbSummaryNext_Click" />
+            <Rock:BootstrapButton ID="lbSummaryNext" runat="server" AccessKey="n" Text="Finish" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbSummaryNext_Click" />
         </div>
 
     </asp:Panel>
