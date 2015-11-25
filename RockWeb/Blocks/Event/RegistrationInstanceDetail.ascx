@@ -252,7 +252,7 @@
                             <Rock:GridFilter ID="fLinkages" runat="server" OnDisplayFilterValue="fLinkages_DisplayFilterValue">
                                 <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gLinkages" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gLinkages_RowSelected" RowItemText="Linkage" ExportSource="ColumnOutput">
+                            <Rock:Grid ID="gLinkages" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Linkage" ExportSource="ColumnOutput">
                                 <Columns>
                                     <Rock:RockTemplateFieldUnselected HeaderText="Calendar Item">
                                         <ItemTemplate>
@@ -268,6 +268,7 @@
                                     </Rock:RockTemplateFieldUnselected>
                                     <asp:BoundField HeaderText="Public Name" DataField="PublicName" SortExpression="PublicName" />
                                     <asp:BoundField HeaderText="URL Slug" DataField="UrlSlug" SortExpression="UrlSlug" />
+                                    <Rock:EditField OnClick="gLinkages_Edit" />
                                     <Rock:DeleteField OnClick="gLinkages_Delete" />
                                 </Columns>
                             </Rock:Grid>

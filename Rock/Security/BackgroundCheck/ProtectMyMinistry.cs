@@ -96,6 +96,7 @@ namespace Rock.Security.BackgroundCheck
                             .Where( p => p.Guid.Equals( personAliasGuid.Value ) )
                             .Select( p => p.Person )
                             .FirstOrDefault();
+                        person.LoadAttributes( rockContext );
                     }
                 }
 
@@ -174,6 +175,12 @@ namespace Rock.Security.BackgroundCheck
                     subjectElement.Add( new XElement( "Gender", "Female" ) );
                 }
 
+                string dlNumber = person.GetAttributeValue( "com.sparkdevnetwork.DLNumber" );
+                if ( !string.IsNullOrWhiteSpace( dlNumber ) )
+                {
+                    subjectElement.Add( new XElement( "com.sparkdevnetwork.DLNumber", dlNumber ) );
+                }
+
                 var homelocation = person.GetHomeLocation();
                 if ( homelocation != null)
                 {
@@ -205,6 +212,8 @@ namespace Rock.Security.BackgroundCheck
                 string packageName = "BASIC";
                 string county = string.Empty;
                 string state = string.Empty;
+                string mvrJurisdiction = string.Empty;
+                string mvrState = string.Empty;
 
                 if ( requestTypeAttribute != null )
                 {
@@ -219,6 +228,20 @@ namespace Rock.Security.BackgroundCheck
                         packageName = pkgTypeDefinedValue.GetAttributeValue("PMMPackageName");
                         county = pkgTypeDefinedValue.GetAttributeValue( "DefaultCounty" );
                         state = pkgTypeDefinedValue.GetAttributeValue( "DefaultState" );
+                        Guid? mvrJurisdictionGuid = pkgTypeDefinedValue.GetAttributeValue( "IncludeMVR" ).AsGuidOrNull();
+                        if ( mvrJurisdictionGuid.HasValue )
+                        {
+                            var mvrJurisdictionDv = DefinedValueCache.Read( mvrJurisdictionGuid.Value );
+                            if ( mvrJurisdictionDv != null )
+                            {
+                                mvrJurisdiction = mvrJurisdictionDv.Value;
+                                if ( mvrJurisdiction.Length >= 2 )
+                                {
+                                    mvrState = mvrJurisdiction.Left( 2 );
+                                }
+                            }
+                        }
+
                         if ( homelocation != null )
                         {
                             if ( !string.IsNullOrWhiteSpace( homelocation.County ) &&
@@ -227,28 +250,33 @@ namespace Rock.Security.BackgroundCheck
                                 county = homelocation.County;
                             }
 
-                            if ( !string.IsNullOrWhiteSpace( homelocation.State ) &&
-                                pkgTypeDefinedValue.GetAttributeValue("SendHomeState").AsBoolean() )
+                            if ( !string.IsNullOrWhiteSpace( homelocation.State ) )
                             {
-                                state = homelocation.State;
+                                if ( pkgTypeDefinedValue.GetAttributeValue( "SendHomeState" ).AsBoolean() )
+                                {
+                                    state = homelocation.State;
+                                }
+                                if ( pkgTypeDefinedValue.GetAttributeValue( "SendHomeStateMVR" ).AsBoolean() )
+                                {
+                                    mvrState = homelocation.State;
+                                }
                             }
                         }
                     }
                 }
 
-                if ( string.IsNullOrWhiteSpace( packageName ) )
+                if ( !string.IsNullOrWhiteSpace( packageName ) )
                 {
-                    packageName = "BASIC";
-                }
-                orderElement.Add( new XElement( "PackageServiceCode", packageName,
-                    new XAttribute( "OrderId", workflow.Id.ToString() ) ) );
+                    orderElement.Add( new XElement( "PackageServiceCode", packageName,
+                        new XAttribute( "OrderId", workflow.Id.ToString() ) ) );
 
-                if ( packageName.Trim().Equals( "BASIC", StringComparison.OrdinalIgnoreCase ) ||
-                    packageName.Trim().Equals( "PLUS", StringComparison.OrdinalIgnoreCase ) )
-                {
-                    orderElement.Add( new XElement( "OrderDetail",
-                        new XAttribute( "OrderId", workflow.Id.ToString() ),
-                        new XAttribute( "ServiceCode", "combo" ) ) );
+                    if ( packageName.Trim().Equals( "BASIC", StringComparison.OrdinalIgnoreCase ) ||
+                        packageName.Trim().Equals( "PLUS", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        orderElement.Add( new XElement( "OrderDetail",
+                            new XAttribute( "OrderId", workflow.Id.ToString() ),
+                            new XAttribute( "ServiceCode", "combo" ) ) );
+                    }
                 }
 
                 if ( !string.IsNullOrWhiteSpace( county ) ||
@@ -263,6 +291,16 @@ namespace Rock.Security.BackgroundCheck
                         new XElement( "CourtDocsRequested", "NO" ),
                         new XElement( "RushRequested", "NO" ),
                         new XElement( "SpecialInstructions", "" ) )
+                    );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( mvrJurisdiction ) && !string.IsNullOrWhiteSpace( mvrState ) )
+                {
+                    orderElement.Add( new XElement( "OrderDetail",
+                        new XAttribute( "OrderId", workflow.Id.ToString() ),
+                        new XAttribute( "ServiceCode", "MVR" ),
+                        new XElement( "JurisdictionCode", mvrJurisdiction ),
+                        new XElement( "State", mvrState ) )
                     );
                 }
 

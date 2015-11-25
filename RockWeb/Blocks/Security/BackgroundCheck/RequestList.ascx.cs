@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
     [Category( "Security > Background Check" )]
     [Description( "Lists all the background check requests." )]
 
+    [LinkedPage("Workflow Detail Page", "The page to view details about the background check workflow")]
     public partial class RequestList : RockBlock, ISecondaryBlock
     { 
         #region Control Methods
@@ -133,6 +134,14 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             {
                 dynamic request = e.Row.DataItem;
 
+                if ( !request.HasWorkflow )
+                {
+                    foreach ( var lb in e.Row.Cells[6].ControlsOfTypeRecursive<LinkButton>() )
+                    {
+                        lb.Visible = false;
+                    }
+                }
+
                 if ( !request.HasResponseXml )
                 {
                     foreach( var lb in e.Row.Cells[5].ControlsOfTypeRecursive<LinkButton>() )
@@ -178,14 +187,17 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             }
         }
 
-        /// <summary>
-        /// Handles the Document event of the gRequest control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gRequest_Document( object sender, RowEventArgs e )
+        protected void gRequest_ViewWorkflow( object sender, RowEventArgs e )
         {
-
+            using ( var rockContext = new RockContext() )
+            {
+                var bc = new BackgroundCheckService( rockContext ).Get( e.RowKeyId );
+                if ( bc != null )
+                {
+                    var qryParms = new Dictionary<string, string> { { "WorkflowId", bc.WorkflowId.Value.ToString() } };
+                    NavigateToLinkedPage( "WorkflowDetailPage", qryParms );
+                }
+            }
         }
 
         #endregion
@@ -296,6 +308,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                         Name = b.PersonAlias.Person.LastName + ", " + b.PersonAlias.Person.NickName,
                         b.Id,
                         PersonId = b.PersonAlias.PersonId,
+                        HasWorkflow = b.WorkflowId.HasValue,
                         b.RequestDate,
                         b.ResponseDate,
                         b.RecordFound,

@@ -50,7 +50,7 @@
                             <Rock:RockLiteral ID="lPassword" runat="server" Label="Password" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockLiteral ID="lPackages" runat="server" Label="Enabled Packages" />
+                            <Rock:RockLiteral ID="lPackages" runat="server" Label="Enabled Background Check Types" />
                         </div>
                     </div>
                     <div class="actions">
@@ -84,26 +84,27 @@
         <asp:Panel ID="pnlPackages" CssClass="panel panel-block" runat="server" Visible="true">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-archive"></i> Packages</h1>
+                <h1 class="panel-title"><i class="fa fa-archive"></i> Background Check Types</h1>
             </div>
             <div class="panel-body">
 
                 <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
                 <div class="grid grid-panel">
-                    <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" RowItemText="Package" OnRowSelected="gDefinedValues_RowSelected" AllowSorting="False" >
+                    <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" RowItemText="Type" OnRowSelected="gDefinedValues_RowSelected" AllowSorting="False" >
                         <Columns>
                             <Rock:ReorderField/>
-                            <Rock:RockTemplateField HeaderText="Package" SortExpression="Name">
+                            <Rock:RockTemplateField HeaderText="Type" SortExpression="Name">
                                 <ItemTemplate>
                                     <%# Eval("Value") %><br /><small><%# Eval("Description") %></small>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
-                            <Rock:RockBoundField DataField="PackageName" HeaderText="PMM Package Name"/>
-                            <Rock:RockBoundField DataField="DefaultCounty" HeaderText="Default County"/>
-                            <Rock:BoolField DataField="SendAddressCounty" HeaderText="Send County from Home Address" />
-                            <Rock:RockBoundField DataField="DefaultState" HeaderText="Default State"/>
-                            <Rock:BoolField DataField="SendAddressState" HeaderText="Send State from Home Address" />
-                            <Rock:BoolField DataField="IncludeMVRInfo" HeaderText="Include MVR Info" />
+                            <Rock:RockBoundField DataField="PackageName" HeaderText="Package Name"/>
+                            <Rock:RockBoundField DataField="DefaultCounty" HeaderText="County Criminal Default County"/>
+                            <Rock:BoolField DataField="SendAddressCounty" HeaderText="Use Home Address for County Criminal" />
+                            <Rock:RockBoundField DataField="DefaultState" HeaderText="Statewide Criminal Default State"/>
+                            <Rock:BoolField DataField="SendAddressState" HeaderText="Use Home State for Statewide Criminal" />
+                            <Rock:DefinedValueField DataField="MVRJurisdication" HeaderText="MVR Jurisdication Code" />
+                            <Rock:BoolField DataField="SendAddressStateMVR" HeaderText="Use Home State for MVR Search" />
                             <Rock:DeleteField OnClick="gDefinedValues_Delete" />
                         </Columns>
                     </Rock:Grid>
@@ -115,7 +116,7 @@
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="dlgPackage" runat="server" Title="Package" ValidationGroup="Package" 
+        <Rock:ModalDialog ID="dlgPackage" runat="server" Title="Background Check Type" ValidationGroup="Package" 
             OnSaveClick="dlgPackage_SaveClick" OnCancelScript="clearActiveDialog();">
             <Content>
 
@@ -124,7 +125,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title" Required="true" ValidationGroup="Package" />
+                        <Rock:RockTextBox ID="tbTitle" runat="server" Label="Background Check Type" Required="true" ValidationGroup="Package" />
                     </div>
                     <div class="col-md-6">
                     </div>
@@ -138,28 +139,36 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbPackageName" runat="server" Label="PMM Package Name" Required="true" ValidationGroup="Package" Help="The exact package name to use when sending the background check request to Protect My Ministry" />
+                        <Rock:RockTextBox ID="tbPackageName" runat="server" Label="Package Name" ValidationGroup="Package" Help="The exact package name to use when sending the background check request to Protect My Ministry" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbIncludeMVR" runat="server" Label="Include MVR Information" Text="Yes" ValidationGroup="Package" Help="Flag indicating if this package requires that the Motor Vehicle Registration (MVR) fields be included with the request." />
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbDefaultCounty" runat="server" Label="Default County" ValidationGroup="Package" Help="The county to include with the background check request. " />
-                    </div>
-                    <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbSendCounty" runat="server" Label="Send County from Home Address" Text="Yes" ValidationGroup="Package" Help="If person's home address includes a valid county, send that instead of the Default County." />
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbDefaultState" runat="server" Label="Default State" ValidationGroup="Package" Help="The state abbreviation to include with the background check request. " />
+                        <Rock:RockTextBox ID="tbDefaultCounty" runat="server" Label="County Criminal Search Default County" ValidationGroup="Package" Help="Include a valid county name to request a County Criminal Search (a default county or state is required when using the PLUS package)." />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbSendState" runat="server" Label="Send State from Home Address" Text="Yes" ValidationGroup="Package" Help="If person's home address includes a valid state, send that instead of the Default State." />
+                        <Rock:RockCheckBox ID="cbSendCounty" runat="server" Label="Use Home Address County" Text="Yes" ValidationGroup="Package" Help="If the person's home address includes a county, use that instead of the default county." />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbDefaultState" runat="server" Label="Statewide Criminal Search Default State" ValidationGroup="Package" Help="Include a valid state to request a Statewide Criminal Search (a default state or county is required when using the PLUS package)." />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbSendState" runat="server" Label="Use Home Address State" Text="Yes" ValidationGroup="Package" Help="If the person's home address includes a state, use that instead of the default state." />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlMVRJurisdication" runat="server" Label="MVR Jurisdication Code" ValidationGroup="Package" Help="Select an MVR Jurisdiction code to request a Motor Vehicle Record search." />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbSendStateMVR" runat="server" Label="Use Home Address State" Text="Yes" ValidationGroup="Package" Help="If the person's home address includes a state, use that instead of state from jurisdication code." />
                     </div>
                 </div>
 
