@@ -1,0 +1,148 @@
+<!doctype html> <html> <head> <meta charset=utf-8> <meta name=description content="Join us this year for Christmas Services at Christ's Church of the Valley. Locations in Peoria, Surprise, Scottsdale, Anthem, Avondale, and Mesa."> <meta name=viewport content="width=device-width, initial-scale=1"> <title>Christmas at CCV 2015</title> <meta property=og:url content=http://ccv.church/christmas15> <meta property=og:title content="Christmas at CCV"> <meta property=og:description content="Join us this year for Christmas Services at Christ's Church of the Valley. Locations in Peoria, Surprise, Scottsdale, Anthem, Avondale, and Mesa."> <meta property=og:image content=http://s3.amazonaws.com/media.ccvonline.com/2015/christmas/og-image.jpg> <link rel=apple-touch-icon href=apple-touch-icon.png> <link rel="shortcut icon" href=favicon.ico> <link rel=stylesheet href=styles/main.css> <script>
+      var text = {
+        emailSubject: 'Join us for Christmas service at CCV',
+        emailSingleP1: 'We\'re going to Christmas service at CCV. Would you like to join us? We\'ll be attending the ',
+        emailSingleP2: ' service on ',
+        emailSingleP3: ' on the ',
+        emailSingleP4: ' campus. Let’s go together!\n\nhttp://ccvchristmas.com',
+        emailAllP1: 'We\'re going to Christmas service at CCV on the ',
+        emailAllP2: ' Campus. Would you like to join us? Check out the service times at http://ccvchristmas.com and let\'s plan to go together!\n',
+        emailAllP3: '\n* Sign language translation and special needs services available',
+        textSingleP1: 'Come to Christmas at CCV with us! We\'ll be going to the ',
+        textSingleP2: ' service on ',
+        textSingleP3: ' at the ',
+        textSingleP4: ' campus. You should join us! http://ccvchristmas.com',
+        textAllP1: 'We\'re going to Christmas service at CCV on the ',
+        textAllP2: ' campus. Would you like to join us? Check out the service times at http://ccvchristmas.com and let\'s plan to go together!'
+      }
+      var templateData = {
+        campuses: [
+          {
+            id: 1,
+            shortcode: "peo",
+            name: "Peoria",
+            geo: {
+              lat: 33.7110943,
+              lng: -112.2088517,
+            },
+            phone: '(623) 376-2444',
+            street: '7007 W Happy Valley Rd',
+            city: 'Peoria',
+            state: 'AZ',
+            zip: '85383-3223',
+            times: {
+              tue: ['6:00 pm', '7:30 pm'],
+              wed: ['4:30 pm', '6:00 pm *', '7:30 pm'],
+              thu: ['1:30 pm', '3:00 pm', '4:30 pm', '6:00 pm *', '7:30 pm']
+            },
+            hasSpecialService: true
+          },
+          {
+            id: 5,
+            shortcode: "sur",
+            name: "Surprise",
+            geo: {
+              lat: 33.5875394,
+              lng: -112.3785948,
+            },
+            phone: '(623) 875-9000',
+            street: '14787 W Cholla St',
+            city: 'Surprise',
+            state: 'AZ',
+            zip: '85379-4418',
+            times: {
+              tue: ['6:00 pm'],
+              wed: ['4:30 pm', '6:00 pm *', '7:30 pm'],
+              thu: ['1:30 pm', '3:00 pm', '4:30 pm', '6:00 pm *', '7:30 pm']
+            },
+            hasSpecialService: true
+          },
+          {
+            id: 6,
+            shortcode: "sco",
+            name: "Scottsdale",
+            geo: {
+              lat: 33.65789,
+              lng: -111.88851,
+            },
+            phone: '(480) 502-9800',
+            street: '19030 N Pima Rd',
+            city: 'Scottsdale',
+            state: 'AZ',
+            zip: '85255-5392',
+            times: {
+              wed: ['6:00 pm', '7:30 pm'],
+              thu: ['3:00 pm', '4:30 pm', '6:00 pm']
+            },
+          },
+          {
+            id: 7,
+            shortcode: "eav",
+            name: "East Valley",
+            geo: {
+              lat: 33.3912,
+              lng: -111.61549,
+            },
+            phone: '(480) 218-1456',
+            street: '1330 S Crismon Rd',
+            city: 'Mesa',
+            state: 'AZ',
+            zip: '85209-3767',
+            times: {
+              wed: ['6:00 pm', '7:30 pm'],
+              thu: ['3:00 pm', '4:30 pm', '6:00 pm']
+            },
+          },
+          {
+            id: 8,
+            shortcode: "ath",
+            name: "Anthem",
+            geo: {
+              lat: 33.84683,
+              lng: -112.13706,
+            },
+            phone: '(623) 561-3700',
+            street: '39905 N Gavilan Peak Pkwy',
+            city: 'Anthem',
+            state: 'AZ',
+            zip: '85086-2521',
+            times: {
+              tue: ['6:00 pm'],
+              wed: ['4:30 pm', '6:00 pm', '7:30 pm'],
+              thu: ['1:30 pm', '3:00 pm', '4:30 pm', '6:00 pm']
+            },
+          },
+          {
+            id: 9,
+            shortcode: "avd",
+            name: "Avondale",
+            geo: {
+              lat: 33.4636054,
+              lng: -112.301477,
+            },
+            phone: '(623) 561-3600',
+            street: '1565 N 113th Ave',
+            city: 'Avondale',
+            state: 'AZ',
+            zip: '85392-3935',
+            times: {
+              tue: ['6:00 pm'],
+              wed: ['4:30 pm', '6:00 pm', '7:30 pm'],
+              thu: ['3:00 pm', '4:30 pm', '6:00 pm']
+            },
+          }
+        ],
+        tueLabel: "Tuesday 12/22",
+        wedLabel: "Wednesday 12/23",
+        thuLabel: "Thursday 12/24"
+      };
+    </script> </head> <body> <!--[if lt IE 10]>
+ <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+ <![endif]--> <header role=banner> <div class=container> <img class=art-title src=images/title.svg alt="Christmas at CCV"> </div> </header> <article> <div class="container container-sm description"> <p class=lead>Join us this year for Christmas at CCV!</p> <p>What is your favorite Christmas gift you’ve ever received? What’s the most meaningful gift you’ve ever given? This Christmas, CCV will celebrate gifts: the funny ones, the special ones, and the most important one… God’s gift to us through Jesus Christ. Join us for this family celebration as we explore, <em>The Greatest Gift</em>.</p> <p><strong>About services this year:</strong> We will not have separate children's classes, so the whole family can enjoy the service together. Select a campus below to find service times near you.</p> <div class=js-find-nearest-container></div> </div> <div id=campuses-container class="container container-lg"> <script id=campuses-template type=text/x-handlebars-template> <div class="campuses"> {{#each campuses}} <section class="campus" data-campus-id="{{ id }}"> <div class="module"> <h3 class="title">{{ name }} Campus</h3> <div class="inner collapse"> <div class="map"> <a href="{{ mapUrl }}" title="Get directions to the {{ name }} Campus"> <img src="https://s3.amazonaws.com/media.ccvonline.com/2015/christmas/{{ shortcode }}.png" alt="{{ name }} Campus Map" /> </a> <p class="small address"><i class="glyphicon glyphicon-map-marker"></i> <a href="{{ mapUrl }}" title="Get directions to the {{ name }} Campus">{{street}}<br>{{city}}, {{state}} {{zip}}</a> </p> </div> <div class="times"> <table class="table"> {{#if times.tue}} <tr><th rowspan="{{rowSpan times.tue}}">{{ ../tueLabel }}</th></tr> {{#each times.tue }} <tr><td>{{ this }}</td></tr> {{/each}} {{/if}} {{#if times.wed}} <tr><th rowspan="{{rowSpan times.wed}}">{{ ../wedLabel }}</th></tr> {{#each times.wed }} <tr><td>{{ this }}</td></tr> {{/each}} {{/if}} {{#if times.thu}} <tr><th rowspan="{{rowSpan times.thu}}">{{ ../thuLabel }}</th></tr> {{#each times.thu }} <tr><td>{{ this }}</td></tr> {{/each}} {{/if}} </table> {{#if hasSpecialService}} <p class="small text-muted">* Sign language translation and special needs services available</p> {{/if}} </div> <div class="invite"> <h4>Invite a friend</h4> <div class="flex"> <button type="button" class="btn btn-default btn-sm" data-invite-method="email" data-campus-id="{{ id }}" data-toggle="modal" data-target="#inviteModal">Email</button> {{#isPhone}} <button type="button" class="btn btn-default btn-sm" data-invite-method="text" data-campus-id="{{ id }}" data-toggle="modal" data-target="#inviteModal">Text</button> {{else}} <a href="https://www.facebook.com/dialog/send?app_id=476409745797650&display=popup&link=http://ccv.church/christmas15?utm_source=facebook&redirect_uri=http://ccv.church/christmas15?utm_source=facebook" class="btn btn-default btn-sm">Facebook</a> {{/isPhone}} </div> </div> </div> </div> </section> {{/each}} </div> </script> </div> </article> <footer class=main-footer> <div class=container> <div class=footer-items> <a class=footer-item href=//ccv.church title="Visit the main CCV Website"> <img class=logo src=images/logo.svg alt="Christ's Church of the Valley"> </a> <a class="footer-item btn btn-sm btn-default" href=//ccv.church/newhere>Learn more about CCV</a> </div> </div> </footer> <div class="modal fade" id=inviteModal tabindex=-1 role=dialog aria-labelledby=inviteModalLabel> <div class=modal-dialog role=document> <div class=modal-content> <div class=modal-header> <button type=button class=close data-dismiss=modal aria-label=Close><span aria-hidden=true>&times;</span></button> <h4 class=modal-title id=inviteModalLabel>Invite</h4> </div> <div class=modal-body> </div> </div> </div> </div> <script id=email-invite-template type=text/x-handlebars-template> <p class="lead">Which service are you attending?</p> {{#if times.tue}} <h4>{{ tueLabel }}</h4> <div class="invitebtns"> {{#each times.tue }} <div class="invitebtn-wrapper"> <a href="{{emailSingle this ../tueLabel ../name}}" class="invitebtn">{{removeAst this }}</a> </div> {{/each}} </div> {{/if}} {{#if times.wed}} <h4>{{ wedLabel }}</h4> <div class="invitebtns"> {{#each times.wed }} <div class="invitebtn-wrapper"> <a href="{{emailSingle this ../wedLabel ../name}}" class="invitebtn">{{removeAst this }}</a> </div> {{/each}} </div> {{/if}} {{#if times.thu}} <h4>{{ thuLabel }}</h4> <div class="invitebtns"> {{#each times.thu }} <div class="invitebtn-wrapper"> <a href="{{emailSingle this ../thuLabel ../name}}" class="invitebtn">{{removeAst this }}</a> </div> {{/each}} </div> {{/if}} <a href="{{emailAll}}" class="invitebtn invitebtn-last">I don’t know yet</a> </script> <script id=text-invite-template type=text/x-handlebars-template> <p class="lead">Which service are you attending?</p> {{#if times.tue}} <h4>{{ tueLabel }}</h4> <div class="invitebtns"> {{#each times.tue }} <div class="invitebtn-wrapper"> <a href="{{textSingle this ../tueLabel ../name}}" class="invitebtn">{{removeAst this }}</a> </div> {{/each}} </div> {{/if}} {{#if times.wed}} <h4>{{ wedLabel }}</h4> <div class="invitebtns"> {{#each times.wed }} <div class="invitebtn-wrapper"> <a href="{{textSingle this ../wedLabel ../name}}" class="invitebtn">{{removeAst this }}</a> </div> {{/each}} </div> {{/if}} {{#if times.thu}} <h4>{{ thuLabel }}</h4> <div class="invitebtns"> {{#each times.thu }} <div class="invitebtn-wrapper"> <a href="{{textSingle this ../thuLabel ../name}}" class="invitebtn">{{removeAst this }}</a> </div> {{/each}} </div> {{/if}} <a href="{{textAll}}" class="invitebtn invitebtn-last">I don’t know yet</a> </script> <script>
+      (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+      function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+      e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+      e.src='https://www.google-analytics.com/analytics.js';
+      r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+      ga('create','UA-273941-1');ga('send','pageview');
+    </script> <script src=scripts/vendor.js></script> <script src=scripts/main.js></script> <script src=https://maps.googleapis.com/maps/api/js></script> </body> </html> 
