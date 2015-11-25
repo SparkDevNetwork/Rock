@@ -28,7 +28,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
-namespace RockWeb.Plugins.cc_newspring.Blocks.ScheduleContextSetter
+namespace RockWeb.Blocks.Core
 {
     /// <summary>
     /// Block that can be used to set the default campus context for the site
