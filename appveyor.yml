@@ -38,8 +38,8 @@ environment:
     secure: MIIEpAIBAAKCAQEAvLvf+Orblx7cByPn4XrryeiIniS8Jpqwti/M2m9IO50IxygS BALaU9mIyAgPGaj/aToKoifHji5jZwz4rBHEFYksnml+DudkKdwFy/aosbQPkUmF qYxZU+woA1alnk7OXTs7gO4LcQylpWAHvgFqFfQCyu8w9GxmEhKav8W+DHqKu1P6 MtHfH4azi53TPJXII/y6+8t84Jtjk9vOa3BddvWRPrtZ0xcXk4M2c/aGwoRZANWn 70GaxdGc3RvuTJHwUwzFXuqW3aU2DDQS8qMzHbkrRpdjCZ0jewHHKj0imiVPApQf agwE/nHselxSyKn5BllE9v3bIZyTFeCc4l89GQIDAQABAoIBACYhq0HGabFhqcDD j2DuDd+QXLHe6CjAjj1w8OmdHDH3K0PZo7ItxWC1jb4karCbhWcENAvJD7d5RdoX M9LIEB7txRcIZ1CpjYIrkvw/jJvCrnaDLT8xPQcIqpjqE7IlZ+pMQlxtO+COVpVQ DqBj9sQStdG8e96WXBUAr0VZtWkdq+crJtgm7F7m/vGek6xBy28h5bePBOw4hyYk t/d/uORqjkp5g8B1/hDz/cfgFJDV4LdXiYYGY9ljobUMEqPm5imwo8Gbcs/8WU4d xp4BAneu1Era7ONqs0Kwk9pFz5LFTXOaebyEJKojI54ccn0i9sS7xHPR+Kz9fFZT NC/tQAUCgYEA8FISbnD5jPcFnkt1lEMer6EGMFMNwMAaqEwdu/A28tYafk2o3V2K 3ZKg5zk1pCT/E4G5ximpsr1S3xnuHY7hBDK82ZOhok7VIlE+dyMqKVc0LwSj99k2 m9Xh4HS1tyFhpGHyxDremLzVFTgKc/XMtgF9BNe95lQKsvrj55/jFlsCgYEAyQwu gHXZFYzDPx2swTrmwUJXwV1/ruDsoHhydIniqGW+T5J5qq/dG/+RddeD6ry3h2bI MCjuvL+2iXhwO7w2F8pCyORCqea9fdhTdeGxSmoi7KRWOEa9Nb03v61HqN1rP5Pa HSlNYNgIuoscUsH6IQ4hWKBGp9DzPAqtn18IXJsCgYEA1zlZYmlxROqxsGt6GNbn s3itdzfaeEZTWWgZtQfT3jUbMwRP+DhfNkKsMYhN3vx3KLwkaTFE1luxzTaGxxf/ s2fRM7aAqkCZpotGOyJWDwIXLQil5EE3I+cvzHoZh7GwpaxG47CpS/bJiqBO1D1N Ia9BjMW+P3oCvvnsg7LwiEMCgYEAg+6xiW1Mkv63lfCkUH2VtlcR/Xuc8ab6wWep PF7L1dRGqjMmEmOsBtaUny9Ziy5ihcFmN2x1Fnn8kIPvqtOc78m0P97C/HnF+hJ+ 2onL7VhvKLnDNtT9D4nnTqqoruD2o1ckOCTFeXrrZ3colAplWVHLgjxTgYb2R31+ aGpVs2cCgYBWfBbmwWe7N7U4ZZbHuk3qWm6qK5x5G+AoH5YDTj4tg6D69CwDadUU AgG7iFut5xa0uIbhcYFO1tX15jQ1Q4hX6ZQ8ENcGmZCEd2fyA3FhvDJv0MkgTh+F MK+Ewfs7rfcHRq8bO3lsRd8Ydv7aURFWy5uMC9+idD9ekx3qnfAeFg==
 
 cache:
-- packages                        # preserve "packages" directory in the root of build folder but will reset it if packages.config is modified
-- node_modules                    # local npm modules
+  - packages                        # preserve "packages" directory in the root of build folder but will reset it if packages.config is modified
+  - node_modules                    # local npm modules
 
 # scripts that run after cloning repository
 install:
@@ -58,18 +58,21 @@ install:
 configuration: Release
 
 build:
-project: Rock.sln
-publish_wap: true               # package Web Application Projects (WAP) for Web Deploy
+  project: Rock.sln
+  publish_wap: true               # package Web Application Projects (WAP) for Web Deploy
 
-# MSBuild verbosity level
-verbosity: minimal
+  # MSBuild verbosity level
+  verbosity: minimal
 
-# scripts to run before build
-before_build:
-  - cmd: npm i --silent --production
-  - cmd: ./node_modules/normajs/bin/norma.js build  # use cached version of norma
-  - cmd: git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
+  # scripts to run before build
+  before_build:
+    - cmd: npm i --silent --production
+    - cmd: ./node_modules/normajs/bin/norma.js build  # use cached version of norma
+    - cmd: git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
 
+
+matrix:
+  fast_finish: true    # set this flag to immediately finish build once one of the jobs fails
 
 #---------------------------------#
 #       tests configuration       #
@@ -83,9 +86,9 @@ test: off
 #---------------------------------#
 
 artifacts:
-# pushing entire folder as a zip archive
-- path: RockWeb
-name: NewSpringRockKit
+  # pushing entire folder as a zip archive
+  - path: RockWeb
+  name: NewSpringRockKit
 
 
 
@@ -93,17 +96,17 @@ name: NewSpringRockKit
 #     deployment configuration    #
 #---------------------------------#
 
-# deploy:
-#
-# - provider: Environment
-# name: Alpha (alpha-rock.newspring.cc)
-# on:
-# branch: alpha
-#
-# - provider: Environment
-# name: Gauntlet (gauntlet.newspring.cc)
-# on:
-# branch: pre-alpha-release
+deploy:
+
+  - provider: Environment
+    name: Alpha (alpha-rock.newspring.cc)
+    on:
+      branch: alpha
+
+  - provider: Environment
+    name: Gauntlet (gauntlet.newspring.cc)
+    on:
+      branch: pre-alpha-release
 
 
 #---------------------------------#
@@ -111,8 +114,8 @@ name: NewSpringRockKit
 #---------------------------------#
 
 notifications:
-- provider: Slack
-auth_token:
-secure: 1OsoJ8x/9EYQWTaJQVCj53YgZJRiz/GSLl5VhE7ZA0wb/J5wISUoxzxhIUMSttheY0G/iQCBt1Tb/9lLaIulWw==
-channel: deployments
-template: "{message}, {commitId}, ..."
+  - provider: Slack
+  auth_token:
+    secure: 1OsoJ8x/9EYQWTaJQVCj53YgZJRiz/GSLl5VhE7ZA0wb/J5wISUoxzxhIUMSttheY0G/iQCBt1Tb/9lLaIulWw==
+  channel: deployments
+  template: "{message}, {commitId}, ..."
