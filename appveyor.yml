@@ -62,7 +62,7 @@ configuration: Release
 
 # scripts to run before build
 before_build:
-  - cmd: npm i --silent --production
+  - cmd: npm install --production
   - cmd: node ./node_modules/normajs/bin/norma.js build  # use cached version of norma
   - cmd: git clone -q --depth=1 https://github.com/NewSpring/rock-spiritual-gifts.git ../rock-spiritual-gifts
 
