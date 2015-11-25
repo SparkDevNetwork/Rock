@@ -352,8 +352,8 @@ namespace RockWeb.Blocks.Event
 
             if ( !Page.IsPostBack )
             {
-                // Get the a registration (either by reading existing, or creating new one
-                if ( SetRegistrationState() )
+                // Get the a registration if it has not already been loaded ( breadcrumbs may have loaded it )
+                if ( RegistrationState != null || SetRegistrationState() )
                 {
                     if ( RegistrationTemplate != null )
                     {
@@ -3599,6 +3599,7 @@ namespace RockWeb.Blocks.Event
                 // If there were any costs
                 if ( costs.Any() )
                 {
+                    pnlRegistrantsReview.Visible = false;
                     pnlMoney.Visible = true;
 
                     // Get the total min payment for all costs and fees
@@ -3715,6 +3716,18 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
+                    pnlRegistrantsReview.Visible = true;
+
+                    lRegistrantsReview.Text = string.Format( "<p>You are registering the following {0} for {1}:",
+                        RegistrationTemplate.RegistrantTerm.PluralizeIf( RegistrationState.Registrants.Count > 0 ).ToLower(), RegistrationTemplate.Name );
+
+                    rptrRegistrantReview.DataSource = RegistrationState.Registrants
+                        .Select( r => new
+                        {
+                            RegistrantName = r.GetFirstName( RegistrationTemplate ) + " " + r.GetLastName( RegistrationTemplate )
+                        } );
+                    rptrRegistrantReview.DataBind(); 
+
                     RegistrationState.TotalCost = 0.0m;
                     RegistrationState.DiscountedCost = 0.0m;
                     pnlMoney.Visible = false;

@@ -56,8 +56,10 @@
     <asp:Panel ID="pnlSummaryAndPayment" runat="server" Visible="false" CssClass="registrationentry-summary">
         
         <h1>Review <asp:Literal ID="lRegistrationTerm" runat="server" /></h1>
-        
+
+   
         <div class="well">
+            
             <h4>Your Information</h4>
             <div class="row">
                 <div class="col-md-6">
@@ -79,7 +81,16 @@
             </div>
         </div>
         
-        
+        <asp:Panel ID="pnlRegistrantsReview" runat="server" Visible="false">
+            <asp:Literal ID="lRegistrantsReview" runat="server" />
+            <ul>
+                <asp:Repeater ID="rptrRegistrantReview" runat="server">
+                    <ItemTemplate>
+                        <li><strong> <%# Eval("RegistrantName")  %></strong></li>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </ul>
+        </asp:Panel>     
         
         <asp:Panel ID="pnlMoney" runat="server">
 
