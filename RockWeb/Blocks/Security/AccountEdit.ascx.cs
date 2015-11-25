@@ -338,13 +338,8 @@ namespace RockWeb.Blocks.Security
                                                 }
 
                                                 var updatedHomeAddress = new Location();
-                                                updatedHomeAddress.Street1 = acAddress.Street1;
-                                                updatedHomeAddress.Street2 = acAddress.Street2;
-                                                updatedHomeAddress.City = acAddress.City;
-                                                updatedHomeAddress.State = acAddress.State;
-                                                updatedHomeAddress.PostalCode = acAddress.PostalCode;
-                                                updatedHomeAddress.Country = acAddress.Country;
-                                                
+                                                acAddress.GetValues( updatedHomeAddress );
+
                                                 History.EvaluateChange( changes, dvHomeAddressType.Value + " Location", familyHomeAddress.Location != null ? familyHomeAddress.Location.ToString() : string.Empty, updatedHomeAddress.ToString() );
 
                                                 familyHomeAddress.Location = updatedHomeAddress;
@@ -404,12 +399,7 @@ namespace RockWeb.Blocks.Security
                 var homeAddress = person.GetHomeLocation();
                 if (homeAddress != null )
                 {
-                    acAddress.Street1 = homeAddress.Street1;
-                    acAddress.Street2 = homeAddress.Street2;
-                    acAddress.City = homeAddress.City;
-                    acAddress.State = homeAddress.State;
-                    acAddress.PostalCode = homeAddress.PostalCode;
-                    acAddress.Country = homeAddress.Country;
+                    acAddress.SetValues( homeAddress );
                 }
 
                 var mobilePhoneType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
