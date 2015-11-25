@@ -567,6 +567,15 @@ Registration By: {0} Total Cost/Fees:{1}
                 TotalCost = registration.TotalCost;
                 DiscountedCost = registration.DiscountedCost;
 
+                if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
+                {
+                    var family = registration.PersonAlias.Person.GetFamilies( rockContext ).FirstOrDefault();
+                    if ( family != null )
+                    {
+                        FamilyGuid = family.Guid;
+                    }
+                }
+
                 foreach ( var registrant in registration.Registrants )
                 {
                     Registrants.Add( new RegistrantInfo( registrant, rockContext ) );
