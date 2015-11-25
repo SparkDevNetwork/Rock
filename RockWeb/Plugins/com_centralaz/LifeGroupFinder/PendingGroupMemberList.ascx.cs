@@ -41,7 +41,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
     [GroupField( "Root Group", "Pending members from groups under this group will be displayed", true )]
     [LinkedPage( "Group Member Detail Page" )]
     [LinkedPage( "Group Detail Page" )]
-    [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
     public partial class PendingGroupMemberList : RockBlock
     {
         #region Private Variables

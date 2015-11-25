@@ -44,15 +44,11 @@ namespace com.centralaz.LifeGroupFinder.Migrations
 
             RockMigrationHelper.AddBlockTypeAttribute( "9CB552A7-4DDB-4DB9-A6F4-6FD326ED384D", "F4399CEF-827B-48B2-A735-F7806FCFE8E8", "Root Group", "RootGroup", "", "Pending members from groups under this group will be displayed", 0, @"", "1C80E09A-6984-4C52-BA4A-0500EAEF7A75" );
 
-            RockMigrationHelper.AddBlockTypeAttribute( "9CB552A7-4DDB-4DB9-A6F4-6FD326ED384D", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Person Profile Page", "PersonProfilePage", "", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", 2, @"", "ED20C8C8-3FC8-4A45-8E14-089883C56F83" );
-
             RockMigrationHelper.AddBlockAttributeValue( "BE689C2C-9799-4214-9D04-6B61631D1978", "216AFE54-82CF-400C-83C2-83C6B2723C49", @"Jan 31 2011 12:00AM" ); // First Activity
 
             RockMigrationHelper.AddBlockAttributeValue( "BE689C2C-9799-4214-9D04-6B61631D1978", "2EE9B769-C9D8-450A-9B33-AD153C041139", @"7f76ae15-c5c4-490e-bf3a-50fb0591a60f" ); // Group Type
 
             RockMigrationHelper.AddBlockAttributeValue( "BE689C2C-9799-4214-9D04-6B61631D1978", "218C5FC4-0B0C-4F4F-9F5C-981A50427622", @"4e237286-b715-4109-a578-c1445ec02707" ); // Group Detail Page
-
-            RockMigrationHelper.AddBlockAttributeValue( "BE689C2C-9799-4214-9D04-6B61631D1978", "ED20C8C8-3FC8-4A45-8E14-089883C56F83", @"08dbd8a5-2c35-4146-b4a8-0f7652348b25" ); // Person Profile Page
 
             RockMigrationHelper.AddBlockAttributeValue( "BE689C2C-9799-4214-9D04-6B61631D1978", "E1A13B50-2EC7-4DAF-AAE7-1C96DCD62972", @"3905c63f-4d57-40f0-9721-c60a2f681911" ); // Group Member Detail Page
 
@@ -67,7 +63,6 @@ namespace com.centralaz.LifeGroupFinder.Migrations
         {
             RockMigrationHelper.DeleteAttribute( "1C80E09A-6984-4C52-BA4A-0500EAEF7A75" );
             RockMigrationHelper.DeleteAttribute( "E1A13B50-2EC7-4DAF-AAE7-1C96DCD62972" );
-            RockMigrationHelper.DeleteAttribute( "ED20C8C8-3FC8-4A45-8E14-089883C56F83" );
             RockMigrationHelper.DeleteAttribute( "218C5FC4-0B0C-4F4F-9F5C-981A50427622" );
             RockMigrationHelper.DeleteAttribute( "2EE9B769-C9D8-450A-9B33-AD153C041139" );
             RockMigrationHelper.DeleteBlock( "BE689C2C-9799-4214-9D04-6B61631D1978" );
