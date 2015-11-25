@@ -1330,6 +1330,9 @@ namespace RockWeb.Blocks.Connection
                 }
                 catch
                 {
+                    // Group not in list, let's add it. It must have been assigned elsewhere.
+                    ddlPlacementGroup.Items.Add( new ListItem( String.Format( "{0} ({1})", connectionRequest.AssignedGroup.Name, connectionRequest.AssignedGroup.Campus != null ? connectionRequest.AssignedGroup.Campus.Name : "No Campus" ), connectionRequest.AssignedGroup.Id.ToString().ToUpper() ) );
+                    ddlPlacementGroup.SelectedValue = connectionRequest.AssignedGroupId.ToString();
 
                 }
             }
