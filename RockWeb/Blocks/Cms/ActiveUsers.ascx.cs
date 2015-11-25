@@ -246,7 +246,12 @@ namespace RockWeb.Blocks.Cms
                         var last15Minutes = RockDateTime.Now.AddMinutes( -15 );
 
                         var qryGuests = new PageViewService( rockContext ).Queryable().AsNoTracking()
-                                          .Where( p => p.SiteId == site.Id && p.DateTimeViewed > last15Minutes && p.PersonAliasId == null )
+                                          .Where( 
+                                                p => p.SiteId == site.Id 
+                                                && p.DateTimeViewed > last15Minutes 
+                                                && p.PersonAliasId == null 
+                                                && p.PageViewSession.PageViewUserAgent.Browser != "Other" 
+                                                && p.PageViewSession.PageViewUserAgent.ClientType != "Crawler" )
                                           .GroupBy( p => p.PageViewSessionId )
                                           .Select( g => new
                                           {
