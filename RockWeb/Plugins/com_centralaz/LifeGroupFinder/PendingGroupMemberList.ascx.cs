@@ -468,7 +468,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                     if ( _groupType != null )
                     {
                         pnlGroupMembers.Visible = true;
-                        lHeading.Text = string.Format( "{0} {1}", _groupType.GroupTerm, _groupType.GroupMemberTerm.Pluralize() );
+                        lHeading.Text = string.Format( "Pending {0} {1}", _groupType.GroupTerm, _groupType.GroupMemberTerm.Pluralize() );
 
                         if ( _groupType.Roles.Any() )
                         {
@@ -483,6 +483,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                             groupQry.Add( new GroupTreeItem { Id = rootGroup.Id, ParentGroupId = rootGroup.ParentGroupId, Name = rootGroup.Name } );
 
                             List<int> groupIdList = groupQry.Select( g => g.Id ).ToList();
+
                             // Get Group Members
                             var qry = groupMemberService.Queryable( "Person,GroupRole", true ).AsNoTracking()
                                 .Where( m =>
@@ -524,7 +525,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                             }
 
                             // Filter by Pending Status
-
                             qry = qry.Where( m => m.GroupMemberStatus == GroupMemberStatus.Pending );
 
                             // Filter by Campus
@@ -616,6 +616,12 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             }
         }
 
+        /// <summary>
+        /// Gets the member detail link.
+        /// </summary>
+        /// <param name="memberId">The member identifier.</param>
+        /// <param name="memberName">Name of the member.</param>
+        /// <returns></returns>
         private object GetMemberDetailLink( int memberId, string memberName )
         {
             string result = Server.HtmlEncode( memberName );
@@ -625,6 +631,13 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             return result;
         }
 
+        /// <summary>
+        /// Gets the group tree.
+        /// </summary>
+        /// <param name="groupQry">The group qry.</param>
+        /// <param name="group">The group.</param>
+        /// <param name="rootGroup">The root group.</param>
+        /// <returns></returns>
         private string GetGroupTree( List<GroupTreeItem> groupQry, GroupTreeItem group, Group rootGroup )
         {
             string result = Server.HtmlEncode( group.Name );
@@ -669,6 +682,9 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
         #endregion
 
+        /// <summary>
+        /// A helper class to quickly find parent groups
+        /// </summary>
         class GroupTreeItem
         {
             public int Id { get; set; }
@@ -677,6 +693,5 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
             public string Name { get; set; }
         }
-
     }
 }
