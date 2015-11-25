@@ -1303,7 +1303,7 @@ namespace RockWeb.Blocks.Connection
                                     .ToList();
             }
                 
-            foreach ( var g in groups )
+            foreach ( var g in groups.OrderBy( g => g.Name ) )
             {
                 ddlPlacementGroup.Items.Add( new ListItem( String.Format( "{0} ({1})", g.Name, g.Campus != null ? g.Campus.Name : "No Campus" ), g.Id.ToString().ToUpper() ) );
             }
