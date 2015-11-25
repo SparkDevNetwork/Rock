@@ -45,6 +45,8 @@
                         </asp:Repeater>
                         </ul>
 
+                        <asp:Literal ID="lAddress" runat="server" />
+
                         <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbEditPerson_Click"><i class="fa fa-pencil"></i> Edit</asp:LinkButton>
         
                     </div>

@@ -60,15 +60,13 @@
 
                     <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
 
-                    
-
                 </fieldset>
 
-                <asp:Panel ID="pnlAddresses" runat="server">
-                <fieldset>
-                    <legend>Addresses</legend>
-                    <Rock:AddressControl id="acHomeAddress" Label="Home Address" runat="server" />
-                </fieldset>
+                <asp:Panel ID="pnlAddress" runat="server">
+                    <fieldset>
+                        <legend>Address</legend>
+                        <Rock:AddressControl id="acAddress" runat="server" RequiredErrorMessage="Your Address is Required" />
+                    </fieldset>
                 </asp:Panel>
 
                 <div class="actions">
