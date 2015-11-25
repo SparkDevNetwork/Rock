@@ -7,13 +7,15 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">Lava Tester</h1>
+                <div class="panel-labels">
+                    <Rock:RockCheckBox ID="cbEnableDebug" runat="server" Checked="false" Text="Enable Debug?" CssClass="pull-right" Help="If enabled, extra Lava debug information will be included at the bottom but it will slow down tremendously. "/>
+                </div>
             </div>
             <div class="panel-body form-group">
                 <fieldset>
                     <div class="row">
                         <div class="col-md-12">
-                            <h2>Entity <small>(currently only supports Person and Group)</small></h2>
-                            <Rock:RockCheckBox ID="cbEnableDebug" runat="server" Checked="false" Label="Enable Debug?" />
+                            <Rock:NotificationBox ID="nbInstructions" runat="server" Title="Instructions" Text="Select one of the entities below, type some lava and press the Test button." NotificationBoxType="Info" Dismissable="true" />
                             <Rock:PersonPicker ID="ppPerson" Label="Person" runat="server" />
                             <Rock:GroupPicker ID="gpGroups" runat="server" Label="Group"/>
                             <div class="row">

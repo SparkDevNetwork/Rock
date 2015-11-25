@@ -73,6 +73,12 @@ namespace RockWeb.Plugins.com_centralaz.Utility
             {
                 var text = GetUserPreference( _USER_PREF_KEY );
                 ceLava.Text = text;
+
+                // Only show instructions the first time.
+                if ( !string.IsNullOrEmpty( text ) )
+                {
+                    nbInstructions.Visible = false;
+                }
             }
         }
 
@@ -94,7 +100,6 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                     litDebug.Text = mergeFields.lavaDebugInfo();
                 }
             }
-
         }
 
         #endregion
@@ -122,6 +127,8 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         #endregion
         protected void bbTest_Click( object sender, EventArgs e )
         {
+            nbInstructions.Visible = false;
+
             try
             {
                 // Save lava test string for future use.
