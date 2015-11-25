@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
@@ -43,7 +44,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
 
         // used for private variables
         Dictionary<string,object> mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-
+        private readonly string _USER_PREF_KEY = "MyLavaTestText";
         #endregion
 
         #region Properties
@@ -63,10 +64,16 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+            
+            if ( string.IsNullOrEmpty( ceLava.Text ) )
+            {
+                var text = GetUserPreference( _USER_PREF_KEY );
+                ceLava.Text = text;
+            }
         }
 
         /// <summary>
@@ -77,12 +84,17 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
+            litDebug.Text = "";
+
+            if ( ! Page.IsPostBack )
             {
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
-                litDebug.Text = mergeFields.lavaDebugInfo();
-                // added for your convenience
+                if ( cbEnableDebug.Checked )
+                {
+                    litDebug.Text = mergeFields.lavaDebugInfo();
+                }
             }
+
         }
 
         #endregion
@@ -110,30 +122,91 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         #endregion
         protected void bbTest_Click( object sender, EventArgs e )
         {
-            RockContext rockContext = new RockContext();
-            PersonService personService = new PersonService(rockContext);
-            Person person;
-            if ( ppPerson.PersonId.HasValue )
+            try
             {
-                person = personService.Get( ppPerson.PersonId ?? -1 , false );
-            }
-            else
-            {
-                person = CurrentPerson;
-            }
-            
-            if ( gpGroups.SelectedValueAsId().HasValue )
-            {
-                GroupService groupService = new GroupService( rockContext );
-                mergeFields.Add( "Group", groupService.Get( gpGroups.SelectedValueAsId() ?? -1 ) );
-            }
+                // Save lava test string for future use.
+                SetUserPreference( _USER_PREF_KEY, ceLava.Text );
 
-            // Get Lava
-            string lava = ceLava.Text;
-            mergeFields.Add( "CurrentPerson", CurrentPerson );
-            mergeFields.Add( "Person", person );
-            litOutput.Text = lava.ResolveMergeFields( mergeFields );
-            litDebug.Text = mergeFields.lavaDebugInfo();
+                RockContext rockContext = new RockContext();
+                PersonService personService = new PersonService( rockContext );
+                Person person;
+                if ( ppPerson.PersonId.HasValue )
+                {
+                    person = personService.Get( ppPerson.PersonId ?? -1, false );
+                }
+                else
+                {
+                    person = CurrentPerson;
+                }
+
+                if ( gpGroups != null && gpGroups.SelectedValueAsInt().HasValue )
+                {
+                    GroupService groupService = new GroupService( rockContext );
+                    mergeFields.Add( "Group", groupService.Get( gpGroups.SelectedValueAsInt() ?? -1 ) );
+                }
+
+                if ( ddlWorkflows != null && ddlWorkflows.Items.Count > 0 && ddlWorkflows.SelectedValueAsInt().HasValue )
+                {
+                    WorkflowService workflowService = new WorkflowService( rockContext );
+                    if ( mergeFields.ContainsKey( "Workflow" ) )
+                    {
+                        mergeFields.Remove( "Workflow" );
+                    }
+                    mergeFields.Add( "Workflow", workflowService.Get( ddlWorkflows.SelectedValueAsInt() ?? -1 ) );
+                }
+
+                // Get Lava
+                mergeFields.Add( "CurrentPerson", CurrentPerson );
+                mergeFields.Add( "Person", person );
+
+                ResolveLava();
+            }
+            catch( Exception ex )
+            {
+                //LogException( ex );
+                litDebug.Text = "<pre>" + ex.StackTrace + "</pre>";
+            }
         }
-    }
+
+        protected void wfpWorkflowType_SelectItem( object sender, EventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            WorkflowService workflowService = new WorkflowService( rockContext );
+            int? workflowTypeId = wfpWorkflowType.SelectedValueAsInt();
+            if ( workflowTypeId.HasValue )
+            {
+                var workflows = workflowService.Queryable().AsNoTracking().Where( w => w.WorkflowTypeId == workflowTypeId.Value ).ToList();
+                ddlWorkflows.DataSource = workflows;
+                ddlWorkflows.DataBind();
+                ddlWorkflows.Visible = true;
+
+                if ( workflows.Count > 0 )
+                {
+                    mergeFields.Add( "Workflow", workflows[0] );
+                    ResolveLava();
+                }
+
+            }
+        }
+
+        protected void ddlWorkflows_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            WorkflowService workflowService = new WorkflowService( rockContext );
+            mergeFields.Add( "Workflow", workflowService.Get( ddlWorkflows.SelectedValueAsInt() ?? -1 ) );
+
+            ResolveLava();
+        }
+
+        protected void ResolveLava()
+        {
+            string lava = ceLava.Text;
+            litOutput.Text = lava.ResolveMergeFields( mergeFields );
+            if ( cbEnableDebug.Checked )
+            {
+                litDebug.Text = mergeFields.lavaDebugInfo();
+                h3DebugTitle.Visible = true;
+            }
+        }
+}
 }

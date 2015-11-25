@@ -146,7 +146,6 @@ namespace RockWeb.Plugins.com_CentralAZ.Utility
             }
 
             hfAttributeKey.Value = personAttribute.Key;
-            //hfAttributeId.Value = attribute.Id.ToStringSafe();
 
             var qualifierValue = personAttribute.QualifierValues.First().Value;
             if ( qualifierValue == null || qualifierValue.Value == null )
@@ -163,12 +162,16 @@ namespace RockWeb.Plugins.com_CentralAZ.Utility
             }
 
             // Bind the definedType to our radio button list
-            rblPreference.BindToDefinedType( definedType, useDescriptionAsText: true );
+            BindToDefinedType( rblPreference, definedType, useDescriptionAsText: true );
 
             // set the person's current value as the selected one
             CurrentPerson.LoadAttributes();
-            var personAttributeValue = CurrentPerson.GetAttributeValue( hfAttributeKey.Value );
-            rblPreference.SelectedValue = personAttributeValue;
+            // The Guids that are put into the data list will be in lowercase as per
+            // https://msdn.microsoft.com/en-us/library/97af8hh4(v=vs.110).aspx
+            // so we need to make sure we're comparing with the lowercase of whatever
+            // was stored.
+            var personAttributeValueGuid = CurrentPerson.GetAttributeValue( hfAttributeKey.Value ).ToLower();
+            rblPreference.SelectedValue = personAttributeValueGuid;
         }
 
         #endregion
@@ -176,5 +179,35 @@ namespace RockWeb.Plugins.com_CentralAZ.Utility
         {
             rblPreference_CheckedChanged( sender, e );
         }
+
+        /// <summary>
+        /// Binds to the values of a definedType using the definedValue's Guid as the listitem value
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="definedType">Type of the defined.</param>
+        /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
+        /// <param name="useDescriptionAsText">if set to <c>true</c> [use description as text].</param>
+        public void BindToDefinedType( ListControl listControl, Rock.Web.Cache.DefinedTypeCache definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
+        {
+            var ds = definedType.DefinedValues
+                .Select( v => new
+                {
+                    Name = v.Value,
+                    v.Description,
+                    v.Guid
+                } );
+
+            listControl.SelectedIndex = -1;
+            listControl.DataSource = ds;
+            listControl.DataTextField = useDescriptionAsText ? "Description" : "Name";
+            listControl.DataValueField = "Guid";
+            listControl.DataBind();
+
+            if ( insertBlankOption )
+            {
+                listControl.Items.Insert( 0, new ListItem() );
+            }
+        }
+
 }
 }

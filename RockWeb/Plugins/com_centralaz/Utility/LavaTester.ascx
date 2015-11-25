@@ -13,13 +13,18 @@
                     <div class="row">
                         <div class="col-md-12">
                             <h2>Entity <small>(currently only supports Person and Group)</small></h2>
+                            <Rock:RockCheckBox ID="cbEnableDebug" runat="server" Checked="false" Label="Enable Debug?" />
                             <Rock:PersonPicker ID="ppPerson" Label="Person" runat="server" />
                             <Rock:GroupPicker ID="gpGroups" runat="server" Label="Group"/>
+                            <div class="row">
+                                <div class="col-md-3"><Rock:WorkflowTypePicker ID="wfpWorkflowType" runat="server" Label="Workflow Type" OnSelectItem="wfpWorkflowType_SelectItem" /></div>
+                                <div class="col-md-9"><Rock:DataDropDownList ID="ddlWorkflows" runat="server" Label="Workflow (instances)" SourceTypeName="Rock.Model.Workflow, Rock" DataTextField="Name" DataValueField="Id" PropertyName="Name" Visible="false" OnSelectedIndexChanged="ddlWorkflows_SelectedIndexChanged" /></div>
+                            </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:CodeEditor ID="ceLava" runat="server" Label="Lava" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" AutoCompleteType="Email" />
+                            <Rock:CodeEditor ID="ceLava" runat="server" Label="Lava" EditorMode="Lava" EditorTheme="Rock" EditorHeight="150" AutoCompleteType="Email" />
                         </div>
                     </div>
 
@@ -32,7 +37,7 @@
                         <asp:Literal ID="litOutput" runat="server"></asp:Literal>
                     </div>
 
-                    <h3>Lava Reference</h3>
+                    <h3 runat="server" id="h3DebugTitle" visible="false">Lava Reference / Debug</h3>
                     <asp:Literal ID="litDebug" runat="server"></asp:Literal>
                 </fieldset>
             </div>
