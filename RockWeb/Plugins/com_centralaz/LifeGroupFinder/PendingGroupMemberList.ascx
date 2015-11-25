@@ -4,9 +4,9 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlContent" runat="server">
+            <Rock:NotificationBox ID="nbRoleWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
 
             <div id="pnlGroupMembers" runat="server">
-
                 <div class="panel panel-block">
 
                     <div class="panel-heading clearfix">
@@ -18,8 +18,6 @@
 
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-
-                        <Rock:NotificationBox ID="nbRoleWarning" runat="server" NotificationBoxType="Warning" Title="No roles!" Visible="false" />
 
                         <div class="grid grid-panel">
                             <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
