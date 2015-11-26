@@ -1,4 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TransactionList.ascx.cs" Inherits="RockWeb.Blocks.Finance.TransactionList" %>
+
+<script type="text/javascript">
+    function clearActiveDialog() {
+        $('#<%=hfActiveDialog.ClientID %>').val('');
+    }
+</script>
+
 <asp:UpdatePanel ID="upTransactions" runat="server">
     <ContentTemplate>
 
@@ -92,6 +99,18 @@
             </div>
 
         </asp:Panel>
+
+        <asp:HiddenField ID="hfActiveDialog" runat="server" />
+
+        <Rock:ModalDialog ID="dlgReassign" runat="server" Title="Reassign Transactions" ValidationGroup="Reassign"
+            SaveButtonText="Reassign" OnSaveClick="dlgReassign_SaveClick" OnCancelScript="clearActiveDialog();" >
+            <Content>
+
+                <Rock:PersonPicker ID="ppReassign" runat="server" Label="Reassign Selected Transactions To" Required="true" ValidationGroup="Reassign" />
+
+            </Content>
+        </Rock:ModalDialog>
+
 
     </ContentTemplate>
 </asp:UpdatePanel>
