@@ -38,6 +38,12 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        /// <summary>
+        /// Gets or sets the root group identifier.
+        /// </summary>
+        /// <value>
+        /// The root group identifier.
+        /// </value>
         public int? RootGroupId
         {
             get
