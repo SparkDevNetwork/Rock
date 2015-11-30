@@ -49,10 +49,11 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Enable Comments Flag", "If enabled, requestors will be able set whether or not they want to allow comments on their requests.", false, "Features", 7 )]
     [BooleanField( "Enable Public Display Flag", "If enabled, requestors will be able set whether or not they want their request displayed on the public website.", false, "Features", 8 )]
     [IntegerField( "Character Limit", "If set to something other than 0, this will limit the number of characters allowed when entering a new prayer request.", false, 250, "Features", 9 )]
+    [BooleanField( "Require Last Name", "Require that a last name be entered", true, "Features", 10 )]
     
     // On Save Behavior
-    [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 10 )]
-    [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-html'>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 11 )]
+    [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 11 )]
+    [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-html'>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 12 )]
     public partial class PrayerRequestEntry : RockBlock
     {
         #region Properties
@@ -80,6 +81,7 @@ namespace RockWeb.Blocks.Prayer
             this.EnableCommentsFlag = GetAttributeValue( "EnableCommentsFlag" ).AsBoolean();
             this.EnablePublicDisplayFlag = GetAttributeValue( "EnablePublicDisplayFlag" ).AsBoolean();
             nbMessage.Text = GetAttributeValue( "SaveSuccessText" );
+            tbLastName.Required = GetAttributeValue( "RequireLastName" ).AsBooleanOrNull() ?? true;
 
             RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/bootstrap-limit.js" ) );
             var categoryGuid = GetAttributeValue( "GroupCategoryId" );
@@ -140,9 +142,9 @@ namespace RockWeb.Blocks.Prayer
             {
                 if ( CurrentPerson != null )
                 {
-                    dtbFirstName.Text = CurrentPerson.FirstName;
-                    dtbLastName.Text = CurrentPerson.LastName;
-                    dtbEmail.Text = CurrentPerson.Email;
+                    tbFirstName.Text = CurrentPerson.FirstName;
+                    tbLastName.Text = CurrentPerson.LastName;
+                    tbEmail.Text = CurrentPerson.Email;
                 }
 
                 dtbRequest.Text = PageParameter( "Request" );
@@ -198,9 +200,9 @@ namespace RockWeb.Blocks.Prayer
 
             prayerRequest.CategoryId = categoryId;
             prayerRequest.RequestedByPersonAliasId = CurrentPersonAliasId;
-            prayerRequest.FirstName = dtbFirstName.Text;
-            prayerRequest.LastName = dtbLastName.Text;
-            prayerRequest.Email = dtbEmail.Text;
+            prayerRequest.FirstName = tbFirstName.Text;
+            prayerRequest.LastName = tbLastName.Text;
+            prayerRequest.Email = tbEmail.Text;
             prayerRequest.Text = dtbRequest.Text;
             
             if ( this.EnableUrgentFlag )
