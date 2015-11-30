@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Event
     [Description( "List recent registrations using a Lava template." )]
 
     [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/RegistrationListSidebar.lava' %}", "", 2, "LavaTemplate" )]
-    [IntegerField( "Max Results", "The maximum number of results to display.", false, 100, order: 3 )]
+    [IntegerField( "Max Results", "The maximum number of results to display.", false, 5, order: 3 )]
     [SlidingDateRangeField( "Date Range", "Date range to limit by.", false, "", enabledSlidingDateRangeTypes: "Last,Previous,Current", order: 7 )]
     [BooleanField("Limit to registrations where money is still owed", "", true, "", 8, "LimitToOwed")]
     [BooleanField( "Enable Debug", "Show merge data to help you see what's available to you.", order: 9 )]

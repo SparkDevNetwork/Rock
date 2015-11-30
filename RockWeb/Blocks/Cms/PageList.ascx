@@ -20,6 +20,7 @@
                         </Rock:GridFilter>
                         <Rock:Grid ID="gPages" runat="server" DisplayType="Full" AllowSorting="true" >
                             <Columns>
+                                <Rock:RockBoundField DataField="Id" HeaderText="Page Id" SortExpression="Id" />
                                 <Rock:RockBoundField DataField="InternalName" HeaderText="Name" SortExpression="InternalName" />
                                 <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                                 <Rock:RockBoundField DataField="Layout.Name" HeaderText="Layout" SortExpression="Layout.Name" />

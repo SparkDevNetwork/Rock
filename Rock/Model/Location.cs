@@ -145,6 +145,16 @@ namespace Rock.Model
         public string City { get; set; }
 
         /// <summary>
+        /// Gets or sets the county.
+        /// </summary>
+        /// <value>
+        /// The county.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string County { get; set; }
+
+        /// <summary>
         /// Gets or sets the State component of the Location's Street/Mailing Address.
         /// </summary>
         /// <value>

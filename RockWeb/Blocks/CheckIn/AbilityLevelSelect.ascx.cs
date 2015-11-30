@@ -152,6 +152,7 @@ namespace RockWeb.Blocks.CheckIn
                                 p.LoadAttributes( rockContext );
                                 p.SetAttributeValue( "AbilityLevel", selectedAbilityLevelGuid.ToUpperInvariant() );
                                 p.SaveAttributeValues( rockContext );
+                                person.Person.LoadAttributes( rockContext );
                             }
                         }
                     }

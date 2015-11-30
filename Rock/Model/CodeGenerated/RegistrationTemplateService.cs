@@ -89,6 +89,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AddPersonNote = source.AddPersonNote;
+            target.AllowGroupPlacement = source.AllowGroupPlacement;
             target.AllowMultipleRegistrants = source.AllowMultipleRegistrants;
             target.CategoryId = source.CategoryId;
             target.ConfirmationEmailTemplate = source.ConfirmationEmailTemplate;

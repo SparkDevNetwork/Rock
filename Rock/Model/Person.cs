@@ -1321,16 +1321,30 @@ namespace Rock.Model
                 {
                     rockUrlRoot.EnsureTrailingBackslash();
 
+                    // get email link preference (new communication/mailto)
+                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                    string emailLinkPreference = globalAttributes.GetValue( "PreferredEmailLinkType" );
+
+                    string emailLink = string.Empty;
+
+                    // create link
+                    if ( string.IsNullOrWhiteSpace(emailLinkPreference) || emailLinkPreference == "1" )
+                    {
+                        emailLink = string.Format( "{0}Communication?person={1}", rockUrlRoot, Id );
+                    } else
+                    {
+                        emailLink = string.Format( "mailto:{0}", Email );
+                    }
+                    
                     switch ( EmailPreference )
                     {
                         case EmailPreference.EmailAllowed:
                             {
                                 return string.Format(
-                                    "<a class='{0}' style='{1}' href='{2}Communication?person={3}'>{4} {5} {6}</a>",
+                                    "<a class='{0}' style='{1}' href='{2}'>{3} {4} {5}</a>",
                                     cssClass,
                                     styles,
-                                    rockUrlRoot,
-                                    Id,
+                                    emailLink,
                                     preText,
                                     Email,
                                     postText );
@@ -1339,10 +1353,9 @@ namespace Rock.Model
                         case EmailPreference.NoMassEmails:
                             {
                                 return string.Format(
-                                    "<span class='js-email-status email-status no-mass-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'><a class='{0}' href='{1}Communication?person={2}'>{3} {4} {5} <i class='fa fa-exchange'></i></a> </span>",
+                                    "<span class='js-email-status email-status no-mass-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'><a class='{0}' href='{1}'>{2} {3} {4} <i class='fa fa-exchange'></i></a> </span>",
                                     cssClass,
-                                    rockUrlRoot,
-                                    Id,
+                                    emailLink,
                                     preText,
                                     Email,
                                     postText );

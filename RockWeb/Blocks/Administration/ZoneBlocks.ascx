@@ -21,8 +21,8 @@
                         <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                         <Rock:RockTemplateField HeaderText="Type" >
                             <ItemTemplate>
-                                <%# Eval("BlockType.Name") %><br />
-                                <small><%# Eval("BlockType.Path") %></small>
+                                <%# Eval("BlockTypeName") %><br />
+                                <small><%# Eval("BlockTypePath") %></small>
                             </ItemTemplate>
                         </Rock:RockTemplateField>
                         <Rock:DeleteField OnClick="gPageBlocks_Delete" />
@@ -41,8 +41,8 @@
                         <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                         <Rock:RockTemplateField HeaderText="Type" >
                             <ItemTemplate>
-                                <%# Eval("BlockType.Name") %><br />
-                                <small><%# Eval("BlockType.Path") %></small>
+                                <%# Eval("BlockTypeName") %><br />
+                                <small><%# Eval("BlockTypePath") %></small>
                             </ItemTemplate>
                         </Rock:RockTemplateField>
                         <Rock:DeleteField OnClick="gLayoutBlocks_Delete" />

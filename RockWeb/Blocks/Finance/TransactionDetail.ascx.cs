@@ -1392,6 +1392,15 @@ namespace RockWeb.Blocks.Finance
             {
                 hlType.Visible = false;
             }
+
+            if (txn.Batch != null )
+            {
+                hlBatchId.Visible = true;
+                hlBatchId.Text = string.Format( "Batch #{0}", txn.BatchId );
+            } else
+            {
+                hlBatchId.Visible = false;
+            }
         }
 
         /// <summary>
