@@ -53,9 +53,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> containing the last name of the person that this prayer request is about.  
         /// </value>
-        [Required]
         [MaxLength( 50 )]
-        [DataMember( IsRequired = true )]
+        [DataMember( IsRequired = false )]
         public string LastName { get; set; }
 
         /// <summary>
