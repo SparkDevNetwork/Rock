@@ -523,7 +523,7 @@
           </attributes>
           <notes />
         </person>
-        <person guid="1a5a4e5f-e0a4-4efa-b7d7-6698153ed718" lastName="Greggs" firstName="Lorraine" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="member" birthDate="12/9/1987" maritalStatus="Married" anniversaryDate="7/1/2007" email="lgreggs@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235554450" cellPhone="6025556320" photoUrl="http://storage.rockrms.com/sampledata/person-images/greggs_lorraine_is_kfriedson.jpg">
+        <person guid="1a5a4e5f-e0a4-4efa-b7d7-6698153ed718" lastName="Greggs" firstName="Lorraine" nickName="Lorraine" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="member" birthDate="12/9/1987" maritalStatus="Married" anniversaryDate="7/1/2007" email="lgreggs@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235554450" cellPhone="6025556320" photoUrl="http://storage.rockrms.com/sampledata/person-images/greggs_lorraine_is_kfriedson.jpg">
           <attributes>
             <attribute Baptized="No" />
             <attribute Employer="Motorola" />
@@ -546,10 +546,10 @@
     
     <family name="Greggs" guid="0e0edc8f-cb8f-4457-88d4-651de3904550">
       <members>
-        <person guid="146b2103-fb28-49c6-b1a4-218c397b739e" lastName="Greggs" firstName="Jenny" middleName="" gender="female" familyRole="child" recordStatus="inactive" recordStatusReason="Deceased" connectionStatus="inactive" birthDate="8/1/2008" maritalStatus="Unknown" email="jgreggs@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false">
+        <person guid="146b2103-fb28-49c6-b1a4-218c397b739e" lastName="Greggs" firstName="Jenny" nickName="Jenny" middleName="" gender="female" familyRole="child" recordStatus="inactive" recordStatusReason="Deceased" connectionStatus="inactive" birthDate="8/1/2008" maritalStatus="Unknown" email="jgreggs@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false">
           <attributes />
           <notes>
-            <note type="Personal Note" text="Jenny went to be with the Lord yesterday.  She was three years old." isAlert="true" date="2011-09-12T09:02:00" byGuid="69DC0FDC-B451-4303-BD91-EF17C0015D23" />
+            <note type="Personal Note" text="Jenny went to be with the Lord yesterday. She was three years old." isAlert="true" date="2011-09-12T09:02:00" byGuid="69DC0FDC-B451-4303-BD91-EF17C0015D23" />
           </notes>
         </person>
       </members>
@@ -640,7 +640,7 @@
         <address type="home" street1="10828 N Biltmore Dr" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5855064" long="-112.1186981" />
       </addresses>
       <members>
-        <person guid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" lastName="Evans" firstName="Helen" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="4/2/1979" maritalStatus="Single" email="hevans@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235552540" cellPhone="4805558410" photoUrl="http://storage.rockrms.com/sampledata/person-images/evans_helen_is_stylecampaign.jpg">
+        <person guid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" lastName="Evans" firstName="Helen" nickName="Helen" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="4/2/1979" maritalStatus="Single" email="hevans@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235552540" cellPhone="4805558410" photoUrl="http://storage.rockrms.com/sampledata/person-images/evans_helen_is_stylecampaign.jpg">
           <attributes>
             <attribute FirstVisit="10/11/2015" />
           </attributes>
@@ -649,13 +649,13 @@
       </members>
     </family>
     
-    <!--Once you started promoting the website to sign-up to serve, requests to get connected have been flowing in regularly.  Be sure to set up your connectors and get them following up with people like Sean Hansen and Michele Turner.-->
+    <!--Once you started promoting the website to sign-up to serve, requests to get connected have been flowing in regularly.  Be sure to set up your connectors and get them following up with people like Sean Hansen and Nancy Turner.-->
     <family name="Hansen" guid="7c8c6808-1e08-46d0-aa0a-84227e22aa8e">
       <addresses>
         <address type="home" street1="11012 N 34th Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5861397" long="-112.132782" />
       </addresses>
       <members>
-        <person guid="fa38a268-6744-4507-9cdc-69a7ac6cc0e5" lastName="Hansen" firstName="Sean" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="7/23/1988" maritalStatus="Single" email="shansen@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" cellPhone="6235556747" photoUrl="http://storage.rockrms.com/sampledata/person-images/hansen_sean_is_nucliweb.jpg">
+        <person guid="fa38a268-6744-4507-9cdc-69a7ac6cc0e5" lastName="Hansen" firstName="Sean" nickName="Sean" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="7/23/1988" maritalStatus="Single" email="shansen@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" cellPhone="6235556747" photoUrl="http://storage.rockrms.com/sampledata/person-images/hansen_sean_is_nucliweb.jpg">
           <attributes>
             <attribute Employer="Arizona State University" />
             <attribute Position="Research Assistant" />
@@ -670,7 +670,7 @@
         <address type="home" street1="11016 N 28th Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5856743" long="-112.1217728" />
       </addresses>
       <members>
-        <person guid="3bb26a8b-f004-43e4-82bb-620d1e657af9" lastName="Turner" firstName="Michele" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="3/26/1990" maritalStatus="Single" email="mturner@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6025558175" cellPhone="4805559229" photoUrl="http://storage.rockrms.com/sampledata/person-images/turner_michele_is_marktimemedia.jpg">
+        <person guid="3bb26a8b-f004-43e4-82bb-620d1e657af9" lastName="Turner" firstName="Nancy" nickName="Nancy" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="3/26/1990" maritalStatus="Single" email="mturner@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6025558175" cellPhone="4805559229" photoUrl="http://storage.rockrms.com/sampledata/person-images/turner_nancy_is_marktimemedia.jpg">
           <attributes />
           <notes />
         </person>
@@ -682,14 +682,14 @@
         <address type="home" street1="11022 N 35th Dr" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.58622" long="-112.135094" />
       </addresses>
       <members>
-        <person guid="92d04619-3f97-4eff-932e-61da56441995" lastName="Gilbert" firstName="Brian" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="7/11/1975" maritalStatus="Married" anniversaryDate="5/13/1997" email="bgilbert@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235552395" cellPhone="6235556987" photoUrl="http://storage.rockrms.com/sampledata/person-images/gilbert_brian_is_bgilmah.jpg">
+        <person guid="92d04619-3f97-4eff-932e-61da56441995" lastName="Gilbert" firstName="Brian" nickName="Brian" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="7/11/1975" maritalStatus="Married" anniversaryDate="5/13/1997" email="bgilbert@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235552395" cellPhone="6235556987" photoUrl="http://storage.rockrms.com/sampledata/person-images/gilbert_brian_is_bgilmah.jpg">
           <attributes>
             <attribute Employer="State of Arizona" />
             <attribute Position="Office Clerk" />
           </attributes>
           <notes />
         </person>
-        <person guid="d35b865d-bf50-4a7d-848f-6c0ed7a2ae67" lastName="Gilbert" firstName="Wendy" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="6/21/1977" maritalStatus="Married" anniversaryDate="5/13/1997" email="wgilbert@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235552395" cellPhone="6025552529" photoUrl="http://storage.rockrms.com/sampledata/person-images/gilbert_wendy_is_mtnmissy.jpg">
+        <person guid="d35b865d-bf50-4a7d-848f-6c0ed7a2ae67" lastName="Gilbert" firstName="Wendy" nickName="Wendy" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="Web Prospect" birthDate="6/21/1977" maritalStatus="Married" anniversaryDate="5/13/1997" email="wgilbert@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235552395" cellPhone="6025552529" photoUrl="http://storage.rockrms.com/sampledata/person-images/gilbert_wendy_is_mtnmissy.jpg">
           <attributes>
             <attribute Employer="State of Arizona" />
             <attribute Position="District Manager" />
@@ -699,6 +699,101 @@
       </members>
     </family>
 
+    <family name="Harper Family" guid="723669a0-4f73-47e7-87ef-aa11cf2eff8a">
+      <addresses>
+        <address type="home" street1="11609 N 31st Ln" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.592419" long="-112.1291037" />
+      </addresses>
+      <members>
+        <person guid="9b2cdbbf-9144-4be4-80ef-05ada0e63ed2" lastName="Harper" firstName="Jackson" nickName="Jack" middleName="" gender="male" familyRole="adult" recordStatus="pending" connectionStatus="attendee" birthDate="8/15/1969" maritalStatus="Single" email="jharper@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235550006" cellPhone="6235559111" photoUrl="http://storage.rockrms.com/sampledata/person-images/harper_jack_is_sauro.jpg">
+          <attributes>
+            <attribute BaptismDate="8/1/1989" />
+            <attribute Employer="Smittys Groceries" />
+            <attribute Position="Assistant Manager" />
+          </attributes>
+          <notes />
+        </person>
+      </members>
+    </family>
+    <family name="Jones Family" guid="b3844f78-367f-4b58-af16-726b1349c7af">
+      <addresses>
+        <address type="home" street1="3029 W Lupine Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.590935" long="-112.1268847" />
+      </addresses>
+      <members>
+        <person guid="160a4747-9d65-44dd-97b6-91a0e583c1bc" lastName="Jones" firstName="William" nickName="Will" middleName="" gender="male" familyRole="adult" recordStatus="pending" connectionStatus="attendee" birthDate="10/4/1967" maritalStatus="Single" email="wjones@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235557798" cellPhone="6025550161" workPhone="6025557691" photoUrl="http://storage.rockrms.com/sampledata/person-images/jones_will_is_ritu.jpg">
+          <attributes>
+            <attribute Employer="Phoenix Orchestra" />
+            <attribute Position="Conductor" />
+          </attributes>
+          <notes />
+        </person>
+      </members>
+    </family>
+    <family name="Tucker Family" guid="2bf1ba50-a9cf-4da7-a60b-475f0dd187ef">
+      <addresses>
+        <address type="home" street1="3009 W Lupine Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.590935" long="-112.1260627" />
+      </addresses>
+      <members>
+        <person guid="52f2bd19-573b-485c-836a-9562389af2e4" lastName="Tucker" firstName="Dale" nickName="Dale" middleName="" gender="male" familyRole="adult" recordStatus="pending" connectionStatus="attendee" birthDate="2/7/1968" maritalStatus="Single" email="dtucker@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6025553507" cellPhone="4805553926" workPhone="6025551680" photoUrl="http://storage.rockrms.com/sampledata/person-images/tucker_dale_is_bramk.jpg">
+          <attributes>
+            <attribute Employer="Video Connections Limited" />
+            <attribute Position="Owner" />
+          </attributes>
+          <notes />
+        </person>
+      </members>
+    </family>
+    <family name="Peterson Family" guid="11f489e2-27b0-4f8b-b378-5a9442c25453">
+      <addresses>
+        <address type="home" street1="3028 W Lupine Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.591271" long="-112.1268317" />
+      </addresses>
+      <members>
+        <person guid="c28dd35e-e58a-4d5f-81a9-47877b9ae03b" lastName="Peterson" firstName="Brian" nickName="Brian" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="attendee" birthDate="11/12/1970" maritalStatus="Married" anniversaryDate="11/1/1993" email="bpeterson@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="4805551625" cellPhone="6235552245" photoUrl="http://storage.rockrms.com/sampledata/person-images/peterson_brian_is_tonychester.jpg">
+          <attributes />
+          <notes />
+        </person>
+        <person guid="3e52cd9d-79d4-40fc-ac71-26688c084a27" lastName="Peterson" firstName="Becky" nickName="Becky" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="attendee" birthDate="12/25/1970" maritalStatus="Married" anniversaryDate="11/1/1993" homePhone="4805551625" cellPhone="6235552470" photoUrl="http://storage.rockrms.com/sampledata/person-images/peterson_becky_is_yemaija.jpg">
+          <attributes />
+          <notes />
+        </person>
+      </members>
+    </family>
+    <family name="Sweeney Family" guid="4b38d838-68cb-494c-8527-72ae85031944">
+      <addresses>
+        <address type="home" street1="11428 N 30th Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.590403" long="-112.1259797" />
+      </addresses>
+      <members>
+        <person guid="dbae45c0-1980-48fa-8201-41c08910f654" lastName="Sweeney" firstName="James" nickName="James" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="attendee" birthDate="2/22/1969" maritalStatus="Married" anniversaryDate="6/1/1996" email="jsweeney@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="4805559691" cellPhone="4805556590" photoUrl="http://storage.rockrms.com/sampledata/person-images/sweeney_james_is_jasongaylor.jpg">
+          <attributes />
+          <notes />
+        </person>
+        <person guid="988195a3-1895-492e-839b-653c35307862" lastName="Sweeney" firstName="Nancy" nickName="Nancy" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="attendee" birthDate="12/22/1969" maritalStatus="Married" anniversaryDate="6/1/1996" email="nsweeney@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="4805559691" cellPhone="6235552266" photoUrl="http://storage.rockrms.com/sampledata/person-images/sweeney_nancy_is_cynthiasavard.jpg">
+          <attributes />
+          <notes />
+        </person>
+      </members>
+    </family>
+    <family name="Tennant Family" guid="3b148e44-bfc3-4a5d-9782-00be59127a87">
+      <addresses>
+        <address type="home" street1="11462 N 30th Ln" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.591448" long="-112.1272517" />
+      </addresses>
+      <members>
+        <person guid="8de6710b-bdab-4617-ae0c-83e77d3e77cc" lastName="Tennant" firstName="Robert" nickName="Rob" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="attendee" birthDate="3/16/1967" maritalStatus="Married" anniversaryDate="1/1/2000" email="rtennant@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6025559143" cellPhone="6235550316" photoUrl="http://storage.rockrms.com/sampledata/person-images/tennant_rob_is_halans.jpg">
+          <attributes>
+            <attribute Employer="University of Phoenix" />
+            <attribute Position="Supply Manager" />
+          </attributes>
+          <notes />
+        </person>
+        <person guid="773ad0f9-369a-47bc-bebb-2e8ee4c5fef5" lastName="Tennant" firstName="Sheryl" nickName="Sheryl" middleName="" gender="female" familyRole="adult" recordStatus="active" connectionStatus="attendee" birthDate="5/16/1965" maritalStatus="Married" anniversaryDate="1/1/2000" email="stennant@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6025559143" cellPhone="4805554355" photoUrl="http://storage.rockrms.com/sampledata/person-images/tennant_sheryl_is_kathleenkrucoff.jpg">
+          <attributes>
+            <attribute Employer="ACME Art" />
+            <attribute Position="Art Director" />
+          </attributes>
+          <notes />
+        </person>
+      </members>
+    </family>
+    
   </families>
 
   <relationships>
@@ -741,6 +836,24 @@
           studyTopic="Women of the Bible" groupSchedule="weekly,Wednesday,19:00:00"
           description ="Small group topics involve studying the women of the Bible.">
       <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23" isLeader="true"/>
+      <person fullname="Jenny Michaels" guid="82309081-A110-496F-8295-CE6A4720D7A8"/>
+    </group>
+    
+    <group type="smallgroup" name="Marble Group" guid="90b2ceda-ae3a-4c10-a2e1-b987020379ad" parentGroupGuid="3CBC1A3F-DD26-430A-9B53-B476CB385ABC"
+          meetsAtHomeOfFamily="6F2E6B64-3592-4543-8D8E-6BA4040CDC4E" meetsAtHomeOfPerson="1EA811BB-3118-42D1-B020-32A82BC8081A"
+          studyTopic="General Bible Study" groupSchedule="weekly,Tuesday,18:00:00"
+          description ="A general Bible study group perfect for people who are new to Christianity. We meet near W Cactus and 31st Ave.">
+      <person fullname="Bill Marble" guid="1EA811BB-3118-42D1-B020-32A82BC8081A" isLeader="true"/>
+      <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23" />
+      <person fullname="Jackson Harper" guid="9b2cdbbf-9144-4be4-80ef-05ada0e63ed2" />
+      <person fullname="William Jones" guid="160a4747-9d65-44dd-97b6-91a0e583c1bc" />
+      <person fullname="Dale Tucker" guid="52f2bd19-573b-485c-836a-9562389af2e4" />
+      <person fullname="Brian Peterson" guid="c28dd35e-e58a-4d5f-81a9-47877b9ae03b" />
+      <person fullname="Becky Peterson" guid="3e52cd9d-79d4-40fc-ac71-26688c084a27" />
+      <person fullname="James Sweeney" guid="dbae45c0-1980-48fa-8201-41c08910f654" />
+      <person fullname="Nancy Sweeney" guid="988195a3-1895-492e-839b-653c35307862" />
+      <person fullname="Robert Tennant" guid="8de6710b-bdab-4617-ae0c-83e77d3e77cc" />
+      <person fullname="Sheryl Tennant" guid="773ad0f9-369a-47bc-bebb-2e8ee4c5fef5" />
       <person fullname="Jenny Michaels" guid="82309081-A110-496F-8295-CE6A4720D7A8"/>
     </group>
 
@@ -786,7 +899,7 @@
         <person fullname="Cora Stone" guid="ae45a615-d55e-4749-b2db-47bbc9fbd885" />
         <person fullname="Helen Evans" guid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" />
         <person fullname="Sean Hansen" guid="fa38a268-6744-4507-9cdc-69a7ac6cc0e5" />
-        <person fullname="Michele Turner" guid="3bb26a8b-f004-43e4-82bb-620d1e657af9" />
+        <person fullname="Nancy Turner" guid="3bb26a8b-f004-43e4-82bb-620d1e657af9" />
     </group>
     
   </groups>
@@ -798,6 +911,14 @@
     <connection type="Involvement" opportunity="Greeter" comment="Me and my wife would like to serve together on the greeters team." date="2015-10-01T00:00:00" personGuid="92d04619-3f97-4eff-932e-61da56441995" />
     <connection type="Involvement" opportunity="Greeter" comment="Me and my husband would like to serve together on the greeters team." date="2015-10-01T00:00:00" personGuid="d35b865d-bf50-4a7d-848f-6c0ed7a2ae67" />
   </connections>
+  
+  <following>
+    <follows personGuid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" followsGuid="3C402382-3BD2-4337-A996-9E62F1BAB09D" type="person" />
+    <follows personGuid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" followsGuid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33" type="person" />
+    <follows personGuid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" followsGuid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" type="person" />
+    <follows personGuid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" followsGuid="CD65C668-B324-4F41-BBB7-BEC9C62233F1" type="group" />
+    <follows personGuid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4" followsGuid="3f61d174-d271-4f96-b5e1-ca98faac60bb" type="group" />
+  </following>
   
   <securityRoles>
     <group name="Communication Administrators" guid="B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B" >

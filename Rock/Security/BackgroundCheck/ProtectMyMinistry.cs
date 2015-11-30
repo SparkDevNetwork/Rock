@@ -81,7 +81,7 @@ namespace Rock.Security.BackgroundCheck
                 // Check to make sure workflow is not null
                 if ( workflow == null )
                 {
-                    errorMessages.Add( "The 'ProtectMyMinistry' requires a valid workflow." );
+                    errorMessages.Add( "The 'Protect My Ministry' background check provider requires a valid workflow." );
                     return false;
                 }
 
@@ -96,12 +96,13 @@ namespace Rock.Security.BackgroundCheck
                             .Where( p => p.Guid.Equals( personAliasGuid.Value ) )
                             .Select( p => p.Person )
                             .FirstOrDefault();
+                        person.LoadAttributes( rockContext );
                     }
                 }
 
                 if ( person == null )
                 {
-                    errorMessages.Add( "The 'ProtectMyMinistry' background check requires the workflow to have a 'Person' attribute that contains the person who the background check is for." );
+                    errorMessages.Add( "The 'Protect My Ministry' background check provider requires the workflow to have a 'Person' attribute that contains the person who the background check is for." );
                     return false;
                 }
 
@@ -127,15 +128,17 @@ namespace Rock.Security.BackgroundCheck
 
                 if ( billingCodeAttribute != null )
                 {
-                    Guid? campusGuid = workflow.GetAttributeValue( billingCodeAttribute.Key ).AsGuidOrNull();
+                    string billingCode = workflow.GetAttributeValue( billingCodeAttribute.Key );
+                    Guid? campusGuid = billingCode.AsGuidOrNull();
                     if ( campusGuid.HasValue )
                     {
                         var campus = CampusCache.Read( campusGuid.Value );
                         if ( campus != null )
                         {
-                            orderElement.Add( new XElement( "BillingReferenceCode", campus.Name ) );
+                            billingCode = campus.Name;
                         }
                     }
+                    orderElement.Add( new XElement( "BillingReferenceCode", billingCode ) );
                 }
 
                 XElement subjectElement = new XElement( "Subject",
@@ -145,6 +148,10 @@ namespace Rock.Security.BackgroundCheck
                 );
                 orderElement.Add( subjectElement );
 
+                if ( person.SuffixValue != null )
+                {
+                    subjectElement.Add( new XElement( "Generation", person.SuffixValue.Value ) );
+                }
                 if ( person.BirthDate.HasValue )
                 {
                     subjectElement.Add( new XElement( "DOB", person.BirthDate.Value.ToString( "MM/dd/yyyy" ) ) );
@@ -168,6 +175,12 @@ namespace Rock.Security.BackgroundCheck
                     subjectElement.Add( new XElement( "Gender", "Female" ) );
                 }
 
+                string dlNumber = person.GetAttributeValue( "com.sparkdevnetwork.DLNumber" );
+                if ( !string.IsNullOrWhiteSpace( dlNumber ) )
+                {
+                    subjectElement.Add( new XElement( "DLNumber", dlNumber ) );
+                }
+
                 var homelocation = person.GetHomeLocation();
                 if ( homelocation != null)
                 {
@@ -184,25 +197,112 @@ namespace Rock.Security.BackgroundCheck
                 {
                     aliasesElement.Add( new XElement( "Alias", new XElement( "FirstName", person.NickName ) ) );
                 }
-                // foreach ( string lastName in [previous last names] ) 
-                //{
-                //    aliasesElement.Add( new XElement( "Alias", new XElement( "LastName", lastName ) ) );
-                //}
+
+                foreach ( var previousName in person.GetPreviousNames() ) 
+                {
+                    aliasesElement.Add( new XElement( "Alias", new XElement( "LastName", previousName.LastName ) ) );
+                }
+
                 if ( aliasesElement.HasElements )
                 {
                     subjectElement.Add( aliasesElement );
                 }
 
-                string packageType = requestTypeAttribute != null ? workflow.GetAttributeValue( requestTypeAttribute.Key ) : string.Empty;
-                if ( string.IsNullOrWhiteSpace(packageType) )
+                DefinedValueCache pkgTypeDefinedValue = null;
+                string packageName = "BASIC";
+                string county = string.Empty;
+                string state = string.Empty;
+                string mvrJurisdiction = string.Empty;
+                string mvrState = string.Empty;
+
+                if ( requestTypeAttribute != null )
                 {
-                    packageType = "Basic";
+                    pkgTypeDefinedValue = DefinedValueCache.Read( workflow.GetAttributeValue( requestTypeAttribute.Key ).AsGuid() );
+                    if ( pkgTypeDefinedValue != null )
+                    {
+                        if ( pkgTypeDefinedValue.Attributes == null )
+                        {
+                            pkgTypeDefinedValue.LoadAttributes( rockContext );
+                        }
+
+                        packageName = pkgTypeDefinedValue.GetAttributeValue("PMMPackageName");
+                        county = pkgTypeDefinedValue.GetAttributeValue( "DefaultCounty" );
+                        state = pkgTypeDefinedValue.GetAttributeValue( "DefaultState" );
+                        Guid? mvrJurisdictionGuid = pkgTypeDefinedValue.GetAttributeValue( "MVRJurisdiction" ).AsGuidOrNull();
+                        if ( mvrJurisdictionGuid.HasValue )
+                        {
+                            var mvrJurisdictionDv = DefinedValueCache.Read( mvrJurisdictionGuid.Value );
+                            if ( mvrJurisdictionDv != null )
+                            {
+                                mvrJurisdiction = mvrJurisdictionDv.Value;
+                                if ( mvrJurisdiction.Length >= 2 )
+                                {
+                                    mvrState = mvrJurisdiction.Left( 2 );
+                                }
+                            }
+                        }
+
+                        if ( homelocation != null )
+                        {
+                            if ( !string.IsNullOrWhiteSpace( homelocation.County ) &&
+                                pkgTypeDefinedValue.GetAttributeValue("SendHomeCounty").AsBoolean() )
+                            {
+                                county = homelocation.County;
+                            }
+
+                            if ( !string.IsNullOrWhiteSpace( homelocation.State ) )
+                            {
+                                if ( pkgTypeDefinedValue.GetAttributeValue( "SendHomeState" ).AsBoolean() )
+                                {
+                                    state = homelocation.State;
+                                }
+                                if ( pkgTypeDefinedValue.GetAttributeValue( "SendHomeStateMVR" ).AsBoolean() )
+                                {
+                                    mvrState = homelocation.State;
+                                }
+                            }
+                        }
+                    }
                 }
-                orderElement.Add( new XElement( "PackageServiceCode", packageType,
-                    new XAttribute( "OrderId", workflow.Id.ToString() ) ) );
-                orderElement.Add( new XElement( "OrderDetail",
-                    new XAttribute( "OrderId", workflow.Id.ToString() ),
-                    new XAttribute( "ServiceCode", "combo" ) ) );
+
+                if ( !string.IsNullOrWhiteSpace( packageName ) )
+                {
+                    orderElement.Add( new XElement( "PackageServiceCode", packageName,
+                        new XAttribute( "OrderId", workflow.Id.ToString() ) ) );
+
+                    if ( packageName.Trim().Equals( "BASIC", StringComparison.OrdinalIgnoreCase ) ||
+                        packageName.Trim().Equals( "PLUS", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        orderElement.Add( new XElement( "OrderDetail",
+                            new XAttribute( "OrderId", workflow.Id.ToString() ),
+                            new XAttribute( "ServiceCode", "combo" ) ) );
+                    }
+                }
+
+                if ( !string.IsNullOrWhiteSpace( county ) ||
+                    !string.IsNullOrWhiteSpace( state ) )
+                {
+                    orderElement.Add( new XElement( "OrderDetail",
+                        new XAttribute( "OrderId", workflow.Id.ToString() ),
+                        new XAttribute( "ServiceCode", string.IsNullOrWhiteSpace(county) ? "StateCriminal" : "CountyCrim" ),
+                        new XElement( "County", county ),
+                        new XElement( "State", state ),
+                        new XElement( "YearsToSearch", 7 ),
+                        new XElement( "CourtDocsRequested", "NO" ),
+                        new XElement( "RushRequested", "NO" ),
+                        new XElement( "SpecialInstructions", "" ) )
+                    );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( mvrJurisdiction ) && !string.IsNullOrWhiteSpace( mvrState ) )
+                {
+                    orderElement.Add( new XElement( "OrderDetail",
+                        new XAttribute( "OrderId", workflow.Id.ToString() ),
+                        new XAttribute( "ServiceCode", "MVR" ),
+                        new XElement( "JurisdictionCode", mvrJurisdiction ),
+                        new XElement( "State", mvrState ) )
+                    );
+                }
 
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
 
@@ -210,10 +310,26 @@ namespace Rock.Security.BackgroundCheck
 
                 if ( _HTTPStatusCode == HttpStatusCode.OK )
                 {
+                    int? personAliasId = person.PrimaryAliasId;
+                    if ( personAliasId.HasValue )
+                    {
+                        // Create a background check file
+                        using ( var newRockContext = new RockContext() )
+                        {
+                            var backgroundCheck = new Rock.Model.BackgroundCheck();
+                            backgroundCheck.PersonAliasId = personAliasId.Value;
+                            backgroundCheck.WorkflowId = workflow.Id;
+                            backgroundCheck.RequestDate = RockDateTime.Now;
+                            new BackgroundCheckService( newRockContext ).Add( backgroundCheck );
+                            newRockContext.SaveChanges();
+                        }
+                    }
+
                     if ( xResult.Root.Descendants().Count() > 0 )
                     {
                         SaveResults( xResult, workflow, rockContext );
                     }
+
                     return true;
                 }
                 else
@@ -232,7 +348,14 @@ namespace Rock.Security.BackgroundCheck
             }
         }
 
-        XDocument PostToWebService( XDocument data, string requestUrl )
+        /// <summary>
+        /// Posts to web service.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <param name="requestUrl">The request URL.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception"></exception>
+        private XDocument PostToWebService( XDocument data, string requestUrl )
         {
             string stringData = "REQUEST=" + data.Declaration.ToString() + data.ToString( SaveOptions.DisableFormatting );
             byte[] postData = ASCIIEncoding.ASCII.GetBytes( stringData );
@@ -257,6 +380,13 @@ namespace Rock.Security.BackgroundCheck
             }
         }
 
+        /// <summary>
+        /// Gets the response.
+        /// </summary>
+        /// <param name="responseStream">The response stream.</param>
+        /// <param name="contentType">Type of the content.</param>
+        /// <param name="statusCode">The status code.</param>
+        /// <returns></returns>
         private XDocument GetResponse(Stream responseStream, string contentType, HttpStatusCode statusCode)
         {
             _HTTPStatusCode = statusCode;
@@ -284,6 +414,11 @@ namespace Rock.Security.BackgroundCheck
                 return null;
         }
 
+        /// <summary>
+        /// Gets the response message.
+        /// </summary>
+        /// <param name="responseStream">The response stream.</param>
+        /// <returns></returns>
         private string GetResponseMessage( Stream responseStream )
         {
             Stream receiveStream = responseStream;
@@ -312,43 +447,124 @@ namespace Rock.Security.BackgroundCheck
         /// <param name="rockContext">The rock context.</param>
         public static void SaveResults( XDocument xResult, Rock.Model.Workflow workflow, RockContext rockContext )
         {
-            var xOrderDetail = xResult.Descendants( "OrderDetail" ).FirstOrDefault();
-            if ( xOrderDetail != null )
+            var xOrderXML = xResult.Elements( "OrderXML" ).FirstOrDefault();
+            if ( xOrderXML != null )
             {
-                string status = ( from o in xOrderDetail.Descendants( "Status" ) select o.Value ).FirstOrDefault();
-                if ( !string.IsNullOrWhiteSpace( status ) )
+                var xOrder = xOrderXML.Elements( "Order" ).FirstOrDefault();
+                if ( xOrder != null )
                 {
-                    // Request has been completed
+                    bool resultFound = false;
 
-                    // Save the status
-                    SaveAttributeValue( workflow, "ReportStatus", status == "NO RECORD" ? "Pass" : "Review",
-                        FieldTypeCache.Read( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
-                        new Dictionary<string, string> { { "fieldtype", "ddl" }, { "values", "Pass,Fail,Review" } } );
-
-                    // Save the report link 
-                    string reportLink = ( from o in xResult.Descendants( "ReportLink" ) select o.Value ).FirstOrDefault();
-                    SaveAttributeValue( workflow, "ReportLink", reportLink, 
-                        FieldTypeCache.Read( Rock.SystemGuid.FieldType.URL_LINK.AsGuid() ), rockContext );
-
-                    // Save the recommendation 
-                    string recommendation = ( from o in xResult.Descendants( "Recommendation" ) select o.Value ).FirstOrDefault();
-                    SaveAttributeValue( workflow, "ReportRecommendation", recommendation,
-                        FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
-                        new Dictionary<string, string> { { "ispassword", "false" } } );
-
-                    // Save the report
-                    Guid? binaryFileGuid = SaveFile( workflow.Attributes["Report"], reportLink, workflow.Id.ToString() + ".pdf" );
-                    if ( binaryFileGuid.HasValue )
+                    // Find any order details with a status element
+                    string reportStatus = "Pass";
+                    foreach ( var xOrderDetail in xOrder.Elements( "OrderDetail" ) )
                     {
-                        SaveAttributeValue( workflow, "Report", binaryFileGuid.Value.ToString(),
-                            FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ), rockContext,
-                            new Dictionary<string, string> { { "binaryFileType", "" } } );
+                        var xStatus = xOrderDetail.Elements( "Status" ).FirstOrDefault();
+                        if ( xStatus != null )
+                        {
+                            resultFound = true;
+                            if ( xStatus.Value != "NO RECORD" )
+                            {
+                                reportStatus = "Review";
+                                break;
+                            }
+                        }
                     }
 
+                    if ( resultFound )
+                    {
+                        // If no records found, still double-check for any alerts
+                        if ( reportStatus != "Review" )
+                        {
+                            var xAlerts = xOrder.Elements( "Alerts" ).FirstOrDefault();
+                            if ( xAlerts != null )
+                            {
+                                if ( xAlerts.Elements( "OrderId" ).Any() )
+                                {
+                                    reportStatus = "Review";
+                                }
+                            }
+                        }
+
+                        // Save the recommendation 
+                        string recommendation = ( from o in xOrder.Elements( "Recommendation" ) select o.Value ).FirstOrDefault();
+                        if ( !string.IsNullOrWhiteSpace( recommendation ) )
+                        {
+                            SaveAttributeValue( workflow, "ReportRecommendation", recommendation,
+                                FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), rockContext,
+                                new Dictionary<string, string> { { "ispassword", "false" } } );
+                        }
+
+                        // Save the report link 
+                        Guid? binaryFileGuid = null;
+                        string reportLink = ( from o in xOrder.Elements( "ReportLink" ) select o.Value ).FirstOrDefault();
+                        if ( !string.IsNullOrWhiteSpace( reportLink ) )
+                        {
+                            SaveAttributeValue( workflow, "ReportLink", reportLink,
+                                FieldTypeCache.Read( Rock.SystemGuid.FieldType.URL_LINK.AsGuid() ), rockContext );
+
+                            // Save the report
+                            binaryFileGuid = SaveFile( workflow.Attributes["Report"], reportLink, workflow.Id.ToString() + ".pdf" );
+                            if ( binaryFileGuid.HasValue )
+                            {
+                                SaveAttributeValue( workflow, "Report", binaryFileGuid.Value.ToString(),
+                                    FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ), rockContext,
+                                    new Dictionary<string, string> { { "binaryFileType", "" } } );
+                            }
+                        }
+
+                        // Save the status
+                        SaveAttributeValue( workflow, "ReportStatus", reportStatus,
+                            FieldTypeCache.Read( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ), rockContext,
+                            new Dictionary<string, string> { { "fieldtype", "ddl" }, { "values", "Pass,Fail,Review" } } );
+
+                        // Update the background check file
+                        using ( var newRockContext = new RockContext() )
+                        {
+                            var service = new BackgroundCheckService( newRockContext );
+                            var backgroundCheck = service.Queryable()
+                                .Where( c =>
+                                    c.WorkflowId.HasValue &&
+                                    c.WorkflowId.Value == workflow.Id )
+                                .FirstOrDefault();
+                            if ( backgroundCheck != null )
+                            {
+                                // Clear any SSN nodes before saving XML to record
+                                foreach ( var xSSNElement in xResult.Descendants( "SSN" ) )
+                                {
+                                    xSSNElement.Value = "XXX-XX-XXXX";
+                                }
+                                backgroundCheck.ResponseXml = xResult.ToString();
+
+                                backgroundCheck.ResponseDate = RockDateTime.Now;
+                                backgroundCheck.RecordFound = reportStatus == "Review";
+
+                                if ( binaryFileGuid.HasValue )
+                                {
+                                    var binaryFile = new BinaryFileService( newRockContext ).Get( binaryFileGuid.Value );
+                                    if ( binaryFile != null )
+                                    {
+                                        backgroundCheck.ResponseDocumentId = binaryFile.Id;
+                                    }
+                                }
+
+                                newRockContext.SaveChanges();
+                            }
+                        }
+                    }
                 }
             }
         }
 
+        /// <summary>
+        /// Saves the attribute value.
+        /// </summary>
+        /// <param name="workflow">The workflow.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="fieldType">Type of the field.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="qualifiers">The qualifiers.</param>
         private static void SaveAttributeValue( Rock.Model.Workflow workflow, string key, string value, 
             FieldTypeCache fieldType, RockContext rockContext, Dictionary<string, string> qualifiers = null )
         {
@@ -389,6 +605,13 @@ namespace Rock.Security.BackgroundCheck
 
         }
 
+        /// <summary>
+        /// Saves the file.
+        /// </summary>
+        /// <param name="binaryFileAttribute">The binary file attribute.</param>
+        /// <param name="url">The URL.</param>
+        /// <param name="fileName">Name of the file.</param>
+        /// <returns></returns>
         private static Guid? SaveFile( AttributeCache binaryFileAttribute, string url, string fileName )
         {
             // get BinaryFileType info

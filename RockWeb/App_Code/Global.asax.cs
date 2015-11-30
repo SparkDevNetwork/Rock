@@ -62,11 +62,6 @@ namespace RockWeb
         /// </summary>
         public static bool QueueInUse = false;
 
-        /// <summary>
-        /// The base URL
-        /// </summary>
-        public static string BaseUrl = null;
-
         // cache callback object
         private static CacheItemRemovedCallback OnCacheRemove = null;
 
@@ -300,15 +295,6 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_BeginRequest( object sender, EventArgs e )
         {
-            if ( string.IsNullOrWhiteSpace( Global.BaseUrl ) )
-            {
-                var uri = GetPublicFacingUrl( Context.Request );
-                if ( uri != null )
-                {
-                    Global.BaseUrl = string.Format( "{0}://{1}/", uri.Scheme, uri.Authority );
-                }
-            }
-
             Context.Items.Add( "Request_Start_Time", RockDateTime.Now );
             Context.Items.Add( "Cache_Hits", new Dictionary<string, bool>() );
         }
@@ -888,55 +874,7 @@ namespace RockWeb
 
         #region Static Methods
 
-        /// <summary>
-        /// Gets the public facing URL.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns></returns>
-        internal static Uri GetPublicFacingUrl( HttpRequest request )
-        {
-            if ( request.Url != null )
-            {
-                // http://stackoverflow.com/questions/7795910/how-do-i-get-url-action-to-use-the-right-port-number
-                // Due to URL rewriting, cloud computing (i.e. Azure)
-                // and web farms, etc., we have to be VERY careful about what
-                // we consider the incoming URL.  We want to see the URL as it would
-                // appear on the public-facing side of the hosting web site.
-                // HttpRequest.Url gives us the internal URL in a cloud environment,
-                // So we use a variable that gives us the public URL:
-                var serverVariables = request.ServerVariables;
-                if ( serverVariables != null && serverVariables["HTTP_HOST"] != null )
-                {
-                    //ErrorUtilities.VerifySupported(request.Url.Scheme == Uri.UriSchemeHttps || request.Url.Scheme == Uri.UriSchemeHttp, "Only HTTP and HTTPS are supported protocols.");
-                    string scheme = serverVariables["HTTP_X_FORWARDED_PROTO"] ?? request.Url.Scheme;
-                    Uri hostAndPort = new Uri( scheme + Uri.SchemeDelimiter + serverVariables["HTTP_HOST"] );
 
-                    // If host is local (occurs with Azure hosting), ignore this request
-                    if ( hostAndPort.Host == "127.0.0.1" || hostAndPort.Host.ToLower() == "localhost" )
-                    {
-                        return null;
-                    }
-
-                    UriBuilder publicRequestUri = new UriBuilder( request.Url );
-                    publicRequestUri.Scheme = scheme;
-                    publicRequestUri.Host = hostAndPort.Host;
-                    publicRequestUri.Port = hostAndPort.Port; 
-                    return publicRequestUri.Uri;
-                }
-
-                // Failover to the method that works for non-web farm enviroments.
-                // We use Request.Url for the full path to the server, and modify it
-                // with Request.RawUrl to capture both the cookieless session "directory" if it exists
-                // and the original path in case URL rewriting is going on.  We don't want to be
-                // fooled by URL rewriting because we're comparing the actual URL with what's in
-                // the return_to parameter in some cases.
-                // Response.ApplyAppPathModifier(builder.Path) would have worked for the cookieless
-                // session, but not the URL rewriting problem.
-                return new Uri( request.Url, request.RawUrl );
-            }
-
-            return null;
-        }
 
         /// <summary>
         /// Adds the call back.
@@ -1069,12 +1007,25 @@ namespace RockWeb
                     // add cache item again
                     AddCallBack();
 
-                    // call a page on the site to keep IIS alive 
-                    if ( !string.IsNullOrWhiteSpace( Global.BaseUrl ) )
+                    var keepAliveUrl = GlobalAttributesCache.Value( "KeepAliveUrl" );
+                    if ( string.IsNullOrWhiteSpace( keepAliveUrl ) )
                     {
-                        string url = Global.BaseUrl + "KeepAlive.aspx";
-                        WebRequest request = WebRequest.Create( url );
-                        WebResponse response = request.GetResponse();
+                        keepAliveUrl = GlobalAttributesCache.Value( "InternalApplicationRoot" ) ?? string.Empty;
+                        keepAliveUrl = keepAliveUrl.EnsureTrailingForwardslash() + "KeepAlive.aspx";
+                    }
+
+                    // call a page on the site to keep IIS alive 
+                    if ( !string.IsNullOrWhiteSpace( keepAliveUrl ) )
+                    {
+                        try
+                        {
+                            WebRequest request = WebRequest.Create( keepAliveUrl );
+                            WebResponse response = request.GetResponse();
+                        }
+                        catch ( Exception ex )
+                        {
+                            LogError( new Exception( "Error doing KeepAlive request.", ex ), null );
+                        }
                     }
                 }
                 else

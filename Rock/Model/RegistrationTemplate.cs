@@ -329,6 +329,15 @@ namespace Rock.Model
         }
         private bool _addPersonNote = true;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [allow group placement].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow group placement]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowGroupPlacement { get;set; }
+
         #endregion
 
         #region Virtual Properties

@@ -53,6 +53,7 @@ namespace RockWeb.Blocks.Finance
         private Panel pnlTotal;
         private Literal lTotal;
         private bool HideViewByOption = false;
+        private bool FilterIncludedInURL = false;
 
         #endregion
 
@@ -96,6 +97,15 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            // Setup for being able to copy text to clipboard
+            RockPage.AddScriptLink( this.Page, "~/Scripts/ZeroClipboard/ZeroClipboard.js" );
+            string script = string.Format( @"
+    var client = new ZeroClipboard( $('#{0}'));
+    $('#{0}').tooltip();
+", btnCopyToClipboard.ClientID );
+            ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
+            btnCopyToClipboard.Attributes["data-clipboard-target"] = hfFilterUrl.ClientID;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -144,7 +154,11 @@ namespace RockWeb.Blocks.Finance
             {
                 BuildDynamicControls();
                 LoadDropDowns();
-                LoadSettingsFromUserPreferences();
+                LoadSettings();
+                if ( FilterIncludedInURL )
+                {
+                    LoadChartAndGrids();
+                }
 
                 lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now );
             }
@@ -533,7 +547,7 @@ function(item) {
 
             dataSourceParams.AddOrReplace( "graphBy", hfGraphBy.Value.AsInteger() );
 
-            SaveSettingsToUserPreferences();
+            SaveSettings();
 
             dataSourceUrl += "?" + dataSourceParams.Select( s => string.Format( "{0}={1}", s.Key, s.Value ) ).ToList().AsDelimited( "&" );
 
@@ -560,7 +574,7 @@ function(item) {
         /// <summary>
         /// Saves the attendance reporting settings to user preferences.
         /// </summary>
-        private void SaveSettingsToUserPreferences()
+        private void SaveSettings()
         {
             string keyPrefix = string.Format( "giving-analytics-{0}-", this.BlockId );
 
@@ -605,16 +619,30 @@ function(item) {
             this.SetUserPreference( keyPrefix + "GiversFilterByPattern", string.Format( "{0}|{1}|{2}", tbPatternXTimes.Text, cbPatternAndMissed.Checked, drpPatternDateRange.DelimitedValues ), false );
 
             this.SaveUserPreferences( keyPrefix );
+
+            // Create URL for selected settings
+            var pageReference = CurrentPageReference;
+            foreach ( var setting in GetUserPreferences( keyPrefix ) )
+            {
+                string key = setting.Key.Substring( keyPrefix.Length );
+                pageReference.Parameters.AddOrReplace( key, setting.Value );
+            }
+
+            Uri uri = new Uri( Request.Url.ToString() );
+            hfFilterUrl.Value = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + pageReference.BuildUrl();
+            btnCopyToClipboard.Disabled = false;
         }
 
         /// <summary>
         /// Loads the attendance reporting settings from user preferences.
         /// </summary>
-        private void LoadSettingsFromUserPreferences()
+        private void LoadSettings()
         {
+            FilterIncludedInURL = false;
+
             string keyPrefix = string.Format( "giving-analytics-{0}-", this.BlockId );
 
-            string slidingDateRangeSettings = this.GetUserPreference( keyPrefix + "SlidingDateRange" );
+            string slidingDateRangeSettings = GetSetting( keyPrefix, "SlidingDateRange" );
             if ( string.IsNullOrWhiteSpace( slidingDateRangeSettings ) )
             {
                 // default to current year
@@ -626,36 +654,36 @@ function(item) {
                 drpSlidingDateRange.DelimitedValues = slidingDateRangeSettings;
             }
 
-            hfGroupBy.Value = this.GetUserPreference( keyPrefix + "GroupBy" );
+            hfGroupBy.Value = GetSetting( keyPrefix, "GroupBy" );
 
-            nreAmount.DelimitedValues = this.GetUserPreference( keyPrefix + "AmountRange" );
+            nreAmount.DelimitedValues = GetSetting( keyPrefix, "AmountRange" );
 
-            var currencyTypeIdList = this.GetUserPreference( keyPrefix + "CurrencyTypeIds" ).Split( ',' ).ToList();
+            var currencyTypeIdList = GetSetting( keyPrefix, "CurrencyTypeIds" ).Split( ',' ).ToList();
             cblCurrencyTypes.SetValues( currencyTypeIdList );
 
-            var sourceIdList = this.GetUserPreference( keyPrefix + "SourceIds" ).Split( ',' ).ToList();
+            var sourceIdList = GetSetting( keyPrefix, "SourceIds" ).Split( ',' ).ToList();
             cblTransactionSource.SetValues( sourceIdList );
 
-            var accountIdList = this.GetUserPreference( keyPrefix + "AccountIds" ).Split( ',' ).ToList();
+            var accountIdList = GetSetting( keyPrefix, "AccountIds" ).Split( ',' ).ToList();
             foreach ( var cblAccounts in phAccounts.Controls.OfType<RockCheckBoxList>() )
             {
                 cblAccounts.SetValues( accountIdList );
             }
 
-            dvpDataView.SetValue( this.GetUserPreference( keyPrefix + "DataView" ) );
+            dvpDataView.SetValue( GetSetting( keyPrefix, "DataView" ) );
             HideShowDataViewResultOption();
 
-            rblDataViewAction.SetValue( this.GetUserPreference( keyPrefix + "DataViewAction" ) );
+            rblDataViewAction.SetValue( GetSetting( keyPrefix, "DataViewAction" ) );
 
-            hfGraphBy.Value = this.GetUserPreference( keyPrefix + "GraphBy" );
+            hfGraphBy.Value = GetSetting( keyPrefix, "GraphBy" );
 
-            ShowBy showBy = this.GetUserPreference( keyPrefix + "ShowBy" ).ConvertToEnumOrNull<ShowBy>() ?? ShowBy.Chart;
+            ShowBy showBy = GetSetting( keyPrefix, "ShowBy" ).ConvertToEnumOrNull<ShowBy>() ?? ShowBy.Chart;
             DisplayShowBy( showBy );
 
-            GiversViewBy viewBy = this.GetUserPreference( keyPrefix + "ViewBy" ).ConvertToEnumOrNull<GiversViewBy>() ?? GiversViewBy.Giver;
+            GiversViewBy viewBy = GetSetting( keyPrefix, "ViewBy" ).ConvertToEnumOrNull<GiversViewBy>() ?? GiversViewBy.Giver;
             hfViewBy.Value = viewBy.ConvertToInt().ToString();
 
-            GiversFilterBy giversFilterby = this.GetUserPreference( keyPrefix + "GiversFilterByType" ).ConvertToEnumOrNull<GiversFilterBy>() ?? GiversFilterBy.All;
+            GiversFilterBy giversFilterby = GetSetting( keyPrefix, "GiversFilterByType" ).ConvertToEnumOrNull<GiversFilterBy>() ?? GiversFilterBy.All;
 
             switch ( giversFilterby )
             {
@@ -670,7 +698,7 @@ function(item) {
                     break;
             }
 
-            string attendeesFilterByPattern = this.GetUserPreference( keyPrefix + "GiversFilterByPattern" );
+            string attendeesFilterByPattern = GetSetting( keyPrefix, "GiversFilterByPattern" );
             string[] attendeesFilterByPatternValues = attendeesFilterByPattern.Split( '|' );
             if ( attendeesFilterByPatternValues.Length == 3 )
             {
@@ -678,6 +706,24 @@ function(item) {
                 cbPatternAndMissed.Checked = attendeesFilterByPatternValues[1].AsBooleanOrNull() ?? false;
                 drpPatternDateRange.DelimitedValues = attendeesFilterByPatternValues[2];
             }
+        }
+
+        /// <summary>
+        /// Gets the setting.
+        /// </summary>
+        /// <param name="prefix">The prefix.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        private string GetSetting( string prefix, string key )
+        {
+            string setting = Request.QueryString[key];
+            if ( setting != null )
+            {
+                FilterIncludedInURL = true;
+                return setting;
+            }
+
+            return this.GetUserPreference( prefix + key );
         }
 
         /// <summary>
@@ -1166,5 +1212,5 @@ function(item) {
 
         #endregion
 
-}
+    }
 }
