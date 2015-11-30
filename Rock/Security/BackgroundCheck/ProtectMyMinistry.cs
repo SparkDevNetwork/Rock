@@ -178,7 +178,7 @@ namespace Rock.Security.BackgroundCheck
                 string dlNumber = person.GetAttributeValue( "com.sparkdevnetwork.DLNumber" );
                 if ( !string.IsNullOrWhiteSpace( dlNumber ) )
                 {
-                    subjectElement.Add( new XElement( "com.sparkdevnetwork.DLNumber", dlNumber ) );
+                    subjectElement.Add( new XElement( "DLNumber", dlNumber ) );
                 }
 
                 var homelocation = person.GetHomeLocation();
@@ -228,7 +228,7 @@ namespace Rock.Security.BackgroundCheck
                         packageName = pkgTypeDefinedValue.GetAttributeValue("PMMPackageName");
                         county = pkgTypeDefinedValue.GetAttributeValue( "DefaultCounty" );
                         state = pkgTypeDefinedValue.GetAttributeValue( "DefaultState" );
-                        Guid? mvrJurisdictionGuid = pkgTypeDefinedValue.GetAttributeValue( "IncludeMVR" ).AsGuidOrNull();
+                        Guid? mvrJurisdictionGuid = pkgTypeDefinedValue.GetAttributeValue( "MVRJurisdiction" ).AsGuidOrNull();
                         if ( mvrJurisdictionGuid.HasValue )
                         {
                             var mvrJurisdictionDv = DefinedValueCache.Read( mvrJurisdictionGuid.Value );
