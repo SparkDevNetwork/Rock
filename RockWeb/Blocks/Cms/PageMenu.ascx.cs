@@ -31,6 +31,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.Web;
 
 
 namespace RockWeb.Blocks.Cms
@@ -146,10 +147,20 @@ namespace RockWeb.Blocks.Cms
                 pageProperties.Add( "Site", GetSiteProperties( RockPage.Site ) );
                 pageProperties.Add( "IncludePageList", GetIncludePageList() );
 
-                using ( var rockContext = new RockContext() )
-                {
-                    pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
+                var cacheKey = "rootPage.GetMenuProperties" + levelsDeep.ToString() + CurrentPerson.Id.ToString() + currentPage.Id.ToString();
+                var menuProperties = HttpContext.Current.Cache[cacheKey] as Dictionary<string, object>;
+
+                if(menuProperties == null) {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        menuProperties = rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString );
+                    }
+
+                    HttpContext.Current.Cache[cacheKey] = menuProperties;
                 }
+
+                pageProperties.Add( "Page", menuProperties );           
+
                 string content = GetTemplate().Render( Hash.FromDictionary( pageProperties ) );
 
                 // check for errors
