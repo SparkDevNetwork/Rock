@@ -167,7 +167,7 @@ namespace Rock.Migrations
 
             // BASIC Package with attribute values
             RockMigrationHelper.UpdateDefinedValue( "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF", "BASIC",
-                "The Basic Package is the minimum recommended package for all volunteer and staff screenings. It includes SSN Verification and Address History, National Criminal Database Search, National Sex Offender Search, Re-verification of criiminal records, Alias Names",
+                "The Basic Package is the minimum recommended package for all volunteer and staff screenings. It includes SSN Verification and Address History, National Criminal Database Search, National Sex Offender Search, Re-verification of criminal records, Alias Names.",
                 "B091BE26-1EEA-4601-A65A-A3A75CDD7506", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "B091BE26-1EEA-4601-A65A-A3A75CDD7506", "01E4D61D-6E23-4EF3-8AE1-6919590B0E70", "BASIC" );
             RockMigrationHelper.AddDefinedValueAttributeValue( "B091BE26-1EEA-4601-A65A-A3A75CDD7506", "39AEB614-BA28-485D-B033-3DD52055DC20", "" );
