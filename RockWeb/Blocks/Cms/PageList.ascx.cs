@@ -37,6 +37,8 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Page List" )]
     [Category( "CMS" )]
     [Description( "Lists pages for a site." )]
+
+    [BooleanField("Show Page Id", "Enables the hiding of the page id column.", true)]
     public partial class PageList : RockBlock, ISecondaryBlock
     {
         #region Base Control Methods
@@ -69,6 +71,8 @@ namespace RockWeb.Blocks.Cms
             {
                 BindFilter();
                 BindPagesGrid();
+
+                gPages.Columns[0].Visible = GetAttributeValue( "ShowPageId" ).AsBoolean();
             }
         }
 

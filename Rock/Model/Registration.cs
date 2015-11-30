@@ -429,6 +429,14 @@ Registration By: {0} Total Cost/Fees:{1}
         public string LastName { get; set; }
 
         /// <summary>
+        /// Gets or sets the family unique identifier.
+        /// </summary>
+        /// <value>
+        /// The family unique identifier.
+        /// </value>
+        public Guid FamilyGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the confirmation email.
         /// </summary>
         /// <value>
@@ -516,6 +524,7 @@ Registration By: {0} Total Cost/Fees:{1}
         /// </summary>
         public RegistrationInfo()
         {
+            FamilyGuid = Guid.Empty;
             Registrants = new List<RegistrantInfo>();
         }
 
@@ -551,12 +560,21 @@ Registration By: {0} Total Cost/Fees:{1}
                     LastName = registration.PersonAlias.Person.LastName;
                     ConfirmationEmail = registration.ConfirmationEmail;
                 }
-
-                DiscountCode = registration.DiscountCode.Trim();
+                                
+                DiscountCode = registration.DiscountCode != null ? registration.DiscountCode.Trim() : string.Empty;
                 DiscountPercentage = registration.DiscountPercentage;
                 DiscountAmount = registration.DiscountAmount;
                 TotalCost = registration.TotalCost;
                 DiscountedCost = registration.DiscountedCost;
+
+                if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
+                {
+                    var family = registration.PersonAlias.Person.GetFamilies( rockContext ).FirstOrDefault();
+                    if ( family != null )
+                    {
+                        FamilyGuid = family.Guid;
+                    }
+                }
 
                 foreach ( var registrant in registration.Registrants )
                 {

@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -36,6 +37,9 @@ namespace RockWeb.Blocks.Security
     [DisplayName( "Account Edit" )]
     [Category( "Security" )]
     [Description( "Allows a person to edit their account information." )]
+
+    [BooleanField("Show Address", "Allows hiding the address field.", false, order: 0)]
+    [BooleanField( "Address Required", "Whether the address is required.", false, order: 2 )]
     public partial class AccountEdit : RockBlock
     {
         /// <summary>
@@ -292,6 +296,68 @@ namespace RockWeb.Blocks.Security
                             }
                         }
 
+                        // save address
+                        if ( pnlAddress.Visible )
+                        {
+                            Guid? familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
+                            if ( familyGroupTypeGuid.HasValue )
+                            {
+                                var familyGroup = new GroupService( rockContext ).Queryable()
+                                                .Where( f => f.GroupType.Guid == familyGroupTypeGuid.Value
+                                                    && f.Members.Any( m => m.PersonId == person.Id ) )
+                                                .FirstOrDefault();
+                                if ( familyGroup != null )
+                                {
+                                    Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
+                                    if ( homeAddressGuid.HasValue )
+                                    {
+                                        var groupLocationService = new GroupLocationService( rockContext );
+
+                                        var dvHomeAddressType = DefinedValueCache.Read( homeAddressGuid.Value );
+                                        var familyHomeAddress = groupLocationService.Queryable().Where( l => l.GroupId == familyGroup.Id && l.GroupLocationTypeValueId == dvHomeAddressType.Id ).FirstOrDefault();
+                                        if ( familyHomeAddress != null && string.IsNullOrWhiteSpace( acAddress.Street1 ) )
+                                        {
+
+                                            // delete the current address
+                                            History.EvaluateChange( changes, familyHomeAddress.GroupLocationTypeValue.Value + " Location", familyHomeAddress.Location.ToString(), string.Empty );
+                                            groupLocationService.Delete( familyHomeAddress );
+                                            rockContext.SaveChanges();
+                                        }
+                                        else
+                                        {
+                                            if ( !string.IsNullOrWhiteSpace( acAddress.Street1 ) )
+                                            {
+                                                if ( familyHomeAddress == null )
+                                                {
+                                                    familyHomeAddress = new GroupLocation();
+                                                    groupLocationService.Add( familyHomeAddress );
+                                                    familyHomeAddress.GroupLocationTypeValueId = dvHomeAddressType.Id;
+                                                    familyHomeAddress.GroupId = familyGroup.Id;
+                                                    familyHomeAddress.IsMailingLocation = true;
+                                                    familyHomeAddress.IsMappedLocation = true;
+                                                }
+
+                                                var updatedHomeAddress = new Location();
+                                                acAddress.GetValues( updatedHomeAddress );
+
+                                                History.EvaluateChange( changes, dvHomeAddressType.Value + " Location", familyHomeAddress.Location != null ? familyHomeAddress.Location.ToString() : string.Empty, updatedHomeAddress.ToString() );
+
+                                                familyHomeAddress.Location = updatedHomeAddress;
+                                                rockContext.SaveChanges();
+                                            }
+                                        }
+
+                                        HistoryService.SaveChanges(
+                                            rockContext,
+                                            typeof( Person ),
+                                            Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                            person.Id,
+                                            changes );
+                                    }
+                                }
+                            }
+                        }
+
                         NavigateToParentPage();
                     }
                 }
@@ -313,6 +379,9 @@ namespace RockWeb.Blocks.Security
         /// </summary>
         private void ShowDetails()
         {
+            pnlAddress.Visible = GetAttributeValue( "ShowAddress" ).AsBoolean();
+            acAddress.Required = GetAttributeValue( "AddressRequired" ).AsBoolean();
+
             var person = CurrentPerson;
             if ( person != null )
             {
@@ -326,6 +395,12 @@ namespace RockWeb.Blocks.Security
                 bpBirthDay.SelectedDate = person.BirthDate;
                 rblGender.SelectedValue = person.Gender.ConvertToString();
                 tbEmail.Text = person.Email;
+
+                var homeAddress = person.GetHomeLocation();
+                if (homeAddress != null )
+                {
+                    acAddress.SetValues( homeAddress );
+                }
 
                 var mobilePhoneType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
 

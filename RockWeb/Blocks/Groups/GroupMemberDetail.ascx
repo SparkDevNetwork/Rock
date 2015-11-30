@@ -33,7 +33,7 @@
                             <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" Label="Person" CssClass="js-authorizedperson" Required="true" OnSelectPerson="ppGroupMemberPerson_SelectPerson" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox runat="server" ID="cbIsNotified" Label="Is Notified" />
+                            <Rock:RockCheckBox runat="server" ID="cbIsNotified" Label="Notified" />
                         </div>
                     </div>
 

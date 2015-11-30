@@ -64,25 +64,13 @@ namespace RockWeb.Webhooks
 
                     if ( !string.IsNullOrEmpty( orderId ) && orderId != "OrderIdUnknown" )
                     {
-                        // Save a copy of the XML to the App_Data/PMMOrders subdirectory
-                        DirectoryInfo dir = new DirectoryInfo( context.Server.MapPath( "~/App_Data/PMMOrders" ) );
-                        if ( !dir.Exists )
-                            dir.Create();
-                        int version = 0;
-                        FileInfo file = new FileInfo( Path.Combine( dir.FullName, orderId + ".xml" ) );
-                        while ( file.Exists )
-                        {
-                            version++;
-                            file = new FileInfo( Path.Combine( dir.FullName, string.Format( "{0}_{1}.xml", orderId, version ) ) );
-                        }
-                        xResult.Save( file.FullName );
-                                                
                         // Find and update the associated workflow
                         var workflowService = new WorkflowService( rockContext );
                         var workflow = new WorkflowService( rockContext ).Get( orderId.AsInteger() );
                         if ( workflow != null && workflow.IsActive )
                         {
                             workflow.LoadAttributes();
+                            
                             Rock.Security.BackgroundCheck.ProtectMyMinistry.SaveResults( xResult, workflow, rockContext );
                             
                             rockContext.WrapTransaction( () =>

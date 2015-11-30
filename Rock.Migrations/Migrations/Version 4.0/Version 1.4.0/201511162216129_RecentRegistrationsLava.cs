@@ -31,8 +31,6 @@ namespace Rock.Migrations
         {
             // catchups
             RockMigrationHelper.UpdateBlockType( "Schedule Context Setter", "Block that can be used to set the default schedule context for the site.", "~/Blocks/Core/ScheduleContextSetter.ascx", "Core", "6553821F-9667-4576-924F-DAF1BB3F3223" );
-            RockMigrationHelper.UpdateBlockType( "Dynamic Chart", "Block to display a chart using SQL as the chart datasource", "~/Blocks/Reporting/DynamicChart.ascx", "Reporting", "7BCCBFB0-26A5-4376-B1F3-DC6ADD7C3723" );
-            RockMigrationHelper.UpdateBlockType( "Dynamic Heat Map", "Block to a map of the locations of people", "~/Blocks/Reporting/DynamicHeatMap.ascx", "Reporting", "FAFBB883-D0B4-498E-91EE-CAC5652E5095" );
             
             // MP: Add Registration List Lava
             RockMigrationHelper.UpdateBlockType( "Registration List Lava", "List recent registrations using a Lava template.", "~/Blocks/Event/RegistrationListLava.ascx", "Event", "92E4BFE8-DF80-49D7-819D-417E579E282D" );

@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Event
             ActiveTab = ( ViewState["ActiveTab"] as string ) ?? "";
             RegistrantFields = ViewState["RegistrantFields"] as List<RegistrantFormField>;
 
-            AddDynamicRegistrantControls();
+            AddDynamicControls();
         }
 
         /// <summary>
@@ -147,6 +147,11 @@ namespace RockWeb.Blocks.Event
             gLinkages.Actions.AddClick += gLinkages_AddClick;
             gLinkages.RowDataBound += gLinkages_RowDataBound;
             gLinkages.GridRebind += gLinkages_GridRebind;
+
+            gGroupPlacements.DataKeyNames = new string[] { "Id" };
+            gGroupPlacements.Actions.ShowAdd = false;
+            gGroupPlacements.RowDataBound += gRegistrants_RowDataBound; //intentionally using same row data bound event as the gRegistrants grid
+            gGroupPlacements.GridRebind += gGroupPlacements_GridRebind;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -217,6 +222,9 @@ namespace RockWeb.Blocks.Event
                             break;
                         case 4:
                             ActiveTab = "lbLinkage";
+                            break;
+                        case 5:
+                            ActiveTab = "lbGroupPlacement";
                             break;
                     }
                 }
@@ -345,11 +353,12 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            RegistrationInstance instance = null;
+
             using ( var rockContext = new RockContext() )
             {
                 var service = new RegistrationInstanceService( rockContext );
 
-                RegistrationInstance instance = null;
 
                 int? RegistrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
                 if ( RegistrationInstanceId.HasValue )
@@ -372,9 +381,12 @@ namespace RockWeb.Blocks.Event
                 }
 
                 rockContext.SaveChanges();
+            }
 
-                // Reload instance and show readonly view
-                instance = service.Get( instance.Id );
+            // Reload instance and show readonly view
+            using ( var rockContext = new RockContext() )
+            {
+                instance = new RegistrationInstanceService( rockContext ).Get( instance.Id );
                 ShowReadonlyDetails( instance );
             }
         }
@@ -1267,11 +1279,11 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Handles the RowSelected event of the gLinkages control.
+        /// Handles the Edit event of the gLinkages control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gLinkages_RowSelected( object sender, RowEventArgs e )
+        protected void gLinkages_Edit( object sender, RowEventArgs e )
         {
             NavigateToLinkedPage( "LinkagePage", "LinkageId", e.RowKeyId, "RegistrationInstanceId", hfRegistrationInstanceId.ValueAsInt() );
         }
@@ -1304,6 +1316,112 @@ namespace RockWeb.Blocks.Event
             BindLinkagesGrid();
         }
 
+        #endregion
+
+        #region Group Placement Tab Events
+
+        /// <summary>
+        /// Handles the GridRebind event of the gGroupPlacements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gGroupPlacements_GridRebind( object sender, EventArgs e )
+        {
+            BindGroupPlacementGrid();
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the gpGroupPlacementParentGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gpGroupPlacementParentGroup_SelectItem( object sender, EventArgs e )
+        {
+            int? parentGroupId = gpGroupPlacementParentGroup.SelectedValueAsInt();
+
+            SetUserPreference( string.Format( "ParentGroup_{0}_{1}", BlockId, hfRegistrationInstanceId.Value),
+                parentGroupId.HasValue ? parentGroupId.Value.ToString() : "", true );
+
+            var groupPickerField = gGroupPlacements.Columns.OfType<GroupPickerField>().FirstOrDefault();
+            if (groupPickerField != null )
+            {
+                groupPickerField.RootGroupId = parentGroupId;
+            }
+
+            BindGroupPlacementGrid();
+        }
+
+        protected void lbPlaceInGroup_Click( object sender, EventArgs e )
+        {
+            var col = gGroupPlacements.Columns.OfType<GroupPickerField>().FirstOrDefault();
+            if (col != null )
+            {
+                var placements = new Dictionary<int, List<int>>();
+
+                var colIndex = gGroupPlacements.Columns.IndexOf( col ).ToString();
+                foreach ( GridViewRow row in gGroupPlacements.Rows )
+                {
+                    GroupPicker gp = row.FindControl( "groupPicker_" + colIndex.ToString() ) as GroupPicker;
+                    if ( gp != null )
+                    {
+                        int? groupId = gp.SelectedValueAsInt();
+                        if ( groupId.HasValue )
+                        {
+                            int registrantId = (int)gGroupPlacements.DataKeys[row.RowIndex].Value;
+                            placements.AddOrIgnore( groupId.Value, new List<int>());
+                            placements[groupId.Value].Add( registrantId );
+                        }
+                    }
+                }
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var groupMemberService = new GroupMemberService( rockContext );
+
+                    // Get all the registrants that were selected
+                    var registrantIds = placements.SelectMany( p => p.Value ).ToList();
+                    var registrants = new RegistrationRegistrantService( rockContext )
+                        .Queryable( "PersonAlias" ).AsNoTracking()
+                        .Where( r => registrantIds.Contains( r.Id ) )
+                        .ToList();
+
+                    // Get any groups that were selected
+                    var groupIds = placements.Keys.ToList();
+                    foreach ( var group in new GroupService( rockContext )
+                        .Queryable("GroupType").AsNoTracking()
+                        .Where( g => groupIds.Contains( g.Id ) ) )
+                    {
+                        foreach ( int registrantId in placements[group.Id] )
+                        {
+                            int? roleId = group.GroupType.DefaultGroupRoleId;
+                            if ( !roleId.HasValue )
+                            {
+                                roleId = group.GroupType.Roles
+                                    .OrderBy( r => r.Order )
+                                    .Select( r => r.Id )
+                                    .FirstOrDefault();
+                            }
+
+                            var registrant = registrants.FirstOrDefault( r => r.Id == registrantId );
+                            if ( registrant != null && roleId.HasValue && roleId.Value > 0 )
+                            {
+                                var groupMember = new GroupMember();
+                                groupMember.PersonId = registrant.PersonAlias.PersonId;
+                                groupMember.GroupId = group.Id;
+                                groupMember.GroupRoleId = roleId.Value;
+                                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                                groupMemberService.Add( groupMember );
+                            }
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+                }
+            }
+
+            BindGroupPlacementGrid();
+        }
+        
         #endregion
 
         #endregion
@@ -1432,7 +1550,7 @@ namespace RockWeb.Blocks.Event
                 BindRegistrationsFilter();
                 BindRegistrantsFilter();
                 BindLinkagesFilter();
-                AddDynamicRegistrantControls();
+                AddDynamicControls();
             }
         }
 
@@ -1484,6 +1602,21 @@ namespace RockWeb.Blocks.Event
             lDetails.Visible = !string.IsNullOrWhiteSpace( RegistrationInstance.Details );
             lDetails.Text = RegistrationInstance.Details;
 
+            liGroupPlacement.Visible = RegistrationInstance.RegistrationTemplate.AllowGroupPlacement;
+
+            int? groupId = GetUserPreference( string.Format( "ParentGroup_{0}_{1}", BlockId, RegistrationInstance.Id ) ).AsIntegerOrNull();
+            if ( groupId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var group = new GroupService( rockContext ).Get( groupId.Value );
+                    if ( group != null )
+                    {
+                        gpGroupPlacementParentGroup.SetValue( group );
+                    }
+                }
+            }
+
             ShowTab();
         }
 
@@ -1515,6 +1648,9 @@ namespace RockWeb.Blocks.Event
             liLinkage.RemoveCssClass( "active" );
             pnlLinkages.Visible = false;
 
+            liGroupPlacement.RemoveCssClass( "active" );
+            pnlGroupPlacement.Visible = false;
+
             switch ( ActiveTab ?? string.Empty )
             {
                 case "lbRegistrants":
@@ -1538,6 +1674,14 @@ namespace RockWeb.Blocks.Event
                         liLinkage.AddCssClass( "active" );
                         pnlLinkages.Visible = true;
                         BindLinkagesGrid();
+                        break;
+                    }
+
+                case "lbGroupPlacement":
+                    {
+                        liGroupPlacement.AddCssClass( "active" );
+                        pnlGroupPlacement.Visible = true;
+                        BindGroupPlacementGrid();
                         break;
                     }
 
@@ -2025,7 +2169,6 @@ namespace RockWeb.Blocks.Event
                             .ToList();
                         groupMemberAttributesIds = groupMemberAttributes.Select( a => a.Id ).Distinct().ToList();
 
-
                         // Filter query by any configured person attribute filters
                         if ( groupMemberAttributes != null && groupMemberAttributes.Any() )
                         {
@@ -2271,7 +2414,7 @@ namespace RockWeb.Blocks.Event
         /// Adds the filter controls and grid columns for all of the registration template's form fields
         /// that were configured to 'Show on Grid'
         /// </summary>
-        private void AddDynamicRegistrantControls()
+        private void AddDynamicControls()
         {
             phRegistrantFormFieldFilters.Controls.Clear();
 
@@ -2312,6 +2455,22 @@ namespace RockWeb.Blocks.Event
                 gRegistrants.Columns.Remove( column );
             }
 
+            // Remove any of the dynamic attribute fields on group placements grid
+            foreach( var column in gGroupPlacements.Columns
+                .OfType<AttributeField>()
+                .ToList() )
+            {
+                gGroupPlacements.Columns.Remove( column );
+            }
+
+            // Remove the delete field
+            foreach ( var column in gRegistrants.Columns
+                .OfType<GroupPickerField>()
+                .ToList() )
+            {
+                gGroupPlacements.Columns.Remove( column );
+            }
+
             if ( RegistrantFields != null )
             {
                 foreach ( var field in RegistrantFields )
@@ -2338,6 +2497,11 @@ namespace RockWeb.Blocks.Event
                                     templateField.HeaderText = "Campus";
                                     gRegistrants.Columns.Add( templateField );
 
+                                    var templateField2 = new TemplateField();
+                                    templateField2.ItemTemplate = new LiteralFieldTemplate( "lCampus" );
+                                    templateField2.HeaderText = "Campus";
+                                    gGroupPlacements.Columns.Add( templateField2 );
+
                                     break;
                                 }
 
@@ -2355,6 +2519,12 @@ namespace RockWeb.Blocks.Event
                                     emailField.HeaderText = "Email";
                                     emailField.SortExpression = dataFieldExpression;
                                     gRegistrants.Columns.Add( emailField );
+
+                                    var emailField2 = new BoundField();
+                                    emailField2.DataField = dataFieldExpression;
+                                    emailField2.HeaderText = "Email";
+                                    emailField2.SortExpression = dataFieldExpression;
+                                    gGroupPlacements.Columns.Add( emailField2 );
 
                                     break;
                                 }
@@ -2374,6 +2544,12 @@ namespace RockWeb.Blocks.Event
                                     birthdateField.SortExpression = dataFieldExpression;
                                     gRegistrants.Columns.Add( birthdateField );
 
+                                    var birthdateField2 = new DateField();
+                                    birthdateField2.DataField = dataFieldExpression;
+                                    birthdateField2.HeaderText = "Birthdate";
+                                    birthdateField2.SortExpression = dataFieldExpression;
+                                    gGroupPlacements.Columns.Add( birthdateField2 ); 
+                                    
                                     break;
                                 }
                             
@@ -2393,6 +2569,11 @@ namespace RockWeb.Blocks.Event
                                     genderField.SortExpression = dataFieldExpression;
                                     gRegistrants.Columns.Add( genderField );
 
+                                    var genderField2 = new EnumField();
+                                    genderField2.DataField = dataFieldExpression;
+                                    genderField2.HeaderText = "Gender";
+                                    genderField2.SortExpression = dataFieldExpression;
+                                    gGroupPlacements.Columns.Add( genderField2 );
                                     break;
                                 }
                             
@@ -2412,6 +2593,12 @@ namespace RockWeb.Blocks.Event
                                     maritalStatusField.SortExpression = dataFieldExpression;
                                     gRegistrants.Columns.Add( maritalStatusField );
 
+                                    var maritalStatusField2 = new BoundField();
+                                    maritalStatusField2.DataField = dataFieldExpression;
+                                    maritalStatusField2.HeaderText = "MaritalStatus";
+                                    maritalStatusField2.SortExpression = dataFieldExpression;
+                                    gGroupPlacements.Columns.Add( maritalStatusField2 );
+
                                     break;
                                 }
 
@@ -2427,6 +2614,11 @@ namespace RockWeb.Blocks.Event
                                     templateField.ItemTemplate = new LiteralFieldTemplate( "lPhone" );
                                     templateField.HeaderText = "Phone(s)";
                                     gRegistrants.Columns.Add( templateField );
+
+                                    var templateField2 = new TemplateField();
+                                    templateField2.ItemTemplate = new LiteralFieldTemplate( "lPhone" );
+                                    templateField2.HeaderText = "Phone(s)";
+                                    gGroupPlacements.Columns.Add( templateField2 );
 
                                     break;
                                 }
@@ -2476,13 +2668,20 @@ namespace RockWeb.Blocks.Event
                             boundField.HeaderText = attribute.Name;
                             boundField.SortExpression = string.Empty;
 
+                            AttributeField boundField2 = new AttributeField();
+                            boundField2.DataField = dataFieldExpression;
+                            boundField2.HeaderText = attribute.Name;
+                            boundField2.SortExpression = string.Empty;
+
                             var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
                             if ( attributeCache != null )
                             {
                                 boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                                boundField2.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
                             }
 
                             gRegistrants.Columns.Add( boundField );
+                            gGroupPlacements.Columns.Add( boundField2 );
                         }
 
                     }
@@ -2498,6 +2697,11 @@ namespace RockWeb.Blocks.Event
             var deleteField = new DeleteField();
             gRegistrants.Columns.Add( deleteField );
             deleteField.Click += gRegistrants_Delete;
+
+            var groupPickerField = new GroupPickerField();
+            groupPickerField.HeaderText = "Group";
+            groupPickerField.RootGroupId = gpGroupPlacementParentGroup.SelectedValueAsInt();
+            gGroupPlacements.Columns.Add( groupPickerField );
         }
 
         #endregion
@@ -2660,6 +2864,257 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
+        #region Group Placement Tab
+
+        private void BindGroupPlacementGrid()
+        {
+            int? groupId = gpGroupPlacementParentGroup.SelectedValueAsInt();
+            int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
+            if ( instanceId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    // Start query for registrants
+                    var qry = new RegistrationRegistrantService( rockContext )
+                        .Queryable( "PersonAlias.Person.PhoneNumbers.NumberTypeValue,Fees.RegistrationTemplateFee,GroupMember.Group" ).AsNoTracking()
+                        .Where( r =>
+                            r.Registration.RegistrationInstanceId == instanceId.Value &&
+                            r.PersonAlias != null &&
+                            r.PersonAlias.Person != null );
+
+                    if ( groupId.HasValue )
+                    {
+                        var validGroupIds = new GroupService( rockContext).GetAllDescendents( groupId.Value )
+                            .Select( g => g.Id )
+                            .ToList();
+
+                        var existingPeopleInGroups = new GroupMemberService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( m => validGroupIds.Contains( m.GroupId ) )
+                            .Select( m => m.PersonId )
+                            .ToList();
+
+                        qry = qry.Where( r => !existingPeopleInGroups.Contains( r.PersonAlias.PersonId ) );
+                    }
+
+                    bool preloadCampusValues = false;
+                    var registrantAttributeIds = new List<int>();
+                    var personAttributesIds = new List<int>();
+                    var groupMemberAttributesIds = new List<int>();
+
+                    if ( RegistrantFields != null )
+                    {
+                        // Check if campus is used
+                        preloadCampusValues = RegistrantFields
+                            .Any( f =>
+                                f.FieldSource == RegistrationFieldSource.PersonField &&
+                                f.PersonFieldType.HasValue &&
+                                f.PersonFieldType.Value == RegistrationPersonFieldType.Campus );
+
+                        // Get all the registrant attributes selected 
+                        var registrantAttributes = RegistrantFields
+                            .Where( f =>
+                                f.Attribute != null &&
+                                f.FieldSource == RegistrationFieldSource.RegistrationAttribute )
+                            .Select( f => f.Attribute )
+                            .ToList();
+                        registrantAttributeIds = registrantAttributes.Select( a => a.Id ).Distinct().ToList();
+
+                        // Get all the person attributes selected 
+                        var personAttributes = RegistrantFields
+                            .Where( f =>
+                                f.Attribute != null &&
+                                f.FieldSource == RegistrationFieldSource.PersonAttribute )
+                            .Select( f => f.Attribute )
+                            .ToList();
+                        personAttributesIds = personAttributes.Select( a => a.Id ).Distinct().ToList();
+
+                        // Get all the group member attributes selected to be on grid
+                        var groupMemberAttributes = RegistrantFields
+                            .Where( f =>
+                                f.Attribute != null &&
+                                f.FieldSource == RegistrationFieldSource.GroupMemberAttribute )
+                            .Select( f => f.Attribute )
+                            .ToList();
+                        groupMemberAttributesIds = groupMemberAttributes.Select( a => a.Id ).Distinct().ToList();
+                    }
+
+                    // Sort the query
+                    IOrderedQueryable<RegistrationRegistrant> orderedQry = null;
+                    SortProperty sortProperty = gGroupPlacements.SortProperty;
+                    if ( sortProperty != null )
+                    {
+                        orderedQry = qry.Sort( sortProperty );
+                    }
+                    else
+                    {
+                        orderedQry = qry
+                            .OrderBy( r => r.PersonAlias.Person.LastName )
+                            .ThenBy( r => r.PersonAlias.Person.NickName );
+                    }
+
+                    // Set the grids LinqDataSource which will run query and set results for current page
+                    gGroupPlacements.SetLinqDataSource<RegistrationRegistrant>( orderedQry );
+
+                    if ( RegistrantFields != null )
+                    {
+                        // Get the query results for the current page
+                        var currentPageRegistrants = gGroupPlacements.DataSource as List<RegistrationRegistrant>;
+                        if ( currentPageRegistrants != null )
+                        {
+                            // Get all the registrant ids in current page of query results
+                            var registrantIds = currentPageRegistrants
+                                .Select( r => r.Id )
+                                .Distinct()
+                                .ToList();
+
+                            // Get all the person ids in current page of query results
+                            var personIds = currentPageRegistrants
+                                .Select( r => r.PersonAlias.PersonId )
+                                .Distinct()
+                                .ToList();
+
+                            // Get all the group member ids and the group id in current page of query results
+                            var groupMemberIds = new List<int>();
+                            GroupLinks = new Dictionary<int,string>();
+                            foreach( var groupMember in currentPageRegistrants
+                                .Where( m => 
+                                    m.GroupMember != null &&
+                                    m.GroupMember.Group != null )
+                                .Select( m => m.GroupMember ) )
+                            {
+                                groupMemberIds.Add( groupMember.Id );
+                                GroupLinks.AddOrIgnore( groupMember.GroupId,
+                                    gGroupPlacements.AllowPaging ?
+                                        string.Format( "<a href='{0}'>{1}</a>",
+                                            LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } ),
+                                            groupMember.Group.Name ) : groupMember.Group.Name );
+                            }
+
+                            // If the campus column was selected to be displayed on grid, preload all the people's
+                            // campuses so that the databind does not need to query each row
+                            if ( preloadCampusValues )
+                            {
+                                PersonCampusIds = new Dictionary<int, List<int>>();
+
+                                Guid familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                                foreach ( var personCampusList in new GroupMemberService( rockContext )
+                                    .Queryable().AsNoTracking()
+                                    .Where( m =>
+                                        m.Group.GroupType.Guid == familyGroupTypeGuid &&
+                                        personIds.Contains( m.PersonId ) )
+                                    .GroupBy( m => m.PersonId )
+                                    .Select( m => new
+                                    {
+                                        PersonId = m.Key,
+                                        CampusIds = m
+                                            .Where( g => g.Group.CampusId.HasValue )
+                                            .Select( g => g.Group.CampusId.Value )
+                                            .ToList()
+                                    } ) )
+                                {
+                                    PersonCampusIds.Add( personCampusList.PersonId, personCampusList.CampusIds );
+                                }
+                            }
+
+                            // If there are any attributes that were selected to be displayed, we're going 
+                            // to try and read all attribute values in one query and then put them into a 
+                            // custom grid ObjectList property so that the AttributeField columns don't need 
+                            // to do the LoadAttributes and querying of values for each row/column
+                            if ( personAttributesIds.Any() || groupMemberAttributesIds.Any() || registrantAttributeIds.Any() )
+                            {
+
+                                // Query the attribute values for all rows and attributes
+                                var attributeValues = new AttributeValueService( rockContext )
+                                    .Queryable( "Attribute" ).AsNoTracking()
+                                    .Where( v =>
+                                        v.EntityId.HasValue &&
+                                        (
+                                            (
+                                                personAttributesIds.Contains( v.AttributeId ) &&
+                                                personIds.Contains( v.EntityId.Value )
+                                            ) ||
+                                            (
+                                                groupMemberAttributesIds.Contains( v.AttributeId ) &&
+                                                groupMemberIds.Contains( v.EntityId.Value )
+                                            ) ||
+                                            (
+                                                registrantAttributeIds.Contains( v.AttributeId ) &&
+                                                registrantIds.Contains( v.EntityId.Value )
+                                            )
+                                        )
+                                    )
+                                    .ToList();
+
+                                // Get the attributes to add to each row's object
+                                var attributes = new Dictionary<string, AttributeCache>();
+                                RegistrantFields
+                                        .Where( f => f.Attribute != null )
+                                        .Select( f => f.Attribute )
+                                        .ToList()
+                                    .ForEach( a => attributes
+                                        .Add( a.Id.ToString() + a.Key, a ) );
+
+                                // Initialize the grid's object list 
+                                gGroupPlacements.ObjectList = new Dictionary<string, object>();
+
+                                // Loop through each of the current page's registrants and build an attribute
+                                // field object for storing attributes and the values for each of the registrants
+                                foreach ( var registrant in currentPageRegistrants )
+                                {
+                                    // Create a row attribute object 
+                                    var attributeFieldObject = new AttributeFieldObject();
+
+                                    // Add the attributes to the attribute object
+                                    attributeFieldObject.Attributes = attributes;
+
+                                    // Add any person attribute values to object
+                                    attributeValues
+                                        .Where( v =>
+                                            personAttributesIds.Contains( v.AttributeId ) &&
+                                            v.EntityId.Value == registrant.PersonAlias.PersonId )
+                                        .ToList()
+                                        .ForEach( v => attributeFieldObject.AttributeValues
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
+
+                                    // Add any group member attribute values to object
+                                    if ( registrant.GroupMemberId.HasValue )
+                                    {
+                                        attributeValues
+                                            .Where( v =>
+                                                groupMemberAttributesIds.Contains( v.AttributeId ) &&
+                                                v.EntityId.Value == registrant.GroupMemberId.Value )
+                                            .ToList()
+                                            .ForEach( v => attributeFieldObject.AttributeValues
+                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
+                                    }
+
+                                    // Add any registrant attribute values to object
+                                    attributeValues
+                                        .Where( v =>
+                                            registrantAttributeIds.Contains( v.AttributeId ) &&
+                                            v.EntityId.Value == registrant.Id )
+                                        .ToList()
+                                        .ForEach( v => attributeFieldObject.AttributeValues
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
+
+                                    // Add row attribute object to grid's object list
+                                    gGroupPlacements.ObjectList.Add( registrant.Id.ToString(), attributeFieldObject );
+                                }
+                            }
+                        }
+                    }
+
+                    gGroupPlacements.DataBind();
+                }
+            }
+
+
+
+        }
+
+        #endregion
+
         #endregion
 
         #region Helper Classes
@@ -2721,5 +3176,5 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
-}
+    }
 }

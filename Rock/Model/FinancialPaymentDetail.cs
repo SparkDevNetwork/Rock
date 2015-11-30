@@ -230,6 +230,22 @@ namespace Rock.Model
                 ExpirationYearEncrypted = Encryption.EncryptString( ccPaymentInfo.ExpirationDate.Year.ToString() );
                 BillingLocationId = newLocation != null ? newLocation.Id : (int?)null;
             }
+            else if ( paymentInfo is SwipePaymentInfo )
+            {
+                var swipePaymentInfo = (SwipePaymentInfo)paymentInfo;
+
+                if ( changes != null )
+                {
+                    string oldNameOnCard = Encryption.DecryptString( NameOnCardEncrypted );
+                    History.EvaluateChange( changes, "Name on Card", oldNameOnCard, swipePaymentInfo.NameOnCard );
+                    History.EvaluateChange( changes, "Expiration Month", Encryption.DecryptString( ExpirationMonthEncrypted ), swipePaymentInfo.ExpirationDate.Month.ToString() );
+                    History.EvaluateChange( changes, "Expiration Year", Encryption.DecryptString( ExpirationYearEncrypted ), swipePaymentInfo.ExpirationDate.Year.ToString() );
+                }
+
+                NameOnCardEncrypted = Encryption.EncryptString( swipePaymentInfo.NameOnCard );
+                ExpirationMonthEncrypted = Encryption.EncryptString( swipePaymentInfo.ExpirationDate.Month.ToString() );
+                ExpirationYearEncrypted = Encryption.EncryptString( swipePaymentInfo.ExpirationDate.Year.ToString() );
+            }
         }
 
         #endregion

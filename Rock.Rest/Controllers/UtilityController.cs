@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Web.Http;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
@@ -52,6 +54,32 @@ namespace Rock.Rest.Controllers
         {
             string textValue = SlidingDateRangePicker.FormatDelimitedValues( string.Format( "{0}|{1}|{2}||", slidingDateRangeType, number, timeUnitType ) );
             return textValue;
+        }
+
+        /// <summary>
+        /// Gets the campus context.
+        /// </summary>
+        /// <returns></returns>
+        [System.Web.Http.Route( "api/Utility/GetCampusContext" )]
+        [HttpGet]
+        public int GetCampusContext()
+        {
+            var campusCookieCypher = System.Web.HttpContext.Current.Request.Cookies["Rock_Context"].Values["Rock.Model.Campus"];
+            var publicKey = Rock.Security.Encryption.DecryptString( campusCookieCypher ).Split( '|' )[1];
+
+            string[] idParts = publicKey.Split( '>' );
+            if ( idParts.Length == 2 )
+            {
+                int id = idParts[0].AsInteger();
+                Guid guid = idParts[1].AsGuid();
+                var campus = CampusCache.Read( guid );
+                if ( campus != null )
+                {
+                    return campus.Id;
+                }
+            }
+
+            return 0;
         }
     }
 }

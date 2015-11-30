@@ -100,6 +100,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<BackgroundCheck>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, BackgroundCheck.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<BackgroundCheck>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, BackgroundCheck.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.CaseWorkerPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
@@ -323,6 +335,12 @@ namespace Rock.Model
             }  
  
             if ( new Service<ConnectionOpportunityCampus>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunityCampus.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<ConnectionOpportunityCampus>( Context ).Queryable().Any( a => a.DefaultConnectorPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionOpportunityCampus.FriendlyTypeName );
                 return false;

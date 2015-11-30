@@ -101,6 +101,7 @@ namespace Rock.Address
                             location.Street1 = candidate.delivery_line_1;
                             location.Street2 = candidate.delivery_line_2;
                             location.City = candidate.components.city_name;
+                            location.County = candidate.metadata.county_name;
                             location.State = candidate.components.state_abbreviation;
                             location.PostalCode = candidate.components.zipcode + "-" + candidate.components.plus4_code;
                             location.StandardizedDateTime = RockDateTime.Now;
