@@ -1,0 +1,111 @@
+Church Logo Here</br>
+</br>
+</br>
+
+Central Christian Church</br>
+933 N. Lindsay Rd.</br>
+Mesa, AZ 85213</br>
+</br>
+
+{% assign sameName = true %}
+{% for person in GivingPeople %}
+  {% if person.LastName != CurrentPerson.LastName %}
+    {% assign sameName = false %}
+  {% endif %}
+{% endfor %}
+
+{% if sameName != true %}
+  {{ GivingPeople | Map:'FullName' | Join:', ' | ReplaceLast:',',' and' }}</br>
+{% else %}
+  {{ GivingPeople | Map:'NickName' | Join:', ' | ReplaceLast:',',' and' }} {{ CurrentPerson.LastName }}</br>
+{% endif %}
+
+{{ CurrentPerson | Address:'Home','[[Street1]] [[Street2]]</br>[[City]], [[State]] [[PostalCode]]' }}</br>
+</br>
+
+Dear {{ GivingPeople | Map:'NickName' | Join:', ' | ReplaceLast:',',' and' }},</br>
+</br>
+On behalf of Central Christian Church, thank you for your faithful giving.</br>
+</br>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h1 class="panel-title">
+       Contributions
+    </h1>
+  </div>
+  <div class="panel-body">
+    <div>
+      <div class="row">
+        <div class="col-md-3">
+          <b>Date</b>
+        </div>
+        <div class="col-md-3">
+          <b>Type</b>
+        </div>
+        <div class="col-md-3">
+          <b>Amount</b>
+        </div>
+        <div class="col-md-3">
+          <b>Fund(s)</b>
+        </div>
+      </div>
+      </br>
+      {% for transaction in Transactions %}
+      <div class="row">
+        <div class="col-md-3">
+          {{ transaction.Date | Date:'dd/MM/yyyy' }}
+        </div>
+        <div class="col-md-3">
+          {{ transaction.Type }}
+        </div>
+        <div class="col-md-3">
+          {{ transaction.Amount }}
+        </div>
+        <div class="col-md-3">
+          {% for fund in transaction.Funds %}
+          <div class="row">
+            {{ fund.Fund}} : {{ fund.Amount | FormatAsCurrency }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      </br>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h1 class="panel-title">
+           Fund Total(s)
+        </h1>
+      </div>
+      <div class="panel-body">
+        {% for total in Totals %}
+        <div class="row" style="text-align:right">
+          <div class="col-md-6">
+            <b>{{ total.AccountName }}</b>
+          </div>
+          <div class="col-md-6">
+            {{ total.TotalAmount | FormatAsCurrency }}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="panel-footer">
+        <div style="text-align:right">
+          <b>Total:</b> {{ FinalTotal | FormatAsCurrency }}
+        </div> 
+      </div>
+    </div>
+  </div>
+</div>
+</br>
+
+Thank you for your continued generous support of the ministry of Central Christian Church! "We have not provided you with any goods or services in exchange for this contribution. We have provided you with intangible religious benefits only and consistent with the tenets of our faith and practice, incidental tangible benefits."</br>
+</br>
+For your convenience you can give online and view your contributions. Go to centralaz.com and click on give. If you have any questions or concerns regarding your contributions please contact Marla Johnson at 480-305-7500 Ext 2226 (Gilbert/Queen Creek/Ahwatukee) or Sylvia Greason at 480-924-4946 Ext 248 (Mesa).</br>
