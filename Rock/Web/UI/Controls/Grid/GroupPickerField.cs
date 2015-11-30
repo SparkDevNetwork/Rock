@@ -211,6 +211,9 @@ namespace Rock.Web.UI.Controls
         internal event EventHandler<GroupPickerRowEventArgs> GroupPickerSelect;
     }
 
+    /// <summary>
+    /// Event argument for Group Picker field
+    /// </summary>
     public class GroupPickerRowEventArgs : RowEventArgs
     {
         /// <summary>
