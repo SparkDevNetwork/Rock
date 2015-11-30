@@ -102,16 +102,18 @@ END
 
 
             // DT: Update all global attribute lava mergfields in the attribute defaultvalue and attributevalue value fields to use the new syntax.
-            Sql(@"
-	-- Get all the affected attributes ( to make updates in cursor faster )
+            Sql( @"
+	-- Get all theaffected attributes ( to make updates in cursor faster )
+    DECLARE @AttributeIds TABLE ( Id int )
+    INSERT INTO @AttributeIds
 	SELECT [Id]
-	INTO #AttributeIds
 	FROM [Attribute]
 	WHERE [DefaultValue] LIKE '%GlobalAttribute.%'
 
 	-- Get all the affected attribute values ( to make updates in cursor faster )
+    DECLARE @AttributeValueIds TABLE ( Id int )
+    INSERT INTO @AttributeValueIds
 	SELECT [Id]
-	INTO #AttributeValueIds
 	FROM [AttributeValue]
 	WHERE [Value] LIKE '%GlobalAttribute.%'
 
@@ -149,13 +151,13 @@ END
 			-- Update the attribute default values
 			UPDATE [Attribute] 
 			SET [DefaultValue] = REPLACE([DefaultValue], @OldWay, @NewWay) 
-			WHERE [Id] IN ( SELECT [Id] FROM #AttributeIds )
+			WHERE [Id] IN ( SELECT [Id] FROM @AttributeIds )
 			AND [DefaultValue] LIKE '%' + @OldWay + '%'
 
 			-- Udpate the attribute values
 			UPDATE [AttributeValue] 
 			SET [Value] = REPLACE([Value], @OldWay, @NewWay) 
-			WHERE [Id] IN ( SELECT [Id] FROM #AttributeValueIds )
+			WHERE [Id] IN ( SELECT [Id] FROM @AttributeValueIds )
 			AND [Value] LIKE '%' + @OldWay + '%'
 		
 			FETCH NEXT FROM RockCursor
@@ -168,8 +170,6 @@ END
 	CLOSE RockCursor
 	DEALLOCATE RockCursor
 
-	DROP TABLE #AttributeIds
-	DROP TABLE #AttributeValueIds
 " );
 
 
