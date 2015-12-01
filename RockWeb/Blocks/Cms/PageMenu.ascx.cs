@@ -31,7 +31,6 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.Web;
 
 
 namespace RockWeb.Blocks.Cms
@@ -49,7 +48,6 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "Enable Debug", "Flag indicating that the control should output the page data that will be passed to Liquid for parsing.", false )]
     [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false )]
     [KeyValueListField( "Include Page List", "List of pages to include in the Lava. Any ~/ will be resolved by Rock. Enable debug for assistance. Example 'Give Now' with '~/page/186' or 'Me' with '~/MyAccount'.", false, "", "Title", "Link" )]
-    [IntegerField( "Cache Duration", "The length of time (in minutes) that the menu data is stored in cache. If this value is 0, the feed will not be cached. Default is 20 minutes", false, 20 )]
 
     public partial class PageMenu : RockBlock, ISecondaryBlock
     {
@@ -127,19 +125,19 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 // Get list of pages in current page's heirarchy
-                var pageHierarchy = new List<int>();
+                var pageHeirarchy = new List<int>();
                 if ( currentPage != null )
                 {
-                    pageHierarchy = currentPage.GetPageHierarchy().Select( p => p.Id ).ToList();
+                    pageHeirarchy = currentPage.GetPageHierarchy().Select( p => p.Id ).ToList();
                 }
 
                 // add context to merge fields
                 var contextEntityTypes = RockPage.GetContextEntityTypes();
                 var contextObjects = new Dictionary<string, object>();
-                foreach ( var contextEntityType in contextEntityTypes )
+                foreach ( var conextEntityType in contextEntityTypes )
                 {
-                    var contextObject = RockPage.GetCurrentContext( contextEntityType );
-                    contextObjects.Add( contextEntityType.FriendlyName, contextObject );
+                    var contextObject = RockPage.GetCurrentContext( conextEntityType );
+                    contextObjects.Add( conextEntityType.FriendlyName, contextObject );
                 }
 
                 var pageProperties = new Dictionary<string, object>();
@@ -148,39 +146,10 @@ namespace RockWeb.Blocks.Cms
                 pageProperties.Add( "Site", GetSiteProperties( RockPage.Site ) );
                 pageProperties.Add( "IncludePageList", GetIncludePageList() );
 
-                var cacheMinutes = GetAttributeValue( "CacheDuration" ).AsInteger();
-                Dictionary<string, object> menuProperties;
-
-                if ( cacheMinutes > 0 )
+                using ( var rockContext = new RockContext() )
                 {
-                    var personId = CurrentPersonId.HasValue ? CurrentPersonId.ToString() : "anonymous";
-                    var cacheKey = "rootPage.GetMenuProperties" + personId;
-                    var cache = HttpContext.Current.Cache;
-                    menuProperties = cache.Get( cacheKey ) as Dictionary<string, object>;
-
-                    if ( menuProperties == null )
-                    {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            menuProperties = rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHierarchy, pageParameters, queryString );
-                        }
-
-                        var absoluteTimeout = System.Web.Caching.Cache.NoAbsoluteExpiration;
-                        var slidingTimeout = TimeSpan.FromMinutes( cacheMinutes );
-                        var priority = System.Web.Caching.CacheItemPriority.AboveNormal;
-                        cache.Add( cacheKey, menuProperties, null, absoluteTimeout, slidingTimeout, priority, null );
-                    }
+                    pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
                 }
-                else
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        menuProperties = rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHierarchy, pageParameters, queryString );
-                    }
-                }
-
-                pageProperties.Add( "Page", menuProperties );           
-
                 string content = GetTemplate().Render( Hash.FromDictionary( pageProperties ) );
 
                 // check for errors
