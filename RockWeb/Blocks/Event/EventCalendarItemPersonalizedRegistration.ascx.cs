@@ -171,6 +171,7 @@ namespace RockWeb.Blocks.Event
             registration.PersonAliasId = person.PrimaryAliasId;
             registration.FirstName = person.NickName;
             registration.LastName = person.LastName;
+            registration.IsTemporary = true;
 
             // add registrants
             foreach ( int registrantId in cblRegistrants.SelectedValuesAsInt )
