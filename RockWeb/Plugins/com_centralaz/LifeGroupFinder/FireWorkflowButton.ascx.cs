@@ -69,31 +69,36 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                     {
                         using ( var rockContext = new RockContext() )
                         {
-                            var workflowTypeService = new WorkflowTypeService( rockContext );
-                            foreach ( string guidValue in workflowActions.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                            var group = new GroupService( rockContext ).Get( groupId.Value );
+                            if ( group != null )
                             {
-                                Guid? guid = guidValue.AsGuidOrNull();
-                                if ( guid.HasValue )
+                                var workflowTypeService = new WorkflowTypeService( rockContext );
+                                foreach ( string guidValue in workflowActions.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                                 {
-                                    var workflowType = workflowTypeService.Get( guid.Value );
-                                    if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                                    Guid? guid = guidValue.AsGuidOrNull();
+                                    if ( guid.HasValue )
                                     {
-                                        string url = string.Format( "~/WorkflowEntry/{0}?GroupId={1}", workflowType.Id, groupId );
-                                        workflowList.Add( new LeaderToolboxWorkflow
+                                        var workflowType = workflowTypeService.Get( guid.Value );
+                                        if ( workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                                         {
-                                            Name = workflowType.Name,
-                                            Url = ResolveRockUrl( url )
-                                        } );
+                                            string url = string.Format( "~/WorkflowEntry/{0}?GroupId={1}", workflowType.Id, groupId );
+                                            workflowList.Add( new LeaderToolboxWorkflow
+                                            {
+                                                Name = workflowType.Name,
+                                                Url = ResolveRockUrl( url )
+                                            } );
+                                        }
                                     }
+                                }
+
+                                if ( workflowList.Any() && group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                                {
+                                    rptLeaderWorkflows.Visible = true;
+                                    rptLeaderWorkflows.DataSource = workflowList.ToList();
+                                    rptLeaderWorkflows.DataBind();
                                 }
                             }
 
-                            if ( workflowList.Any() )
-                            {
-                                rptLeaderWorkflows.Visible = true;
-                                rptLeaderWorkflows.DataSource = workflowList.ToList();
-                                rptLeaderWorkflows.DataBind();
-                            }
                         }
                     }
                 }
