@@ -222,7 +222,8 @@ namespace RockWeb.Blocks.Event
 
                 if ( registration != null )
                 {
-                    if ( !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                    if ( !UserCanEdit &&
+                        !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                     {
                         mdDeleteWarning.Show( "You are not authorized to delete this registration.", ModalAlertType.Information );
                         return;
@@ -863,7 +864,8 @@ namespace RockWeb.Blocks.Event
 
                     if ( registrant != null )
                     {
-                        if ( !registrant.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                        if ( !UserCanEdit &&
+                            !registrant.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                         {
                             mdDeleteWarning.Show( "You are not authorized to delete this registrant.", ModalAlertType.Information );
                             return;
@@ -939,6 +941,8 @@ namespace RockWeb.Blocks.Event
 
         private void LoadState()
         {
+            EditAllowed = UserCanEdit;
+
             if ( !RegistrationInstanceId.HasValue )
             {
                 Title = "New Registration";
@@ -958,10 +962,10 @@ namespace RockWeb.Blocks.Event
                         lWizardTemplateName.Text = Registration.RegistrationInstance.RegistrationTemplate.Name;
                         lWizardInstanceName.Text = Registration.RegistrationInstance.Name;
                         lWizardRegistrationName.Text = Registration.ToString();
+
+                        EditAllowed = EditAllowed || Registration.RegistrationInstance.IsAuthorized( Authorization.EDIT, CurrentPerson );
                     }
                 }
-
-                EditAllowed = IsUserAuthorized( Authorization.EDIT ) || ( Registration != null && Registration.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
 
                 if ( RegistrationTemplateState == null && RegistrationInstanceId.HasValue )
                 {
@@ -975,7 +979,8 @@ namespace RockWeb.Blocks.Event
                         lWizardInstanceName.Text = registrationInstance.Name;
                         lWizardRegistrationName.Text = "New Registration";
                         RegistrationTemplateState = registrationInstance.RegistrationTemplate;
-                        EditAllowed = EditAllowed || registrationInstance.RegistrationTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
+                        EditAllowed = EditAllowed || registrationInstance.IsAuthorized( Authorization.EDIT, CurrentPerson );
                     }
                 }
             }
