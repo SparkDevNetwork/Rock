@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "Enable Debug", "Flag indicating that the control should output the page data that will be passed to Liquid for parsing.", false )]
     [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false )]
     [KeyValueListField( "Include Page List", "List of pages to include in the Lava. Any ~/ will be resolved by Rock. Enable debug for assistance. Example 'Give Now' with '~/page/186' or 'Me' with '~/MyAccount'.", false, "", "Title", "Link" )]
-    [IntegerField( "Cache Duration", "The length of time (in minutes) that the menu data is stored in cache. If this value is 0, the feed will not be cached. Default is 20 minutes", false, 20 )]
+    [IntegerField( "Cache Duration", "The length of time (in minutes) that the menu data is stored in cache. If this value is 0, the feed will not be cached. Default is 20 minutes", false, 20, "Menu" )]
 
     public partial class PageMenu : RockBlock, ISecondaryBlock
     {
