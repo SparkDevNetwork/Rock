@@ -753,7 +753,7 @@ namespace RockWeb.Blocks.Finance
                                 if ( gateway != null )
                                 {
                                     string errorMessage = string.Empty;
-                                    refundTxn = gateway.Credit( txn, refundAmount, out errorMessage );
+                                    refundTxn = gateway.Credit( txn, refundAmount, tbRefundSummary.Text, out errorMessage );
                                     if ( refundTxn == null )
                                     {
                                         nbRefundError.Title = "Refund Error";
