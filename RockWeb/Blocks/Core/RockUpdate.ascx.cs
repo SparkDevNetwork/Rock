@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Core
         IEnumerable<IPackage> _availablePackages = null;
         SemanticVersion _installedVersion = new SemanticVersion( "0.0.0" );
         private int _numberOfAvailablePackages = 0;
-
+        private bool _isOkToProceed = false;
         #endregion
 
         #region Properties
@@ -134,6 +134,16 @@ namespace RockWeb.Blocks.Core
                 {
                     try
                     {
+                    	if ( CheckSqlServerVersion() )
+                    	{
+                        	_isOkToProceed = true;
+                    	}
+                	    else
+            	        {
+        	                nbVersionIssue.Visible = true;
+    	                    nbBackupMessage.Visible = false;
+	                    }
+	                    
                         _availablePackages = NuGetService.SourceRepository.FindPackagesById( _rockPackageId ).OrderByDescending( p => p.Version );
                         if ( IsUpdateAvailable() )
                         {
@@ -229,6 +239,15 @@ namespace RockWeb.Blocks.Core
                         lbInstall.AddCssClass( "btn-default" );
                         divPanel.AddCssClass( "panel-block" );
                     }
+
+                    if ( ! _isOkToProceed )
+                    {
+                        lbInstall.Enabled = false;
+                        lbInstall.AddCssClass( "btn-danger" );
+                        lbInstall.AddCssClass( "small" );
+                        lbInstall.AddCssClass( "btn-xs" );
+                        lbInstall.Text = "Requirements not met";
+                    }
                 }
             }
         }
@@ -247,6 +266,38 @@ namespace RockWeb.Blocks.Core
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Checks the SQL server version and returns false if not at the needed
+        /// level to proceed.
+        /// </summary>
+        /// <returns></returns>
+        private bool CheckSqlServerVersion()
+        {
+            bool isOk = false;
+            string sqlVersion = "";
+            try
+            {
+                sqlVersion = Rock.Data.DbService.ExecuteScaler( "SELECT SERVERPROPERTY('productversion')" ).ToString();
+                string[] versionParts = sqlVersion.Split( '.' );
+
+                int majorVersion = -1;
+                Int32.TryParse( versionParts[0], out majorVersion );
+
+                if ( majorVersion >= 11 )
+                {
+                    isOk = true;
+                }
+            }
+            catch
+            {
+                // This would be pretty bad, but regardless we'll just
+                // return the isOk (not) and let the caller proceed.
+            }
+
+            return isOk;
+        }
+
         /// <summary>
         /// Updates an existing Rock package to the given version and returns true if successful.
         /// </summary>
