@@ -197,6 +197,14 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
+                // remove approved status if they do not have approve access when editing
+                if ( !contentItem.IsAuthorized( Authorization.APPROVE, CurrentPerson ) )
+                {
+                    contentItem.ApprovedDateTime = null;
+                    contentItem.ApprovedByPersonAliasId = null;
+                    contentItem.Status = ContentChannelItemStatus.PendingApproval;
+                }
+
                 contentItem.LoadAttributes( rockContext );
                 Rock.Attribute.Helper.GetEditValues( phAttributes, contentItem );
 
