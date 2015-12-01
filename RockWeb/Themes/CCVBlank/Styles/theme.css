@@ -11175,7 +11175,7 @@ iframe.email-body {
   34. Checkbox
   35. Follow button
   36. Range Editors
-
+  37. Custom Buttons
   xx. Misc
 */
 .picker {
@@ -11446,6 +11446,9 @@ ul.rocktree ul {
 }
 .treeview {
   margin-bottom: 15px;
+}
+.treeview .treeview-frame {
+  padding-left: 0;
 }
 .treeview .treeview-actions {
   margin-bottom: 7.5px;
@@ -12860,6 +12863,9 @@ ul.list-group-panel .list-group-item:first-child,
 }
 .date-range-picker .input-group {
   margin-bottom: 6px;
+}
+.btn-copy-to-clipboard:focus {
+  outline: 0;
 }
 /*
     Used to manage styles for specific blocks.
