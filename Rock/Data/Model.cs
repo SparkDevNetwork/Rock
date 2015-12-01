@@ -340,6 +340,17 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Allows the security role.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="group">The group.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void AllowSecurityRole( string action, Group group, RockContext rockContext = null )
+        {
+            Security.Authorization.AllowSecurityRole( this, action, group, rockContext );
+        }
+
+        /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
         /// <remarks>

@@ -15,7 +15,11 @@
                 <h1 class="panel-title"><i class="fa fa-cloud-download"></i> Rock Update</h1>
             </div>
             <div class="panel-body">
-
+                 <Rock:NotificationBox ID="nbVersionIssue" runat="server" NotificationBoxType="Danger" Visible="false">
+                     <h2>Database Update Required</h2>
+                     <p>As of Rock McKinley v4, Rock requires SQL Server 2012 or greater.
+                         You will need to upgrade your database in order to proceed with the next update.</p>
+                 </Rock:NotificationBox>
                  <asp:Panel ID="pnlNoUpdates" runat="server">
                     <div class="well well-message">
                         <h1>Everything Is Shipshape</h1>
@@ -36,7 +40,7 @@
                     <Rock:NotificationBox runat="server" Title="Remember..." NotificationBoxType="Warning" ID="nbRepoWarning" Visible="false">
                         You're using a <b>beta</b> or <b>alpha</b> update repository.</Rock:NotificationBox>
 
-                    <Rock:NotificationBox runat="server" Title="Note" NotificationBoxType="Danger">
+                    <Rock:NotificationBox runat="server" Title="Note" NotificationBoxType="Danger" ID="nbBackupMessage">
                         We <em>strongly urge</em> you to backup your database and website before updating Rock.
                         The changes that are made during the update process can't be undone.
                         Also, be patient when updating. It takes anywhere from a few seconds
