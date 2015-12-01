@@ -201,9 +201,10 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="origTransaction">The original transaction.</param>
         /// <param name="amount">The amount.</param>
+        /// <param name="comment">The comment.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public abstract FinancialTransaction Credit( FinancialTransaction origTransaction, decimal amount, out string errorMessage );
+        public abstract FinancialTransaction Credit( FinancialTransaction origTransaction, decimal amount, string comment, out string errorMessage );
 
         /// <summary>
         /// Adds the scheduled payment.
