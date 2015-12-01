@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Data.Entity;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -93,7 +94,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             if ( year != null )
             {
                 var transactionDetailService = new FinancialTransactionDetailService( rockContext );
-                var qry = transactionDetailService.Queryable("FinancialTransaction,FinancialPaymentDetail")
+                var qry = transactionDetailService.Queryable("FinancialTransaction,FinancialPaymentDetail").AsNoTracking()
                     .Where( a => a.Transaction.TransactionDateTime.HasValue );
 
                 var targetPerson = CurrentPerson;

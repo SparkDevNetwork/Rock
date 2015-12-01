@@ -80,7 +80,7 @@ namespace com.centralaz.Prayer.Jobs
                             Byte[] b = System.Text.Encoding.UTF8.GetBytes( prayerRequest.Email );
                             string encodedEmail = Convert.ToBase64String( b );
 
-                            String relativeUrl = String.Format( "/page/{0}?Guid={1}&Key={2}", pageId, prayerRequest.Guid, encodedEmail );
+                            String relativeUrl = String.Format( "page/{0}?Guid={1}&Key={2}", pageId, prayerRequest.Guid, encodedEmail );
 
                             mergeFields.Add( "MagicUrl", relativeUrl );
 
