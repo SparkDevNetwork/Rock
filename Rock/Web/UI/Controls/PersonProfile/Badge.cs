@@ -124,7 +124,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            string script = "$('.badge[data-toggle=\"tooltip\"]').tooltip({html: true});";
+            string script = "$('.badge[data-toggle=\"tooltip\"]').tooltip({html: true}); $('.badge[data-toggle=\"popover\"]').popover();";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "badge-popover", script, true );
 
         }
