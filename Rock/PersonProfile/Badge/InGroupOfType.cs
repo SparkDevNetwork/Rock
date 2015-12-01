@@ -63,7 +63,7 @@ namespace Rock.PersonProfile.Badge
                 Guid groupTypeGuid = GetAttributeValue( badge, "GroupType" ).AsGuid();
                 if ( groupTypeGuid != Guid.Empty )
                 {
-                    writer.Write( String.Format( "<div class='badge badge-ingroupoftype badge-id-{0}' data-original-title=''>", badge.Id ) );
+                    writer.Write( String.Format( "<div class='badge badge-ingroupoftype badge-id-{0}' data-toggle='tooltip' data-original-title=''>", badge.Id ) );
 
                     writer.Write( "</div>" );
 
