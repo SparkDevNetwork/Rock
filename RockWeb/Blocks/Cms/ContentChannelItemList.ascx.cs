@@ -39,7 +39,9 @@ namespace RockWeb.Blocks.Cms
     [Description("Lists content channel items.")]
 
     [ContextAware]
-    [LinkedPage("Detail Page")]
+    [LinkedPage("Detail Page", order:0)]
+    [BooleanField("Filter Items For Current User", "Filters the items by those created by the current logged in user.", false, order: 1)]
+    [BooleanField("Show Filters", "Allows you to show/hide the grids filters.", true, order: 2)]
     public partial class ContentChannelItemList : RockBlock, ISecondaryBlock
     {
         #region Fields
@@ -60,6 +62,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
+            // set person context
             var contextEntity = this.ContextEntity();
             if ( contextEntity != null )
             {
@@ -68,6 +71,14 @@ namespace RockWeb.Blocks.Cms
                     _person = contextEntity as Person;
                 }
             }
+
+            // set person if grid should be filtered by the current person
+            if ( GetAttributeValue( "FilterItemsForCurrentUser" ).AsBoolean() )
+            {
+                _person = CurrentPerson;
+            }
+
+            gfFilter.Visible = GetAttributeValue( "ShowFilters" ).AsBoolean();
             
             _channelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
             if ( _channelId != null )
