@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContributionStatementPreference.ascx.cs" Inherits="RockWeb.Plugins.com_CentralAZ.Utility.ContributionStatementPreference" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ContributionStatementPreference.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.Utility.ContributionStatementPreference" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>

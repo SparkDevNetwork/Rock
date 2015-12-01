@@ -29,7 +29,7 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Web.UI;
 
-namespace RockWeb.Plugins.com_CentralAZ.Utility
+namespace RockWeb.Plugins.com_centralaz.Utility
 {
     [DisplayName( "Contribution Statement Preference" )]
     [Category( "com_centralaz > Utility" )]
@@ -43,14 +43,9 @@ namespace RockWeb.Plugins.com_CentralAZ.Utility
     {
         #region Fields
 
-        // used for private variables
-        Person _person = null;
-
         #endregion
 
         #region Properties
-
-        // used for public / protected properties
 
         #endregion
 
@@ -65,12 +60,6 @@ namespace RockWeb.Plugins.com_CentralAZ.Utility
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            var contextEntity = this.ContextEntity();
-            if ( contextEntity != null )
-            {
-                _person = (Person)contextEntity;
-            }
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -136,42 +125,70 @@ namespace RockWeb.Plugins.com_CentralAZ.Utility
 
         private void BindOptionsToList()
         {
-            // Check configuration to make sure the attribute is valid and has a DefinedType for it's qualifier.
-            nbConfigurationError.Visible = false;
-            var personAttribute = AttributeCache.Read( GetAttributeValue( "FrequencyPreferenceAttributeGuid" ).AsGuid() );
-            if ( personAttribute == null )
+            try
+            {
+                // Check configuration to make sure the attribute is valid and has a DefinedType for it's qualifier.
+                nbConfigurationError.Visible = false;
+                Guid? frequencyAttribute = GetAttributeValue( "FrequencyPreferenceAttributeGuid" ).AsGuidOrNull();
+                if ( !frequencyAttribute.HasValue )
+                {
+                    nbConfigurationError.Visible = true;
+                    return;
+                }
+
+                var personAttribute = Rock.Web.Cache.AttributeCache.Read( frequencyAttribute.Value );
+                if ( personAttribute == null )
+                {
+                    nbConfigurationError.Visible = true;
+                    return;
+                }
+
+                hfAttributeKey.Value = personAttribute.Key;
+
+                if ( personAttribute.QualifierValues.Count > 0 )
+                {
+                    var qualifierValue = personAttribute.QualifierValues.First().Value;
+                    if ( qualifierValue == null || qualifierValue.Value == null )
+                    {
+                        nbConfigurationError.Visible = true;
+                        return;
+                    }
+
+                    var definedType = DefinedTypeCache.Read( int.Parse( qualifierValue.Value ) );
+                    if ( definedType == null )
+                    {
+                        nbConfigurationError.Visible = true;
+                        return;
+                    }
+
+                    // Bind the definedType to our radio button list
+                    BindToDefinedType( rblPreference, definedType, useDescriptionAsText: true );
+
+                    // set the person's current value as the selected one
+                    CurrentPerson.LoadAttributes();
+
+                    // The Guids that are put into the data list will be in lowercase as per
+                    // https://msdn.microsoft.com/en-us/library/97af8hh4(v=vs.110).aspx
+                    // so we need to make sure we're comparing with the lowercase of whatever
+                    // was stored.
+                    var personAttributeValueGuid = CurrentPerson.GetAttributeValue( hfAttributeKey.Value );
+                    if ( personAttributeValueGuid != null )
+                    {
+                        try
+                        {
+                            rblPreference.SelectedValue = personAttributeValueGuid.ToLower();
+                        }
+                        catch
+                        { }
+                    }
+                }
+            }
+            catch ( Exception ex )
             {
                 nbConfigurationError.Visible = true;
-                return;
+                nbConfigurationError.Text = "There appears to be a problem with something we did not expect. We've reported this to the system administrators.";
+                ExceptionLogService.LogException( new Exception( "Unable to load Contribution Statement Preference block.", ex ), null );
             }
-
-            hfAttributeKey.Value = personAttribute.Key;
-
-            var qualifierValue = personAttribute.QualifierValues.First().Value;
-            if ( qualifierValue == null || qualifierValue.Value == null )
-            {
-                nbConfigurationError.Visible = true;
-                return;
-            }
-
-            var definedType = DefinedTypeCache.Read( int.Parse( qualifierValue.Value ) );
-            if ( definedType == null )
-            {
-                nbConfigurationError.Visible = true;
-                return;
-            }
-
-            // Bind the definedType to our radio button list
-            BindToDefinedType( rblPreference, definedType, useDescriptionAsText: true );
-
-            // set the person's current value as the selected one
-            CurrentPerson.LoadAttributes();
-            // The Guids that are put into the data list will be in lowercase as per
-            // https://msdn.microsoft.com/en-us/library/97af8hh4(v=vs.110).aspx
-            // so we need to make sure we're comparing with the lowercase of whatever
-            // was stored.
-            var personAttributeValueGuid = CurrentPerson.GetAttributeValue( hfAttributeKey.Value ).ToLower();
-            rblPreference.SelectedValue = personAttributeValueGuid;
         }
 
         #endregion
