@@ -262,16 +262,6 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                // if TargetPerson wasn't set by Impersonation, try to get it from the PersonId parameter (if specified)
-                if ( TargetPerson == null )
-                {
-                    int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
-                    if ( personId.HasValue )
-                    {
-                        TargetPerson = new PersonService( rockContext ).Get( personId.Value );
-                    }
-                }
-
                 if ( TargetPerson == null )
                 {
                     TargetPerson = CurrentPerson;
