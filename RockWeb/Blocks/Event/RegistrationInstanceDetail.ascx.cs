@@ -310,21 +310,26 @@ namespace RockWeb.Blocks.Event
                 {
                     int registrationTemplateId = registrationInstance.RegistrationTemplateId;
 
-                    if ( !registrationInstance.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                    if ( UserCanEdit ||
+                         registrationInstance.IsAuthorized( Authorization.EDIT, CurrentPerson ) ||
+                         registrationInstance.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                    {
+                        rockContext.WrapTransaction( () =>
+                        {
+                            new RegistrationService( rockContext ).DeleteRange( registrationInstance.Registrations );
+                            service.Delete( registrationInstance );
+                            rockContext.SaveChanges();
+                        } );
+
+                        var qryParams = new Dictionary<string, string> { { "RegistrationTemplateId", registrationTemplateId.ToString() } };
+                        NavigateToParentPage( qryParams );
+                    }
+                    else
                     {
                         mdDeleteWarning.Show( "You are not authorized to delete this registration instance.", ModalAlertType.Information );
                         return;
                     }
 
-                    rockContext.WrapTransaction( () =>
-                    {
-                        new RegistrationService( rockContext ).DeleteRange( registrationInstance.Registrations );
-                        service.Delete( registrationInstance );
-                        rockContext.SaveChanges();
-                    } );
-
-                    var qryParams = new Dictionary<string, string> { { "RegistrationTemplateId", registrationTemplateId.ToString() } };
-                    NavigateToParentPage( qryParams );
                 }
             }
         }
@@ -624,7 +629,9 @@ namespace RockWeb.Blocks.Event
                 {
                     int registrationInstanceId = registration.RegistrationInstanceId;
 
-                    if ( !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                    if ( !UserCanEdit && 
+                        !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) &&
+                        !registration.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
                     {
                         mdDeleteWarning.Show( "You are not authorized to delete this registration.", ModalAlertType.Information );
                         return;
@@ -1401,7 +1408,7 @@ namespace RockWeb.Blocks.Event
 
                 nbEditModeMessage.Text = string.Empty;
 
-                // User must have 'Edit' rights to block, or 'Administrate' rights to instance
+                // User must have 'Edit' rights to block, or 'Edit' or 'Administrate' rights to instance
                 if ( !canEdit )
                 {
                     readOnly = true;
@@ -1412,11 +1419,13 @@ namespace RockWeb.Blocks.Event
                 if ( readOnly )
                 {
                     btnEdit.Visible = false;
+                    btnDelete.Visible = false;
                     ShowReadonlyDetails( registrationInstance );
                 }
                 else
                 {
                     btnEdit.Visible = true;
+                    btnDelete.Visible = true;
 
                     if ( registrationInstance.Id > 0 )
                     {
