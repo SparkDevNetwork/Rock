@@ -108,7 +108,7 @@ namespace Rock.PersonProfile.Badge
                 }
                 
                 //Badge HTML
-                writer.Write( String.Format( "<div class='badge badge-disc badge-id-{0}' data-original-title='{1}'>", badge.Id, description ) );
+                writer.Write( String.Format( "<div class='badge badge-disc badge-id-{0}' data-toggle='tooltip' data-original-title='{1}'>", badge.Id, description ) );
                 writer.Write( "<ul class='badge-disc-chart list-unstyled'>" );
                 writer.Write( string.Format( "<li class='badge-disc-d {1}' title='D'><span style='height:{0}%'></span></li>", Math.Floor( (double)( (double)discScores[0].Value / (double)MAX ) * 100 ), ( discStrength == 0 ) ? "badge-disc-primary" : String.Empty ) );
                 writer.Write( string.Format( "<li class='badge-disc-i {1}' title='I'><span style='height:{0}%'></span></li>", Math.Floor( (double)( (double)discScores[1].Value / (double)MAX ) * 100 ), ( discStrength == 1 ) ? "badge-disc-primary" : String.Empty ) );
