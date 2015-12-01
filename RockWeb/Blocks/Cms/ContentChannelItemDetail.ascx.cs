@@ -43,7 +43,8 @@ namespace RockWeb.Blocks.Cms
     [Category("CMS")]
     [Description("Displays the details for a content channel item.")]
 
-    [LinkedPage( "Event Occurrence Page" )]
+    [LinkedPage( "Event Occurrence Page", order: 0 )]
+    [BooleanField( "Show Delete Button", "Shows a delete button for the current item.", false, order: 1 )]
     public partial class ContentChannelItemDetail : RockBlock, IDetailBlock
     {
 
@@ -248,6 +249,34 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Handles the Click event of the lbDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbDelete_Click( object sender, EventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            var contentItemService = new ContentChannelItemService( rockContext );
+            ContentChannelItem contentItem = null;
+
+            int contentItemId = hfId.Value.AsInteger();
+            if ( contentItemId != 0 )
+            {
+                contentItem = contentItemService
+                    .Queryable( "ContentChannel,ContentChannelType" )
+                    .FirstOrDefault( t => t.Id == contentItemId );
+            }
+
+            if (contentItem != null )
+            {
+                contentItemService.Delete( contentItem );
+                rockContext.SaveChanges();
+            }
+
+            ReturnToParentPage();
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbCancel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -348,6 +377,9 @@ namespace RockWeb.Blocks.Cms
                 ShowApproval( contentItem );
 
                 pnlEditDetails.Visible = true;
+
+                // show/hide the delete button
+                lbDelete.Visible = (GetAttributeValue( "ShowDeleteButton" ).AsBoolean() && contentItem.Id != 0);
 
                 hfId.Value = contentItem.Id.ToString();
                 hfChannelId.Value = contentItem.ContentChannelId.ToString();
@@ -523,6 +555,5 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
-
-}
+    }
 }
