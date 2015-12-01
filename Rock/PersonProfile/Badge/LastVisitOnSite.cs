@@ -68,7 +68,7 @@ namespace Rock.PersonProfile.Badge
                         detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?Person={1}&SiteId={2}", pageId, Person.UrlEncodedKey, siteId ) );
                     }
 
-                    writer.Write( String.Format( "<div class='badge badge-lastvisitonsite badge-id-{0}' data-original-title=''>", badge.Id ) );
+                    writer.Write( String.Format( "<div class='badge badge-lastvisitonsite badge-id-{0}' data-toggle='tooltip' data-original-title=''>", badge.Id ) );
 
                     writer.Write( "</div>" );
 

@@ -93,11 +93,11 @@ namespace Rock.PersonProfile.Badge
 
                 if (spanValue == "New")
                 {
-                    writer.Write(String.Format("<div class='badge badge-attendingduration' data-original-title='{0} is new this week.'>", Person.NickName));
+                    writer.Write(String.Format( "<div class='badge badge-attendingduration' data-toggle='tooltip' data-original-title='{0} is new this week.'>", Person.NickName));
                 }
                 else
                 {
-                    writer.Write(String.Format("<div class='badge badge-attendingduration' data-original-title='{0} has attended for {1} {2}.'>", Person.NickName, spanValue, spanUnit));
+                    writer.Write(String.Format( "<div class='badge badge-attendingduration' data-toggle='tooltip' data-original-title='{0} has attended for {1} {2}.'>", Person.NickName, spanValue, spanUnit));
                 }
 
                 writer.Write(String.Format("<div class='duration-metric {0}'>", cssClass));
