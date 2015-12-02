@@ -5989,6 +5989,7 @@ h2 {
 }
 .module-red .nav-pills li {
   margin-bottom: 7.5px;
+  float: none;
 }
 .module-red .nav-pills li:last-child {
   margin-bottom: 0;
