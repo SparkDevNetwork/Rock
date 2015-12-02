@@ -207,6 +207,19 @@
                         <Rock:RockRating ID="rrRating" runat="server" Label="Rock:RatingInput" /><br />
                     </div>
 
+                    <a id="RangeSlider"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:RangeSlider ID="rsSlider" runat="server" Label="Rock:RangeSlider" MaxValue="250" MinValue="125" SelectedValue="200" />
+                        <br />
+                    </div>
+
+                    <div runat="server" class="r-example">
+                        <Rock:RangeSlider ID="rsSlider2" runat="server" Label="Rock:RangeSlider" />
+                        <br />
+                    </div>
+
+                    <asp:LinkButton ID="lbTestSlider" runat="server" CssClass="btn btn-default" Text="Test" OnClick="lbTestSlider_Click" />
+
                     <a id="Pickers"></a>
                     <h1 runat="server">Pickers</h1>
 
