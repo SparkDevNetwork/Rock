@@ -81,9 +81,10 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="transaction">The transaction.</param>
         /// <param name="amount">The amount.</param>
+        /// <param name="comment">The comment.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override FinancialTransaction Credit( FinancialTransaction transaction, decimal amount, out string errorMessage )
+        public override FinancialTransaction Credit( FinancialTransaction transaction, decimal amount, string comment, out string errorMessage )
         {
             errorMessage = string.Empty;
 
