@@ -24,9 +24,9 @@ using Rock;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with numerical validation 
+    /// NumberUpDown control
     /// </summary>
-    [ToolboxData( "<{0}:NumberBox runat=server></{0}:NumberBox>" )]
+    [ToolboxData( "<{0}:NumberUpDown runat=server></{0}:NumberUpDown>" )]
     public class NumberUpDown : CompositeControl, IRockControl, IDisplayRequiredIndicator
     {
         #region IRockControl implementation
