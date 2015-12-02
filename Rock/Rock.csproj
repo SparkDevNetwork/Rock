@@ -534,6 +534,7 @@
     <Compile Include="Web\InternalContext.cs" />
     <Compile Include="Web\UI\Controls\Grid\GroupPickerField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
+    <Compile Include="Web\UI\Controls\RangeSlider.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />
     <Compile Include="Security\Authentication\Facebook.cs">
       <SubType>Code</SubType>
