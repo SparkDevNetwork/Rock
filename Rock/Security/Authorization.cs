@@ -956,6 +956,8 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="group">The group.</param>
+        /// <param name="specialRole">The special role.</param>
         /// <param name="rockContext">The rock context.</param>
         private static void MyAllow( ISecured entity, string action, 
             Person person = null, Group group = null, SpecialRole specialRole = SpecialRole.None, 
