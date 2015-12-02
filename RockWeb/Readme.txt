@@ -114,7 +114,7 @@ Rock McKinley 4.0
 + Added ability to delete a batch and all its transactions from the Check Scanner utility.
 + Fixed issue with pre/post delete triggers not firing when a column qualifier was specified.
 + Added new Lava filter to return the possessive form of the string (Ted -&gt; Ted's, Charles -&gt; Charles').
-+ Changed the Group Details block to require ‘Administrate’ access to view/edit Group Member Attributes.
++ Changed the Group Details block to require ï¿½Administrateï¿½ access to view/edit Group Member Attributes.
 + New Lava filter for returning a set of next date/times from an iCal string
 + Made Batch Id visible in Check Scanner Utility
 + Added ability to delete a scanned transaction in the Check Scanner Utility
