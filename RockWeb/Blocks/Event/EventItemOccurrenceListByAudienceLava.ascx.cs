@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.Event
 
                 // get event occurrences
                 var qry = new EventItemOccurrenceService( rockContext ).Queryable()
-                                            .Where( e => e.EventItem.EventItemAudiences.Any(a => a.DefinedValue.Guid == audienceGuid) );
+                                            .Where(e => e.EventItem.EventItemAudiences.Any(a => a.DefinedValue.Guid == audienceGuid) && e.EventItem.IsActive);
 
                 // filter occurrences for campus (always include the "All Campuses" events)
                 if ( GetAttributeValue( "UseCampusContext" ).AsBoolean() )
