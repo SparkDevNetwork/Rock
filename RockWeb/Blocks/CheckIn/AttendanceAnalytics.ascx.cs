@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.CheckIn
         #region Fields
 
         private RockContext _rockContext = null;
+        private bool FilterIncludedInURL = false;
 
         #endregion
 
@@ -60,6 +61,15 @@ namespace RockWeb.Blocks.CheckIn
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            // Setup for being able to copy text to clipboard
+            RockPage.AddScriptLink( this.Page, "~/Scripts/ZeroClipboard/ZeroClipboard.js" );
+            string script = string.Format( @"
+    var client = new ZeroClipboard( $('#{0}'));
+    $('#{0}').tooltip();
+", btnCopyToClipboard.ClientID );
+            ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
+            btnCopyToClipboard.Attributes["data-clipboard-target"] = hfFilterUrl.ClientID;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -124,7 +134,11 @@ namespace RockWeb.Blocks.CheckIn
                 LoadDropDowns();
                 try
                 {
-                    LoadSettingsFromUserPreferences();
+                    LoadSettings();
+                    if ( FilterIncludedInURL )
+                    {
+                        LoadChartAndGrids();
+                    }
                 }
                 catch ( Exception exception )
                 {
@@ -381,7 +395,7 @@ function(item) {
                 dataSourceParams.AddOrReplace( "groupIds", 0 );
             }
 
-            SaveSettingsToUserPreferences();
+            SaveSettings();
 
             lineChartDataSourceUrl += "?" + dataSourceParams.Select( s => string.Format( "{0}={1}", s.Key, s.Value ) ).ToList().AsDelimited( "&" );
 
@@ -416,7 +430,7 @@ function(item) {
         /// <summary>
         /// Saves the attendance reporting settings to user preferences.
         /// </summary>
-        private void SaveSettingsToUserPreferences()
+        private void SaveSettings()
         {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
@@ -454,6 +468,18 @@ function(item) {
             this.SetUserPreference( keyPrefix + "AttendeesFilterByPattern", string.Format( "{0}|{1}|{2}|{3}", tbPatternXTimes.Text, cbPatternAndMissed.Checked, tbPatternMissedXTimes.Text, drpPatternDateRange.DelimitedValues ), false );
 
             this.SaveUserPreferences( keyPrefix );
+
+            // Create URL for selected settings
+            var pageReference = CurrentPageReference;
+            foreach ( var setting in GetUserPreferences( keyPrefix ) )
+            {
+                string key = setting.Key.Substring( keyPrefix.Length );
+                pageReference.Parameters.AddOrReplace( key, setting.Value );
+            }
+
+            Uri uri = new Uri( Request.Url.ToString() );
+            hfFilterUrl.Value = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + pageReference.BuildUrl();
+            btnCopyToClipboard.Disabled = false;
         }
 
         /// <summary>
@@ -475,14 +501,16 @@ function(item) {
         /// <summary>
         /// Loads the attendance reporting settings from user preferences.
         /// </summary>
-        private void LoadSettingsFromUserPreferences()
+        private void LoadSettings()
         {
+            FilterIncludedInURL = false;
+
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
-            ddlAttendanceType.SelectedGroupTypeId = this.GetUserPreference( keyPrefix + "TemplateGroupTypeId" ).AsIntegerOrNull();
+            ddlAttendanceType.SelectedGroupTypeId = GetSetting( keyPrefix, "TemplateGroupTypeId" ).AsIntegerOrNull();
             BuildGroupTypesUI();
 
-            string slidingDateRangeSettings = this.GetUserPreference( keyPrefix + "SlidingDateRange" );
+            string slidingDateRangeSettings = GetSetting( keyPrefix, "SlidingDateRange" );
             if ( string.IsNullOrWhiteSpace( slidingDateRangeSettings ) )
             {
                 // default to current year
@@ -494,10 +522,10 @@ function(item) {
                 drpSlidingDateRange.DelimitedValues = slidingDateRangeSettings;
             }
 
-            dvpDataView.SetValue( this.GetUserPreference( keyPrefix + "DataView" ) );
+            dvpDataView.SetValue( GetSetting( keyPrefix, "DataView" ) );
 
-            hfGroupBy.Value = this.GetUserPreference( keyPrefix + "GroupBy" );
-            hfGraphBy.Value = this.GetUserPreference( keyPrefix + "GraphBy" );
+            hfGroupBy.Value = GetSetting( keyPrefix, "GroupBy" );
+            hfGraphBy.Value = GetSetting( keyPrefix, "GraphBy" );
 
             var campusIdList = new List<string>();
             string campusKey = keyPrefix + "CampusIds";
@@ -516,7 +544,7 @@ function(item) {
                 }
             }
 
-            var groupIdList = this.GetUserPreference( keyPrefix + "GroupIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            var groupIdList = GetSetting( keyPrefix, "GroupIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
 
             // if no groups are selected, default to showing all of them
             var selectAll = groupIdList.Count == 0;
@@ -530,13 +558,13 @@ function(item) {
                 }
             }
 
-            ShowBy showBy = this.GetUserPreference( keyPrefix + "ShowBy" ).ConvertToEnumOrNull<ShowBy>() ?? ShowBy.Chart;
+            ShowBy showBy = GetSetting( keyPrefix, "ShowBy" ).ConvertToEnumOrNull<ShowBy>() ?? ShowBy.Chart;
             DisplayShowBy( showBy );
 
-            ViewBy viewBy = this.GetUserPreference( keyPrefix + "ViewBy" ).ConvertToEnumOrNull<ViewBy>() ?? ViewBy.Attendees;
+            ViewBy viewBy = GetSetting( keyPrefix, "ViewBy" ).ConvertToEnumOrNull<ViewBy>() ?? ViewBy.Attendees;
             hfViewBy.Value = viewBy.ConvertToInt().ToString();
 
-            AttendeesFilterBy attendeesFilterBy = this.GetUserPreference( keyPrefix + "AttendeesFilterByType" ).ConvertToEnumOrNull<AttendeesFilterBy>() ?? AttendeesFilterBy.All;
+            AttendeesFilterBy attendeesFilterBy = GetSetting( keyPrefix, "AttendeesFilterByType" ).ConvertToEnumOrNull<AttendeesFilterBy>() ?? AttendeesFilterBy.All;
 
             switch ( attendeesFilterBy )
             {
@@ -557,8 +585,8 @@ function(item) {
                     break;
             }
 
-            ddlNthVisit.SelectedValue = this.GetUserPreference( keyPrefix + "AttendeesFilterByVisit" );
-            string attendeesFilterByPattern = this.GetUserPreference( keyPrefix + "AttendeesFilterByPattern" );
+            ddlNthVisit.SelectedValue = GetSetting( keyPrefix, "AttendeesFilterByVisit" );
+            string attendeesFilterByPattern = GetSetting( keyPrefix, "AttendeesFilterByPattern" );
             string[] attendeesFilterByPatternValues = attendeesFilterByPattern.Split( '|' );
             if ( attendeesFilterByPatternValues.Length == 4 )
             {
@@ -567,6 +595,24 @@ function(item) {
                 tbPatternMissedXTimes.Text = attendeesFilterByPatternValues[2];
                 drpPatternDateRange.DelimitedValues = attendeesFilterByPatternValues[3];
             }
+        }
+
+        /// <summary>
+        /// Gets the setting.
+        /// </summary>
+        /// <param name="prefix">The prefix.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        private string GetSetting( string prefix, string key )
+        {
+            string setting = Request.QueryString[key];
+            if ( setting != null )
+            {
+                FilterIncludedInURL = true;
+                return setting;
+            }
+
+            return this.GetUserPreference( prefix + key );
         }
 
         /// <summary>
