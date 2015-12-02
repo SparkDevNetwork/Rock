@@ -167,6 +167,11 @@
                         <Rock:NumberUpDown ID="nudExample" runat="server" Label="Rock:NumberUpDown" Minimum="0" Maximum="5" />
                     </div>
 
+                    <a id="NumberUpDown"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:RangeSlider ID="rsRangeSlider" runat="server" Label="Rock:RangeSlider" MinValue="0" MaxValue="100" />
+                    </div>
+
                     <a id="RockCheckBox"></a>
                     <div runat="server" class="r-example">
                         <Rock:RockCheckBox ID="cbExample" runat="server" Label="Rock:RockCheckBox" />
