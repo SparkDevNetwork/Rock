@@ -17,6 +17,7 @@ namespace RockInstallTools
         private static string requiredDotnetVersion = "4.5.1";
         private static double iisVersionRequired = 7.0;
         private static int minimumDatabaseSize = 500;
+        private static readonly int requiredDatabaseVersion = 11;
 
         // internet connection test method
         public static EnvironmentCheckResult ConnectedToInternetTest()
@@ -351,7 +352,7 @@ namespace RockInstallTools
                 int majorVersion = -1;
                 Int32.TryParse( versionParts[0], out majorVersion );
 
-                if ( majorVersion >= 10 )
+                if ( majorVersion >= requiredDatabaseVersion )
                 {
                     result.Success = true;
                 }
