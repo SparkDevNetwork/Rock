@@ -39,7 +39,7 @@ DECLARE @IsSystem int = 0, @Order int = 0,  @TextFieldTypeId int = 1, @True int 
 
 DECLARE @SmallGroupTypeId int, @SmallGroupMemberId int, @SmallGroupId int, @SmallGroupLeaderId int, 
 	@FuseGroupTypeId int, @FuseGroupMemberId int, @FuseGroupId int, @FuseGroupLeaderId int
-	
+
 -- use the Small Group grouptype that ships with core
 SELECT @SmallGroupTypeId = Id, 
 	@SmallGroupMemberId = DefaultGroupRoleId
@@ -155,7 +155,7 @@ BEGIN
 	SELECT @FuseGroupId = SCOPE_IDENTITY()
 END
 
--- set the Fuse Group grouptype to inherit FROM Check In By Grade
+-- set the Fuse Group grouptype to inherit from Check In By Grade
 IF NOT EXISTS (SELECT ID FROM GroupType WHERE ID = @FuseGroupTypeId AND InheritedGroupTypeId = @CheckInByGradeId)
 BEGIN
 	UPDATE GroupType
@@ -191,7 +191,7 @@ AND Name = @GenderAttributeName
 
 IF @SmallGroupGenderId IS NULL
 BEGIN
-	
+
 	INSERT [Attribute] (IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Description], DefaultValue,
 		[Order], [IsGridColumn], [IsMultiValue], [IsRequired], [AllowSearch], [Guid])
 	SELECT @IsSystem, @SingleSelectFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @SmallGroupId, REPLACE(@GenderAttributeName, ' ', ''), @GenderAttributeName, '', '',
@@ -216,7 +216,7 @@ AND Name = @MaritalAttributeName
 
 IF @SmallGroupMaritalId IS NULL
 BEGIN
-	
+
 	INSERT [Attribute] (IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Description], DefaultValue,
 		[Order], [IsGridColumn], [IsMultiValue], [IsRequired], [AllowSearch], [Guid])
 	SELECT @IsSystem, @DefinedValueFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @SmallGroupId, REPLACE(@MaritalAttributeName, ' ', ''), @MaritalAttributeName, '', '',
@@ -244,7 +244,7 @@ AND Name = @ChildCareAttributeName
 
 IF @SmallGroupChildcareId IS NULL
 BEGIN
-	
+
 	INSERT [Attribute] (IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Description], DefaultValue,
 		[Order], [IsGridColumn], [IsMultiValue], [IsRequired], [AllowSearch], [Guid])
 	SELECT @IsSystem, @BooleanFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @SmallGroupId, REPLACE(@ChildCareAttributeName, ' ', ''), @ChildCareAttributeName, '', 'False',
@@ -270,7 +270,7 @@ AND Name = @GenderAttributeName
 
 IF @FuseGroupGenderId IS NULL
 BEGIN
-	
+
 	INSERT [Attribute] (IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Description], DefaultValue,
 		[Order], [IsGridColumn], [IsMultiValue], [IsRequired], [AllowSearch], [Guid])
 	SELECT @IsSystem, @SingleSelectFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @FuseGroupId, REPLACE(@GenderAttributeName, ' ', ''), @GenderAttributeName, '', '',
@@ -294,7 +294,7 @@ BEGIN
 END
 CREATE TABLE #groupAssignments (
 	ID int IDENTITY(1,1) NOT NULL,
-	groupId bigint,	
+	groupId bigint,
 	groupName nvarchar(255),
 	groupDescription nvarchar(max),
 	groupType nvarchar(255),
@@ -322,7 +322,7 @@ SELECT @numItems = count(1) + @scopeIndex FROM Campus
 
 WHILE @scopeIndex < @numItems
 BEGIN
-	
+
 	DECLARE @CampusId int, @CampusName nvarchar(255), @GroupTypeId int, @CampusFuseGroupId int, @LeaderRoleId int, @MemberRoleId int,
 		 @CampusHomeGroupId int, @ParentGroupId int, @ChildGroupId int, @GroupScheduleId int, @GroupLocationId int
 
@@ -335,7 +335,7 @@ BEGIN
 	AND CampusId = @CampusId
 	AND ParentGroupId = @FuseGroupId
 	AND GroupTypeId = @FuseGroupTypeId
-	
+
 	IF @CampusFuseGroupId is null
 	BEGIN
 		INSERT [Group] (IsSystem, ParentGroupId, GroupTypeId, CampusId, Name, [Description], IsSecurityRole, IsActive, [Order], IsPublic, [Guid])
@@ -350,7 +350,7 @@ BEGIN
 	AND CampusId = @CampusId
 	AND ParentGroupId = @SmallGroupid
 	AND GroupTypeId = @SmallGroupTypeId
-	
+
 	IF @CampusHomeGroupId is null
 	BEGIN
 		INSERT [Group] (IsSystem, ParentGroupId, GroupTypeId, CampusId, Name, [Description], IsSecurityRole, IsActive, [Order], IsPublic, [Guid])
@@ -362,7 +362,7 @@ BEGIN
 	-- Filter groups by the current campus
 	INSERT into #groupAssignments (groupId, groupName, groupDescription, groupType, groupVisibility, groupStart, groupGender, groupMarital, groupAgeMin, groupAgeMax, groupRecurrence, groupDay, groupTime, 
 		groupAddress1, groupAddress2, groupCity, groupState, groupZip, groupCountry, groupChildren )
-	SELECT TOP 1000 Group_ID, LTRIM(RTRIM(Group_Name)), LTRIM(RTRIM(Description)), LTRIM(RTRIM(SUBSTRING( Group_Type_Name, CHARINDEX(' ', Group_Type_Name) +1, 
+	SELECT Group_ID, LTRIM(RTRIM(Group_Name)), LTRIM(RTRIM(Description)), LTRIM(RTRIM(SUBSTRING( Group_Type_Name, CHARINDEX(' ', Group_Type_Name) +1, 
 			LEN(Group_Type_Name) - CHARINDEX(' ', REVERSE(Group_Type_Name))
 		))) as groupType, isSearchable, start_date, gender_name, marital_status_name, start_age_range, end_age_range, RecurrenceType, ScheduleDay, StartHour, 
 		address1, address2, city, StProvince, PostalCode, country, HasChildcare
@@ -371,7 +371,7 @@ BEGIN
 		AND Group_Type_Name NOT LIKE 'Inactive%'
 		AND Group_Name NOT LIKE '%Wait%'
 		AND Group_Type_Name LIKE ('' + @CampusName + '%')
-			
+
 	/* ====================================================== */
 	-- Start creating child groups
 	/* ====================================================== */
@@ -387,7 +387,7 @@ BEGIN
 
 	WHILE @childIndex < @childItems
 	BEGIN
-		
+
 		SELECT @F1GroupId = GroupId, @GroupName = groupName, @Description = groupDescription, @GroupTypeName = groupType, @IsPublic = groupVisibility,
 			@Gender = groupGender, @MaritalStatus = groupMarital, @MinAge = groupAgeMin, @MaxAge = groupAgeMax, @ScheduleRecurrence = groupRecurrence,
 			@ScheduleStart = groupStart, @ScheduleDay = groupDay, @ScheduleTime = groupTime, @LocationStreet = groupAddress1, @LocationStreet2 = groupAddress2, 
@@ -423,7 +423,7 @@ BEGIN
 		-- Create group (+ attributes + location + schedule) if it doesn't exist
 		IF @ChildGroupId is null
 		BEGIN
-			
+
 			INSERT [Group] (IsSystem, ParentGroupId, GroupTypeId, CampusId, Name, [Description], IsSecurityRole, IsActive, [Order], CreatedDateTime, IsPublic, ForeignKey, ForeignId, [Guid])
 			SELECT @False, @ParentGroupId, @GroupTypeId, @CampusId, @GroupName, @Description, @False, @True, @Order, @ScheduleStart, @IsPublic, @F1GroupId, @F1GroupId, NEWID()
 
@@ -443,11 +443,19 @@ BEGIN
 				-- parse the grade range
 				IF ISNUMERIC(LEFT(@GroupName, 1)) = 1
 				BEGIN
+
+					-- fix bad group name 
+					IF @GroupName LIKE '%6-7th%' 
+					BEGIN
+						SELECT @GroupName = REPLACE(@GroupName, '6-7th', '6th & 7th')
+					END
+
+
 					SELECT @MinGrade = [Guid]
 					FROM DefinedValue
 					WHERE DefinedTypeId = @DefinedTypeGradeId
 					AND [Order] = SUBSTRING(@GroupName, 0, PATINDEX('%[0-9]th%', @GroupName)+1)
-					
+
 					SELECT @MaxGrade = [Guid]
 					FROM DefinedValue
 					WHERE DefinedTypeId = @DefinedTypeGradeId
@@ -510,7 +518,7 @@ BEGIN
 
 				SELECT @GroupLocationId = SCOPE_IDENTITY()
 			END
-			
+
 			IF @GroupLocationId IS NOT NULL
 			BEGIN
 				-- assign group to location
@@ -520,14 +528,14 @@ BEGIN
 				SELECT @GroupLocationId = SCOPE_IDENTITY()
 			END
 		END
-		
+
 		-- Create group memberships
-		INSERT [GroupMember] (IsSyStem, GroupId, PersonId, GroupMemberStatus, IsNotified, CreatedDateTime, [Guid], GroupRoleId)
+		INSERT [GroupMember] (IsSystem, GroupId, PersonId, GroupMemberStatus, IsNotified, CreatedDateTime, [Guid], GroupRoleId)
 		SELECT @False, @ChildGroupId, p.PersonId, @True, @False, g.Created_Date, NEWID(),
 			 CASE Group_member_type_name WHEN 'Leader' THEN @LeaderRoleId ELSE @MemberRoleId END 
 		FROM F1..Groups g
 		INNER JOIN PersonAlias p
-			ON g.Individual_ID = p.ForeignId
+			ON g.Individual_ID = p.ForeignKey
 			AND g.Group_ID = @F1GroupId
 
 		-- reset all variables
