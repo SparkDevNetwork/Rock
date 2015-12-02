@@ -1,6 +1,6 @@
 /* ====================================================== 
 -- NewSpring Script #5: 
--- Imports home and fuse groups FROM F1.
+-- Imports home and fuse groups from F1.
   
 --  Assumptions:
 --  Groups must be marked as 'Fuse' or 'Home'
@@ -360,7 +360,7 @@ BEGIN
 	END
 
 	-- Filter groups by the current campus
-	INSERT into #groupAssignments (groupId, groupName, groupDescription, groupType, groupVisibility, groupStart, groupGender, groupMarital, groupAgeMin, groupAgeMax, groupRecurrence, groupDay, groupTime, 
+	INSERT INTO #groupAssignments (groupId, groupName, groupDescription, groupType, groupVisibility, groupStart, groupGender, groupMarital, groupAgeMin, groupAgeMax, groupRecurrence, groupDay, groupTime, 
 		groupAddress1, groupAddress2, groupCity, groupState, groupZip, groupCountry, groupChildren )
 	SELECT Group_ID, LTRIM(RTRIM(Group_Name)), LTRIM(RTRIM(Description)), LTRIM(RTRIM(SUBSTRING( Group_Type_Name, CHARINDEX(' ', Group_Type_Name) +1, 
 			LEN(Group_Type_Name) - CHARINDEX(' ', REVERSE(Group_Type_Name))
