@@ -98,40 +98,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         public virtual string GetGroupFilterClientSelection( bool not )
         {
-            string format = @"
-function() {{
-  var groupNames = $('.js-group-picker', $content).find('.selected-names').text();
-  var checkedRoles = $('.js-roles', $content).find(':checked').closest('label');
-  var result = '{0} ' + groupNames;
-  var includeChildGroups = $('.js-include-child-groups', $content).is(':checked');
-  if (includeChildGroups) {{
-    var includeDescendantGroups = $('.js-include-child-groups-descendants', $content).is(':checked');    
-    var includeSelectedGroups = $('.js-include-selected-groups', $content).is(':checked');
-    if (includeDescendantGroups) {{
-        result = result + ' or descendant groups';
-    }} else {{
-        result = result + ' or child groups';
-    }}
-
-    if (!includeSelectedGroups) {{
-        result = result + ' not including selected groups';
-    }}
-  }}
-
-  if (checkedRoles.length > 0) {{
-     var roleCommaList = checkedRoles.map(function() {{ return $(this).text() }}).get().join(',');
-     result = result + ', with role(s): ' + roleCommaList;
-  }}
-
-  var groupMemberStatus = $('.js-group-member-status option:selected', $content).text();
-  if (groupMemberStatus) {{
-     result = result + ', with member status:' + groupMemberStatus;
-  }}
-
-  return result;
-}}
-";
-            return string.Format( format, not ? "Not in groups:" : "In groups:" );
+            return string.Format( @"Rock.reporting.formatFilterForGroupFilterField('{0}', $content)", not ? "Not in groups:" : "In groups:" );
         }
 
         /// <summary>
@@ -168,6 +135,7 @@ function() {{
                 bool includeChildGroups = false;
                 bool includeChildGroupsPlusDescendants = false;
                 bool includeChildGroupsIncludeSelected = false;
+                bool includeInactiveGroups = false;
                 if ( selectionValues.Length >= 3 )
                 {
                     includeChildGroups = selectionValues[2].AsBooleanOrNull() ?? false;
@@ -175,6 +143,11 @@ function() {{
                     {
                         includeChildGroupsIncludeSelected = selectionValues[4].AsBooleanOrNull() ?? false;
                         includeChildGroupsPlusDescendants = selectionValues[5].AsBooleanOrNull() ?? false;
+                    }
+
+                    if ( selectionValues.Length >= 7 )
+                    {
+                        includeInactiveGroups = selectionValues[6].AsBooleanOrNull() ?? false;
                     }
                 }
 
@@ -198,10 +171,16 @@ function() {{
                             result += " or child groups";
                         }
 
+                        if ( includeInactiveGroups )
+                        {
+                            result += ", including inactive groups";
+                        }
+
                         if ( !includeChildGroupsIncludeSelected )
                         {
-                            result += " not including selected groups";
+                            result += ", not including selected groups";
                         }
+
                     }
 
                     if ( groupTypeRoles.Count() > 0 )
@@ -245,6 +224,11 @@ function() {{
         private RockCheckBox cbChildGroupsPlusDescendants = null;
 
         /// <summary>
+        /// The "Include Inactive" checkbox
+        /// </summary>
+        private RockCheckBox cbIncludeInactiveGroups = null;
+
+        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
@@ -282,6 +266,14 @@ function() {{
             cbChildGroupsPlusDescendants.CheckedChanged += gp_SelectItem;
             filterControl.Controls.Add( cbChildGroupsPlusDescendants );
 
+            cbIncludeInactiveGroups = new RockCheckBox();
+            cbIncludeInactiveGroups.ID = filterControl.ID + "_cbIncludeInactiveGroups";
+            cbIncludeInactiveGroups.Text = "Include Inactive Groups";
+            cbIncludeInactiveGroups.CssClass = "js-include-inactive-groups";
+            cbIncludeInactiveGroups.AutoPostBack = true;
+            cbIncludeInactiveGroups.CheckedChanged += gp_SelectItem;
+            filterControl.Controls.Add( cbIncludeInactiveGroups );
+
             cblRole = new RockCheckBoxList();
             cblRole.Label = "with Group Member Role(s) (optional)";
             cblRole.ID = filterControl.ID + "_cblRole";
@@ -298,7 +290,7 @@ function() {{
             ddlGroupMemberStatus.SetValue( GroupMemberStatus.Active.ConvertToInt() );
             filterControl.Controls.Add( ddlGroupMemberStatus );
 
-            return new Control[6] { gp, cbChildGroups, cbIncludeSelectedGroup, cbChildGroupsPlusDescendants, cblRole, ddlGroupMemberStatus };
+            return new Control[7] { gp, cbChildGroups, cbIncludeSelectedGroup, cbChildGroupsPlusDescendants, cblRole, ddlGroupMemberStatus, cbIncludeInactiveGroups };
         }
 
         /// <summary>
@@ -329,12 +321,24 @@ function() {{
                         if ( cbChildGroupsPlusDescendants.Checked )
                         {
                             // get all children and descendants of the selected group(s)
-                            childGroupTypeIds.AddRange( groupService.GetAllDescendents( groupId ).Select( a => a.GroupTypeId ).ToList() );
+                            var descendants = groupService.GetAllDescendents( groupId );
+                            if ( !cbIncludeInactiveGroups.Checked )
+                            {
+                                descendants = descendants.Where( a => a.IsActive == true );
+                            }
+
+                            childGroupTypeIds.AddRange( descendants.Select( a => a.GroupTypeId ).Distinct().ToList() );
                         }
                         else
                         {
                             // get only immediate children of the selected group(s)
-                            childGroupTypeIds.AddRange( groupService.Queryable().Where( a => a.ParentGroupId == groupId ).Select( a => a.GroupTypeId ).ToList() );
+                            var childGroups = groupService.Queryable().Where( a => a.ParentGroupId == groupId );
+                            if ( !cbIncludeInactiveGroups.Checked )
+                            {
+                                childGroups = childGroups.Where( a => a.IsActive == true );
+                            }
+
+                            childGroupTypeIds.AddRange( childGroups.Select( a => a.GroupTypeId ).Distinct().ToList() );
                         }
                     }
 
@@ -389,6 +393,7 @@ function() {{
             RockCheckBox cbChildGroupsPlusDescendants = controls[3] as RockCheckBox;
             RockCheckBoxList cblRoles = controls[4] as RockCheckBoxList;
             RockDropDownList ddlGroupMemberStatus = controls[5] as RockDropDownList;
+            RockCheckBox cbIncludeInactiveGroups = controls[6] as RockCheckBox;
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -408,6 +413,8 @@ function() {{
             cbIncludeSelectedGroup.RenderControl( writer );
             cbChildGroupsPlusDescendants.ContainerCssClass = "margin-l-md";
             cbChildGroupsPlusDescendants.RenderControl( writer );
+            cbIncludeInactiveGroups.ContainerCssClass = "margin-l-md";
+            cbIncludeInactiveGroups.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
@@ -443,17 +450,20 @@ function() {{
             RockCheckBoxList cblRoles = controls[4] as RockCheckBoxList;
             RockDropDownList ddlGroupMemberStatus = controls[5] as RockDropDownList;
 
+            RockCheckBox cbInactiveGroups = controls[6] as RockCheckBox;
+
             List<int> groupIdList = groupPicker.SelectedValues.AsIntegerList();
             var groupGuids = new GroupService( new RockContext() ).GetByIds( groupIdList ).Select( a => a.Guid ).Distinct().ToList();
 
             return string.Format(
-                "{0}|{1}|{2}|{3}|{4}|{5}",
+                "{0}|{1}|{2}|{3}|{4}|{5}|{6}",
                 groupGuids.AsDelimited( "," ),
                 cblRoles.SelectedValues.AsDelimited( "," ),
                 cbChildGroups.Checked.ToString(),
                 ddlGroupMemberStatus.SelectedValue,
                 cbIncludeSelectedGroup.Checked.ToString(),
-                cbChildGroupsPlusDescendants.Checked.ToString() );
+                cbChildGroupsPlusDescendants.Checked.ToString(),
+                cbIncludeInactiveGroups.Checked.ToString() );
         }
 
         /// <summary>
@@ -475,6 +485,7 @@ function() {{
             RockCheckBox cbChildGroupsPlusDescendants = controls[3] as RockCheckBox;
             RockCheckBoxList cblRoles = controls[4] as RockCheckBoxList;
             RockDropDownList ddlGroupMemberStatus = controls[5] as RockDropDownList;
+            RockCheckBox cbIncludeInactive = controls[6] as RockCheckBox;
 
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
@@ -500,6 +511,16 @@ function() {{
                 {
                     cbIncludeSelectedGroup.Checked = true;
                     cbChildGroupsPlusDescendants.Checked = true;
+                }
+
+                if ( selectionValues.Length >= 7 )
+                {
+                    cbIncludeInactiveGroups.Checked = selectionValues[6].AsBooleanOrNull() ?? false;
+                }
+                else
+                {
+                    // if options where saved before this option was added, set to false, even though it would have included inactive before
+                    cbIncludeInactiveGroups.Checked = false;
                 }
 
                 gp_SelectItem( this, new EventArgs() );
@@ -543,6 +564,7 @@ function() {{
                 bool includeChildGroups = false;
                 bool includeChildGroupsIncludeSelected = false;
                 bool includeChildGroupsPlusDescendants = false;
+                bool includeInactiveGroups = false;
                 if ( selectionValues.Length >= 3 )
                 {
                     includeChildGroups = selectionValues[2].AsBooleanOrNull() ?? false;
@@ -558,6 +580,16 @@ function() {{
                     // in case the selection was saved before these options where added
                     includeChildGroupsIncludeSelected = true;
                     includeChildGroupsPlusDescendants = true;
+                }
+
+                if ( selectionValues.Length >= 7 )
+                {
+                    includeInactiveGroups = selectionValues[6].AsBooleanOrNull() ?? true; ;
+                }
+                else
+                {
+                    // if options where saved before this option was added, set to false, even though it would have included inactive before
+                    includeInactiveGroups = false;
                 }
 
                 GroupMemberStatus? groupMemberStatus = null;
@@ -576,12 +608,24 @@ function() {{
                         if ( includeChildGroupsPlusDescendants )
                         {
                             // get all children and descendants of the selected group(s)
-                            childGroupIds.AddRange( groupService.GetAllDescendents( groupId ).Select( a => a.Id ).Distinct().ToList() );
+                            var descendants = groupService.GetAllDescendents( groupId );
+                            if ( !includeInactiveGroups )
+                            {
+                                descendants = descendants.Where( a => a.IsActive == true );
+                            }
+
+                            childGroupIds.AddRange( descendants.Select( a => a.Id ).Distinct().ToList() );
                         }
                         else
                         {
                             // get only immediate children of the selected group(s)
-                            childGroupIds.AddRange( groupService.Queryable().Where( a => a.ParentGroupId == groupId ).Select( a => a.Id ) );
+                            var childGroups = groupService.Queryable().Where( a => a.ParentGroupId == groupId );
+                            if ( !includeInactiveGroups )
+                            {
+                                childGroups = childGroups.Where( a => a.IsActive == true );
+                            }
+
+                            childGroupIds.AddRange( childGroups.Select( a => a.Id ) );
                         }
                     }
 

@@ -435,6 +435,25 @@ namespace Rock
         }
 
         /// <summary>
+        /// Html Encodes string values that are processed by a lava filter
+        /// </summary>
+        /// <param name="s">The s.</param>
+        /// <returns></returns>
+        private static object EncodeStringTransformer( object s )
+        {
+            string val = ( s as string );
+            if ( !string.IsNullOrEmpty( val ) )
+            {
+                // we techically want to XML encode, but Html Encode does the trick
+                return val.EncodeHtml();
+            }
+            else
+            {
+                return s;
+            }
+        }
+
+        /// <summary>
         /// Use DotLiquid to resolve any merge codes within the content using the values
         /// in the mergeObjects.
         /// </summary>
@@ -453,39 +472,21 @@ namespace Rock
                 }
 
                 Template template = Template.Parse( content );
-
-                // if encodeStrings = true, we want any string values to be XML Encoded ( 
-                var stringTransformer = Template.GetValueTypeTransformer( typeof( string ) );
+                
                 if ( encodeStrings )
                 {
-                    // if the stringTransformer hasn't been registered yet, register it
-                    if ( stringTransformer == null )
-                    {
-                        Template.RegisterValueTypeTransformer( typeof( string ), ( s ) =>
-                        {
-                            string val = ( s as string );
-                            if ( val != null )
-                            {
-                                // we techically want to XML encode, but Html Encode does the trick
-                                return val.EncodeHtml();
-                            }
-                            else
-                            {
-                                return s;
-                            }
-                        } );
-                    }
+                    // if encodeStrings = true, we want any string values to be XML Encoded ( 
+                    RenderParameters renderParameters = new RenderParameters();
+                    renderParameters.LocalVariables = Hash.FromDictionary( mergeObjects );
+                    renderParameters.ValueTypeTransformers = new Dictionary<Type, Func<object, object>>();
+                    renderParameters.ValueTypeTransformers[typeof( string )] = EncodeStringTransformer;
+                    return template.Render( renderParameters );
                 }
                 else
                 {
-                    // if the stringTransformer is registered, un-register it
-                    if ( stringTransformer != null )
-                    {
-                        Template.RegisterValueTypeTransformer( typeof( string ), null );
-                    }
+                    return template.Render( Hash.FromDictionary( mergeObjects ) );
                 }
 
-                return template.Render( Hash.FromDictionary( mergeObjects ) );
             }
             catch ( Exception ex )
             {

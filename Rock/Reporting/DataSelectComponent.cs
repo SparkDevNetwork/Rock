@@ -102,19 +102,30 @@ namespace Rock.Reporting
 
         /// <summary>
         /// Gets the type of the column field.
+        /// Override this property to specify a Type other than the default of System.String
         /// </summary>
         /// <value>
         /// The type of the column field.
         /// </value>
-        public abstract Type ColumnFieldType { get; }
+        public virtual Type ColumnFieldType
+        {
+            get
+            {
+                return typeof( System.String );
+            }
+        }
 
         /// <summary>
         /// Gets the default column header text.
+        /// Override this property to specify a Header that is different from the ColumnPropertyName.
         /// </summary>
         /// <value>
         /// The default column header text.
         /// </value>
-        public abstract string ColumnHeaderText { get; }
+        public virtual string ColumnHeaderText
+        {
+            get { return this.ColumnPropertyName; }
+        }
 
         #endregion
 
@@ -133,12 +144,16 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Gets the title.
+        /// Gets the title of the DataSelectComponent.
+        /// Override this property to specify a Title that is different from the ColumnPropertyName.
         /// </summary>
         /// <value>
         /// The title.
         /// </value>
-        public abstract string GetTitle( Type entityType );
+        public virtual string GetTitle( Type entityType )
+        {
+            return this.ColumnPropertyName;
+        }
 
         /// <summary>
         /// Creates the child controls.

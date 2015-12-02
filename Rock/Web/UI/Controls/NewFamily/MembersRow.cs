@@ -154,9 +154,8 @@ namespace Rock.Web.UI.Controls
         {
             get 
             {
-                return _rblGender.SelectedValueAsEnum<Gender>(); 
+                return _rblGender.SelectedValueAsEnum<Gender>( Gender.Unknown );
             }
-
             set 
             {
                 SetListValue( _rblGender, value.ConvertToInt().ToString() );

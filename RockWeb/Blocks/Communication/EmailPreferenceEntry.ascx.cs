@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Communication
                                     {
                                         ddlInactiveReason.SelectedValue = _person.RecordStatusReasonValueId.HasValue.ToString();
                                     }
-                                    tbInactiveNote.Text = _person.InactiveReasonNote;
+                                    tbInactiveNote.Text = _person.ReviewReasonNote;
                                 }
                                 break;
                             }
@@ -195,14 +195,13 @@ namespace RockWeb.Blocks.Communication
                         person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id;
                         person.RecordStatusReasonValueId = ddlInactiveReason.SelectedValue.AsInteger();
                         person.ReviewReasonValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_REVIEW_REASON_SELF_INACTIVATED ).Id;
-                        if ( string.IsNullOrWhiteSpace( person.ReviewReasonNote ) )
+
+                        // If the inactive reason note is the same as the current review reason note, update it also.
+                        if ( ( person.InactiveReasonNote ?? string.Empty ) == ( person.ReviewReasonNote ?? string.Empty ) )
                         {
-                            person.ReviewReasonNote = tbInactiveNote.Text;
+                            person.InactiveReasonNote = tbInactiveNote.Text;
                         }
-                        else
-                        {
-                            person.ReviewReasonNote += " " + tbInactiveNote.Text;
-                        }
+                        person.ReviewReasonNote = tbInactiveNote.Text;
                     }
                     else
                     {

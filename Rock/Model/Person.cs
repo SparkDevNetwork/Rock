@@ -81,6 +81,15 @@ namespace Rock.Model
         public int? RecordStatusValueId { get; set; }
 
         /// <summary>
+        /// Gets or sets the record status last modified date time.
+        /// </summary>
+        /// <value>
+        /// The record status last modified date time.
+        /// </value>
+        [DataMember]
+        public DateTime? RecordStatusLastModifiedDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the Id of the Record Status Reason <see cref="Rock.Model.DefinedValue"/> representing the reason why a person record status would have a set status.
         /// </summary>
         /// <value>
@@ -643,7 +652,17 @@ namespace Rock.Model
                 {
                     try
                     {
-                        DateTime thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                        DateTime thisYearsBirthdate;
+                        if ( BirthMonth == 2 && BirthDay == 29 && !DateTime.IsLeapYear( RockDateTime.Now.Year ) )
+                        {
+                            // if their birthdate is 2/29 and the current year is NOT a leapyear, have their birthday be 2/28
+                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, 28, 0, 0, 0 );
+                        }
+                        else
+                        {
+                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                        }
+
                         birthdayDayOfWeek = thisYearsBirthdate.ToString( "dddd" );
                     }
                     catch
@@ -679,7 +698,17 @@ namespace Rock.Model
                 {
                     try
                     {
-                        DateTime thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                        DateTime thisYearsBirthdate;
+                        if ( BirthMonth == 2 && BirthDay == 29 && !DateTime.IsLeapYear( RockDateTime.Now.Year ) )
+                        {
+                            // if their birthdate is 2/29 and the current year is NOT a leapyear, have their birthday be 2/28
+                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, 28, 0, 0, 0 );
+                        }
+                        else
+                        {
+                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                        }
+
                         birthdayDayOfWeek = thisYearsBirthdate.ToString( "ddd" );
                     }
                     catch
@@ -1136,7 +1165,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [DataMember]
-        [RockClientInclude( "The Grade Offset of the person, which is the number of years until their graduation date. See GradeFormatted to see their current Grade." )]
+        [RockClientInclude( "The Grade Offset of the person, which is the number of years until their graduation date. See GradeFormatted to see their current Grade. [Readonly]" )]
         public virtual int? GradeOffset
         {
             get
@@ -1169,20 +1198,7 @@ namespace Rock.Model
 
             set
             {
-                if ( value.HasValue && value >= 0 )
-                {
-                    var globalAttributes = GlobalAttributesCache.Read();
-                    var transitionDate = globalAttributes.GetValue( "GradeTransitionDate" ).AsDateTime();
-                    if ( transitionDate.HasValue )
-                    {
-                        int gradeOffsetAdjustment = ( RockDateTime.Now < transitionDate.Value ) ? value.Value : value.Value + 1;
-                        GraduationYear = transitionDate.Value.Year + gradeOffsetAdjustment;
-                    }
-                }
-                else
-                {
-                    GraduationYear = null;
-                }
+                GraduationYear = GraduationYearFromGradeOffset(value);
             }
         }
 
@@ -1838,6 +1854,27 @@ namespace Rock.Model
             }
 
             return FormatFullName( nickName, lastName, string.Empty );
+        }
+
+        /// <summary>
+        /// Given a grade offset, returns the graduation year
+        /// </summary>
+        /// <param name="gradeOffset"></param>
+        /// <returns></returns>
+        public static int? GraduationYearFromGradeOffset(int? gradeOffset)
+        {
+            if (gradeOffset.HasValue && gradeOffset.Value >= 0)
+            {
+                var globalAttributes = GlobalAttributesCache.Read();
+                var transitionDate = globalAttributes.GetValue("GradeTransitionDate").AsDateTime();
+                if (transitionDate.HasValue)
+                {
+                    int gradeOffsetAdjustment = (RockDateTime.Now < transitionDate.Value) ? gradeOffset.Value : gradeOffset.Value + 1;
+                    return transitionDate.Value.Year + gradeOffsetAdjustment;
+                }
+            }
+
+            return null;
         }
 
         #endregion

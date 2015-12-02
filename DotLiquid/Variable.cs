@@ -65,7 +65,13 @@ namespace DotLiquid
 
 			if (output != null)
 			{
-                var transformer = Template.GetValueTypeTransformer(output.GetType());
+                // see if this context has a ValueTypeTranformer for the type
+                var transformer = context.GetValueTypeTransformer(output.GetType());
+                if (transformer == null)
+                {
+                    // if the context doesn't have a ValueTypeTranformer for the type, get the global one (if there is one)
+                    transformer = Template.GetValueTypeTransformer(output.GetType());
+                }
                 
                 if(transformer != null)
                     output = transformer(output);

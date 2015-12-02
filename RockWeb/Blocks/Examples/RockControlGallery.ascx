@@ -133,6 +133,11 @@
                         <Rock:ButtonDropDownList ID="bddlExample" runat="server" Label="Rock:ButtonDropDownList" />
                     </div>
 
+                    <a id="ButtonDropDownListCheckMark"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:ButtonDropDownList ID="bddlExampleCheckmark" runat="server" Label="Rock:ButtonDropDownList with Checkmark" SelectionStyle="Checkmark" Title="T-Shirt Size" />
+                    </div>
+
                     <a id="Input"></a>
                     <h1 runat="server">Input</h1>
 

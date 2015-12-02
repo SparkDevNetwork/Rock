@@ -166,6 +166,26 @@ namespace Rock.Rest.Controllers
             throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
         }
 
+        /// <summary>
+        /// Gets the graduation year based on the provided GradeOffset
+        /// </summary>
+        /// <param name="gradeOffset">The grade offset for the person.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route("api/People/GetGraduationYear/{gradeOffset}")]
+        public int GetGraduationYear( int gradeOffset )
+        {
+            int? graduationYear = Person.GraduationYearFromGradeOffset( gradeOffset );
+            if( graduationYear.HasValue )
+            {
+                return graduationYear.Value;
+            }
+
+            throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
+        }
+
         #endregion
 
         #region Post
@@ -793,7 +813,7 @@ namespace Rock.Rest.Controllers
                     }
                 }
 
-                foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false ).OrderBy( n => n.NumberTypeValue.Order ) )
+                foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false && n.NumberTypeValueId.HasValue ).OrderBy( n => n.NumberTypeValue.Order ) )
                 {
                     html.AppendFormat( "<div><strong>{0}</strong> {1}</div>", phoneNumber.NumberTypeValue.Value, phoneNumber.ToString() );
                 }

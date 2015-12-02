@@ -198,6 +198,15 @@
   }
 }
 
+// date time picker
+.date-time-picker {
+    margin-bottom: 11px;
+
+    .input-group {
+        margin-bottom: 4px;
+    }
+}
+
 // campuses picker
 
 .campuses-picker  {
@@ -299,6 +308,15 @@ ul.rocktree ul {
 .rocktree {
 
   .rocktree-item {
+
+    &.is-inactive {
+        color: lighten(@text-color, 20%);
+        opacity: 1;
+    }
+
+    &:not(.is-inactive){
+        color: @text-color;
+    }
 
     white-space: nowrap;
 
@@ -1123,7 +1141,7 @@ fieldset .actions {
 // 16. Time Picker
 // -------------------------
 
-/*.timepicker-input  {
+.timepicker-input  {
   .clearfix();
 
   .input-group {
@@ -1150,7 +1168,7 @@ fieldset .actions {
 
 .touch .timepicker-input i.fa-times {
   opacity: 1;
-}*/
+}
 
 .bootstrap-timepicker {
   position: relative;

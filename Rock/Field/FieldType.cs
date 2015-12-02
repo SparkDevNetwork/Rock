@@ -127,6 +127,18 @@ namespace Rock.Field
             return FormatValue( parentControl, value, configurationValues, condensed );
         }
 
+        /// <summary>
+        /// Values the type of as field.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public virtual object ValueAsFieldType(  Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value;
+        }
+
         #endregion
 
         #region Edit Control
@@ -632,6 +644,7 @@ namespace Rock.Field
         /// <param name="value">The value.</param>
         /// <param name="propertyType">Type of the property.</param>
         /// <returns></returns>
+        [Obsolete("Use ConvertValueToPropertyType( string value, Type propertyType, bool isNullableType )")]
         public virtual object ConvertValueToPropertyType( string value, Type propertyType )
         {
             return ConvertValueToPropertyType( value, propertyType, false );

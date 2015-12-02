@@ -36,6 +36,7 @@ namespace Rock.Web.UI.Controls
         private RockRadioButtonList _rblSelectPageRoute;
         private LinkButton _btnSelectPageRoute;
         private HyperLink _btnCancelPageRoute;
+        private LinkButton _btnSelectCurrentPage;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PagePicker" /> class.
@@ -413,11 +414,64 @@ namespace Rock.Web.UI.Controls
             _btnCancelPageRoute.ID = string.Format( "btnCancelPageRoute_{0}", this.ID );
             _btnCancelPageRoute.Text = "Cancel";
 
+            _btnSelectCurrentPage = new LinkButton();
+            _btnSelectCurrentPage.ID = this.ID + "_btnSelectCurrentPage";
+            _btnSelectCurrentPage.CssClass = "btn btn-xs btn-default pull-right";
+            _btnSelectCurrentPage.Text = "<i class='fa fa-file-o'></i>";
+            _btnSelectCurrentPage.ToolTip = "select current page";
+            _btnSelectCurrentPage.CausesValidation = false;
+            _btnSelectCurrentPage.Click += _btnSelectCurrentPage_Click;
+            Controls.Add( _btnSelectCurrentPage );
+
             Controls.Add( _hfPageRouteId );
             Controls.Add( _rblSelectPageRoute );
             Controls.Add( _btnShowPageRoutePicker );
             Controls.Add( _btnSelectPageRoute );
             Controls.Add( _btnCancelPageRoute );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the _btnSelectCurrentPage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        public void _btnSelectCurrentPage_Click( object sender, EventArgs e )
+        {
+            int? pageId = null;
+            var rockBlock = this.RockBlock();
+            if ( rockBlock.PageCache.Guid == Rock.SystemGuid.Page.BLOCK_PROPERTIES.AsGuid() )
+            {
+                // if the BlockProperties block is the current block, we'll treat the page that this block properties is for as the current page
+                int blockId = rockBlock.PageParameter( "BlockId" ).AsInteger();
+                var block = new BlockService( new RockContext() ).Get( blockId );
+                if ( block != null )
+                {
+                    pageId = block.PageId;
+                }
+            }
+            else
+            {
+                pageId = rockBlock.PageCache.Id;
+            }
+
+            if ( pageId.HasValue )
+            {
+                var currentPage = new PageService( new RockContext() ).Get( pageId.Value );
+                this.SetValue( currentPage );
+            }
+
+            ShowDropDown = true;
+        }
+
+        /// <summary>
+        /// Render any additional picker actions
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public override void RenderCustomPickerActions( HtmlTextWriter writer )
+        {
+            base.RenderCustomPickerActions( writer );
+
+            _btnSelectCurrentPage.RenderControl( writer );
         }
 
         /// <summary>

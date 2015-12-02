@@ -182,6 +182,8 @@ namespace RockWeb.Blocks.Core
 
             rockContext.SaveChanges();
 
+            Rock.CheckIn.KioskDevice.Flush( Device.Id );
+            
             NavigateToParentPage();
         }
 
@@ -260,6 +262,7 @@ namespace RockWeb.Blocks.Core
                 }
                 Locations.Add( location.Id, path );
             }
+
             BindLocations();
 
             hfAddLocationId.Value = string.Empty;

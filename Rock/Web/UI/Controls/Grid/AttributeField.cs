@@ -84,7 +84,7 @@ namespace Rock.Web.UI.Controls
             IHasAttributes dataItem = GetAttributeObject( row );
             if ( dataItem == null )
             {
-                // If unsuccesful, check to see if row has attributes
+                // If unsuccessful, check to see if row has attributes
                 dataItem = row.DataItem as IHasAttributes;
             }
 

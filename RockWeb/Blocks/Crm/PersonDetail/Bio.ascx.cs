@@ -53,6 +53,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
     [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers." )]
     public partial class Bio : PersonBlock
     {
+        
+        
+        
         #region Base Control Methods
 
         /// <summary>
@@ -347,14 +350,16 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// <param name="number">The number.</param>
         /// <param name="phoneNumberTypeId">The phone number type identifier.</param>
         /// <returns></returns>
-        protected string FormatPhoneNumber( bool unlisted, object countryCode, object number, int phoneNumberTypeId )
+        protected string
+        FormatPhoneNumber( bool unlisted, object countryCode, object number, int phoneNumberTypeId, bool smsEnabled = false )
         {
             string formattedNumber = "Unlisted";
+
+            string cc = countryCode as string ?? string.Empty;
+            string n = number as string ?? string.Empty;
+
             if ( !unlisted )
             {
-                string cc = countryCode as string ?? string.Empty;
-                string n = number as string ?? string.Empty;
-
                 if ( GetAttributeValue( "DisplayCountryCode" ).AsBoolean() )
                 {
                     formattedNumber = PhoneNumber.FormattedNumber( cc, n, true );
@@ -365,10 +370,23 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
+            // if the page is being loaded locally then add the tel:// link
+            if ( RockPage.IsMobileRequest )
+            {
+                formattedNumber = string.Format( "<a href=\"tel://{0}\">{1}</a>", n, formattedNumber );
+            }
+
             var phoneType = DefinedValueCache.Read( phoneNumberTypeId );
             if ( phoneType != null )
             {
-                return string.Format( "{0} <small>{1}</small>", formattedNumber, phoneType.Value );
+                if ( smsEnabled )
+                {
+                    formattedNumber = string.Format( "{0} <small>{1} <i class='fa fa-comments'></i></small>", formattedNumber, phoneType.Value );
+                }
+                else
+                {
+                    formattedNumber = string.Format( "{0} <small>{1}</small>", formattedNumber, phoneType.Value );
+                }
             }
 
             return formattedNumber;

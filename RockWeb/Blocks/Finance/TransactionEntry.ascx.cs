@@ -30,6 +30,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Communication;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -99,6 +100,10 @@ namespace RockWeb.Blocks.Finance
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 25 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 26 )]
 
+    [SystemEmailField( "Receipt Email", "The system email to use to send the receipt.", false, "", "Email Templates", 27 )]
+    [TextField( "Payment Comment", "The comment to include with the payment transaction when sending to Gateway", false, "Online Contribution", "", 28 )]
+    [BooleanField( "Enable Comment Entry", "Allows the guest to enter the the value that's put into the comment field (will be appended to the 'Payment Comment' setting)", false, "", 29 )]
+    [TextField("Comment Entry Label", "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).", false, "Comment", "", 30)]
     #endregion
 
     public partial class TransactionEntry : Rock.Web.UI.RockBlock
@@ -106,6 +111,7 @@ namespace RockWeb.Blocks.Finance
         #region Fields
 
         private bool _showRepeatingOptions = false;
+        private bool _showCommmentEntry = false;
         private FinancialGateway _ccGateway;
         private FinancialGateway _achGateway;
 
@@ -239,6 +245,10 @@ namespace RockWeb.Blocks.Finance
             GatewayComponent ccGatewayComponent = null;
             GatewayComponent achGatewayComponent = null;
             var supportedFrequencies = new List<DefinedValueCache>();
+
+            _showCommmentEntry = GetAttributeValue( "EnableCommentEntry" ).AsBoolean();
+            txtCommentEntry.Label = GetAttributeValue( "CommentEntryLabel" );
+            txtCommentEntry.Visible = _showCommmentEntry;
 
             using ( var rockContext = new RockContext() )
             {
@@ -1497,6 +1507,15 @@ namespace RockWeb.Blocks.Finance
                     CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
                 }
 
+                if ( _showCommmentEntry ) {
+                    paymentInfo.Comment1 = !string.IsNullOrWhiteSpace(GetAttributeValue( "PaymentComment" )) ? string.Format("{0}: {1}", GetAttributeValue( "PaymentComment" ), txtCommentEntry.Text ) : txtCommentEntry.Text;
+                }
+                else
+                {
+                    paymentInfo.Comment1 = GetAttributeValue( "PaymentComment" );
+                }
+                
+
                 PaymentSchedule schedule = GetSchedule();
                 if ( schedule != null )
                 {
@@ -1639,29 +1658,28 @@ namespace RockWeb.Blocks.Finance
                         transaction.BatchId = batch.Id;
                         batch.Transactions.Add( transaction );
 
-                        rockContext.WrapTransaction( () =>
-                        {
-                            rockContext.SaveChanges();
+                        rockContext.SaveChanges();
 
-                            HistoryService.SaveChanges(
-                                rockContext,
-                                typeof( FinancialBatch ),
-                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
-                                batch.Id,
-                                batchChanges
-                            );
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( FinancialBatch ),
+                            Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                            batch.Id,
+                            batchChanges
+                        );
 
-                            HistoryService.SaveChanges(
-                                rockContext,
-                                typeof( FinancialBatch ),
-                                Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                                batch.Id,
-                                txnChanges,
-                                person.FullName,
-                                typeof( FinancialTransaction ),
-                                transaction.Id
-                            );
-                        } );
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( FinancialBatch ),
+                            Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                            batch.Id,
+                            txnChanges,
+                            person.FullName,
+                            typeof( FinancialTransaction ),
+                            transaction.Id
+                        );
+
+                        SendReceipt( transaction.Id );
 
                         TransactionCode = transaction.TransactionCode;
                     }
@@ -1715,6 +1733,18 @@ namespace RockWeb.Blocks.Finance
                 divActions.Visible = false;
                 errorMessage = string.Empty;
                 return false;
+            }
+        }
+
+        private void SendReceipt( int transactionId )
+        {
+            Guid? recieptEmail = GetAttributeValue( "ReceiptEmail" ).AsGuidOrNull();
+            if ( recieptEmail.HasValue )
+            {
+                // Queue a transaction to send reciepts
+                var newTransactionIds = new List<int> { transactionId };
+                var sendPaymentRecieptsTxn = new Rock.Transactions.SendPaymentReciepts( recieptEmail.Value, newTransactionIds );
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentRecieptsTxn );
             }
         }
 
@@ -1861,6 +1891,10 @@ namespace RockWeb.Blocks.Finance
 			}});
         }});
     }});
+
+    // sets the scroll position to the top of the page after partial postbacks
+    // without this the scroll position is the bottom of the page.
+    setTimeout('window.scrollTo(0,0)',0);
 
 ";
             string script = string.Format( 

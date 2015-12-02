@@ -192,6 +192,20 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var campusGuids = value.SplitDelimitedValues().AsGuidList();
+
+            var campuses = campusGuids.Select( a => CampusCache.Read( a ) ).Where( c => c != null );
+            return campuses.Select( a => a.Name ).ToList().AsDelimited( ", ", " or " );
+        }
+
+        /// <summary>
         /// Gets the filter compare value.
         /// </summary>
         /// <param name="control">The control.</param>

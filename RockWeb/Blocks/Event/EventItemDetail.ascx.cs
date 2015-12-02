@@ -656,7 +656,7 @@ namespace RockWeb.Blocks.Event
             }
             if ( eventItem.Id == 0 )
             {
-                lReadOnlyTitle.Text = ActionTitle.Add( "Calendar Item" ).FormatAsHtmlTitle();
+                lReadOnlyTitle.Text = ActionTitle.Add( "Event Item" ).FormatAsHtmlTitle();
                 hlStatus.Visible = false;
                 hlApproved.Visible = false;
             }

@@ -316,6 +316,38 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the recipient count.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public int GetRecipientCount( RockContext rockContext )
+        {
+            var count = new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == this.Id ).Count();
+
+            return count;
+        }
+
+        /// <summary>
+        /// Returns true if this communication has any pending recipients
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public bool HasPendingRecipients( RockContext rockContext )
+        {
+            return new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == this.Id && a.Status == Model.CommunicationRecipientStatus.Pending ).Any();
+        }
+
+        /// <summary>
+        /// Returns a queryable of the Recipients for this communication
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IQueryable<CommunicationRecipient> GetRecipientsQry( RockContext rockContext )
+        {
+            return new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == this.Id );
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>

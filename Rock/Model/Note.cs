@@ -150,6 +150,24 @@ namespace Rock.Model
             return base.IsAuthorized( action, person );
         }
 
+        /// <summary>
+        /// Determines whether the specified action is private.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public override bool IsPrivate( string action, Person person )
+        {
+            if ( CreatedByPersonAlias != null && person != null &&
+                CreatedByPersonAlias.PersonId == person.Id &&
+                IsPrivateNote )
+            {
+                return true;
+            }
+
+            return base.IsPrivate( action, person );
+        }
+
         #endregion
 
         #region Public Methods

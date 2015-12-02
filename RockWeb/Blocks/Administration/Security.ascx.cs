@@ -265,9 +265,9 @@ namespace RockWeb.Blocks.Administration
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                AuthRule authRule = (AuthRule)e.Row.DataItem;
+                var myAuthRule = (AuthRule)e.Row.DataItem;
                 RadioButtonList rbl = (RadioButtonList)e.Row.FindControl( "rblAllowDeny" );
-                rbl.SelectedValue = authRule.AllowOrDeny;
+                rbl.SelectedValue = myAuthRule.AllowOrDeny.ToString();
             }
         }
 
@@ -560,9 +560,9 @@ namespace RockWeb.Blocks.Administration
                             r.PersonId == rule.PersonId &&
                             r.GroupId == rule.GroupId ) &&
                         !parentRules.Exists( r =>
-                            r.SpecialRole == rule.SpecialRole &&
-                            r.PersonId == rule.PersonId &&
-                            r.GroupId == rule.GroupId ) )
+                            r.AuthRule.SpecialRole == rule.SpecialRole &&
+                            r.AuthRule.PersonId == rule.PersonId &&
+                            r.AuthRule.GroupId == rule.GroupId ) )
                     {
                         var myRule = new MyAuthRule( rule );
                         myRule.EntityTitle = string.Format( "{0} <small>({1})</small>", parent.ToString(), entityType.FriendlyName ?? entityType.Name ).TrimStart();
@@ -683,8 +683,16 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    public class MyAuthRule : AuthRule
+    public class MyAuthRule 
     {
+        /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
+        public int Id { get; set; }
+
         /// <summary>
         /// Gets or sets the entity title.
         /// </summary>
@@ -694,12 +702,21 @@ namespace RockWeb.Blocks.Administration
         public string EntityTitle { get; set; }
 
         /// <summary>
+        /// Gets or sets the authentication rule.
+        /// </summary>
+        /// <value>
+        /// The authentication rule.
+        /// </value>
+        public AuthRule AuthRule { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MyAuthRule"/> class.
         /// </summary>
         /// <param name="rule">The rule.</param>
         public MyAuthRule( AuthRule rule )
-            : base( rule.Id, rule.EntityId, rule.AllowOrDeny, rule.SpecialRole, rule.PersonId, rule.PersonAliasId, rule.GroupId, rule.Order )
         {
+            Id = rule.Id;
+            AuthRule = rule;
         }
     }
 

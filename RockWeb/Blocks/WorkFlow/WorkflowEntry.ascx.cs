@@ -688,7 +688,7 @@ namespace RockWeb.Blocks.WorkFlow
                 } 
                 
                 Guid activityTypeGuid = Guid.Empty;
-                string responseText = "Your information has been submitted succesfully.";
+                string responseText = "Your information has been submitted successfully.";
 
                 foreach ( var action in _actionType.WorkflowForm.Actions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
                 {

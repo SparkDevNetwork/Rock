@@ -84,7 +84,7 @@ namespace Rock.CheckIn
         public List<CheckInGroup> Groups { get; set; }
 
         /// <summary>
-        /// Gets or sets the labels to be printed after succesful check-in
+        /// Gets or sets the labels to be printed after successful check-in
         /// </summary>
         /// <value>
         /// The labels.

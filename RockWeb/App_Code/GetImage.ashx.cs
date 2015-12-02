@@ -57,7 +57,14 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex, context );
+                if ( !context.Response.IsClientConnected )
+                {
+                    // if client disconnected, ignore
+                }
+                else
+                {
+                    ExceptionLogService.LogException( ex, context );
+                }
             }
         }
 
@@ -246,7 +253,7 @@ namespace RockWeb
 
                 using ( var responseStream = fileContent )
                 {
-                    context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName );
+                    context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName.MakeValidFileName() );
                     if ( responseStream.CanSeek )
                     {
                         responseStream.Seek( 0, SeekOrigin.Begin );

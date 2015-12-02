@@ -1396,10 +1396,8 @@ namespace RockWeb.Blocks.Connection
 
                 if ( connectionRequest.ConnectionOpportunity != null )
                 {
-
                     // Get the connectors from the connector groups
-                    if ( connectionRequest.ConnectionOpportunity != null &&
-                        connectionRequest.ConnectionOpportunity.ConnectionType != null )
+                    if ( connectionRequest.ConnectionOpportunity.ConnectionType != null )
                     {
                         connectionRequest.ConnectionOpportunity.ConnectionOpportunityConnectorGroups
                             .Where( g =>
@@ -1411,7 +1409,14 @@ namespace RockWeb.Blocks.Connection
                             .ToList()
                             .ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
                     }
+
+                    if ( !currentValue.HasValue && campusId.HasValue )
+                    {
+                        currentValue = connectionRequest.ConnectionOpportunity.GetDefaultConnectorPersonId( campusId.Value );
+                    }
+
                 }
+
             }
 
             // Add the current person as possible connector
@@ -1603,7 +1608,8 @@ namespace RockWeb.Blocks.Connection
                         .Where( a =>
                             a.EntityTypeId == entityTypeId &&
                             a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                            a.EntityTypeQualifierValue.Equals( connectionRequest.ConnectionOpportunity.ConnectionTypeId.ToString() ) )
+                            a.EntityTypeQualifierValue.Equals( connectionRequest.ConnectionOpportunity.ConnectionTypeId.ToString() ) &&
+                            a.AllowSearch )
                         .OrderBy( a => a.Order )
                         .ThenBy( a => a.Name ) )
                     {
@@ -1715,7 +1721,7 @@ namespace RockWeb.Blocks.Connection
 
             ddlActivityConnector.SetValue(
                 activity != null && activity.ConnectorPersonAlias != null ?
-                activity.ConnectorPersonAlias.PersonId : CurrentPersonAliasId ?? 0 );
+                activity.ConnectorPersonAlias.PersonId : CurrentPersonId ?? 0 );
 
             tbNote.Text = activity != null ? activity.Note : string.Empty;
 

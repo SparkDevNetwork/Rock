@@ -437,6 +437,12 @@ namespace RockWeb.Blocks.Prayer
 
             //lPrayerText.Text = prayerRequest.Text.EncodeHtmlThenConvertCrLfToHtmlBr();
             lPrayerText.Text = prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr();
+
+            if ( prayerRequest.EnteredDateTime != null )
+            {
+                lPrayerRequestDate.Text = string.Format("Date Entered: {0}", prayerRequest.EnteredDateTime.ToShortDateString());
+            }
+            
             hlblCategory.Text = prayerRequest.Category.Name;
 
             // Show their answer if there is one on the request.

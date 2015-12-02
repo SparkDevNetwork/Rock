@@ -13,7 +13,7 @@
 <asp:UpdatePanel ID="upnlGroupDetail" runat="server">
     <ContentTemplate>
 
-        <asp:Panel ID="pnlDetails" runat="server">
+        <asp:Panel ID="pnlDetails" CssClass="js-group-panel" runat="server">
             <asp:HiddenField ID="hfGroupId" runat="server" />
 
             <div class="panel panel-block">
@@ -25,8 +25,8 @@
                     </h1>
 
                     <div class="panel-labels"> 
-                        <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
-                        <Rock:HighlightLabel ID="hlIsPrivate" runat="server" LabelType="Default" Text="Private" />
+                        <Rock:HighlightLabel ID="hlInactive" runat="server" CssClass="js-inactivegroup-label" LabelType="Danger" Text="Inactive" />
+                        <Rock:HighlightLabel ID="hlIsPrivate" runat="server" CssClass="js-privategroup-label" LabelType="Default" Text="Private" />
                         <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                         <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                     </div>
@@ -50,8 +50,9 @@
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
-                                <Rock:RockCheckBox ID="cbIsPublic" runat="server" Text="Public" />
+                                <Rock:RockCheckBox ID="cbIsActive" runat="server" CssClass="js-isactivegroup" Text="Active" />
+                                <Rock:RockCheckBox ID="cbInactivateChildGroups" runat="server" Text="Inactivate Child Groups" ContainerCssClass="margin-l-md js-inactivatechildgroups" style="display:none" />
+                                <Rock:RockCheckBox ID="cbIsPublic" runat="server" CssClass="js-ispublicgroup" Text="Public" />
                             </div>
                         </div>
 
@@ -64,7 +65,7 @@
                         <Rock:PanelWidget ID="wpGeneral" runat="server" Title="General">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" />
+                                    <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" Required="true" />
                                     <Rock:RockLiteral ID="lGroupType" runat="server" Label="Group Type" />
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
                                 </div>
@@ -365,6 +366,57 @@
                 </div>
             </Content>
         </Rock:ModalDialog>
+
+        <script>
+            
+            Sys.Application.add_load(function () {
+                function setIsActiveControls(activeCheckbox) {
+                    
+                    var $inactiveLabel = $(activeCheckbox).closest(".js-group-panel").find('.js-inactivegroup-label');
+                    if ($(activeCheckbox).is(':checked')) {
+                        $inactiveLabel.hide();
+                    }
+                    else {
+                        $inactiveLabel.show();
+                    }
+
+                    // if isactive was toggled from Active to Inactive, show the inactivate child groups checkbox
+                    if ($(activeCheckbox).is(':checked')) {
+                        $('.js-inactivatechildgroups').hide();
+                    }
+                    else {
+                        $('.js-inactivatechildgroups').show();
+                    }
+                }
+
+                function setPrivateLabel(publicCheckbox) {
+                    var $privateLabel = $(publicCheckbox).closest(".js-group-panel").find('.js-privategroup-label');
+                    if ($(publicCheckbox).is(':checked')) {
+                        $privateLabel.hide();
+                    }
+                    else {
+                        $privateLabel.show();
+                    }
+                }
+
+                $('.js-isactivegroup').on('click', function () {
+                    setIsActiveControls(this);
+                });
+
+                $('.js-ispublicgroup').on('click', function () {
+                    setPrivateLabel(this);
+                });
+
+                $('.js-isactivegroup').each(function (i) {
+                    setIsActiveControls(this);
+                });
+
+                $('.js-ispublicgroup').each(function (i) {
+                    setPrivateLabel(this);
+                });
+            });
+
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>
