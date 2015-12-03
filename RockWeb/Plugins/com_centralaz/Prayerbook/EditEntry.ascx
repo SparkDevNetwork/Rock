@@ -28,16 +28,7 @@
                 <Rock:RockTextBox ID="dtbPraise1" runat="server" Label="Praise 1" CausesValidation="false" Rows="4" TextMode="MultiLine" Required="true" />
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-6">
-                <Rock:RockTextBox ID="dtbPersonalRequest1" runat="server" Label="Personal Request 1" CausesValidation="false" Rows="4" TextMode="MultiLine" Required="true" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
-                <Rock:RockTextBox ID="dtbPersonalRequest2" runat="server" Label="PersonalRequest 2" CausesValidation="false" Rows="4" TextMode="MultiLine" />
-            </div>
-        </div>
+
         <div class="row">
             <div class="col-md-6">
                 <Rock:RockTextBox ID="dtbMinistryNeed1" runat="server" Label="Ministry Need 1" CausesValidation="false" Rows="4" TextMode="MultiLine" Required="true" />
@@ -53,6 +44,16 @@
                 <Rock:RockTextBox ID="dtbMinistryNeed3" runat="server" Label="Ministry Need 3" CausesValidation="false" Rows="4" TextMode="MultiLine" />
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-6">
+                <Rock:RockTextBox ID="dtbPersonalRequest1" runat="server" Label="Personal Request 1" CausesValidation="false" Rows="4" TextMode="MultiLine" Required="true" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <Rock:RockTextBox ID="dtbPersonalRequest2" runat="server" Label="PersonalRequest 2" CausesValidation="false" Rows="4" TextMode="MultiLine" />
+            </div>
+        </div>
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-1">
@@ -62,7 +63,7 @@
                     <Rock:BootstrapButton ID="btnDelete" runat="server" Text="Delete Entry" OnClick="btnDelete_Click" CssClass="btn btn-default" CausesValidation="false" />
                 </div>
                 <div class="col-md-1">
-                    <Rock:BootstrapButton ID="btnCancel" runat="server" Text="Cancel" OnClick="btnCancel_Click" CssClass="btn btn-link" CausesValidation="false" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" OnClick="btnCancel_Click" CssClass="btn btn-link" CausesValidation="false" />
                 </div>
             </div>
         </div>
