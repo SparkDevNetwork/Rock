@@ -243,17 +243,17 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
                         if ( totalSaved > 0 )
                         {
-                            lblCompleteMsg.Text += totalSaved + " successfully saved.<br/><br />";
+                            lblCompleteMsg.Text += totalSaved + " successfully saved.<br />";
                         }
 
                         if ( alreadyConnected > 0 )
                         {
-                            lblCompleteMsg.Text += alreadyConnected + " of the email addresses were already tagged.<br/><br />";
+                            lblCompleteMsg.Text += alreadyConnected + " of the email addresses were already tagged.<br />";
                         }
 
                         if ( badEmail > 0 )
                         {
-                            lblCompleteMsg.Text += badEmail + " of the provided email addresses were blank or invalid.<br /><br />";
+                            lblCompleteMsg.Text += badEmail + " of the provided email addresses were blank or invalid.<br />";
                         }
 
                         if ( miscProblems > 0 )
@@ -516,7 +516,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             if ( GetAttributeValue( "AutoAddPeople" ).AsBoolean() )
             {
                 totalToImport = list.Count + badList.Count;
-                importPeopleMessage = "Will first add (as new) and then";
+                importPeopleMessage = "Will add then";
             }
             else
             {
@@ -529,12 +529,15 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 badItems.Append( "<br/>" + string.Join( ",", s ) );
             }
 
-            lblSummary.Text = "<table class='smallText'>" +
-                "<tr><td align='right'><span class='formLabel'>People to import:</span></td><td>" + totalToImport + "</td></tr>" +
-                "<tr><td align='right'><span class='formLabel'>Group:</span></td><td>" + ddlGroup.SelectedItem.Text + "</td></tr>" +
-                "<tr><td align='right' valign='top'><span class='formLabel'>" + importPeopleMessage + " import people:</span></td><td valign='top'>" + badItems.ToString() +
-                "</td></tr>" +
-                "</table>";
+            lblSummary.Text = String.Format( @"
+            <dl class='dl-horizontal'>
+                <dt>People to import:</dt>
+                <dd>{0}</dd>         
+                <dt>Group:</dt>
+                <dd>{1}</dd>
+                <dt style='white-space: normal;'>{2} import people:</dt>
+                <dd>{3}</dd>
+            </dl>", totalToImport, ddlGroup.SelectedItem.Text, importPeopleMessage, badItems.ToString() );
         }
 
         /// <summary>
