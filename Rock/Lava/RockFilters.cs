@@ -1806,6 +1806,43 @@ namespace Rock.Lava
             return new List<Model.GroupMember>();
         }
 
+
+        /// <summary>
+        /// Groups the specified context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="status">The status.</param>
+        /// <returns></returns>
+        public static List<Rock.Model.GroupMember> Group( DotLiquid.Context context, object input, string groupId, string status = "Active" )
+        {
+            var person = GetPerson( input );
+            int? numericalGroupId = groupId.AsIntegerOrNull();
+
+            if ( person != null && numericalGroupId.HasValue )
+            {
+                var groupQuery = new GroupMemberService( GetRockContext( context ) )
+                    .Queryable( "Group, GroupRole" ).AsNoTracking()
+                    .Where( m =>
+                        m.PersonId == person.Id &&
+                        m.Group.Id == numericalGroupId.Value &&
+                        m.Group.IsActive );
+
+                if ( status != "All" )
+                {
+                    GroupMemberStatus queryStatus = GroupMemberStatus.Active;
+                    queryStatus = (GroupMemberStatus)Enum.Parse( typeof( GroupMemberStatus ), status, true );
+
+                    groupQuery = groupQuery.Where( m => m.GroupMemberStatus == queryStatus );
+                }
+
+                return groupQuery.ToList();
+            }
+
+            return new List<Model.GroupMember>();
+        }
+
         /// <summary>
         /// Gets the groups of selected type that person is a member of which they have attended at least once
         /// </summary>
