@@ -126,9 +126,9 @@ namespace RockWeb.Blocks.Event
 
                 // get event occurrences
                 var qry = new EventItemOccurrenceService( rockContext ).Queryable()
-                                            .Where( e => e.EventItem.EventItemAudiences.Any(a => a.DefinedValue.Guid == audienceGuid) );
+                                            .Where(e => e.EventItem.EventItemAudiences.Any(a => a.DefinedValue.Guid == audienceGuid) && e.EventItem.IsActive);
 
-                // filter occurrences for campus
+                // filter occurrences for campus (always include the "All Campuses" events)
                 if ( GetAttributeValue( "UseCampusContext" ).AsBoolean() )
                 {
                     var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( contextCampus != null )
                     {
-                        qry = qry.Where( e => e.CampusId == contextCampus.Id );
+                        qry = qry.Where( e => e.CampusId == contextCampus.Id || !e.CampusId.HasValue );
                     }
                 }
                 else
@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.Event
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "Campuses" ) ) )
                     {
                         var selectedCampuses = Array.ConvertAll( GetAttributeValue( "Campuses" ).Split( ',' ), s => new Guid( s ) ).ToList();
-                        qry = qry.Where( e => selectedCampuses.Contains( e.Campus.Guid ) );
+                        qry = qry.Where( e => selectedCampuses.Contains(e.Campus.Guid) || !e.CampusId.HasValue );
                     }
                 }
 
