@@ -440,12 +440,12 @@ BEGIN
 		AND ParentGroupId = @ParentGroupId
 		AND GroupTypeId = @GroupTypeId
 
-		SELECT @Output = 'Starting ' + @CampusName + ' / ' + @GroupTypeName + ' / ' + @GroupName
-		RAISERROR ( @Output, 0, 0 ) WITH NOWAIT
-
 		-- Create group (+ attributes + location + schedule) if it doesn't exist
 		IF @ChildGroupId IS NULL AND @GroupTypeId IS NOT NULL
 		BEGIN
+
+			SELECT @Output = 'Starting ' + @CampusName + ' / ' + @GroupTypeName + ' / ' + @GroupName
+			RAISERROR ( @Output, 0, 0 ) WITH NOWAIT
 
 			INSERT [Group] (IsSystem, ParentGroupId, GroupTypeId, CampusId, Name, [Description], IsSecurityRole, IsActive, [Order], CreatedDateTime, IsPublic, ForeignKey, ForeignId, [Guid])
 			SELECT @False, @ParentGroupId, @GroupTypeId, @CampusId, @GroupName, @Description, @False, @True, @Order, @ScheduleStart, @IsPublic, @F1GroupId, @F1GroupId, NEWID()
@@ -543,6 +543,10 @@ BEGIN
 
 				SELECT @GroupLocationId = SCOPE_IDENTITY()
 			END
+		END
+		ELSE BEGIN
+			SELECT @Output = 'Could not create ' + ISNULL(@CampusName,'') + ' / ' + ISNULL(@GroupTypeName,'') + ' / ' + ISNULL(@GroupName,'')
+			RAISERROR ( @Output, 0, 0 ) WITH NOWAIT
 		END
 
 		IF @ChildGroupId IS NOT NULL
