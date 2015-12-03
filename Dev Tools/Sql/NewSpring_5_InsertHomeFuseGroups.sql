@@ -316,6 +316,23 @@ CREATE TABLE #groupAssignments (
 	groupChildren bit
 )
 
+-- remove groups that show up twice 
+IF EXISTS ( SELECT Group_name FROM F1..GroupsDescription GROUP BY group_name, group_type_name HAVING COUNT(1) > 1)
+BEGIN
+	SELECT Group_Name, Group_Type_Name
+	INTO #groupsToDelete
+	FROM F1..GroupsDescription 
+	GROUP BY Group_Name, Group_Type_Name
+	HAVING COUNT(1) > 1	
+
+	DELETE gd 
+	FROM F1..GroupsDescription gd
+	INNER JOIN #groupsToDelete gtd
+	ON gd.Group_name = gtd.Group_Name
+	AND gd.Group_Type_name = gtd.Group_Type_Name
+	AND gd..RecurrenceType IS NULL
+END
+
 DECLARE @scopeIndex int, @numItems int
 SELECT @scopeIndex = min(ID) FROM Campus
 SELECT @numItems = count(1) + @scopeIndex FROM Campus
@@ -444,22 +461,15 @@ BEGIN
 				IF ISNUMERIC(LEFT(@GroupName, 1)) = 1
 				BEGIN
 
-					-- fix bad group name 
-					IF @GroupName LIKE '%6-7th%' 
-					BEGIN
-						SELECT @GroupName = REPLACE(@GroupName, '6-7th', '6th & 7th')
-					END
-
-
 					SELECT @MinGrade = [Guid]
 					FROM DefinedValue
 					WHERE DefinedTypeId = @DefinedTypeGradeId
-					AND [Order] = SUBSTRING(@GroupName, 0, PATINDEX('%[0-9]th%', @GroupName)+1)
+					AND [Order] = REPLACE(LEFT(REPLACE(SUBSTRING(REPLACE(@GroupName, '-', 'th'), 0, PATINDEX('%[0-9]th%', @GroupName)+1), 't', ''), 2), 'h', '')
 
 					SELECT @MaxGrade = [Guid]
 					FROM DefinedValue
 					WHERE DefinedTypeId = @DefinedTypeGradeId
-					AND [Order] = REPLACE(REVERSE(SUBSTRING(REVERSE( @GroupName ), PATINDEX('%ht[0-9]%', REVERSE( @GroupName )) +2, 2)), ',', '')
+					AND [Order] = REPLACE(REPLACE(REVERSE(SUBSTRING(REVERSE(REPLACE(@GroupName, '-', 'th') ), PATINDEX('%ht[0-9]%', REVERSE( REPLACE(@GroupName, '-', 'th'))) +2, 2)), ',', ''), 'h', '')
 
 					-- set grade range attribute
 					INSERT [AttributeValue] (IsSystem, AttributeId, EntityId, Value, [Guid])
