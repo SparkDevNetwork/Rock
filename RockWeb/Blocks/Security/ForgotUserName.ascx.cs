@@ -136,9 +136,13 @@ namespace RockWeb.Blocks.Security
             else if (results.Count > 0 )
             {
                 // the person has user accounts but none of them are allowed to have their passwords reset (Facebook/Google/etc)
+                
                 lWarning.Text = string.Format( @"<p>We were able to find the following accounts for this email, but 
-                                                none of them are able to be reset from this website.</p> <p>Accounts:<br /> {0}</p>"
-                                    , string.Join( ",", accountTypes ) );
+                                                none of them are able to be reset from this website.</p> <p>Accounts:<br /> {0}</p>
+                                                <p>To create a new account with a username and password please see our <a href='{1}'>New Account</a>
+                                                page.</p>"
+                                    , string.Join( ",", accountTypes )
+                                    , ResolveRockUrl( "~/NewAccount" ) );
                 pnlWarning.Visible = true;
             }
             else
