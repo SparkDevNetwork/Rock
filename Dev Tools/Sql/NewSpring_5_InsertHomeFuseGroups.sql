@@ -316,23 +316,6 @@ CREATE TABLE #groupAssignments (
 	groupChildren bit
 )
 
--- remove groups that show up twice 
-IF EXISTS ( SELECT Group_name FROM F1..GroupsDescription GROUP BY group_name, group_type_name HAVING COUNT(1) > 1)
-BEGIN
-	SELECT Group_Name, Group_Type_Name
-	INTO #groupsToDelete
-	FROM F1..GroupsDescription 
-	GROUP BY Group_Name, Group_Type_Name
-	HAVING COUNT(1) > 1	
-
-	DELETE gd 
-	FROM F1..GroupsDescription gd
-	INNER JOIN #groupsToDelete gtd
-	ON gd.Group_name = gtd.Group_Name
-	AND gd.Group_Type_name = gtd.Group_Type_Name
-	AND gd..RecurrenceType IS NULL
-END
-
 DECLARE @scopeIndex int, @numItems int
 SELECT @scopeIndex = min(ID) FROM Campus
 SELECT @numItems = count(1) + @scopeIndex FROM Campus
@@ -388,6 +371,29 @@ BEGIN
 		AND Group_Type_Name NOT LIKE 'Inactive%'
 		AND Group_Name NOT LIKE '%Wait%'
 		AND Group_Type_Name LIKE ('' + @CampusName + '%')
+
+	-- remove duplicate groups that don't have a schedule
+	IF EXISTS ( SELECT groupName FROM #groupAssignments GROUP BY groupName, groupType HAVING COUNT(1) > 1)
+	BEGIN
+		IF OBJECT_ID('tempdb..#groupsToDelete') is not null
+		BEGIN
+			DROP TABLE #groupsToDelete
+		END
+
+		SELECT groupName, groupType
+		INTO #groupsToDelete
+		FROM #groupAssignments
+		GROUP BY groupName, groupType
+		HAVING COUNT(1) > 1;		
+
+		DELETE ga
+		FROM #groupAssignments ga
+		INNER JOIN #groupsToDelete gtd
+		ON ga.groupName = gtd.groupName
+		AND ga.groupType = gtd.groupType
+		WHERE ga.groupRecurrence IS NULL
+	END
+
 
 	/* ====================================================== */
 	-- Start creating child groups
@@ -569,4 +575,5 @@ END
 RAISERROR ( N'Completed successfully.', 0, 0 ) WITH NOWAIT
 
 use master
+
 
