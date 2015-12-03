@@ -444,7 +444,7 @@ BEGIN
 		RAISERROR ( @Output, 0, 0 ) WITH NOWAIT
 
 		-- Create group (+ attributes + location + schedule) if it doesn't exist
-		IF @ChildGroupId is null
+		IF @ChildGroupId IS NULL AND @GroupTypeId IS NOT NULL
 		BEGIN
 
 			INSERT [Group] (IsSystem, ParentGroupId, GroupTypeId, CampusId, Name, [Description], IsSecurityRole, IsActive, [Order], CreatedDateTime, IsPublic, ForeignKey, ForeignId, [Guid])
@@ -545,14 +545,17 @@ BEGIN
 			END
 		END
 
-		-- Create group memberships
-		INSERT [GroupMember] (IsSystem, GroupId, PersonId, GroupMemberStatus, IsNotified, CreatedDateTime, [Guid], GroupRoleId)
-		SELECT @False, @ChildGroupId, p.PersonId, @True, @False, g.Created_Date, NEWID(),
-			 CASE Group_member_type_name WHEN 'Leader' THEN @LeaderRoleId ELSE @MemberRoleId END 
-		FROM F1..Groups g
-		INNER JOIN PersonAlias p
-			ON g.Individual_ID = p.ForeignKey
-			AND g.Group_ID = @F1GroupId
+		IF @ChildGroupId IS NOT NULL
+		BEGIN
+			-- Create group memberships
+			INSERT [GroupMember] (IsSystem, GroupId, PersonId, GroupMemberStatus, IsNotified, CreatedDateTime, [Guid], GroupRoleId)
+			SELECT @False, @ChildGroupId, p.PersonId, @True, @False, g.Created_Date, NEWID(),
+				 CASE Group_member_type_name WHEN 'Leader' THEN @LeaderRoleId ELSE @MemberRoleId END 
+			FROM F1..Groups g
+			INNER JOIN PersonAlias p
+				ON g.Individual_ID = p.ForeignKey
+				AND g.Group_ID = @F1GroupId
+		END
 
 		-- reset all variables
 		SELECT @GroupTypeId = null, @GroupTypeName = null, @F1GroupId = null, @ParentGroupId = null, @ChildGroupId = null, @GroupScheduleId = null,
