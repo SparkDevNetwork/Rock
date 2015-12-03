@@ -36,9 +36,8 @@ using Rock.Communication;
 
 namespace com.centralaz.GeneralJobs.Jobs
 {
-
     /// <summary>
-    /// Job to send reminders to accountability group members to submit a report.
+    /// Creates Workflows from emails in a POP3 inbox.
     /// </summary>
     [WorkflowTypeField( "Workflow", "Type to use when creating workflows", false, true, "51FE9641-FB8F-41BF-B09E-235900C3E53E", "", 0 )]
     [TextField( "Mailserver", "Hostname of the mail server", true, "", "", 1 )]
@@ -51,7 +50,7 @@ namespace com.centralaz.GeneralJobs.Jobs
     [BooleanField( "Enable Logging", "Enable logging", false, "", 8 )]
     [PersonField( "Anonymous Sender", "Default Requester when the job cannot find one", true, "", "", 9 )]
     [DisallowConcurrentExecution]
-    public class EmailToAssignment : IJob
+    public class EmailToWorkflow : IJob
     {
         private bool _loggingActive = false;
         private int _inboxCount = 0;
@@ -64,7 +63,7 @@ namespace com.centralaz.GeneralJobs.Jobs
         /// <summary>
         /// Initializes a new instance of the <see cref="SendCommunications"/> class.
         /// </summary>
-        public EmailToAssignment()
+        public EmailToWorkflow()
         {
         }
 
@@ -78,7 +77,7 @@ namespace com.centralaz.GeneralJobs.Jobs
 
             String root = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/Logs/" );
             String now = DateTime.Now.ToString( "yyyy-MM-dd-HH-mm-ss" );
-            String pathName = String.Format( "{0}{1}-EmailToAssignment.log", root, now );
+            String pathName = String.Format( "{0}{1}-EmailToWorkflow.log", root, now );
 
             //Get Mail
             try
@@ -194,6 +193,15 @@ namespace com.centralaz.GeneralJobs.Jobs
             }
         }
 
+        /// <summary>
+        /// Makes the workflow.
+        /// </summary>
+        /// <param name="fromAddress">From address.</param>
+        /// <param name="emailSubject">The email subject.</param>
+        /// <param name="emailBody">The email body.</param>
+        /// <param name="pathName">Name of the path.</param>
+        /// <param name="anonymousSenderGuid">The anonymous sender unique identifier.</param>
+        /// <returns></returns>
         protected Boolean MakeWorkflow( System.Net.Mail.MailAddress fromAddress, String emailSubject, String emailBody, String pathName, String anonymousSenderGuid )
         {
             //Make Workflow
@@ -277,6 +285,7 @@ namespace com.centralaz.GeneralJobs.Jobs
                     {
                         _action.Activity.MarkComplete();
                     }
+
                     //Try to find the person from the email
                     Person entity = null;
                     entity = new PersonService( rockContext ).GetByEmail( fromAddress.Address ).FirstOrDefault();
@@ -289,16 +298,19 @@ namespace com.centralaz.GeneralJobs.Jobs
                         catch
                         { }
                     }
+
                     if ( entity == null )
                     {
                         String[] nameArray = fromAddress.Address.Split( '.', '@' );
                         String fullName = String.Format( "{0} {1}", nameArray[0], nameArray[1] );
                         entity = new PersonService( rockContext ).GetByFullName( fullName, false ).FirstOrDefault();
                     }
+
                     workflow.LoadAttributes();
                     //Set each attribute from the email
                     workflow.SetAttributeValue( "Summary", emailSubject );
                     workflow.SetAttributeValue( "Details", emailBody );
+
                     if ( entity != null )
                     {
                         workflow.SetAttributeValue( "Requester", entity.Guid.ToString() );
@@ -364,9 +376,13 @@ namespace com.centralaz.GeneralJobs.Jobs
             }
         }
 
+        /// <summary>
+        /// Logs to file.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="pathName">Name of the path.</param>
         protected void LogToFile( String message, String pathName )
         {
-
             using ( var str = new StreamWriter( pathName, true ) )
             {
                 str.WriteLine( message );
@@ -374,6 +390,12 @@ namespace com.centralaz.GeneralJobs.Jobs
             }
         }
 
+        /// <summary>
+        /// Activates the workflow action.
+        /// </summary>
+        /// <param name="actionType">Type of the action.</param>
+        /// <param name="activity">The activity.</param>
+        /// <returns></returns>
         protected WorkflowAction ActivateWorkflowAction( WorkflowActionType actionType, WorkflowActivity activity )
         {
             var action = new WorkflowAction();
