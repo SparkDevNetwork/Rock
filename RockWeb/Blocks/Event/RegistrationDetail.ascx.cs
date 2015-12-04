@@ -316,7 +316,7 @@ namespace RockWeb.Blocks.Event
                     History.EvaluateChange( changes, "First Name", registration.FirstName, tbFirstName.Text );
                     registration.FirstName = tbFirstName.Text;
 
-                    History.EvaluateChange( changes, "Last Name", registration.FirstName, tbLastName.Text );
+                    History.EvaluateChange( changes, "Last Name", registration.LastName, tbLastName.Text );
                     registration.LastName = tbLastName.Text;
 
                     History.EvaluateChange( changes, "Confirmation Email", registration.ConfirmationEmail, ebConfirmationEmail.Text );
@@ -614,6 +614,19 @@ namespace RockWeb.Blocks.Event
                 confirmation.AppRoot = appRoot;
                 confirmation.ThemeRoot = themeRoot;
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
+
+                var changes = new List<string>();
+                changes.Add( "Resent Confirmation" );
+                using ( var rockContext = new RockContext() )
+                {
+                    HistoryService.SaveChanges(
+                        rockContext,
+                        typeof( Registration ),
+                        Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                        RegistrationId.Value,
+                        changes
+                    );
+                }
 
                 nbConfirmationQueued.Visible = true;
             }
@@ -1302,6 +1315,8 @@ namespace RockWeb.Blocks.Event
             var txnChanges = new List<string>();
             txnChanges.Add( "Created Transaction" );
 
+            var registrationChanges = new List<string>();
+
             DefinedValueCache dvCurrencyType = null;
             DefinedValueCache dvCredCardType = null;
 
@@ -1356,6 +1371,8 @@ namespace RockWeb.Blocks.Event
 
                     dvCurrencyType = paymentInfo.CurrencyTypeValue;
                     dvCredCardType = paymentInfo.CreditCardTypeValue;
+
+                    registrationChanges.Add( string.Format( "Processed payment of {0}.", amount.FormatAsCurrency() ) );
                 }
             }
             else
@@ -1366,6 +1383,8 @@ namespace RockWeb.Blocks.Event
                 transaction.FinancialPaymentDetail.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
                 transaction.FinancialPaymentDetail.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
                 transaction.TransactionCode = tbTransactionCode.Text;
+
+                registrationChanges.Add( string.Format( "Manually added payment of {0}.", amount.FormatAsCurrency() ) );
             }
 
             transaction.Summary = tbSummary.Text;
@@ -1457,6 +1476,14 @@ namespace RockWeb.Blocks.Event
                     transaction.Id
                 );
 
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( Registration ),
+                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                    registration.Id,
+                    registrationChanges
+                );
+                    
                 return true;
             }
             else

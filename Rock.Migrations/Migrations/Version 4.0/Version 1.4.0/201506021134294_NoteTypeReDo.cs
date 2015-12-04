@@ -93,7 +93,7 @@ namespace Rock.Migrations
     SET @EntityTypeId  = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Person' )
 	IF @EntityTypeId IS NOT NULL
 	BEGIN
-		Set @NoteTypeGuid = ( SELECT TOP 1 [Guid] FROM [NoteType] WHERE [EntityTypeId] = @EntityTypeId ORDER BY [Order] )
+		Set @NoteTypeGuid = ( SELECT TOP 1 [Guid] FROM [NoteType] WHERE [EntityTypeId] = @EntityTypeId ORDER BY [Order], [Id] DESC )
 		IF @NoteTypeGuid IS NOT NULL
 		BEGIN
 			UPDATE AV SET [Value] = '66a1b9d7-7efa-40f3-9415-e54437977d60'
