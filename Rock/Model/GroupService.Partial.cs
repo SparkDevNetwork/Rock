@@ -657,14 +657,16 @@ namespace Rock.Model
                             rockContext.SaveChanges();
                         }
 
+                        int? modifiedByPersonAliasId = person.ModifiedAuditValuesAlreadyUpdated ? person.ModifiedByPersonAliasId : ( int? ) null;
+
                         HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                            person.Id, changes );
+                            person.Id, changes, true, modifiedByPersonAliasId );
 
                         HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                            person.Id, familyMemberChanges[person.Guid], familyGroup.Name, typeof( Group ), familyGroup.Id );
+                            person.Id, familyMemberChanges[person.Guid], familyGroup.Name, typeof( Group ), familyGroup.Id, true, modifiedByPersonAliasId );
 
                         HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                            person.Id, familyChanges, familyGroup.Name, typeof( Group ), familyGroup.Id );
+                            person.Id, familyChanges, familyGroup.Name, typeof( Group ), familyGroup.Id, true, modifiedByPersonAliasId );
                     }
                 }
 
