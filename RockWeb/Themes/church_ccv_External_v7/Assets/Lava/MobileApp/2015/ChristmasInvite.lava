@@ -1,0 +1,283 @@
+{% comment %}
+
+{% assign CurrentCampus = 'East Valley' %}
+{% include '~~/Assets/Lava/MobileApp/2015/ChristmasInvite.lava' %}
+
+{% endcomment %}
+
+{% assign preurl = 'external:' %}
+
+{% case CurrentCampus %}
+  {% when 'Anthem' %}
+    {% assign tueTimes = "6:00 pm" | Split: ", " %}
+    {% assign wedTimes = "4:30 pm, 6:00 pm, 7:30 pm" | Split: ", " %}
+    {% assign thuTimes = "1:30 pm, 3:00 pm, 4:30 pm, 6:00 pm" | Split: ", " %}
+  {% when 'Avondale' %}
+    {% assign tueTimes = "6:00 pm" | Split: ", " %}
+    {% assign wedTimes = "4:30 pm, 6:00 pm, 7:30 pm" | Split: ", " %}
+    {% assign thuTimes = "3:00 pm, 4:30 pm, 6:00 pm" | Split: ", " %}
+  {% when 'East Valley' %}
+    {% comment %}{% assign tueTimes = "" | Split: ", " %}{% endcomment %}
+    {% assign wedTimes = "6:00 pm, 7:30 pm" | Split: ", " %}
+    {% assign thuTimes = "3:00 pm, 4:30 pm, 6:00 pm" | Split: ", " %}
+  {% when 'Peoria' %}
+    {% assign tueTimes = "6:00 pm, 7:30 pm" | Split: ", " %}
+    {% assign wedTimes = "4:30 pm, 6:00 pm, 7:30 pm" | Split: ", " %}
+    {% assign thuTimes = "1:30 pm, 3:00 pm, 4:30 pm, 6:00 pm, 7:30 pm" | Split: ", " %}
+  {% when 'Scottsdale' %}
+    {% comment %}{% assign tueTimes = "" | Split: ", " %}{% endcomment %}
+    {% assign wedTimes = "6:00 pm, 7:30 pm" | Split: ", " %}
+    {% assign thuTimes = "3:00 pm, 4:30 pm, 6:00 pm" | Split: ", " %}
+  {% when 'Surprise' %}
+    {% assign tueTimes = "6:00 pm" | Split: ", " %}
+    {% assign wedTimes = "4:30 pm, 6:00 pm, 7:30 pm" | Split: ", " %}
+    {% assign thuTimes = "1:30 pm, 3:00 pm, 4:30 pm, 6:00 pm, 7:30 pm" | Split: ", " %}
+{% endcase %}
+
+{% assign tueTitle = "Tuesday 12/22" %}
+{% assign wedTitle = "Wednesday 12/23" %}
+{% assign thuTitle = "Thursday 12/24" %}
+
+{% capture allTimes %}
+We're going to CCV for Christmas services this year. Would you like to join us? Below are all the service times this year for the {{ CurrentCampus }} Campus.\n
+{% if tueTimes %}
+\n{{ tueTitle }}\n
+{% for time in tueTimes %} - {{time}}\n{% endfor %}
+{% endif %}
+{% if wedTimes %}
+\n{{ wedTitle }}\n
+{% for time in wedTimes %} - {{time}}\n{% endfor %}
+{% endif %}
+{% if thuTimes %}
+\n{{ thuTitle }}\n
+{% for time in thuTimes %} - {{time}}\n{% endfor %}
+{% endif %}
+{% endcapture %}
+{% assign allTimes = allTimes | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+
+{% comment %}{{ Context.Campus.ShortCode }}{% endcomment %}
+
+{% assign emailSubject = 'Join us for Christmas service at CCV' %}
+{% assign emailSubjectEscaped = emailSubject | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+
+{% comment %}{% assign emailBodyHeader = "" %}{% endcomment %}
+{% capture emailBodyHeader %}We're going to CCV for Christmas services this year on the {{ CurrentCampus }} Campus. Would you like to join us?\n\nWe'll be attending the {% endcapture %}
+{% assign emailBodyHeaderEscaped = emailBodyHeader | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+
+{% capture smsP1 %}Come to Christmas at CCV with us! We'll be going to the {% endcapture %}
+{% assign smsP1Escaped = smsP1 | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+
+{% capture smsP2 %} at the {{ CurrentCampus }} campus. You should join us! http://ccvchristmas.com{% endcapture %}
+{% assign smsP2Escaped = smsP2 | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+
+{% capture url %}http://ccvchristmas.com{% endcapture %}
+{% assign urlEscaped = url | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+
+
+
+{% capture smsAll %}We're going to Christmas service at CCV on the {{ CurrentCampus }} campus. Would you like to join us? Check out the service times at http://ccvchristmas.com and let's plan to go together!{% endcapture %}
+{% assign smsAllEscaped = smsAll | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+
+{% case PageParameter.ma-platform %}
+  {% when 'android' %}
+    {% assign sep = '?' %}
+  {% when 'ios' %}
+    {% assign sep = '&' %}
+  {% else %}
+    {% assign sep = '&' %}
+{% endcase %}
+
+<div class="wrapper">
+  <article class="page fade in js-pg1 is-currentpg">
+    <p>&nbsp;</p>
+
+    {% comment %}<h1>{{ CurrentCampus }}</h1>{% endcomment %}
+
+    <p class="lead">How would you like to send your invite?</p>
+
+    <p>
+      <a href="#" class="js-pg1-choose btn btn-default btn-block" data-medium="email">Email</a>
+    </p>
+
+    <p>
+      <a href="#" class="js-pg1-choose btn btn-default btn-block" data-medium="sms">Text Message</a>
+    </p>
+  </article>
+
+  <article class="page fade js-pg2-email">
+    <div class="row margin-t-lg">
+      <div class="col-xs-7">
+        <h4 class="margin-t-none">Email Invite</h4>
+      </div>
+      <div class="col-xs-5 text-right">
+        <a href="#" class="js-back btn btn-default btn-xs"><i class="fa fa-angle-left"></i> Back</a>
+      </div>
+    </div>
+    <p class="lead">Which service are you attending?</p>
+    <div class="row">
+
+      {% if tueTimes %}
+        {% assign title = tueTitle %}
+        <div class="col-xs-12">
+          <h5 class="underline">{{ title }}</h5>
+        </div>
+        {% for time in tueTimes %}
+          {% assign timeEscaped = time | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+          {% assign titleEscaped = title | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+          <div class="col-xs-6">
+            <a href="{{ preurl }}mailto:?subject={{ emailSubjectEscaped }}&body={{ emailBodyHeaderEscaped }}{{ timeEscaped }}%20service%20on%20{{ titleEscaped }}.%0D%0A%0D%0A{{ urlEscaped }}" class="btn btn-default btn-block margin-b-lg js-track-email" data-label="{{ title }} {{ time }}">{{ time }}</a>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% if wedTimes %}
+        {% assign title = wedTitle %}
+        <div class="col-xs-12">
+          <h5 class="underline">{{ title }}</h5>
+        </div>
+        {% for time in wedTimes %}
+          {% assign timeEscaped = time | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+          {% assign titleEscaped = title | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+          <div class="col-xs-6">
+            <a href="{{ preurl }}mailto:?subject={{ emailSubjectEscaped }}&body={{ emailBodyHeaderEscaped }}{{ timeEscaped }}%20service%20on%20{{ titleEscaped }}.%0D%0A%0D%0A{{ urlEscaped }}" class="btn btn-default btn-block margin-b-lg js-track-email" data-label="{{ title }} {{ time }}">{{ time }}</a>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% if thuTimes %}
+        {% assign title = thuTitle %}
+        <div class="col-xs-12">
+          <h5 class="underline">{{ title }}</h5>
+        </div>
+        {% for time in thuTimes %}
+          {% assign timeEscaped = time | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+          {% assign titleEscaped = title | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+          <div class="col-xs-6">
+            <a href="{{ preurl }}mailto:?subject={{ emailSubjectEscaped }}&body={{ emailBodyHeaderEscaped }}{{ timeEscaped }}%20service%20on%20{{ titleEscaped }}.%0D%0A%0D%0A{{ urlEscaped }}" class="btn btn-default btn-block margin-b-lg js-track-email" data-label="{{ title }} {{ time }}">{{ time }}</a>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="col-xs-12">
+        <p>&nbsp;</p>
+        <a href="{{ preurl }}mailto:?subject={{ emailSubjectEscaped }}&body={{ allTimes }}" class="btn btn-default btn-block margin-b-lg js-track-email" data-label="Don't know yet">I don't know yet</a>
+      </div>
+    </div>
+  </article>
+
+  <article class="page fade js-pg2-sms">
+    <div class="row margin-t-lg">
+      <div class="col-xs-7">
+        <h4 class="margin-t-none">Text Invite</h4>
+      </div>
+      <div class="col-xs-5 text-right">
+        <a href="#" class="js-back btn btn-default btn-xs"><i class="fa fa-angle-left"></i> Back</a>
+      </div>
+    </div>
+
+    <p class="lead">Which service are you attending?</p>
+    <div class="row">
+
+      {% if tueTimes %}
+        {% assign title = tueTitle %}
+        <div class="col-xs-12">
+          <h5 class="underline">{{ title }}</h5>
+        </div>
+        {% for time in tueTimes %}
+          {% assign timeEscaped = time | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+          {% assign titleEscaped = title | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+          <div class="col-xs-6">
+            <a href="{{ preurl }}sms:{{ sep }}body={{ smsP1Escaped }}{{ timeEscaped }}%20service%20on%20{{ titleEscaped }}{{ smsP2Escaped }}" class="btn btn-default btn-block margin-b-lg js-track-sms" data-label="{{ title }} {{ time }}">{{ time }}</a>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% if wedTimes %}
+        {% assign title = wedTitle %}
+        <div class="col-xs-12">
+          <h5 class="underline">{{ title }}</h5>
+        </div>
+        {% for time in wedTimes %}
+          {% assign timeEscaped = time | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+          {% assign titleEscaped = title | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+          <div class="col-xs-6">
+            <a href="{{ preurl }}sms:{{ sep }}body={{ smsP1Escaped }}{{ timeEscaped }}%20service%20on%20{{ titleEscaped }}{{ smsP2Escaped }}" class="btn btn-default btn-block margin-b-lg js-track-sms" data-label="{{ title }} {{ time }}">{{ time }}</a>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% if thuTimes %}
+        {% assign title = thuTitle %}
+        <div class="col-xs-12">
+          <h5 class="underline">{{ title }}</h5>
+        </div>
+        {% for time in thuTimes %}
+          {% assign timeEscaped = time | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+          {% assign titleEscaped = title | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
+          <div class="col-xs-6">
+            <a href="{{ preurl }}sms:{{ sep }}body={{ smsP1Escaped }}{{ timeEscaped }}%20service%20on%20{{ titleEscaped }}{{ smsP2Escaped }}" class="btn btn-default btn-block margin-b-lg js-track-sms" data-label="{{ title }} {{ time }}">{{ time }}</a>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="col-xs-12">
+        <p>&nbsp;</p>
+        <a href="{{ preurl }}sms:{{ sep }}body={{ smsAllEscaped }}" class="btn btn-default btn-block margin-b-lg js-track-sms" data-label="Don't know yet">I don't know yet</a>
+      </div>
+    </div>
+  </article>
+</div>
+
+
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  .wrapper {
+    position: relative;
+  }
+  article.page {
+    position: absolute;
+    width: 100%;
+    padding-bottom: 60px;
+  }
+  .fade {
+    z-index: -999;
+  }
+  .fade.in {
+    z-index: 999;
+  }
+</style>
+
+
+<script>
+
+  function switchToPage(to) {
+    $('.is-currentpg').removeClass('in').removeClass('is-currentpg')
+    $('.js-pg' + to).addClass('in').addClass('is-currentpg')
+  }
+
+  $('.js-pg1-choose').click(function(){
+    var medium = $(this).attr('data-medium')
+    switchToPage('2-'+medium)
+  })
+
+  // category, action, opt_label
+
+  $('[class*="js-pg2-"] .js-back').click(function(){
+    switchToPage('1')
+    _gaq.push(['_trackEvent', 'Christmas Invite Page', 'back button', '{{ CurrentCampus }}'])
+  })
+
+  $('.js-track-sms').click(function(){
+    var label = '{{ CurrentCampus }} ' + $(this).data('label')
+    _gaq.push(['_trackEvent', 'Christmas Invite Page', 'Text Invite', label])
+  })
+
+  $('.js-track-email').click(function(){
+    var label = '{{ CurrentCampus }} ' + $(this).data('label')
+    _gaq.push(['_trackEvent', 'Christmas Invite Page', 'Email Invite', label])
+  })
+
+</script>
