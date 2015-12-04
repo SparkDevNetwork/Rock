@@ -64,7 +64,7 @@
 
                 <asp:Panel ID="pnlAddress" runat="server">
                     <fieldset>
-                        <legend>Address</legend>
+                        <legend><asp:Literal ID="lAddressTitle" runat="server" /></legend>
                         <Rock:AddressControl id="acAddress" runat="server" RequiredErrorMessage="Your Address is Required" />
                     </fieldset>
                 </asp:Panel>

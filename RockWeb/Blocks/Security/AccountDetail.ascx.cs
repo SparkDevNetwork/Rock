@@ -24,6 +24,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -39,6 +40,8 @@ namespace RockWeb.Blocks.Security
 
     [LinkedPage("Detail Page", "Page to edit account details.", order: 0)]
     [BooleanField("Show Home Address", "Shows/hides the home address.", order: 1)]
+    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Location Type",
+        "The type of location that address should use.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 14 )]
     public partial class AccountDetail : RockBlock
     {
         #region Base Control Methods
@@ -94,12 +97,37 @@ namespace RockWeb.Blocks.Security
 
                 lEmail.Text = CurrentPerson.Email;
 
+                Guid? locationTypeGuid = GetAttributeValue( "LocationType" ).AsGuidOrNull();
+                if ( locationTypeGuid.HasValue )
+                {
+                    var addressTypeDv = DefinedValueCache.Read( locationTypeGuid.Value );
+
+                    var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
+
+                    if ( familyGroupTypeGuid.HasValue )
+                    {
+                        var familyGroupType = GroupTypeCache.Read( familyGroupTypeGuid.Value );
+
+                        RockContext rockContext = new RockContext();
+                        var address = new GroupLocationService( rockContext ).Queryable()
+                                            .Where( l => l.Group.GroupTypeId == familyGroupType.Id
+                                                 && l.GroupLocationTypeValueId == addressTypeDv.Id
+                                                 && l.Group.Members.Any( m => m.PersonId == CurrentPerson.Id ) )
+                                            .Select( l => l.Location )
+                                            .FirstOrDefault();
+                        if ( address != null )
+                        {
+                            lAddress.Text = string.Format( "<div class='margin-b-md'><small>{0} Address</small><br />{1}</div>", addressTypeDv.Value, address.FormattedHtmlAddress );
+                        }
+                    }
+                }
+
                 if ( GetAttributeValue( "ShowHomeAddress" ).AsBoolean() )
                 {
                     var homeAddress = CurrentPerson.GetHomeLocation();
                     if ( homeAddress != null )
                     {
-                        lAddress.Text = string.Format( "<div class='margin-b-md'><small>Home Address</small><br />{0}</div>", homeAddress.FormattedHtmlAddress );
+                        
                     }
                 }
             }
