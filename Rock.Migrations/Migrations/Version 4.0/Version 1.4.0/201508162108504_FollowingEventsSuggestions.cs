@@ -295,6 +295,9 @@ namespace Rock.Migrations
             RockMigrationHelper.AddSecurityAuthForPage( Rock.SystemGuid.Page.EVENT_REGISTRATION, 0, Rock.Security.Authorization.VIEW, true, Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS, 0, "4C63D597-1C2E-D7BA-4C71-34724D5C9670" );
             RockMigrationHelper.AddSecurityAuthForPage( Rock.SystemGuid.Page.EVENT_REGISTRATION, 0, Rock.Security.Authorization.EDIT, true, Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS, 0, "514591FB-4972-93AE-438C-A410739BDBD1" );
 
+            // Add a reminder to enable the following jobs
+            RockMigrationHelper.AddDefinedValue( "4BF34677-37E9-4E71-BD03-252B66C9373D", "Enable Following Jobs", @"Two new jobs have been added for sending following suggestions and following reminders. Make sure to activate both these jobs when you are ready start using the Following features.", "27E02D09-E3B1-4D89-920B-0DFDDA298D72" );
+
         }
         
         /// <summary>
