@@ -40,6 +40,8 @@ namespace RockWeb.Blocks.Security
 
     [BooleanField("Show Address", "Allows hiding the address field.", false, order: 0)]
     [BooleanField( "Address Required", "Whether the address is required.", false, order: 2 )]
+    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Location Type",
+        "The type of location that address should use.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 14 )]
     public partial class AccountEdit : RockBlock
     {
         /// <summary>
@@ -308,12 +310,12 @@ namespace RockWeb.Blocks.Security
                                                 .FirstOrDefault();
                                 if ( familyGroup != null )
                                 {
-                                    Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
-                                    if ( homeAddressGuid.HasValue )
+                                    Guid? addressTypeGuid = GetAttributeValue("LocationType").AsGuidOrNull();
+                                    if ( addressTypeGuid.HasValue )
                                     {
                                         var groupLocationService = new GroupLocationService( rockContext );
 
-                                        var dvHomeAddressType = DefinedValueCache.Read( homeAddressGuid.Value );
+                                        var dvHomeAddressType = DefinedValueCache.Read( addressTypeGuid.Value );
                                         var familyHomeAddress = groupLocationService.Queryable().Where( l => l.GroupId == familyGroup.Id && l.GroupLocationTypeValueId == dvHomeAddressType.Id ).FirstOrDefault();
                                         if ( familyHomeAddress != null && string.IsNullOrWhiteSpace( acAddress.Street1 ) )
                                         {
@@ -379,6 +381,8 @@ namespace RockWeb.Blocks.Security
         /// </summary>
         private void ShowDetails()
         {
+            RockContext rockContext = new RockContext();
+
             pnlAddress.Visible = GetAttributeValue( "ShowAddress" ).AsBoolean();
             acAddress.Required = GetAttributeValue( "AddressRequired" ).AsBoolean();
 
@@ -396,10 +400,34 @@ namespace RockWeb.Blocks.Security
                 rblGender.SelectedValue = person.Gender.ConvertToString();
                 tbEmail.Text = person.Email;
 
+
                 var homeAddress = person.GetHomeLocation();
-                if (homeAddress != null )
+                
+
+                Guid? locationTypeGuid = GetAttributeValue( "LocationType" ).AsGuidOrNull();
+                if ( locationTypeGuid.HasValue )
                 {
-                    acAddress.SetValues( homeAddress );
+                    var addressTypeDv = DefinedValueCache.Read( locationTypeGuid.Value );
+
+                    lAddressTitle.Text = addressTypeDv.Value + " Address";
+
+                    var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
+
+                    if ( familyGroupTypeGuid.HasValue )
+                    {
+                        var familyGroupType = GroupTypeCache.Read( familyGroupTypeGuid.Value );
+
+                        var address = new GroupLocationService( rockContext ).Queryable()
+                                            .Where( l => l.Group.GroupTypeId == familyGroupType.Id
+                                                 && l.GroupLocationTypeValueId == addressTypeDv.Id 
+                                                 && l.Group.Members.Any( m => m.PersonId == person.Id))
+                                            .Select( l => l.Location)
+                                            .FirstOrDefault();
+                        if ( address != null )
+                        {
+                            acAddress.SetValues( homeAddress );
+                        }
+                    }
                 }
 
                 var mobilePhoneType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
