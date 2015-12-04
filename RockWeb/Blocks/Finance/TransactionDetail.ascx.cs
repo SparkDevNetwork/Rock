@@ -822,6 +822,27 @@ namespace RockWeb.Blocks.Finance
                                 refundTxn.TransactionDetails.Last().Amount += remBalance;
                             }
 
+                            var registrationEntityType = EntityTypeCache.Read( typeof( Rock.Model.Registration ) );
+                            if ( registrationEntityType != null )
+                            {
+                                foreach ( var transactionDetail in refundTxn.TransactionDetails
+                                    .Where( d => 
+                                        d.EntityTypeId.HasValue &&
+                                        d.EntityTypeId.Value == registrationEntityType.Id &&
+                                        d.EntityId.HasValue ) )
+                                {
+                                    var registrationChanges = new List<string>();
+                                    registrationChanges.Add( string.Format( "Processed refund for {0}.", transactionDetail.Amount.FormatAsCurrency() ) );
+                                    HistoryService.SaveChanges(
+                                        rockContext,
+                                        typeof( Registration ),
+                                        Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                                        transactionDetail.EntityId.Value,
+                                        registrationChanges
+                                    );
+                                }
+                            }
+
                             refundTxn.RefundDetails = new FinancialTransactionRefund();
                             refundTxn.RefundDetails.RefundReasonValueId = ddlRefundReason.SelectedValueAsId();
                             refundTxn.RefundDetails.RefundReasonSummary = tbRefundSummary.Text;
