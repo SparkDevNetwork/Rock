@@ -22,11 +22,13 @@ using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -53,7 +55,9 @@ namespace RockWeb.Blocks.Prayer
     
     // On Save Behavior
     [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 11 )]
-    [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-html'>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 12 )]
+    [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 12 )]
+    [WorkflowTypeField( "Workflow", "An optional workflow to start when prayer request is created. The PrayerRequest will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "On Save Behavior", 13 )]
+    [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, "On Save Behavior", 14 )]
     public partial class PrayerRequestEntry : RockBlock
     {
         #region Properties
@@ -80,7 +84,6 @@ namespace RockWeb.Blocks.Prayer
             this.EnableUrgentFlag = GetAttributeValue( "EnableUrgentFlag" ).AsBoolean();
             this.EnableCommentsFlag = GetAttributeValue( "EnableCommentsFlag" ).AsBoolean();
             this.EnablePublicDisplayFlag = GetAttributeValue( "EnablePublicDisplayFlag" ).AsBoolean();
-            nbMessage.Text = GetAttributeValue( "SaveSuccessText" );
             tbLastName.Required = GetAttributeValue( "RequireLastName" ).AsBooleanOrNull() ?? true;
 
             RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/bootstrap-limit.js" ) );
@@ -190,15 +193,22 @@ namespace RockWeb.Blocks.Prayer
             }
 
             // Now record all the bits...
+            // Make sure the Category is hydrated so it's included for any Lava processing
+            Category category;
             int? categoryId = bddlCategory.SelectedValueAsInt();
             Guid defaultCategoryGuid = GetAttributeValue( "DefaultCategory" ).AsGuid();
             if ( categoryId == null && !defaultCategoryGuid.IsEmpty() )
             {
-                var category = new CategoryService( rockContext ).Get( defaultCategoryGuid );
+                category = new CategoryService( rockContext ).Get( defaultCategoryGuid );
                 categoryId = category.Id;
+            }
+            else
+            {
+                category = new CategoryService( rockContext ).Get( categoryId.Value );
             }
 
             prayerRequest.CategoryId = categoryId;
+            prayerRequest.Category = category;
             prayerRequest.RequestedByPersonAliasId = CurrentPersonAliasId;
             prayerRequest.FirstName = tbFirstName.Text;
             prayerRequest.LastName = tbLastName.Text;
@@ -241,6 +251,8 @@ namespace RockWeb.Blocks.Prayer
 
             rockContext.SaveChanges();
 
+            StartWorkflow( prayerRequest, rockContext );
+
             bool isNavigateToParent = GetAttributeValue( "NavigateToParentOnSave" ).AsBoolean();
 
             if ( isNavigateToParent )
@@ -251,6 +263,22 @@ namespace RockWeb.Blocks.Prayer
             {
                 pnlForm.Visible = false;
                 pnlReceipt.Visible = true;
+
+                // Build success text that is Lava capable
+                var mergeObjects = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( this.CurrentPerson );
+                mergeObjects.Add( "PrayerRequest", prayerRequest );
+                nbMessage.Text = GetAttributeValue( "SaveSuccessText" ).ResolveMergeFields( mergeObjects );
+
+                // Resolve any dynamic url references
+                string appRoot = ResolveRockUrl( "~/" );
+                string themeRoot = ResolveRockUrl( "~~/" );
+                nbMessage.Text = nbMessage.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                // show liquid help for debug
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+                {
+                    nbMessage.Text += mergeObjects.lavaDebugInfo();
+                }
             }
         }
 
@@ -310,6 +338,35 @@ namespace RockWeb.Blocks.Prayer
             {
                 nbWarningMessage.Visible = false;
                 return true;
+            }
+        }
+
+        /// <summary>
+        /// Starts the workflow if one was defined in the block setting.
+        /// </summary>
+        /// <param name="prayerRequest">The prayer request.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void StartWorkflow( PrayerRequest prayerRequest, RockContext rockContext )
+        {
+            WorkflowType workflowType = null;
+            Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+            if ( workflowTypeGuid.HasValue )
+            {
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+                workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                if ( workflowType != null )
+                {
+                    try
+                    {
+                        var workflow = Workflow.Activate( workflowType, prayerRequest.Name );
+                        List<string> workflowErrors;
+                        new WorkflowService( rockContext ).Process( workflow, prayerRequest, out workflowErrors );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex, this.Context );
+                    }
+                }
             }
         }
 
