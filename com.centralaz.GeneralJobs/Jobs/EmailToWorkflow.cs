@@ -42,7 +42,7 @@ namespace com.centralaz.GeneralJobs.Jobs
     [WorkflowTypeField( "Workflow", "Type to use when creating workflows", false, true, "51FE9641-FB8F-41BF-B09E-235900C3E53E", "", 0 )]
     [TextField( "Mailserver", "Hostname of the mail server", true, "", "", 1 )]
     [TextField( "Mail Username", "POP3 account to login to", true, "", "", 2 )]
-    [TextField( "Mail Password", "Password of the POP3 account", true, "", "", 3 )]
+    [TextField( "Mail Password", "Password of the POP3 account", true, "", "", 3, isPassword:true )]
     [IntegerField( "Mail Port", "", true, 110, "", 4 )]
     [IntegerField( "Message Batch Size", "Max number of emails to process with each running of the job (Recommended 30)", true, 30, "", 5 )]
     [BooleanField( "Use SSL", "Does your email system use SSL?", false, "", 6 )]
