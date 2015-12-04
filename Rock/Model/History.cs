@@ -231,8 +231,8 @@ namespace Rock.Model
         public static void EvaluateChange( List<string> historyMessages, string propertyName, decimal? oldValue, decimal? newValue )
         {
             EvaluateChange( historyMessages, propertyName,
-                oldValue.HasValue ? oldValue.Value.ToString() : string.Empty,
-                newValue.HasValue ? newValue.Value.ToString() : string.Empty );
+                oldValue.HasValue ? oldValue.Value.ToString("N2") : string.Empty,
+                newValue.HasValue ? newValue.Value.ToString("N2") : string.Empty );
         }
 
         /// <summary>

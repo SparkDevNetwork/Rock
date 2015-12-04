@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Event
     This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} has a remaining balance 
     of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}.
     You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
-    using our <a href='{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}'>
+    using our <a href='{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person.UrlEncodedKey }}'>
     online registration page</a>.
 </p>
 {% endif %}

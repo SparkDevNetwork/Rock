@@ -178,6 +178,8 @@ END" );
         VALUES( 0, @UrlMaskAttributeId, @RegistrationCategoryId, '~/page/' + CAST(@RegistrationDetailPageId AS varchar) + '?RegistrationId={0}', NEWID())
     END
 " );
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.Registration", "D2F294C6-E161-4A56-85C7-CD74D535F61A", true, true );
+
             // DT: Registration Audit Page
             RockMigrationHelper.AddPage( "FC81099A-2F98-4EBA-AC5A-8300B2FE46C4", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Registration Audit Log", "", "747C1DAA-1E77-45CB-99C5-7F4D030F824E", "" ); // Site:Rock RMS
             // Add Block to Page: Registration Audit Log, Site: Rock RMS
@@ -188,7 +190,7 @@ END" );
             // Attrib Value for Block:Registration Detail, Attribute:Audit Page Page: Registration, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "0E0AE4CB-E348-435E-A0CA-9E3B2FC6BA19", "DAE22517-2B39-4CB5-9687-5EB4F4104628", @"747c1daa-1e77-45cb-99c5-7f4d030f824e" );
             // Attrib Value for Block:History Log, Attribute:Entity Type Page: Registration Audit Log, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "BF085310-4BC6-4BD5-9338-7A0533F61E4E", "8FB690EC-5299-46C5-8695-AAD23168E6E1", @"40e5f218-69c0-495d-9ff3-d81528f35c46" );
+            RockMigrationHelper.AddBlockAttributeValue( "BF085310-4BC6-4BD5-9338-7A0533F61E4E", "8FB690EC-5299-46C5-8695-AAD23168E6E1", @"d2f294c6-e161-4a56-85c7-cd74d535f61a" ); // Entity Type
             // Add/Update PageContext for Page:Registration Audit Log, Entity: Rock.Model.Registration, Parameter: RegistrationId
             RockMigrationHelper.UpdatePageContext( "747C1DAA-1E77-45CB-99C5-7F4D030F824E", "Rock.Model.Registration", "RegistrationId", "2DC21259-C186-4DEF-A19A-7E763F7066E6" );
         }
