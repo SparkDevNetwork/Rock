@@ -35,6 +35,9 @@ namespace Rock.Migrations
             Sql( @"UPDATE [EntityType]
 	                SET [FriendlyName] = 'Lava'
 	                WHERE [Guid] = '95912004-62B5-4460-951F-D752427D44FE'" );
+
+            RockMigrationHelper.AddSecurityAuthForBlock( "9382B285-3EF6-47F7-94BB-A47C498196A3", 0, "Edit", true, SystemGuid.Group.GROUP_FINANCE_ADMINISTRATORS, Model.SpecialRole.None, "52EEC3EA-3404-91B4-4650-2A97BD7A04A3" );
+            RockMigrationHelper.AddSecurityAuthForBlock( "9382B285-3EF6-47F7-94BB-A47C498196A3", 0, "Edit", true, SystemGuid.Group.GROUP_FINANCE_USERS, Model.SpecialRole.None, "E4C158D7-E72B-039A-4021-426419973D09" );
         }
         
         /// <summary>
