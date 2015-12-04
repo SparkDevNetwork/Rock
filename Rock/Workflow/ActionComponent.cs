@@ -134,22 +134,34 @@ namespace Rock.Workflow
         /// <returns></returns>
         protected string GetAttributeValue( WorkflowAction action, string key )
         {
+            return GetActionAttributeValue( action, key );
+        }
+
+        public static string GetActionAttributeValue( WorkflowAction action, string key )
+        {
             var actionType = action.ActionType;
 
-            var values = actionType.AttributeValues;
-            if ( values.ContainsKey( key ) )
+            if ( actionType != null )
             {
-                var keyValues = values[key];
-                if ( keyValues != null )
+                if ( actionType.Attributes == null )
                 {
-                    return keyValues.Value;
+                    actionType.LoadAttributes();
                 }
-            }
+                var values = actionType.AttributeValues;
+                if ( values.ContainsKey( key ) )
+                {
+                    var keyValues = values[key];
+                    if ( keyValues != null )
+                    {
+                        return keyValues.Value;
+                    }
+                }
 
-            if ( actionType.Attributes != null &&
-                actionType.Attributes.ContainsKey( key ))
-            {
-                return actionType.Attributes[key].DefaultValue;
+                if ( actionType.Attributes != null &&
+                    actionType.Attributes.ContainsKey( key ) )
+                {
+                    return actionType.Attributes[key].DefaultValue;
+                }
             }
 
             return string.Empty;

@@ -1133,6 +1133,7 @@
     <Compile Include="Workflow\Action\RemovePersonFromGroup.cs" />
     <Compile Include="Workflow\Action\AddPersonToGroupAttribute.cs" />
     <Compile Include="Workflow\Action\AssignActivityFromAttributeValue.cs" />
+    <Compile Include="Workflow\Action\SendEmailWithEvents.cs" />
     <Compile Include="Workflow\Action\SetInitiatorFromAttribute.cs" />
     <Compile Include="Workflow\Action\AssignActivityToSecurityRole.cs" />
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
