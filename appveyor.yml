@@ -48,8 +48,7 @@ install:
   - ps: $fileContent += $env:priv_key.Replace(' ', "`n")
   - ps: $fileContent += "`n-----END RSA PRIVATE KEY-----`n"
   - ps: Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
-  - ps: git submodule -q update --init --recursive
-  - cmd: git clone -q --depth=1 https://github.com/NewSpring/rock-bookshelf.git .remote/rock-bookshelf
+  - ps: git clone -q --depth=1 https://github.com/NewSpring/rock-bookshelf.git c:\projects\Rock\.remote\rock-bookshelf
 
 
 
