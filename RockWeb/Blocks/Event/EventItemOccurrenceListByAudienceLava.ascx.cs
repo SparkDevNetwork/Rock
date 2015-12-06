@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Event
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Calendar Item Occurrence List By Audience Lava" )]
+    [DisplayName( "Event Item Occurrence List By Audience Lava" )]
     [Category( "Event" )]
     [Description( "Block that takes a audience and displays calendar item occurrences for it using Lava." )]
     
