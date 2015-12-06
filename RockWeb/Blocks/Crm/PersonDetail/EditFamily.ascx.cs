@@ -251,12 +251,28 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         ddlReason.SetValue( _family.Members.Select( m => m.Person.RecordStatusReasonValueId ).FirstOrDefault() );
                     }
 
+                    // Get all the family members
                     FamilyMembers = new List<FamilyMember>();
                     foreach ( var familyMember in _family.Members )
                     {
                         FamilyMembers.Add( new FamilyMember( familyMember, true ) );
                     }
 
+                    // Figure out which ones are in another family
+                    int familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+                    var familyMemberPersonIds = FamilyMembers.Select( m => m.Id ).ToList();
+                    var otherFamilyPersonIds = new GroupMemberService( new RockContext() ).Queryable()
+                        .Where( m =>
+                            familyMemberPersonIds.Contains( m.PersonId ) &&
+                            m.Group.GroupTypeId == familyGroupTypeId &&
+                            m.GroupId != _family.Id )
+                        .Select( m => m.PersonId )
+                        .Distinct();
+                    FamilyMembers
+                        .Where( m => otherFamilyPersonIds.Contains( m.Id ) )
+                        .ToList()
+                        .ForEach( m => m.IsInOtherFamilies = true );
+                    
                     BindMembers();
 
                     FamilyAddresses = new List<FamilyAddress>();
@@ -362,7 +378,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var lbRemoveMember = e.Item.FindControl( "lbRemoveMember" ) as LinkButton;
                     if ( lbRemoveMember != null )
                     {
-                        lbRemoveMember.Visible = _canEdit && !familyMember.ExistingFamilyMember && members > 1;
+                        lbRemoveMember.Visible = _canEdit && ( !familyMember.ExistingFamilyMember || familyMember.IsInOtherFamilies ) && members > 1;
                     }
                 }
             }
@@ -385,7 +401,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 else if ( e.CommandName == "Remove" )
                 {
-                    FamilyMembers.RemoveAt( index );
+                    if ( familyMember.ExistingFamilyMember )
+                    {
+                        familyMember.Removed = true;
+                    }
+                    else
+                    {
+                        FamilyMembers.RemoveAt( index );
+                    }
                 }
 
                 confirmExit.Enabled = true;
@@ -923,51 +946,61 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             {
                                 if ( familyMember.Removed )
                                 {
-                                    var newFamilyChanges = new List<string>();
-
-                                    // Family member was removed and should be created in their own new family
-                                    var newFamily = new Group();
-                                    newFamily.Name = familyMember.LastName + " Family";
-                                    History.EvaluateChange( newFamilyChanges, "Family", string.Empty, newFamily.Name );
-
-                                    newFamily.GroupTypeId = familyGroupTypeId;
-
-                                    if ( _family.CampusId.HasValue )
+                                    if ( !familyMember.IsInOtherFamilies )
                                     {
-                                        History.EvaluateChange( newFamilyChanges, "Campus", string.Empty, CampusCache.Read( _family.CampusId.Value ).Name );
+                                        var newFamilyChanges = new List<string>();
+
+                                        // Family member was removed and should be created in their own new family
+                                        var newFamily = new Group();
+                                        newFamily.Name = familyMember.LastName + " Family";
+                                        History.EvaluateChange( newFamilyChanges, "Family", string.Empty, newFamily.Name );
+
+                                        newFamily.GroupTypeId = familyGroupTypeId;
+
+                                        if ( _family.CampusId.HasValue )
+                                        {
+                                            History.EvaluateChange( newFamilyChanges, "Campus", string.Empty, CampusCache.Read( _family.CampusId.Value ).Name );
+                                        }
+
+                                        newFamily.CampusId = _family.CampusId;
+
+                                        familyService.Add( newFamily );
+                                        rockContext.SaveChanges();
+
+                                        // If person's previous giving group was this family, set it to their new family id
+                                        if ( groupMember.Person.GivingGroup != null && groupMember.Person.GivingGroupId == _family.Id )
+                                        {
+                                            History.EvaluateChange( demographicChanges, "Giving Group", groupMember.Person.GivingGroup.Name, _family.Name );
+                                            groupMember.Person.GivingGroupId = newFamily.Id;
+                                        }
+
+                                        groupMember.Group = newFamily;
+                                        rockContext.SaveChanges();
+
+                                        var newMemberChanges = new List<string>();
+                                        History.EvaluateChange( newMemberChanges, "Role", string.Empty, groupMember.GroupRole.Name );
+
+                                        HistoryService.SaveChanges(
+                                            rockContext,
+                                            typeof( Person ),
+                                            Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                            groupMember.Person.Id,
+                                            newFamilyChanges,
+                                            newFamily.Name,
+                                            typeof( Group ),
+                                            newFamily.Id );   
+
+                                        newFamilies.Add( newFamily );
+
+                                        History.EvaluateChange( memberChanges, "Role", groupMember.GroupRole.Name, string.Empty );
                                     }
-
-                                    newFamily.CampusId = _family.CampusId;
-
-                                    familyService.Add( newFamily );
-                                    rockContext.SaveChanges();
-
-                                    // If person's previous giving group was this family, set it to their new family id
-                                    if ( groupMember.Person.GivingGroup != null && groupMember.Person.GivingGroupId == _family.Id )
+                                    else
                                     {
-                                        History.EvaluateChange( demographicChanges, "Giving Group", groupMember.Person.GivingGroup.Name, _family.Name );
-                                        groupMember.Person.GivingGroupId = newFamily.Id;
+                                        History.EvaluateChange( familyChanges, "Family", groupMember.Group.Name, string.Empty );
+
+                                        familyMemberService.Delete( groupMember );
+                                        rockContext.SaveChanges();
                                     }
-
-                                    groupMember.Group = newFamily;
-                                    rockContext.SaveChanges();
-
-                                    var newMemberChanges = new List<string>();
-                                    History.EvaluateChange( newMemberChanges, "Role", string.Empty, groupMember.GroupRole.Name );
-
-                                    HistoryService.SaveChanges(
-                                        rockContext,
-                                        typeof( Person ),
-                                        Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                        groupMember.Person.Id,
-                                        newFamilyChanges,
-                                        newFamily.Name,
-                                        typeof( Group ),
-                                        newFamily.Id );
-
-                                    newFamilies.Add( newFamily );
-
-                                    History.EvaluateChange( memberChanges, "Role", groupMember.GroupRole.Name, string.Empty );
                                 }
                                 else
                                 {
@@ -1107,44 +1140,46 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             _family.Id );
                     }
 
-                    _family = familyService.Get( _family.Id );
-                    if ( _family.Members.Any( m => m.PersonId == Person.Id ) )
-                    {
-                        Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
-                    }
-                    else
-                    {
-                        var fm = _family.Members
-                            .Where( m =>
-                                m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
-                                m.Person.Gender == Gender.Male )
-                            .OrderByDescending( m => m.Person.Age )
-                            .FirstOrDefault();
-                        if ( fm == null )
-                        {
-                            fm = _family.Members
-                                .Where( m =>
-                                    m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
-                                .OrderByDescending( m => m.Person.Age )
-                                .FirstOrDefault();
-                        }
+                    Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
 
-                        if ( fm == null )
-                        {
-                            fm = _family.Members
-                                .OrderByDescending( m => m.Person.Age )
-                                .FirstOrDefault();
-                        }
+                    //_family = familyService.Get( _family.Id );
+                    //if ( _family.Members.Any( m => m.PersonId == Person.Id ) )
+                    //{
+                    //    Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
+                    //}
+                    //else
+                    //{
+                    //    var fm = _family.Members
+                    //        .Where( m =>
+                    //            m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
+                    //            m.Person.Gender == Gender.Male )
+                    //        .OrderByDescending( m => m.Person.Age )
+                    //        .FirstOrDefault();
+                    //    if ( fm == null )
+                    //    {
+                    //        fm = _family.Members
+                    //            .Where( m =>
+                    //                m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
+                    //            .OrderByDescending( m => m.Person.Age )
+                    //            .FirstOrDefault();
+                    //    }
 
-                        if ( fm != null )
-                        {
-                            Response.Redirect( string.Format( "~/Person/{0}", fm.PersonId ), false );
-                        }
-                        else
-                        {
-                            Response.Redirect( "~", false );
-                        }
-                    }
+                    //    if ( fm == null )
+                    //    {
+                    //        fm = _family.Members
+                    //            .OrderByDescending( m => m.Person.Age )
+                    //            .FirstOrDefault();
+                    //    }
+
+                    //    if ( fm != null )
+                    //    {
+                    //        Response.Redirect( string.Format( "~/Person/{0}", fm.PersonId ), false );
+                    //    }
+                    //    else
+                    //    {
+                    //        Response.Redirect( "~", false );
+                    //    }
+                    //}
                 } );
             }
         }
@@ -1266,15 +1301,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( FamilyMembers.Count <= 1 )
             {
                 var familyMember = FamilyMembers.FirstOrDefault();
-                int familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
                 if ( familyMember != null )
                 {
-                    bool isInOtherFamilies = new GroupMemberService( new RockContext() ).Queryable()
-                                    .Where( m =>
-                                        m.PersonId == familyMember.Id &&
-                                        m.Group.GroupTypeId == familyGroupTypeId &&
-                                        m.GroupId != _family.Id ).Any();
-                    if ( isInOtherFamilies )
+                    if ( familyMember.IsInOtherFamilies )
                     {
                         // person is only person in the current family, and they are also in at least one other family, so let them delete this family
                         btnDelete.Visible = true;
@@ -1364,6 +1393,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         public bool Removed { get; set; } // Was an existing person removed from the family (to their own family)
 
         public bool RemoveFromOtherFamilies { get; set; } // When adding an existing person, should they be removed from other families
+
+        public bool IsInOtherFamilies { get; set; } // This person is also a member of another family
 
         public int? TitleValueId { get; set; }
 

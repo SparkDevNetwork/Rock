@@ -17,6 +17,11 @@
                             <asp:ListItem Value="Yes" Text="Yes" />
                             <asp:ListItem Value="No" Text="No" />
                         </Rock:RockDropDownList>
+                        <Rock:RockDropDownList ID="ddlShowInNavigation" runat="server" Label="Shown in Navigation">
+                            <asp:ListItem Value="" Text=" " />
+                            <asp:ListItem Value="Yes" Text="Yes" />
+                            <asp:ListItem Value="No" Text="No" />
+                        </Rock:RockDropDownList>
                     </Rock:GridFilter>
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                     <Rock:Grid ID="gGroupType" runat="server" RowItemText="Group Type" OnRowSelected="gGroupType_Edit" TooltipField="Description">
@@ -24,7 +29,7 @@
                             <Rock:ReorderField />
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="Purpose" HeaderText="Purpose" SortExpression="Purpose" />
-                            <Rock:RockBoundField DataField="GroupsCount" HeaderText="Group Count" SortExpression="GroupsCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="GroupsCount" HeaderText="Group Count" SortExpression="GroupsCount" />
                             <Rock:BoolField DataField="ShowInNavigation" HeaderText="Show in Navigation" SortExpression="ShowInNavigation" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:SecurityField TitleField="Name" />

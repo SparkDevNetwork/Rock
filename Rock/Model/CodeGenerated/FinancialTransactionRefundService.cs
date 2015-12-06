@@ -90,6 +90,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.OriginalTransactionId = source.OriginalTransactionId;
             target.RefundReasonSummary = source.RefundReasonSummary;
             target.RefundReasonValueId = source.RefundReasonValueId;
             target.CreatedDateTime = source.CreatedDateTime;

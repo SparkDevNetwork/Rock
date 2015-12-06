@@ -77,6 +77,22 @@ namespace Rock.Financial
         }
 
         /// <summary>
+        /// Credits the specified transaction.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="amount">The amount.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override FinancialTransaction Credit( FinancialTransaction transaction, decimal amount, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            var refundTransaction = new FinancialTransaction();
+            refundTransaction.TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
+            return transaction;
+        }
+
+        /// <summary>
         /// Adds the scheduled payment.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>

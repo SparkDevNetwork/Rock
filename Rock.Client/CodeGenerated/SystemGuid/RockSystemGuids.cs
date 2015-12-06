@@ -128,6 +128,7 @@ namespace Rock.Client.SystemGuid
         public const string PERSON_REVIEW_REASON = "7680C445-AD69-4E5D-94F0-CBAA96DB0FF8";
         public const string PERSON_SUFFIX = "16f85b3c-b3e8-434c-9094-f3d41f87a740";
         public const string PERSON_TITLE = "4784cd23-518b-43ee-9b97-225bf6e07846";
+        public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
         public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
         public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
@@ -227,6 +228,7 @@ namespace Rock.Client.SystemGuid
         public const string NOTE = "53DC1E78-14A5-44DE-903F-6A2CB02164E7";
         public const string PERSON = "72657ED8-D16E-492E-AC12-144C5E7567E7";
         public const string PERSON_ALIAS = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F";
+        public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
         public const string REPORTING_DATASELECT_LIQUIDSELECT = "C130DC52-CA31-45EE-A4F2-6C53A838EF3D";
         public const string SCHEDULE = "0B2C38A7-D79C-4F85-9757-F1B045D32C8A";
         public const string SERVICE_JOB = "52766196-A72F-4F60-997A-78E19508843D";

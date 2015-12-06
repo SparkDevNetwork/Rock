@@ -648,7 +648,7 @@ $(document).ready(function() {
                             var qry = service.Queryable( "ContentChannel,ContentChannelType" );
 
                             int? itemId = PageParameter( "Item" ).AsIntegerOrNull();
-                            if ( itemId.HasValue )
+                            if ( queryParameterFiltering && itemId.HasValue )
                             {
                                 qry = qry.Where( i => i.Id == itemId.Value );
                             }
@@ -742,14 +742,14 @@ $(document).ready(function() {
                                             if ( direction == SortDirection.Ascending )
                                             {
                                                 orderedQry = ( columnIndex == 0 ) ?
-                                                    itemQry.OrderBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value ) :
-                                                    orderedQry.ThenBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value );
+                                                    itemQry.OrderBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.ValueAsType ) :
+                                                    orderedQry.ThenBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.ValueAsType );
                                             }
                                             else
                                             {
                                                 orderedQry = ( columnIndex == 0 ) ?
-                                                    itemQry.OrderByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value ) :
-                                                    orderedQry.ThenByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.Value );
+                                                    itemQry.OrderByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.ValueAsType ) :
+                                                    orderedQry.ThenByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.ValueAsType );
                                             }
                                         }
                                         else
@@ -787,50 +787,55 @@ $(document).ready(function() {
                             }
                         }
 
+
                         // If items could be filtered by querystring values, check for filters
-                        if ( queryParameterFiltering && Request.QueryString.Count > 0 )
+                        if ( queryParameterFiltering )
                         {
-                            var propertyFilter = new Rock.Reporting.DataFilter.PropertyFilter();
-
-                            var itemQry = items.AsQueryable();
-                            foreach( string key in Request.QueryString.AllKeys )
+                            var pageParameters = PageParameters();
+                            if ( pageParameters.Count > 0 )
                             {
-                                var selection = new List<string>();
-                                selection.Add( key );
+                                var propertyFilter = new Rock.Reporting.DataFilter.PropertyFilter();
 
-                                var entityField = entityFields.FirstOrDefault( f => f.Name.Equals( key, StringComparison.OrdinalIgnoreCase ) );
-                                if ( entityField != null )
+                                var itemQry = items.AsQueryable();
+                                foreach ( string key in PageParameters().Select( p => p.Key ).ToList() )
                                 {
-                                    string value = Request.QueryString[key];
-                                    switch ( entityField.FieldType.Guid.ToString().ToUpper() )
+                                    var selection = new List<string>();
+                                    selection.Add( key );
+
+                                    var entityField = entityFields.FirstOrDefault( f => f.Name.Equals( key, StringComparison.OrdinalIgnoreCase ) );
+                                    if ( entityField != null )
                                     {
-                                        case Rock.SystemGuid.FieldType.DAY_OF_WEEK:
-                                        case Rock.SystemGuid.FieldType.SINGLE_SELECT:
-                                            {
-                                                selection.Add( value );
-                                            }
-                                            break;
-                                        case Rock.SystemGuid.FieldType.MULTI_SELECT:
-                                            {
-                                                var values = new List<string>();
-                                                values.Add( value );
-                                                selection.Add( Newtonsoft.Json.JsonConvert.SerializeObject( values ) );
-                                            }
-                                            break;
-                                        default:
-                                            {
-                                                selection.Add( ComparisonType.EqualTo.ConvertToInt().ToString());
-                                                selection.Add( value);
-                                            }
-                                            break;
+                                        string value = PageParameter( key );
+                                        switch ( entityField.FieldType.Guid.ToString().ToUpper() )
+                                        {
+                                            case Rock.SystemGuid.FieldType.DAY_OF_WEEK:
+                                            case Rock.SystemGuid.FieldType.SINGLE_SELECT:
+                                                {
+                                                    selection.Add( value );
+                                                }
+                                                break;
+                                            case Rock.SystemGuid.FieldType.MULTI_SELECT:
+                                                {
+                                                    var values = new List<string>();
+                                                    values.Add( value );
+                                                    selection.Add( Newtonsoft.Json.JsonConvert.SerializeObject( values ) );
+                                                }
+                                                break;
+                                            default:
+                                                {
+                                                    selection.Add( ComparisonType.EqualTo.ConvertToInt().ToString() );
+                                                    selection.Add( value );
+                                                }
+                                                break;
+                                        }
+
+                                        itemQry = itemQry.Where( paramExpression, propertyFilter.GetExpression( itemType, service, paramExpression, Newtonsoft.Json.JsonConvert.SerializeObject( selection ) ) );
                                     }
-
-                                    itemQry = itemQry.Where( paramExpression, propertyFilter.GetExpression( itemType, service, paramExpression, Newtonsoft.Json.JsonConvert.SerializeObject( selection ) ) );
                                 }
+
+                                items = itemQry.ToList();
+
                             }
-
-                            items = itemQry.ToList();
-
                         }
                     }
                 }

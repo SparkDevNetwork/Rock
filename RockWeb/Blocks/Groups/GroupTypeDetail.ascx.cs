@@ -424,6 +424,7 @@ namespace RockWeb.Blocks.Groups
             groupType.GroupMemberTerm = tbGroupMemberTerm.Text;
             groupType.ShowInGroupList = cbShowInGroupList.Checked;
             groupType.ShowInNavigation = cbShowInNavigation.Checked;
+            groupType.ShowConnectionStatus = cbShowConnectionStatus.Checked;
             groupType.IconCssClass = tbIconCssClass.Text;
             groupType.TakesAttendance = cbTakesAttendance.Checked;
             groupType.SendAttendanceReminder = cbSendAttendanceReminder.Checked;
@@ -685,6 +686,7 @@ namespace RockWeb.Blocks.Groups
             // Display
             cbShowInGroupList.Checked = groupType.ShowInGroupList;
             cbShowInNavigation.Checked = groupType.ShowInNavigation;
+            cbShowConnectionStatus.Checked = groupType.ShowConnectionStatus;
             tbIconCssClass.Text = groupType.IconCssClass;
 
             // Locations

@@ -84,19 +84,44 @@
 
                                 <asp:Literal ID="lScreenshots" runat="server" />
 
-                                <h4><asp:Literal ID="lLatestVersionLabel" runat="server" /></h4>
+                                <h2><asp:Literal ID="lLatestVersionLabel" runat="server" /></h2>
                                 <p class="margin-b-lg">
                                     <asp:Literal ID="lLatestVersionDescription" runat="server" />
                                 </p>
 
+                                <h4>Reviews</h4>
+                                <asp:Literal ID="lNoReviews" runat="server" Text="No reviews exist." />
+                                <div class="row">
+                                    <asp:Repeater ID="rptLatestVersionRatings" runat="server">
+                                        <ItemTemplate>
+                                            <div class="col-md-6 margin-b-lg">
+                                                    <div style="width: 65px; float: left;">
+                                                        <img src="http://www.rockrms.com/<%# Eval("PersonAlias.Person.PhotoUrl")%>&width=50" class="img-circle" />
+                                                    </div>
+                                                    <div style="width: 100%;">
+                                                        <div class='rating rating-<%# Eval("Rating")%> pull-left margin-r-sm'></div>
+                                                        <strong><%# Eval("PersonAlias.Person.FullName")%></strong>
+                                                        <p class="margin-b-lg">
+                                                            <%# Eval("Review")%>
+                                                        </p>
+                                                    </div>
+                                            </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
+
                                 <asp:Panel ID="pnlAdditionalVersions" runat="server">
                                     <p>
-                                        <a href="#" class="btn btn-xs btn-default pull-right js-showmoreversions">More <i class="fa fa-chevron-down"></i></a>
+                                        <a href="#" class="btn btn-xs btn-default pull-right js-showmoreversions">Additional Versions <i class="fa fa-chevron-down"></i></a>
                                     </p>
                                     <div class="packagedetail-additionalversions">
                                         <asp:Repeater ID="rptAdditionalVersions" runat="server">
                                             <ItemTemplate>
-                                                <h4><%# Eval("VersionLabel")%></h4>
+                                                <div class="clearfix">
+                                                    <h4 style="float: left;" class="margin-r-sm"><%# Eval("VersionLabel")%></h4>
+                                                    <div class='rating rating-<%# GetRating((int)Eval("Id")) %> pull-left margin-t-sm'></div>
+                                                </div>
+
                                                 <p class="margin-b-lg">
                                                     <%# Eval("Description")%>
                                                 </p>

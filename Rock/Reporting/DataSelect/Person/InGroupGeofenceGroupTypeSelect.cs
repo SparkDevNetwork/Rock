@@ -56,6 +56,17 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
+        /// Gets the section that this will appear in in the Field Selector
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public override string Section
+        {
+            get { return "Groups"; }
+        }
+
+        /// <summary>
         /// The PropertyName of the property in the anonymous class returned by the SelectExpression
         /// </summary>
         /// <value>

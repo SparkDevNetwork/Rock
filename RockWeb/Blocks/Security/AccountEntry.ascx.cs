@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security
 {
@@ -49,8 +50,14 @@ namespace RockWeb.Blocks.Security
     [SystemEmailField( "Forgot Username", "Forgot Username Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME, "Email Templates", 8, "ForgotUsernameTemplate" )]
     [SystemEmailField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 9, "ConfirmAccountTemplate" )]
     [SystemEmailField( "Account Created", "Account Created Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_ACCOUNT_CREATED, "Email Templates", 10, "AccountCreatedTemplate" )]
-    [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2" )]
-    [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49" )]
+    [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", order: 11 )]
+    [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", order: 12 )]
+    [BooleanField( "Show Address", "Allows hiding the address field.", false, order: 13 )]
+    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Location Type",
+        "The type of location that address should use.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 14 )]
+    [BooleanField("Address Required", "Whether the address is required.", false, order:15)]
+    [BooleanField("Show Phone Numbers", "Allows hiding the phone numbers.", false, order:16)]
+    [DefinedValueField(Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Types", "The phone numbers to display for editing.", false, true, order:17 )]
     public partial class AccountEntry : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -105,6 +112,39 @@ namespace RockWeb.Blocks.Security
             if ( !Page.IsPostBack )
             {
                 DisplayUserInfo( Direction.Forward );
+
+                // show/hide address and phone panels
+                pnlAddress.Visible = GetAttributeValue( "ShowAddress" ).AsBoolean();
+                pnlPhoneNumbers.Visible = GetAttributeValue( "ShowPhoneNumbers" ).AsBoolean();
+                acAddress.Required = GetAttributeValue( "AddressRequired" ).AsBoolean();
+
+                var phoneNumbers = new List<PhoneNumber>();
+
+                // add phone number types
+                if ( pnlPhoneNumbers.Visible )
+                {
+                    var phoneNumberTypeDefinedType = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+
+                    if (!string.IsNullOrWhiteSpace( GetAttributeValue( "PhoneTypes" ) ) )
+                    {
+                        var selectedPhoneTypeGuids = GetAttributeValue( "PhoneTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
+                        var selectedPhoneTypes = phoneNumberTypeDefinedType.DefinedValues.Where( v => selectedPhoneTypeGuids.Contains( v.Guid ) ).ToList();
+
+                        foreach ( var phoneNumberType in selectedPhoneTypes )
+                        {
+                            var numberType = new DefinedValue();
+                            numberType.Id = phoneNumberType.Id;
+                            numberType.Value = phoneNumberType.Value;
+
+                            var phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
+
+                            phoneNumbers.Add( phoneNumber );
+                        }
+
+                        rPhoneNumbers.DataSource = phoneNumbers;
+                        rPhoneNumbers.DataBind();
+                    }
+                }
             }
         }
 
@@ -560,7 +600,72 @@ namespace RockWeb.Blocks.Security
                 }
             }
 
+            bool smsSelected = false;
+
+            foreach ( RepeaterItem item in rPhoneNumbers.Items )
+            {
+                HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
+                PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
+                CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
+                CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
+
+                if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
+                {
+                    int phoneNumberTypeId;
+                    if ( int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
+                    {
+                        var phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberTypeId };
+                        person.PhoneNumbers.Add( phoneNumber );
+                        phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
+                        phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
+
+                        // Only allow one number to have SMS selected
+                        if ( smsSelected )
+                        {
+                            phoneNumber.IsMessagingEnabled = false;
+                        }
+                        else
+                        {
+                            phoneNumber.IsMessagingEnabled = cbSms.Checked;
+                            smsSelected = cbSms.Checked;
+                        }
+
+                        phoneNumber.IsUnlisted = cbUnlisted.Checked;
+                    }
+                }
+            }
+
             PersonService.SaveNewPerson( person, rockContext, null, false );
+
+            // save address
+            if ( pnlAddress.Visible )
+            {
+                if ( acAddress.IsValid && !string.IsNullOrWhiteSpace(acAddress.Street1) && !string.IsNullOrWhiteSpace( acAddress.City ) && !string.IsNullOrWhiteSpace( acAddress.PostalCode ) )
+                {
+                    Guid locationTypeGuid = GetAttributeValue( "LocationType" ).AsGuid();
+                    if ( locationTypeGuid != Guid.Empty )
+                    {
+                        Guid familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                        GroupService groupService = new GroupService( rockContext );
+                        GroupLocationService groupLocationService = new GroupLocationService( rockContext );
+                        var family = groupService.Queryable().Where( g => g.GroupType.Guid == familyGroupTypeGuid && g.Members.Any( m => m.PersonId == person.Id ) ).FirstOrDefault();
+
+                        var groupLocation = new GroupLocation();
+                        groupLocation.GroupId = family.Id;
+                        groupLocationService.Add( groupLocation );
+
+                        var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
+                        groupLocation.Location = location;
+
+                        groupLocation.GroupLocationTypeValueId = DefinedValueCache.Read( locationTypeGuid).Id;
+                        groupLocation.IsMailingLocation = true;
+                        groupLocation.IsMappedLocation = true;
+                       
+                        rockContext.SaveChanges();
+                    }                    
+                }
+            }
+
             return person;
         }
 

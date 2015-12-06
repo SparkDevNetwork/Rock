@@ -30,7 +30,13 @@ namespace Rock
         /// The _call counts
         /// </summary>
         public static int _callCounts = 0;
-        
+
+        private class DebugHelperUserState
+        {
+            public int CallNumber { get; set; }
+            public Stopwatch Stopwatch { get; set; }
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -55,26 +61,31 @@ namespace Rock
                 {
                     return;
                 }
-                
+
                 DebugHelper._callCounts++;
 
                 System.Diagnostics.Debug.WriteLine( "\n" );
 
                 StackTrace st = new StackTrace( 1, true );
                 var frames = st.GetFrames().Where( a => a.GetFileName() != null );
+                if ( interceptionContext.UserState == null )
+                {
+                    interceptionContext.UserState = new DebugHelperUserState { CallNumber = DebugHelper._callCounts, Stopwatch = Stopwatch.StartNew() };
+                }
+
                 System.Diagnostics.Debug.WriteLine( string.Format( "/* Call# {0}*/", DebugHelper._callCounts ) );
-                System.Diagnostics.Debug.WriteLine( string.Format( "/*\n{0}*/", frames.ToList().AsDelimited("") ) );
-                
+                System.Diagnostics.Debug.WriteLine( string.Format( "/*\n{0}*/", frames.ToList().AsDelimited( "" ) ) );
+
                 System.Diagnostics.Debug.WriteLine( "BEGIN\n" );
 
                 var declares = command.Parameters.OfType<System.Data.SqlClient.SqlParameter>()
-                    .Select( p => 
+                    .Select( p =>
                     {
                         if ( p.SqlDbType == System.Data.SqlDbType.NVarChar )
                         {
                             return string.Format( "@{0} {1}({2}) = '{3}'", p.ParameterName, p.SqlDbType, p.Size, p.SqlValue );
                         }
-                        else if (p.SqlDbType == System.Data.SqlDbType.Udt)
+                        else if ( p.SqlDbType == System.Data.SqlDbType.Udt )
                         {
                             return string.Format( "@{0} {1} = '{2}'", p.ParameterName, p.UdtTypeName, p.SqlValue );
                         }
@@ -82,7 +93,7 @@ namespace Rock
                         {
                             return string.Format( "@{0} {1} = '{2}'", p.ParameterName, p.SqlDbType, p.SqlValue );
                         }
-                    }).ToList().AsDelimited( ",\n" );
+                    } ).ToList().AsDelimited( ",\n" );
 
                 if ( !string.IsNullOrEmpty( declares ) )
                 {
@@ -92,6 +103,20 @@ namespace Rock
                 System.Diagnostics.Debug.WriteLine( command.CommandText );
 
                 System.Diagnostics.Debug.WriteLine( "\nEND\nGO\n\n" );
+            }
+
+            /// <summary>
+            /// Readers the executed.
+            /// </summary>
+            /// <param name="command">The command.</param>
+            /// <param name="interceptionContext">The interception context.</param>
+            public override void ReaderExecuted( System.Data.Common.DbCommand command, DbCommandInterceptionContext<System.Data.Common.DbDataReader> interceptionContext )
+            {
+                var debugHelperUserState = interceptionContext.UserState as DebugHelperUserState;
+                if ( debugHelperUserState != null )
+                {
+                    System.Diagnostics.Debug.WriteLine( string.Format( "\n/* Call# {0}: ElapsedTime [{1}ms]*/\n", debugHelperUserState.CallNumber, debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds ) );
+                }
             }
         }
 
@@ -104,8 +129,9 @@ namespace Rock
         /// Starts logging all EF SQL Calls to the Debug Output Window as T-SQL Blocks
         /// </summary>
         /// <param name="rockContext">The rock context to limit the output to.  Leave blank to show output for all rockContexts.</param>
-        public static void SQLLoggingStart( RockContext rockContext = null)
+        public static void SQLLoggingStart( RockContext rockContext = null )
         {
+            _callCounts = 0;
             SQLLoggingStop();
             _debugLoggingDbCommandInterceptor.RockContext = rockContext;
             DbInterception.Add( _debugLoggingDbCommandInterceptor );

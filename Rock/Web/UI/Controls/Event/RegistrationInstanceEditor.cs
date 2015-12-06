@@ -475,7 +475,25 @@ namespace Rock.Web.UI.Controls
                 _dtpStart.SelectedDateTime = instance.StartDateTime;
                 _dtpEnd.SelectedDateTime = instance.EndDateTime;
                 _nbMaxAttendees.Text = instance.MaxAttendees.ToString();
-                _ppContact.SetValue( instance.ContactPersonAlias != null ? instance.ContactPersonAlias.Person : null );
+
+                Person contactPerson = null;
+                if ( instance.ContactPersonAlias != null && instance.ContactPersonAlias.Person != null )
+                {
+                    contactPerson = instance.ContactPersonAlias.Person;
+                }
+                else if ( instance.ContactPersonAliasId.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        contactPerson = new PersonAliasService( rockContext )
+                            .Queryable()
+                            .Where( p => p.Id == instance.ContactPersonAliasId.Value )
+                            .Select( p => p.Person )
+                            .FirstOrDefault();
+                    }
+                }
+                _ppContact.SetValue( contactPerson );
+
                 _pnContactPhone.Text = instance.ContactPhone;
                 _ebContactEmail.Text = instance.ContactEmail;
                 _apAccount.SetValue( instance.AccountId );
@@ -526,7 +544,8 @@ namespace Rock.Web.UI.Controls
                 instance.ContactPersonAliasId = _ppContact.PersonAliasId;
                 instance.ContactPhone = _pnContactPhone.Text;
                 instance.ContactEmail = _ebContactEmail.Text;
-                instance.AccountId = _apAccount.SelectedValue.AsIntegerOrNull();
+                int accountId = _apAccount.SelectedValue.AsInteger();
+                instance.AccountId = accountId > 0 ? accountId : (int?)null;
                 instance.SendReminderDateTime = _dtpSendReminder.SelectedDateTime;
                 instance.ReminderSent = _cbReminderSent.Checked;
                 instance.AdditionalReminderDetails = _htmlAdditionalReminderDetails.Text; 
