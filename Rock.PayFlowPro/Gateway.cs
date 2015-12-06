@@ -211,7 +211,7 @@ namespace Rock.PayFlowPro
         /// <param name="origTransaction">The original transaction.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override FinancialTransaction Credit( FinancialTransaction origTransaction, decimal amount, out string errorMessage )
+        public override FinancialTransaction Credit( FinancialTransaction origTransaction, decimal amount, string comment, out string errorMessage )
         {
             errorMessage = string.Empty;
             Response ppResponse = null;
@@ -222,7 +222,7 @@ namespace Rock.PayFlowPro
             {
                 var ppInvoice = new Invoice();
                 ppInvoice.Amt = new Currency( amount );
-                ppInvoice.Comment1 = "Refund";
+                ppInvoice.Comment1 = comment;
 
                 var ppTransaction = new CreditTransaction( origTransaction.TransactionCode, GetUserInfo( origTransaction.FinancialGateway ), GetConnection( origTransaction.FinancialGateway ), ppInvoice, PayflowUtility.RequestId );
 
