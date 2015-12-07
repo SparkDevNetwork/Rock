@@ -5,6 +5,7 @@
 
   <section class="bigblock bigblock-graylighter">
     <div class="container">
+      <h3>Videos</h3>
       <div class="row">
         {% for item in videos %}
           {% assign video = item | PropertyToKeyValue %}
