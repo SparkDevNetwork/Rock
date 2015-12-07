@@ -1358,6 +1358,33 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Persons the by unique identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person PersonByGuid( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            Guid? personGuid = input.ToString().AsGuidOrNull();
+
+            if ( personGuid.HasValue )
+            {
+                var rockContext = new RockContext();
+
+                return new PersonService( rockContext ).Get( personGuid.Value );
+            } else
+            {
+                return null;
+            }
+
+        }
+
+        /// <summary>
         /// Persons the by alias identifier.
         /// </summary>
         /// <param name="context">The context.</param>
