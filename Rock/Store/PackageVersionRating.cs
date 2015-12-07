@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Rock.Model;
 
 namespace Rock.Store
 {
@@ -81,7 +82,7 @@ namespace Rock.Store
         /// <value>
         /// A <see cref="System.Int32"/> representing person id of the reviewer.
         /// </value>
-        public int PersonId { get; set; }
+        public int PersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the reviewer. 
@@ -89,6 +90,6 @@ namespace Rock.Store
         /// <value>
         /// A <see cref="Rock.Model.Person"/> representing the reviewer.
         /// </value>
-        public string PersonName { get; set; }
+        public PersonAlias PersonAlias { get; set; }
     }
 }

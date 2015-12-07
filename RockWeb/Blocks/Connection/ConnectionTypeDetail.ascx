@@ -72,7 +72,7 @@
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
                                     <Rock:RockBoundField DataField="FieldType" HeaderText="Field Type" />
-                                    <Rock:BoolField DataField="AllowSearch" HeaderText="Allow Search" />
+                                    <Rock:BoolField DataField="AllowSearch" HeaderText="Allow Search" HeaderStyle-HorizontalAlign="Center" />
                                     <Rock:EditField OnClick="gAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gAttributes_Delete" />
                                 </Columns>

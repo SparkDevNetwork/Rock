@@ -45,7 +45,6 @@ namespace Rock.Reporting.DataFilter.GroupMember
         /// <summary>
         /// Gets the Attributes for a Group Member of a specific Group Type.
         /// </summary>
-        /// <param name="groupTypeId">The group type identifier.</param>
         /// <returns></returns>
         private List<EntityField> GetGroupMemberAttributes()
         {
@@ -300,7 +299,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
             foreach (var entityField in GetGroupMemberAttributes())
             {
                 string controlId = pnlGroupAttributeFilterControls.GetChildControlInstanceName( entityField.Name );
-                var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true );
+                var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, filterControl.FilterMode );
                 if (control != null)
                 {
                     // Add the field to the dropdown of available fields
@@ -374,7 +373,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
 
                 if (control != null)
                 {
-                    entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig ).ForEach( v => settings.AttributeFilterSettings.Add( v ) );
+                    entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig, FilterMode.AdvancedFilter ).ForEach( v => settings.AttributeFilterSettings.Add( v ) );
                 }
             }
 

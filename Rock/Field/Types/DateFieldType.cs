@@ -226,6 +226,18 @@ namespace Rock.Field.Types
 
         }
 
+        /// <summary>
+        /// Values the type of as field.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object ValueAsFieldType( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value.AsDateTime();
+        }
+
         #endregion
 
         #region Edit Control

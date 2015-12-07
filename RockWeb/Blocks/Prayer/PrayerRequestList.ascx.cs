@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Prayer
 
     [LinkedPage( "Detail Page", Order = 0 )]
     [IntegerField( "Expires After (Days)", "Number of days until the request will expire.", false, 14, "", 1, "ExpireDays" )]
+    [BooleanField( "Show Prayer Count", "If enabled, the block will show the current prayer count for each request in the list.", false, "", 2 )]
     public partial class PrayerRequestList : RockBlock
     {
         #region Fields
@@ -98,6 +99,7 @@ namespace RockWeb.Blocks.Prayer
             _canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gPrayerRequests.Actions.ShowAdd = _canAddEditDelete;
             gPrayerRequests.IsDeleteEnabled = _canAddEditDelete;
+            gPrayerRequests.Columns[4].Visible = GetAttributeValue( "ShowPrayerCount" ).AsBoolean();
         }
 
         /// <summary>
@@ -277,6 +279,7 @@ namespace RockWeb.Blocks.Prayer
                     a.ExpirationDate,
                     a.Text,
                     a.FlagCount,
+                    PrayerCount = a.PrayerCount.HasValue ? a.PrayerCount : 0,
                     a.IsApproved,
                     a.CategoryId,
                     CategoryParentCategoryId = a.CategoryId.HasValue ? a.Category.ParentCategoryId : null,

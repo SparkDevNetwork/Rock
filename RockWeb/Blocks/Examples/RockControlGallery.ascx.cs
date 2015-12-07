@@ -176,6 +176,12 @@ namespace RockWeb.Blocks.Examples
                 bddlExample.Items.Add( new ListItem( "Mustard", "654" ) );
                 bddlExample.SelectedValue = "44";
 
+                bddlExampleCheckmark.Items.Clear();
+                bddlExampleCheckmark.Items.Add( new ListItem( "Small", "44" ) );
+                bddlExampleCheckmark.Items.Add( new ListItem( "Medium", "88" ) );
+                bddlExampleCheckmark.Items.Add( new ListItem( "Large", "150" ) );
+                bddlExampleCheckmark.Items.Add( new ListItem( "Software Developer", "654" ) );
+
                 ddlDataExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
                 cblExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );

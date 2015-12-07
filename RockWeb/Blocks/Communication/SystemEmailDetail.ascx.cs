@@ -162,6 +162,8 @@ namespace RockWeb.Blocks.Communication
             string globalFrom = globalAttributes.GetValue( "OrganizationEmail" );
             tbFrom.Help = string.Format( "If a From Address value is not entered the 'Organization Email' Global Attribute value of '{0}' will be used when this template is sent.", globalFrom );
 
+            tbTo.Help = "You can specify multiple email addresses by separating them with commas or semi-colons.";
+
             SystemEmailService emailTemplateService = new SystemEmailService( new RockContext() );
             SystemEmail emailTemplate = emailTemplateService.Get( emailTemplateId );
 

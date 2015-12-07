@@ -119,6 +119,9 @@ namespace Rock.Client
         public int? PhotoId { get; set; }
 
         /// <summary />
+        public DateTime? RecordStatusLastModifiedDateTime { get; set; }
+
+        /// <summary />
         public int? RecordStatusReasonValueId { get; set; }
 
         /// <summary />
@@ -203,6 +206,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NickName = source.NickName;
             this.PhotoId = source.PhotoId;
+            this.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
             this.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
             this.RecordStatusValueId = source.RecordStatusValueId;
             this.RecordTypeValueId = source.RecordTypeValueId;

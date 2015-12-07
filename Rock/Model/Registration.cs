@@ -31,7 +31,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    /// The person doing the registration. For example, Dad signing his kids up for camp. Dad is the Registration person and the kids would be Registrants
     /// </summary>
     [Table( "Registration" )]
     [DataContract]
@@ -429,6 +429,14 @@ Registration By: {0} Total Cost/Fees:{1}
         public string LastName { get; set; }
 
         /// <summary>
+        /// Gets or sets the family unique identifier.
+        /// </summary>
+        /// <value>
+        /// The family unique identifier.
+        /// </value>
+        public Guid FamilyGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the confirmation email.
         /// </summary>
         /// <value>
@@ -516,6 +524,7 @@ Registration By: {0} Total Cost/Fees:{1}
         /// </summary>
         public RegistrationInfo()
         {
+            FamilyGuid = Guid.Empty;
             Registrants = new List<RegistrantInfo>();
         }
 
@@ -551,12 +560,21 @@ Registration By: {0} Total Cost/Fees:{1}
                     LastName = registration.PersonAlias.Person.LastName;
                     ConfirmationEmail = registration.ConfirmationEmail;
                 }
-
-                DiscountCode = registration.DiscountCode.Trim();
+                                
+                DiscountCode = registration.DiscountCode != null ? registration.DiscountCode.Trim() : string.Empty;
                 DiscountPercentage = registration.DiscountPercentage;
                 DiscountAmount = registration.DiscountAmount;
                 TotalCost = registration.TotalCost;
                 DiscountedCost = registration.DiscountedCost;
+
+                if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
+                {
+                    var family = registration.PersonAlias.Person.GetFamilies( rockContext ).FirstOrDefault();
+                    if ( family != null )
+                    {
+                        FamilyGuid = family.Guid;
+                    }
+                }
 
                 foreach ( var registrant in registration.Registrants )
                 {
@@ -652,6 +670,30 @@ Registration By: {0} Total Cost/Fees:{1}
         public int RegistrationId { get; set; }
 
         /// <summary>
+        /// Gets or sets the person identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
+        public int? PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member identifier.
+        /// </summary>
+        /// <value>
+        /// The group member identifier.
+        /// </value>
+        public int? GroupMemberId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the group.
+        /// </summary>
+        /// <value>
+        /// The name of the group.
+        /// </value>
+        public string GroupName { get; set; }
+
+        /// <summary>
         /// Gets or sets the person alias unique identifier.
         /// </summary>
         /// <value>
@@ -728,6 +770,9 @@ Registration By: {0} Total Cost/Fees:{1}
         {
             Guid = Guid.NewGuid();
             PersonAliasGuid = Guid.Empty;
+            PersonId = null;
+            GroupMemberId = null;
+            GroupName = string.Empty;
             FamilyGuid = Guid.Empty;
             FieldValues = new Dictionary<int, object>();
             FeeValues = new Dictionary<int, List<FeeInfo>>();
@@ -743,6 +788,8 @@ Registration By: {0} Total Cost/Fees:{1}
         {
             if ( person != null )
             {
+                PersonId = person.Id;
+
                 using ( var rockContext = new RockContext() )
                 {
                     PersonName = person.FullName;
@@ -780,6 +827,9 @@ Registration By: {0} Total Cost/Fees:{1}
             {
                 Id = registrant.Id;
                 Guid = registrant.Guid;
+                GroupMemberId = registrant.GroupMemberId;
+                GroupName = registrant.GroupMember != null && registrant.GroupMember.Group != null ?
+                    registrant.GroupMember.Group.Name : string.Empty;
                 RegistrationId = registrant.RegistrationId;
                 Cost = registrant.Cost;
 
@@ -788,6 +838,7 @@ Registration By: {0} Total Cost/Fees:{1}
 
                 if ( registrant.PersonAlias != null )
                 {
+                    PersonId = registrant.PersonAlias.PersonId;
                     PersonAliasGuid = registrant.PersonAlias.Guid;
                     person = registrant.PersonAlias.Person;
 

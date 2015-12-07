@@ -670,7 +670,7 @@ namespace RockWeb.Blocks.Cms
                     statusField.HtmlEncode = false;
                 }
 
-                // Add Occurences Count column
+                // Add occurrences Count column
                 var occurrencesField = new BoolField();
                 occurrencesField.DataField = "Occurrences";
                 occurrencesField.HeaderText = "Event Occurrences";

@@ -1880,6 +1880,37 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Adds the defined value.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="description">The description.</param>
+        public void AddDefinedValue( string definedTypeGuid, string value, string description )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                DECLARE @Order int
+                SELECT @Order = ISNULL(MAX([order])+1,0) FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId
+
+                INSERT INTO [DefinedValue] (
+                    [IsSystem],[DefinedTypeId],[Order],
+                    [Value],[Description],
+                    [Guid])
+                VALUES(
+                    0,@DefinedTypeId,@Order,
+                    '{1}','{2}',
+                    NEWID() )
+",
+                    definedTypeGuid,
+                    value,
+                    description.Replace( "'", "''" )
+                    ) );
+        }
+
+        /// <summary>
         /// Updates (or Adds) the defined value for the given DefinedType.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type GUID.</param>
@@ -2707,6 +2738,80 @@ END
             Migration.Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, attributeGuid, action, specialRole, authGuid, order,
                 ( allow ? "A" : "D" ) ) );
         }
+
+        /// <summary>
+        /// Adds the security authentication for calendar.
+        /// </summary>
+        /// <param name="calendarGuid">The calendar unique identifier.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForCalendar( string calendarGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        {
+            if ( string.IsNullOrWhiteSpace( groupGuid ) )
+            {
+                groupGuid = Guid.Empty.ToString();
+            }
+
+            string entityTypeName = "Rock.Model.EventCalendar";
+            EnsureEntityTypeExists( entityTypeName );
+
+            string sql = @"
+    DECLARE @EntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [name] = '{0}')
+    DECLARE @CalendarId int = (SELECT TOP 1 [Id] FROM [EventCalendar] WHERE [Guid] = '{1}')
+
+    IF @EntityTypeId IS NOT NULL AND @CalendarId IS NOT NULL
+    BEGIN
+
+        DECLARE @GroupId int = ( SELECT TOP 1 [Id] FROM [Group] WHERE [Guid] = '{2}')
+
+        IF NOT EXISTS (
+            SELECT [Id] FROM [dbo].[Auth]
+            WHERE [EntityTypeId] = @EntityTypeId
+            AND [EntityId] = @CalendarId
+            AND [Action] = '{4}'
+            AND [AllowOrDeny] = '{5}'
+            AND [SpecialRole] = {6}
+            AND [GroupId] = @GroupId
+        )
+        BEGIN
+            INSERT INTO [dbo].[Auth]
+                   ([EntityTypeId]
+                   ,[EntityId]
+                   ,[Order]
+                   ,[Action]
+                   ,[AllowOrDeny]
+                   ,[SpecialRole]
+                   ,[GroupId]
+                   ,[Guid])
+             VALUES
+                   (@EntityTypeId
+                   ,@CalendarId
+                   ,{3}
+                   ,'{4}'
+                   ,'{5}'
+                   ,{6}
+                   ,@GroupId
+                   ,'{7}')
+        END
+    END
+";
+
+            Migration.Sql( string.Format( sql,
+                entityTypeName,                 // 0
+                calendarGuid,                   // 1
+                groupGuid,                      // 2
+                order,                          // 3
+                action,                         // 4
+                ( allow ? "A" : "D" ),          // 5
+                specialRole.ConvertToInt(),     // 6
+                authGuid ) );                   // 7
+
+        }
+
 
         /// <summary>
         /// Deletes the security authentication for category.
@@ -3998,6 +4103,7 @@ END
                     AND [Key] = '{2}' )
                 BEGIN
                     UPDATE [Attribute] SET
+                        [FieldTypeId] = @FieldTypeId,
                         [Name] = '{3}',
                         [Description] = '{4}',
                         [Order] = {5},

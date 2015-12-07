@@ -241,7 +241,15 @@ namespace RockWeb.Blocks.Reporting
             {
                 try
                 {
-                    query = query.ResolveMergeFields( PageParameters() );
+                    var mergeFields = GetDynamicDataMergeFields();
+
+                    // NOTE: there is already a PageParameters merge field from GetDynamicDataMergeFields, but for backwords compatibility, also add each of the PageParameters as plain merge fields
+                    foreach ( var pageParam in PageParameters() )
+                    {
+                        mergeFields.AddOrReplace( pageParam.Key, pageParam.Value );
+                    }
+
+                    query = query.ResolveMergeFields( mergeFields );
 
                     var parameters = GetParameters();
                     return DbService.GetDataSet( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters );
@@ -291,6 +299,28 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
+        /// Gets the dynamic data merge fields.
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<string, object> GetDynamicDataMergeFields()
+        {
+            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+            if ( CurrentPerson != null )
+            {
+                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
+                mergeFields.Add( "Person", CurrentPerson );
+                mergeFields.Add( "CurrentPerson", CurrentPerson );
+            }
+
+            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+            mergeFields.Add( "Campuses", CampusCache.All() );
+            mergeFields.Add( "PageParameter", PageParameters() );
+            mergeFields.Add( "CurrentPage", this.PageCache );
+
+            return mergeFields;
+        }
+
+        /// <summary>
         /// Builds the controls.
         /// </summary>
         /// <param name="setData">if set to <c>true</c> [set data].</param>
@@ -309,7 +339,8 @@ namespace RockWeb.Blocks.Reporting
             else
             {
                 phContent.Controls.Clear();
-                var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+
+                var mergeFields = GetDynamicDataMergeFields();
 
                 if ( dataSet != null )
                 {
@@ -318,16 +349,6 @@ namespace RockWeb.Blocks.Reporting
                     // load merge objects if needed by either for formatted output OR page title
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PageTitleLava" ) ) || !string.IsNullOrWhiteSpace( formattedOutput ) )
                     {
-                        if ( CurrentPerson != null )
-                        {
-                            // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                            mergeFields.Add( "Person", CurrentPerson );
-                            mergeFields.Add( "CurrentPerson", CurrentPerson );
-                        }
-
-                        mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-                        mergeFields.Add( "Campuses", CampusCache.All() );
-                        mergeFields.Add( "PageParameter", PageParameters() );
 
                         int i = 1;
                         foreach ( DataTable dataTable in dataSet.Tables )

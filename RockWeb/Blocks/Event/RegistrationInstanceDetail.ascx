@@ -120,6 +120,9 @@
                     <li id="liLinkage" runat="server">
                         <asp:LinkButton ID="lbLinkage" runat="server" Text="Linkages" OnClick="lbTab_Click" />
                     </li>
+                    <li id="liGroupPlacement" runat="server">
+                        <asp:LinkButton ID="lbGroupPlacement" runat="server" Text="Group Placement" OnClick="lbTab_Click" />
+                    </li>
                 </ul>
 
                 <asp:Panel ID="pnlRegistrations" runat="server" Visible="false" CssClass="panel panel-block">
@@ -221,7 +224,7 @@
                                     <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date / Time" SortExpression="TransactionDateTime" />                
                                     <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" SortExpression="TotalAmount" />
                                     <Rock:RockBoundField DataField="FinancialPaymentDetail.CurrencyAndCreditCardType" HeaderText="Payment Method" />
-                                    <Rock:RockBoundField DataField="FinancialPaymentDetail.AccountNumberMasked" HeaderText="Accout" />
+                                    <Rock:RockBoundField DataField="FinancialPaymentDetail.AccountNumberMasked" HeaderText="Account" />
                                     <Rock:RockBoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" ColumnPriority="DesktopSmall" />                
                                     <Rock:RockTemplateFieldUnselected HeaderText="Registrar">
                                         <ItemTemplate>
@@ -249,7 +252,7 @@
                             <Rock:GridFilter ID="fLinkages" runat="server" OnDisplayFilterValue="fLinkages_DisplayFilterValue">
                                 <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gLinkages" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gLinkages_RowSelected" RowItemText="Linkage" ExportSource="ColumnOutput">
+                            <Rock:Grid ID="gLinkages" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Linkage" ExportSource="ColumnOutput">
                                 <Columns>
                                     <Rock:RockTemplateFieldUnselected HeaderText="Calendar Item">
                                         <ItemTemplate>
@@ -265,9 +268,39 @@
                                     </Rock:RockTemplateFieldUnselected>
                                     <asp:BoundField HeaderText="Public Name" DataField="PublicName" SortExpression="PublicName" />
                                     <asp:BoundField HeaderText="URL Slug" DataField="UrlSlug" SortExpression="UrlSlug" />
+                                    <Rock:EditField OnClick="gLinkages_Edit" />
                                     <Rock:DeleteField OnClick="gLinkages_Delete" />
                                 </Columns>
                             </Rock:Grid>
+                        </div>
+                    </div>
+                </asp:Panel>
+
+                <asp:Panel ID="pnlGroupPlacement" runat="server" Visible="false" CssClass="panel panel-block">
+                    <div class="panel-heading">
+                        <h1 class="panel-title"><i class="fa fa-link"></i> Group Placement</h1>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:GroupPicker ID="gpGroupPlacementParentGroup" runat="server" Label="Parent Group"
+                                    OnSelectItem="gpGroupPlacementParentGroup_SelectItem" />
+                            </div>
+                            <div>
+                            </div>
+                        </div>
+                        <Rock:ModalAlert ID="mdGroupPlacementGridWarning" runat="server" />
+                        <Rock:Grid ID="gGroupPlacements" runat="server" DisplayType="Light" EnableResponsiveTable="false" AllowSorting="false" RowItemText="Registrant" ExportSource="ColumnOutput">
+                            <Columns>
+                                <Rock:RockTemplateField HeaderText="Registrant" SortExpression="PersonAlias.Person.LastName, PersonAlias.Person.NickName">
+                                    <ItemTemplate>
+                                        <asp:Literal ID="lRegistrant" runat="server"></asp:Literal>
+                                    </ItemTemplate>
+                                </Rock:RockTemplateField>
+                            </Columns>
+                        </Rock:Grid>
+                        <div class="actions">
+                            <asp:LinkButton ID="lbPlaceInGroup" runat="server" OnClick="lbPlaceInGroup_Click" Text="Place" CssClass="btn btn-primary btn-sm" />
                         </div>
                     </div>
                 </asp:Panel>

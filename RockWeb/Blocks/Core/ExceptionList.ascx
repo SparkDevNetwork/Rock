@@ -74,7 +74,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <p>
-                            Below is a list of each occurence of this error.
+                            Below is a list of each occurrence of this error.
                         </p>
                         <asp:Literal ID="lblMainDetails" runat="server" />
                     </div>
