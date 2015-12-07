@@ -39,31 +39,38 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// <summary>
     /// Block for adding new families
     /// </summary>
-    [DisplayName( "Add Family" )]
+    [DisplayName( "Add Group" )]
     [Category( "CRM > Person Detail" )]
-    [Description( "Allows for adding new families." )]
+    [Description( "Allows for adding a new group and the people in the group (e.g. New Families." )]
 
-    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Location Type",
-        "The type of location that address should use", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 0 )]
+    [GroupTypeField( "Group Type", "The group type to display groups for (default is Family)", false, Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "", 0 )]
+    [GroupField( "Parent Group", "The parent group to add the new group to (default is none)", false, "", "", 1 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Type",
+        "The type of location that address should use", false, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 2 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status",
-        "The connection status that should be set by default", false, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR, "", 1 )]
-    [BooleanField( "Gender", "Require a gender for each person", "Don't require", "Should Gender be required for each person added?", false, "", 2 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "The default marital status for adults in the family.", false, false, "", "", 3 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Child Marital Status", "The marital status to use for children in the family.", false, false,
-        Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 4 )]
-    [BooleanField( "Marital Status Confirmation", "Should user be asked to confirm saving an adults without a marital status?", true, "", 5 )]
-    [BooleanField( "Grade", "Require a grade for each child", "Don't require", "Should Grade be required for each child added?", false, "", 6 )]
-    [BooleanField("SMS", "SMS is enabled by default", "SMS is not enabled by default", "Should SMS be enabled for cell phone numbers by default?", false, "", 7)]
-    [AttributeCategoryField( "Attribute Categories", "The Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 8 )]
+        "The connection status that should be set by default", false, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR, "", 3 )]
+    [BooleanField( "Gender", "Require a gender for each person", "Don't require", "Should Gender be required for each person added?", false, "", 4 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "When Family group type, the default marital status for adults in the family.", false, false, "", "", 5 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Child Marital Status", "When Famiy group type, the marital status to use for children in the family.", false, false, 
+        Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 6 )]
+    [BooleanField( "Marital Status Confirmation", "When Family group type, should user be asked to confirm saving an adult without a marital status?", true, "", 7 )]
+    [BooleanField( "Grade", "Require a grade for each child", "Don't require", "When Family group type, should Grade be required for each child added?", false, "", 8 )]
+    [BooleanField("SMS", "SMS is enabled by default", "SMS is not enabled by default", "Should SMS be enabled for cell phone numbers by default?", false, "", 9)]
+    [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 10 )]
 
     public partial class AddFamily : Rock.Web.UI.RockBlock
     {
-
         #region Fields
+
+        private GroupTypeCache _groupType = null;
+        private bool _isFamilyGroupType = false;
+        protected string _groupTypeName = string.Empty;
+
+        private DefinedValueCache _locationType = null;
 
         private bool _confirmMaritalStatus = true;
         private int _childRoleId = 0;
-        private List<NewFamilyAttributes> attributeControls = new List<NewFamilyAttributes>();
+        private List<NewGroupAttributes> attributeControls = new List<NewGroupAttributes>();
         private Dictionary<string, int?> _verifiedLocations = null;
         private DefinedValueCache _homePhone = null;
         private DefinedValueCache _cellPhone = null;
@@ -82,15 +89,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected int CurrentPageIndex { get; set; }
 
         /// <summary>
-        /// Gets or sets the family members that have been added by user
+        /// Gets or sets the group members that have been added by user
         /// </summary>
         /// <value>
-        /// The family members.
+        /// The group members.
         /// </value>
-        protected List<GroupMember> FamilyMembers { get; set; }
+        protected List<GroupMember> GroupMembers { get; set; }
 
         /// <summary>
-        /// Gets or sets any possible duplicates for each family member
+        /// Gets or sets any possible duplicates for each group member
         /// </summary>
         /// <value>
         /// The duplicates.
@@ -111,14 +118,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             CurrentPageIndex = ViewState["CurrentPageIndex"] as int? ?? 0;
 
-            string json = ViewState["FamilyMembers"] as string;
+            string json = ViewState["GroupMembers"] as string;
             if ( string.IsNullOrWhiteSpace( json ))
             {
-                FamilyMembers = new List<GroupMember>();
+                GroupMembers = new List<GroupMember>();
             }
             else
             {
-                FamilyMembers = JsonConvert.DeserializeObject<List<GroupMember>>( json );
+                GroupMembers = JsonConvert.DeserializeObject<List<GroupMember>>( json );
             }
 
             json = ViewState["Duplicates"] as string;
@@ -144,40 +151,63 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
-            var AdultMaritalStatus = DefinedValueCache.Read( GetAttributeValue( "AdultMaritalStatus" ).AsGuid() );
-            if ( AdultMaritalStatus != null )
+            _groupType = GroupTypeCache.Read( GetAttributeValue( "GroupType" ).AsGuid() );
+            if ( _groupType == null )
             {
-                ddlMaritalStatus.SetValue( AdultMaritalStatus.Id );
+                _groupType = GroupTypeCache.GetFamilyGroupType();
             }
 
-            var campusi = CampusCache.All();
-            cpCampus.Campuses = campusi;
-            cpCampus.Visible = campusi.Any();
-            if ( campusi.Count == 1 )
+            _groupTypeName = _groupType.Name;
+            _isFamilyGroupType = _groupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            _locationType = _groupType.LocationTypeValues.FirstOrDefault( v => v.Guid.Equals( GetAttributeValue( "LocationType" ).AsGuid() ) );
+            if ( _locationType == null )
             {
-                cpCampus.SelectedCampusId = campusi.FirstOrDefault().Id;
+                _locationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
             }
 
-            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
-            if ( familyGroupType != null )
+            if ( _isFamilyGroupType )
             {
-                _childRoleId = familyGroupType.Roles
+                divGroupName.Visible = false;
+                var campusi = CampusCache.All();
+                cpCampus.Campuses = campusi;
+                cpCampus.Visible = campusi.Any();
+                if ( campusi.Count == 1 )
+                {
+                    cpCampus.SelectedCampusId = campusi.FirstOrDefault().Id;
+                }
+
+                ddlMaritalStatus.Visible = true;
+                ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
+                var AdultMaritalStatus = DefinedValueCache.Read( GetAttributeValue( "AdultMaritalStatus" ).AsGuid() );
+                if ( AdultMaritalStatus != null )
+                {
+                    ddlMaritalStatus.SetValue( AdultMaritalStatus.Id );
+                }
+
+                _childRoleId = _groupType.Roles
                     .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) )
                     .Select( r => r.Id )
                     .FirstOrDefault();
             }
+            else
+            {
+                divGroupName.Visible = true;
+                tbGroupName.Label = _groupTypeName + " Name";
+                cpCampus.Visible = false;
+                ddlMaritalStatus.Visible = false;
+            }
 
+            nfmMembers.ShowGrade = _isFamilyGroupType;
             nfmMembers.RequireGender = GetAttributeValue( "Gender" ).AsBoolean();
             nfmMembers.RequireGrade = GetAttributeValue( "Grade" ).AsBoolean();
             _SMSEnabled = GetAttributeValue("SMS").AsBoolean();
 
-            lTitle.Text = ( "Add Family" ).FormatAsHtmlTitle();
+            lTitle.Text = string.Format( "Add {0}", _groupType.Name ).FormatAsHtmlTitle();
 
             _homePhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
             _cellPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
 
-            _confirmMaritalStatus = GetAttributeValue( "MaritalStatusConfirmation" ).AsBoolean();
+            _confirmMaritalStatus = _isFamilyGroupType && GetAttributeValue( "MaritalStatusConfirmation" ).AsBoolean();
             if ( _confirmMaritalStatus )
             {
                 string script = string.Format( @"
@@ -217,10 +247,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( !Page.IsPostBack )
             {
-                FamilyMembers = new List<GroupMember>();
+                GroupMembers = new List<GroupMember>();
                 Duplicates = new Dictionary<Guid, List<Person>>();
                 _verifiedLocations = new Dictionary<string, int?>();
-                AddFamilyMember();
+                AddGroupMember();
                 CreateControls( true );
             }
             else
@@ -244,7 +274,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             };
 
             ViewState["CurrentPageIndex"] = CurrentPageIndex;
-            ViewState["FamilyMembers"] = JsonConvert.SerializeObject( FamilyMembers, Formatting.None, jsonSetting );
+            ViewState["GroupMembers"] = JsonConvert.SerializeObject( GroupMembers, Formatting.None, jsonSetting );
             ViewState["Duplicates"] = JsonConvert.SerializeObject( Duplicates, Formatting.None, jsonSetting );
             ViewState["VerifiedLocations"] = _verifiedLocations;
 
@@ -257,8 +287,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
-            var adults = FamilyMembers.Where( m => m.GroupRoleId != _childRoleId ).ToList();
-            ddlMaritalStatus.Visible = adults.Any();
+            if ( _isFamilyGroupType )
+            {
+                var adults = GroupMembers.Where( m => m.GroupRoleId != _childRoleId ).ToList();
+                ddlMaritalStatus.Visible = adults.Any();
+            }
 
             base.OnPreRender( e );
         }
@@ -268,40 +301,41 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         #region Events
 
         /// <summary>
-        /// Handles the AddFamilyMemberClick event of the nfmMembers control.
+        /// Handles the AddGroupMemberClick event of the nfmMembers control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void nfmMembers_AddFamilyMemberClick( object sender, EventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void nfmMembers_AddGroupMemberClick( object sender, EventArgs e )
         {
-            AddFamilyMember();
+            AddGroupMember();
             CreateControls( true );
         }
 
         /// <summary>
-        /// Handles the RoleUpdated event of the familyMemberRow control.
+        /// Handles the RoleUpdated event of the groupMemberRow control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        void familyMemberRow_RoleUpdated( object sender, EventArgs e )
+        void groupMemberRow_RoleUpdated( object sender, EventArgs e )
         {
-            NewFamilyMembersRow row = sender as NewFamilyMembersRow;
-            row.ShowGrade = row.RoleId == _childRoleId;
+            NewGroupMembersRow row = sender as NewGroupMembersRow;
+            row.ShowGradePicker = row.RoleId == _childRoleId;
+            row.ShowGradeColumn = _isFamilyGroupType;
         }
 
         /// <summary>
-        /// Handles the DeleteClick event of the familyMemberRow control.
+        /// Handles the DeleteClick event of the groupMemberRow control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void familyMemberRow_DeleteClick( object sender, EventArgs e )
+        void groupMemberRow_DeleteClick( object sender, EventArgs e )
         {
-            NewFamilyMembersRow row = sender as NewFamilyMembersRow;
-            var familyMember = FamilyMembers.FirstOrDefault( m => m.Person.Guid.Equals( row.PersonGuid ) );
-            if ( familyMember != null )
+            NewGroupMembersRow row = sender as NewGroupMembersRow;
+            var groupMember = GroupMembers.FirstOrDefault( m => m.Person.Guid.Equals( row.PersonGuid ) );
+            if ( groupMember != null )
             {
-                FamilyMembers.Remove( familyMember );
+                GroupMembers.Remove( groupMember );
             }
 
             CreateControls( true );
@@ -340,7 +374,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 else
                 {
-                    if ( FamilyMembers.Any() )
+                    if ( GroupMembers.Any() )
                     {
                         if ( CurrentPageIndex == ( attributeControls.Count + 1 ) && FindDuplicates() )
                         {
@@ -350,20 +384,32 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         else
                         {
                             var rockContext = new RockContext();
+
+                            Guid? parentGroupGuid = GetAttributeValue( "ParentGroup" ).AsGuidOrNull();
+
                             rockContext.WrapTransaction( () =>
                             {
-                                var familyGroup = GroupService.SaveNewFamily( rockContext, FamilyMembers, cpCampus.SelectedValueAsInt(), true );
-                                if ( familyGroup != null )
+                                Group group = null;
+                                if ( _isFamilyGroupType )
+                                {
+                                    group = GroupService.SaveNewFamily( rockContext, GroupMembers, cpCampus.SelectedValueAsInt(), true );
+                                }
+                                else
+                                {
+                                    group = GroupService.SaveNewGroup( rockContext, _groupType.Id, parentGroupGuid, tbGroupName.Text, GroupMembers, null, true );
+                                }
+
+                                if ( group != null )
                                 {
                                     string locationKey = GetLocationKey();
                                     if ( !string.IsNullOrEmpty( locationKey ) && _verifiedLocations.ContainsKey( locationKey ) )
                                     {
-                                        GroupService.AddNewFamilyAddress( rockContext, familyGroup, GetAttributeValue( "LocationType" ), _verifiedLocations[locationKey] );
+                                        GroupService.AddNewGroupAddress( rockContext, group, _locationType.Guid.ToString(), _verifiedLocations[locationKey] );
                                     }
                                 }
                             } );
 
-                            Response.Redirect( string.Format( "~/Person/{0}", FamilyMembers[0].Person.Id ), false );
+                            Response.Redirect( string.Format( "~/Person/{0}", GroupMembers[0].Person.Id ), false );
                         }
                     }
                 }
@@ -393,11 +439,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var category = CategoryCache.Read( guid );
                     if ( category != null )
                     {
-                        var attributeControl = new NewFamilyAttributes();
+                        var attributeControl = new NewGroupAttributes();
                         attributeControl.ClearRows();
                         pnlAttributes.Controls.Add( attributeControl );
                         attributeControls.Add( attributeControl );
-                        attributeControl.ID = "familyAttributes_" + category.Id.ToString();
+                        attributeControl.ID = "groupAttributes_" + category.Id.ToString();
                         attributeControl.CategoryId = category.Id;
 
                         foreach ( var attribute in attributeService.GetByCategoryId( category.Id ) )
@@ -415,39 +461,39 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             nfciContactInfo.ClearRows();
 
             var groupMemberService = new GroupMemberService(rockContext);
-            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
-            int adultRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
-            var homeLocationGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+            int defaultRoleId = _groupType.DefaultGroupRoleId ?? _groupType.Roles.Select( r => r.Id ).FirstOrDefault();
 
             var location = new Location();
             acAddress.GetValues( location );
 
-            foreach ( var familyMember in FamilyMembers )
+            foreach ( var groupMember in GroupMembers )
             {
-                string familyMemberGuidString = familyMember.Person.Guid.ToString().Replace( "-", "_" );
+                string groupMemberGuidString = groupMember.Person.Guid.ToString().Replace( "-", "_" );
 
-                var familyMemberRow = new NewFamilyMembersRow();
-                nfmMembers.Controls.Add( familyMemberRow );
-                familyMemberRow.ID = string.Format( "row_{0}", familyMemberGuidString );
-                familyMemberRow.RoleUpdated += familyMemberRow_RoleUpdated;
-                familyMemberRow.DeleteClick += familyMemberRow_DeleteClick;
-                familyMemberRow.PersonGuid = familyMember.Person.Guid;
-                familyMemberRow.RequireGender = nfmMembers.RequireGender;
-                familyMemberRow.RequireGrade = nfmMembers.RequireGrade;
-                familyMemberRow.RoleId = familyMember.GroupRoleId;
-                familyMemberRow.ShowGrade = familyMember.GroupRoleId == _childRoleId;
-                familyMemberRow.ValidationGroup = BlockValidationGroup;
+                var groupMemberRow = new NewGroupMembersRow();
+                groupMemberRow.GroupTypeId = _groupType.Id;
+                nfmMembers.Controls.Add( groupMemberRow );
+                groupMemberRow.ID = string.Format( "row_{0}", groupMemberGuidString );
+                groupMemberRow.RoleUpdated += groupMemberRow_RoleUpdated;
+                groupMemberRow.DeleteClick += groupMemberRow_DeleteClick;
+                groupMemberRow.PersonGuid = groupMember.Person.Guid;
+                groupMemberRow.RequireGender = nfmMembers.RequireGender;
+                groupMemberRow.RequireGrade = nfmMembers.RequireGrade;
+                groupMemberRow.RoleId = groupMember.GroupRoleId;
+                groupMemberRow.ShowGradeColumn = _isFamilyGroupType;
+                groupMemberRow.ShowGradePicker = groupMember.GroupRoleId == _childRoleId;
+                groupMemberRow.ValidationGroup = BlockValidationGroup;
 
-                var contactInfoRow = new NewFamilyContactInfoRow();
+                var contactInfoRow = new NewGroupContactInfoRow();
                 nfciContactInfo.Controls.Add( contactInfoRow );
-                contactInfoRow.ID = string.Format( "ci_row_{0}", familyMemberGuidString );
-                contactInfoRow.PersonGuid = familyMember.Person.Guid;
+                contactInfoRow.ID = string.Format( "ci_row_{0}", groupMemberGuidString );
+                contactInfoRow.PersonGuid = groupMember.Person.Guid;
                 contactInfoRow.IsMessagingEnabled = _SMSEnabled;
-                contactInfoRow.PersonName = familyMember.Person.FullName;
+                contactInfoRow.PersonName = groupMember.Person.FullName;
 
                 if ( _homePhone != null )
                 {
-                    var homePhoneNumber = familyMember.Person.PhoneNumbers.Where( p => p.NumberTypeValueId == _homePhone.Id ).FirstOrDefault();
+                    var homePhoneNumber = groupMember.Person.PhoneNumbers.Where( p => p.NumberTypeValueId == _homePhone.Id ).FirstOrDefault();
                     if ( homePhoneNumber != null )
                     {
                         contactInfoRow.HomePhoneNumber = PhoneNumber.FormattedNumber( homePhoneNumber.CountryCode, homePhoneNumber.Number );
@@ -457,7 +503,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 if ( _cellPhone != null )
                 {
-                    var cellPhoneNumber = familyMember.Person.PhoneNumbers.Where( p => p.NumberTypeValueId == _cellPhone.Id ).FirstOrDefault();
+                    var cellPhoneNumber = groupMember.Person.PhoneNumbers.Where( p => p.NumberTypeValueId == _cellPhone.Id ).FirstOrDefault();
                     if ( cellPhoneNumber != null )
                     {
                         contactInfoRow.CellPhoneNumber = PhoneNumber.FormattedNumber( cellPhoneNumber.CountryCode, cellPhoneNumber.Number );
@@ -465,59 +511,59 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                 }
 
-                contactInfoRow.Email = familyMember.Person.Email;
+                contactInfoRow.Email = groupMember.Person.Email;
 
                 if ( setSelection )
                 {
-                    if ( familyMember.Person != null )
+                    if ( groupMember.Person != null )
                     {
-                        familyMemberRow.TitleValueId = familyMember.Person.TitleValueId;
-                        familyMemberRow.FirstName = familyMember.Person.FirstName;
-                        familyMemberRow.LastName = familyMember.Person.LastName;
-                        familyMemberRow.SuffixValueId = familyMember.Person.SuffixValueId;
-                        familyMemberRow.Gender = familyMember.Person.Gender;
-                        familyMemberRow.BirthDate = familyMember.Person.BirthDate;
-                        familyMemberRow.ConnectionStatusValueId = familyMember.Person.ConnectionStatusValueId;
-                        familyMemberRow.GradeOffset = familyMember.Person.GradeOffset;
+                        groupMemberRow.TitleValueId = groupMember.Person.TitleValueId;
+                        groupMemberRow.FirstName = groupMember.Person.FirstName;
+                        groupMemberRow.LastName = groupMember.Person.LastName;
+                        groupMemberRow.SuffixValueId = groupMember.Person.SuffixValueId;
+                        groupMemberRow.Gender = groupMember.Person.Gender;
+                        groupMemberRow.BirthDate = groupMember.Person.BirthDate;
+                        groupMemberRow.ConnectionStatusValueId = groupMember.Person.ConnectionStatusValueId;
+                        groupMemberRow.GradeOffset = groupMember.Person.GradeOffset;
                     }
                 }
 
                 foreach ( var attributeControl in attributeControls )
                 {
-                    var attributeRow = new NewFamilyAttributesRow();
+                    var attributeRow = new NewGroupAttributesRow();
                     attributeControl.Controls.Add( attributeRow );
-                    attributeRow.ID = string.Format( "{0}_{1}", attributeControl.ID, familyMemberGuidString );
+                    attributeRow.ID = string.Format( "{0}_{1}", attributeControl.ID, groupMemberGuidString );
                     attributeRow.AttributeList = attributeControl.AttributeList;
-                    attributeRow.PersonGuid = familyMember.Person.Guid;
-                    attributeRow.PersonName = familyMember.Person.FullName;
+                    attributeRow.PersonGuid = groupMember.Person.Guid;
+                    attributeRow.PersonName = groupMember.Person.FullName;
 
                     if ( setSelection )
                     {
-                        attributeRow.SetEditValues( familyMember.Person );
+                        attributeRow.SetEditValues( groupMember.Person );
                     }
                 }
 
-                if ( Duplicates.ContainsKey( familyMember.Person.Guid ) )
+                if ( Duplicates.ContainsKey( groupMember.Person.Guid ) )
                 {
                     var dupRow = new HtmlGenericControl( "div" );
                     dupRow.AddCssClass( "row" );
-                    dupRow.ID = string.Format( "dupRow_{0}", familyMemberGuidString );
+                    dupRow.ID = string.Format( "dupRow_{0}", groupMemberGuidString );
                     phDuplicates.Controls.Add( dupRow );
 
                     var newPersonCol = new HtmlGenericControl( "div" );
                     newPersonCol.AddCssClass( "col-md-6" );
-                    newPersonCol.ID = string.Format( "newPersonCol_{0}", familyMemberGuidString );
+                    newPersonCol.ID = string.Format( "newPersonCol_{0}", groupMemberGuidString );
                     dupRow.Controls.Add( newPersonCol );
 
                     newPersonCol.Controls.Add( PersonHtmlPanel(
-                        familyMemberGuidString,
-                        familyMember.Person,
-                        familyMember.GroupRole,
+                        groupMemberGuidString,
+                        groupMember.Person,
+                        groupMember.GroupRole,
                         location,
                         rockContext ) );
 
                     LinkButton lbRemoveMember = new LinkButton();
-                    lbRemoveMember.ID = string.Format( "lbRemoveMember_{0}", familyMemberGuidString );
+                    lbRemoveMember.ID = string.Format( "lbRemoveMember_{0}", groupMemberGuidString );
                     lbRemoveMember.AddCssClass( "btn btn-danger btn-xs" );
                     lbRemoveMember.Text = "Remove";
                     lbRemoveMember.Click += lbRemoveMember_Click;
@@ -525,35 +571,35 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     var dupPersonCol = new HtmlGenericControl( "div" );
                     dupPersonCol.AddCssClass( "col-md-6" );
-                    dupPersonCol.ID = string.Format( "dupPersonCol_{0}", familyMemberGuidString );
+                    dupPersonCol.ID = string.Format( "dupPersonCol_{0}", groupMemberGuidString );
                     dupRow.Controls.Add( dupPersonCol );
 
                     var duplicateHeader = new HtmlGenericControl( "h4" );
                     duplicateHeader.InnerText = "Possible Duplicate Records";
                     dupPersonCol.Controls.Add( duplicateHeader );
 
-                    foreach( var duplicate in Duplicates[familyMember.Person.Guid] )
+                    foreach( var duplicate in Duplicates[groupMember.Person.Guid] )
                     {
                         GroupTypeRole groupTypeRole = null;
                         Location duplocation = null;
 
-                        var familyGroupMember = groupMemberService.Queryable()
+                        var dupGroupMember = groupMemberService.Queryable()
                             .Where( a => a.PersonId == duplicate.Id )
-                            .Where( a => a.Group.GroupTypeId == familyGroupType.Id )
+                            .Where( a => a.Group.GroupTypeId == _groupType.Id )
                             .Select( s => new
                             {
                                 s.GroupRole,
-                                GroupLocation = s.Group.GroupLocations.Where( a => a.GroupLocationTypeValue.Guid == homeLocationGuid ).Select( a => a.Location ).FirstOrDefault()
+                                GroupLocation = s.Group.GroupLocations.Where( a => a.GroupLocationTypeValue.Guid.Equals( _locationType.Guid ) ).Select( a => a.Location ).FirstOrDefault()
                             } )
                             .FirstOrDefault();
-                        if ( familyGroupMember != null )
+                        if ( dupGroupMember != null )
                         {
-                            groupTypeRole = familyGroupMember.GroupRole;
-                            duplocation = familyGroupMember.GroupLocation;
+                            groupTypeRole = dupGroupMember.GroupRole;
+                            duplocation = dupGroupMember.GroupLocation;
                         }
 
                         dupPersonCol.Controls.Add( PersonHtmlPanel(
-                            familyMemberGuidString,
+                            groupMemberGuidString,
                             duplicate,
                             groupTypeRole,
                             duplocation,
@@ -568,14 +614,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         void lbRemoveMember_Click( object sender, EventArgs e )
         {
             Guid personGuid = ( (LinkButton)sender ).ID.Substring( 15 ).Replace( "_", "-" ).AsGuid();
-            var familyMember = FamilyMembers.Where( f => f.Person.Guid.Equals( personGuid ) ).FirstOrDefault();
-            if ( familyMember != null )
+            var groupMember = GroupMembers.Where( f => f.Person.Guid.Equals( personGuid ) ).FirstOrDefault();
+            if ( groupMember != null )
             {
-                FamilyMembers.Remove( familyMember );
+                GroupMembers.Remove( groupMember );
                 Duplicates.Remove( personGuid );
-                if ( !FamilyMembers.Any() )
+                if ( !GroupMembers.Any() )
                 {
-                    AddFamilyMember();
+                    AddGroupMember();
                     CurrentPageIndex = 0;
                 }
                 CreateControls( true );
@@ -583,7 +629,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         private Panel PersonHtmlPanel( 
-            string familyMemberGuidString, 
+            string groupMemberGuidString, 
             Person person,
             GroupTypeRole GroupTypeRole,
             Location location,
@@ -633,11 +679,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 personInfoHtml.AppendFormat( " <em>({0} yrs old)</em>", personAge.Value ); ;
             }
 
-            var familyMembers = person.GetFamilyMembers( false, rockContext );
-            if ( familyMembers != null && familyMembers.Any() )
+            var groupMembers = person.GetGroupMembers( _groupType.Id, false, rockContext );
+            if ( groupMembers != null && groupMembers.Any() )
             {
-                personInfoHtml.AppendFormat( "<p><strong>Family Members:</strong> {0}",
-                    familyMembers.Select( m => m.Person.NickName ).ToList().AsDelimited( ", " ) );
+                personInfoHtml.AppendFormat( "<p><strong>{0} Members:</strong> {1}", _groupType.Name,
+                    groupMembers.Select( m => m.Person.NickName ).ToList().AsDelimited( ", " ) );
             }
 
             if ( location != null )
@@ -669,7 +715,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             personInfoHtml.Append( "</div>" );
 
             var dupPersonPnl = new Panel();
-            dupPersonPnl.ID = string.Format( "dupPersonPnl_{0}_{1}", familyMemberGuidString, person.Id );
+            dupPersonPnl.ID = string.Format( "dupPersonPnl_{0}_{1}", groupMemberGuidString, person.Id );
             dupPersonPnl.Controls.Add( new LiteralControl( personInfoHtml.ToString() ) );
 
             return dupPersonPnl;
@@ -677,7 +723,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private void GetControlData()
         {
-            FamilyMembers = new List<GroupMember>();
+            GroupMembers = new List<GroupMember>();
 
             int? childMaritalStatusId = null;
             var childMaritalStatus = DefinedValueCache.Read( GetAttributeValue( "ChildMaritalStatus" ).AsGuid() );
@@ -690,7 +736,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             int recordTypePersonId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             int recordStatusActiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
 
-            foreach ( NewFamilyMembersRow row in nfmMembers.FamilyMemberRows )
+            foreach ( NewGroupMembersRow row in nfmMembers.GroupMemberRows )
             {
                 var groupMember = new GroupMember();
                 groupMember.GroupMemberStatus = GroupMemberStatus.Active;
@@ -703,13 +749,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     groupMember.GroupRoleId = row.RoleId.Value;
 
-                    if ( groupMember.GroupRoleId == _childRoleId )
+                    if ( _isFamilyGroupType )
                     {
-                        groupMember.Person.MaritalStatusValueId = childMaritalStatusId;
+                        if ( groupMember.GroupRoleId == _childRoleId )
+                        {
+                            groupMember.Person.MaritalStatusValueId = childMaritalStatusId;
+                        }
+                        else
+                        {
+                            groupMember.Person.MaritalStatusValueId = adultMaritalStatusId;
+                        }
                     }
                     else
                     {
-                        groupMember.Person.MaritalStatusValueId = adultMaritalStatusId;
+                        groupMember.Person.MaritalStatusValueId = null;
                     }
                 }
 
@@ -746,9 +799,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
 
                 groupMember.Person.ConnectionStatusValueId = row.ConnectionStatusValueId;
-                groupMember.Person.GradeOffset = row.GradeOffset;
 
-                NewFamilyContactInfoRow contactInfoRow = nfciContactInfo.ContactInfoRows.FirstOrDefault( c => c.PersonGuid == row.PersonGuid );
+                if ( _isFamilyGroupType )
+                {
+                    groupMember.Person.GradeOffset = row.GradeOffset;
+                }
+
+                var contactInfoRow = nfciContactInfo.ContactInfoRows.FirstOrDefault( c => c.PersonGuid == row.PersonGuid );
                 if ( contactInfoRow != null )
                 {
                     string homeNumber = PhoneNumber.CleanNumber( contactInfoRow.HomePhoneNumber );
@@ -783,14 +840,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 foreach ( var attributeControl in attributeControls )
                 {
-                    NewFamilyAttributesRow attributeRow = attributeControl.AttributesRows.FirstOrDefault( r => r.PersonGuid == row.PersonGuid );
+                    var attributeRow = attributeControl.AttributesRows.FirstOrDefault( r => r.PersonGuid == row.PersonGuid );
                     if ( attributeRow != null )
                     {
                         attributeRow.GetEditValues( groupMember.Person );
                     }
                 }
 
-                FamilyMembers.Add( groupMember );
+                GroupMembers.Add( groupMember );
             }
         }
 
@@ -801,29 +858,26 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             return location.GetFullStreetAddress().Trim();
         }
 
-        private void AddFamilyMember()
+        private void AddGroupMember()
         {
-            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
-            if ( familyGroupType != null && familyGroupType.DefaultGroupRoleId != null )
-            {
-                int recordTypePersonId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                int recordStatusActiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-                var ConnectionStatusValue = DefinedValueCache.Read( GetAttributeValue( "DefaultConnectionStatus" ).AsGuid() );
+            int defaultRoleId = _groupType.DefaultGroupRoleId ?? _groupType.Roles.Select( r => r.Id ).FirstOrDefault();
+            int recordTypePersonId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            int recordStatusActiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+            var ConnectionStatusValue = DefinedValueCache.Read( GetAttributeValue( "DefaultConnectionStatus" ).AsGuid() );
 
-                var person = new Person();
-                person.Guid = Guid.NewGuid();
-                person.RecordTypeValueId = recordTypePersonId;
-                person.RecordStatusValueId = recordStatusActiveId;
-                person.Gender = Gender.Unknown;
-                person.ConnectionStatusValueId = ( ConnectionStatusValue != null ) ? ConnectionStatusValue.Id : (int?)null;
+            var person = new Person();
+            person.Guid = Guid.NewGuid();
+            person.RecordTypeValueId = recordTypePersonId;
+            person.RecordStatusValueId = recordStatusActiveId;
+            person.Gender = Gender.Unknown;
+            person.ConnectionStatusValueId = ( ConnectionStatusValue != null ) ? ConnectionStatusValue.Id : (int?)null;
 
-                var familyMember = new GroupMember();
-                familyMember.GroupMemberStatus = GroupMemberStatus.Active;
-                familyMember.GroupRoleId = familyGroupType.DefaultGroupRoleId.Value;
-                familyMember.Person = person;
+            var groupMember = new GroupMember();
+            groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+            groupMember.GroupRoleId = defaultRoleId;
+            groupMember.Person = person;
 
-                FamilyMembers.Add( familyMember );
-            }
+            GroupMembers.Add( groupMember );
         }
 
         public bool FindDuplicates()
@@ -835,9 +889,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var groupService = new GroupService( rockContext );
             var personService = new PersonService( rockContext );
 
-            // Find any other family members (any family) that have same location
+            // Find any other group members (any group) that have same location
             var othersAtAddress = new List<int>();
-            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
 
             string locationKey = GetLocationKey();
             if ( !string.IsNullOrWhiteSpace(locationKey) && _verifiedLocations.ContainsKey( locationKey))
@@ -851,7 +904,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         othersAtAddress = groupService
                             .Queryable().AsNoTracking()
                             .Where( g =>
-                                g.GroupTypeId == familyGroupType.Id &&
+                                g.GroupTypeId == _locationType.Id &&
                                 g.GroupLocations.Any( l => l.LocationId == location.Id ) )
                             .SelectMany( g => g.Members )
                             .Select( m => m.PersonId )
@@ -860,7 +913,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
             }
 
-            foreach ( var person in FamilyMembers
+            foreach ( var person in GroupMembers
                 .Where( m =>
                     m.Person != null &&
                     m.Person.FirstName != "" )
@@ -948,7 +1001,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private void ShowPage()
         {
-            pnlFamilyData.Visible = ( CurrentPageIndex == 0 );
+            pnlGroupData.Visible = ( CurrentPageIndex == 0 );
             pnlContactInfo.Visible = ( CurrentPageIndex == 1 );
             pnlAttributes.Visible = CurrentPageIndex > 1 && CurrentPageIndex <= attributeControls.Count + 1;
             pnlDuplicateWarning.Visible = CurrentPageIndex > attributeControls.Count + 1;

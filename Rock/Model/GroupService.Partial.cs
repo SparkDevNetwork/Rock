@@ -529,41 +529,73 @@ namespace Rock.Model
         public static Group SaveNewFamily( RockContext rockContext, List<GroupMember> familyMembers, int? campusId, bool savePersonAttributes )
         {
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+            string familyName = familyMembers.FirstOrDefault().Person.LastName + " Family";
+            return SaveNewGroup( rockContext, familyGroupType.Id, null, familyName, familyMembers, campusId, savePersonAttributes );
+        }
 
+        /// <summary>
+        /// Saves the new group.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="parentGroupGuid">The parent group unique identifier.</param>
+        /// <param name="groupName">Name of the group.</param>
+        /// <param name="groupMembers">The group members.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
+        /// <returns></returns>
+        public static Group SaveNewGroup( RockContext rockContext, int groupTypeId, Guid? parentGroupGuid, string groupName, List<GroupMember> groupMembers, int? campusId, bool savePersonAttributes )
+        {
+            var groupType = GroupTypeCache.Read( groupTypeId );
             var familyChanges = new List<string>();
             var familyMemberChanges = new Dictionary<Guid, List<string>>();
-            var familyDemographicChanges = new Dictionary<Guid, List<string>>();
+            var personDemographicChanges = new Dictionary<Guid, List<string>>();
 
-            if ( familyGroupType != null )
+            if ( groupType != null )
             {
+                var isFamilyGroupType = groupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+
                 var groupService = new GroupService( rockContext );
 
-                var familyGroup = new Group();
+                var group = new Group();
 
-                familyGroup.GroupTypeId = familyGroupType.Id;
+                group.GroupTypeId = groupType.Id;
 
-                familyGroup.Name = familyMembers.FirstOrDefault().Person.LastName + " Family";
-                History.EvaluateChange( familyChanges, "Family", string.Empty, familyGroup.Name );
-
-                if ( campusId.HasValue )
+                if ( parentGroupGuid.HasValue )
                 {
-                    History.EvaluateChange( familyChanges, "Campus", string.Empty, CampusCache.Read( campusId.Value ).Name );
-                }
-                familyGroup.CampusId = campusId;
-
-                int? childRoleId = null;
-                var childRole = new GroupTypeRoleService( rockContext ).Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
-                if ( childRole != null )
-                {
-                    childRoleId = childRole.Id;
+                    var parentGroup = groupService.Get( parentGroupGuid.Value );
+                    if ( parentGroup != null )
+                    {
+                        group.ParentGroupId = parentGroup.Id;
+                    }
                 }
 
-                foreach ( var familyMember in familyMembers )
+                group.Name = groupName;
+
+                History.EvaluateChange( familyChanges, "Family", string.Empty, group.Name );
+
+                if ( isFamilyGroupType )
                 {
-                    var person = familyMember.Person;
+                    if ( campusId.HasValue )
+                    {
+                        History.EvaluateChange( familyChanges, "Campus", string.Empty, CampusCache.Read( campusId.Value ).Name );
+                    }
+                    group.CampusId = campusId;
+                }
+
+                int? adultRoleId = null;
+                var adultRole = new GroupTypeRoleService( rockContext ).Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
+                if ( adultRole != null )
+                {
+                    adultRoleId = adultRole.Id;
+                }
+
+                foreach ( var groupMember in groupMembers )
+                {
+                    var person = groupMember.Person;
                     if ( person != null )
                     {
-                        familyGroup.Members.Add( familyMember );
+                        group.Members.Add( groupMember );
 
                         var demographicChanges = new List<string>();
                         demographicChanges.Add( "Created" );
@@ -591,26 +623,29 @@ namespace Rock.Model
                         History.EvaluateChange( demographicChanges, "Inactive Reason Note", string.Empty, person.InactiveReasonNote );
                         History.EvaluateChange( demographicChanges, "System Note", string.Empty, person.SystemNote );
 
-                        familyDemographicChanges.Add( person.Guid, demographicChanges );
+                        personDemographicChanges.Add( person.Guid, demographicChanges );
 
-                        var memberChanges = new List<string>();
+                        if ( isFamilyGroupType )
+                        {
+                            var memberChanges = new List<string>();
 
-                        string roleName = familyGroupType.Roles
-                            .Where( r => r.Id == familyMember.GroupRoleId )
-                            .Select( r => r.Name )
-                            .FirstOrDefault();
+                            string roleName = groupType.Roles
+                                .Where( r => r.Id == groupMember.GroupRoleId )
+                                .Select( r => r.Name )
+                                .FirstOrDefault();
 
-                        History.EvaluateChange( memberChanges, "Role", string.Empty, roleName );
-                        familyMemberChanges.Add( person.Guid, memberChanges );
+                            History.EvaluateChange( memberChanges, "Role", string.Empty, roleName );
+                            familyMemberChanges.Add( person.Guid, memberChanges );
+                        }
                     }
                 }
 
-                groupService.Add( familyGroup );
+                groupService.Add( group );
                 rockContext.SaveChanges();
 
                 var personService = new PersonService( rockContext );
 
-                foreach ( var groupMember in familyMembers )
+                foreach ( var groupMember in groupMembers )
                 {
                     var person = groupMember.Person;
 
@@ -632,7 +667,7 @@ namespace Rock.Model
 
                             if ( !oldValue.Equals( newValue ) )
                             {
-                                History.EvaluateChange( familyDemographicChanges[person.Guid], attributeCache.Name,
+                                History.EvaluateChange( personDemographicChanges[person.Guid], attributeCache.Name,
                                     attributeCache.FieldType.Field.FormatValue( null, oldValue, attributeCache.QualifierValues, false ),
                                     attributeCache.FieldType.Field.FormatValue( null, newValue, attributeCache.QualifierValues, false ) );
                                 Rock.Attribute.Helper.SaveAttributeValue( person, attributeCache, newValue );
@@ -644,12 +679,12 @@ namespace Rock.Model
                     if ( person != null )
                     {
                         bool updateRequired = false;
-                        var changes = familyDemographicChanges[person.Guid];
-                        if ( groupMember.GroupRoleId != childRoleId )
+                        var changes = personDemographicChanges[person.Guid];
+                        if ( groupMember.GroupRoleId == adultRoleId )
                         {
-                            person.GivingGroupId = familyGroup.Id;
+                            person.GivingGroupId = group.Id;
                             updateRequired = true;
-                            History.EvaluateChange( changes, "Giving Group", string.Empty, familyGroup.Name );
+                            History.EvaluateChange( changes, "Giving Group", string.Empty, group.Name );
                         }
 
                         if ( updateRequired )
@@ -662,34 +697,57 @@ namespace Rock.Model
                         HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                             person.Id, changes, true, modifiedByPersonAliasId );
 
-                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                            person.Id, familyMemberChanges[person.Guid], familyGroup.Name, typeof( Group ), familyGroup.Id, true, modifiedByPersonAliasId );
+                        if ( isFamilyGroupType )
+                        {
+                            HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                person.Id, familyMemberChanges[person.Guid], group.Name, typeof( Group ), group.Id, true, modifiedByPersonAliasId );
 
-                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                            person.Id, familyChanges, familyGroup.Name, typeof( Group ), familyGroup.Id, true, modifiedByPersonAliasId );
+                            HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                person.Id, familyChanges, group.Name, typeof( Group ), group.Id, true, modifiedByPersonAliasId );
+                        }
                     }
                 }
 
-                return familyGroup;
+                return group;
             }
 
             return null;
         }
 
-/// <summary>
-/// Adds the new family address.
-/// </summary>
-/// <param name="rockContext">The rock context.</param>
-/// <param name="family">The family.</param>
-/// <param name="locationTypeGuid">The location type unique identifier.</param>
-/// <param name="street1">The street1.</param>
-/// <param name="street2">The street2.</param>
-/// <param name="city">The city.</param>
-/// <param name="state">The state.</param>
-/// <param name="postalCode">The postal code.</param>
-/// <param name="country">The country.</param>
-/// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
+        /// <summary>
+        /// Adds the new group address.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="family">The family.</param>
+        /// <param name="locationTypeGuid">The location type unique identifier.</param>
+        /// <param name="street1">The street1.</param>
+        /// <param name="street2">The street2.</param>
+        /// <param name="city">The city.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="postalCode">The postal code.</param>
+        /// <param name="country">The country.</param>
+        /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
+        [Obsolete("Use AddNewGroupAddress instead.")]
         public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
+            string street1, string street2, string city, string state, string postalCode, string country, bool moveExistingToPrevious = false )
+        {
+            AddNewGroupAddress( rockContext, family, locationTypeGuid, street1, street2, city, state, postalCode, country, moveExistingToPrevious );
+        }
+
+        /// <summary>
+        /// Adds the new group address.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="group">The group.</param>
+        /// <param name="locationTypeGuid">The location type unique identifier.</param>
+        /// <param name="street1">The street1.</param>
+        /// <param name="street2">The street2.</param>
+        /// <param name="city">The city.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="postalCode">The postal code.</param>
+        /// <param name="country">The country.</param>
+        /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
+        public static void AddNewGroupAddress( RockContext rockContext, Group group, string locationTypeGuid,
             string street1, string street2, string city, string state, string postalCode, string country, bool moveExistingToPrevious = false )
         {
             if ( !String.IsNullOrWhiteSpace( street1 ) ||
@@ -699,7 +757,7 @@ namespace Rock.Model
                  !string.IsNullOrWhiteSpace( country ) )
             {
                 var location = new LocationService( rockContext ).Get( street1, street2, city, state, postalCode, country );
-                AddNewFamilyAddress( rockContext, family, locationTypeGuid, location, moveExistingToPrevious );
+                AddNewGroupAddress( rockContext, group, locationTypeGuid, location, moveExistingToPrevious );
             }
         }
 
@@ -711,13 +769,28 @@ namespace Rock.Model
         /// <param name="locationTypeGuid">The location type unique identifier.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
-        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid, 
+        [Obsolete( "Use AddNewGroupAddress instead." )]
+        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
+            int? locationId, bool moveExistingToPrevious = false )
+        {
+            AddNewGroupAddress( rockContext, family, locationTypeGuid, locationId, moveExistingToPrevious );
+        }
+
+        /// <summary>
+        /// Adds the new group address.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="group">The group.</param>
+        /// <param name="locationTypeGuid">The location type unique identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
+        public static void AddNewGroupAddress( RockContext rockContext, Group group, string locationTypeGuid, 
             int? locationId, bool moveExistingToPrevious = false )
         {
             if ( locationId.HasValue )
             {
                 var location = new LocationService( rockContext ).Get( locationId.Value );
-                AddNewFamilyAddress( rockContext, family, locationTypeGuid, location, moveExistingToPrevious );
+                AddNewGroupAddress( rockContext, group, locationTypeGuid, location, moveExistingToPrevious );
             }
         }
 
@@ -729,70 +802,91 @@ namespace Rock.Model
         /// <param name="locationTypeGuid">The location type unique identifier.</param>
         /// <param name="location">The location.</param>
         /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
+        [Obsolete( "Use AddNewGroupAddress instead." )]
         public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid,
+            Location location, bool moveExistingToPrevious = false )
+        {
+            AddNewGroupAddress( rockContext, family, locationTypeGuid, location, moveExistingToPrevious );
+        }
+
+        /// <summary>
+        /// Adds the new group address.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="group">The group.</param>
+        /// <param name="locationTypeGuid">The location type unique identifier.</param>
+        /// <param name="location">The location.</param>
+        /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
+        public static void AddNewGroupAddress( RockContext rockContext, Group group, string locationTypeGuid,
             Location location, bool moveExistingToPrevious = false )
         {
             if ( location != null )
             {
-                var locationType = Rock.Web.Cache.DefinedValueCache.Read( locationTypeGuid.AsGuid() );
-                if ( locationType != null )
+                var groupType = GroupTypeCache.Read( group.GroupTypeId );
+                if ( groupType != null )
                 {
-                    var groupLocationService = new GroupLocationService( rockContext );
-                    if ( !groupLocationService.Queryable()
-                        .Where( gl =>
-                            gl.GroupId == family.Id &&
-                            gl.GroupLocationTypeValueId == locationType.Id &&
-                            gl.LocationId == location.Id )
-                        .Any() )
+                    var locationType = groupType.LocationTypeValues.FirstOrDefault( l => l.Guid.Equals( locationTypeGuid.AsGuid() ) );
+                    if ( locationType != null )
                     {
-
-                        var familyChanges = new List<string>();
-
-                        if ( moveExistingToPrevious )
+                        var groupLocationService = new GroupLocationService( rockContext );
+                        if ( !groupLocationService.Queryable()
+                            .Where( gl =>
+                                gl.GroupId == group.Id &&
+                                gl.GroupLocationTypeValueId == locationType.Id &&
+                                gl.LocationId == location.Id )
+                            .Any() )
                         {
-                            var prevLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS );
-                            if ( prevLocationType != null )
+                            var familyChanges = new List<string>();
+
+                            if ( moveExistingToPrevious )
                             {
-                                foreach ( var prevLoc in groupLocationService.Queryable( "Location,GroupLocationTypeValue" )
-                                    .Where( gl =>
-                                        gl.GroupId == family.Id &&
-                                        gl.GroupLocationTypeValueId == locationType.Id ) )
+                                var prevLocationType = groupType.LocationTypeValues.FirstOrDefault( l => l.Guid.Equals( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() ) );
+                                if ( prevLocationType != null )
                                 {
-                                    History.EvaluateChange( familyChanges, prevLoc.Location.ToString(), prevLoc.GroupLocationTypeValue.Value, prevLocationType.Value );
-                                    prevLoc.GroupLocationTypeValueId = prevLocationType.Id;
-                                    prevLoc.IsMailingLocation = false;
-                                    prevLoc.IsMappedLocation = false;
+                                    foreach ( var prevLoc in groupLocationService.Queryable( "Location,GroupLocationTypeValue" )
+                                        .Where( gl =>
+                                            gl.GroupId == group.Id &&
+                                            gl.GroupLocationTypeValueId == locationType.Id ) )
+                                    {
+                                        History.EvaluateChange( familyChanges, prevLoc.Location.ToString(), prevLoc.GroupLocationTypeValue.Value, prevLocationType.Value );
+                                        prevLoc.GroupLocationTypeValueId = prevLocationType.Id;
+                                        prevLoc.IsMailingLocation = false;
+                                        prevLoc.IsMappedLocation = false;
+                                    }
                                 }
                             }
-                        }
 
-                        string addressChangeField = locationType.Value;
+                            string addressChangeField = locationType.Value;
 
-                        var groupLocation = groupLocationService.Queryable()
-                            .Where( gl =>
-                                gl.GroupId == family.Id &&
-                                gl.LocationId == location.Id )
-                            .FirstOrDefault();
-                        if ( groupLocation == null )
-                        {
-                            groupLocation = new GroupLocation();
-                            groupLocation.Location = location;
-                            groupLocation.IsMailingLocation = true;
-                            groupLocation.IsMappedLocation = true;
-                            family.GroupLocations.Add( groupLocation );
-                        }
-                        groupLocation.GroupLocationTypeValueId = locationType.Id;
+                            var groupLocation = groupLocationService.Queryable()
+                                .Where( gl =>
+                                    gl.GroupId == group.Id &&
+                                    gl.LocationId == location.Id )
+                                .FirstOrDefault();
+                            if ( groupLocation == null )
+                            {
+                                groupLocation = new GroupLocation();
+                                groupLocation.Location = location;
+                                groupLocation.IsMailingLocation = true;
+                                groupLocation.IsMappedLocation = true;
+                                group.GroupLocations.Add( groupLocation );
+                            }
+                            groupLocation.GroupLocationTypeValueId = locationType.Id;
 
-                        History.EvaluateChange( familyChanges, addressChangeField, string.Empty, groupLocation.Location.ToString() );
-                        History.EvaluateChange( familyChanges, addressChangeField + " Is Mailing", string.Empty, groupLocation.IsMailingLocation.ToString() );
-                        History.EvaluateChange( familyChanges, addressChangeField + " Is Map Location", string.Empty, groupLocation.IsMappedLocation.ToString() );
+                            History.EvaluateChange( familyChanges, addressChangeField, string.Empty, groupLocation.Location.ToString() );
+                            History.EvaluateChange( familyChanges, addressChangeField + " Is Mailing", string.Empty, groupLocation.IsMailingLocation.ToString() );
+                            History.EvaluateChange( familyChanges, addressChangeField + " Is Map Location", string.Empty, groupLocation.IsMappedLocation.ToString() );
 
-                        rockContext.SaveChanges();
+                            rockContext.SaveChanges();
 
-                        foreach ( var fm in family.Members )
-                        {
-                            HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                fm.PersonId, familyChanges, family.Name, typeof( Group ), family.Id );
+                            if ( groupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ) )
+                            {
+                                foreach ( var fm in group.Members )
+                                {
+                                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                        fm.PersonId, familyChanges, group.Name, typeof( Group ), group.Id );
+                                }
+                            }
                         }
                     }
                 }

@@ -29,19 +29,23 @@ using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
-    [DisplayName( "Family Members" )]
+    [DisplayName( "Group Members" )]
     [Category( "CRM > Person Detail" )]
-    [Description( "Allows you to view the members of a family." )]
+    [Description( "Allows you to view the other members of a group person belongs to (e.g. Family groups)." )]
 
-    [LinkedPage("Location Detail Page", "Page used to edit the settings for a particular location.")]
+    [GroupTypeField("Group Type", "The group type to display groups for (default is Family)", false, Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "", 0)]
+    [LinkedPage("Group Edit Page", "Page used to edit the members of the selected group.", true, "", "", 1)]
+    [LinkedPage( "Location Detail Page", "Page used to edit the settings for a particular location.", false, "", "", 2 )]
     public partial class FamilyMembers : Rock.Web.UI.PersonBlock
     {
         #region Fields
 
+        private GroupTypeCache _groupType = null;
+        private bool _IsFamilyGroupType = false;
         private bool _allowEdit = false;
 
-        // private global rockContext that is specifically for rptrFamilies binding and rptrFamilies_ItemDataBound
-        private RockContext _bindFamiliesRockContext = null;
+        // private global rockContext that is specifically for rptrGroups binding and rptrGroups_ItemDataBound
+        private RockContext _bindGroupsRockContext = null;
 
         #endregion
         #region Base Control Methods
@@ -54,7 +58,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            rptrFamilies.ItemDataBound += rptrFamilies_ItemDataBound;
+            _groupType = GroupTypeCache.Read( GetAttributeValue( "GroupType" ).AsGuid() );
+            if ( _groupType == null )
+            {
+                _groupType = GroupTypeCache.GetFamilyGroupType();
+            }
+            _IsFamilyGroupType = _groupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+
+            rptrGroups.ItemDataBound += rptrGroups_ItemDataBound;
 
             _allowEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
         }
@@ -67,7 +78,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnLoad( e );
 
-            BindFamilies();
+            BindGroups();
         }
 
         #endregion
@@ -75,29 +86,38 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         #region Events
 
         /// <summary>
-        /// Handles the ItemDataBound event of the rptrFamilies control.
+        /// Handles the ItemDataBound event of the rptrGroups control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rptrFamilies_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
+        protected void rptrGroups_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
                 var group = e.Item.DataItem as Group;
                 if ( group != null )
                 {
-                    HyperLink hlEditFamily = e.Item.FindControl( "hlEditFamily" ) as HyperLink;
-                    if ( hlEditFamily != null )
+                    HyperLink hlEditGroup = e.Item.FindControl( "hlEditGroup" ) as HyperLink;
+                    if ( hlEditGroup != null )
                     {
-                        hlEditFamily.Visible = _allowEdit;
-                        hlEditFamily.NavigateUrl = string.Format( "~/EditFamily/{0}/{1}", Person.Id, group.Id );
+                        hlEditGroup.Visible = _allowEdit;
+                        var pageParams = new Dictionary<string, string>();
+                        pageParams.Add( "PersonId", Person.Id.ToString() );
+                        pageParams.Add( "GroupId", group.Id.ToString() );
+                        hlEditGroup.NavigateUrl = LinkedPageUrl( "GroupEditPage", pageParams );
+                    }
+
+                    Literal lEditGroup = e.Item.FindControl( "lEditGroup" ) as Literal;
+                    if ( lEditGroup != null )
+                    {
+                        lEditGroup.Text = "Edit " + _groupType.Name;
                     }
 
                     Repeater rptrMembers = e.Item.FindControl( "rptrMembers" ) as Repeater;
                     if ( rptrMembers != null )
                     {
-                        // use the _bindFamiliesRockContext that is created/disposed in BindFamilies()
-                        var members = new GroupMemberService( _bindFamiliesRockContext ).Queryable( "GroupRole,Person", true )
+                        // use the _bindGroupsRockContext that is created/disposed in BindFamilies()
+                        var members = new GroupMemberService( _bindGroupsRockContext ).Queryable( "GroupRole,Person", true )
                             .Where( m =>
                                 m.GroupId == group.Id &&
                                 m.PersonId != Person.Id )
@@ -106,23 +126,33 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                         var orderedMembers = new List<GroupMember>();
 
-                        // Add adult males
-                        orderedMembers.AddRange( members
-                            .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
-                                m.Person.Gender == Gender.Male )
-                            .OrderByDescending( m => m.Person.Age ) );
+                        if ( _IsFamilyGroupType )
+                        {
+                            // Add adult males
+                            orderedMembers.AddRange( members
+                                .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
+                                    m.Person.Gender == Gender.Male )
+                                .OrderByDescending( m => m.Person.Age ) );
 
-                        // Add adult females
-                        orderedMembers.AddRange( members
-                            .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
-                                m.Person.Gender != Gender.Male )
-                            .OrderByDescending( m => m.Person.Age ) );
+                            // Add adult females
+                            orderedMembers.AddRange( members
+                                .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
+                                    m.Person.Gender != Gender.Male )
+                                .OrderByDescending( m => m.Person.Age ) );
 
-                        // Add non-adults
-                        orderedMembers.AddRange( members
-                            .Where( m => !m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
-                            .OrderByDescending( m => m.Person.Age ) );
-
+                            // Add non-adults
+                            orderedMembers.AddRange( members
+                                .Where( m => !m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
+                                .OrderByDescending( m => m.Person.Age ) );
+                        }
+                        else
+                        {
+                            orderedMembers = members
+                                .OrderBy( m => m.GroupRole.Order )
+                                .ThenBy( m => m.Person.LastName )
+                                .ThenBy( m => m.Person.NickName )
+                                .ToList();
+                        }
                         rptrMembers.ItemDataBound += rptrMembers_ItemDataBound;
                         rptrMembers.DataSource = orderedMembers;
                         rptrMembers.DataBind();
@@ -132,7 +162,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         rptrAddresses.ItemDataBound += rptrAddresses_ItemDataBound;
                         rptrAddresses.ItemCommand += rptrAddresses_ItemCommand;
-                        rptrAddresses.DataSource = new GroupLocationService( _bindFamiliesRockContext ).Queryable( "Location,GroupLocationTypeValue" )
+                        rptrAddresses.DataSource = new GroupLocationService( _bindGroupsRockContext ).Queryable( "Location,GroupLocationTypeValue" )
                             .Where( l => l.GroupId == group.Id )
                             .OrderBy( l => l.GroupLocationTypeValue.Order )
                             .ToList();
@@ -255,7 +285,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
             }
 
-            BindFamilies();
+            BindGroups();
         }
 
         #endregion
@@ -263,50 +293,45 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         #region Methods
 
         /// <summary>
-        /// Binds the families.
+        /// Binds the groups.
         /// </summary>
-        private void BindFamilies()
+        private void BindGroups()
         {
             if ( Person != null && Person.Id > 0 )
             {
-                Guid familyGroupGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-
-                using ( _bindFamiliesRockContext = new RockContext() )
+                using ( _bindGroupsRockContext = new RockContext() )
                 {
-                    var memberService = new GroupMemberService( _bindFamiliesRockContext );
-                    var families = memberService.Queryable( true )
+                    var memberService = new GroupMemberService( _bindGroupsRockContext );
+                    var groups = memberService.Queryable( true )
                         .Where( m =>
                             m.PersonId == Person.Id &&
-                            m.Group.GroupType.Guid == familyGroupGuid )
+                            m.Group.GroupTypeId == _groupType.Id )
                         .Select( m => m.Group )
                         .ToList();
 
-                    if ( !families.Any() )
+                    if ( !groups.Any() )
                     {
-                        // ensure that the person is in a family
-                        var familyGroupType = GroupTypeCache.GetFamilyGroupType();
-                        if ( familyGroupType != null )
-                        {
-                            var groupMember = new GroupMember();
-                            groupMember.PersonId = Person.Id;
-                            groupMember.GroupRoleId = familyGroupType.DefaultGroupRoleId.Value;
+                        // ensure that the person is in a group
+                        var groupMember = new GroupMember();
+                        groupMember.PersonId = Person.Id;
+                        groupMember.GroupRoleId = _groupType.DefaultGroupRoleId.Value;
 
-                            var family = new Group();
-                            family.Name = Person.LastName;
-                            family.GroupTypeId = familyGroupType.Id;
-                            family.Members.Add( groupMember );
+                        var group = new Group();
+                        group.Name = Person.LastName;
+                        group.GroupTypeId = _groupType.Id;
+                        group.Members.Add( groupMember );
 
-                            // use the _bindFamiliesRockContext that is created/disposed in BindFamilies()
-                            var groupService = new GroupService( _bindFamiliesRockContext );
-                            groupService.Add( family );
-                            _bindFamiliesRockContext.SaveChanges();
+                        // use the _bindGroupsRockContext that is created/disposed in BindFamilies()
+                        var groupService = new GroupService( _bindGroupsRockContext );
+                        groupService.Add( group );
+                        _bindGroupsRockContext.SaveChanges();
 
-                            families.Add( groupService.Get( family.Id ) );
-                        }
+                        groups.Add( groupService.Get( group.Id ) );
                     }
+                    
 
-                    rptrFamilies.DataSource = families;
-                    rptrFamilies.DataBind();
+                    rptrGroups.DataSource = groups;
+                    rptrGroups.DataBind();
                 }
             }
         }
@@ -340,7 +365,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <returns></returns>
         protected string FormatPersonName( string nickName, string lastName )
         {
-            if ( Person != null && Person.LastName != lastName )
+            if ( Person != null && ( Person.LastName != lastName || !_IsFamilyGroupType ) )
             {
                 return string.Format( "{0} {1}", nickName, lastName );
             }
@@ -356,6 +381,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected string FormatPersonCssClass( bool isDeceased )
         {
             return isDeceased ? "member deceased" : "member";
+        }
+
+        /// <summary>
+        /// Formats the details.
+        /// </summary>
+        /// <param name="dataitem">The dataitem.</param>
+        /// <returns></returns>
+        protected string FormatPersonDetails( object dataitem )
+        {
+            var gm = dataitem as GroupMember;
+            if ( gm != null )
+            {
+                return _IsFamilyGroupType ?
+                    ( gm.Person.Age.HasValue ? gm.Person.Age.Value.ToString( "N0" ) : "" ) :
+                    gm.GroupRole.Name;
+            }
+            return string.Empty;
         }
 
         /// <summary>

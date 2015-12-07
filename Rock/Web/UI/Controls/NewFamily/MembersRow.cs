@@ -31,13 +31,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Displays a bootstrap badge
     /// </summary>
-    public class NewFamilyMembersRow : CompositeControl
+    public class NewGroupMembersRow : CompositeControl
     {
-        /// <summary>
-        /// The Family role key
-        /// </summary>
-        public static string FAMILY_ROLE_KEY = "NewFamilyMembersRow_FamilyRoles";
-
         private RockRadioButtonList _rblRole;
         private DropDownList _ddlTitle;
         private RockTextBox _tbFirstName;
@@ -49,6 +44,18 @@ namespace Rock.Web.UI.Controls
         private GradePicker _ddlGradePicker;
 
         private LinkButton _lbDelete;
+
+        /// <summary>
+        /// Gets or sets the group type identifier.
+        /// </summary>
+        /// <value>
+        /// The group type identifier.
+        /// </value>
+        public int? GroupTypeId
+        {
+            get { return ViewState["GroupTypeId"] as int?; }
+            set { ViewState["GroupTypeId"] = value; }
+        }
 
         /// <summary>
         /// Gets or sets the person GUID.
@@ -187,19 +194,22 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the family roles.
+        /// Gets the group roles.
         /// </summary>
         /// <value>
-        /// The family roles.
+        /// The group roles.
         /// </value>
-        public List<GroupTypeRoleCache> FamilyRoles
+        public List<GroupTypeRoleCache> GroupRoles
         {
             get
             {
-                var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-                if (familyGroupType != null)
+                if ( GroupTypeId.HasValue )
                 {
-                    return familyGroupType.Roles;
+                    var groupGroupType = GroupTypeCache.Read( GroupTypeId.Value );
+                    if ( groupGroupType != null )
+                    {
+                        return groupGroupType.Roles;
+                    }
                 }
                 return new List<GroupTypeRoleCache>();
             }
@@ -225,15 +235,27 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show grade column].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show grade column]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowGradeColumn
+        {
+            get { return ViewState["ShowGradeColumn"] as bool? ?? false; }
+            set { ViewState["ShowGradeColumn"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show grade].
         /// </summary>
         /// <value>
         ///   <c>true</c> if [show grade]; otherwise, <c>false</c>.
         /// </value>
-        public bool ShowGrade
+        public bool ShowGradePicker
         {
-            get { return ViewState["ShowGrade"] as bool? ?? false; }
-            set { ViewState["ShowGrade"] = value; }
+            get { return ViewState["ShowGradePicker"] as bool? ?? false; }
+            set { ViewState["ShowGradePicker"] = value; }
         }
 
         /// <summary>
@@ -284,9 +306,9 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NewFamilyMembersRow" /> class.
+        /// Initializes a new instance of the <see cref="NewGroupMembersRow" /> class.
         /// </summary>
-        public NewFamilyMembersRow()
+        public NewGroupMembersRow()
             : base()
         {
             _rblRole = new RockRadioButtonList();
@@ -339,7 +361,7 @@ namespace Rock.Web.UI.Controls
             _rblRole.RequiredErrorMessage = "Role is required for all members";
             _rblRole.DataTextField = "Name";
             _rblRole.DataValueField = "Id";
-            _rblRole.DataSource = FamilyRoles;
+            _rblRole.DataSource = GroupRoles;
             _rblRole.DataBind();
 
             _ddlTitle.CssClass = "form-control";
@@ -348,12 +370,12 @@ namespace Rock.Web.UI.Controls
             _tbFirstName.CssClass = "form-control";
             _tbFirstName.Placeholder = "First Name";
             _tbFirstName.Required = true;
-            _tbFirstName.RequiredErrorMessage = "First Name is required for all family members";
+            _tbFirstName.RequiredErrorMessage = "First Name is required for all group members";
 
             _tbLastName.CssClass = "form-control";
             _tbLastName.Placeholder = "Last Name";
             _tbLastName.Required = true;
-            _tbLastName.RequiredErrorMessage = "Last Name is required for all family members";
+            _tbLastName.RequiredErrorMessage = "Last Name is required for all group members";
 
             _ddlSuffix.CssClass = "form-control";
             BindListToDefinedType( _ddlSuffix, Rock.SystemGuid.DefinedType.PERSON_SUFFIX, true );
@@ -362,7 +384,7 @@ namespace Rock.Web.UI.Controls
             BindListToDefinedType( _ddlConnectionStatus, Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, true );
 
             _rblGender.RepeatDirection = RepeatDirection.Vertical;
-            _rblGender.RequiredErrorMessage = "Gender is required for all family members";
+            _rblGender.RequiredErrorMessage = "Gender is required for all group members";
             BindGender();
 
             _dpBirthdate.StartView = DatePicker.StartViewOption.decade;
@@ -432,13 +454,15 @@ namespace Rock.Web.UI.Controls
                 _dpBirthdate.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                if ( ShowGrade )
+                if ( ShowGradeColumn )
                 {
-                    _ddlGradePicker.RenderControl( writer );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Td );
+                    if ( ShowGradePicker )
+                    {
+                        _ddlGradePicker.RenderControl( writer );
+                    }
+                    writer.RenderEndTag();
                 }
-
-                writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 _lbDelete.RenderControl( writer );
