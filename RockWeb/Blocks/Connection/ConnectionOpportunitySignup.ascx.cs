@@ -135,7 +135,16 @@ namespace RockWeb.Blocks.Connection
                     string email = tbEmail.Text.Trim();
                     int? campusId = cpCampus.SelectedCampusId;
 
-                    if ( CurrentPerson != null &&
+                    // if a person guid was passed in from the query string use that
+                    if (RockPage.PageParameter("PersonGuid") != null )
+                    {
+                        Guid? personGuid = RockPage.PageParameter( "PersonGuid" ).AsGuidOrNull();
+
+                        if ( personGuid.HasValue )
+                        {
+                            person = personService.Get( personGuid.Value );
+                        }
+                    } else if ( CurrentPerson != null &&
                         CurrentPerson.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase ) &&
                         CurrentPerson.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) &&
                         CurrentPerson.Email.Equals( email, StringComparison.OrdinalIgnoreCase ) )
@@ -299,15 +308,32 @@ namespace RockWeb.Blocks.Connection
                 pnHome.Visible = GetAttributeValue( "DisplayHomePhone" ).AsBoolean();
                 pnMobile.Visible = GetAttributeValue( "DisplayMobilePhone" ).AsBoolean();
 
-                if ( CurrentPerson != null )
+                Person registrant = null;
+
+                if ( RockPage.PageParameter( "PersonGuid" ) != null )
                 {
-                    tbFirstName.Text = CurrentPerson.FirstName.EncodeHtml();
-                    tbLastName.Text = CurrentPerson.LastName.EncodeHtml();
-                    tbEmail.Text = CurrentPerson.Email.EncodeHtml();
+                    Guid? personGuid = RockPage.PageParameter( "PersonGuid" ).AsGuidOrNull();
+
+                    if ( personGuid.HasValue )
+                    {
+                        registrant = new PersonService(rockContext).Get( personGuid.Value );
+                    }
+                }
+
+                if (registrant == null && CurrentPerson != null )
+                {
+                    registrant = CurrentPerson;
+                }
+
+                if ( registrant != null )
+                {
+                    tbFirstName.Text = registrant.FirstName.EncodeHtml();
+                    tbLastName.Text = registrant.LastName.EncodeHtml();
+                    tbEmail.Text = registrant.Email.EncodeHtml();
 
                     if ( pnHome.Visible && _homePhone != null )
                     {
-                        var homePhoneNumber = CurrentPerson.PhoneNumbers.Where( p => p.NumberTypeValueId == _homePhone.Id ).FirstOrDefault();
+                        var homePhoneNumber = registrant.PhoneNumbers.Where( p => p.NumberTypeValueId == _homePhone.Id ).FirstOrDefault();
                         if ( homePhoneNumber != null )
                         {
                             pnHome.Number = homePhoneNumber.NumberFormatted;
@@ -317,7 +343,7 @@ namespace RockWeb.Blocks.Connection
 
                     if ( pnMobile.Visible && _cellPhone != null )
                     {
-                        var cellPhoneNumber = CurrentPerson.PhoneNumbers.Where( p => p.NumberTypeValueId == _cellPhone.Id ).FirstOrDefault();
+                        var cellPhoneNumber = registrant.PhoneNumbers.Where( p => p.NumberTypeValueId == _cellPhone.Id ).FirstOrDefault();
                         if ( cellPhoneNumber != null )
                         {
                             pnMobile.Number = cellPhoneNumber.NumberFormatted;
@@ -325,7 +351,7 @@ namespace RockWeb.Blocks.Connection
                         }
                     }
 
-                    var campus = CurrentPerson.GetCampus();
+                    var campus = registrant.GetCampus();
                     if ( campus != null )
                     {
                         cpCampus.SelectedCampusId = campus.Id;
