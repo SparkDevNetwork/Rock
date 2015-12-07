@@ -28,8 +28,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Report Filter control
     /// </summary>
-    [ToolboxData( "<{0}:NewFamilyContactInfo runat=server></{0}:NewFamilyContactInfo>" )]
-    public class NewFamilyContactInfo : CompositeControl, INamingContainer
+    [ToolboxData( "<{0}:NewGroupContactInfo runat=server></{0}:NewGroupContactInfo>" )]
+    public class NewGroupContactInfo : CompositeControl, INamingContainer
     {
 
         /// <summary>
@@ -38,20 +38,20 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The contact information rows.
         /// </value>
-        public List<NewFamilyContactInfoRow> ContactInfoRows
+        public List<NewGroupContactInfoRow> ContactInfoRows
         {
             get
             {
-                var rows = new List<NewFamilyContactInfoRow>();
+                var rows = new List<NewGroupContactInfoRow>();
 
                 foreach ( Control control in Controls )
                 {
-                    if ( control is NewFamilyContactInfoRow )
+                    if ( control is NewGroupContactInfoRow )
                     {
-                        var newFamilyMemberRow = control as NewFamilyContactInfoRow;
-                        if ( newFamilyMemberRow != null )
+                        var newGroupMemberRow = control as NewGroupContactInfoRow;
+                        if ( newGroupMemberRow != null )
                         {
-                            rows.Add( newFamilyMemberRow );
+                            rows.Add( newGroupMemberRow );
                         }
                     }
                 }
@@ -71,7 +71,7 @@ namespace Rock.Web.UI.Controls
                 var homePhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
                 var cellPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table table-familycontactinfo" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table table-groupcontactinfo" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Table );
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Thead );
@@ -109,7 +109,7 @@ namespace Rock.Web.UI.Controls
 
                 foreach ( Control control in Controls )
                 {
-                    if ( control is NewFamilyContactInfoRow )
+                    if ( control is NewGroupContactInfoRow )
                     {
                         control.RenderControl( writer );
                     }
@@ -128,7 +128,7 @@ namespace Rock.Web.UI.Controls
         {
             for (int i = Controls.Count - 1; i >= 0; i--)
             {
-                if (Controls[i] is NewFamilyContactInfoRow )
+                if (Controls[i] is NewGroupContactInfoRow )
                 {
                     Controls.RemoveAt( i );
                 }

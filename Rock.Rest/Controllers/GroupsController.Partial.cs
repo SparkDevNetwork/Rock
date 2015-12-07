@@ -446,7 +446,7 @@ namespace Rock.Rest.Controllers
 
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
 
-            GroupService.AddNewFamilyAddress( rockContext, group, locationType.Guid.ToString(),
+            GroupService.AddNewGroupAddress( rockContext, group, locationType.Guid.ToString(),
                 street1, street2, city, state, postalCode, country, true );
         }
 
