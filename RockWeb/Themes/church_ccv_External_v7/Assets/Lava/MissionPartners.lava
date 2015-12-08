@@ -1,0 +1,21 @@
+<div class="row">
+  {% for item in Items %}
+    <div class="col-sm-6 col-md-4 margin-b-md">
+      <div class="hoverthumb margin-b-sm">
+        <img src="{{ item | Attribute: 'Image', 'Url' }}&width=525&height=295&mode=crop&scale=both">
+        <div class="hoverthumb-overlay">
+          <h3 class="hoverthumb-overlaytitle">{{ item.Title }}</h3>
+        </div>
+      </div>
+      <p class="small">{{ item.Content }} <a href="{{ item | Attribute: 'Website', 'RawValue' }}">{{ item | Attribute: 'Website', 'RawValue' | Remove: 'http://www.' | Remove: 'https://www.' | Remove: 'http://' | Remove: 'https://' }}</a></p>
+    </div>
+    {% assign xsMod = forloop.index | Modulo: 1 %}
+    {% assign smMod = forloop.index | Modulo: 2 %}
+    {% assign mdMod = forloop.index | Modulo: 3 %}
+    {% assign lgMod = forloop.index | Modulo: 3 %}
+    {% if xsMod == 0 %}<div class="clearfix visible-xs-block"></div>{% endif %}
+    {% if smMod == 0 %}<div class="clearfix visible-sm-block"></div>{% endif %}
+    {% if mdMod == 0 %}<div class="clearfix visible-md-block"></div>{% endif %}
+    {% if lgMod == 0 %}<div class="clearfix visible-lg-block"></div>{% endif %}
+  {% endfor %}
+</div>
