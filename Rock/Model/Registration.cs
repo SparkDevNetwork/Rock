@@ -126,6 +126,14 @@ namespace Rock.Model
         [DataMember]
         public int? GroupId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is temporary.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is temporary; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsTemporary { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -145,6 +153,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>

@@ -123,6 +123,33 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            SaveGroupMember();
+
+            if ( cvGroupMember.IsValid )
+            {
+                Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString["GroupId"] = hfGroupId.Value;
+                NavigateToParentPage( qryString );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveAndAdd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSaveThenAdd_Click( object sender, EventArgs e )
+        {
+            SaveGroupMember();
+
+            if ( cvGroupMember.IsValid )
+            {
+                ShowDetail( 0, hfGroupId.Value.AsIntegerOrNull() );
+            }
+        }
+
+        private void SaveGroupMember()
+        {
             if ( Page.IsValid )
             {
                 var rockContext = new RockContext();
@@ -177,7 +204,7 @@ namespace RockWeb.Blocks.Groups
                             {
                                 groupMemberRequirement = new GroupMemberRequirement();
                                 groupMemberRequirement.GroupRequirementId = groupRequirementId;
-                                
+
                                 groupMember.GroupMemberRequirements.Add( groupMemberRequirement );
                             }
 
@@ -238,10 +265,6 @@ namespace RockWeb.Blocks.Groups
                     Rock.Security.Authorization.Flush();
                 }
             }
-
-            Dictionary<string, string> qryString = new Dictionary<string, string>();
-            qryString["GroupId"] = hfGroupId.Value;
-            NavigateToParentPage( qryString );
         }
 
         /// <summary>
@@ -353,7 +376,7 @@ namespace RockWeb.Blocks.Groups
             {
                 cbIsNotified.Checked = groupMember.IsNotified;
                 cbIsNotified.Visible = true;
-                cbIsNotified.Help = "If this box is uncheked and a <a href=\"http://www.rockrms.com/Rock/BookContent/7/#servicejobsrelatingtogroups\">group leader notification job</a> is enabled then a notification will be sent to the group's leaders when this group member is saved.";
+                cbIsNotified.Help = "If this box is unchecked and a <a href=\"http://www.rockrms.com/Rock/BookContent/7/#servicejobsrelatingtogroups\">group leader notification job</a> is enabled then a notification will be sent to the group's leaders when this group member is saved.";
             }
             else
             {
@@ -376,10 +399,12 @@ namespace RockWeb.Blocks.Groups
             if ( groupMember.Id.Equals( 0 ) )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( groupMember.Group.GroupType.GroupTerm + " " + groupMember.Group.GroupType.GroupMemberTerm ).FormatAsHtmlTitle();
+                btnSaveThenAdd.Visible = true;
             }
             else
             {
                 lReadOnlyTitle.Text = groupMember.Person.FullName.FormatAsHtmlTitle();
+                btnSaveThenAdd.Visible = false;
             }
 
             if ( groupMember.DateTimeAdded.HasValue )

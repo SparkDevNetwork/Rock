@@ -528,19 +528,31 @@ function(item) {
             hfGraphBy.Value = GetSetting( keyPrefix, "GraphBy" );
 
             var campusIdList = new List<string>();
-            string campusKey = keyPrefix + "CampusIds";
-            var sessionPreferences = RockPage.SessionUserPreferences();
-            if ( sessionPreferences.ContainsKey( campusKey ) )
+
+            string campusQryString = Request.QueryString["CampusIds"];
+            if ( campusQryString != null )
             {
-                campusIdList = sessionPreferences[campusKey].Split( ',' ).ToList();
+                FilterIncludedInURL = true;
+                campusIdList = campusQryString.Split( ',' ).ToList();
                 clbCampuses.SetValues( campusIdList );
             }
             else
             {
-                // if previous campus selection has never been made, default to showing all of them
-                foreach ( ListItem item in clbCampuses.Items )
+                string campusKey = keyPrefix + "CampusIds";
+
+                var sessionPreferences = RockPage.SessionUserPreferences();
+                if ( sessionPreferences.ContainsKey( campusKey ) )
                 {
-                    item.Selected = true;
+                    campusIdList = sessionPreferences[campusKey].Split( ',' ).ToList();
+                    clbCampuses.SetValues( campusIdList );
+                }
+                else
+                {
+                    // if previous campus selection has never been made, default to showing all of them
+                    foreach ( ListItem item in clbCampuses.Items )
+                    {
+                        item.Selected = true;
+                    }
                 }
             }
 

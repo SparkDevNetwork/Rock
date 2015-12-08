@@ -1464,6 +1464,7 @@ namespace RockWeb.Blocks.Examples
             FinancialTransactionService financialTransactionService = new FinancialTransactionService( rockContext );
             PersonPreviousNameService personPreviousNameService = new PersonPreviousNameService( rockContext );
             ConnectionRequestService connectionRequestService = new ConnectionRequestService( rockContext );
+            ConnectionRequestActivityService connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
 
             // delete the batch data
             List<int> imageIds = new List<int>();
@@ -1573,6 +1574,7 @@ namespace RockWeb.Blocks.Examples
                         // delete any connection requests tied to them
                         foreach ( var request in connectionRequestService.Queryable().Where( r => r.PersonAlias.PersonId == person.Id || r.ConnectorPersonAlias.PersonId == person.Id ) )
                         {
+                            connectionRequestActivityService.DeleteRange( request.ConnectionRequestActivities );    
                             connectionRequestService.Delete( request );
                         }
 
@@ -1808,6 +1810,8 @@ namespace RockWeb.Blocks.Examples
             int weekNumber = 0;
             DateTime monthly = startingDate;
 
+            var currencyTypeCheck = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid() );
+
             var imageUrlNode = circularImageList.First ?? null;
             // foreach weekend or monthly between the starting and ending date...
             for ( DateTime date = startingDate; date <= endDate; date = frequency == Frequency.weekly ? date.AddDays( 7 ) : frequency == Frequency.monthly ? date.AddMonths( 1 ) : endDate.AddDays(1) )
@@ -1860,6 +1864,10 @@ namespace RockWeb.Blocks.Examples
                     TransactionDateTime = date,
                     AuthorizedPersonAliasId = _peopleAliasDictionary[personGuid]
                 };
+
+                financialTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+                financialTransaction.FinancialPaymentDetail.CurrencyTypeValueId = currencyTypeCheck.Id;
+                financialTransaction.FinancialPaymentDetail.Guid = Guid.NewGuid();
 
                 // Add a transaction detail record for each account they're donating to
                 foreach ( var item in accountAmountDict )

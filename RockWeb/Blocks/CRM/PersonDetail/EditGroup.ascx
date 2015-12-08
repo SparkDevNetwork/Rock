@@ -1,10 +1,10 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EditFamily.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.EditFamily" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EditGroup.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.EditGroup" %>
 
-<asp:UpdatePanel ID="upEditFamily" runat="server">
+<asp:UpdatePanel ID="upEditGroup" runat="server">
     <ContentTemplate>
-        <Rock:NotificationBox ID="nbInvalidFamily" runat="server" Visible="false" />
+        <Rock:NotificationBox ID="nbInvalidGroup" runat="server" Visible="false" />
 
-        <div class="panel panel-block" id="pnlEditFamily" runat="server">
+        <div class="panel panel-block" id="pnlEditGroup" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-users"></i> <asp:Literal ID="lBanner" runat="server" /></h1>
             </div>
@@ -15,7 +15,7 @@
                 <div class="row">
                     <div class="col-md-4">
                         <fieldset>
-                            <Rock:RockTextBox ID="tbFamilyName" runat="server" Label="Family Name" Required="true" CssClass="input-meduim" AutoPostBack="true" OnTextChanged="tbFamilyName_TextChanged" />
+                            <Rock:RockTextBox ID="tbGroupName" runat="server" Label='Group Name' Required="true" CssClass="input-meduim" AutoPostBack="true" OnTextChanged="tbGroupName_TextChanged" />
                         </fieldset>
                     </div>
                     <div class="col-md-4">
@@ -32,9 +32,9 @@
                     </div>
                 </div>
 
-                <div class="panel panel-widget editfamily-list">
+                <div class="panel panel-widget editgroup-list">
                     <div class="panel-heading clearfix">
-                        <h3 class="panel-title pull-left">Family Members</h3>
+                        <h3 class="panel-title pull-left"><%=GroupTypeName %> Members</h3>
                         <div class="pull-right">
                             <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddPerson_Click" CausesValidation="false"><i class="fa fa-user"></i> Add Person</asp:LinkButton>
                         </div>
@@ -54,8 +54,8 @@
                                             </div>
                                         </div>
                                         <div class="actions">
-                                            <asp:LinkButton ID="lbNewFamily" runat="server" CssClass="btn btn-default btn-move btn-xs" ToolTip="Move to New Family" CommandName="Move"><i class="fa fa-fw fa-external-link"></i></asp:LinkButton>
-                                            <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-default btn-xs" Tooltip="Remove from Family" CommandName="Remove"><i class="fa fa-fw fa-times"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbNewGroup" runat="server" CssClass="btn btn-default btn-move btn-xs" CommandName="Move"><i class="fa fa-fw fa-external-link"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-default btn-xs" CommandName="Remove"><i class="fa fa-fw fa-times"></i></asp:LinkButton>
                                         </div>
                                     </li>
                                 </ItemTemplate>
@@ -68,7 +68,7 @@
                     <div class="panel-heading clearfix">
                         <h4 class="panel-title pull-left">Addresses</h4>
                         <div class="pull-right">
-                            <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbMoved_Click" CausesValidation="false"><i class="fa fa-truck fa-flip-horizontal"></i> Family Moved</asp:LinkButton>
+                            <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbMoved_Click" CausesValidation="false"><i class="fa fa-truck fa-flip-horizontal"></i> <%=GroupTypeName %> Moved</asp:LinkButton>
                         </div>
                     </div>
 
@@ -136,7 +136,7 @@
             </div>
         </div>
         
-        <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this family that have not yet been saved." Enabled="false" />
+        <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this group that have not yet been saved." Enabled="false" />
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
@@ -185,7 +185,7 @@
                     <div id="divExistingPerson" runat="server" class="tab-pane">
                         <fieldset>
                             <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" ValidationGroup="AddPerson" />
-                            <Rock:RockCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" ValidationGroup="AddPerson"/>
+                            <Rock:RockCheckBox ID="cbRemoveOtherGroups" runat="server" Checked="true" Text="Remove person from other groups" ValidationGroup="AddPerson"/>
                         </fieldset>
                     </div>
 

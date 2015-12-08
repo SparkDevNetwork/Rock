@@ -2030,6 +2030,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the group members.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<GroupMember> GetGroupMembers( this Person person, int groupTypeId, bool includeSelf = false, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetGroupMembers( groupTypeId, person != null ? person.Id : 0, includeSelf );
+        }
+        /// <summary>
         /// Gets any previous last names for this person sorted alphabetically by LastName
         /// </summary>
         /// <param name="person">The person.</param>

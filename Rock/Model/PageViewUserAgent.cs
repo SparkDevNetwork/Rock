@@ -126,7 +126,7 @@ namespace Rock.Model
                 // let's now label bots/crawler
                 if ( !clientDetected )
                 {
-                    Regex t = new Regex( @"bot|googlebot|crawler|spider|robot|crawling", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+                    Regex t = new Regex( @"bot|googlebot|crawler|spider|robot|crawling|whatsup|chartbeat|facebookexternalhit|pingdom", RegexOptions.IgnoreCase | RegexOptions.Multiline );
                     if ( t.IsMatch( u ) )
                     {
                         clientType = "Crawler";

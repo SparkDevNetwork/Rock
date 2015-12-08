@@ -1,6 +1,6 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AddFamily.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.AddFamily" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AddGroup.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.AddGroup" %>
 
-<asp:UpdatePanel ID="upAddFamily" runat="server">
+<asp:UpdatePanel ID="upAddGroup" runat="server">
     <ContentTemplate>
 
         <div class="panel panel-block">
@@ -12,17 +12,25 @@
 
                 <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-                <asp:Panel ID="pnlFamilyData" runat="server">
+                <asp:Panel ID="pnlGroupData" runat="server">
 
-                    <div class="row">
-                        <div class="col-md-12">
-                            <h4>Family Members</h4>
+                    <div class="row" id="divGroupName" runat="server">
+                        <div class="col-md-4">
+                            <Rock:RockTextBox ID="tbGroupName" runat="server" Label="Group Name" Required="true" />
+                        </div>
+                        <div class="col-md-8">
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:NewFamilyMembers ID="nfmMembers" runat="server" OnAddFamilyMemberClick="nfmMembers_AddFamilyMemberClick" />
+                            <h4><%=_groupTypeName %> Members</h4>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:NewGroupMembers ID="nfmMembers" runat="server" OnAddGroupMemberClick="nfmMembers_AddGroupMemberClick" />
                         </div>
                     </div>
 
@@ -41,7 +49,7 @@
                 </asp:Panel>
 
                 <asp:Panel ID="pnlContactInfo" runat="server" Visible="false">
-                    <Rock:NewFamilyContactInfo ID="nfciContactInfo" runat="server" />
+                    <Rock:NewGroupContactInfo ID="nfciContactInfo" runat="server" />
                 </asp:Panel>
 
                 <asp:Panel ID="pnlAttributes" runat="server" Visible="false">

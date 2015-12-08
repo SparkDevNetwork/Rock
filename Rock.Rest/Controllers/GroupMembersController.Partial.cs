@@ -25,7 +25,7 @@ using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
-    public partial class GroupMembersController 
+   public partial class GroupMembersController 
     {
         /// <summary>
         /// Overrides base Get controller method to include deceased GroupMembers
@@ -76,6 +76,26 @@ namespace Rock.Rest.Controllers
             groupMemberService.CreateKnownRelationship( personId, relatedPersonId, relationshipRoleId );
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+        }
+
+        /// <summary>
+        /// Gets the known relationship.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="relationshipRoleId">The relationship role identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/GroupMembers/KnownRelationship" )]
+        public IQueryable<GroupMember> GetKnownRelationship( int personId, int relationshipRoleId )
+        {
+           SetProxyCreation( true );
+           var rockContext = this.Service.Context as RockContext;
+        
+           var groupMemberService = new GroupMemberService( rockContext );
+           var groupMembers = groupMemberService.GetKnownRelationship( personId, relationshipRoleId );
+
+           return groupMembers;
         }
 
         /// <summary>
