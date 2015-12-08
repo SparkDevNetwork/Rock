@@ -447,6 +447,51 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets all group members that have a  known relationship of relationshipRoleId type with personId.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="relationshipRoleId">The relationship role identifier.</param>
+        public IQueryable<GroupMember> GetKnownRelationship( int personId, int relationshipRoleId )
+        {
+           var groupMemberService = this;
+           var rockContext = this.Context as RockContext;
+
+           var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+           var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) );
+           var relationshipRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Id == relationshipRoleId );
+           if ( ownerRole == null )
+           {
+              throw new Exception( "Unable to find known relationships owner role" );
+           }
+
+           if ( relationshipRole == null )
+           {
+              throw new Exception( "Specified relationshipRoleId is not a known relationships role" );
+           }
+
+           // find the personId's "known relationship" group
+           int? knownRelationshipGroupId = groupMemberService.Queryable()
+               .Where( m =>
+                   m.PersonId == personId &&
+                   m.GroupRoleId == ownerRole.Id )
+               .Select( m => m.GroupId )
+               .FirstOrDefault();
+        
+           // if there was a known relationship group found
+           IQueryable<GroupMember> groupMembers = null;
+           if ( knownRelationshipGroupId.HasValue )
+           {
+              // take everyone that has the specified relationship role.
+              groupMembers = groupMemberService.Queryable()
+                 .Where( gm =>
+                    gm.GroupId == knownRelationshipGroupId &&
+                    gm.GroupRoleId == relationshipRoleId );
+           }
+
+           return groupMembers;
+        }
+     
+        /// <summary>
         /// Deletes the known relationship.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
