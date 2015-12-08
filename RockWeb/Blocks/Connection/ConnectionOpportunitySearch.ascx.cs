@@ -238,7 +238,7 @@ namespace RockWeb.Blocks.Connection
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
 
                 var pageReference = new PageReference( GetAttributeValue( "DetailPage" ), null );
-                mergeFields.Add( "DetailPage", pageReference.BuildUrl() );
+                mergeFields.Add( "DetailPage", BuildDetailPageUrl(pageReference.BuildUrl()) );
 
                 lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
@@ -257,6 +257,33 @@ namespace RockWeb.Blocks.Connection
                     lDebug.Text = mergeFields.lavaDebugInfo();
                 }
             }
+        }
+
+        /// <summary>
+        /// Builds the detail page URL. This is needed so that it can pass along any url paramters that are in the
+        /// query string.
+        /// </summary>
+        /// <param name="detailPage">The detail page.</param>
+        /// <returns></returns>
+        private string BuildDetailPageUrl(string detailPage )
+        {
+            StringBuilder sbUrlParms = new StringBuilder();
+            foreach(var parm in this.RockPage.PageParameters() )
+            {
+                if ( parm.Key != "PageId" )
+                {
+                    if ( sbUrlParms.Length > 0 )
+                    {
+                        sbUrlParms.Append( string.Format( "&{0}={1}", parm.Key, parm.Value.ToString() ) );
+                    }
+                    else
+                    {
+                        sbUrlParms.Append( string.Format( "?{0}={1}", parm.Key, parm.Value.ToString() ) );
+                    }
+                }
+            }
+
+            return detailPage + sbUrlParms.ToString();
         }
 
         /// <summary>

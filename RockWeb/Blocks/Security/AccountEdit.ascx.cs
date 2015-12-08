@@ -79,6 +79,36 @@ namespace RockWeb.Blocks.Security
         }
 
         /// <summary>
+        /// Handles the Click event of the lbMoved control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbMoved_Click( object sender, EventArgs e )
+        {
+            if ( !string.IsNullOrWhiteSpace( acAddress.Street1 ) )
+            {
+                hfStreet1.Value = acAddress.Street1;
+                hfStreet2.Value = acAddress.Street2;
+                hfCity.Value = acAddress.City;
+                hfState.Value = acAddress.State;
+                hfPostalCode.Value = acAddress.PostalCode;
+                hfCountry.Value = acAddress.Country;
+
+                Location currentAddress = new Location();
+                acAddress.GetValues( currentAddress );
+                lPreviousAddress.Text = string.Format( "<strong>Previous Address</strong><br />{0}", currentAddress.FormattedHtmlAddress );
+
+                acAddress.Street1 = string.Empty;
+                acAddress.Street2 = string.Empty;
+                acAddress.PostalCode = string.Empty;
+                acAddress.City = string.Empty;
+
+                cbIsMailingAddress.Checked = true;
+                cbIsPhysicalAddress.Checked = true;
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -316,35 +346,60 @@ namespace RockWeb.Blocks.Security
                                         var groupLocationService = new GroupLocationService( rockContext );
 
                                         var dvHomeAddressType = DefinedValueCache.Read( addressTypeGuid.Value );
-                                        var familyHomeAddress = groupLocationService.Queryable().Where( l => l.GroupId == familyGroup.Id && l.GroupLocationTypeValueId == dvHomeAddressType.Id ).FirstOrDefault();
-                                        if ( familyHomeAddress != null && string.IsNullOrWhiteSpace( acAddress.Street1 ) )
+                                        var familyAddress = groupLocationService.Queryable().Where( l => l.GroupId == familyGroup.Id && l.GroupLocationTypeValueId == dvHomeAddressType.Id ).FirstOrDefault();
+                                        if ( familyAddress != null && string.IsNullOrWhiteSpace( acAddress.Street1 ) )
                                         {
-
                                             // delete the current address
-                                            History.EvaluateChange( changes, familyHomeAddress.GroupLocationTypeValue.Value + " Location", familyHomeAddress.Location.ToString(), string.Empty );
-                                            groupLocationService.Delete( familyHomeAddress );
+                                            History.EvaluateChange( changes, familyAddress.GroupLocationTypeValue.Value + " Location", familyAddress.Location.ToString(), string.Empty );
+                                            groupLocationService.Delete( familyAddress );
                                             rockContext.SaveChanges();
                                         }
                                         else
                                         {
                                             if ( !string.IsNullOrWhiteSpace( acAddress.Street1 ) )
                                             {
-                                                if ( familyHomeAddress == null )
+                                                if ( familyAddress == null )
                                                 {
-                                                    familyHomeAddress = new GroupLocation();
-                                                    groupLocationService.Add( familyHomeAddress );
-                                                    familyHomeAddress.GroupLocationTypeValueId = dvHomeAddressType.Id;
-                                                    familyHomeAddress.GroupId = familyGroup.Id;
-                                                    familyHomeAddress.IsMailingLocation = true;
-                                                    familyHomeAddress.IsMappedLocation = true;
+                                                    familyAddress = new GroupLocation();
+                                                    groupLocationService.Add( familyAddress );
+                                                    familyAddress.GroupLocationTypeValueId = dvHomeAddressType.Id;
+                                                    familyAddress.GroupId = familyGroup.Id;
+                                                    familyAddress.IsMailingLocation = true;
+                                                    familyAddress.IsMappedLocation = true;
                                                 }
+                                                else if ( hfStreet1.Value != string.Empty ) {
+                                                    
+                                                    // user clicked move so create a previous address
+                                                    var previousAddress = new GroupLocation();
+                                                    groupLocationService.Add( previousAddress );
+
+                                                    var previousAddressValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
+                                                    if ( previousAddressValue  != null )
+                                                    {
+                                                        previousAddress.GroupLocationTypeValueId = previousAddressValue.Id;
+                                                        previousAddress.GroupId = familyGroup.Id;
+
+                                                        Location previousAddressLocation = new Location();
+                                                        previousAddressLocation.Street1 = hfStreet1.Value;
+                                                        previousAddressLocation.Street2 = hfStreet2.Value;
+                                                        previousAddressLocation.City = hfCity.Value;
+                                                        previousAddressLocation.State = hfState.Value;
+                                                        previousAddressLocation.PostalCode = hfPostalCode.Value;
+                                                        previousAddressLocation.Country = hfCountry.Value;
+
+                                                        previousAddress.Location = previousAddressLocation;
+                                                    }
+                                                }
+
+                                                familyAddress.IsMailingLocation = cbIsMailingAddress.Checked;
+                                                familyAddress.IsMappedLocation = cbIsPhysicalAddress.Checked;
 
                                                 var updatedHomeAddress = new Location();
                                                 acAddress.GetValues( updatedHomeAddress );
 
-                                                History.EvaluateChange( changes, dvHomeAddressType.Value + " Location", familyHomeAddress.Location != null ? familyHomeAddress.Location.ToString() : string.Empty, updatedHomeAddress.ToString() );
+                                                History.EvaluateChange( changes, dvHomeAddressType.Value + " Location", familyAddress.Location != null ? familyAddress.Location.ToString() : string.Empty, updatedHomeAddress.ToString() );
 
-                                                familyHomeAddress.Location = updatedHomeAddress;
+                                                familyAddress.Location = updatedHomeAddress;
                                                 rockContext.SaveChanges();
                                             }
                                         }
@@ -398,16 +453,25 @@ namespace RockWeb.Blocks.Security
                 ddlSuffix.SelectedValue = person.SuffixValueId.HasValue ? person.SuffixValueId.Value.ToString() : string.Empty;
                 bpBirthDay.SelectedDate = person.BirthDate;
                 rblGender.SelectedValue = person.Gender.ConvertToString();
-                tbEmail.Text = person.Email;
-
-
-                var homeAddress = person.GetHomeLocation();
-                
+                tbEmail.Text = person.Email;             
 
                 Guid? locationTypeGuid = GetAttributeValue( "LocationType" ).AsGuidOrNull();
                 if ( locationTypeGuid.HasValue )
                 {
                     var addressTypeDv = DefinedValueCache.Read( locationTypeGuid.Value );
+
+                    // if address type is home enable the move and is mailing/physical
+                    if (addressTypeDv.Guid == Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )
+                    {
+                        lbMoved.Visible = true;
+                        cbIsMailingAddress.Visible = true;
+                        cbIsPhysicalAddress.Visible = true;
+                    } else
+                    {
+                        lbMoved.Visible = false;
+                        cbIsMailingAddress.Visible = false;
+                        cbIsPhysicalAddress.Visible = false;
+                    }
 
                     lAddressTitle.Text = addressTypeDv.Value + " Address";
 
@@ -417,15 +481,17 @@ namespace RockWeb.Blocks.Security
                     {
                         var familyGroupType = GroupTypeCache.Read( familyGroupTypeGuid.Value );
 
-                        var address = new GroupLocationService( rockContext ).Queryable()
+                        var familyAddress = new GroupLocationService( rockContext ).Queryable()
                                             .Where( l => l.Group.GroupTypeId == familyGroupType.Id
                                                  && l.GroupLocationTypeValueId == addressTypeDv.Id 
                                                  && l.Group.Members.Any( m => m.PersonId == person.Id))
-                                            .Select( l => l.Location)
                                             .FirstOrDefault();
-                        if ( address != null )
+                        if ( familyAddress != null )
                         {
-                            acAddress.SetValues( homeAddress );
+                            acAddress.SetValues( familyAddress.Location );
+
+                            cbIsMailingAddress.Checked = familyAddress.IsMailingLocation;
+                            cbIsPhysicalAddress.Checked = familyAddress.IsMappedLocation;
                         }
                     }
                 }

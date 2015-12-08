@@ -2246,56 +2246,62 @@ namespace RockWeb.Blocks.Event
 
                 History.EvaluateChange( txnChanges, RegistrationInstanceState.Account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
 
-                var batchService = new FinancialBatchService( rockContext );
-
-                // Get the batch
-                var batch = batchService.Get(
-                    GetAttributeValue( "BatchNamePrefix" ),
-                    paymentInfo.CurrencyTypeValue,
-                    paymentInfo.CreditCardTypeValue,
-                    transaction.TransactionDateTime.Value,
-                    RegistrationTemplate.FinancialGateway.GetBatchTimeOffset() );
-
                 var batchChanges = new List<string>();
 
-                if ( batch.Id == 0 )
+                rockContext.WrapTransaction( () =>
                 {
-                    batchChanges.Add( "Generated the batch" );
-                    History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                    History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                    History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                    History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+                    var batchService = new FinancialBatchService( rockContext );
+
+                    // Get the batch
+                    var batch = batchService.Get(
+                        GetAttributeValue( "BatchNamePrefix" ),
+                        paymentInfo.CurrencyTypeValue,
+                        paymentInfo.CreditCardTypeValue,
+                        transaction.TransactionDateTime.Value,
+                        RegistrationTemplate.FinancialGateway.GetBatchTimeOffset() );
+
+                    if ( batch.Id == 0 )
+                    {
+                        batchChanges.Add( "Generated the batch" );
+                        History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
+                        History.EvaluateChange( batchChanges, "Status", null, batch.Status );
+                        History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
+                        History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+                    }
+
+                    decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
+                    History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
+                    batch.ControlAmount = newControlAmount;
+
+                    transaction.BatchId = batch.Id;
+                    batch.Transactions.Add( transaction );
+
+                    rockContext.SaveChanges();
+                } );
+
+                if ( transaction.BatchId.HasValue )
+                {
+                    Task.Run( () =>
+                        HistoryService.SaveChanges(
+                            new RockContext(),
+                            typeof( FinancialBatch ),
+                            Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                            transaction.BatchId.Value,
+                            batchChanges )
+                    );
+
+                    Task.Run( () =>
+                        HistoryService.SaveChanges(
+                            new RockContext(),
+                            typeof( FinancialBatch ),
+                            Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
+                            transaction.BatchId.Value,
+                            txnChanges,
+                            CurrentPerson != null ? CurrentPerson.FullName : string.Empty,
+                            typeof( FinancialTransaction ),
+                            transaction.Id )
+                    );
                 }
-
-                decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-                History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-                batch.ControlAmount = newControlAmount;
-
-                transaction.BatchId = batch.Id;
-                batch.Transactions.Add( transaction );
-
-                rockContext.SaveChanges();
-
-                Task.Run( () => 
-                    HistoryService.SaveChanges(
-                        new RockContext(),
-                        typeof( FinancialBatch ),
-                        Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
-                        batch.Id,
-                        batchChanges )
-                );
-
-                Task.Run( () => 
-                    HistoryService.SaveChanges(
-                        new RockContext(),
-                        typeof( FinancialBatch ),
-                        Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                        batch.Id,
-                        txnChanges,
-                        CurrentPerson != null ? CurrentPerson.FullName : string.Empty,
-                        typeof( FinancialTransaction ),
-                        transaction.Id )
-                );
 
                 TransactionCode = transaction.TransactionCode;
 

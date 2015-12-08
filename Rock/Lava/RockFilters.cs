@@ -2149,7 +2149,7 @@ namespace Rock.Lava
         /// <param name="input">The input.</param>
         /// <param name="parm">The parm.</param>
         /// <returns></returns>
-        public static string Page( string input, string parm )
+        public static object Page( string input, string parm )
         {
             RockPage page = HttpContext.Current.Handler as RockPage;
 
@@ -2204,6 +2204,11 @@ namespace Rock.Lava
                     case "Scheme":
                         {
                             return HttpContext.Current.Request.Url.Scheme;
+                        }
+                    case "QueryString":
+                        {
+                            var test = page.PageParameters();
+                            return page.PageParameters();
                         }
                 }
             }
