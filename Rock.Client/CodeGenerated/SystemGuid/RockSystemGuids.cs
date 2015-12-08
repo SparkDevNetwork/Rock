@@ -128,6 +128,7 @@ namespace Rock.Client.SystemGuid
         public const string PERSON_REVIEW_REASON = "7680C445-AD69-4E5D-94F0-CBAA96DB0FF8";
         public const string PERSON_SUFFIX = "16f85b3c-b3e8-434c-9094-f3d41f87a740";
         public const string PERSON_TITLE = "4784cd23-518b-43ee-9b97-225bf6e07846";
+        public const string PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES = "2F8821E8-05B9-4CD5-9FA4-303662AAC85D";
         public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
         public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
