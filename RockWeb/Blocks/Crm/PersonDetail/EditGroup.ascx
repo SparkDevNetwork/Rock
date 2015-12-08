@@ -1,6 +1,6 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EditFamily.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.EditFamily" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EditGroup.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.EditGroup" %>
 
-<asp:UpdatePanel ID="upEditFamily" runat="server">
+<asp:UpdatePanel ID="upEditGroup" runat="server">
     <ContentTemplate>
         <Rock:NotificationBox ID="nbInvalidGroup" runat="server" Visible="false" />
 
@@ -32,7 +32,7 @@
                     </div>
                 </div>
 
-                <div class="panel panel-widget editfamily-list">
+                <div class="panel panel-widget editgroup-list">
                     <div class="panel-heading clearfix">
                         <h3 class="panel-title pull-left"><%=GroupTypeName %> Members</h3>
                         <div class="pull-right">

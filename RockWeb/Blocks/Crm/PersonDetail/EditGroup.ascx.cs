@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to edit a group that person belongs to." )]
 
-    public partial class EditFamily : PersonBlock
+    public partial class EditGroup : PersonBlock
     {
         private GroupTypeCache _groupType = null;
         private bool _isFamilyGroupType = false;

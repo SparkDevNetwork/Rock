@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FamilyMembers.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.FamilyMembers" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupMembers.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.GroupMembers" %>
 
 <asp:UpdatePanel ID="upGroupMembers" runat="server">
     <ContentTemplate>
@@ -6,7 +6,7 @@
         <asp:Repeater ID="rptrGroups" runat="server">
             <ItemTemplate>
 
-                <div class="persondetails-family rollover-container">
+                <div class="persondetails-group rollover-container">
 
                     <div class="actions rollover-item">
                         <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" CssClass="edit btn btn-action btn-xs"><i class="fa fa-pencil"></i> <asp:Literal ID="lEditGroup" runat="server" /></asp:HyperLink>

@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [BooleanField("SMS", "SMS is enabled by default", "SMS is not enabled by default", "Should SMS be enabled for cell phone numbers by default?", false, "", 9)]
     [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 10 )]
 
-    public partial class AddFamily : Rock.Web.UI.RockBlock
+    public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Fields
 
