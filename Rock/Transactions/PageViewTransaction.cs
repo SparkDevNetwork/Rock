@@ -124,7 +124,7 @@ namespace Rock.Transactions
 
                 // lookup the pageViewUserAgent, and create it if it doesn't exist
                 var pageViewUserAgent = pageViewUserAgentService.Queryable().Where( a => a.UserAgent == userAgent ).FirstOrDefault();
-                if ( pageViewUserAgent != null)
+                if ( pageViewUserAgent == null)
                 {
                     pageViewUserAgent = new PageViewUserAgent();
                     pageViewUserAgent.UserAgent = userAgent;
