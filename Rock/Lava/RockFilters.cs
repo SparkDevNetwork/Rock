@@ -1358,6 +1358,33 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Persons the by unique identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person PersonByGuid( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            Guid? personGuid = input.ToString().AsGuidOrNull();
+
+            if ( personGuid.HasValue )
+            {
+                var rockContext = new RockContext();
+
+                return new PersonService( rockContext ).Get( personGuid.Value );
+            } else
+            {
+                return null;
+            }
+
+        }
+
+        /// <summary>
         /// Persons the by alias identifier.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -2122,7 +2149,7 @@ namespace Rock.Lava
         /// <param name="input">The input.</param>
         /// <param name="parm">The parm.</param>
         /// <returns></returns>
-        public static string Page( string input, string parm )
+        public static object Page( string input, string parm )
         {
             RockPage page = HttpContext.Current.Handler as RockPage;
 
@@ -2177,6 +2204,11 @@ namespace Rock.Lava
                     case "Scheme":
                         {
                             return HttpContext.Current.Request.Url.Scheme;
+                        }
+                    case "QueryString":
+                        {
+                            var test = page.PageParameters();
+                            return page.PageParameters();
                         }
                 }
             }

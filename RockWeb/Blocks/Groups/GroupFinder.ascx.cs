@@ -108,6 +108,8 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Age", "", false, "CustomSetting" )]
     [BooleanField( "Show Description", "", true, "CustomSetting" )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Attribute Columns", "", false, true, "", "CustomSetting" )]
+    [BooleanField( "Sort By Distance", "", false, "CustomSetting" )]
+    [TextField( "Page Sizes", "To show a dropdown of page sizes, enter a comma delimited list of page sizes. For example: 10,20 will present a drop down with 10,20,All as options with the default as 10", false, "", "CustomSetting" )]
 
     public partial class GroupFinder : RockBlockCustomSettings
     {
@@ -300,6 +302,8 @@ namespace RockWeb.Blocks.Groups
             SetAttributeValue( "ShowSchedule", cbShowSchedule.Checked.ToString() );
             SetAttributeValue( "ShowDescription", cbShowDescription.Checked.ToString() );
             SetAttributeValue( "ShowProximity", cbProximity.Checked.ToString() );
+            SetAttributeValue( "SortByDistance", cbSortByDistance.Checked.ToString() );
+            SetAttributeValue( "PageSizes", tbPageSizes.Text );
             SetAttributeValue( "ShowCount", cbShowCount.Checked.ToString() );
             SetAttributeValue( "ShowAge", cbShowAge.Checked.ToString() );
             SetAttributeValue( "AttributeColumns", cblGridAttributes.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
@@ -438,6 +442,8 @@ namespace RockWeb.Blocks.Groups
             cbShowSchedule.Checked = GetAttributeValue( "ShowSchedule" ).AsBoolean();
             cbShowDescription.Checked = GetAttributeValue( "ShowDescription" ).AsBoolean();
             cbProximity.Checked = GetAttributeValue( "ShowProximity" ).AsBoolean();
+            cbSortByDistance.Checked = GetAttributeValue( "SortByDistance" ).AsBoolean();
+            tbPageSizes.Text = GetAttributeValue( "PageSizes" );
             cbShowCount.Checked = GetAttributeValue( "ShowCount" ).AsBoolean();
             cbShowAge.Checked = GetAttributeValue( "ShowAge" ).AsBoolean();
             foreach ( string attr in GetAttributeValue( "AttributeColumns" ).SplitDelimitedValues() )
@@ -683,6 +689,28 @@ namespace RockWeb.Blocks.Groups
                 gGroups.Columns.Add( registerColumn );
             }
 
+            var pageSizes = GetAttributeValue( "PageSizes" ).Split( ',' ).AsIntegerList();
+
+            ddlPageSize.Items.Clear();
+            ddlPageSize.Items.AddRange( pageSizes.Select( a => new ListItem( a.ToString(), a.ToString() ) ).ToArray() );
+            ddlPageSize.Items.Add( new ListItem( "All", "0" ) );
+
+            if ( pageSizes.Any() )
+            {
+                // set default PageSize to whatever is first in the PageSize setting
+                ddlPageSize.Visible = true;
+                ddlPageSize.SelectedValue = pageSizes[0].ToString();
+            }
+            else
+            {
+                ddlPageSize.Visible = false;
+            }
+
+            // if the SortByDistance is enabled, prevent them from sorting by ColumnClick
+            if ( GetAttributeValue( "SortByDistance" ).AsBoolean() )
+            {
+                gGroups.AllowSorting = false;
+            }
         }
 
         private void AddFilterControl( Control control, string name, string description )
@@ -902,6 +930,21 @@ namespace RockWeb.Blocks.Groups
                             fenceMapItems.Add( mapItem );
                         }
                     }
+                }
+
+                // if not sorting by ColumnClick and SortByDistance, then sort the groups by distance
+                if ( gGroups.SortProperty == null && GetAttributeValue( "SortByDistance" ).AsBoolean() )
+                {
+                    // only show groups with a known location, and sort those by distance
+                    groups = groups.Where( a => distances.Select( b => b.Key ).Contains( a.Id ) ).ToList();
+                    groups = groups.OrderBy( a => distances[a.Id] ).ThenBy( a => a.Name ).ToList();
+                }
+
+                // if limiting by PageSize, limit to the top X groups
+                int? pageSize = ddlPageSize.SelectedValue.AsIntegerOrNull();
+                if ( pageSize.HasValue && pageSize > 0 )
+                {
+                    groups = groups.Take(pageSize.Value).ToList();
                 }
 
                 // If a map is to be shown
@@ -1454,5 +1497,15 @@ namespace RockWeb.Blocks.Groups
 
             }
         }
-    }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlPageSize control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlPageSize_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ShowResults();
+        }
+}
 }

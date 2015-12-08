@@ -253,19 +253,23 @@ function() {
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            int groupTypeId = ( controls[0] as GroupTypePicker ).SelectedValueAsId() ?? 0;
+            var groupTypePicker = ( controls[0] as GroupTypePicker );
+            var cblRoles = ( controls[1] as RockCheckBoxList );
+            var ddlMemberStatus = ( controls[2] as RockDropDownList );
+
+            int groupTypeId = groupTypePicker.SelectedValueAsId() ?? 0;
             Guid? groupTypeGuid = null;
-            var groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId );
+            var groupType = Rock.Web.Cache.GroupTypeCache.Read( groupTypeId );
             if ( groupType != null )
             {
                 groupTypeGuid = groupType.Guid;
             }
 
-            var guidCommaList = ( controls[1] as RockCheckBoxList ).SelectedValues.AsDelimited( "," );
+            var rolesGuidCommaList = cblRoles.SelectedValues.AsDelimited( "," );
 
-            var memberStatusValue = ( controls[2] as RockDropDownList ).SelectedValue;
+            var memberStatusValue = ddlMemberStatus.SelectedValue;
 
-            return groupTypeGuid.ToString() + "|" + guidCommaList + "|" + memberStatusValue;
+            return groupTypeGuid.ToString() + "|" + rolesGuidCommaList + "|" + memberStatusValue;
         }
 
         /// <summary>
