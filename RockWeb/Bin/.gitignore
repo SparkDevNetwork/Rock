@@ -1,5 +1,6 @@
 *.pdb
 /church.ccv.Authentication.dll
+/church.ccv.Badges.dll
 /church.ccv.CommandCenter.dll
 /church.ccv.Datamart.dll
 /church.ccv.Hr.dll
