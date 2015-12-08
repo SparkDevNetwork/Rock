@@ -1048,7 +1048,7 @@ namespace RockWeb.Blocks.Finance
 
                 if ( familyGroup != null )
                 {
-                    GroupService.AddNewFamilyAddress(
+                    GroupService.AddNewGroupAddress(
                         rockContext,
                         familyGroup,
                         GetAttributeValue( "AddressType" ),

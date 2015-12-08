@@ -2071,7 +2071,7 @@ namespace RockWeb.Blocks.Event
                                     l.GroupLocationTypeValueId.HasValue &&
                                     l.GroupLocationTypeValueId.Value == homeLocationType.Id ) )
                             {
-                                GroupService.AddNewFamilyAddress(
+                                GroupService.AddNewGroupAddress(
                                     rockContext,
                                     familyGroup,
                                     Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
@@ -2090,7 +2090,7 @@ namespace RockWeb.Blocks.Event
                     {
                         if ( location != null )
                         {
-                            GroupService.AddNewFamilyAddress(
+                            GroupService.AddNewGroupAddress(
                                 rockContext,
                                 familyGroup,
                                 Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
