@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [GroupTypeField("Group Type", "The group type to display groups for (default is Family)", false, Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "", 0)]
     [LinkedPage("Group Edit Page", "Page used to edit the members of the selected group.", true, "", "", 1)]
     [LinkedPage( "Location Detail Page", "Page used to edit the settings for a particular location.", false, "", "", 2 )]
-    public partial class FamilyMembers : Rock.Web.UI.PersonBlock
+    public partial class GroupMembers : Rock.Web.UI.PersonBlock
     {
         #region Fields
 
@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private RockContext _bindGroupsRockContext = null;
 
         #endregion
+
         #region Base Control Methods
 
         /// <summary>
