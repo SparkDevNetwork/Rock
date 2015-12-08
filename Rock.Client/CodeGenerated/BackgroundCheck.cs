@@ -35,9 +35,6 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.BackgroundCheckStatus BackgroundCheckStatus { get; set; }
-
-        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -58,13 +55,16 @@ namespace Rock.Client
         public DateTime RequestDate { get; set; }
 
         /// <summary />
-        public DateTime ResponseDate { get; set; }
+        public DateTime? ResponseDate { get; set; }
 
         /// <summary />
         public int? ResponseDocumentId { get; set; }
 
         /// <summary />
         public string ResponseXml { get; set; }
+
+        /// <summary />
+        public int? WorkflowId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -99,7 +99,6 @@ namespace Rock.Client
         public void CopyPropertiesFrom( BackgroundCheck source )
         {
             this.Id = source.Id;
-            this.BackgroundCheckStatus = source.BackgroundCheckStatus;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
@@ -109,6 +108,7 @@ namespace Rock.Client
             this.ResponseDate = source.ResponseDate;
             this.ResponseDocumentId = source.ResponseDocumentId;
             this.ResponseXml = source.ResponseXml;
+            this.WorkflowId = source.WorkflowId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
