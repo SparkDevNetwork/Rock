@@ -1,9 +1,16 @@
 {% comment %}
 
 {% assign CurrentCampus = 'East Valley' %}
+{% assign Platform = 'ios' %}
+{% assign Platform = 'android' %}
 {% include '~~/Assets/Lava/MobileApp/2015/ChristmasInvite.lava' %}
 
 {% endcomment %}
+
+<style>
+  .fade { visibility: hidden; }
+  .fade.in { visibility: visible; }
+</style>
 
 {% assign preurl = 'external:' %}
 
@@ -78,7 +85,7 @@ We're going to CCV for Christmas services this year. Would you like to join us? 
 {% capture smsAll %}We're going to Christmas service at CCV on the {{ CurrentCampus }} campus. Would you like to join us? Check out the service times at http://ccvchristmas.com and let's plan to go together!{% endcapture %}
 {% assign smsAllEscaped = smsAll | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
 
-{% case PageParameter.ma-platform %}
+{% case Platform %}
   {% when 'android' %}
     {% assign sep = '?' %}
   {% when 'ios' %}
@@ -91,7 +98,10 @@ We're going to CCV for Christmas services this year. Would you like to join us? 
   <article class="page fade in js-pg1 is-currentpg">
     <p>&nbsp;</p>
 
-    {% comment %}<h1>{{ CurrentCampus }}</h1>{% endcomment %}
+    <p>
+      <strong>Campus:</strong> {{ CurrentCampus }}<br>
+      <strong>Platform:</strong> {{ Platform }}
+    </p>
 
     <p class="lead">How would you like to send your invite?</p>
 
