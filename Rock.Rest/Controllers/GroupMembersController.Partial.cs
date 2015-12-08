@@ -79,7 +79,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Creates the known relationship.
+        /// Gets the known relationship.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="relationshipRoleId">The relationship role identifier.</param>
