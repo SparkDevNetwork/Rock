@@ -2416,13 +2416,13 @@ table.attribute-grid tr th:nth-child(3) {
   float: left;
   margin-right: 12px;
 }
-.editfamily-list li.member {
+.editgroup-list li.member {
   min-width: 200px;
 }
-.editfamily-list li.member .radio {
+.editgroup-list li.member .radio {
   margin: 0;
 }
-.editfamily-list .groupmembers h4 {
+.editgroup-list .groupmembers h4 {
   margin-bottom: 4px;
 }
 .person-content {
@@ -2446,7 +2446,7 @@ span.field-value {
   white-space: nowrap;
   border-radius: 4px;
 }
-.table-familymembers .radio:first-child {
+.table-groupmembers .radio:first-child {
   margin-top: 0;
 }
 #fluidbox-overlay {
