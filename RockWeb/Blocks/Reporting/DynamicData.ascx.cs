@@ -317,6 +317,26 @@ namespace RockWeb.Blocks.Reporting
             mergeFields.Add( "PageParameter", PageParameters() );
             mergeFields.Add( "CurrentPage", this.PageCache );
 
+            var contextObjects = new Dictionary<string, object>();
+            foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
+            {
+                var contextEntity = RockPage.GetCurrentContext(contextEntityType);
+                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
+                {
+                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
+                    if ( type != null )
+                    {
+                        contextObjects.Add( type.Name, contextEntity );
+                    }
+                }
+
+            }
+
+            if (contextObjects.Any())
+            {
+                mergeFields.Add("Context", contextObjects);
+            }
+
             return mergeFields;
         }
 
