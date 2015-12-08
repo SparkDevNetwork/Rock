@@ -44,6 +44,9 @@ namespace Rock.Client
         public string Country { get; set; }
 
         /// <summary />
+        public string County { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -153,6 +156,7 @@ namespace Rock.Client
             this.AssessorParcelId = source.AssessorParcelId;
             this.City = source.City;
             this.Country = source.Country;
+            this.County = source.County;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GeocodeAttemptedDateTime = source.GeocodeAttemptedDateTime;
