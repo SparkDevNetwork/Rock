@@ -1,0 +1,22 @@
+<div class="row">
+  {% for item in Items %}
+    <div class="col-sm-6 col-md-4 margin-b-md">
+      <div class="thumbnail">
+        <img src="{{ item | Attribute: 'Image', 'Url' }}&width=525&height=295&mode=crop&scale=both" alt="{{ item.Title }}">
+        <div class="caption">
+          <h4>{{ item.Title }}{% comment %} <small>{{ item.StartDateTime | Date:'M/d/yyyy' }}</small>{% endcomment %}</h4>
+          <p>{{ item.Summary }}</p>
+          <a href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">Read &rarr;</a>
+        </div>
+      </div>
+    </div>
+    {% assign xsMod = forloop.index | Modulo: 1 %}
+    {% assign smMod = forloop.index | Modulo: 2 %}
+    {% assign mdMod = forloop.index | Modulo: 3 %}
+    {% assign lgMod = forloop.index | Modulo: 3 %}
+    {% if xsMod == 0 %}<div class="clearfix visible-xs-block"></div>{% endif %}
+    {% if smMod == 0 %}<div class="clearfix visible-sm-block"></div>{% endif %}
+    {% if mdMod == 0 %}<div class="clearfix visible-md-block"></div>{% endif %}
+    {% if lgMod == 0 %}<div class="clearfix visible-lg-block"></div>{% endif %}
+  {% endfor %}
+</div>

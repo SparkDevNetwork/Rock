@@ -1,0 +1,10 @@
+<div class="container-sm">
+  {% for item in Items %}
+    <a class="link-plain" href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}"><h2 class="page-header">{{ item.Title }} <small>{{ item.StartDateTime | Date:'M/d/yyyy' }}</small></h3></a>
+    <div class="margin-b-md">
+      <img src="{{ item | Attribute: 'Image', 'Url' }}&width=560" alt="{{ item.Title }}">
+    </div>
+    <p class="lead">{{ item.Summary }}</p>
+    {{ item.Content }}
+  {% endfor %}
+</div>
