@@ -1019,14 +1019,17 @@ namespace RockWeb.Blocks.Finance
         /// <param name="transactionId">The transaction identifier.</param>
         public void ShowDetail( int transactionId, int? batchId )
         {
-            // show or hide the add new transaction button depending if there is a batch id in the querystring
-            bool haveBatch = !string.IsNullOrWhiteSpace( PageParameter( "batchId" ) );
-            
             FinancialTransaction txn = null;
 
             bool editAllowed = UserCanEdit;
 
             var rockContext = new RockContext();
+
+            FinancialBatch batch = null;
+            if ( batchId.HasValue )
+            {
+                batch = new FinancialBatchService( rockContext ).Get( batchId.Value );
+            }
 
             BindDropdowns( rockContext );
 
@@ -1081,7 +1084,7 @@ namespace RockWeb.Blocks.Finance
 
             lbEdit.Visible = editAllowed;
             lbRefund.Visible = editAllowed && txn.RefundDetails == null;
-            lbAddTransaction.Visible = editAllowed && haveBatch;
+            lbAddTransaction.Visible = editAllowed && batch != null && batch.Status != BatchStatus.Closed;
 
             if ( !editAllowed )
             {
