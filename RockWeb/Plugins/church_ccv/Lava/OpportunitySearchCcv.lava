@@ -1,0 +1,26 @@
+{% assign opportunityCount = Opportunities | Size %}
+
+{% if opportunityCount == 0 %}
+  <div class="panel panel-widget margin-t-md">
+    <div class="margin-all-md"> There are no opportunities that match the criteria</div>
+  </div>
+{% endif %}
+
+{% for opportunity in Opportunities %}
+  <div class="panel panel-widget margin-t-md">
+    <div class="panel-heading clearfix">
+      <h2 class="panel-title pull-left">
+        <i class='{{opportunity.IconCssClass}}'></i> {{ opportunity.Name }}
+      </h2>
+	  
+	  <div class="pull-right">
+		{% if DetailPage contains "?" %}
+			<a class="btn btn-default btn-xs" href="{{ DetailPage }}&OpportunityId={{ opportunity.Id }}" role="button">Connect</a>
+		{% else %}
+			<a class="btn btn-default btn-xs" href="{{ DetailPage }}?OpportunityId={{ opportunity.Id }}" role="button">Connect</a>
+		{% endif %}
+	  </div>
+    </div>
+    
+  </div>
+{% endfor %}
