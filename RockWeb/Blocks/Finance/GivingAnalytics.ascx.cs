@@ -541,14 +541,17 @@ function(item) {
             bcAmount.TooltipFormatter = lcAmount.TooltipFormatter;
             bcAmount.DataSourceUrl = this.ResolveUrl( dataSourceUrl );
 
-            var chartData = GetChartData();
-            var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
-            bcAmount.Visible = singleDateTime;
-            lcAmount.Visible = !singleDateTime;
-
-            if ( pnlChartAmountGrid.Visible )
+            if ( pnlResults.Visible )
             {
-                BindChartAmountGrid(chartData);
+                var chartData = GetChartData();
+                var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
+                bcAmount.Visible = singleDateTime;
+                lcAmount.Visible = !singleDateTime;
+
+                if ( pnlChartAmountGrid.Visible )
+                {
+                    BindChartAmountGrid( chartData );
+                }
             }
 
             if ( pnlDetails.Visible )
