@@ -303,7 +303,7 @@ namespace RockWeb.Blocks.Connection
                     lIcon.Text = string.Format( "<i class='{0}' ></i>", opportunity.IconCssClass );
                 }
 
-                lTitle.Text = opportunity.Name.FormatAsHtmlTitle();
+                lTitle.Text = opportunity.Name;
 
                 pnHome.Visible = GetAttributeValue( "DisplayHomePhone" ).AsBoolean();
                 pnMobile.Visible = GetAttributeValue( "DisplayMobilePhone" ).AsBoolean();

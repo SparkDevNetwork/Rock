@@ -11,7 +11,7 @@
         <asp:Panel ID="pnlSignup" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1><asp:Literal ID="lIcon" runat="server" /> <asp:Literal ID="lTitle" runat="server" /></h1>
+                <h1 class="panel-title"><asp:Literal ID="lIcon" runat="server" /> <asp:Literal ID="lTitle" runat="server" /></h1>
             </div>
 
             <div class="panel-body">
