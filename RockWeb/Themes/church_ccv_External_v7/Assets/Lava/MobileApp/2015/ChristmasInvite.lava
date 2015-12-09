@@ -97,11 +97,11 @@ We're going to CCV for Christmas services this year. Would you like to join us? 
 <div class="wrapper">
   <article class="page fade in js-pg1 is-currentpg">
     <p>&nbsp;</p>
-
+{% comment %}
     <p>
       <strong>Campus:</strong> {{ CurrentCampus }}<br>
       <strong>Platform:</strong> {{ Platform }}
-    </p>
+    </p>{% endcomment %}
 
     <p class="lead">How would you like to send your invite?</p>
 
