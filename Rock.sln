@@ -64,6 +64,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.centralaz.Prayer", "com
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.centralaz.CheckInLabels", "com.centralaz.CheckInLabels\com.centralaz.CheckInLabels.csproj", "{FFFE1207-CB79-42B2-B9AF-B75A72140A53}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.centralaz.Calendar", "com.centralaz.Calendar\com.centralaz.Calendar.csproj", "{732B2F08-1E75-4635-AA47-C490276B2F76}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -254,6 +256,16 @@ Global
 		{FFFE1207-CB79-42B2-B9AF-B75A72140A53}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{FFFE1207-CB79-42B2-B9AF-B75A72140A53}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{FFFE1207-CB79-42B2-B9AF-B75A72140A53}.Release|x86.ActiveCfg = Release|Any CPU
+		{732B2F08-1E75-4635-AA47-C490276B2F76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{732B2F08-1E75-4635-AA47-C490276B2F76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{732B2F08-1E75-4635-AA47-C490276B2F76}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{732B2F08-1E75-4635-AA47-C490276B2F76}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{732B2F08-1E75-4635-AA47-C490276B2F76}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{732B2F08-1E75-4635-AA47-C490276B2F76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{732B2F08-1E75-4635-AA47-C490276B2F76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{732B2F08-1E75-4635-AA47-C490276B2F76}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{732B2F08-1E75-4635-AA47-C490276B2F76}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{732B2F08-1E75-4635-AA47-C490276B2F76}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
