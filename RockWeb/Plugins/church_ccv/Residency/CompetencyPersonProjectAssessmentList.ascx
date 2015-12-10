@@ -17,7 +17,7 @@
                     <Rock:Grid ID="gList" runat="server" AllowSorting="true" OnRowSelected="gList_Edit" DataKeyNames="Id" RowItemText="Assessment">
                         <Columns>
                             <Rock:DateTimeField DataField="AssessmentDateTime" ItemStyle-HorizontalAlign="Left" HeaderText="Assessment Date/Time" SortExpression="AssessmentDateTime" />
-                            <asp:BoundField DataField="AssessorPerson.FullName" HeaderText="Assessor" SortExpression="AssessorPerson.FullName" />
+                            <asp:BoundField DataField="AssessorPerson.FullName" HeaderText="Assessor" SortExpression="AssessorPerson.FirstName, AssessorPerson.LastName" />
                             <asp:BoundField DataField="OverallRating" HeaderText="Rating" SortExpression="OverallRating" />
                             <Rock:DeleteField OnClick="gList_Delete" />
                         </Columns>
