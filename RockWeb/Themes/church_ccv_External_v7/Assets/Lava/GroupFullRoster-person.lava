@@ -1,0 +1,67 @@
+<div class="col-sm-6 margin-b-md">
+  {% if LinkedPages.PersonDetailPage != '' %}
+    <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
+  {% endif %}
+  <div class="media">
+    <div class="pull-left">
+      <img src="{{ member.Person.PhotoUrl }}&height=180&width=180&mode=crop&scale=both" height="60" width="60" />
+      {% comment %} Badges {% endcomment %}
+      <div>
+        {% assign baptismDate = member.Person | Attribute: 'BaptismDate' %}
+        {% if baptismDate != '' %}
+          <i class="fa fa-tint text-info" data-toggle="tooltip" data-placement="bottom" title="Baptized on {{ baptismDate }}"></i>
+        {% endif %}
+        {% assign pendingBaptism = member.Person | Attribute: 'PendingBaptism' %}
+        {% if pendingBaptism != '' and pendingBaptism != 'No' %}
+          <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Pending Baptism"></i>
+        {% endif %}
+
+        {% assign startingPointDates = member.Person | GroupsAttended: '57' | Size %}
+        {% if startingPointDates > 0 %}
+          <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point"></i>
+        {% endif %}
+        {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
+        {% if pendingStartingPoint != '' %}
+          <i class="fa fa-map-marker text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
+        {% endif %}
+        {% assign groupMembers = member.Person | Groups: "23",'All' %}
+        {% assign activeCount = 0 %}
+        {% for groupMember in groupMembers %}
+          {% if groupMember.GroupMemberStatus == "Active" %}
+            {% assign activeCount = activeCount | Plus: 1 %}
+          {% endif %}
+        {% endfor %}
+        {% unless activeCount == 0 %}
+          <i class="fa fa-gear text-muted" data-toggle="tooltip" data-placement="bottom" title="Currently Serving"></i>
+        {% endunless %}
+      </div>
+    </div>
+    <div class="media-body">
+      <strong class="media-heading">{{ member.Person.FullName }}</strong> <small>({{ member.GroupRole.Name}})</small>
+      <div>
+        {% if member.Person.BirthDate %}
+          {{ member.Person.BirthDate | Date:'M/d/yyyy' }} <small>({{ member.Person.Age }} yrs. old)</small><br>
+        {% endif %}
+        {{ member.Person.Gender }}<br>
+        {% if member.Person.MaritalStatusValue.Value %}
+          {{ member.Person.MaritalStatusValue.Value }} {% if member.Person.AnniversaryDate %}<small>({{ member.Person.AnniversaryDate | Date:'M/d/yyyy' }})</small>{% endif %}<br>
+        {% endif %}
+
+        {% for phone in member.Person.PhoneNumbers %}
+        {{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small><br />
+        {% endfor %}
+
+        {% assign memberAddress =  member.Person | Address:'Home' %}
+        {% if memberAddress != '' %}
+        {{ member.Person | Address:'Home' }}<br />
+        {% endif %}
+
+        <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
+      </div>
+    </div>
+  </div>
+
+  {% if LinkedPages.PersonDetailPage != '' %}
+    </a>
+  {% endif %}
+</div>

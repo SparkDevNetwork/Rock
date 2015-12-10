@@ -131,64 +131,7 @@ REQUIRED VARIABLES
             <div class="row">
           {% endif %}
 
-          <div class="col-sm-6 margin-b-md rollover-container">
-            {% if LinkedPages.PersonDetailPage != '' %}
-              <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
-            {% endif %}
-            <img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" width="60" class="pull-left margin-r-sm" />
-            <div class="pull-left">
-              <strong>{{ member.Person.FullName }}</strong>
-              <small>({{ member.GroupRole.Name}})</small>
-
-              <br />
-              <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
-
-              <p>
-                {% assign baptismDate = member.Person | Attribute: 'BaptismDate' %}
-                {% if baptismDate != '' %}
-                  <i class="fa fa-tint text-info" data-toggle="tooltip" data-placement="bottom" title="Baptized on {{ baptismDate }}"></i>
-                {% endif %}
-                {% assign pendingBaptism = member.Person | Attribute: 'PendingBaptism' %}
-                {% if pendingBaptism != '' and pendingBaptism != 'No' %}
-                  <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Pending Baptism"></i>
-                {% endif %}
-
-                {% assign startingPointDates = member.Person | GroupsAttended: '57' | Size %}
-                {% if startingPointDates > 0 %}
-                  <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point"></i>
-                {% endif %}
-                {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
-                {% if pendingStartingPoint != '' %}
-                  <i class="fa fa-map-marker text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
-                {% endif %}
-                {% assign groupMembers = member.Person | Groups: "23",'All' %}
-                {% assign activeCount = 0 %}
-                {% for groupMember in groupMembers %}
-                  {% if groupMember.GroupMemberStatus == "Active" %}
-                    {% assign activeCount = activeCount | Plus: 1 %}
-                  {% endif %}
-                {% endfor %}
-                {% unless activeCount == 0 %}
-                  <i class="fa fa-gear text-muted" data-toggle="tooltip" data-placement="bottom" title="Currently Serving"></i>
-                {% endunless %}
-              </p>
-            </div>
-
-            {% if AllowedActions.Edit == true %}
-            <div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
-              <a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
-              <i class="fa fa-times"></i>
-              </a>
-              <a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
-              <i class="fa fa-pencil"></i>
-              </a>
-            </div>
-            {% endif %}
-
-            {% if LinkedPages.PersonDetailPage != '' %}
-              </a>
-            {% endif %}
-          </div>
+          {% include '~~/Assets/Lava/GroupDetail-person.lava' %}
 
           {% if loopcycle != 0 or icountPending == countPending %}
             </div>
@@ -221,64 +164,7 @@ REQUIRED VARIABLES
           <div class="row">
           {% endif %}
 
-          <div class="col-sm-6 margin-b-md rollover-container">
-            {% if LinkedPages.PersonDetailPage != '' %}
-              <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
-            {% endif %}
-            <img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" width="60" class="pull-left margin-r-sm" />
-            <div class="pull-left">
-              <strong>{{ member.Person.FullName }}</strong>
-              <small>({{ member.GroupRole.Name}})</small>
-
-              <br />
-              <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
-
-              <p>
-                {% assign baptismDate = member.Person | Attribute: 'BaptismDate' %}
-                {% if baptismDate != '' %}
-                  <i class="fa fa-tint text-info" data-toggle="tooltip" data-placement="bottom" title="Baptized on {{ baptismDate }}"></i>
-                {% endif %}
-                {% assign pendingBaptism = member.Person | Attribute: 'PendingBaptism' %}
-                {% if pendingBaptism != '' and pendingBaptism != 'No' %}
-                  <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Pending Baptism"></i>
-                {% endif %}
-
-                {% assign startingPointDates = member.Person | GroupsAttended: '57' | Size %}
-                {% if startingPointDates > 0 %}
-                  <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point"></i>
-                {% endif %}
-                {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
-                {% if pendingStartingPoint != '' %}
-                  <i class="fa fa-map-marker text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
-                {% endif %}
-                {% assign groupMembers = member.Person | Groups: "23",'All' %}
-                {% assign activeCount = 0 %}
-                {% for groupMember in groupMembers %}
-                  {% if groupMember.GroupMemberStatus == "Active" %}
-                    {% assign activeCount = activeCount | Plus: 1 %}
-                  {% endif %}
-                {% endfor %}
-                {% unless activeCount == 0 %}
-                  <i class="fa fa-gear text-muted" data-toggle="tooltip" data-placement="bottom" title="Currently Serving"></i>
-                {% endunless %}
-              </p>
-            </div>
-
-            {% if AllowedActions.Edit == true %}
-            <div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
-              <a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
-              <i class="fa fa-times"></i>
-              </a>
-              <a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
-              <i class="fa fa-pencil"></i>
-              </a>
-            </div>
-            {% endif %}
-
-            {% if LinkedPages.PersonDetailPage != '' %}
-              </a>
-            {% endif %}
-          </div>
+          {% include '~~/Assets/Lava/GroupDetail-person.lava' %}
 
           {% if loopcycle != 0 or icountActive == countActive %}
             </div>
@@ -309,64 +195,7 @@ REQUIRED VARIABLES
           <div class="row">
           {% endif %}
 
-          <div class="col-sm-6 margin-b-md rollover-container">
-            {% if LinkedPages.PersonDetailPage != '' %}
-              <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
-            {% endif %}
-            <img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" width="60" class="pull-left margin-r-sm" />
-            <div class="pull-left">
-              <strong>{{ member.Person.FullName }}</strong>
-              <small>({{ member.GroupRole.Name}})</small>
-
-              <br />
-              <a href="mailto:{{ member.Person.Email }}">{{ member.Person.Email }}</a>
-
-              <p>
-                {% assign baptismDate = member.Person | Attribute: 'BaptismDate' %}
-                {% if baptismDate != '' %}
-                  <i class="fa fa-tint text-info" data-toggle="tooltip" data-placement="bottom" title="Baptized on {{ baptismDate }}"></i>
-                {% endif %}
-                {% assign pendingBaptism = member.Person | Attribute: 'PendingBaptism' %}
-                {% if pendingBaptism != '' and pendingBaptism != 'No' %}
-                  <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Pending Baptism"></i>
-                {% endif %}
-
-                {% assign startingPointDates = member.Person | GroupsAttended: '57' | Size %}
-                {% if startingPointDates > 0 %}
-                  <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point"></i>
-                {% endif %}
-                {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
-                {% if pendingStartingPoint != '' %}
-                  <i class="fa fa-map-marker text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
-                {% endif %}
-                {% assign groupMembers = member.Person | Groups: "23",'All' %}
-                {% assign activeCount = 0 %}
-                {% for groupMember in groupMembers %}
-                  {% if groupMember.GroupMemberStatus == "Active" %}
-                    {% assign activeCount = activeCount | Plus: 1 %}
-                  {% endif %}
-                {% endfor %}
-                {% unless activeCount == 0 %}
-                  <i class="fa fa-gear text-muted" data-toggle="tooltip" data-placement="bottom" title="Currently Serving"></i>
-                {% endunless %}
-              </p>
-            </div>
-
-            {% if AllowedActions.Edit == true %}
-            <div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
-              <a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
-              <i class="fa fa-times"></i>
-              </a>
-              <a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
-              <i class="fa fa-pencil"></i>
-              </a>
-            </div>
-            {% endif %}
-
-            {% if LinkedPages.PersonDetailPage != '' %}
-              </a>
-            {% endif %}
-          </div>
+          {% include '~~/Assets/Lava/GroupDetail-person.lava' %}
 
           {% if loopcycle != 0 or icountInactive == countInactive %}
             </div>
@@ -414,7 +243,23 @@ REQUIRED VARIABLES
         groupMap.draw()
       }
     })
+
+    $(function () {
+      $('[data-toggle="popover"]').popover({
+        content: function() {
+          return $(this).find('.js-popup-content').html()
+        },
+        html: true
+      })
+    })
   </script>
+
+  <style>
+    .img-popover {
+      display: block;
+      cursor: pointer;
+    }
+  </style>
 
 {% else %}
   {% if Group.Id %}
