@@ -541,7 +541,7 @@ function(item) {
             bcAmount.TooltipFormatter = lcAmount.TooltipFormatter;
             bcAmount.DataSourceUrl = this.ResolveUrl( dataSourceUrl );
 
-            if ( pnlResults.Visible )
+            if ( pnlChart.Visible )
             {
                 var chartData = GetChartData();
                 var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
