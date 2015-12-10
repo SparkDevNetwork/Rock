@@ -70,7 +70,7 @@ namespace Rock.Field.Types
             cb.CheckedChanged += OnQualifierUpdated;
             cb.Label = "Allow HTML";
             cb.Text = "Yes";
-            cb.Help = "Controls whether server shold prevent HTML from being entered in this field or not.";
+            cb.Help = "Controls whether server should prevent HTML from being entered in this field or not.";
 
             return controls;
         }
@@ -84,7 +84,7 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( NUMBER_OF_ROWS, new ConfigurationValue( "Rows", "The number of rows to display (default is 3).", "" ) );
-            configurationValues.Add( ALLOW_HTML, new ConfigurationValue( "Allow HTML", "Controls whether server shold prevent HTML from being entered in this field or not.", "" ) );
+            configurationValues.Add( ALLOW_HTML, new ConfigurationValue( "Allow HTML", "Controls whether server should prevent HTML from being entered in this field or not.", "" ) );
 
             if ( controls != null )
             {
