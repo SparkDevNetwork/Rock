@@ -137,6 +137,7 @@ namespace Rock.Security
             using ( var rockContext = new RockContext() )
             {
                 Rock.Model.GroupService groupService = new Rock.Model.GroupService( rockContext );
+                Rock.Model.GroupMemberService groupMemberService = new Rock.Model.GroupMemberService( rockContext );
                 Rock.Model.Group groupModel = groupService.Get( id );
 
                 if ( groupModel != null && groupModel.IsSecurityRole == true )
@@ -146,10 +147,12 @@ namespace Rock.Security
                     role.Name = groupModel.Name;
                     role.People = new ConcurrentDictionary<Guid,bool>();
 
+                    var groupMembersQry = groupMemberService.Queryable().Where( a => a.GroupId == groupModel.Id );
+
                     // Add the members
-                    foreach ( var personGuid in groupModel.Members 
+                    foreach ( var personGuid in groupMembersQry
                         .Where( m => 
-                            m.Person != null &&
+                            m.PersonId != null &&
                             m.GroupMemberStatus == Model.GroupMemberStatus.Active )
                         .Select( m => m.Person.Guid )
                         .ToList()
