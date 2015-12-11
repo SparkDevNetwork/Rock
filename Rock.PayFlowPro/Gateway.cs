@@ -835,7 +835,6 @@ namespace Rock.PayFlowPro
                 var ach = paymentInfo as ACHPaymentInfo;
                 var ppBankAccount = new BankAcct( ach.BankAccountNumber, ach.BankRoutingNumber );
                 ppBankAccount.AcctType = ach.AccountType == BankAccountType.Checking ? "C" : "S";
-                ppBankAccount.Name = ach.BankName;
                 return new ACHTender( ppBankAccount );
             }
 
