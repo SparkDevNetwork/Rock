@@ -150,6 +150,8 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         /// </summary>
         private void LoadList()
         {
+            //try
+            //{
             // Build qry
             ParameterState.AddOrReplace( "DetailSource", RockPage.Guid.ToString() );
 
@@ -161,10 +163,11 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
             qry = qry.Where( g => g.IsPublic && g.IsActive && g.Members.Any( m => m.GroupRole.IsLeader == true ) );
 
-
-            if ( ParameterState["Campus"].AsIntegerOrNull() != null )
+            // You can't call the AsIntegerOrNull extension method in a LINQ query.
+            var campusId = ParameterState["Campus"].AsIntegerOrNull();
+            if ( campusId != null )
             {
-                qry = qry.Where( g => g.CampusId == ParameterState["Campus"].AsIntegerOrNull() );
+                qry = qry.Where( g => g.CampusId == campusId );
             }
 
             if ( !String.IsNullOrWhiteSpace( ParameterState["Days"] ) )
@@ -175,7 +178,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                     qry = qry.Where( g => daysList.Contains( g.Schedule.WeeklyDayOfWeek.Value ) );
                 }
             }
-            
+
             if ( !String.IsNullOrWhiteSpace( ParameterState["Children"] ) )
             {
                 List<String> childrenList = ParameterState["Children"].Split( ';' ).ToList();
@@ -207,6 +210,8 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 // {{ group.Image }}
                 GroupMember leader = group.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true );
 
+                // Consider changing the query to use the WhereAttributeValue LINQ extension method
+                // instead of loading attributes in a for loop.
                 group.LoadAttributes();
                 lifeGroupSummaries.Add( new LifeGroupSummary
                 {
@@ -238,6 +243,13 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 lDebug.Visible = false;
                 lDebug.Text = string.Empty;
             }
+            //}
+            //catch (Exception ex)
+            //{
+            //    nbError.Visible = true;
+            //    nbError.Text = "Sorry, something went wrong. We've recorded the details to our logs for future reference.";
+            //    LogException( ex );
+            //}
         }
 
         private Location GetPersonLocation( RockContext rockContext )

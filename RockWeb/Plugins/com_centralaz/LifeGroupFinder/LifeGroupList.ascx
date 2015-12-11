@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upnlGroupList" runat="server">
     <ContentTemplate>
-
+        <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false"></Rock:NotificationBox>
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i runat="server" id="iIcon"></i>
