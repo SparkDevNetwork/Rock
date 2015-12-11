@@ -43,8 +43,8 @@ namespace RockWeb.Plugins.com_CentralAZ.Utility
     // https://github.com/SparkDevNetwork/Rock/wiki/Block-Attributes
 
     [TextField( "Attribute Name", "Name of the person attribute where the number is stored.", true, "Envelope Number", "", 0 )]
-    [TextField( "Icon Class", "The icon class string (e.g., fa fa-plus-circle) to use on the assign button.", true, "fa fa-plus-circle", "", 1 )]
-
+    [TextField( "Attribute Key", "The Key of the attribute.", true, "EnvelopeNumber", "", 1 )]
+    [TextField( "Icon Class", "The icon class string (e.g., fa fa-plus-circle) to use on the assign button.", true, "fa fa-plus-circle", "", 2 )]
     public partial class AutoAssignNumber : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -140,8 +140,7 @@ namespace RockWeb.Plugins.com_CentralAZ.Utility
         /// <returns>true if they already have an assigned value; false otherwise</returns>
         private bool IsAttributeAssigned()
         {
-            string attributeName = GetAttributeValue( "AttributeName" );
-            string number = _person.GetAttributeValue( attributeName.Replace(" ", "" ) );
+            string number = _person.GetAttributeValue( GetAttributeValue( "AttributeKey" ) );
 
             return string.IsNullOrEmpty( number ) ? false : true;
         }
@@ -152,7 +151,7 @@ namespace RockWeb.Plugins.com_CentralAZ.Utility
         /// <returns>the number assigned or null</returns>
         private int? AssignNewNumber()
         {
-            string attributeKey = GetAttributeValue( "AttributeName" ).Replace( " ", "" );
+            string attributeKey = GetAttributeValue( "AttributeKey" );
             var thePersonAttribute = _person.Attributes.Values.Where( a => a.Key == attributeKey ).FirstOrDefault();
 
             if ( thePersonAttribute != null )
@@ -177,7 +176,6 @@ namespace RockWeb.Plugins.com_CentralAZ.Utility
             {
                 return null;
             }
-
         }
         #endregion
 }
