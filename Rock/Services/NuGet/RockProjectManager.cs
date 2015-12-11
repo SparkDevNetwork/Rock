@@ -96,12 +96,23 @@ namespace Rock.Services.NuGet
 
             try
             {
-                Directory.Delete( packageRestorePath, recursive: true );
+                try
+                {
+                    Directory.Delete( packageRestorePath, recursive: true );
+                }
+                catch ( IOException )
+                {
+                    // try one more time
+                    System.Threading.Thread.Sleep( 10 );
+                    if ( Directory.Exists( packageRestorePath ) )
+                    {
+                        Directory.Delete( packageRestorePath, recursive: true );
+                    }
+                }
             }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
-                ExceptionLogService.LogException( new Exception( string.Format( "Unable to delete package restore folder ({0}) after a successful update.", packageRestorePath ) ), System.Web.HttpContext.Current );
+                ExceptionLogService.LogException( new Exception( string.Format( "Note: Unable to delete the temporary package restore folder ({0}) after a successful update.", packageRestorePath ), ex ), System.Web.HttpContext.Current );
             }
         }
 
