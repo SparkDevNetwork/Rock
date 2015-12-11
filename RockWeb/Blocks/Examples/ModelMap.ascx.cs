@@ -126,6 +126,12 @@ namespace RockWeb.Blocks.Examples
                 if ( aClass.Methods.Any() )
                 {
                     sb.AppendLine( "<h2>Methods</h2><ul>" );
+
+                    if ( aClass.Methods.Where( m => m.IsInherited == false ).Count() == 0 )
+                    {
+                        sb.AppendLine( "<small class='text-muted'><i>all inherited</i></small>" );
+                    }
+
                     foreach ( var method in aClass.Methods.OrderBy( m => m.Name ) )
                     {
                         //<li data-expanded='false' data-model='Block' data-id='b{0}'><span>{1}{2}:{3}</span></li>{4}
@@ -137,6 +143,7 @@ namespace RockWeb.Blocks.Examples
                             method.IsInherited ? " (inherited)" : "",
                             Environment.NewLine );
                     }
+
                     sb.AppendLine( "</ul>" );
                 }
 
