@@ -72,7 +72,10 @@ namespace Rock.Rest.Controllers
             GroupMemberService groupMemberService = new GroupMemberService( (Rock.Data.RockContext)Service.Context );
             
             IQueryable<GroupMember> groupMembershipsQuery = groupMemberService.Queryable("Person,GroupRole,Group")
-                                        .Where(t => t.Group.GroupType.Guid == groupTypeGuid && t.PersonId == personId && t.GroupMemberStatus == GroupMemberStatus.Active )
+                                        .Where(t => t.Group.GroupType.Guid == groupTypeGuid 
+                                                && t.PersonId == personId 
+                                                && t.GroupMemberStatus == GroupMemberStatus.Active 
+                                                && t.Group.IsActive)
                                         .OrderBy(g => g.GroupRole.Order);
 
             foreach (GroupMember member in groupMembershipsQuery)
