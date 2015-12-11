@@ -595,27 +595,6 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Adds a new PageContext to the given page.
-        /// </summary>
-        /// <param name="pageGuid">The page GUID.</param>
-        /// <param name="entity">The entity.</param>
-        /// <param name="idParameter">The id parameter.</param>
-        [Obsolete( "Use UpdatePageContext" )]
-        public void AddPageContext( string pageGuid, string entity, string idParameter )
-        {
-            Migration.Sql( string.Format( @"
-
-                DECLARE @PageId int
-                SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
-
-                INSERT INTO [PageContext] (
-                    [IsSystem],[PageId],[Entity],[IdParameter],[Guid])
-                VALUES(
-                    1, @PageId, '{1}', '{2}', newid())
-", pageGuid, entity, idParameter ) );
-        }
-
-        /// <summary>
         /// Adds or Updates PageContext to the given page, entity, idParameter
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>

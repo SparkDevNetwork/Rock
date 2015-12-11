@@ -56,18 +56,6 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Loads the attributes.
-        /// </summary>
-        /// <exception cref="System.Exception">Gateway Component attributes are saved specific to the financial gateway, which requires that the current financial gateway is included in order to load or retrieve values. Use the LoadAttributes( FinancialGateway financialGateway ) method instead.</exception>
-        [Obsolete( "Use LoadAttributes( FinancialGateway financialGateway ) instead", true )]
-        public void LoadAttributes()
-        {
-            // Compiler should generate error if referencing this method, so exception should never be thrown
-            // but method is needed to "override" the extension method for IHasAttributes objects
-            throw new Exception( "Gateway Component attributes are saved specific to the financial gateway, which requires that the current financial gateway is included in order to load or retrieve values. Use the LoadAttributes( FinancialGateway financialGateway ) method instead." );
-        }
-
-        /// <summary>
         /// Loads the attributes for the financial gateway.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>

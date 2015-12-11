@@ -111,18 +111,6 @@ namespace Rock.PersonProfile
         }
 
         /// <summary>
-        /// Loads the attributes.
-        /// </summary>
-        /// <exception cref="System.Exception">Person Badge attributes are saved specific to the current badge, which requires that the current badge is included in order to load or retrieve values.  Use the LoadAttributes( PersonBadge badge ) method instead.</exception>
-        [Obsolete( "Use LoadAttributes( PersonBadge badge ) instead", true )]
-        public void LoadAttributes()
-        {
-            // Compiler should generate error if referencing this method, so exception should never be thrown
-            // but method is needed to "override" the extension method for IHasAttributes objects
-            throw new Exception( "Person Badge attributes are saved specific to the current badge, which requires that the current badge is included in order to load or retrieve values.  Use the LoadAttributes( PersonBadge badge ) method instead." );
-        }
-
-        /// <summary>
         /// Loads the attributes for the badge.  The attributes are loaded by the framework prior to executing the badge, 
         /// so typically Person Badges do not need to load the attributes
         /// </summary>

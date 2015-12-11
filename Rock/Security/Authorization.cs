@@ -229,43 +229,10 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        [Obsolete( "Use Authorized( ISecured, action, Person) instead. RockContext parameter is no longer needed." )]
-        public static bool Authorized( ISecured entity, string action, Rock.Model.Person person, RockContext rockContext )
-        {
-            return Authorized( entity, action, person );
-        }
-
-        /// <summary>
-        /// Evaluates whether a selected person is allowed to perform the selected action on the selected
-        /// entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, Rock.Model.Person person )
         {
             return ItemAuthorized( entity, action, person ) ?? entity.IsAllowedByDefault( action );
-        }
-
-        /// <summary>
-        /// Determines whether the specified entity is private. Entity is considered private if only the current user
-        /// has access.  In this scenario, the first rule would give current user access, and second rule would deny
-        /// all users.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified entity is private; otherwise, <c>false</c>.
-        /// </returns>
-        [Obsolete("Use IsPrivate( ISecured, string, Person ) instead. RockContext is no longer needed.")]
-        public static bool IsPrivate( ISecured entity, string action, Person person, RockContext rockContext )
-        {
-            return IsPrivate( entity, action, person );
         }
 
         /// <summary>
@@ -425,21 +392,6 @@ namespace Rock.Security
                     MyAllow( entity, action, null, group, SpecialRole.None, myRockContext );
                 }
             }
-        }
-
-
-        /// <summary>
-        /// Returns the authorization rules for the specified entity and action.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <param name="action">The action.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        [Obsolete("Use AuthRules( int, int, string ) instead. RockContext is no longer needed.")]
-        public static List<AuthRule> AuthRules( int entityTypeId, int entityId, string action, RockContext rockContext )
-        {
-            return AuthRules( entityTypeId, entityId, action );
         }
 
         /// <summary>

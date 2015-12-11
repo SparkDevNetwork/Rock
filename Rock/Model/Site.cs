@@ -266,31 +266,6 @@ namespace Rock.Model
         [DataMember]
         public int? PageViewRetentionPeriodDays { get; set; }
 
-        /// <summary>
-        /// Gets or sets the Site's Facebook AppId for utilizing the Facebook SDK.
-        /// </summary>
-        /// <remarks>
-        /// Each site that utilizes the Facebook SDK requires a different AppId. More info is available at http://developer.facebook.com
-        /// </remarks>
-        /// <value>
-        /// Facebook App Id.
-        /// </value>
-        [MaxLength( 25 )]
-        [DataMember]
-        [Obsolete( "Attribute value of Facebook Authentication provider are used instead." )]
-        public string FacebookAppId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the site's App Secret for the Facebook API
-        /// </summary>
-        /// <value>
-        /// Facebook App Secret.
-        /// </value>
-        [MaxLength( 50 )]
-        [DataMember]
-        [Obsolete( "Attribute value of Facebook Authentication provider are used instead." )]
-        public string FacebookAppSecret { get; set; }
-
         #endregion
 
         #region Virtual Properties

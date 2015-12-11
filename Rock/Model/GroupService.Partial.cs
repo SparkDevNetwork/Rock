@@ -391,19 +391,6 @@ namespace Rock.Model
 ", groupId ).FirstOrDefault();
 
         }
-        /// <summary>
-        /// Adds the person to a new family record
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="campusId">The campus identifier.</param>
-        /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
-        /// <returns></returns>
-        [Obsolete("Use PersonService.SaveNewPerson() instead!")]
-        public static Group SaveNewFamily( RockContext rockContext, Person person, int? campusId, bool savePersonAttributes )
-        {
-            return PersonService.SaveNewPerson( person, rockContext, campusId, savePersonAttributes );
-        }
 
         /// <summary>
         /// Groups the members not meeting requirements.
