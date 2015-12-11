@@ -46,7 +46,7 @@
 {% assign thuTitle = "Thursday 12/24" %}
 
 {% capture allTimes %}
-We're going to CCV for Christmas services this year. Would you like to join us? Below are all the service times this year for the {{ CurrentCampus }} Campus.\n
+I'm going to CCV for Christmas services this year. Would you like to join me? Below are all the service times this year for the {{ CurrentCampus }} Campus.\n
 {% if tueTimes %}
 \n{{ tueTitle }}\n
 {% for time in tueTimes %} - {{time}}\n{% endfor %}
@@ -64,17 +64,17 @@ We're going to CCV for Christmas services this year. Would you like to join us? 
 
 {% comment %}{{ Context.Campus.ShortCode }}{% endcomment %}
 
-{% assign emailSubject = 'Join us for Christmas service at CCV' %}
+{% assign emailSubject = 'Join me for Christmas service at CCV' %}
 {% assign emailSubjectEscaped = emailSubject | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
 
 {% comment %}{% assign emailBodyHeader = "" %}{% endcomment %}
-{% capture emailBodyHeader %}We're going to CCV for Christmas services this year on the {{ CurrentCampus }} Campus. Would you like to join us?\n\nWe'll be attending the {% endcapture %}
+{% capture emailBodyHeader %}I'm going to CCV for Christmas services this year on the {{ CurrentCampus }} Campus. Would you like to join me?\n\nI'll be attending the {% endcapture %}
 {% assign emailBodyHeaderEscaped = emailBodyHeader | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
 
-{% capture smsP1 %}Come to Christmas at CCV with us! We'll be going to the {% endcapture %}
+{% capture smsP1 %}Come to Christmas at CCV with us! I'll be going to the {% endcapture %}
 {% assign smsP1Escaped = smsP1 | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
 
-{% capture smsP2 %} at the {{ CurrentCampus }} campus. You should join us! http://ccvchristmas.com{% endcapture %}
+{% capture smsP2 %} at the {{ CurrentCampus }} campus. You should join me! http://ccvchristmas.com{% endcapture %}
 {% assign smsP2Escaped = smsP2 | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
 
 {% capture url %}http://ccvchristmas.com{% endcapture %}
@@ -82,7 +82,7 @@ We're going to CCV for Christmas services this year. Would you like to join us? 
 
 
 
-{% capture smsAll %}We're going to Christmas service at CCV on the {{ CurrentCampus }} campus. Would you like to join us? Check out the service times at http://ccvchristmas.com and let's plan to go together!{% endcapture %}
+{% capture smsAll %}I'm going to Christmas service at CCV on the {{ CurrentCampus }} campus. Would you like to join me? Check out the service times at http://ccvchristmas.com and let's plan to go together!{% endcapture %}
 {% assign smsAllEscaped = smsAll | Replace: ' ', '%20' | Replace: '&', '%26' | Replace: '?', '%3F' | Replace: '!', '%21' | Replace: ',', '%2C' | Replace: "'", "%27" | Replace: '/', '%2F' | Replace: '\n', '%0D%0A' %}
 
 {% case Platform %}
