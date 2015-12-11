@@ -556,24 +556,7 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         #region Event Handlers
-
-        /// <summary>
-        /// Occurs when Person merge action is clicked.
-        /// </summary>
-        [Obsolete("Use PersonMergeClick instead")]
-        public event EventHandler MergeClick
-        {
-            add
-            {
-                PersonMergeClick += value;
-            }
-
-            remove
-            {
-                PersonMergeClick -= value;
-            }
-        }
-               
+    
         /// <summary>
         /// Occurs when Person merge action is clicked.
         /// </summary>

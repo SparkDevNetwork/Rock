@@ -65,18 +65,6 @@ namespace Rock.Workflow
         public abstract Boolean Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages );
 
         /// <summary>
-        /// Loads the attributes.
-        /// </summary>
-        /// <exception cref="System.Exception">Workflow Action attributes are saved specific to the current action, which requires that the current action is included in order to load or retrieve values.  Use the LoadAttributes( WorkflowAction action ) method instead.</exception>
-        [Obsolete("Use LoadAttributes( WorkflowAction action ) instead", true)]
-        public void LoadAttributes()
-        {
-            // Compiler should generate error if referencing this method, so exception should never be thrown
-            // but method is needed to "override" the extension method for IHasAttributes objects
-            throw new Exception( "Workflow Action attributes are saved specific to the current action, which requires that the current action is included in order to load or retrieve values.  Use the LoadAttributes( WorkflowAction action ) method instead." );
-        }
-
-        /// <summary>
         /// Loads the attributes for the action.  The attributes are loaded by the framework prior to executing the action, 
         /// so typically workflow actions do not need to load the attributes
         /// </summary>

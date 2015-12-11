@@ -233,17 +233,6 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Returns all event calendars
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        [Obsolete( "Use All() method instead. RockContext parameter is no longer needed." )]
-        public static List<EventCalendarCache> All( RockContext rockContext )
-        {
-            return All();
-        }
-
-        /// <summary>
-        /// Returns all event calendars
-        /// </summary>
         /// <returns></returns>
         public static List<EventCalendarCache> All()
         {

@@ -37,21 +37,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class GroupsController
     {
-        /// <summary>
-        /// Gets the children (obsolete, use the other GetChildren method)
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="rootGroupId">The root group id.</param>
-        /// <param name="limitToSecurityRoleGroups">if set to <c>true</c> [limit to security role groups].</param>
-        /// <param name="groupTypeIds">The group type ids.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Groups/GetChildren/{id}/{rootGroupId}/{limitToSecurityRoleGroups}/{groupTypeIds}" )]
-        [Obsolete( "use the other GetChildren" )]
-        public IQueryable<TreeViewItem> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, string groupTypeIds )
-        {
-            return GetChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIds, "" );
-        }
 
         /// <summary>
         /// Gets the children.
@@ -392,27 +377,6 @@ namespace Rock.Rest.Controllers
             // manually apply any OData parameters to the InMemory Query
             var qryResults = queryOptions.ApplyTo( fenceGroups.AsQueryable() );
             return qryResults;
-        }
-
-        /// <summary>
-        /// Saves a group address.
-        /// </summary>
-        /// <param name="groupId">The group identifier.</param>
-        /// <param name="locationTypeId">The location type identifier.</param>
-        /// <param name="street1">The street1.</param>
-        /// <param name="city">The city.</param>
-        /// <param name="state">The state.</param>
-        /// <param name="postalCode">The postal code.</param>
-        /// <param name="country">The country.</param>
-        /// <param name="street2">The street2.</param>
-        [Authenticate, Secured]
-        [HttpPut]
-        [System.Web.Http.Route( "api/Groups/SaveAddress/{groupId}/{locationTypeId}/{street1}/{city}/{state}/{postalCode}/{country}" )]
-        [Obsolete( "Use ~api/Groups/SaveAddress/{groupId}/{locationTypeId}?street1={street1}&city={city}&state={state}&postalCode={postalCode}&country={country}" )]
-        public virtual void SaveAddress2( int groupId, int locationTypeId,
-            string street1, string city, string state, string postalCode, string country, string street2 = ""  )
-        {
-            this.SaveAddress( groupId, locationTypeId, street1, street2, city, state, postalCode, country );
         }
 
         /// <summary>
