@@ -16,6 +16,7 @@
 //
 using System;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
@@ -159,7 +160,16 @@ namespace RockWeb.Plugins.com_CentralAZ.Utility
                 // Get the highest value stored in this attribute.
                 int maxValue = 0;
                 RockContext rockContext = new RockContext();
-                var maxValueString = new AttributeValueService( rockContext ).Queryable().Where( a => a.AttributeId == thePersonAttribute.Id ).OrderByDescending( av => av.Value ).FirstOrDefault();
+                // We're doing those odd order by's below because the Value is a string datatype.
+                // That means in descending order, 999 would come before 3200 (for example).
+                // ordering by the length first and then the value gets around this problem
+                // in a way that's legal for LINQ to Entities.
+                var maxValueString = new AttributeValueService( rockContext ).Queryable().AsNoTracking()
+                    .Where( a => a.AttributeId == thePersonAttribute.Id )
+                    .Where( av => av.Value != null && ! av.Value.Equals( string.Empty ) )
+                    .OrderByDescending( av => av.Value.Length )
+                    .ThenByDescending( av => av.Value ).FirstOrDefault();
+
                 if ( maxValueString != null && ! string.IsNullOrEmpty( maxValueString.Value ) )
                 {
                     maxValue = maxValueString.Value.AsInteger();
