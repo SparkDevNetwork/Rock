@@ -1847,6 +1847,11 @@ namespace Rock.Lava
             var person = GetPerson( input );
             int? numericalGroupId = groupId.AsIntegerOrNull();
 
+            if (string.IsNullOrWhiteSpace( status ) )
+            {
+                status = 'All';
+            }
+
             if ( person != null && numericalGroupId.HasValue )
             {
                 var groupQuery = new GroupMemberService( GetRockContext( context ) )
