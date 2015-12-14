@@ -2025,6 +2025,8 @@ namespace RockWeb.Blocks.Event
         private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId,
             Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId )
         {
+            int? familyId = null;
+
             if ( person.Id > 0 )
             {
                 rockContext.SaveChanges();
@@ -2033,6 +2035,7 @@ namespace RockWeb.Blocks.Event
                 var family = person.GetFamilies( rockContext ).FirstOrDefault();
                 if ( family != null )
                 {
+                    familyId = family.Id;
                     multipleFamilyGroupIds.AddOrIgnore( familyGuid, family.Id );
                     if ( !singleFamilyId.HasValue )
                     {
@@ -2053,32 +2056,11 @@ namespace RockWeb.Blocks.Event
                     var age = person.Age;
                     int familyRoleId = age.HasValue && age < 18 ? childRoleId : adultRoleId;
 
-                    int familyId = RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask ?
+                    familyId = RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask ?
                         multipleFamilyGroupIds[familyGuid] :
                         singleFamilyId.Value;
                     PersonService.AddPersonToFamily( person, true, multipleFamilyGroupIds[familyGuid], familyRoleId, rockContext );
 
-                    if ( location != null )
-                    {
-                        var homeLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
-                        if ( homeLocationType != null )
-                        {
-                            var familyGroup = new GroupService( rockContext ).Get( familyId );
-
-                            // Do not update existing location on an existing family ( only update when creating new family or location doesn't already exist )
-                            if ( familyGroup != null && !familyGroup.GroupLocations
-                                .Any( l =>
-                                    l.GroupLocationTypeValueId.HasValue &&
-                                    l.GroupLocationTypeValueId.Value == homeLocationType.Id ) )
-                            {
-                                GroupService.AddNewFamilyAddress(
-                                    rockContext,
-                                    familyGroup,
-                                    Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-                                    location.Street1, location.Street2, location.City, location.State, location.PostalCode, location.Country );
-                            }
-                        }
-                    }
                 }
 
                 // otherwise create a new family
@@ -2088,14 +2070,7 @@ namespace RockWeb.Blocks.Event
                     var familyGroup = PersonService.SaveNewPerson( person, rockContext, campusId, false );
                     if ( familyGroup != null )
                     {
-                        if ( location != null )
-                        {
-                            GroupService.AddNewFamilyAddress(
-                                rockContext,
-                                familyGroup,
-                                Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-                                location.Street1, location.Street2, location.City, location.State, location.PostalCode, location.Country );
-                        }
+                        familyId = familyGroup.Id;
 
                         // Store the family id for next person 
                         multipleFamilyGroupIds.AddOrIgnore( familyGuid, familyGroup.Id );
@@ -2103,6 +2078,24 @@ namespace RockWeb.Blocks.Event
                         {
                             singleFamilyId = familyGroup.Id;
                         }
+                    }
+                }
+            }
+
+
+            if ( familyId.HasValue && location != null )
+            {
+                var homeLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                if ( homeLocationType != null )
+                {
+                    var familyGroup = new GroupService( rockContext ).Get( familyId.Value );
+                    if ( familyGroup != null )
+                    {
+                        GroupService.AddNewFamilyAddress(
+                            rockContext,
+                            familyGroup,
+                            Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+                            location.Street1, location.Street2, location.City, location.State, location.PostalCode, location.Country, true );
                     }
                 }
             }
