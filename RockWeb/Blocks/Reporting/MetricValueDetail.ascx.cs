@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Reporting
             metricValue.XValue = tbXValue.Text;
             metricValue.YValue = tbYValue.Text.AsDecimalOrNull();
             metricValue.Note = tbNote.Text;
-            metricValue.MetricValueDateTime = dpMetricValueDateTime.SelectedDate;
+            metricValue.MetricValueDateTime = dpMetricValueDateTime.SelectedDateTime;
 
             // Get EntityId from EntityType UI controls
             var metricEntityType = EntityTypeCache.Read( metricValue.Metric.EntityTypeId ?? 0 );
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Reporting
             tbYValue.Text = metricValue.YValue.ToString();
             hfMetricId.Value = metricValue.MetricId.ToString();
             tbNote.Text = metricValue.Note;
-            dpMetricValueDateTime.SelectedDate = metricValue.MetricValueDateTime;
+            dpMetricValueDateTime.SelectedDateTime = metricValue.MetricValueDateTime;
 
             var metricEntityType = EntityTypeCache.Read( metricValue.Metric.EntityTypeId ?? 0 );
 
