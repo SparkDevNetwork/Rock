@@ -28,6 +28,9 @@
                 content: "Bingo. You're free to drop.";
                 font-size: 1.2em;
             }
+            .dz-progress {
+                visibility: hidden;
+            }
 </style>
 <asp:UpdatePanel runat="server" ID="upnlHtmlContent" ChildrenAsTriggers="false" UpdateMode="Conditional">
     <ContentTemplate>
