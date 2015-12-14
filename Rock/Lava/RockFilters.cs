@@ -1849,7 +1849,7 @@ namespace Rock.Lava
 
             if (string.IsNullOrWhiteSpace( status ) )
             {
-                status = 'All';
+                status = "All";
             }
 
             if ( person != null && numericalGroupId.HasValue )
