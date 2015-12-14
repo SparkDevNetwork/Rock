@@ -1831,9 +1831,9 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            foreach( var form in RegistrationTemplateState.Forms )
+            foreach( var form in RegistrationTemplateState.Forms.OrderBy( f => f.Order ) )
             {
-                foreach( var field in form.Fields )
+                foreach( var field in form.Fields.OrderBy( f => f.Order ) )
                 {
                     var fieldControl = BuildRegistrantFieldControl( field, registrant, setValues );
                     if ( fieldControl != null )
@@ -1958,7 +1958,7 @@ namespace RockWeb.Blocks.Event
 
                         case RegistrationPersonFieldType.Address:
                             {
-                                var location = fieldValue.ToString().FromJsonOrNull<Location>();
+                                var location = fieldValue.ToString();
                                 rlField.Text = location != null ? location.ToString() : string.Empty;
                                 break;
                             }
