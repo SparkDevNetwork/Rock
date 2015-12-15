@@ -425,17 +425,21 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
 
             List<Person> filtered = contributorsPersons.Where( cp => !x.Contains( cp.Id ) ).ToList();
 
-            if ( administrateEnabled )
-            {
-                ddlContributors.DataSource = filtered;
-            }
-            else
-            {
-                filtered = filtered.Where( f => f.Id == CurrentPerson.Id ).ToList();
-                ddlContributors.DataSource = filtered;
-            }
+            // For now, we're just going to show all contributors to any contributor
+            // ----------------------------------------------------------------
+            //if ( administrateEnabled )
+            //{
+            //    ddlContributors.DataSource = filtered;
+            //}
+            //else
+            //{
+            //    filtered = filtered.Where( f => f.Id == CurrentPerson.Id ).ToList();
+            //    ddlContributors.DataSource = filtered;
+            //}
+            ddlContributors.DataSource = filtered;
 
             ddlContributors.DataBind();
+            ddlContributors.SetValue( CurrentPerson.Id.ToStringSafe() );
         }
 
         /// <summary>

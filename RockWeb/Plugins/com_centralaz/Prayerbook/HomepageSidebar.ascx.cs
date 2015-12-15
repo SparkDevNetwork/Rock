@@ -182,26 +182,31 @@ namespace RockWeb.Plugins.com_centralaz.Prayerbook
             var book = new GroupService( new RockContext() ).Get( bookId );
             List<GroupMember> entries = book.Members.ToList();
 
-            //if the current person can Administrate
-            if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
-            {
-                //set datasource for grid
-                gBookEntries.DataSource = entries;// entries;
-            }
-            //if the current person and only EDIT
-            else if ( IsUserAuthorized( Authorization.EDIT ) )
-            {
-                //filter entry list for current person only
-                entries = ( entries.Where( e => e.PersonId == CurrentPerson.Id ) ).ToList();
+            // For now, we're just going to show all entries to all contributors
+            // -----------------------------------------------------------------
 
-                //set datasource for grid
-                gBookEntries.DataSource = entries;
+            ////if the current person can Administrate
+            //if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
+            //{
+            //    //set datasource for grid
+            //    gBookEntries.DataSource = entries;// entries;
+            //}
+            ////if the current person and only EDIT
+            //else if ( IsUserAuthorized( Authorization.EDIT ) )
+            //{
+            //    //filter entry list for current person only
+            //    entries = ( entries.Where( e => e.PersonId == CurrentPerson.Id ) ).ToList();
 
-                if ( entries.Count > 0 )
-                {
-                    bbtnAddNewRequest.Enabled = false;
-                }
-            }
+            //    //set datasource for grid
+            //    gBookEntries.DataSource = entries;
+
+            //    if ( entries.Count > 0 )
+            //    {
+            //        bbtnAddNewRequest.Enabled = false;
+            //    }
+            //}
+
+            gBookEntries.DataSource = entries;
 
             //bind the data for the grid
             gBookEntries.DataBind();
