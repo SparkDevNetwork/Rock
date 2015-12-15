@@ -34,7 +34,6 @@ using Rock.Communication;
 namespace com.centralaz.Calendar.Jobs
 {
     [LinkedPage( "Registration Details Page", "The page that the link directs the user to.", true )]
-    [IntegerField( "RegistrationId", "An optional attribute that allwos the job to be run on a single registration", false )]
     [SystemEmailField( "Request Registration Details Email", "The system email to send.", true )]
     [DisallowConcurrentExecution]
     public class RequestRegistrationDetails : IJob
@@ -60,210 +59,204 @@ namespace com.centralaz.Calendar.Jobs
 
             var qry = registrationService.Queryable();
 
-            int? registrationId = dataMap.GetString( "RegistrationId" ).AsIntegerOrNull();
-            if ( registrationId.HasValue )
+            SystemEmailService emailService = new SystemEmailService( rockContext );
+
+            SystemEmail systemEmail = null;
+            Guid? systemEmailGuid = dataMap.GetString( "RequestRegistrationDetailsEmail" ).AsGuidOrNull();
+            var recipients = new List<RecipientData>();
+
+            if ( systemEmailGuid != null )
             {
-                qry = qry.Where( r => r.Id == registrationId.Value );
+                systemEmail = emailService.Get( systemEmailGuid.Value );
             }
 
-            Guid? updatePageGuid = dataMap.GetString( "RegistrationDetailsPage" ).AsGuidOrNull();
-            if ( updatePageGuid != null )
+            if ( systemEmail != null )
             {
-                int? pageId = ( new PageService( new RockContext() ).Get( updatePageGuid.Value ) ).Id;
-                if ( pageId != null )
+                Guid? updatePageGuid = dataMap.GetString( "RegistrationDetailsPage" ).AsGuidOrNull();
+                if ( updatePageGuid != null )
                 {
-                    foreach ( var registration in qry.ToList() )
+                    int? pageId = ( new PageService( new RockContext() ).Get( updatePageGuid.Value ) ).Id;
+                    if ( pageId != null )
                     {
-                        foreach ( var registrant in registration.Registrants )
+                        foreach ( var registration in qry.ToList() )
                         {
-                            bool additionalDetails = false;
-
-                            // Set any of the template's person fields
-                            foreach ( var field in registration.RegistrationInstance.RegistrationTemplate.Forms
-                                .SelectMany( f => f.Fields
-                                    .Where( t => t.FieldSource == RegistrationFieldSource.PersonField && t.IsRequired ) ) )
+                            foreach ( var registrant in registration.Registrants )
                             {
+                                bool additionalDetails = false;
 
-                                switch ( field.PersonFieldType )
+                                var person = registrant.Person;
+
+                                // Set any of the template's person fields
+                                foreach ( var field in registration.RegistrationInstance.RegistrationTemplate.Forms
+                                    .SelectMany( f => f.Fields
+                                        .Where( t => t.FieldSource == RegistrationFieldSource.PersonField && t.IsRequired ) ) )
                                 {
-                                    case RegistrationPersonFieldType.Campus:
-                                        {
-                                            if ( registrant.Person.GetCampus() == null )
-                                            {
-                                                additionalDetails = true;
-                                            }
-                                            break;
-                                        }
 
-                                    case RegistrationPersonFieldType.Address:
-                                        {
-                                            if ( registrant.Person.GetHomeLocation() == null )
-                                            {
-                                                additionalDetails = true;
-                                            }
-                                            break;
-                                        }
-
-                                    case RegistrationPersonFieldType.Birthdate:
-                                        {
-                                            if ( !registrant.Person.BirthDate.HasValue )
-                                            {
-                                                additionalDetails = true;
-                                            }
-                                            break;
-                                        }
-
-                                    case RegistrationPersonFieldType.Gender:
-                                        {
-                                            if ( registrant.Person.Gender == null )
-                                            {
-                                                additionalDetails = true;
-                                            }
-                                            break;
-                                        }
-
-                                    case RegistrationPersonFieldType.MaritalStatus:
-                                        {
-                                            if ( registrant.Person.MaritalStatusValue == null )
-                                            {
-                                                additionalDetails = true;
-                                            }
-                                            break;
-                                        }
-
-                                    case RegistrationPersonFieldType.MobilePhone:
-                                        {
-                                            if ( registrant.Person.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).FirstOrDefault() == null )
-                                            {
-                                                additionalDetails = true;
-                                            }
-                                            break;
-                                        }
-
-                                    case RegistrationPersonFieldType.HomePhone:
-                                        {
-                                            if ( registrant.Person.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).FirstOrDefault() == null )
-                                            {
-                                                additionalDetails = true;
-                                            } break;
-                                        }
-
-                                    case RegistrationPersonFieldType.WorkPhone:
-                                        {
-                                            if ( registrant.Person.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() ).FirstOrDefault() == null )
-                                            {
-                                                additionalDetails = true;
-                                            } break;
-                                        }
-                                }
-                            }
-
-                            // Set any of the template's person fields
-                            foreach ( var field in registration.RegistrationInstance.RegistrationTemplate.Forms
-                                .SelectMany( f => f.Fields
-                                    .Where( t =>
-                                        t.FieldSource == RegistrationFieldSource.PersonAttribute &&
-                                        t.AttributeId.HasValue &&
-                                        t.IsRequired ) ) )
-                            {
-
-                                var attribute = AttributeCache.Read( field.AttributeId.Value );
-                                if ( attribute != null )
-                                {
-                                    string originalValue = registrant.Person.GetAttributeValue( attribute.Key );
-                                    if ( String.IsNullOrWhiteSpace( originalValue ) )
+                                    switch ( field.PersonFieldType )
                                     {
-                                        additionalDetails = true;
+                                        case RegistrationPersonFieldType.Campus:
+                                            {
+                                                if ( person.GetCampus() == null )
+                                                {
+                                                    additionalDetails = true;
+                                                }
+                                                break;
+                                            }
+
+                                        case RegistrationPersonFieldType.Address:
+                                            {
+                                                if ( person.GetHomeLocation() == null )
+                                                {
+                                                    additionalDetails = true;
+                                                }
+                                                break;
+                                            }
+
+                                        case RegistrationPersonFieldType.Birthdate:
+                                            {
+                                                if ( !person.BirthDate.HasValue )
+                                                {
+                                                    additionalDetails = true;
+                                                }
+                                                break;
+                                            }
+
+                                        case RegistrationPersonFieldType.Gender:
+                                            {
+                                                if ( person.Gender == Gender.Unknown )
+                                                {
+                                                    additionalDetails = true;
+                                                }
+                                                break;
+                                            }
+
+                                        case RegistrationPersonFieldType.MaritalStatus:
+                                            {
+                                                if ( person.MaritalStatusValue == null )
+                                                {
+                                                    additionalDetails = true;
+                                                }
+                                                break;
+                                            }
+
+                                        case RegistrationPersonFieldType.MobilePhone:
+                                            {
+                                                if ( person.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).FirstOrDefault() == null )
+                                                {
+                                                    additionalDetails = true;
+                                                }
+                                                break;
+                                            }
+
+                                        case RegistrationPersonFieldType.HomePhone:
+                                            {
+                                                if ( person.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).FirstOrDefault() == null )
+                                                {
+                                                    additionalDetails = true;
+                                                } break;
+                                            }
+
+                                        case RegistrationPersonFieldType.WorkPhone:
+                                            {
+                                                if ( person.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() ).FirstOrDefault() == null )
+                                                {
+                                                    additionalDetails = true;
+                                                } break;
+                                            }
                                     }
                                 }
-                            }
 
-                            if ( registration.Group != null )
-                            {
-                                var groupMember = registration.Group.Members.Where( m => m.PersonId == registrant.Person.Id ).FirstOrDefault();
-                                if ( groupMember != null )
+                                person.LoadAttributes();
+
+                                // Set any of the template's person fields
+                                foreach ( var field in registration.RegistrationInstance.RegistrationTemplate.Forms
+                                    .SelectMany( f => f.Fields
+                                        .Where( t =>
+                                            t.FieldSource == RegistrationFieldSource.PersonAttribute &&
+                                            t.AttributeId.HasValue &&
+                                            t.IsRequired ) ) )
                                 {
-                                    groupMember.LoadAttributes();
 
-                                    foreach ( var field in registration.RegistrationInstance.RegistrationTemplate.Forms
-                                        .SelectMany( f => f.Fields
-                                            .Where( t =>
-                                                t.FieldSource == RegistrationFieldSource.GroupMemberAttribute &&
-                                                t.AttributeId.HasValue ) ) )
+                                    var attribute = AttributeCache.Read( field.AttributeId.Value );
+                                    if ( attribute != null )
                                     {
-                                        var attribute = AttributeCache.Read( field.AttributeId.Value );
-                                        if ( attribute != null )
+                                        string originalValue = person.GetAttributeValue( attribute.Key );
+                                        if ( String.IsNullOrWhiteSpace( originalValue ) )
                                         {
-                                            string originalValue = groupMember.GetAttributeValue( attribute.Key );
-                                            if ( String.IsNullOrWhiteSpace( originalValue ) )
-                                            {
-                                                additionalDetails = true;
-                                            }
+                                            additionalDetails = true;
                                         }
                                     }
                                 }
 
-                            }
-
-                            // Set any of the template's registrant attributes
-                            registrant.LoadAttributes();
-                            foreach ( var field in registration.RegistrationInstance.RegistrationTemplate.Forms
-                                .SelectMany( f => f.Fields
-                                    .Where( t =>
-                                        t.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
-                                        t.AttributeId.HasValue ) ) )
-                            {
-                                var attribute = AttributeCache.Read( field.AttributeId.Value );
-                                if ( attribute != null )
+                                if ( registration.Group != null )
                                 {
-                                    string originalValue = registrant.GetAttributeValue( attribute.Key );
-                                    if ( String.IsNullOrWhiteSpace( originalValue ) )
+                                    var groupMember = registration.Group.Members.Where( m => m.PersonId == person.Id ).FirstOrDefault();
+                                    if ( groupMember != null )
                                     {
-                                        additionalDetails = true;
+                                        groupMember.LoadAttributes();
+
+                                        foreach ( var field in registration.RegistrationInstance.RegistrationTemplate.Forms
+                                            .SelectMany( f => f.Fields
+                                                .Where( t =>
+                                                    t.FieldSource == RegistrationFieldSource.GroupMemberAttribute &&
+                                                    t.AttributeId.HasValue ) ) )
+                                        {
+                                            var attribute = AttributeCache.Read( field.AttributeId.Value );
+                                            if ( attribute != null )
+                                            {
+                                                string originalValue = groupMember.GetAttributeValue( attribute.Key );
+                                                if ( String.IsNullOrWhiteSpace( originalValue ) )
+                                                {
+                                                    additionalDetails = true;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                }
+
+                                // Set any of the template's registrant attributes
+                                registrant.LoadAttributes();
+                                foreach ( var field in registration.RegistrationInstance.RegistrationTemplate.Forms
+                                    .SelectMany( f => f.Fields
+                                        .Where( t =>
+                                            t.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
+                                            t.AttributeId.HasValue ) ) )
+                                {
+                                    var attribute = AttributeCache.Read( field.AttributeId.Value );
+                                    if ( attribute != null )
+                                    {
+                                        string originalValue = registrant.GetAttributeValue( attribute.Key );
+                                        if ( String.IsNullOrWhiteSpace( originalValue ) )
+                                        {
+                                            additionalDetails = true;
+                                        }
                                     }
                                 }
-                            }
 
-                            if ( additionalDetails )
-                            {
-                                SystemEmailService emailService = new SystemEmailService( rockContext );
-
-                                SystemEmail systemEmail = null;
-                                Guid? systemEmailGuid = dataMap.GetString( "RequestRegistrationDetailsEmail" ).AsGuidOrNull();
-
-                                if ( systemEmailGuid != null )
+                                if ( additionalDetails )
                                 {
-                                    systemEmail = emailService.Get( systemEmailGuid.Value );
+                                    var mergeFields = new Dictionary<string, object>();
+                                    mergeFields.Add( "Registrant", registrant );
+                                    mergeFields.Add( "Registration", registration );
+
+                                    Byte[] b = System.Text.Encoding.UTF8.GetBytes( registrant.Email );
+                                    string encodedEmail = Convert.ToBase64String( b );
+
+                                    String relativeUrl = String.Format( "page/{0}?RegistrationId={1}&Guid={2}&Key={3}", pageId, registration.Id, registration.Guid, encodedEmail );
+
+                                    mergeFields.Add( "MagicUrl", relativeUrl );
+
+                                    var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                                    globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+
+                                    recipients.Add( new RecipientData( registrant.Email, mergeFields ) );
                                 }
-
-                                if ( systemEmail == null )
-                                {
-                                    // no email specified, so nothing to do
-                                }
-
-                                var recipients = new List<RecipientData>();
-
-                                var mergeFields = new Dictionary<string, object>();
-                                mergeFields.Add( "Registrant", registrant );
-                                mergeFields.Add( "Registration", registration );
-
-                                Byte[] b = System.Text.Encoding.UTF8.GetBytes( registrant.Email );
-                                string encodedEmail = Convert.ToBase64String( b );
-
-                                String relativeUrl = String.Format( "page/{0}?Guid={1}&Key={2}", pageId, registration.Guid, encodedEmail );
-
-                                mergeFields.Add( "MagicUrl", relativeUrl );
-
-                                var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                                globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-
-                                recipients.Add( new RecipientData( registrant.Email, mergeFields ) );
-
-
-                                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
-                                Email.Send( systemEmail.Guid, recipients, appRoot );
                             }
                         }
+
+                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                        Email.Send( systemEmail.Guid, recipients, appRoot );
                     }
                 }
             }
