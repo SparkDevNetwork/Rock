@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ImportPeople.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.LifeGroupFinder.ImportPeople" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ImportPeople.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.Utility.ImportPeople" %>
 <asp:Panel ID="pnlContent" runat="server">
     <div class="panel panel-block">
         <div class="panel panel-heading">
@@ -8,11 +8,14 @@
             <asp:Wizard ID="Wizard1" runat="server" ActiveStepIndex="0"
                 OnFinishButtonClick="Wizard1_FinishButtonClick"
                 StartNextButtonStyle-CssClass="btn btn-default"
-                FinishCompleteButtonStyle-CssClass="btn btn-primary"
-                StepNextButtonStyle-CssClass="btn btn-default"
-                StepPreviousButtonStyle-CssClass="btn btn-default" SideBarStyle-VerticalAlign="Top"
+                FinishCompleteButtonStyle-CssClass="btn btn-primary margin-l-md"
+                StepNextButtonStyle-CssClass="btn btn-default  margin-l-md"
+                StepPreviousButtonStyle-CssClass="btn btn-default margin-r-md" SideBarStyle-VerticalAlign="Top"
                 SideBarButtonStyle-CssClass="btn btn-default" SideBarButtonStyle-Width="100%"
-                FinishPreviousButtonStyle-CssClass="btn btn-default"
+                FinishPreviousButtonStyle-CssClass="btn btn-default" 
+                SideBarStyle-CssClass="padding-all-md  well" SideBarStyle-BackColor="#dddddd"
+                NavigationStyle-CssClass="padding-all-md well"
+                StepStyle-CssClass="alert "
                 OnNextButtonClick="Wizard1_NextButtonClick">
                 <WizardSteps>
                     <asp:WizardStep ID="WizardStep1" runat="server" Title="Upload List Data">
@@ -22,30 +25,28 @@
                             <asp:BulletedList ID="BulletedList1" runat="server">
                                 <asp:ListItem>first name</asp:ListItem>
                                 <asp:ListItem>last name</asp:ListItem>
-                                <asp:ListItem>email address (required)</asp:ListItem>
+                                <asp:ListItem>email address</asp:ListItem>
                             </asp:BulletedList>
                             <div class="row">
-                                <div class="col-md-4" style="text-align: right">
-                                    <asp:Label ID="Label1" runat="server" Text="CSV file"></asp:Label>
-                                </div>
-                                <div class="col-md-4">
-                                    <asp:FileUpload ID="fuUpload" runat="server" />
-                                </div>
-                                <div class="col-md-4">
+                                <div class="col-md-12">
+                                    <asp:FileUpload ID="fuUpload" runat="server" CssClass="btn btn-primary" />
                                     <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server"
-                                        ControlToValidate="fuUpload" ErrorMessage="Please select a file to upload">*</asp:RequiredFieldValidator>
+                                        ControlToValidate="fuUpload" CssClass="text-danger" ErrorMessage="Please select a file to upload">*</asp:RequiredFieldValidator>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-9 col-offset-3">
+
+                            <div class="row alert alert-danger" runat="server" id="divErrors" visible="false">
+                                <div class="col-md-12">
                                     <asp:Label ID="lblErrorMessage" runat="server"
-                                        Text="There was a problem with the file you are trying to upload:"
-                                        Visible="False"></asp:Label>
+                                        Text="There was a problem with the file you are trying to upload."></asp:Label>
+                                    <div>
+                                        <asp:Label ID="lblErrors" runat="server" ></asp:Label>
+                                    </div>
                                 </div>
                             </div>
+
                             <div class="row">
-                                <div class="col-md-9 col-offset-3">
-                                    <asp:Label ID="lblErrors" runat="server" Visible="False"></asp:Label>
+                                <div class="col-md-12">
                                 </div>
                             </div>
                         </div>
@@ -106,7 +107,7 @@
                             <h3>Summary</h3>
                             <div runat="server" id="divAlert" class="alert alert-warning">
                                 WARNING! This tool is configured to Add unmatched people as new records to the database.
-                    That means it will add them as new records to the database and then add them to the group.<br />
+                                That means it will add them as new records to the database and then add them to the group.<br />
                                 However you can check this checkbox to disable it temporarily:<br />
                                 <asp:CheckBox runat="server" ID="cbDisableAutoAdd" />
                                 (check to disable automatic adding)

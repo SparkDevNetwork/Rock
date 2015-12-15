@@ -33,11 +33,11 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
+namespace RockWeb.Plugins.com_centralaz.Utility
 {
     [DisplayName( "Import People" )]
-    [Category( "com_centralaz > Groups" )]
-    [Description( "Allows a user to import people from a csv file into a group" )]
+    [Category( "com_centralaz > Utility" )]
+    [Description( "Tool to import a CSV file of matching people into a group. The CSV must have the first name, last name and email. This block can also optionally add a person record (if no match is found) before adding it to the group." )]
 
     [BooleanField( "Auto Add People", "If true, will automatically add unmatched emails as new people records." )]
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 2 )]
@@ -146,7 +146,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 lblReadyToImportPeople.Text = personIDs.Count.ToString();
 
                 // are there ambiguous person matches?
-                if ( ResolveAmbiguousPeople() > 1 )
+                if ( ResolveAmbiguousPeople() )
                 {
                     e.Cancel = true;
                 }
@@ -263,8 +263,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                         }
                     }
                 }
-
-
             }
             catch ( System.Exception ex )
             {
@@ -277,6 +275,18 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 Session[SESSIONKEY_PERSONIDs] = null;
                 Session[SESSIONKEY_UNMATCHED_ITEMS] = null;
             }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlGroupType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlGroupType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            int? groupTypeId = ddlGroupType.SelectedValue.AsIntegerOrNull();
+            LoadGroupRoles( groupTypeId );
+            LoadGroups( groupTypeId );
         }
 
         #endregion
@@ -358,7 +368,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         /// Resolves the ambiguous people.
         /// </summary>
         /// <returns></returns>
-        private int ResolveAmbiguousPeople()
+        private bool ResolveAmbiguousPeople()
         {
             var list = (Queue<string[]>)Session[SESSIONKEY_TO_PROCESS];
             ArrayList unmatchedItems = (ArrayList)Session[SESSIONKEY_UNMATCHED_ITEMS];
@@ -366,10 +376,11 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
             if ( list.Count == 0 )
             {
-                return 0;
+                return false;
             }
 
             // now process through each record we're importing...
+            bool moreUnresolved = false;
             do
             {
                 string[] item = list.Dequeue();
@@ -385,13 +396,14 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
                     if ( people.Count > 1 )
                     {
+                        moreUnresolved = true;
                         // Add each person to the radio button list.
                         rblPeople.Items.Clear();
                         lblRawLineData.Text = string.Join( ", ", item );
 
                         foreach ( Person person in people )
                         {
-                            rblPeople.Items.Add( new ListItem( string.Format( "{0} ({1}yrs) city: {2}", person.FullName, person.Age, person.GetHomeLocation() == null ? " - " : person.GetHomeLocation().City ), person.Id.ToString() ) );
+                            rblPeople.Items.Add( new ListItem( string.Format( "{0} ({1}yrs) city: {2}", person.FullName, person.Age == null ? "? " : person.Age.ToString(), person.GetHomeLocation() == null ? " - " : person.GetHomeLocation().City ), person.Id.ToString() ) );
                         }
 
                         // now break out and let the user select the appropriate user.
@@ -405,7 +417,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             Session[SESSIONKEY_UNMATCHED_ITEMS] = unmatchedItems;
             lblUnmatchedItems.Text = unmatchedItems.Count.ToString();
 
-            return list.Count;
+            return moreUnresolved;
         }
 
         /// <summary>
@@ -516,7 +528,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             if ( GetAttributeValue( "AutoAddPeople" ).AsBoolean() )
             {
                 totalToImport = list.Count + badList.Count;
-                importPeopleMessage = "Will add then";
+                importPeopleMessage = "Add and then";
             }
             else
             {
@@ -535,7 +547,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 <dd>{0}</dd>         
                 <dt>Group:</dt>
                 <dd>{1}</dd>
-                <dt style='white-space: normal;'>{2} import people:</dt>
+                <dt>{2} import:</dt>
                 <dd>{3}</dd>
             </dl>", totalToImport, ddlGroup.SelectedItem.Text, importPeopleMessage, badItems.ToString() );
         }
@@ -549,6 +561,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             bool errors = false;
             bool isValid = false;
             lblErrors.Text = string.Empty;
+            StringBuilder sbErrors = new StringBuilder();
 
             if ( fuUpload.PostedFile != null )
             {
@@ -563,17 +576,19 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                     if ( split.Length != 3 )
                     {
                         errors = true;
-                        lblErrors.Text += "Error: Line " + lineNum + " has " + split.Length + " fields. (" + rec + ")<BR>";
+                        string adverb = split.Length < 3 ? "only" : "";
+                        string plural = split.Length == 1 ? "" : "s";
+                        sbErrors.AppendFormat( "Line {0} has {1} {2} field{3}. ({4})<br/>", lineNum, adverb, split.Length, plural, rec );
                     }
                     else if ( !split[2].Contains( "@" ) )
                     {
                         errors = true;
-                        lblErrors.Text += "Error: Line " + lineNum + " is missing an email address in the third column (" + rec + ")<BR>";
+                        sbErrors.AppendFormat( "Line {0} is missing an email address in the third field ({1}).<br/>", lineNum, rec );
                     }
                     else if ( !split[2].IsValidEmail() )
                     {
                         errors = true;
-                        lblErrors.Text += "Error: Line " + lineNum + " is not a valid email address (" + rec + ")<BR>";
+                        sbErrors.AppendFormat( "Line {0} does not contain a valid email address ({1}).<br/>", lineNum, rec );
                     }
                     else
                     {
@@ -584,13 +599,13 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             }
             else
             {
-                lblErrors.Text = "No file was found.";
+                sbErrors.Append( "No file was found."  );
             }
 
             if ( errors )
             {
-                lblErrorMessage.Visible = true;
-                lblErrors.Visible = true;
+                lblErrors.Text = sbErrors.ToString();
+                divErrors.Visible = true;
             }
             else
             {
@@ -642,18 +657,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
             // bind group member status
             ddlGroupMemberStatus.BindToEnum<GroupMemberStatus>();
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlGroupType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlGroupType_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            int? groupTypeId = ddlGroupType.SelectedValue.AsIntegerOrNull();
-            LoadGroupRoles( groupTypeId );
-            LoadGroups( groupTypeId );
         }
 
         /// <summary>
