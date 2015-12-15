@@ -74,15 +74,14 @@ namespace RockWeb.Themes.Flat.Layouts
         private void ProcessException( Exception ex, string exLevel )
         {
             lErrorInfo.Text += "<div class=\"alert alert-danger\">";
-            lErrorInfo.Text += "<h4>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h3>";
-            lErrorInfo.Text += "<p><strong>Message</strong><br>" + ex.Message + "</p>";
-            lErrorInfo.Text += "<p><strong>Stack Trace</strong><br><pre>" + ex.StackTrace + "</pre></p>";
+            lErrorInfo.Text += "<h4>" + exLevel + ex.GetType().Name + " in " + HttpUtility.HtmlEncode( ex.Source ) + "</h3>";
+            lErrorInfo.Text += "<p><strong>Message</strong><br>" + HttpUtility.HtmlEncode( ex.Message ) + "</p>";
+            lErrorInfo.Text += "<p><strong>Stack Trace</strong><br><pre>" + HttpUtility.HtmlEncode( ex.StackTrace ) + "</pre></p>";
             lErrorInfo.Text += "</div>";
 
             // check for inner exception
             if ( ex.InnerException != null )
             {
-                //lErrorInfo.Text += "<p /><p />";
                 ProcessException( ex.InnerException, "-" + exLevel );
             }
         }

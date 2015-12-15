@@ -282,20 +282,24 @@ namespace RockWeb.Blocks.Event
                         linkage = new EventItemOccurrenceGroupMap();
                         eventItemOccurrence.Linkages.Add( linkage );
                     }
-
                     linkage.CopyPropertiesFrom( LinkageState );
 
                     // update registration instance 
                     if ( LinkageState.RegistrationInstance != null )
                     {
-                        RegistrationInstance registrationInstance = linkage.RegistrationInstance;
-                        if ( registrationInstance == null )
+                        if ( LinkageState.RegistrationInstance.Id != 0 )
                         {
-                            registrationInstance = new RegistrationInstance();
-                            registrationInstanceService.Add( registrationInstance );
+                            linkage.RegistrationInstance = registrationInstanceService.Get( LinkageState.RegistrationInstance.Id );
                         }
-                        registrationInstance.CopyPropertiesFrom( LinkageState.RegistrationInstance );
-                        linkage.RegistrationInstance = registrationInstance;
+
+                        if ( linkage.RegistrationInstance == null )
+                        {
+                            var registrationInstance = new RegistrationInstance();
+                            registrationInstanceService.Add( registrationInstance );
+                            linkage.RegistrationInstance = registrationInstance;
+                        }
+
+                        linkage.RegistrationInstance.CopyPropertiesFrom( LinkageState.RegistrationInstance );
                     }
 
                 }
@@ -464,7 +468,37 @@ namespace RockWeb.Blocks.Event
             LinkageState = new EventItemOccurrenceGroupMap { Guid = Guid.Empty };
             DisplayRegistration();
         }
-        
+
+        protected void ddlNewLinkageTemplate_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            int? registrationTemplateId = ddlNewLinkageTemplate.SelectedValueAsInt();
+            if ( registrationTemplateId.HasValue )
+            {
+                var rockContext = new RockContext();
+
+                if ( LinkageState.RegistrationInstance == null )
+                {
+                    LinkageState.RegistrationInstance = new RegistrationInstance();
+                    LinkageState.RegistrationInstance.IsActive = true;
+                }
+
+                LinkageState.RegistrationInstance.RegistrationTemplateId = registrationTemplateId.Value;
+                if ( LinkageState.RegistrationInstance.RegistrationTemplate == null )
+                {
+                    LinkageState.RegistrationInstance.RegistrationTemplate = new RegistrationTemplate();
+                }
+
+                var registrationTemplate = new RegistrationTemplateService( rockContext ).Get( registrationTemplateId.Value );
+                if ( registrationTemplate != null )
+                {
+                    LinkageState.RegistrationInstance.RegistrationTemplate.CopyPropertiesFrom( registrationTemplate );
+                }
+
+                rieNewLinkage.GetValue( LinkageState.RegistrationInstance );
+                rieNewLinkage.SetValue( LinkageState.RegistrationInstance );
+            }
+        }
+
         /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlExistingLinkageTemplate control.
         /// </summary>
@@ -897,12 +931,47 @@ namespace RockWeb.Blocks.Event
             rieNewLinkage.ShowActive = false;
             rieNewLinkage.ShowUrlSlug = true;
 
-            bool newLinkage = !LinkageState.RegistrationInstanceId.HasValue || LinkageState.RegistrationInstanceId.Value == 0;
-            
             ddlNewLinkageTemplate.Items.Clear();
 
             using ( var rockContext = new RockContext() )
             {
+                // Find most recent mapping with same event, campus and copy some of it's registration instance values
+                int EventItemId = PageParameter( "EventItemId" ).AsInteger();
+                int? campusId = ddlCampus.SelectedValueAsInt();
+                var registrationInstance = new EventItemOccurrenceGroupMapService( rockContext )
+                    .Queryable()
+                    .Where( m =>
+                        m.EventItemOccurrence != null &&
+                        m.EventItemOccurrence.EventItemId == EventItemId &&
+                        m.RegistrationInstance != null &&
+                        (
+                            ( campusId.HasValue && ( !m.EventItemOccurrence.CampusId.HasValue || m.EventItemOccurrence.CampusId.Value == campusId.Value ) ) ||
+                            ( !campusId.HasValue && !m.EventItemOccurrence.CampusId.HasValue )
+                        )
+                    )
+                    .ToList()
+                    .OrderByDescending( m => m.EventItemOccurrence.NextStartDateTime )
+                    .Select( m => m.RegistrationInstance )
+                    .FirstOrDefault();
+
+                if ( registrationInstance != null )
+                {
+                    LinkageState.RegistrationInstance = new RegistrationInstance();
+                    LinkageState.RegistrationInstance.AccountId = registrationInstance.AccountId;
+                    LinkageState.RegistrationInstance.RegistrationTemplateId = registrationInstance.RegistrationTemplateId;
+                    LinkageState.RegistrationInstance.RegistrationTemplate = new RegistrationTemplate();
+                    LinkageState.RegistrationInstance.ContactPersonAliasId = registrationInstance.ContactPersonAliasId;
+                    LinkageState.RegistrationInstance.ContactPhone = registrationInstance.ContactPhone;
+                    LinkageState.RegistrationInstance.ContactEmail = registrationInstance.ContactEmail;
+                    LinkageState.RegistrationInstance.AdditionalReminderDetails = registrationInstance.AdditionalReminderDetails;
+                    LinkageState.RegistrationInstance.AdditionalConfirmationDetails = registrationInstance.AdditionalConfirmationDetails;
+                    var registrationTemplate = new RegistrationTemplateService( rockContext ).Get( registrationInstance.RegistrationTemplateId );
+                    if ( registrationTemplate != null )
+                    {
+                        LinkageState.RegistrationInstance.RegistrationTemplate.CopyPropertiesFrom( registrationTemplate );
+                    }
+                }
+                
                 foreach ( var template in new RegistrationTemplateService( rockContext )
                     .Queryable().AsNoTracking().OrderBy(t => t.Name ))
                 {

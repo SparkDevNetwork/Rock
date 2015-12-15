@@ -37,8 +37,9 @@ namespace RockWeb.Blocks.Crm
     [DisplayName( "Person Duplicate Detail" )]
     [Category( "CRM" )]
     [Description( "Shows records that are possible duplicates of the selected person" )]
-    [DecimalField( "Confidence Score High", "The minimum confidence score required to be considered a likely match", true, 80.00 )]
-    [DecimalField( "Confidence Score Low", "The maximum confidence score required to be considered an unlikely match. Values lower than this will not be shown in the grid.", true, 40.00 )]
+    [DecimalField( "Confidence Score High", "The minimum confidence score required to be considered a likely match", true, 80.00, order: 0 )]
+    [DecimalField( "Confidence Score Low", "The maximum confidence score required to be considered an unlikely match. Values lower than this will not be shown in the grid.", true, 40.00, order: 1 )]
+    [BooleanField( "Include Inactive", "Set to true to also include potential matches when both records are inactive.", false, order: 2 )]
     public partial class PersonDuplicateDetail : RockBlock
     {
         #region Base Control Methods
@@ -176,10 +177,15 @@ namespace RockWeb.Blocks.Crm
 
             //// select person duplicate records
             //// list duplicates that aren't confirmed as NotDuplicate and aren't IgnoreUntilScoreChanges. Also, don't include records where both the Person and Duplicate are inactive
-            var qry = personDuplicateService.Queryable()
-                .Where( a => a.PersonAlias.PersonId == personId && !a.IsConfirmedAsNotDuplicate && !a.IgnoreUntilScoreChanges )
-                .Where( a => !( a.PersonAlias.Person.RecordStatusValueId == recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId == recordStatusInactiveId ))
-                .Select( s => new
+            var qryPersonDuplicates = personDuplicateService.Queryable()
+                .Where( a => a.PersonAlias.PersonId == personId && !a.IsConfirmedAsNotDuplicate && !a.IgnoreUntilScoreChanges );
+
+            if (this.GetAttributeValue("IncludeInactive").AsBoolean() == false)
+            {
+                qryPersonDuplicates = qryPersonDuplicates.Where( a => !( a.PersonAlias.Person.RecordStatusValueId == recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId == recordStatusInactiveId ) );
+            }
+                    
+            var qry = qryPersonDuplicates.Select( s => new
                 {
                     PersonId = s.DuplicatePersonAlias.Person.Id, // PersonId has to be the key field in the grid for the Merge button to work
                     PersonDuplicateId = s.Id,

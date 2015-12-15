@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Core
         private void LoadDropdowns()
         {
             var currentRange = RockPage.GetUserPreference( ContextPreferenceName );
-            var dateRangeString = Request.QueryString["dateRange"];
+            var dateRangeString = Request.QueryString["SlidingDateRange"];
             if ( !string.IsNullOrEmpty( dateRangeString ) && currentRange != dateRangeString )
             {
                 // set context to query string
@@ -131,10 +131,10 @@ namespace RockWeb.Blocks.Core
             if ( refreshPage )
             {
                 // Only redirect if refreshPage is true
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "dateRange" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "SlidingDateRange" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
-                    queryString.Set( "dateRange", dateRangeValues );
+                    queryString.Set( "SlidingDateRange", dateRangeValues );
                     Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ), false );
                 }
                 else

@@ -42,6 +42,12 @@ namespace RockWeb.Blocks.Administration
     [Description( "Displays system information on the installed version of Rock." )]
     public partial class SystemInfo : Rock.Web.UI.RockBlock
     {
+        #region Fields
+
+        private string _catalog = String.Empty;
+
+        #endregion
+
         #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
@@ -95,7 +101,7 @@ namespace RockWeb.Blocks.Administration
                             misses.Select( c => c.Key )
                                 .OrderBy( c => c )
                                 .ToList()
-                                .AsDelimited( "<br/>" ) );
+                                .AsDelimited( "<br />" ) );
                     }
                 }
             }
@@ -182,7 +188,7 @@ namespace RockWeb.Blocks.Administration
             nbMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Success;
             nbMessage.Visible = true;
             nbMessage.Title = "Clear Cache";
-            nbMessage.Text = string.Format( "<p>{0}</p>", msgs.AsDelimited( "<br/>" ) );
+            nbMessage.Text = string.Format( "<p>{0}</p>", msgs.AsDelimited( "<br />" ) );
         }
 
         protected void btnRestart_Click( object sender, EventArgs e )
@@ -190,6 +196,11 @@ namespace RockWeb.Blocks.Administration
             RestartWebApplication();
         }
 
+        /// <summary>
+        /// Creates a text version (mostly) of the Diagnostics data that is sent via the HttpResponse to the client.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDumpDiagnostics_Click( object sender, EventArgs e )
         {
             System.Web.HttpResponse response = System.Web.HttpContext.Current.Response;
@@ -202,11 +213,14 @@ namespace RockWeb.Blocks.Administration
             response.Charset = "";
 
             ResponseWrite( "Version:", lRockVersion.Text, response );
-            ResponseWrite( "Database:", lDatabase.Text.Replace("<br />", Environment.NewLine.ToString()), response );
+            ResponseWrite( "Database:", lDatabase.Text.Replace( "<br />", Environment.NewLine.ToString() ), response );
             ResponseWrite( "Execution Location:", lExecLocation.Text, response );
-            ResponseWrite( "Cache:", lCacheOverview.Text, response ); ;
-            ResponseWrite( "Routes:", lRoutes.Text, response );
+            ResponseWrite( "Migrations:", GetLastMigrationData().Replace( "<br />", Environment.NewLine.ToString() ), response );
+            ResponseWrite( "Cache:", lCacheOverview.Text.Replace( "<br />", Environment.NewLine.ToString() ), response ); ;
+            ResponseWrite( "Routes:", lRoutes.Text.Replace( "<br />", Environment.NewLine.ToString() ), response );
 
+            // Last and least...
+            ResponseWrite( "Server Variables:", "", response );
             foreach ( string key in Request.ServerVariables )
             {
                 ResponseWrite( key, Request.ServerVariables[key], response );
@@ -233,7 +247,7 @@ namespace RockWeb.Blocks.Administration
             var result = DbService.ExecuteScaler( "SELECT TOP 1 [MigrationId] FROM [__MigrationHistory] ORDER BY [MigrationId] DESC ", CommandType.Text, null );
             if ( result != null )
             {
-                sb.AppendFormat( "Last Core Migration: {0}", (string)result );
+                sb.AppendFormat( "Last Core Migration: {0}{1}", (string)result, Environment.NewLine );
             }
 
             var tableResult = DbService.GetDataTable( @"
@@ -255,7 +269,7 @@ namespace RockWeb.Blocks.Administration
                 {
                     sb.AppendFormat( "<tr><td>{0}</td><td>{1}</td><td>{2}</td></tr>", row[0].ToString(), row[1].ToString(), row[2].ToString() );
                 }
-                sb.AppendFormat( "</table" );
+                sb.AppendFormat( "</table>" );
             }
 
             return sb.ToString();
@@ -266,17 +280,16 @@ namespace RockWeb.Blocks.Administration
             var cache = Rock.Web.Cache.RockMemoryCache.Default;
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat( "<p><strong>Cache Items:</strong><br /> {0}</p>", cache.Count() );
-            sb.AppendFormat( "<p><strong>Cache Memory Limit:</strong><br /> {0:N0} (bytes)</p>", cache.CacheMemoryLimit );
-            sb.AppendFormat( "<p><strong>Physical Memory Limit:</strong><br /> {0} %</p>", cache.PhysicalMemoryLimit );
-            sb.AppendFormat( "<p><strong>Polling Interval:</strong><br /> {0}</p>", cache.PollingInterval );
+            sb.AppendFormat( "<p><strong>Cache Items:</strong><br /> {0}</p>{1}", cache.Count(), Environment.NewLine );
+            sb.AppendFormat( "<p><strong>Cache Memory Limit:</strong><br /> {0:N0} (bytes)</p>{1}", cache.CacheMemoryLimit, Environment.NewLine );
+            sb.AppendFormat( "<p><strong>Physical Memory Limit:</strong><br /> {0} %</p>{1}", cache.PhysicalMemoryLimit, Environment.NewLine );
+            sb.AppendFormat( "<p><strong>Polling Interval:</strong><br /> {0}</p>{1}", cache.PollingInterval, Environment.NewLine );
             lCacheObjects.Text = cache.GroupBy( a => a.Value.GetType() ).Select( a => new
             {
                 a.Key.Name,
                 Count = a.Count()
-            } ).OrderBy( a => a.Name ).Select( a => string.Format( "{0}: {1} items", a.Name, a.Count ) ).ToList().AsDelimited( "</br>" );
+            } ).OrderBy( a => a.Name ).Select( a => string.Format( "{0}: {1} items", a.Name, a.Count ) ).ToList().AsDelimited( "<br />" );
             
-
             return sb.ToString();
         }
 
@@ -291,7 +304,7 @@ namespace RockWeb.Blocks.Administration
             StringBuilder sb = new StringBuilder();
             foreach ( var routeItem in routes )
             {
-                sb.AppendFormat( "{0}<br/>", routeItem.Key );
+                sb.AppendFormat( "{0}<br />", routeItem.Key );
             }
 
             return sb.ToString();
@@ -305,7 +318,8 @@ namespace RockWeb.Blocks.Administration
             object dataSource, catalog = string.Empty;
             if ( csBuilder.TryGetValue( "data source", out dataSource ) && csBuilder.TryGetValue( "initial catalog", out catalog ) )
             {
-                databaseResults.Append( string.Format( "Name: {0} <br /> Server: {1}", catalog, dataSource ));
+                _catalog = catalog.ToString();
+                databaseResults.Append( string.Format( "Name: {0} <br /> Server: {1}", catalog, dataSource ) );
             }
 
             try
@@ -325,35 +339,65 @@ namespace RockWeb.Blocks.Administration
 
                     databaseResults.Append( string.Format( "<br />Database Version: {0}", versionInfo ) );
                 }
-                
-                // get database size
-                reader = DbService.GetDataReader( "sp_helpdb " + catalog, System.Data.CommandType.Text, null );
-                if ( reader != null )
+
+                try
                 {
-                    // get second data table
-                    reader.NextResult();
-                    reader.Read();
-
-                    string size = reader.GetValue( 5 ).ToString();
-                    if ( size != "Unlimited" )
+                    // get database size
+                    reader = DbService.GetDataReader( "sp_helpdb " + catalog, System.Data.CommandType.Text, null );
+                    if ( reader != null )
                     {
-                        if ( size.Contains( "KB" ) )
+                        // get second data table
+                        reader.NextResult();
+                        reader.Read();
+
+                        string size = reader.GetValue( 5 ).ToString();
+                        if ( size != "Unlimited" )
                         {
-                            size = size.Replace( " KB", "" );
-                            int sizeInKB = Int32.Parse( size );
+                            if ( size.Contains( "KB" ) )
+                            {
+                                size = size.Replace( " KB", "" );
+                                int sizeInKB = Int32.Parse( size );
 
-                            int sizeInMB = sizeInKB / 1024;
+                                int sizeInMB = sizeInKB / 1024;
 
-                            databaseResults.Append( string.Format("<br />Database Size: {0}", sizeInMB) );
+                                databaseResults.AppendFormat( "<br />Database Size: {0}", sizeInMB );
+                            }
+                        }
+                        else
+                        {
+                            databaseResults.Append( "<br />Database Size: Unlimited" );
                         }
                     }
-                    else
+                }
+                catch
+                {
+                    databaseResults.AppendFormat( "<br />Database Size: unable to determine" );
+                }
+
+                try
+                {
+                    // get database snapshot isolation details
+                    reader = DbService.GetDataReader( string.Format( "SELECT [snapshot_isolation_state], [is_read_committed_snapshot_on] FROM sys.databases WHERE [name] = '{0}'", _catalog ), System.Data.CommandType.Text, null );
+                    if ( reader != null )
                     {
-                        databaseResults.Append( "<br />Database Size: Unlimited" );
+                        bool isAllowSnapshotIsolation = false;
+                        bool isReadCommittedSnapshopOn = true;
+
+                        while ( reader.Read() )
+                        {
+                            isAllowSnapshotIsolation = reader[0].ToStringSafe().AsBoolean();
+                            isReadCommittedSnapshopOn = reader[1].ToString().AsBoolean();
+                        }
+
+                        databaseResults.AppendFormat( "<br />Allow Snapshot Isolation: {0}<br />Is Read Committed Snapshot On: {1}<br />", isAllowSnapshotIsolation.ToYesNo(), isReadCommittedSnapshopOn.ToYesNo() );
                     }
                 }
+                catch { }
             }
-            catch {}
+            catch ( Exception ex )
+            {
+                databaseResults.AppendFormat( "Unable to read database system information: {0}", ex.Message );
+            }
 
             return databaseResults.ToString();
         }
@@ -397,6 +441,5 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
-
-}
+    }
 }

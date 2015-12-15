@@ -116,7 +116,14 @@
 
                     <div class="modal-body">
 
+                        <!-- Ajax Error -->
+                        <div class="alert alert-danger ajax-error" style="display:none">
+                            <p><strong>Error</strong></p>
+                            <span class="ajax-error-message"></span>
+                        </div>
+
                         <Rock:Zone Name="Main" runat="server" />
+
                     </div>
 
                     <div class="modal-footer">

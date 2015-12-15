@@ -37,7 +37,8 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Public block for user to manager their account" )]
 
-    [LinkedPage("Detail Page", "Page to edit account details")]
+    [LinkedPage("Detail Page", "Page to edit account details.", order: 0)]
+    [BooleanField("Show Home Address", "Shows/hides the home address.", order: 1)]
     public partial class AccountDetail : RockBlock
     {
         #region Base Control Methods
@@ -92,6 +93,15 @@ namespace RockWeb.Blocks.Security
                 }
 
                 lEmail.Text = CurrentPerson.Email;
+
+                if ( GetAttributeValue( "ShowHomeAddress" ).AsBoolean() )
+                {
+                    var homeAddress = CurrentPerson.GetHomeLocation();
+                    if ( homeAddress != null )
+                    {
+                        lAddress.Text = string.Format( "<div class='margin-b-md'><small>Home Address</small><br />{0}</div>", homeAddress.FormattedHtmlAddress );
+                    }
+                }
             }
         }
 

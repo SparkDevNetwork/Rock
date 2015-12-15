@@ -62,6 +62,13 @@
 
                 </fieldset>
 
+                <asp:Panel ID="pnlAddress" runat="server">
+                    <fieldset>
+                        <legend>Address</legend>
+                        <Rock:AddressControl id="acAddress" runat="server" RequiredErrorMessage="Your Address is Required" />
+                    </fieldset>
+                </asp:Panel>
+
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />

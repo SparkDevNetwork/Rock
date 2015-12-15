@@ -192,6 +192,7 @@ namespace Rock.Web.UI.Controls
         private TextBox _tbStreet1;
         private TextBox _tbStreet2;
         private TextBox _tbCity;
+        private TextBox _tbCounty;
         private TextBox _tbState;
         private DropDownList _ddlState;
         private TextBox _tbPostalCode;
@@ -261,6 +262,27 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _tbCity.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the county.
+        /// </summary>
+        /// <value>
+        /// The county.
+        /// </value>
+        public string County
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbCounty.Text;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _tbCounty.Text = value;
             }
         }
 
@@ -361,6 +383,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show county].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show county]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowCounty
+        {
+            get
+            {
+                return ViewState["ShowCounty"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["ShowCounty"] = value;
+            }
+        }
+
+        /// <summary>
         /// Display an abbreviated state name
         /// </summary>
         public bool UseStateAbbreviation
@@ -427,6 +468,7 @@ namespace Rock.Web.UI.Controls
                 _tbStreet1.ValidationGroup = value;
                 _tbStreet2.ValidationGroup = value;
                 _tbCity.ValidationGroup = value;
+                _tbCounty.ValidationGroup = value;
                 _tbState.ValidationGroup = value;
                 _ddlState.ValidationGroup = value;
                 _ddlCountry.ValidationGroup = value;
@@ -475,6 +517,11 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _tbCity );
             _tbCity.ID = "tbCity";
             _tbCity.CssClass = "form-control";
+
+            _tbCounty = new TextBox();
+            Controls.Add( _tbCounty );
+            _tbCounty.ID = "tbCounty";
+            _tbCounty.CssClass = "form-control";
 
             _tbState = new TextBox();
             Controls.Add( _tbState );
@@ -578,7 +625,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "row" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( "class", "form-group col-sm-6" );
+                writer.AddAttribute( "class", ( ShowCounty ? "form-group col-sm-3" : "form-group col-sm-6" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
                 writer.AddAttribute( HtmlTextWriterAttribute.For, _tbCity.ClientID );
@@ -587,6 +634,19 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();  // label
                 _tbCity.RenderControl( writer );
                 writer.RenderEndTag();  // div.form-group
+
+                if ( ShowCounty )
+                {
+                    writer.AddAttribute( "class", "form-group col-sm-3" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.For, _tbCounty.ClientID );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
+                    writer.Write( "County" );
+                    writer.RenderEndTag();  // label
+                    _tbCounty.RenderControl( writer );
+                    writer.RenderEndTag();  // div.form-group
+                }
 
                 writer.AddAttribute( "class", "form-group col-sm-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -686,6 +746,7 @@ namespace Rock.Web.UI.Controls
                 Street1 = location.Street1;
                 Street2 = location.Street2;
                 City = location.City;
+                County = location.County;
                 State = location.State;
                 PostalCode = location.PostalCode;
             }
@@ -695,6 +756,7 @@ namespace Rock.Web.UI.Controls
                 Street1 = string.Empty;
                 Street2 = string.Empty;
                 City = string.Empty;
+                County = string.Empty;
                 State = GetDefaultState();
                 PostalCode = string.Empty;
             }
@@ -716,6 +778,7 @@ namespace Rock.Web.UI.Controls
                     location.Street1 = Street1;
                     location.Street2 = Street2;
                     location.City = City;
+                    location.County = County;
                     location.State = State;
                     location.PostalCode = PostalCode;
                 }
@@ -725,6 +788,7 @@ namespace Rock.Web.UI.Controls
                     location.Street1 = null;
                     location.Street2 = null;
                     location.City = null;
+                    location.County = null;
                     location.State = null;
                     location.PostalCode = null;
                 }

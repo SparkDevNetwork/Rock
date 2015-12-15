@@ -354,7 +354,7 @@ namespace DotLiquid
 
 #if NET35
 	/// <summary>
-	/// Replace the first occurence of a string with another
+	/// Replace the first occurrence of a string with another
 	/// </summary>
 	/// <param name="input"></param>
 	/// <param name="string"></param>
@@ -366,7 +366,7 @@ namespace DotLiquid
         }
 
         /// <summary>
-        /// Replace the first occurence of a string with another
+        /// Replace the first occurrence of a string with another
         /// </summary>
         /// <param name="input"></param>
         /// <param name="string"></param>
@@ -375,7 +375,7 @@ namespace DotLiquid
         public static string ReplaceFirst(string input, string @string, string replacement)
 #else
 		/// <summary>
-		/// Replace the first occurence of a string with another
+		/// Replace the first occurrence of a string with another
 		/// </summary>
 		/// <param name="input"></param>
 		/// <param name="string"></param>

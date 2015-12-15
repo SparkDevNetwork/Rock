@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -42,18 +43,22 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Detail Page", order:0 )]
     [TextField( "Title", "Title to display above the grid. Leave blank to hide.", false, order:1 )]
     [BooleanField( "Show Only Active Accounts on Filter", "If account filter is displayed, only list active accounts", false, "", 2, "ActiveAccountsOnlyFilter")]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transation types to limit the list to (if none are selected all types will be included).", false, true, "", "", 3 )]
+    [BooleanField( "Show Options", "Show an Options button in the title panel for showing images or summary.", false, order: 3 )]
+    [IntegerField( "Image Height", "If the Show Images option is selected, the image height", false, 200, order: 4)]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transation types to limit the list to (if none are selected all types will be included).", false, true, "", "", 5 )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler
     {
         #region Fields
 
         private bool _canEdit = false;
+        private int _imageHeight = 200;
         private FinancialBatch _batch = null;
         private Person _person = null;
         private FinancialScheduledTransaction _scheduledTxn = null;
         private Registration _registration = null;
 
         private RockDropDownList _ddlMove = new RockDropDownList();
+        private LinkButton _lbReassign = new LinkButton();
 
         // Dictionaries to cache values for databinding performance
         private Dictionary<int, string> _currencyTypes;
@@ -75,13 +80,7 @@ namespace RockWeb.Blocks.Finance
             gfTransactions.ClearFilterClick += gfTransactions_ClearFilterClick;
             gfTransactions.DisplayFilterValue += gfTransactions_DisplayFilterValue;
 
-            string title = GetAttributeValue( "Title" );
-            if (string.IsNullOrWhiteSpace(title))
-            {
-                title = "Transaction List";
-            }
-
-            lTitle.Text = title;
+            SetBlockOptions();
 
             _canEdit = UserCanEdit;
 
@@ -126,11 +125,34 @@ namespace RockWeb.Blocks.Finance
                 _ddlMove.DataBind();
                 _ddlMove.Items.Insert( 0, new ListItem( "-- Move Transactions To Batch --", "" ) );
                 gTransactions.Actions.AddCustomActionControl( _ddlMove );
+
+                _lbReassign.ID = "lbReassign";
+                _lbReassign.CssClass = "btn btn-default btn-sm pull-left";
+                _lbReassign.Click += _lbReassign_Click;
+                _lbReassign.Text = "Reassign Transactions";
+                gTransactions.Actions.AddCustomActionControl( _lbReassign );
             }
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upTransactions );
 
+        }
+
+        /// <summary>
+        /// Sets the block options.
+        /// </summary>
+        private void SetBlockOptions()
+        {
+            string title = GetAttributeValue( "Title" );
+            if ( string.IsNullOrWhiteSpace( title ) )
+            {
+                title = "Transaction List";
+            }
+
+            bddlOptions.Visible = GetAttributeValue( "ShowOptions" ).AsBooleanOrNull() ?? false;
+            _imageHeight = GetAttributeValue( "ImageHeight" ).AsIntegerOrNull() ?? 200;
+
+            lTitle.Text = title;
         }
 
         /// <summary>
@@ -151,6 +173,10 @@ namespace RockWeb.Blocks.Finance
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbClosedWarning.Visible = false;
+            nbResult.Visible = false;
+
             var contextEntity = this.ContextEntity();
             if ( contextEntity != null )
             {
@@ -181,6 +207,10 @@ namespace RockWeb.Blocks.Finance
                 BindFilter();
                 BindGrid();
             }
+            else
+            {
+                ShowDialog();
+            }
 
             if ( _canEdit && _batch != null )
             {
@@ -206,23 +236,25 @@ namespace RockWeb.Blocks.Finance
 ", _ddlMove.ClientID, gTransactions.ClientID, Page.ClientScript.GetPostBackEventReference( this, "MoveTransactions" ) );
                 ScriptManager.RegisterStartupScript( _ddlMove, _ddlMove.GetType(), "moveTransaction", script, true );
             }
+
         }
 
         protected override void OnPreRender( EventArgs e )
         {
+            bool showSelectColumn = false;
+
             // Set up the selection filter
-            if ( _batch != null )
+            if ( _canEdit && _batch != null )
             {
                 if ( _batch.Status == BatchStatus.Closed )
                 {
                     nbClosedWarning.Visible = true;
-                    gTransactions.Columns[0].Visible = false;
                     _ddlMove.Visible = false;
                 }
                 else
                 {
                     nbClosedWarning.Visible = false;
-                    gTransactions.Columns[0].Visible = true;
+                    showSelectColumn = true;
                     _ddlMove.Visible = true;
                 }
 
@@ -242,7 +274,6 @@ namespace RockWeb.Blocks.Finance
             else 
             {
                 nbClosedWarning.Visible = false;
-                gTransactions.Columns[0].Visible = false;
                 _ddlMove.Visible = false;
 
                 // not in batch mode, so don't allow Add, and don't show the DeleteButton
@@ -254,6 +285,18 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
+            if ( _canEdit && _person != null )
+            {
+                showSelectColumn = true;
+                _lbReassign.Visible = true;
+            }
+            else
+            {
+                _lbReassign.Visible = false;
+            }
+
+            gTransactions.Columns[0].Visible = showSelectColumn;
+
             base.OnPreRender( e );
         }
 
@@ -261,8 +304,14 @@ namespace RockWeb.Blocks.Finance
 
         #region Events
 
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            SetBlockOptions();
             BindGrid();
         }
 
@@ -389,6 +438,17 @@ namespace RockWeb.Blocks.Finance
                             lCurrencyType.Text = currencyType;
                         }
                     }
+
+                    var lTransactionImage = e.Row.FindControl( "lTransactionImage" ) as Literal;
+                    if (lTransactionImage != null)
+                    {
+                        var firstImage = txn.Images.FirstOrDefault();
+                        if (firstImage != null )
+                        {
+                            string imageSrc = string.Format( "~/GetImage.ashx?id={0}&height={1}", firstImage.BinaryFileId, _imageHeight );
+                            lTransactionImage.Text = string.Format("<image src='{0}' />", this.ResolveUrl(imageSrc)) ;
+                        }
+                    }
                 }
             }
 
@@ -482,9 +542,13 @@ namespace RockWeb.Blocks.Finance
             BindGrid();
         }
 
-       public void RaisePostBackEvent( string eventArgument )
+        /// <summary>
+        /// When implemented by a class, enables a server control to process an event raised when a form is posted to the server.
+        /// </summary>
+        /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
+        public void RaisePostBackEvent( string eventArgument )
         {
-            if ( _batch != null )
+            if ( _canEdit && _batch != null )
             {
                 if ( eventArgument == "MoveTransactions" &&
                     _ddlMove != null &&
@@ -492,7 +556,6 @@ namespace RockWeb.Blocks.Finance
                     !String.IsNullOrWhiteSpace( _ddlMove.SelectedValue ) )
                 {
                     var txnsSelected = new List<int>();
-
                     gTransactions.SelectedKeys.ToList().ForEach( b => txnsSelected.Add( b.ToString().AsInteger() ) );
 
                     if ( txnsSelected.Any() )
@@ -611,6 +674,65 @@ namespace RockWeb.Blocks.Finance
                 _ddlMove.SelectedIndex = 0;
             }
 
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the _lbReassign control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _lbReassign_Click( object sender, EventArgs e )
+        {
+            if ( _canEdit && _person != null )
+            {
+                var txnsSelected = new List<int>();
+                gTransactions.SelectedKeys.ToList().ForEach( b => txnsSelected.Add( b.ToString().AsInteger() ) );
+
+                if ( txnsSelected.Any() )
+                {
+                    ShowDialog( "Reassign" );
+                }
+                else
+                {
+                    nbResult.Text = string.Format( "There were not any transactions selected." );
+                    nbResult.NotificationBoxType = NotificationBoxType.Warning;
+                    nbResult.Visible = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgReassign control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgReassign_SaveClick( object sender, EventArgs e )
+        {
+            if ( _canEdit && _person != null )
+            {
+                int? personAliasId = ppReassign.PersonAliasId;
+                var txnsSelected = new List<int>();
+                gTransactions.SelectedKeys.ToList().ForEach( b => txnsSelected.Add( b.ToString().AsInteger() ) );
+
+                if ( txnsSelected.Any() && personAliasId.HasValue )
+                {
+                    var rockContext = new RockContext();
+                    var txnService = new FinancialTransactionService( rockContext );
+                    var txnsToUpdate = txnService.Queryable( "AuthorizedPersonAlias.Person" )
+                        .Where( t => txnsSelected.Contains( t.Id ) )
+                        .ToList();
+
+                    foreach ( var txn in txnsToUpdate )
+                    {
+                        txn.AuthorizedPersonAliasId = personAliasId.Value;
+                    }
+
+                    rockContext.SaveChanges();
+                }
+            }
+
+            HideDialog();
             BindGrid();
         }
 
@@ -733,10 +855,11 @@ namespace RockWeb.Blocks.Finance
             var qry = new FinancialTransactionService( rockContext ).Queryable();
 
             // Transaction Types
-            var txnTypes = GetAttributeValue( "TransactionTypes" ).SplitDelimitedValues().AsGuidList();
-            if ( txnTypes.Any() )
+            var transactionTypeValueIdList = GetAttributeValue( "TransactionTypes" ).SplitDelimitedValues().AsGuidList().Select( a => DefinedValueCache.Read( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
+
+            if ( transactionTypeValueIdList.Any() )
             {
-                qry = qry.Where( t => txnTypes.Contains( t.TransactionTypeValue.Guid ) );
+                qry = qry.Where( t => transactionTypeValueIdList.Contains( t.TransactionTypeValueId ) );
             }
 
             // Set up the selection filter
@@ -888,6 +1011,24 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
+            var lTransactionImageField = gTransactions.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lTransactionImage" );
+            var summaryField = gTransactions.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "Summary" );
+            var showImages = bddlOptions.SelectedValue.AsIntegerOrNull() == 1;
+            if ( lTransactionImageField != null)
+            {
+                lTransactionImageField.Visible = showImages;
+            }
+
+            if ( summaryField != null )
+            {
+                summaryField.Visible = !showImages;
+            }
+
+            if ( showImages )
+            {
+                qry = qry.Include( a => a.Images );
+            }
+
             gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
 
@@ -899,19 +1040,19 @@ namespace RockWeb.Blocks.Finance
                 pnlSummary.Visible = true;
 
                 // No context - show account summary
-                var qryTransactionDetails = qry.SelectMany( a => a.TransactionDetails );
-                var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.Account ).Select( a => new
+                var qryTransactionDetails = qry.SelectMany( a => a.TransactionDetails ); 
+                var qryFinancialAccount = new FinancialAccountService( rockContext ).Queryable();
+                var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.AccountId ).Select( a => new
                 {
-                    a.Key.Name,
-                    a.Key.Order,
+                    AccountId = a.Key,
                     TotalAmount = (decimal?)a.Sum( d => d.Amount )
-                } ).OrderBy( a => a.Order );
-
+                } ).Join( qryFinancialAccount, k1 => k1.AccountId, k2 => k2.Id, ( td, fa ) => new { td.TotalAmount, fa.Name, fa.Order } )
+                .OrderBy( a => a.Order );
+                
                 var summaryList = accountSummaryQry.ToList();
                 var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
-                string currencyFormat = GlobalAttributesCache.Value( "CurrencySymbol" ) + "{0:n}";
-                lGrandTotal.Text = string.Format( currencyFormat, grandTotalAmount );
-                rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = string.Format( currencyFormat, a.TotalAmount ) } ).ToList();
+                lGrandTotal.Text = grandTotalAmount.FormatAsCurrency();
+                rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = a.TotalAmount.FormatAsCurrency() } ).ToList();
                 rptAccountSummary.DataBind();
             }
             else
@@ -976,7 +1117,54 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="dialog">The dialog.</param>
+        private void ShowDialog( string dialog )
+        {
+            hfActiveDialog.Value = dialog.ToUpper().Trim();
+            ShowDialog();
+        }
+
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        private void ShowDialog()
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "REASSIGN":
+                    dlgReassign.Show();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Hides the dialog.
+        /// </summary>
+        private void HideDialog()
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "REASSIGN":
+                    dlgReassign.Hide();
+                    break;
+            }
+
+            hfActiveDialog.Value = string.Empty;
+        }
+
         #endregion Internal Methods
 
-    }
+        /// <summary>
+        /// Handles the SelectionChanged event of the bddlOptions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void bddlOptions_SelectionChanged( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
+}
 }

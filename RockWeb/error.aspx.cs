@@ -152,10 +152,21 @@ namespace RockWeb
                     }
                 }
 
-                if ( showDetails )
+                if ( ex is HttpRequestValidationException )
                 {
                     lErrorInfo.Text = "<h3>Exception Log:</h3>";
-                    ProcessException( ex, " " );
+                    lErrorInfo.Text += "<div class=\"alert alert-danger\">";
+                    lErrorInfo.Text += "<h4>Invalid Content</h4>";
+                    lErrorInfo.Text += "<p>One or more of the fields contained invalid characters. Please make sure that your entries do not contain any angle brackets like &lt; or &gt;.";
+                    lErrorInfo.Text += "</div>";
+                }
+                else
+                {
+                    if ( showDetails )
+                    {
+                        lErrorInfo.Text = "<h3>Exception Log:</h3>";
+                        ProcessException( ex, " " );
+                    }
                 }
 
                 if ( Request.Headers["X-Requested-With"] == "XMLHttpRequest" )
@@ -163,24 +174,31 @@ namespace RockWeb
                     Response.StatusCode = 500;
                     Response.Clear();
 
-                    if ( showDetails )
+                    if ( ex is HttpRequestValidationException )
                     {
-                        var stackTrace = ex.StackTrace;
-                        // go get the important exception
-                        while ( ex.InnerException != null )
-                        {
-                            ex = ex.InnerException;
-                            if (ex != null)
-                            {
-                                stackTrace = ex.StackTrace + "<br/>" + stackTrace;
-                            }
-                        }
-
-                        Response.Write( string.Format( "{0}<p><pre>{1}</pre>", ex.Message, stackTrace ) );
+                        Response.Write( "One or more of the fields contains invalid characters. Please make sure that your entries do not contain any angle brackets like &lt; or &gt;." );
                     }
                     else
                     {
-                        Response.Write( "An error has occurred while processing your request.  Your organization's administrators have been notified of this problem." );
+                        if ( showDetails )
+                        {
+                            var stackTrace = HttpUtility.HtmlEncode( ex.StackTrace );
+                            // go get the important exception
+                            while ( ex.InnerException != null )
+                            {
+                                ex = ex.InnerException;
+                                if ( ex != null )
+                                {
+                                    stackTrace = HttpUtility.HtmlEncode( ex.StackTrace ) + "<br/>" + stackTrace;
+                                }
+                            }
+
+                            Response.Write( string.Format( "{0}<p><pre>{1}</pre>", HttpUtility.HtmlEncode( ex.Message ), stackTrace ) );
+                        }
+                        else
+                        {
+                            Response.Write( "An error has occurred while processing your request.  Your organization's administrators have been notified of this problem." );
+                        }
                     }
 
                     Response.Flush();
@@ -198,9 +216,9 @@ namespace RockWeb
         private void ProcessException( Exception ex, string exLevel )
         {
             lErrorInfo.Text += "<div class=\"alert alert-danger\">";
-            lErrorInfo.Text += "<h4>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h4>";
-            lErrorInfo.Text += "<p><strong>Message</strong><br>" + ex.Message + "</p>";
-            lErrorInfo.Text += "<p><strong>Stack Trace</strong><br><pre>" + ex.StackTrace + "</pre></p>";
+            lErrorInfo.Text += "<h4>" + exLevel + ex.GetType().Name + " in " + HttpUtility.HtmlEncode( ex.Source ) + "</h4>";
+            lErrorInfo.Text += "<p><strong>Message</strong><br>" + HttpUtility.HtmlEncode( ex.Message ) + "</p>";
+            lErrorInfo.Text += "<p><strong>Stack Trace</strong><br><pre>" + HttpUtility.HtmlEncode( ex.StackTrace ) + "</pre></p>";
             lErrorInfo.Text += "</div>";
 
             // check for inner exception
