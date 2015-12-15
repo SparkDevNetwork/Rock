@@ -120,6 +120,7 @@ function() {
                 a.NeighborhoodName ).Distinct().OrderBy( a => a ).ToList();
 
             ddlNeighborhoodPicker.Items.Clear();
+            ddlNeighborhoodPicker.Items.Add( new ListItem() );
             ddlNeighborhoodPicker.Items.AddRange( neighborHoodNames.Select( a => new ListItem( a ) ).ToArray() );
 
             filterControl.Controls.Add( ddlNeighborhoodPicker );
@@ -184,15 +185,18 @@ function() {
             {
                 string neighborhoodName = selectionValues[0];
 
-                var datamartPersonService = new Service<DatamartPerson>( rockContext );
-                var qryDatamartPerson = datamartPersonService.Queryable().Where( a => a.NeighborhoodName == neighborhoodName );
+                if ( !string.IsNullOrWhiteSpace( neighborhoodName ) )
+                {
+                    var datamartPersonService = new Service<DatamartPerson>( rockContext );
+                    var qryDatamartPerson = datamartPersonService.Queryable().Where( a => a.NeighborhoodName == neighborhoodName );
 
-                var qry = new PersonService( rockContext ).Queryable()
-                    .Where( p => qryDatamartPerson.Any( xx => xx.PersonId == p.Id ) );
+                    var qry = new PersonService( rockContext ).Queryable()
+                        .Where( p => qryDatamartPerson.Any( xx => xx.PersonId == p.Id ) );
 
-                Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
+                    Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
 
-                return extractedFilterExpression;
+                    return extractedFilterExpression;
+                }
             }
 
             return null;
