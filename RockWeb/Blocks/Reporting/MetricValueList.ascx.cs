@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Reporting
     {
         #region fields
 
+        private IQueryable<IEntity> entityLookupQry = null;
         private Dictionary<int, string> _entityNameLookup;
 
         /// <summary>
@@ -285,10 +286,22 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( _entityNameLookup != null && seriesId.HasValue )
             {
-                if ( _entityNameLookup.ContainsKey( seriesId.Value ) )
+                if ( !_entityNameLookup.ContainsKey( seriesId.Value ) )
                 {
-                    return _entityNameLookup[seriesId.Value];
+                    string value = string.Empty;
+                    if ( seriesId.HasValue )
+                    {
+                        var entityItem = entityLookupQry.Where( a => a.Id == seriesId.Value ).FirstOrDefault();
+                        if ( entityItem != null )
+                        {
+                            value = entityItem.ToString();
+                        }
+                    }
+
+                    _entityNameLookup.AddOrIgnore( seriesId.Value, value );
                 }
+
+                return _entityNameLookup[seriesId.Value];
             }
 
             return null;
@@ -329,11 +342,11 @@ namespace RockWeb.Blocks.Reporting
                 if ( entityTypeCache != null )
                 {
                     entityTypeNameColumn.HeaderText = entityTypeCache.FriendlyName;
-                    IQueryable<IEntity> entityQry = null;
+                    
                     if ( entityTypeCache.GetEntityType() == typeof( Rock.Model.Group ) )
                     {
                         // special case for Group since there could be a very large number (especially if you include families), so limit to GroupType.ShowInGroupList
-                        entityQry = new GroupService( rockContext ).Queryable().Where( a => a.GroupType.ShowInGroupList );
+                        entityLookupQry = new GroupService( rockContext ).Queryable().Where( a => a.GroupType.ShowInGroupList );
                     }
                     else
                     {
@@ -342,16 +355,7 @@ namespace RockWeb.Blocks.Reporting
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
                         var serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
                         MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
-                        entityQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
-                    }
-
-                    if ( entityQry != null )
-                    {
-                        var entityList = entityQry.ToList();
-                        foreach ( var e in entityList )
-                        {
-                            _entityNameLookup.AddOrReplace( e.Id, e.ToString() );
-                        }
+                        entityLookupQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
                     }
                 }
             }
