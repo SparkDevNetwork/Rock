@@ -420,7 +420,6 @@ namespace RockWeb.Blocks.Finance
                 txtCreditCard.Text = "5105105105105100";
                 txtCVV.Text = "023";
 
-                txtBankName.Text = "Test Bank";
                 txtRoutingNumber.Text = "111111118";
                 txtAccountNumber.Text = "1111111111";
                  */
@@ -1203,11 +1202,6 @@ namespace RockWeb.Blocks.Finance
                 }
                 else
                 {
-                    if ( string.IsNullOrWhiteSpace( txtBankName.Text ) )
-                    {
-                        errorMessages.Add( "Make sure to enter a bank name" );
-                    }
-
                     if ( string.IsNullOrWhiteSpace( txtRoutingNumber.Text ) )
                     {
                         errorMessages.Add( "Make sure to enter a valid routing number" );
@@ -1385,7 +1379,6 @@ namespace RockWeb.Blocks.Finance
         private ACHPaymentInfo GetACHInfo()
         {
             var ach = new ACHPaymentInfo( txtAccountNumber.Text, txtRoutingNumber.Text, rblAccountType.SelectedValue == "Savings" ? BankAccountType.Savings : BankAccountType.Checking );
-            ach.BankName = txtBankName.Text;
             return ach;
         }
 

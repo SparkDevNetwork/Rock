@@ -214,7 +214,6 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
-    <Compile Include="Attribute\EmailTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CustomCheckboxListFieldAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -237,7 +236,6 @@
     <Compile Include="Data\BoundFieldTypeAttribute.cs" />
     <Compile Include="Chart\IChartData.cs" />
     <Compile Include="Data\FieldTypeAttribute.cs" />
-    <Compile Include="Data\IgnoreLiquid.cs" />
     <Compile Include="Data\Interception\QueryHintDbCommandInterceptor.cs" />
     <Compile Include="Data\Interception\QueryHintScope.cs" />
     <Compile Include="Data\IRockEntity.cs" />
@@ -877,7 +875,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Field\Types\KeyValueListFieldType.cs" />
-    <Compile Include="Field\Types\EmailTemplateFieldType.cs" />
     <Compile Include="Field\Types\EntityTypeFieldType.cs" />
     <Compile Include="Field\Types\GroupFieldType.cs" />
     <Compile Include="Field\Types\GroupTypesFieldType.cs" />
@@ -994,7 +991,6 @@
     <Compile Include="Web\UI\Controls\NewFamily\ContactInfo.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SchedulePicker.cs" />
     <Compile Include="Web\UI\Controls\RockRadioButton.cs" />
-    <Compile Include="Web\UI\Controls\ToolkitScriptManager.cs" />
     <Compile Include="Web\UI\Controls\UrlLinkBox.cs" />
     <Compile Include="Web\UI\Controls\EmailBox.cs" />
     <Compile Include="Web\UI\Controls\Chart\BarChart.cs" />
@@ -1006,7 +1002,6 @@
     <Compile Include="Web\UI\Controls\Grid\LiquidField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ListDelimitedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonMergeField.cs" />
-    <Compile Include="Web\UI\Controls\Grid\TemplateFieldUnselected.cs" />
     <Compile Include="Web\UI\Controls\Grid\SelectField.cs" />
     <Compile Include="Web\UI\Controls\Grid\RockBoundField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LinkButtonField.cs" />
@@ -1126,7 +1121,6 @@
     </Compile>
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\ISecondaryBlock.cs" />
-    <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Workflow\Action\ActivateActions.cs" />
     <Compile Include="Workflow\Action\RemovePersonFromGroupAttribute.cs" />

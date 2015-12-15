@@ -252,10 +252,24 @@ namespace RockWeb.Blocks.Finance
 
                     // Requery the batch to support EF navigation properties
                     var savedBatch = GetBatch( batch.Id );
-
                     ShowReadonlyDetails( savedBatch );
-                }
 
+                    // If there is a batch context item, update the context's properties with new values
+                    var contextObjects = new Dictionary<string, object>();
+                    foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
+                    {
+                        var contextEntity = RockPage.GetCurrentContext( contextEntityType );
+                        if ( contextEntity is FinancialBatch )
+                        {
+                            var contextBatch = contextEntity as FinancialBatch;
+                            contextBatch.CopyPropertiesFrom( batch );
+                        }
+                    }
+
+                    // Then refresh transaction list
+                    RockPage.UpdateBlocks( "~/Blocks/Finance/TransactionList.ascx" );
+
+                }
             }
         }
 

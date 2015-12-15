@@ -250,19 +250,6 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the inverse relationship.
-        /// </summary>
-        /// <param name="groupMember">The group member.</param>
-        /// <param name="createGroup">if set to <c>true</c> [create group].</param>
-        /// <param name="personAlias">The person alias.</param>
-        /// <returns></returns>
-        [Obsolete("Use the other GetInverseRelationship")]
-        public GroupMember GetInverseRelationship( GroupMember groupMember, bool createGroup, PersonAlias personAlias )
-        {
-            return GetInverseRelationship( groupMember, createGroup );
-        }
-
-        /// <summary>
-        /// Gets the inverse relationship.
         /// Returns the <see cref="Rock.Model.GroupMember" /> who has an inverse relationship to the provided <see cref="Rock.Model.GroupMember" />.
         /// </summary>
         /// <param name="groupMember">A <see cref="Rock.Model.GroupMember" /> representing the person to find the inverse relationship for.</param>

@@ -321,17 +321,6 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Returns all campuses
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        [Obsolete( "Use All() method instead. RockContext parameter is no longer needed." )]
-        public static List<CampusCache> All( RockContext rockContext )
-        {
-            return All();
-        }
-
-        /// <summary>
-        /// Returns all campuses
-        /// </summary>
         /// <returns></returns>
         public static List<CampusCache> All()
         {

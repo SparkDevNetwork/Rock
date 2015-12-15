@@ -55,17 +55,6 @@ namespace Rock
             return value ? "True" : "False";
         }
 
-        /// <summary>
-        /// Use AsBoolean() instead.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        [Obsolete( "Use AsBoolean() instead" )]
-        public static bool FromTrueFalse( this string value )
-        {
-            return value.Equals( "True" );
-        }
-
         #endregion Boolean Extensions
     }
 }

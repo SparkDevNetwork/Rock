@@ -377,24 +377,6 @@ namespace Rock.Web.Cache
         public int? PageViewRetentionPeriodDays { get; set; }
 
         /// <summary>
-        /// Gets or sets the facebook app id.
-        /// </summary>
-        /// <value>
-        /// The facebook app id.
-        /// </value>
-        [Obsolete( "Attribute value of Facebook Authentication provider are used instead." )]
-        public string FacebookAppId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the facebook app secret.
-        /// </summary>
-        /// <value>
-        /// The facebook app secret.
-        /// </value>
-        [Obsolete( "Attribute value of Facebook Authentication provider are used instead." )]
-        public string FacebookAppSecret { get; set; }
-
-        /// <summary>
         /// Gets the default page.
         /// </summary>
         public PageCache DefaultPage
