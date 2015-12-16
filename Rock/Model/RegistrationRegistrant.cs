@@ -235,6 +235,25 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the person.
+        /// </summary>
+        /// <value>
+        /// The person.
+        /// </value>
+        [LavaInclude]
+        public virtual Person Person
+        {
+            get
+            {
+                if ( PersonAlias != null )
+                {
+                    return PersonAlias.Person;
+                }
+                return null;
+            }
+        }
+
         #endregion
 
         #region Methods

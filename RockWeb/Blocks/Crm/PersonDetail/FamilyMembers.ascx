@@ -53,8 +53,11 @@
                                                 <%# Eval("Location.FormattedHtmlAddress") %>
                                             </div>
                                             <div class="pull-left rollover-item">
-                                                <asp:LinkButton ID="lbVerify" runat="server">
+                                                <asp:LinkButton ID="lbVerify" runat="server" CommandName="verify" ToolTip="Verify Address">
                                                     <i class="fa fa-globe"></i>
+                                                </asp:LinkButton>
+                                                <asp:LinkButton ID="lbLocationSettings" runat="server" CommandName="settings" ToolTip="Configure Location">
+                                                    <i class="fa fa-gear"></i>
                                                 </asp:LinkButton>
                                             </div>
                                         </li>

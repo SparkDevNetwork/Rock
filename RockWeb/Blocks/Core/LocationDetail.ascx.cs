@@ -50,6 +50,8 @@ namespace RockWeb.Blocks.Core
 
     public partial class LocationDetail : RockBlock, IDetailBlock
     {
+        private int? _personId = null;
+
         private int? LocationTypeValueId
         {
             get { return ViewState["LocationTypeValueId"] as int?; }
@@ -90,9 +92,12 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+            _personId = PageParameter( "PersonId" ).AsIntegerOrNull();
+
             if ( !Page.IsPostBack )
             {
                 string locationId = PageParameter( "LocationId" );
+
                 if ( !string.IsNullOrWhiteSpace( locationId ) )
                 {
                     ShowDetail( locationId.AsInteger(), PageParameter( "ParentLocationId" ).AsIntegerOrNull() );
@@ -274,13 +279,20 @@ namespace RockWeb.Blocks.Core
 
             } );
 
-            Rock.CheckIn.KioskDevice.FlushAll();
+            if ( _personId.HasValue )
+            {
+                NavigateToParentPage( new Dictionary<string, string> { { "PersonId", _personId.Value.ToString() } } );
+            }
+            else
+            {
+                Rock.CheckIn.KioskDevice.FlushAll();
 
-            var qryParams = new Dictionary<string, string>();
-            qryParams["LocationId"] = location.Id.ToString();
-            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+                var qryParams = new Dictionary<string, string>();
+                qryParams["LocationId"] = location.Id.ToString();
+                qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
 
-            NavigateToPage( RockPage.Guid, qryParams );
+                NavigateToPage( RockPage.Guid, qryParams );
+            }
         }
 
         /// <summary>
@@ -290,29 +302,36 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            if ( hfLocationId.Value.Equals( "0" ) )
+            if ( _personId.HasValue )
             {
-                int? parentLocationId = PageParameter( "ParentLocationId" ).AsIntegerOrNull();
-                if ( parentLocationId.HasValue )
-                {
-                    // Cancelling on Add, and we know the parentLocationId, so we are probably in treeview mode, so navigate to the current page
-                    var qryParams = new Dictionary<string, string>();
-                    qryParams["LocationId"] = parentLocationId.ToString();
-                    qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
-                    NavigateToPage( RockPage.Guid, qryParams );
-                }
-                else
-                {
-                    // Cancelling on Add.  Return to Grid
-                    NavigateToParentPage();
-                }
+                NavigateToParentPage( new Dictionary<string, string> { { "PersonId", _personId.Value.ToString() } } );
             }
             else
             {
-                // Cancelling on Edit.  Return to Details
-                LocationService locationService = new LocationService( new RockContext() );
-                Location location = locationService.Get( int.Parse( hfLocationId.Value ) );
-                ShowReadonlyDetails( location );
+                if ( hfLocationId.Value.Equals( "0" ) )
+                {
+                    int? parentLocationId = PageParameter( "ParentLocationId" ).AsIntegerOrNull();
+                    if ( parentLocationId.HasValue )
+                    {
+                        // Cancelling on Add, and we know the parentLocationId, so we are probably in treeview mode, so navigate to the current page
+                        var qryParams = new Dictionary<string, string>();
+                        qryParams["LocationId"] = parentLocationId.ToString();
+                        qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+                        NavigateToPage( RockPage.Guid, qryParams );
+                    }
+                    else
+                    {
+                        // Cancelling on Add.  Return to Grid
+                        NavigateToParentPage();
+                    }
+                }
+                else
+                {
+                    // Cancelling on Edit.  Return to Details
+                    LocationService locationService = new LocationService( new RockContext() );
+                    Location location = locationService.Get( int.Parse( hfLocationId.Value ) );
+                    ShowReadonlyDetails( location );
+                }
             }
         }
 
@@ -425,7 +444,7 @@ namespace RockWeb.Blocks.Core
             {
                 btnEdit.Visible = true;
                 btnDelete.Visible = true;
-                if ( location.Id > 0 )
+                if ( location.Id > 0 && !_personId.HasValue )
                 {
                     ShowReadonlyDetails( location );
                 }
@@ -443,6 +462,10 @@ namespace RockWeb.Blocks.Core
         /// <param name="location">The location.</param>
         private void ShowEditDetails( Location location )
         {
+            divAdvSettings.Visible = !_personId.HasValue;
+            cbIsActive.Visible = !_personId.HasValue;
+            geopFence.Visible = !_personId.HasValue;
+
             if ( location.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( Location.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -450,6 +473,11 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
+                if ( _personId.HasValue )
+                {
+                    hlInactive.Visible = false;
+                }
+
                 if ( string.IsNullOrWhiteSpace( location.Name ) )
                 {
                     lReadOnlyTitle.Text = location.ToString().FormatAsHtmlTitle();

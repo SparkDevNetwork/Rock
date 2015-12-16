@@ -12,6 +12,13 @@
                     <a href="#" onclick="$('.js-slidingdaterange-help').slideToggle()">
                         <i class='fa fa-question-circle'></i>
                     </a>
+                    <button id="btnCopyToClipboard" runat="server" disabled="disabled" 
+                        data-toggle="tooltip" data-placement="top" data-title="Copy Report Link to Clipboard" 
+                        class="btn btn-link padding-all-none " 
+                        onmouseover="$(this).tooltip('hide').attr('data-original-title','Copy Report Link to Clipboard').tooltip('fixTitle').tooltip('show');"
+                        onclick="$(this).tooltip('hide').attr('data-original-title','Copied').tooltip('fixTitle').tooltip('show');return false;">
+                        <i class='fa fa-clipboard'></i>
+                    </button>
                 </div>
             </div>
 
@@ -24,6 +31,8 @@
             <div class="panel-body">
                 <div class="row row-eq-height-md">
                     <div class="col-md-3 filter-options">
+
+                        <asp:HiddenField ID="hfFilterUrl" runat="server" />
 
                         <Rock:GroupTypePicker ID="ddlAttendanceType" runat="server" Label="Attendance Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
                         <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="false" />

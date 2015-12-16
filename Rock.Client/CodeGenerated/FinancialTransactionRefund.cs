@@ -46,6 +46,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public int? OriginalTransactionId { get; set; }
+
+        /// <summary />
         public string RefundReasonSummary { get; set; }
 
         /// <summary />
@@ -87,6 +90,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.OriginalTransactionId = source.OriginalTransactionId;
             this.RefundReasonSummary = source.RefundReasonSummary;
             this.RefundReasonValueId = source.RefundReasonValueId;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -104,6 +108,12 @@ namespace Rock.Client
     /// </summary>
     public partial class FinancialTransactionRefund : FinancialTransactionRefundEntity
     {
+        /// <summary />
+        public FinancialTransaction FinancialTransaction { get; set; }
+
+        /// <summary />
+        public FinancialTransaction OriginalTransaction { get; set; }
+
         /// <summary />
         public DefinedValue RefundReasonValue { get; set; }
 

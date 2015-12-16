@@ -51,8 +51,12 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 ", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
     [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 3 )]
     [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers." )]
+    [BooleanField( "Display Middle Name", "Display the middle name of the person.")]
     public partial class Bio : PersonBlock
     {
+        
+        
+        
         #region Base Control Methods
 
         /// <summary>
@@ -273,7 +277,15 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
             else
             {
-                nameText = string.Format( "<span class='first-word'>{0}</span> {1}", Person.NickName, Person.LastName );
+                if (GetAttributeValue( "DisplayMiddleName" ).AsBoolean() && !String.IsNullOrWhiteSpace(Person.MiddleName))
+                {
+                    nameText = string.Format( "<span class='first-word'>{0}</span> {1} {2}", Person.NickName, Person.MiddleName, Person.LastName );
+                }
+                else
+                {
+                    nameText = string.Format( "<span class='first-word'>{0}</span> {1}", Person.NickName, Person.LastName );
+                }
+                
 
                 // Add First Name if different from NickName.
                 if ( Person.NickName != Person.FirstName )
@@ -351,11 +363,12 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         FormatPhoneNumber( bool unlisted, object countryCode, object number, int phoneNumberTypeId, bool smsEnabled = false )
         {
             string formattedNumber = "Unlisted";
+
+            string cc = countryCode as string ?? string.Empty;
+            string n = number as string ?? string.Empty;
+
             if ( !unlisted )
             {
-                string cc = countryCode as string ?? string.Empty;
-                string n = number as string ?? string.Empty;
-
                 if ( GetAttributeValue( "DisplayCountryCode" ).AsBoolean() )
                 {
                     formattedNumber = PhoneNumber.FormattedNumber( cc, n, true );
@@ -366,16 +379,22 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
+            // if the page is being loaded locally then add the tel:// link
+            if ( RockPage.IsMobileRequest )
+            {
+                formattedNumber = string.Format( "<a href=\"tel://{0}\">{1}</a>", n, formattedNumber );
+            }
+
             var phoneType = DefinedValueCache.Read( phoneNumberTypeId );
             if ( phoneType != null )
             {
                 if ( smsEnabled )
                 {
-                    return string.Format( "{0} <small>{1} <i class='fa fa-comments'></i></small>", formattedNumber, phoneType.Value );
+                    formattedNumber = string.Format( "{0} <small>{1} <i class='fa fa-comments'></i></small>", formattedNumber, phoneType.Value );
                 }
                 else
                 {
-                    return string.Format( "{0} <small>{1}</small>", formattedNumber, phoneType.Value );
+                    formattedNumber = string.Format( "{0} <small>{1}</small>", formattedNumber, phoneType.Value );
                 }
             }
 

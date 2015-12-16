@@ -2,10 +2,10 @@
 
 <asp:UpdatePanel ID="upCategoryTree" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
     <ContentTemplate>
-        <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" ClientIDMode="Static" />
-        <asp:HiddenField ID="hfSelectedItemId" runat="server" ClientIDMode="Static" />
-        <asp:HiddenField ID="hfPageRouteTemplate" runat="server" ClientIDMode="Static" />
-        <asp:HiddenField ID="hfDetailPageUrl" runat="server" ClientIDMode="Static" />
+        <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" />
+        <asp:HiddenField ID="hfSelectedItemId" runat="server" />
+        <asp:HiddenField ID="hfPageRouteTemplate" runat="server" />
+        <asp:HiddenField ID="hfDetailPageUrl" runat="server" />
 
         <div class="treeview">
 
@@ -37,7 +37,7 @@
                 <div class="viewport">
                     <div class="overview">
                         <div class="panel-body treeview-frame">
-                            <div id="treeview-content"></div>
+                            <asp:Panel ID="pnlTreeviewContent" runat="server" />
                         </div>
                     </div>
                 </div>
@@ -55,7 +55,7 @@
 
         <script type="text/javascript">
 
-            var scrollbCategory = $('.treeview-scroll');
+            var scrollbCategory = $('#<%=pnlTreeviewContent.ClientID%>').closest('.treeview-scroll');
             scrollbCategory.tinyscrollbar({ axis: 'x', sizethumb: 60, size: 200 });
 
             // resize scrollbar when the window resizes
@@ -67,7 +67,7 @@
 
             // scrollbar hide/show
             var timerScrollHide;
-            $("[id$='upCategoryTree']").on({
+            $("#<%=upCategoryTree.ClientID%>").on({
                 mouseenter: function () {
                     clearTimeout(timerScrollHide);
                     $("[id$='upCategoryTree'] div[class~='scrollbar'] div[class='track'").fadeIn('fast');
@@ -81,12 +81,12 @@
 
             if ('<%= RestParms %>' == '') {
                 // EntityType not set
-                $('#treeview-content').hide();
+                $('#<%=pnlTreeviewContent.ClientID%>').hide();
             }
 
             $(function () {
-                var $selectedId = $('#hfSelectedItemId'),
-                    $expandedIds = $('#hfInitialCategoryParentIds'),
+                var $selectedId = $('#<%=hfSelectedItemId.ClientID%>'),
+                    $expandedIds = $('#<%=hfInitialCategoryParentIds.ClientID%>'),
                     _mapCategories = function (arr) {
                         return $.map(arr, function (item) {
                             var node = {
@@ -111,7 +111,7 @@
                         });
                     };
 
-                $('#treeview-content')
+                $('#<%=pnlTreeviewContent.ClientID%>')
                     .on('rockTree:selected', function (e, id) {
 
                         var $node = $('[data-id="' + id + '"]'),
@@ -132,7 +132,7 @@
                                 return $(this).attr('data-id')
                             }).get().join(',');
 
-                            var pageRouteTemplate = $('#hfPageRouteTemplate').val();
+                            var pageRouteTemplate = $('#<%=hfPageRouteTemplate.ClientID%>').val();
                             var locationUrl = "";
                             var regex = new RegExp("{" + urlParameter + "}", "i");
 
@@ -141,7 +141,7 @@
                                 locationUrl += "?ExpandedIds=" + encodeURIComponent(expandedDataIds);
                             }
                             else {
-                                var detailPageUrl = $('#hfDetailPageUrl').val();
+                                var detailPageUrl = $('#<%=hfDetailPageUrl.ClientID%>').val();
                                 if (detailPageUrl) {
                                     locationUrl = Rock.settings.get('baseUrl') + detailPageUrl + itemSearch;
                                 }

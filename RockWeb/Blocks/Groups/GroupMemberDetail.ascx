@@ -33,7 +33,7 @@
                             <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" Label="Person" CssClass="js-authorizedperson" Required="true" OnSelectPerson="ppGroupMemberPerson_SelectPerson" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox runat="server" ID="cbIsNotified" Label="Is Notified" />
+                            <Rock:RockCheckBox runat="server" ID="cbIsNotified" Label="Notified" />
                         </div>
                     </div>
 
@@ -44,6 +44,15 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
+                            <Rock:RockControlWrapper id="rcwLinkedRegistrations" runat="server" Label="Registration">
+                                <ul class="list-unstyled">
+                                    <asp:Repeater ID="rptLinkedRegistrations" runat="server">
+                                        <ItemTemplate>
+                                            <li><a href='<%# RegistrationUrl( (int)Eval("Id" ) ) %>'><%# Eval("Name") %></a></li>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </ul>
+                            </Rock:RockControlWrapper>
                         </div>
                     </div>
 
@@ -92,6 +101,7 @@
                         <Rock:RockLiteral ID="lCurrentGroup" runat="server" Label="Current Group" />
                         <Rock:GroupPicker ID="gpMoveGroupMember" runat="server" Required="true" Label="Destination Group" ValidationGroup="vgMoveGroupMember" OnSelectItem="gpMoveGroupMember_SelectItem" />
                         <Rock:GroupRolePicker ID="grpMoveGroupMember" runat="server" Label="Role" ValidationGroup="vgMoveGroupMember" GroupTypeId="0" />   
+                        <Rock:RockCheckBox ID="cbMoveGroupMemberMoveNotes" runat="server" ValidationGroup="vgMoveGroupMember" Label="Move Notes" Help="If this group member has notes, move these notes with them to their new group." />
                         <Rock:NotificationBox ID="nbMoveGroupMemberWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
                     </div>
                 </div>

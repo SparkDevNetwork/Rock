@@ -37,6 +37,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using System.Globalization;
+using System.Web;
 
 namespace RockWeb.Blocks.Examples
 {
@@ -157,6 +158,11 @@ namespace RockWeb.Blocks.Examples
         private Dictionary<Guid, int> _peopleDictionary = new Dictionary<Guid, int>();
 
         /// <summary>
+        /// Holds a cached copy of the Id for each group Guid
+        /// </summary>
+        private Dictionary<Guid, int> _groupDictionary = new Dictionary<Guid, int>();
+
+        /// <summary>
         /// Holds a cached copy of the attribute Id for each person Guid
         /// </summary>
         private Dictionary<Guid, int> _peopleAliasDictionary = new Dictionary<Guid, int>();
@@ -197,6 +203,26 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         private static int _kioskDeviceId = 2;
 
+        /// <summary>
+        /// The marital status DefinedType
+        /// </summary>
+        DefinedType _maritalStatusDefinedType = null;
+
+        /// <summary>
+        /// The small group topic DefinedType
+        /// </summary>
+        DefinedType _smallGroupTopicDefinedType = null;
+
+        /// <summary>
+        /// The record status reason DefinedType
+        /// </summary>
+        DefinedType _recordStatusReasonDefinedType = null;
+
+        /// <summary>
+        /// The suffix DefinedType
+        /// </summary>
+        DefinedType _suffixDefinedType = null;
+
         #endregion
 
         #region Properties
@@ -230,8 +256,11 @@ namespace RockWeb.Blocks.Examples
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            Server.ScriptTimeout = 300;
-            ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 300;
+
+            // Set timeout for up to 30 minutes (just like installer)
+            Server.ScriptTimeout = 1800;
+            ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 1800;
+
             if ( !IsPostBack )
             {
                 tbPassword.Focus();
@@ -286,14 +315,15 @@ namespace RockWeb.Blocks.Examples
             }
             catch ( Exception ex )
             {
+                _hubContext.Clients.All.showLog();
                 nbMessage.Visible = true;
                 nbMessage.Title = "Oops!";
                 nbMessage.NotificationBoxType = NotificationBoxType.Danger;
                 nbMessage.Text = string.Format(
-                    "That wasn't supposed to happen.  The error was:<br/>{0}<br/>{1}<br/>{2}",
+                    "That wasn't supposed to happen. The error was:<br/>{0}<br/>{1}<br/>{2}",
                     ex.Message.ConvertCrLfToHtmlBr(),
                     FlattenInnerExceptions( ex.InnerException ),
-                    ex.StackTrace.ConvertCrLfToHtmlBr() );
+                    HttpUtility.HtmlEncode( ex.StackTrace ).ConvertCrLfToHtmlBr() );
             }
 
             if ( File.Exists( saveFile ) )
@@ -438,9 +468,17 @@ namespace RockWeb.Blocks.Examples
             RockContext rockContext = new RockContext();
             rockContext.Configuration.AutoDetectChangesEnabled = false;
 
+            DefinedTypeService definedTypeService = new DefinedTypeService( rockContext );
+            _maritalStatusDefinedType = definedTypeService.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
+            _smallGroupTopicDefinedType = definedTypeService.Get( Rock.SystemGuid.DefinedType.SMALL_GROUP_TOPIC.AsGuid() );
+            _recordStatusReasonDefinedType = definedTypeService.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
+            _suffixDefinedType = definedTypeService.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
+
             var elemFamilies = xdoc.Element( "data" ).Element( "families" );
             var elemGroups = xdoc.Element( "data" ).Element( "groups" );
             var elemRelationships = xdoc.Element( "data" ).Element( "relationships" );
+            var elemConnections = xdoc.Element( "data" ).Element( "connections" );
+            var elemFollowing = xdoc.Element( "data" ).Element( "following" );
             var elemSecurityGroups = xdoc.Element( "data" ).Element( "securityRoles" );
             TimeSpan ts;
 
@@ -481,6 +519,14 @@ namespace RockWeb.Blocks.Examples
                 ts = _stopwatch.Elapsed;
                 AppendFormat( "{0:00}:{1:00}.{2:00} groups added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
+                AddConnections( elemConnections, rockContext );
+                ts = _stopwatch.Elapsed;
+                AppendFormat( "{0:00}:{1:00}.{2:00} people connection requests added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
+                AddFollowing( elemFollowing, rockContext );
+                ts = _stopwatch.Elapsed;
+                AppendFormat( "{0:00}:{1:00}.{2:00} people following added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
                 AddToSecurityGroups( elemSecurityGroups, rockContext );
                 ts = _stopwatch.Elapsed;
                 AppendFormat( "{0:00}:{1:00}.{2:00} people added to security roles<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
@@ -503,6 +549,12 @@ namespace RockWeb.Blocks.Examples
                 rockContext.SaveChanges( disablePrePostProcessing: true );
                 ts = _stopwatch.Elapsed;
                 AppendFormat( "{0:00}:{1:00}.{2:00} notes added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
+                // Add Person Previous LastNames
+                AddPeoplesPreviousNames( elemFamilies, rockContext );
+                rockContext.SaveChanges( disablePrePostProcessing: true );
+                ts = _stopwatch.Elapsed;
+                AppendFormat( "{0:00}:{1:00}.{2:00} previous names added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
                 // Add Person Metaphone/Sounds-like stuff
                 AddMetaphone();
@@ -576,6 +628,45 @@ namespace RockWeb.Blocks.Examples
                 int personId = _peopleDictionary[ r.PersonGuid.AsGuid() ];
                 AddNote( personId, r.Type, r.Text, r.Date, r.ByPersonGuid, r.IsPrivate, r.IsAlert, rockContext );
 	        }
+        }
+
+        /// <summary>
+        /// Adds the peoples previous names.
+        /// </summary>
+        /// <param name="elemFamilies">The elem families.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void AddPeoplesPreviousNames( XElement elemFamilies, RockContext rockContext )
+        {
+            var previousNames = from n in elemFamilies.Elements( "family" ).Elements( "members" ).Elements( "person" ).Elements( "previousNames" ).Elements( "name" )
+                                  select new
+                                  {
+                                      PersonGuid = n.Parent.Parent.Attribute( "guid" ).Value,
+                                      LastName = n.Attribute( "lastName" ).Value,
+                                  };
+
+            foreach ( var r in previousNames )
+            {
+                int personId = _peopleDictionary[r.PersonGuid.AsGuid()];
+                int personAliasId = _peopleAliasDictionary[r.PersonGuid.AsGuid()];
+                AddPreviousName( personAliasId, r.LastName, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Adds the name of the previous.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="previousLastName">Last name of the previous.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void AddPreviousName( int personAliasId, string previousLastName, RockContext rockContext )
+        {
+                var personPreviousNameService = new PersonPreviousNameService( rockContext );
+                var previousName = new PersonPreviousName()
+                {
+                    LastName = previousLastName,
+                    PersonAliasId = personAliasId
+                };
+                personPreviousNameService.Add( previousName );
         }
 
         /// <summary>
@@ -837,6 +928,9 @@ namespace RockWeb.Blocks.Examples
 
             // Now save each person's attributevalues (who had them defined in the XML)
             // and add each person's ID to a dictionary for use later.
+            _stopwatch.Stop();
+            AppendFormat( "{0:00}:{1:00}.{2:00} saving attributes for everyone...<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
+            _stopwatch.Start();
             AttributeValueService attributeValueService = new AttributeValueService( rockContext );
             foreach ( var gm in allGroups.SelectMany( g => g.Members ) )
             {
@@ -863,14 +957,16 @@ namespace RockWeb.Blocks.Examples
                     }
                 }
             }
+            rockContext.ChangeTracker.DetectChanges();
+            rockContext.SaveChanges( disablePrePostProcessing: true );
 
             _stopwatch.Stop();
-            AppendFormat( "{0:00}:{1:00}.{2:00} saved attributes for everyone <br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
+            AppendFormat( "{0:00}:{1:00}.{2:00} attributes saved<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
             _stopwatch.Start();
 
             // Create person alias records for each person manually since we set disablePrePostProcessing=true on save
             PersonService personService = new PersonService( rockContext );
-            foreach ( var person in personService.Queryable( "Aliases" )
+            foreach ( var person in personService.Queryable( "Aliases", true )
                 .Where( p =>
                     _peopleDictionary.Keys.Contains( p.Guid ) &&
                     !p.Aliases.Any() ) )
@@ -879,6 +975,10 @@ namespace RockWeb.Blocks.Examples
             }
             rockContext.ChangeTracker.DetectChanges();
             rockContext.SaveChanges( disablePrePostProcessing: true );
+
+            _stopwatch.Stop();
+            AppendFormat( "{0:00}:{1:00}.{2:00} added person aliases<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
+            _stopwatch.Start();
 
             // Put the person alias ids into the people alias dictionary for later use.
             PersonAliasService personAliasService = new PersonAliasService( rockContext );
@@ -889,10 +989,6 @@ namespace RockWeb.Blocks.Examples
             { 
                 _peopleAliasDictionary.Add( personAlias.Person.Guid, personAlias.Id );
             }
-
-            _stopwatch.Stop();
-            AppendFormat( "{0:00}:{1:00}.{2:00} added person aliases<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
-            _stopwatch.Start();
 
             // Now that person aliases have been saved, save the attendance records
             var attendanceService = new AttendanceService( rockContext );
@@ -1038,12 +1134,12 @@ namespace RockWeb.Blocks.Examples
                 if ( elemGroup.Attribute( "studyTopic" ) != null )
                 {
                     var topic = elemGroup.Attribute( "studyTopic" ).Value;
-                    DefinedValueCache smallGroupTopicDefinedValue = smallGroupTopicType.DefinedValues.FirstOrDefault( a => a.Value == topic );
+                    DefinedValue smallGroupTopicDefinedValue = _smallGroupTopicDefinedType.DefinedValues.FirstOrDefault( a => a.Value == topic );
 
                     // add it as new if we didn't find it.
                     if ( smallGroupTopicDefinedValue == null )
                     {
-                        smallGroupTopicDefinedValue = AddDefinedTypeValue( topic, smallGroupTopicType, rockContext );
+                        smallGroupTopicDefinedValue = AddDefinedTypeValue( topic, _smallGroupTopicDefinedType, rockContext );
                     }
 
                     group.SetAttributeValue( "Topic", smallGroupTopicDefinedValue.Guid.ToString() );
@@ -1095,6 +1191,11 @@ namespace RockWeb.Blocks.Examples
                 // Now we have to save changes in order for the attributes to be saved correctly.
                 rockContext.SaveChanges();
                 group.SaveAttributeValues( rockContext );
+
+                if ( !_groupDictionary.ContainsKey( group.Guid ) )
+                {
+                    _groupDictionary.Add( group.Guid, group.Id );
+                }
 
                 // Now add any group location schedules
                 LocationService locationService = new LocationService( rockContext );
@@ -1153,29 +1254,143 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// Adds a new defined value to a given DefinedType.
         /// </summary>
-        /// <param name="topic">the string value of the new defined value</param>
-        /// <param name="definedTypeCache">a defined type cache to which the defined value will be added.</param>
+        /// <param name="stringValue">the string value of the new defined value</param>
+        /// <param name="definedType">a defined type to which the defined value will be added.</param>
         /// <param name="rockContext"></param>
         /// <returns></returns>
-        private DefinedValueCache AddDefinedTypeValue( string topic, DefinedTypeCache definedTypeCache, RockContext rockContext )
+        private DefinedValue AddDefinedTypeValue( string stringValue, DefinedType definedType, RockContext rockContext )
         {
             DefinedValueService definedValueService = new DefinedValueService( rockContext );
-            
+            DefinedTypeService definedTypeService = new DefinedTypeService( rockContext );
+
             DefinedValue definedValue = new DefinedValue {
                 Id = 0,
                 IsSystem = false,
-                Value = topic,
+                Value = stringValue,
                 Description = "",
                 CreatedDateTime = RockDateTime.Now,
-                DefinedTypeId = definedTypeCache.Id
+                DefinedTypeId = definedType.Id
             };
+
             definedValueService.Add( definedValue );
-            rockContext.SaveChanges();
+            rockContext.ChangeTracker.DetectChanges();
+            rockContext.SaveChanges( disablePrePostProcessing: true );
 
-            Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
-            Rock.Web.Cache.DefinedTypeCache.Flush( definedTypeCache.Id );
+            return definedValue;
+        }
 
-            return DefinedValueCache.Read( definedValue.Id, rockContext );
+        /// <summary>
+        /// Adds the following records from the given XML element.
+        /// </summary>
+        /// <example>
+        ///   &lt;following&gt;
+        ///       &lt;follows personGuid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" followsGuid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" type="person" /&gt;
+        ///   &lt;/connections&gt;
+        /// </example>
+        /// <param name="elemFollowing">The element with the following XML fragment.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void AddFollowing( XElement elemFollowing, RockContext rockContext )
+        {
+            if ( elemFollowing == null )
+            {
+                return;
+            }
+
+            FollowingService followingService = new FollowingService( rockContext );
+
+            int entityTypeId;
+            int entityId;
+
+            // Find the type and it's corresponding opportunity and then add a connection request for the given person.
+            foreach ( var element in elemFollowing.Elements( "follows" ) )
+            {
+                Guid personGuid = element.Attribute( "personGuid" ).Value.Trim().AsGuid();
+                Guid entityGuid = element.Attribute( "followsGuid" ).Value.Trim().AsGuid();
+
+                string entityTypeName = element.Attribute( "type" ).Value.Trim();
+                // only person (person aliases) are supported now.
+                if ( entityTypeName.ToLower() == "person" )
+                {
+                    entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.PersonAlias ) ).Id;
+                    entityId =  _peopleAliasDictionary[entityGuid];
+                }
+                else if ( entityTypeName.ToLower() == "group" )
+                {
+                    entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Group ) ).Id;
+                    entityId = _groupDictionary[entityGuid];
+                }
+
+                else
+                {
+                    // only person (person aliases) are supported as of now.
+                    continue;
+                }
+
+                Following following = new Following()
+                {
+                    PersonAliasId = _peopleAliasDictionary[personGuid],
+                    EntityTypeId = entityTypeId,
+                    EntityId = entityId,
+                    CreatedByPersonAliasId = _peopleAliasDictionary[personGuid],
+                    CreatedDateTime = RockDateTime.Now,
+                    ModifiedDateTime = RockDateTime.Now,
+                    ModifiedByPersonAliasId = _peopleAliasDictionary[personGuid]
+                };
+
+                followingService.Add( following );
+            }
+        }
+
+        /// <summary>
+        /// Adds the connections requests to the system from the given XML element.
+        /// </summary>
+        /// <example>
+        ///   &lt;connections&gt;
+        ///       &lt;connection type="Involvement" opportunity="Children's" comment="I would love to help teach kids about Jesus." date="2015-10-11T00:00:00" personGuid="1dfff821-e97c-4324-9883-cf59b5c5bdd6" /&gt;
+        ///   &lt;/connections&gt;
+        /// </example>
+        /// <param name="elemConnections">The elem connections.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void AddConnections( XElement elemConnections, RockContext rockContext )
+        {
+            if ( elemConnections == null )
+            {
+                return;
+            }
+
+            ConnectionRequestService crService = new ConnectionRequestService( rockContext );
+            ConnectionOpportunityService coService = new ConnectionOpportunityService( rockContext );
+            ConnectionTypeService typeService = new ConnectionTypeService( rockContext );
+            ConnectionStatusService connectionStatusService = new ConnectionStatusService( rockContext );
+            ConnectionStatus noContact = connectionStatusService.Get( "901e1a6a-0e91-4f42-880f-47c061c24e0c".AsGuid() );
+
+            // Find the type and it's corresponding opportunity and then add a connection request for the given person.
+            foreach ( var element in elemConnections.Elements( "connection" ) )
+            {
+                string connectionTypeName = element.Attribute( "type" ).Value.Trim();
+                string opportunityName = element.Attribute( "opportunity" ).Value.Trim();
+                string comment = element.Attribute( "comment" ).Value.Trim();
+                DateTime date = DateTime.Parse( element.Attribute( "date" ).Value.Trim(), new CultureInfo( "en-US" ) );
+                Guid personGuid = element.Attribute( "personGuid" ).Value.Trim().AsGuid();
+
+                var connectionOpportunity = coService.Queryable( "ConnectionType" ).AsNoTracking().Where( co => co.ConnectionType.Name == connectionTypeName && co.Name == opportunityName ).FirstOrDefault();
+                
+                // make sure we found a matching connection opportunity
+                if ( connectionOpportunity != null )
+                {
+                    ConnectionRequest connectionRequest = new ConnectionRequest()
+                    {
+                        ConnectionOpportunityId = connectionOpportunity.Id,
+                        PersonAliasId = _peopleAliasDictionary[personGuid],
+                        Comments = comment,
+                        ConnectionStatus = noContact,
+                        ConnectionState = global::ConnectionState.Active,
+                        CreatedDateTime = date
+                    };
+
+                    crService.Add( connectionRequest );
+                }
+            }
         }
 
         /// <summary>
@@ -1247,6 +1462,8 @@ namespace RockWeb.Blocks.Examples
             CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
             FinancialBatchService financialBatchService = new FinancialBatchService( rockContext );
             FinancialTransactionService financialTransactionService = new FinancialTransactionService( rockContext );
+            PersonPreviousNameService personPreviousNameService = new PersonPreviousNameService( rockContext );
+            ConnectionRequestService connectionRequestService = new ConnectionRequestService( rockContext );
 
             // delete the batch data
             List<int> imageIds = new List<int>();
@@ -1272,7 +1489,7 @@ namespace RockWeb.Blocks.Examples
                 if ( family != null )
                 {
                     var groupMemberService = new GroupMemberService( rockContext );
-                    var members = groupMemberService.GetByGroupId( family.Id );
+                    var members = groupMemberService.GetByGroupId( family.Id, true );
 
                     // delete the people records
                     string errorMessage;
@@ -1324,11 +1541,17 @@ namespace RockWeb.Blocks.Examples
                             noteService.Delete( note );
                         }
 
-                        //// delete any GroupMember records they have
-                        //foreach ( var groupMember in groupMemberService.Queryable().Where( gm => gm.PersonId == person.Id ) )
-                        //{
-                        //    groupMemberService.Delete( groupMember );
-                        //}
+                        // delete previous names on their records
+                        foreach ( var previousName in personPreviousNameService.Queryable().Where( r => r.PersonAlias.PersonId == person.Id ) )
+                        {
+                            personPreviousNameService.Delete( previousName );
+                        }
+
+                        // delete any GroupMember records they have
+                        foreach ( var groupMember in groupMemberService.Queryable().Where( gm => gm.PersonId == person.Id ) )
+                        {
+                            groupMemberService.Delete( groupMember );
+                        }
 
                         //// delete any Authorization data
                         //foreach ( var auth in authService.Queryable().Where( a => a.PersonId == person.Id ) )
@@ -1345,6 +1568,12 @@ namespace RockWeb.Blocks.Examples
                             }
 
                             personAliasService.Delete( alias );
+                        }
+
+                        // delete any connection requests tied to them
+                        foreach ( var request in connectionRequestService.Queryable().Where( r => r.PersonAlias.PersonId == person.Id || r.ConnectorPersonAlias.PersonId == person.Id ) )
+                        {
+                            connectionRequestService.Delete( request );
                         }
 
                         // Save these changes so the CanDelete passes the check...
@@ -1875,9 +2104,18 @@ namespace RockWeb.Blocks.Examples
                     person = new Person();
                     person.Guid = guid;
                     person.FirstName = personElem.Attribute( "firstName" ).Value.Trim();
+                    if ( personElem.Attribute( "suffix") != null )
+                    {
+                        person.SuffixValueId = GetOrAddDefinedValueId( personElem.Attribute( "suffix" ).Value.Trim(), _suffixDefinedType, rockContext );
+                    }
+
                     if ( personElem.Attribute( "nickName" ) != null )
                     {
                         person.NickName = personElem.Attribute( "nickName" ).Value.Trim();
+                    }
+                    else
+                    {
+                        person.NickName = personElem.Attribute( "firstName" ).Value.Trim();
                     }
 
                     if ( personElem.Attribute( "lastName" ) != null )
@@ -1935,14 +2173,23 @@ namespace RockWeb.Blocks.Examples
                         person.Photo = SaveImage( personElem.Attribute( "photoUrl" ).Value.Trim(), _personImageBinaryFileType, _personImageBinaryFileTypeSettings, rockContext );
                     }
 
-                    if ( personElem.Attribute( "recordType" ) != null && personElem.Attribute( "recordType" ).Value.Trim() == "person" )
+                    if ( personElem.Attribute( "recordType" ) == null || ( personElem.Attribute( "recordType" ) != null && personElem.Attribute( "recordType" ).Value.Trim() == "person" ) )
                     {
                         person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                     }
-
-                    if ( personElem.Attribute( "maritalStatus" ) != null && personElem.Attribute( "maritalStatus" ).Value.Trim() == "married" )
+                    else
                     {
-                        person.MaritalStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
+                        person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                    }
+
+                    if ( personElem.Attribute( "maritalStatus" ) != null )
+                    {
+                        person.MaritalStatusValueId = GetOrAddDefinedValueId( personElem.Attribute( "maritalStatus" ).Value, _maritalStatusDefinedType, rockContext );
+                    }
+
+                    if ( personElem.Attribute( "anniversaryDate" ) != null )
+                    {
+                        person.AnniversaryDate = DateTime.Parse( personElem.Attribute( "anniversaryDate" ).Value.Trim(), new CultureInfo( "en-US" ) );
                     }
 
                     switch ( personElem.Attribute( "recordStatus" ).Value.Trim() )
@@ -1952,6 +2199,14 @@ namespace RockWeb.Blocks.Examples
                             break;
                         case "inactive":
                             person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
+                            if ( personElem.Attribute( "recordStatusReason") != null )
+                            {
+                                person.RecordStatusReasonValueId = GetOrAddDefinedValueId( personElem.Attribute( "recordStatusReason" ).Value.Trim(), _recordStatusReasonDefinedType, rockContext );
+                                if ( person.RecordStatusReasonValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() ).Id )
+                                {
+                                    person.IsDeceased = true;
+                                }
+                            }
                             break;
                         default:
                             person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
@@ -1989,6 +2244,9 @@ namespace RockWeb.Blocks.Examples
                                 break;
                             case "attendee":
                                 person.ConnectionStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_ATTENDEE.AsGuid() ).Id;
+                                break;
+                            case "web prospect":
+                                person.ConnectionStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT.AsGuid() ).Id;
                                 break;
                             case "visitor":
                             default:
@@ -2080,6 +2338,26 @@ namespace RockWeb.Blocks.Examples
             return familyMembers;
         }
 
+
+        /// <summary>
+        /// Gets or adds a new DefinedValue to the given DefinedTypeCache and returns the Id of the value.
+        /// </summary>
+        /// <param name="theValue">The value.</param>
+        /// <param name="aDefinedType">a definedTypeCache.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>the id of the defined value</returns>
+        private int GetOrAddDefinedValueId( string theValue, DefinedType aDefinedType, RockContext rockContext )
+        {
+            DefinedValue theDefinedValue = aDefinedType.DefinedValues.FirstOrDefault( a => String.Equals( a.Value, theValue, StringComparison.CurrentCultureIgnoreCase ) );
+            // add it as new if we didn't find it.
+            if ( theDefinedValue == null )
+            {
+                theDefinedValue = AddDefinedTypeValue( theValue, aDefinedType, rockContext );
+            }
+
+            return theDefinedValue.Id;
+        }
+
         /// <summary>
         /// Add a note on the given person's record.
         /// </summary>
@@ -2096,7 +2374,6 @@ namespace RockWeb.Blocks.Examples
 
             if ( noteType != null )
             {
-
                 // Find the person's alias
                 int? createdByPersonAliasId = null;
                 if ( byPersonGuid != null )

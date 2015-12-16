@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-
+using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
@@ -73,6 +73,7 @@ namespace RockWeb.Blocks.Groups
                 gOccurrences.DataKeyNames = new string[] { "Date", "ScheduleId", "LocationId" };
                 gOccurrences.Actions.AddClick += gOccurrences_Add;
                 gOccurrences.GridRebind += gOccurrences_GridRebind;
+                gOccurrences.RowDataBound += gOccurrences_RowDataBound;
 
                 // make sure they have Auth to edit the block OR edit to the Group
                 bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
@@ -100,7 +101,7 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
-        #region GroupMembers Grid
+        #region Events
 
         /// <summary>
         /// Handles the ApplyFilterClick event of the rFilter control.
@@ -169,6 +170,24 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        void gOccurrences_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == System.Web.UI.WebControls.DataControlRowType.DataRow )
+            {
+                var occurrence = e.Row.DataItem as ScheduleOccurrence;
+                if ( occurrence == null || occurrence.ScheduleId.HasValue )
+                {
+                    var deleteField = gOccurrences.Columns.OfType<DeleteField>().First();
+                    var cell = e.Row.Cells[gOccurrences.Columns.IndexOf( deleteField )];
+                    var lb = cell.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+                    if ( lb != null )
+                    {
+                        lb.Visible = false;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Handles the Edit event of the gOccurrences control.
         /// </summary>
@@ -227,6 +246,57 @@ namespace RockWeb.Blocks.Groups
             NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
+
+        /// <summary>
+        /// Handles the Delete event of the gOccurrences control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gOccurrences_Delete( object sender, RowEventArgs e )
+        {
+            if ( _group != null )
+            {
+                var occurrenceDate = (DateTime)e.RowKeyValues["Date"];
+                DateTime startDate = occurrenceDate.Date;
+                DateTime endDate = occurrenceDate.Date.AddDays( 1 );
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var attendanceService = new AttendanceService( rockContext );
+                    var qry = attendanceService.Queryable()
+                        .Where( a =>
+                            a.GroupId == _group.Id &&
+                            a.StartDateTime >= startDate &&
+                            a.StartDateTime < endDate );
+                    
+                    int? scheduleId = e.RowKeyValues["ScheduleId"] as int?;
+                    if ( scheduleId.HasValue )
+                    {
+                        qry = qry.Where( a => 
+                            a.ScheduleId.HasValue &&
+                            a.ScheduleId.Value == scheduleId.Value );
+                    }
+
+                    int? locationId = e.RowKeyValues["LocationId"] as int?;
+                    if ( locationId.HasValue )
+                    {
+                        qry = qry.Where( a => 
+                            a.LocationId.HasValue &&
+                            a.LocationId.Value == locationId.Value );
+                    }
+
+                    foreach( var attendance in qry )
+                    {
+                        attendanceService.Delete( attendance );
+                    }
+
+                    rockContext.SaveChanges();
+                }
+            }
+
+            BindGrid();
+        }
+        
         /// <summary>
         /// Handles the GridRebind event of the gOccurrences control.
         /// </summary>
@@ -405,6 +475,6 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
-        
+
 }
 }

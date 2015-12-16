@@ -557,7 +557,7 @@ namespace Rock.Web.UI.Controls
                 _cvKey.ServerValidate += cvKey_ServerValidate;
                 _cvKey.Display = ValidatorDisplay.Dynamic;
                 _cvKey.CssClass = "validation-error help-inline";
-                _cvKey.ErrorMessage = "There is already an existing property with the key value you entered.  Please select a different key value.";
+                _cvKey.ErrorMessage = "There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.";
                 Controls.Add( _cvKey );
 
                 _tbIconCssClass = new RockTextBox();
@@ -1032,7 +1032,7 @@ namespace Rock.Web.UI.Controls
 
         if (keyValue == '') {
 
-            keyValue = $('#' + nameControlId).val().replace(/\s+/g, '');
+            keyValue = $('#' + nameControlId).val().replace(/[^a-zA-Z0-9_.\-]/g, '');
             var newKeyValue = keyValue;
         
             var i = 1;
@@ -1048,7 +1048,7 @@ namespace Rock.Web.UI.Controls
         var keyControl = $('#' + sender.controltovalidate);
         var reservedKeyJson = keyControl.closest('fieldset').find('.js-existing-key-names').val();
         var reservedKeyNames = eval('(' + reservedKeyJson + ')');
-        args.IsValid = ( $.inArray( keyControl.val(), reservedKeyNames ) < 0 );
+        args.IsValid = ( $.inArray( keyControl.val(), reservedKeyNames ) < 0 && ! keyControl.val().match(/[^a-zA-Z0-9_.\-]/g) );
     }
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "AttributeEditor", script, true );

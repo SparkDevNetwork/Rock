@@ -30,12 +30,16 @@ BEGIN
         ,0
 
     -- Flags that enable the various compare functions
+	-- How many characters of first name to consider when evaluating a partial name match (0-50)
+	DECLARE @PartialFirstNameLen INT = 2
+	-- One or more of these flags are required and only people that match at least one of these will be considered for additional matching
     DECLARE @compareByEmail BIT = 1
         ,@compareByPartialName BIT = 1
-        ,@compareByFullFirstName BIT = 1
-        ,@compareByFullLastName BIT = 1
         ,@compareByPhone BIT = 1
         ,@compareByAddress BIT = 1
+	-- Additional matches to consider when person is matched by one or more of the previous flags
+	DECLARE @compareByFullFirstName BIT = 1
+        ,@compareByFullLastName BIT = 1
         ,@compareByBirthDate BIT = 1
         ,@compareByGender BIT = 1
         ,@compareByCampus BIT = 1
@@ -122,37 +126,37 @@ BEGIN
     CREATE TABLE #PersonDuplicateByNameTable (
         Id INT NOT NULL IDENTITY(1, 1)
         ,LastName NVARCHAR(50) NOT NULL
-        ,First2 NVARCHAR(50) NOT NULL -- intentionally 50 vs 2 for performance reasons (sql server spends time on the length constraint if it's shorter than the source column)
+        ,FirstName NVARCHAR(50) NOT NULL 
         ,PersonAliasId INT NOT NULL
         ,CONSTRAINT [pk_PersonDuplicateByNameTable] PRIMARY KEY CLUSTERED (Id)
         );
 
     INSERT INTO #PersonDuplicateByNameTable (
         LastName
-        ,First2
+        ,FirstName
         ,PersonAliasId
         )
     SELECT [e].[LastName]
-        ,[e].[First2]
+        ,[e].[FirstName]
         ,[pa].[Id] [PersonAliasId]
     FROM (
-        SELECT [a].[First2]
+        SELECT [a].[FirstName]
             ,[a].[LastName]
         FROM (
-            SELECT SUBSTRING([FirstName], 1, 2) [First2]
+            SELECT SUBSTRING([FirstName], 1, @PartialFirstNameLen) [FirstName]
                 ,[LastName]
                 ,COUNT(*) [MatchCount]
             FROM [Person] [p]
             WHERE isnull([LastName], '') != ''
                 AND [FirstName] IS NOT NULL
-                AND LEN([FirstName]) >= 2
+                AND LEN([FirstName]) >= @PartialFirstNameLen
             GROUP BY [LastName]
-                ,SUBSTRING([FirstName], 1, 2)
+                ,SUBSTRING([FirstName], 1, @PartialFirstNameLen)
             ) [a]
         WHERE [a].[MatchCount] > 1
         ) [e]
     JOIN [Person] [p] ON [p].[LastName] = [e].[LastName]
-        AND [p].[FirstName] LIKE (e.First2 + '%')
+        AND [p].[FirstName] LIKE (e.FirstName + '%')
     JOIN [PersonAlias] [pa] ON [pa].[PersonId] = [p].[Id]
     WHERE [pa].[AliasPersonId] = [pa].[PersonId] -- limit to only the primary alias
         AND @compareByPartialName = 1
@@ -377,16 +381,16 @@ BEGIN
     USING (
         SELECT [e1].[PersonAliasId] [PersonAliasId]
             ,[e2].[PersonAliasId] [DuplicatePersonAliasId]
-            ,max([e1].[First2]) [First2]
+            ,max([e1].[FirstName]) [FirstName]
             ,max([e1].[LastName]) [LastName]
         FROM #PersonDuplicateByNameTable [e1]
-        JOIN #PersonDuplicateByNameTable [e2] ON [e1].[First2] = [e2].[First2]
+        JOIN #PersonDuplicateByNameTable [e2] ON [e1].[FirstName] = [e2].[FirstName]
             AND [e1].[LastName] = [e2].[LastName]
             AND [e1].[Id] != [e2].[Id]
             AND [e1].[PersonAliasId] > [e2].[PersonAliasId] -- we only need the matched pair in there once (don't need both PersonA == PersonB and PersonB == PersonA)
         GROUP BY e1.PersonAliasId
             ,e2.PersonAliasId
-        ) AS source(PersonAliasId, DuplicatePersonAliasId, LastName, First2)
+        ) AS source(PersonAliasId, DuplicatePersonAliasId, LastName, FirstName)
         ON (target.PersonAliasId = source.PersonAliasId)
             AND (target.DuplicatePersonAliasId = source.DuplicatePersonAliasId)
     WHEN MATCHED
@@ -607,7 +611,7 @@ BEGIN
             -- full last name capacity
             WHEN @compareByFullLastName = 1
                 AND isnull(p.LastName, '') != ''
-                THEN @cScoreWeightFullFirstName
+                THEN @cScoreWeightFullLastName
             ELSE 0
             END + CASE 
             -- add the Birthday Capacity
@@ -739,7 +743,7 @@ BEGIN
         AND @compareByFullLastName = 1
 
     UPDATE [PersonDuplicate]
-    SET [Score] = [Score] + @cScoreWeightFullFirstName
+    SET [Score] = [Score] + @cScoreWeightFullLastName
         ,[ScoreDetail] += '|LastName'
     WHERE Id IN (
             SELECT Id

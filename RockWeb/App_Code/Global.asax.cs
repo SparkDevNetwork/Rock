@@ -62,11 +62,6 @@ namespace RockWeb
         /// </summary>
         public static bool QueueInUse = false;
 
-        /// <summary>
-        /// The base URL
-        /// </summary>
-        public static string BaseUrl = null;
-
         // cache callback object
         private static CacheItemRemovedCallback OnCacheRemove = null;
 
@@ -300,15 +295,6 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_BeginRequest( object sender, EventArgs e )
         {
-            if ( string.IsNullOrWhiteSpace( Global.BaseUrl ) )
-            {
-                var uri = GetPublicFacingUrl( Context.Request );
-                if ( uri != null )
-                {
-                    Global.BaseUrl = string.Format( "{0}://{1}/", uri.Scheme, uri.Authority );
-                }
-            }
-
             Context.Items.Add( "Request_Start_Time", RockDateTime.Now );
             Context.Items.Add( "Cache_Hits", new Dictionary<string, bool>() );
         }
@@ -356,8 +342,28 @@ namespace RockWeb
                         //
                     }
 
+                    while (ex is HttpUnhandledException && ex.InnerException != null )
+                    {
+                        ex = ex.InnerException;
+                    }
 
-                    SendNotification( ex );
+                    // Check for EF error
+                    if ( ex is System.Data.Entity.Core.EntityCommandExecutionException )
+                    {
+                        try
+                        {
+                            throw new Exception( "An error occurred in Entity Framework when attempting to connect to your database. This could be caused by a missing 'MultipleActiveResultSets=true' parameter in your connection string settings.", ex );
+                        }
+                        catch ( Exception newEx )
+                        {
+                            ex = newEx;
+                        }
+                    }
+
+                    if ( !(ex is HttpRequestValidationException ) )
+                    {
+                        SendNotification( ex );
+                    }
 
                     object siteId = context.Items["Rock:SiteId"];
                     if ( context.Session != null )
@@ -659,17 +665,22 @@ namespace RockWeb
         private void LoadCacheObjects( RockContext rockContext )
         {
             // Cache all the entity types
-            foreach ( var entityType in new Rock.Model.EntityTypeService( rockContext ).Queryable() )
+            foreach ( var entityType in new Rock.Model.EntityTypeService( rockContext ).Queryable().AsNoTracking() )
             {
                 EntityTypeCache.Read( entityType );
             }
 
             // Cache all the Field Types
+            foreach ( var fieldType in new Rock.Model.FieldTypeService( rockContext ).Queryable().AsNoTracking() )
+            {
+                Rock.Web.Cache.FieldTypeCache.Read( fieldType );
+            }
+
             var all = Rock.Web.Cache.FieldTypeCache.All();
 
             // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
             var qualifiers = new Dictionary<int, Dictionary<string, string>>();
-            foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable() )
+            foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable().AsNoTracking() )
             {
                 try
                 {
@@ -686,8 +697,16 @@ namespace RockWeb
                 }
             }
 
-            // Cache all the attributes.
-            foreach ( var attribute in new Rock.Model.AttributeService( rockContext ).Queryable( "Categories" ).ToList() )
+            // Cache all the attributes, except for user preferences
+            
+            var attributeQuery = new Rock.Model.AttributeService( rockContext ).Queryable( "Categories" );
+            int? personUserValueEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( Person.USER_VALUE_ENTITY );
+            if (personUserValueEntityTypeId.HasValue)
+            {
+                attributeQuery = attributeQuery.Where(a => !a.EntityTypeId.HasValue || a.EntityTypeId.Value != personUserValueEntityTypeId);
+            }
+
+            foreach ( var attribute in attributeQuery.AsNoTracking().ToList() )
             {
                 if ( qualifiers.ContainsKey( attribute.Id ) )
                     Rock.Web.Cache.AttributeCache.Read( attribute, qualifiers[attribute.Id] );
@@ -696,7 +715,7 @@ namespace RockWeb
             }
 
             // cache all the Country Defined Values since those can be loaded in just a few millisecond here, but take around 1-2 seconds if first loaded when formatting an address
-            foreach (var definedValue in new Rock.Model.DefinedValueService(rockContext).GetByDefinedTypeGuid(Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid()))
+            foreach ( var definedValue in new Rock.Model.DefinedValueService( rockContext ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() ).AsNoTracking() )
             {
                 DefinedValueCache.Read( definedValue, rockContext );
             }
@@ -840,8 +859,8 @@ namespace RockWeb
             string message = string.Empty;
 
             message += "<h2>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h2>";
-            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Message</strong><br>" + ex.Message + "</div>";
-            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Stack Trace</strong><br>" + ex.StackTrace.ConvertCrLfToHtmlBr() + "</p>";
+            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Message</strong><br>" + HttpUtility.HtmlEncode( ex.Message ) + "</div>";
+            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Stack Trace</strong><br>" + HttpUtility.HtmlEncode( ex.StackTrace ).ConvertCrLfToHtmlBr() + "</p>";
 
             // check for inner exception
             if ( ex.InnerException != null )
@@ -855,55 +874,7 @@ namespace RockWeb
 
         #region Static Methods
 
-        /// <summary>
-        /// Gets the public facing URL.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns></returns>
-        internal static Uri GetPublicFacingUrl( HttpRequest request )
-        {
-            if ( request.Url != null )
-            {
-                // http://stackoverflow.com/questions/7795910/how-do-i-get-url-action-to-use-the-right-port-number
-                // Due to URL rewriting, cloud computing (i.e. Azure)
-                // and web farms, etc., we have to be VERY careful about what
-                // we consider the incoming URL.  We want to see the URL as it would
-                // appear on the public-facing side of the hosting web site.
-                // HttpRequest.Url gives us the internal URL in a cloud environment,
-                // So we use a variable that gives us the public URL:
-                var serverVariables = request.ServerVariables;
-                if ( serverVariables != null && serverVariables["HTTP_HOST"] != null )
-                {
-                    //ErrorUtilities.VerifySupported(request.Url.Scheme == Uri.UriSchemeHttps || request.Url.Scheme == Uri.UriSchemeHttp, "Only HTTP and HTTPS are supported protocols.");
-                    string scheme = serverVariables["HTTP_X_FORWARDED_PROTO"] ?? request.Url.Scheme;
-                    Uri hostAndPort = new Uri( scheme + Uri.SchemeDelimiter + serverVariables["HTTP_HOST"] );
 
-                    // If host is local (occurs with Azure hosting), ignore this request
-                    if ( hostAndPort.Host == "127.0.0.1" || hostAndPort.Host.ToLower() == "localhost" )
-                    {
-                        return null;
-                    }
-
-                    UriBuilder publicRequestUri = new UriBuilder( request.Url );
-                    publicRequestUri.Scheme = scheme;
-                    publicRequestUri.Host = hostAndPort.Host;
-                    publicRequestUri.Port = hostAndPort.Port; 
-                    return publicRequestUri.Uri;
-                }
-
-                // Failover to the method that works for non-web farm enviroments.
-                // We use Request.Url for the full path to the server, and modify it
-                // with Request.RawUrl to capture both the cookieless session "directory" if it exists
-                // and the original path in case URL rewriting is going on.  We don't want to be
-                // fooled by URL rewriting because we're comparing the actual URL with what's in
-                // the return_to parameter in some cases.
-                // Response.ApplyAppPathModifier(builder.Path) would have worked for the cookieless
-                // session, but not the URL rewriting problem.
-                return new Uri( request.Url, request.RawUrl );
-            }
-
-            return null;
-        }
 
         /// <summary>
         /// Adds the call back.
@@ -1036,12 +1007,25 @@ namespace RockWeb
                     // add cache item again
                     AddCallBack();
 
-                    // call a page on the site to keep IIS alive 
-                    if ( !string.IsNullOrWhiteSpace( Global.BaseUrl ) )
+                    var keepAliveUrl = GlobalAttributesCache.Value( "KeepAliveUrl" );
+                    if ( string.IsNullOrWhiteSpace( keepAliveUrl ) )
                     {
-                        string url = Global.BaseUrl + "KeepAlive.aspx";
-                        WebRequest request = WebRequest.Create( url );
-                        WebResponse response = request.GetResponse();
+                        keepAliveUrl = GlobalAttributesCache.Value( "InternalApplicationRoot" ) ?? string.Empty;
+                        keepAliveUrl = keepAliveUrl.EnsureTrailingForwardslash() + "KeepAlive.aspx";
+                    }
+
+                    // call a page on the site to keep IIS alive 
+                    if ( !string.IsNullOrWhiteSpace( keepAliveUrl ) )
+                    {
+                        try
+                        {
+                            WebRequest request = WebRequest.Create( keepAliveUrl );
+                            WebResponse response = request.GetResponse();
+                        }
+                        catch ( Exception ex )
+                        {
+                            LogError( new Exception( "Error doing KeepAlive request.", ex ), null );
+                        }
                     }
                 }
                 else

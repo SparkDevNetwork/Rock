@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "norma-bower": "^0.3.7",
-    "norma-copy": "newspring/norma-copy#feature-base-name"
+    "norma-copy": "newspring/norma-copy#feature-base-name",
+    "normajs": "^1.7.10"
   }
 }

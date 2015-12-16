@@ -49,6 +49,8 @@ namespace Rock.Web.UI
         private ScriptManager _scriptManager;
         private PageCache _pageCache = null;
 
+        private string _clientType = null;
+
         #endregion
 
         #region Protected Variables
@@ -385,6 +387,39 @@ namespace Rock.Web.UI
             get
             {
                 return this.ControlsOfTypeRecursive<RockBlock>();
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the client.
+        /// </summary>
+        /// <value>
+        /// The type of the client.
+        /// </value>
+        public string ClientType
+        {
+            get
+            {
+                if ( _clientType == null )
+                {
+                    _clientType = PageViewUserAgent.GetClientType( Request.UserAgent ?? "" );
+                }
+                return _clientType;
+            }
+
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is mobile request.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is mobile request; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsMobileRequest
+        {
+            get
+            {
+                return this.ClientType == "Mobile";
             }
         }
 
@@ -889,7 +924,7 @@ namespace Rock.Web.UI
                                     nbBlockLoad.CssClass = "system-error";
                                     nbBlockLoad.NotificationBoxType = NotificationBoxType.Danger;
                                     nbBlockLoad.Text = string.Format( "Error Loading Block: {0}", block.Name );
-                                    nbBlockLoad.Details = string.Format( "{0}<pre>{1}</pre>", ex.Message, ex.StackTrace );
+                                    nbBlockLoad.Details = string.Format( "{0}<pre>{1}</pre>", HttpUtility.HtmlEncode( ex.Message ), HttpUtility.HtmlEncode( ex.StackTrace ) );
                                     nbBlockLoad.Dismissable = true;
                                     control = nbBlockLoad;
 
@@ -1147,7 +1182,7 @@ namespace Rock.Web.UI
         {
             var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
             string keyParameter = string.IsNullOrWhiteSpace( googleAPIKey ) ? "" : string.Format( "key={0}&", googleAPIKey );
-            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}sensor=false&libraries=drawing", keyParameter );
+            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}sensor=false&libraries=drawing,visualization", keyParameter );
 
             // first, add it to the page to handle cases where the api is needed on first page load
             if ( this.Page != null && this.Page.Header != null )

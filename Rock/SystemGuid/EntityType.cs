@@ -162,5 +162,10 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string WORKFLOW_TYPE = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE";
 
+        /// <summary>
+        /// The protect my ministry provider
+        /// </summary>
+        public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
+
     }
 }

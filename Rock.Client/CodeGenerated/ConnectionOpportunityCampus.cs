@@ -41,6 +41,9 @@ namespace Rock.Client
         public int ConnectionOpportunityId { get; set; }
 
         /// <summary />
+        public int? DefaultConnectorPersonAliasId { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -86,6 +89,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.CampusId = source.CampusId;
             this.ConnectionOpportunityId = source.ConnectionOpportunityId;
+            this.DefaultConnectorPersonAliasId = source.DefaultConnectorPersonAliasId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

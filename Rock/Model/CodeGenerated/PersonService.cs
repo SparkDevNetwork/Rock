@@ -117,6 +117,7 @@ namespace Rock.Model
             target.MiddleName = source.MiddleName;
             target.NickName = source.NickName;
             target.PhotoId = source.PhotoId;
+            target.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
             target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
             target.RecordStatusValueId = source.RecordStatusValueId;
             target.RecordTypeValueId = source.RecordTypeValueId;

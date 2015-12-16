@@ -222,16 +222,26 @@
                         }
                         else {
                             if (item.series.chartData) {
+                                var date = null;
+
                                 if (item.series.chartData[item.dataIndex].DateTimeStamp) {
-                                    tooltipText = new Date(item.series.chartData[item.dataIndex].DateTimeStamp).toLocaleDateString();
+                                    date = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
+                                    tooltipText = date.toLocaleDateString();
                                 };
 
                                 if (item.series.chartData[item.dataIndex].StartDateTimeStamp) {
-                                    tooltipText = new Date(item.series.chartData[item.dataIndex].StartDateTimeStamp).toLocaleDateString();
+                                    date = new Date(item.series.chartData[item.dataIndex].StartDateTimeStamp);
+                                    tooltipText = date.toLocaleDateString();
                                 }
 
                                 if (item.series.chartData[item.dataIndex].EndDateTimeStamp) {
-                                    tooltipText += " to " + new Date(item.series.chartData[item.dataIndex].EndDateTimeStamp).toLocaleDateString();
+                                    date = new Date(item.series.chartData[item.dataIndex].EndDateTimeStamp);
+                                    tooltipText += " to " + date.toLocaleDateString();
+                                }
+
+                                if (tooltipText && date) {
+                                    var timeParts = date.toTimeString().split(':');
+                                    tooltipText += ' ' + timeParts[0] + ':' + timeParts[1];
                                 }
                             }
 

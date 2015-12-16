@@ -81,6 +81,15 @@ namespace Rock.Model
         public int? RecordStatusValueId { get; set; }
 
         /// <summary>
+        /// Gets or sets the record status last modified date time.
+        /// </summary>
+        /// <value>
+        /// The record status last modified date time.
+        /// </value>
+        [DataMember]
+        public DateTime? RecordStatusLastModifiedDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the Id of the Record Status Reason <see cref="Rock.Model.DefinedValue"/> representing the reason why a person record status would have a set status.
         /// </summary>
         /// <value>
@@ -643,7 +652,17 @@ namespace Rock.Model
                 {
                     try
                     {
-                        DateTime thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                        DateTime thisYearsBirthdate;
+                        if ( BirthMonth == 2 && BirthDay == 29 && !DateTime.IsLeapYear( RockDateTime.Now.Year ) )
+                        {
+                            // if their birthdate is 2/29 and the current year is NOT a leapyear, have their birthday be 2/28
+                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, 28, 0, 0, 0 );
+                        }
+                        else
+                        {
+                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                        }
+
                         birthdayDayOfWeek = thisYearsBirthdate.ToString( "dddd" );
                     }
                     catch
@@ -679,7 +698,17 @@ namespace Rock.Model
                 {
                     try
                     {
-                        DateTime thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                        DateTime thisYearsBirthdate;
+                        if ( BirthMonth == 2 && BirthDay == 29 && !DateTime.IsLeapYear( RockDateTime.Now.Year ) )
+                        {
+                            // if their birthdate is 2/29 and the current year is NOT a leapyear, have their birthday be 2/28
+                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, 28, 0, 0, 0 );
+                        }
+                        else
+                        {
+                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                        }
+
                         birthdayDayOfWeek = thisYearsBirthdate.ToString( "ddd" );
                     }
                     catch
@@ -1292,16 +1321,30 @@ namespace Rock.Model
                 {
                     rockUrlRoot.EnsureTrailingBackslash();
 
+                    // get email link preference (new communication/mailto)
+                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                    string emailLinkPreference = globalAttributes.GetValue( "PreferredEmailLinkType" );
+
+                    string emailLink = string.Empty;
+
+                    // create link
+                    if ( string.IsNullOrWhiteSpace(emailLinkPreference) || emailLinkPreference == "1" )
+                    {
+                        emailLink = string.Format( "{0}Communication?person={1}", rockUrlRoot, Id );
+                    } else
+                    {
+                        emailLink = string.Format( "mailto:{0}", Email );
+                    }
+                    
                     switch ( EmailPreference )
                     {
                         case EmailPreference.EmailAllowed:
                             {
                                 return string.Format(
-                                    "<a class='{0}' style='{1}' href='{2}Communication?person={3}'>{4} {5} {6}</a>",
+                                    "<a class='{0}' style='{1}' href='{2}'>{3} {4} {5}</a>",
                                     cssClass,
                                     styles,
-                                    rockUrlRoot,
-                                    Id,
+                                    emailLink,
                                     preText,
                                     Email,
                                     postText );
@@ -1310,10 +1353,9 @@ namespace Rock.Model
                         case EmailPreference.NoMassEmails:
                             {
                                 return string.Format(
-                                    "<span class='js-email-status email-status no-mass-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'><a class='{0}' href='{1}Communication?person={2}'>{3} {4} {5} <i class='fa fa-exchange'></i></a> </span>",
+                                    "<span class='js-email-status email-status no-mass-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'><a class='{0}' href='{1}'>{2} {3} {4} <i class='fa fa-exchange'></i></a> </span>",
                                     cssClass,
-                                    rockUrlRoot,
-                                    Id,
+                                    emailLink,
                                     preText,
                                     Email,
                                     postText );
