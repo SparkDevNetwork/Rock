@@ -76,6 +76,15 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        /// <summary>
+        /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// based on the current page reference.  This function is called during the page's
+        /// oninit to load any initial breadcrumbs.
+        /// </summary>
+        /// <param name="pageReference">The <see cref="Rock.Web.PageReference" />.</param>
+        /// <returns>
+        /// A <see cref="System.Collections.Generic.List{BreadCrumb}" /> of block related <see cref="Rock.Web.UI.BreadCrumb">BreadCrumbs</see>.
+        /// </returns>
         public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
         {
             var breadCrumbs = new List<BreadCrumb>();
@@ -182,11 +191,13 @@ namespace RockWeb.Blocks.Finance
                 {
                     oldCampus = CampusCache.Read( batch.CampusId.Value );
                 }
+
                 CampusCache newCampus = null;
                 if ( campCampus.SelectedCampusId.HasValue )
                 {
                     newCampus = CampusCache.Read( campCampus.SelectedCampusId.Value );
                 }
+
                 History.EvaluateChange( changes, "Campus", oldCampus != null ? oldCampus.Name : "None", newCampus != null ? newCampus.Name : "None" );
                 batch.CampusId = campCampus.SelectedCampusId;
 
@@ -203,10 +214,11 @@ namespace RockWeb.Blocks.Finance
                 {
                     endDateTime = dtpEnd.SelectedDateTimeIsBlank ? null : dtpEnd.SelectedDateTime;
                 }
+
                 History.EvaluateChange( changes, "End Date/Time", batch.BatchEndDateTime, endDateTime );
                 batch.BatchEndDateTime = endDateTime;
 
-                decimal controlAmount = tbControlAmount.Text.AsDecimal(); 
+                decimal controlAmount = tbControlAmount.Text.AsDecimal();
                 History.EvaluateChange( changes, "Control Amount", batch.ControlAmount.FormatAsCurrency(), controlAmount.FormatAsCurrency() );
                 batch.ControlAmount = controlAmount;
 
@@ -268,7 +280,6 @@ namespace RockWeb.Blocks.Finance
 
                     // Then refresh transaction list
                     RockPage.UpdateBlocks( "~/Blocks/Finance/TransactionList.ascx" );
-
                 }
             }
         }
@@ -317,7 +328,7 @@ namespace RockWeb.Blocks.Finance
         private FinancialBatch GetBatch( int batchId, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
-            var batch = new FinancialBatchService( rockContext ).Get(batchId);
+            var batch = new FinancialBatchService( rockContext ).Get( batchId );
             return batch;
         }
 
@@ -402,16 +413,19 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 var rockContext = new RockContext();
-                var financialTransactionService = new FinancialTransactionService(rockContext);
+                var financialTransactionService = new FinancialTransactionService( rockContext );
                 var batchTransactions = financialTransactionService.Queryable().Where( a => a.BatchId.HasValue && a.BatchId.Value == batch.Id );
 
-                var financialTransactionDetailService = new FinancialTransactionDetailService(rockContext);
+                var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
                 var qryTransactionDetails = financialTransactionDetailService.Queryable().Where( a => a.Transaction.BatchId == batch.Id );
                 decimal txnTotal = qryTransactionDetails.Select( a => a.Amount ).Sum();
 
                 decimal variance = txnTotal - batch.ControlAmount;
-                string amountFormat = string.Format( "{0} / {1} / " + ( variance == 0.0M ? "{2}" : "<span class='label label-danger'>{2}</span>" ),
-                    txnTotal.FormatAsCurrency(), batch.ControlAmount.FormatAsCurrency(), variance.FormatAsCurrency() );
+                string amountFormat = string.Format(
+                    "{0} / {1} / " + ( variance == 0.0M ? "{2}" : "<span class='label label-danger'>{2}</span>" ),
+                    txnTotal.FormatAsCurrency(),
+                    batch.ControlAmount.FormatAsCurrency(),
+                    variance.FormatAsCurrency() );
 
                 lDetails.Text = new DescriptionList()
                     .Add( "Date Range", new DateRange( batch.BatchStartDateTime, batch.BatchEndDateTime ).ToString( "g" ) )
@@ -419,7 +433,7 @@ namespace RockWeb.Blocks.Finance
                     .Add( "Accounting Code", batch.AccountingSystemCode )
                     .Add( "Notes", batch.Note )
                     .Html;
-                
+
                 // Account Summary
                 gAccounts.DataSource = qryTransactionDetails
                     .GroupBy( d => new
@@ -435,6 +449,7 @@ namespace RockWeb.Blocks.Finance
                     } )
                     .OrderBy( s => s.Name )
                     .ToList();
+
                 gAccounts.DataBind();
 
                 // Currency Summary
@@ -452,9 +467,10 @@ namespace RockWeb.Blocks.Finance
                     .Select( s => new
                     {
                         Id = s.CurrencyTypeValueId,
-                        Name = DefinedValueCache.GetName(s.CurrencyTypeValueId),
+                        Name = DefinedValueCache.GetName( s.CurrencyTypeValueId ),
                         Amount = s.Amount
-                    } ).OrderBy(a=> a.Name).ToList();
+                    } ).OrderBy( a => a.Name ).ToList();
+
                 gCurrencyTypes.DataBind();
             }
         }
@@ -497,6 +513,11 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        /// <summary>
+        /// Sets the heading information.
+        /// </summary>
+        /// <param name="batch">The batch.</param>
+        /// <param name="title">The title.</param>
         private void SetHeadingInfo( FinancialBatch batch, string title )
         {
             lTitle.Text = title.FormatAsHtmlTitle();
@@ -504,9 +525,12 @@ namespace RockWeb.Blocks.Finance
             hlStatus.Text = batch.Status.ConvertToString();
             switch ( batch.Status )
             {
-                case BatchStatus.Pending: hlStatus.LabelType = LabelType.Danger; break;
-                case BatchStatus.Open: hlStatus.LabelType = LabelType.Warning; break;
-                case BatchStatus.Closed: hlStatus.LabelType = LabelType.Default; break;
+                case BatchStatus.Pending: hlStatus.LabelType = LabelType.Danger;
+                    break;
+                case BatchStatus.Open: hlStatus.LabelType = LabelType.Warning;
+                    break;
+                case BatchStatus.Closed: hlStatus.LabelType = LabelType.Default;
+                    break;
             }
 
             if ( batch.Campus != null )
@@ -519,8 +543,8 @@ namespace RockWeb.Blocks.Finance
                 hlCampus.Visible = false;
             }
 
-            hlBatchId.Text = string.Format("Batch #{0}", batch.Id.ToString());
-            hlBatchId.Visible = (batch.Id != 0);
+            hlBatchId.Text = string.Format( "Batch #{0}", batch.Id.ToString() );
+            hlBatchId.Visible = batch.Id != 0;
         }
 
         /// <summary>
