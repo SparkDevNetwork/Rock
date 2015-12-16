@@ -43,21 +43,38 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
     [LinkedPage( "Listing Page", "Page used to view all workflows assigned to the current user." )]
     public partial class WorkflowAlert : Rock.Web.UI.RockBlock
     {
-        protected override void OnLoad( EventArgs e )
+        protected override void OnInit( EventArgs e )
         {
-            base.OnLoad( e );
+            base.OnInit( e );
 
             // Check for current person
-            if ( !Page.IsPostBack && CurrentPersonAliasId != null )
+            if ( CurrentPersonAliasId.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
+
+                    // Search the DB for what groups the current person belongs to
+                    var memberGroups = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
+                        .Where( a =>
+                            a.PersonId == CurrentPersonId
+                        )
+                        .Select( a => a.GroupId )
+                        .ToList();
+
                     // Search the DB for active workflows assigned to the current user, and return the count
                     var count = new WorkflowActivityService( rockContext ).Queryable().AsNoTracking()
                         .Where( a =>
-                            a.AssignedPersonAliasId == CurrentPersonAliasId 
-                            && !a.CompletedDateTime.HasValue
-                            && !a.Workflow.Status.Equals( "Completed" ) 
+                            !a.CompletedDateTime.HasValue
+                            && !a.Workflow.Status.Equals( "Completed" )
+                            && (
+                                a.AssignedPersonAliasId == CurrentPersonAliasId
+                                || (
+                                    a.AssignedGroupId.HasValue
+                                    && memberGroups.Contains( (int)a.AssignedGroupId )
+                                    && !a.AssignedPersonAliasId.HasValue
+                                )
+
+                            )
                         )
                         .Count();
 
