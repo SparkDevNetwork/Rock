@@ -35,6 +35,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Communication;
 
 namespace RockWeb.Plugins.com_centralaz.Calendar
 {
@@ -48,19 +49,19 @@ namespace RockWeb.Plugins.com_centralaz.Calendar
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 0 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING, "", 1 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE, "", 2 )]
-    [CodeEditorField( "Success Template", "Lava template to use to display the search results.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{%  %}", "", 6 )]
-    [BooleanField( "Enable Debug", "Display the merge fields that are available for lava ( Success Page ).", false, "", 5 )]
+    [LinkedPage( "Registration Details Page", "The page that the link directs the user to.", true, order: 3 )]
+    [SystemEmailField( "Request Registration Details Email", "The system email to send.", true, order: 4 )]
+    [CodeEditorField( "Success Template", "Lava template to use to display the search results.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{%  %}", "", 5 )]
+    [BooleanField( "Enable Debug", "Display the merge fields that are available for lava ( Success Page ).", false, "", 6 )]
     public partial class SimpleRegistration : RockBlock
     {
         #region Fields
 
         // Page (query string) parameter names
         private const string REGISTRATION_ID_PARAM_NAME = "RegistrationId";
-        private const string SLUG_PARAM_NAME = "Slug";
         private const string REGISTRATION_INSTANCE_ID_PARAM_NAME = "RegistrationInstanceId";
         private const string EVENT_OCCURRENCE_ID_PARAM_NAME = "EventOccurrenceId";
         private const string GROUP_ID_PARAM_NAME = "GroupId";
-        private const string CAMPUS_ID_PARAM_NAME = "CampusId";
 
         #endregion
 
@@ -97,11 +98,21 @@ namespace RockWeb.Plugins.com_centralaz.Calendar
 
         #region Events
 
+        /// <summary>
+        /// Handles the Click event of the lbAddRegistrant control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddRegistrant_Click( object sender, EventArgs e )
         {
             NavigateToPage( RockPage.Guid, new Dictionary<string, string>() );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbRegister control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRegister_Click( object sender, EventArgs e )
         {
             if ( SaveRegistration() )
@@ -141,7 +152,6 @@ namespace RockWeb.Plugins.com_centralaz.Calendar
                 var registrationInstance = new RegistrationInstanceService( rockContext ).Get( registrationInstanceId.Value );
                 if ( registrationInstance != null )
                 {
-
                     var registrationChanges = new List<string>();
 
                     var registrationService = new RegistrationService( rockContext );
@@ -152,10 +162,6 @@ namespace RockWeb.Plugins.com_centralaz.Calendar
                     var noteService = new NoteService( rockContext );
 
                     Person registrar = null;
-
-                    // variables to keep track of the family that new people should be added to
-                    int? singleFamilyId = null;
-                    var multipleFamilyGroupIds = new Dictionary<Guid, int>();
 
                     var dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
                     var dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
@@ -197,7 +203,6 @@ namespace RockWeb.Plugins.com_centralaz.Calendar
                                 }
                             }
                         }
-
                     }
 
                     registration.GroupId = groupId;
@@ -212,7 +217,6 @@ namespace RockWeb.Plugins.com_centralaz.Calendar
                     registration.ConfirmationEmail = tbEmail.Text;
 
                     registration.DiscountCode = string.Empty;
-
 
                     // If the 'your name' value equals the currently logged in person, use their person alias id
                     if ( CurrentPerson != null )
@@ -247,7 +251,6 @@ namespace RockWeb.Plugins.com_centralaz.Calendar
 
                     // Setup Note settings
                     NoteTypeCache noteType = null;
-                    var registrantNames = new Dictionary<int, string>();
                     if ( registrationInstance.RegistrationTemplate != null && registrationInstance.RegistrationTemplate.AddPersonNote )
                     {
                         noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PERSON_EVENT_REGISTRATION.AsGuid() );
@@ -263,8 +266,6 @@ namespace RockWeb.Plugins.com_centralaz.Calendar
                     );
 
                     var registrantChanges = new List<string>();
-                    var personChanges = new List<string>();
-                    var familyChanges = new List<string>();
 
                     Person person = null;
 
@@ -335,21 +336,8 @@ namespace RockWeb.Plugins.com_centralaz.Calendar
                     int? campusId = null;
                     Location location = null;
 
-                    Guid? familyGuid = null;
-                    if ( person.GetFamilies().FirstOrDefault() != null )
-                    {
-                        familyGuid = person.GetFamilies().FirstOrDefault().Guid;
-                    }
-
                     // Save the person ( and family if needed )
-                    SavePerson( rockContext, person, familyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, singleFamilyId, registrationInstance );
-
-                    // Load the person's attributes
-                    person.LoadAttributes();
-
-                    string registrantName = person.FullName + ": ";
-
-                    personChanges.ForEach( c => registrantChanges.Add( c ) );
+                    SavePerson( rockContext, person, campusId, location );
 
                     GroupMember groupMember = null;
 
@@ -429,7 +417,7 @@ namespace RockWeb.Plugins.com_centralaz.Calendar
                     );
 
                     // Add a note to the registrars notes
-                    if ( noteType != null && registrar != null && registrantNames.Any() )
+                    if ( noteType != null && registrar != null )
                     {
                         string namesText = string.Empty;
                         if ( person.Id != registrar.Id )
@@ -454,6 +442,199 @@ namespace RockWeb.Plugins.com_centralaz.Calendar
 
                     rockContext.SaveChanges();
 
+                    SystemEmailService emailService = new SystemEmailService( rockContext );
+
+                    SystemEmail systemEmail = null;
+                    Guid? systemEmailGuid = GetAttributeValue( "RequestRegistrationDetailsEmail" ).AsGuidOrNull();
+                    var recipients = new List<RecipientData>();
+
+                    if ( systemEmailGuid != null )
+                    {
+                        systemEmail = emailService.Get( systemEmailGuid.Value );
+                    }
+
+                    if ( systemEmail != null )
+                    {
+                        Guid? updatePageGuid = GetAttributeValue( "RegistrationDetailsPage" ).AsGuidOrNull();
+                        if ( updatePageGuid != null )
+                        {
+                            int? pageId = ( new PageService( new RockContext() ).Get( updatePageGuid.Value ) ).Id;
+                            if ( pageId != null )
+                            {
+                                bool additionalDetails = false;
+
+                                // Set any of the template's person fields
+                                foreach ( var field in registration.RegistrationInstance.RegistrationTemplate.Forms
+                                    .SelectMany( f => f.Fields
+                                        .Where( t => t.FieldSource == RegistrationFieldSource.PersonField && t.IsRequired ) ) )
+                                {
+
+                                    switch ( field.PersonFieldType )
+                                    {
+                                        case RegistrationPersonFieldType.Campus:
+                                            {
+                                                if ( person.GetCampus() == null )
+                                                {
+                                                    additionalDetails = true;
+                                                }
+                                                break;
+                                            }
+
+                                        case RegistrationPersonFieldType.Address:
+                                            {
+                                                if ( person.GetHomeLocation() == null )
+                                                {
+                                                    additionalDetails = true;
+                                                }
+                                                break;
+                                            }
+
+                                        case RegistrationPersonFieldType.Birthdate:
+                                            {
+                                                if ( !person.BirthDate.HasValue )
+                                                {
+                                                    additionalDetails = true;
+                                                }
+                                                break;
+                                            }
+
+                                        case RegistrationPersonFieldType.Gender:
+                                            {
+                                                if ( person.Gender == Gender.Unknown )
+                                                {
+                                                    additionalDetails = true;
+                                                }
+                                                break;
+                                            }
+
+                                        case RegistrationPersonFieldType.MaritalStatus:
+                                            {
+                                                if ( person.MaritalStatusValue == null )
+                                                {
+                                                    additionalDetails = true;
+                                                }
+                                                break;
+                                            }
+
+                                        case RegistrationPersonFieldType.MobilePhone:
+                                            {
+                                                if ( person.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).FirstOrDefault() == null )
+                                                {
+                                                    additionalDetails = true;
+                                                }
+                                                break;
+                                            }
+
+                                        case RegistrationPersonFieldType.HomePhone:
+                                            {
+                                                if ( person.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).FirstOrDefault() == null )
+                                                {
+                                                    additionalDetails = true;
+                                                } break;
+                                            }
+
+                                        case RegistrationPersonFieldType.WorkPhone:
+                                            {
+                                                if ( person.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() ).FirstOrDefault() == null )
+                                                {
+                                                    additionalDetails = true;
+                                                } break;
+                                            }
+                                    }
+                                }
+
+                                person.LoadAttributes();
+
+                                // Set any of the template's person fields
+                                foreach ( var field in registration.RegistrationInstance.RegistrationTemplate.Forms
+                                    .SelectMany( f => f.Fields
+                                        .Where( t =>
+                                            t.FieldSource == RegistrationFieldSource.PersonAttribute &&
+                                            t.AttributeId.HasValue &&
+                                            t.IsRequired ) ) )
+                                {
+
+                                    var attribute = AttributeCache.Read( field.AttributeId.Value );
+                                    if ( attribute != null )
+                                    {
+                                        string originalValue = person.GetAttributeValue( attribute.Key );
+                                        if ( String.IsNullOrWhiteSpace( originalValue ) )
+                                        {
+                                            additionalDetails = true;
+                                        }
+                                    }
+                                }
+
+                                // Set any of the template's group member attributes
+                                if ( registration.Group != null )
+                                {
+                                    if ( groupMember != null )
+                                    {
+                                        groupMember.LoadAttributes();
+
+                                        foreach ( var field in registration.RegistrationInstance.RegistrationTemplate.Forms
+                                            .SelectMany( f => f.Fields
+                                                .Where( t =>
+                                                    t.FieldSource == RegistrationFieldSource.GroupMemberAttribute &&
+                                                    t.AttributeId.HasValue ) ) )
+                                        {
+                                            var attribute = AttributeCache.Read( field.AttributeId.Value );
+                                            if ( attribute != null )
+                                            {
+                                                string originalValue = groupMember.GetAttributeValue( attribute.Key );
+                                                if ( String.IsNullOrWhiteSpace( originalValue ) )
+                                                {
+                                                    additionalDetails = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Set any of the template's registrant attributes
+                                registrant.LoadAttributes();
+                                foreach ( var field in registration.RegistrationInstance.RegistrationTemplate.Forms
+                                    .SelectMany( f => f.Fields
+                                        .Where( t =>
+                                            t.FieldSource == RegistrationFieldSource.RegistrationAttribute &&
+                                            t.AttributeId.HasValue ) ) )
+                                {
+                                    var attribute = AttributeCache.Read( field.AttributeId.Value );
+                                    if ( attribute != null )
+                                    {
+                                        string originalValue = registrant.GetAttributeValue( attribute.Key );
+                                        if ( String.IsNullOrWhiteSpace( originalValue ) )
+                                        {
+                                            additionalDetails = true;
+                                        }
+                                    }
+                                }
+
+                                if ( additionalDetails )
+                                {
+                                    var mergeFields = new Dictionary<string, object>();
+                                    mergeFields.Add( "Registrant", registrant );
+                                    mergeFields.Add( "Registration", registration );
+
+                                    Byte[] b = System.Text.Encoding.UTF8.GetBytes( registrant.Email );
+                                    string encodedEmail = Convert.ToBase64String( b );
+
+                                    String relativeUrl = String.Format( "page/{0}?RegistrationId={1}&Guid={2}&Key={3}", pageId, registration.Id, registration.Guid, encodedEmail );
+
+                                    mergeFields.Add( "MagicUrl", relativeUrl );
+
+                                    var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+                                    globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+
+                                    recipients.Add( new RecipientData( registrant.Email, mergeFields ) );
+                                }
+
+                                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                                Email.Send( systemEmail.Guid, recipients, appRoot );
+                            }
+                        }
+                    }
+
                     return true;
                 }
             }
@@ -461,8 +642,15 @@ namespace RockWeb.Plugins.com_centralaz.Calendar
             return false;
         }
 
-        private Person SavePerson( RockContext rockContext, Person person, Guid? familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId,
-            Dictionary<Guid, int> multipleFamilyGroupIds, int? singleFamilyId, RegistrationInstance registrationInstance )
+        /// <summary>
+        /// Saves the person.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="location">The location.</param>
+        /// <returns></returns>
+        private Person SavePerson( RockContext rockContext, Person person, int? campusId, Location location )
         {
             if ( person.Id > 0 )
             {
@@ -492,6 +680,9 @@ namespace RockWeb.Plugins.com_centralaz.Calendar
 
         #region Display Methods
 
+        /// <summary>
+        /// Shows the registration.
+        /// </summary>
         private void ShowRegistration()
         {
             if ( CurrentPerson != null )

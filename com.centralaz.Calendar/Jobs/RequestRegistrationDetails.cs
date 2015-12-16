@@ -40,7 +40,7 @@ namespace com.centralaz.Calendar.Jobs
     {
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SendCommunications"/> class.
+        /// Initializes a new instance of the <see cref="RequestRegistrationDetails"/> class.
         /// </summary>
         public RequestRegistrationDetails()
         {
