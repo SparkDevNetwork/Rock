@@ -266,6 +266,27 @@ namespace Rock.Model
         [DataMember]
         public int? PageViewRetentionPeriodDays { get; set; }
 
+        /// <summary>
+        /// Gets or sets the content of the page header.
+        /// </summary>
+        /// <value>
+        /// The content of the page header.
+        /// </value>
+        [DataMember]
+        public string PageHeaderContent { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allow indexing].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow indexing]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowIndexing {
+            get { return _allowIndexing; }
+            set { _allowIndexing = value; }
+        }
+        private bool _allowIndexing = true;
         #endregion
 
         #region Virtual Properties
