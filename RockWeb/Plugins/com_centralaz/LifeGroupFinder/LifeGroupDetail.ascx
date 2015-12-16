@@ -18,7 +18,9 @@
         </asp:Panel>
         <asp:Panel ID="pnlView" runat="server" Visible="true">
             <div class="row">
-                    <Rock:RockLiteral ID="lGroupName" runat="server" CssClass="lifegroupdetail-groupname"/>
+                <h2>
+                    <Rock:RockLiteral ID="lGroupName" runat="server" CssClass="lifegroupdetail-groupname" />
+                </h2>
             </div>
             <hr />
             <div class="row">
@@ -47,7 +49,9 @@
                 </div>
             </div>
             <div class="lifegroupdetail-descriptiondiv row">
-                <asp:Literal ID="lDescription" runat="server" />
+                <p>
+                    <asp:Literal ID="lDescription" runat="server" />
+                </p>
             </div>
 
             <asp:Literal ID="lPhotoOutput" runat="server" />
