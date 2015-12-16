@@ -489,7 +489,14 @@ namespace Rock.Web.UI
             }
             
             base.OnLoad( e );
-            SetValidationGroup( this.Controls, BlockValidationGroup );
+
+            if ( this.BlockCache == null ||
+                this.BlockCache.Page == null || 
+                this.BlockCache.Page.Layout == null || 
+                this.BlockCache.Page.Layout.FileName != "Dialog" )
+            {
+                SetValidationGroup( this.Controls, BlockValidationGroup );
+            }
         }
 
         #endregion
