@@ -367,7 +367,7 @@ namespace RockWeb.Blocks.Core
         {
             Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
             phProperties.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( component, phProperties, setValues, string.Empty, new List<string>() { "Order" } );
+            Rock.Attribute.Helper.AddEditControls( component, phProperties, setValues, BlockValidationGroup, new List<string>() { "Order" } );
         }
 
         /// <summary>
