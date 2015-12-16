@@ -296,6 +296,20 @@ namespace Rock.Model
         public string HeaderContent { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [allow indexing].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow indexing]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowIndexing
+        {
+            get { return _allowIndexing; }
+            set { _allowIndexing = value; }
+        }
+        private bool _allowIndexing = true;
+
+        /// <summary>
         /// Gets or sets the icon CSS class name for a font vector based icon.
         /// </summary>
         /// <value>

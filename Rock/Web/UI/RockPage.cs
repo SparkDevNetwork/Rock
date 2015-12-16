@@ -1152,9 +1152,19 @@ namespace Rock.Web.UI
                     AddMetaTag( this.Page, metaTag );
                 }
 
+                if (!string.IsNullOrWhiteSpace( _pageCache.Layout.Site.PageHeaderContent ))
+                {
+                    Page.Header.Controls.Add( new LiteralControl( _pageCache.Layout.Site.PageHeaderContent ) );
+                }
+
                 if ( !string.IsNullOrWhiteSpace( _pageCache.HeaderContent ) )
                 {
                     Page.Header.Controls.Add( new LiteralControl( _pageCache.HeaderContent ) );
+                }
+
+                if ( !_pageCache.AllowIndexing || !_pageCache.Layout.Site.AllowIndexing )
+                {
+                    Page.Header.Controls.Add( new LiteralControl( "<meta name=\"robots\" content=\"noindex, nofollow\">" ) );
                 }
                 
                 if ( showDebugTimings )

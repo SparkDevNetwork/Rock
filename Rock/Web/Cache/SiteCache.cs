@@ -377,6 +377,22 @@ namespace Rock.Web.Cache
         public int? PageViewRetentionPeriodDays { get; set; }
 
         /// <summary>
+        /// Gets or sets the content of the page header.
+        /// </summary>
+        /// <value>
+        /// The content of the page header.
+        /// </value>
+        public string PageHeaderContent { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allow indexing].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow indexing]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowIndexing { get; set; }
+
+        /// <summary>
         /// Gets the default page.
         /// </summary>
         public PageCache DefaultPage
@@ -429,6 +445,8 @@ namespace Rock.Web.Cache
                 this.RedirectTablets = site.RedirectTablets;
                 this.EnablePageViews = site.EnablePageViews;
                 this.PageViewRetentionPeriodDays = site.PageViewRetentionPeriodDays;
+                this.PageHeaderContent = site.PageHeaderContent;
+                this.AllowIndexing = site.AllowIndexing;
 
                 foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
                 {
