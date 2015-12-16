@@ -317,10 +317,7 @@ namespace RockWeb.Blocks.Finance
         private FinancialBatch GetBatch( int batchId, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
-            var batch = new FinancialBatchService( rockContext )
-                .Queryable( "Campus,Transactions.TransactionDetails.Account" )
-                .Where( b => b.Id == batchId )
-                .FirstOrDefault();
+            var batch = new FinancialBatchService( rockContext ).Get(batchId);
             return batch;
         }
 
@@ -394,13 +391,24 @@ namespace RockWeb.Blocks.Finance
 
                 SetHeadingInfo( batch, batch.Name );
 
-                string campus = string.Empty;
-                if ( batch.Campus != null )
+                string campusName = string.Empty;
+                if ( batch.CampusId.HasValue )
                 {
-                    campus = batch.Campus.ToString();
+                    var campus = CampusCache.Read( batch.CampusId.Value );
+                    if ( campus != null )
+                    {
+                        campusName = campus.ToString();
+                    }
                 }
 
-                decimal txnTotal = batch.Transactions.Sum( t => (decimal?)( t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ) ) ?? 0.0M;
+                var rockContext = new RockContext();
+                var financialTransactionService = new FinancialTransactionService(rockContext);
+                var batchTransactions = financialTransactionService.Queryable().Where( a => a.BatchId.HasValue && a.BatchId.Value == batch.Id );
+
+                var financialTransactionDetailService = new FinancialTransactionDetailService(rockContext);
+                var qryTransactionDetails = financialTransactionDetailService.Queryable().Where( a => a.Transaction.BatchId == batch.Id );
+                decimal txnTotal = qryTransactionDetails.Select( a => a.Amount ).Sum();
+
                 decimal variance = txnTotal - batch.ControlAmount;
                 string amountFormat = string.Format( "{0} / {1} / " + ( variance == 0.0M ? "{2}" : "<span class='label label-danger'>{2}</span>" ),
                     txnTotal.FormatAsCurrency(), batch.ControlAmount.FormatAsCurrency(), variance.FormatAsCurrency() );
@@ -411,9 +419,9 @@ namespace RockWeb.Blocks.Finance
                     .Add( "Accounting Code", batch.AccountingSystemCode )
                     .Add( "Notes", batch.Note )
                     .Html;
-                //Account Summary
-                gAccounts.DataSource = batch.Transactions
-                    .SelectMany( t => t.TransactionDetails )
+                
+                // Account Summary
+                gAccounts.DataSource = qryTransactionDetails
                     .GroupBy( d => new
                     {
                         AccountId = d.AccountId,
@@ -429,27 +437,24 @@ namespace RockWeb.Blocks.Finance
                     .ToList();
                 gAccounts.DataBind();
 
-                //Currency Summary
-                gCurrencyTypes.DataSource = batch.Transactions
-                    .Select( t => new
-                    {
-                        CurrencyId = t.FinancialPaymentDetail != null && t.FinancialPaymentDetail.CurrencyTypeValue != null ? t.FinancialPaymentDetail.CurrencyTypeValue.Id : 0,
-                        CurrencyName = t.FinancialPaymentDetail != null && t.FinancialPaymentDetail.CurrencyTypeValue != null ? t.FinancialPaymentDetail.CurrencyTypeValue.Value : "None",
-                        TotalAmount = t.TotalAmount
-                    } )
+                // Currency Summary
+                gCurrencyTypes.DataSource = batchTransactions
                     .GroupBy( c => new
                     {
-                        c.CurrencyId,
-                        c.CurrencyName
+                        CurrencyTypeValueId = c.FinancialPaymentDetailId.HasValue ? c.FinancialPaymentDetail.CurrencyTypeValueId : 0,
                     } )
                     .Select( s => new
                     {
-                        Id = s.Key.CurrencyId,
-                        Name = s.Key.CurrencyName,
-                        Amount = s.Sum( a => (decimal?)a.TotalAmount ) ?? 0.0M
+                        CurrencyTypeValueId = s.Key.CurrencyTypeValueId,
+                        Amount = s.Sum( a => (decimal?)a.TransactionDetails.Sum( t => t.Amount ) ) ?? 0.0M
                     } )
-                    .OrderBy( s => s.Name )
-                    .ToList();
+                    .ToList()
+                    .Select( s => new
+                    {
+                        Id = s.CurrencyTypeValueId,
+                        Name = DefinedValueCache.GetName(s.CurrencyTypeValueId),
+                        Amount = s.Amount
+                    } ).OrderBy(a=> a.Name).ToList();
                 gCurrencyTypes.DataBind();
             }
         }
