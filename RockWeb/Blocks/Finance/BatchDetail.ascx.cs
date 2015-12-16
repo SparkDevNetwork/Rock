@@ -418,7 +418,7 @@ namespace RockWeb.Blocks.Finance
 
                 var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
                 var qryTransactionDetails = financialTransactionDetailService.Queryable().Where( a => a.Transaction.BatchId == batch.Id );
-                decimal txnTotal = qryTransactionDetails.Select( a => a.Amount ).Sum();
+                decimal txnTotal = qryTransactionDetails.Select( a => (decimal?)a.Amount ).Sum() ?? 0;
 
                 decimal variance = txnTotal - batch.ControlAmount;
                 string amountFormat = string.Format(
