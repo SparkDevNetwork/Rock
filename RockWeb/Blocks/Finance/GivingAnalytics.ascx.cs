@@ -909,23 +909,26 @@ function(item) {
             numberGiftsField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
             gGiversGifts.Columns.Add( numberGiftsField );
 
-            // Add a column to indicate if this is a first time giver
-            gGiversGifts.Columns.Add(
-                new BoolField
-                {
-                    DataField = "IsFirstEverGift",
-                    HeaderText = "Is First Gift",
-                    SortExpression = "IsFirstEverGift"
-                } );
+            if ( !radFirstTime.Checked )
+            {
+                // Add a column to indicate if this is a first time giver
+                gGiversGifts.Columns.Add(
+                    new BoolField
+                    {
+                        DataField = "IsFirstEverGift",
+                        HeaderText = "Is First Gift",
+                        SortExpression = "IsFirstEverGift"
+                    } );
 
-            // Add a column for the first gift date ( that matches criteria )
-            gGiversGifts.Columns.Add(
-                new DateField
-                {
-                    DataField = "FirstGift",
-                    HeaderText = "First Gift",
-                    SortExpression = "FirstGift"
-                } );
+                // Add a column for the first gift date ( that matches criteria )
+                gGiversGifts.Columns.Add(
+                    new DateField
+                    {
+                        DataField = "FirstGift",
+                        HeaderText = "First Gift in Period",
+                        SortExpression = "FirstGift"
+                    } );
+            }
 
             // Add a column for the first-ever gift date ( to any tax-deductible account )
             gGiversGifts.Columns.Add(
