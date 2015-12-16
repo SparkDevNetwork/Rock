@@ -376,7 +376,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbGoBack_Click( object sender, EventArgs e )
         {
-            NavigateToPage( ParameterState["DetailSource"].AsGuid(), new Dictionary<string,string>() );
+            NavigateToPage( ParameterState["DetailSource"].AsGuid(), new Dictionary<string, string>() );
         }
 
         /// <summary>
@@ -699,7 +699,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
         /// <returns></returns>
-        public string GetVideoTag( String videoGuid, int? maxWidth = null, int? maxHeight = null )
+        public string GetVideoTag( String videoGuid )
         {
             var videoUrl = new StringBuilder();
             var videoSize = new StringBuilder();
@@ -711,29 +711,13 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             if ( !String.IsNullOrWhiteSpace( videoGuid ) )
             {
                 videoUrl.AppendFormat( "GetFile.ashx?guid={0}", videoGuid );
-
-                if ( maxWidth.HasValue )
-                {
-                    videoSize.AppendFormat( "width='{0}'", maxWidth.Value );
-                }
-                if ( maxHeight.HasValue )
-                {
-                    videoSize.AppendFormat( "height='{0}'", maxHeight.Value );
-                }
             }
             else
             {
                 videoUrl.Append( "Assets/Images/no-picture.svg?" );
-
-                if ( maxWidth.HasValue || maxHeight.HasValue )
-                {
-                    styleString = string.Format( " style='{0}{1}'",
-                        maxWidth.HasValue ? "max-width:" + maxWidth.Value.ToString() + "px; " : "",
-                        maxHeight.HasValue ? "max-height:" + maxHeight.Value.ToString() + "px;" : "" );
-                }
             }
 
-            return string.Format( "<video controls {0} name='media'><source src='{1}'{2} type='video/mp4'></video>", videoSize.ToString(), videoUrl.ToString(), styleString );
+            return string.Format( "<div class='embed-responsive embed-responsive-16by9'><iframe class='embed-responsive-item' src='{0}'></iframe></div>", videoUrl.ToString() );
         }
 
         /// <summary>

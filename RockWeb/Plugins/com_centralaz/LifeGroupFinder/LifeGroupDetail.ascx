@@ -33,10 +33,10 @@
                 </asp:Panel>
             </div>
             <div class="row">
-                <div class="lifegroupdetail-videoboxdiv col-md-4 text-center">
+                <div class="lifegroupdetail-videoboxdiv col-md-5 text-center">
                     <asp:Literal ID="lMainMedia" runat="server" />
                 </div>
-                <div class="lifegroupdetail-contactdiv col-md-4">
+                <div class="lifegroupdetail-contactdiv col-md-2">
                     <div class="lifegroupdetail-registerdiv row text-center">
                         <asp:LinkButton ID="lbRegister" runat="server" Text="Sign up!" CssClass="btn btn-primary" OnClick="lbRegister_Click" CausesValidation="false" />
                     </div>
@@ -44,7 +44,7 @@
                         <asp:LinkButton ID="lbEmail" runat="server" Text="Email" OnClick="lbEmail_Click" CausesValidation="false" />
                     </div>
                 </div>
-                <div class="lifegroupdetail-mapdiv col-md-4 location-maps text-center">
+                <div class="lifegroupdetail-mapdiv col-md-5 location-maps text-center">
                     <asp:PlaceHolder ID="phMaps" runat="server" EnableViewState="true" />
                 </div>
             </div>
