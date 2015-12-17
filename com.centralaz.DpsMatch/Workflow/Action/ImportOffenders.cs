@@ -39,12 +39,12 @@ namespace com.centralaz.DpsMatch.Workflow.Action
                 {
                     try
                     {
-                        if ( !string.IsNullOrWhiteSpace( csvReader[csvReader.GetFieldIndex( "Last Name" )] ) )
+                        if ( !string.IsNullOrWhiteSpace( csvReader[csvReader.GetFieldIndex( "Last_Name" )] ) )
                         {
                             //Build new SO Object
                             parameters = new Dictionary<string, object>();
-                            parameters.Add( "LastName", csvReader[csvReader.GetFieldIndex( "Last Name" )] );
-                            parameters.Add( "FirstName", csvReader[csvReader.GetFieldIndex( "First Name" )] );
+                            parameters.Add( "LastName", csvReader[csvReader.GetFieldIndex( "Last_Name" )] );
+                            parameters.Add( "FirstName", csvReader[csvReader.GetFieldIndex( "First_Name" )] );
                             if ( !string.IsNullOrWhiteSpace( csvReader[csvReader.GetFieldIndex( "MI" )] ) )
                             {
                                 String middleName = csvReader[csvReader.GetFieldIndex( "MI" )];
@@ -79,8 +79,15 @@ namespace com.centralaz.DpsMatch.Workflow.Action
                             parameters.Add( "Offense", csvReader[csvReader.GetFieldIndex( "Offense" )] );
                             parameters.Add( "OffenseLevel", csvReader[csvReader.GetFieldIndex( "Level" )].AsInteger() );
                             parameters.Add( "Absconder", csvReader[csvReader.GetFieldIndex( "Absconder" )].AsBoolean() );
-                            parameters.Add( "ConvictingJurisdiction", csvReader[csvReader.GetFieldIndex( "Convicting Jurisdiction" )] );
-                            parameters.Add( "Unverified", csvReader[csvReader.GetFieldIndex( "Unverified" )].AsBoolean() );
+                            parameters.Add( "ConvictingJurisdiction", csvReader[csvReader.GetFieldIndex( "Conviction_State" )] );
+                            if ( !string.IsNullOrWhiteSpace( csvReader[csvReader.GetFieldIndex( "Unverified" )] ) )
+                            {
+                                parameters.Add( "Unverified", csvReader[csvReader.GetFieldIndex( "Unverified" )].AsBoolean() );
+                            }
+                            else
+                            {
+                                parameters.Add( "Unverified", DBNull.Value );
+                            }
                             parameters.Add( "KeyString", String.Format( "{0}{1}{2}{3}{4}{5}{6}", parameters["LastName"], parameters["FirstName"], parameters["Race"], parameters["Sex"], parameters["Hair"], parameters["Eyes"], parameters["ResidentialZip"] ) );
 
                             DbService.ExecuteCommand( "_com_centralaz_spDpsMatch_Offender", System.Data.CommandType.StoredProcedure, parameters );
