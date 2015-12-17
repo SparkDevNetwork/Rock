@@ -17,9 +17,9 @@
             </h1>
         </asp:Panel>
         <asp:Panel ID="pnlView" runat="server" Visible="true">
-            <div class="row">
+            <div class="row lifegroupdetail-groupname">
                 <h2>
-                    <Rock:RockLiteral ID="lGroupName" runat="server" CssClass="lifegroupdetail-groupname" />
+                    <asp:Literal ID="lGroupName" runat="server" />
                 </h2>
             </div>
             <hr />
@@ -62,78 +62,71 @@
             </div>
         </asp:Panel>
         <asp:Panel ID="pnlSignup" runat="server" Visible="true">
+
             <div class="lifegroupdetail-errordiv">
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
             </div>
 
-            <div class="lifegroupdetail-firstnamediv row">
-                <div class="col-md-6">
-                    <Rock:RockLiteral ID="lFirstName" runat="server" Text="We treat Life Groups like family, and to us family uses real names." />
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label for="tbFirstName" class="col-md-2 control-label">First Name</label>
+                    <div class="col-md-10">
+                        <Rock:RockTextBox ID="tbFirstName" runat="server" Placeholder="First Name" Required="true"></Rock:RockTextBox>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true"></Rock:RockTextBox>
+                <div class="form-group">
+                    <label for="tbLastName" class="col-md-2 control-label">Last Name</label>
+                    <div class="col-md-10">
+                        <Rock:RockTextBox ID="tbLastName" runat="server" Placeholder="Last Name" Required="true"></Rock:RockTextBox>
+                    </div>
                 </div>
-            </div>
-            <div class="lifegroupdetail-lastnamediv row">
-                <div class="col-md-6">
-                    <Rock:RockLiteral ID="lLastName" runat="server" Text="What is yours?" />
+                <div class="form-group">
+                    <label id="lblHome" runat="server" for="pnHome" class="col-md-2 control-label">Home Phone</label>
+                    <div class="col-md-10">
+                        <Rock:PhoneNumberBox ID="pnHome" runat="server" Placeholder="Home Phone" />
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true"></Rock:RockTextBox>
+                <div class="form-group">
+                    <label for="tbLastName" class="col-md-2 control-label">Email</label>
+                    <div class="col-md-10">
+                        <Rock:EmailBox ID="tbEmail" runat="server" Placeholder="Email" Required="true"></Rock:EmailBox>
+                    </div>
                 </div>
-            </div>
-            <div class="lifegroupdetail-homephonediv row">
-                <div class="col-md-6">
-                    <Rock:RockLiteral ID="lHome" runat="server" Text="Please provide your email and phone." />
-                </div>
-                <div class="col-md-6">
-                    <Rock:PhoneNumberBox ID="pnHome" runat="server" Label="Home Phone" />
-                </div>
-            </div>
-            <div class="lifegroupdetail-emaildiv row">
-                <div class="col-md-6">
-                    <Rock:RockLiteral ID="lEmail" runat="server" Text="To connect you to your selected group we would like to contact you." />
-                </div>
-                <div class="col-md-6">
-                    <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true"></Rock:EmailBox>
-                </div>
-            </div>
-            <div class="lifegroupdetail-secondsignupdiv row">
-                <div class="col-md-6">
-                    <Rock:RockLiteral ID="lSecondSignup" runat="server" Text="Will some one else be attending with you, such as a spouse, friend, or neighbor?" />
-                </div>
-                <div class="col-md-6">
-                    <Rock:RockCheckBox ID="cbSecondSignup" runat="server" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbSecondSignup_CheckedChanged" />
+                <div class="form-group">
+                    <div class="col-md-6">
+                        <Rock:RockLiteral ID="lSecondSignup" runat="server" Text="Will some one else be attending with you, such as a spouse, friend, or neighbor?" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbSecondSignup" runat="server" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbSecondSignup_CheckedChanged" />
+                    </div>
                 </div>
             </div>
 
             <asp:Panel ID="pnlSecondSignup" runat="server" Visible="false">
-                <div class="lifegroupdetail-secondfirstnamediv row">
-                    <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label for="tbSecondFirstName" class="col-md-2 control-label">First Name</label>
+                        <div class="col-md-10">
+                            <Rock:RockTextBox ID="tbSecondFirstName" runat="server" Placeholder="First Name" Required="true"></Rock:RockTextBox>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbSecondFirstName" runat="server" Label="First Name" Required="true"></Rock:RockTextBox>
+                    <div class="form-group">
+                        <label for="tbSecondLastName" class="col-md-2 control-label">Last Name</label>
+                        <div class="col-md-10">
+                            <Rock:RockTextBox ID="tbSecondLastName" runat="server" Placeholder="Last Name" Required="true"></Rock:RockTextBox>
+                        </div>
                     </div>
-                </div>
-                <div class="lifegroupdetail-secondlastnamediv row">
-                    <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="pnSecondHome" class="col-md-2 control-label">Home Phone</label>
+                        <div class="col-md-10">
+                            <Rock:PhoneNumberBox ID="pnSecondHome" runat="server" Placeholder="Home Phone" />
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbSecondLastName" runat="server" Label="Last Name" Required="true"></Rock:RockTextBox>
-                    </div>
-                </div>
-                <div class="lifegroupdetail-secondhomephonediv row">
-                    <div class="col-md-6">
-                    </div>
-                    <div class="col-md-6">
-                        <Rock:PhoneNumberBox ID="pnSecondHome" runat="server" Label="Home Phone" />
-                    </div>
-                </div>
-                <div class="lifegroupdetail-secondemaildiv row">
-                    <div class="col-md-6">
-                    </div>
-                    <div class="col-md-6">
-                        <Rock:EmailBox ID="tbSecondEmail" runat="server" Label="Email" Required="true"></Rock:EmailBox>
+                    <div class="form-group">
+                        <label for="tbSecondEmail" class="col-md-2 control-label">Email</label>
+                        <div class="col-md-10">
+                            <Rock:EmailBox ID="tbSecondEmail" runat="server" Placeholder="Email" Required="true"></Rock:EmailBox>
+                        </div>
                     </div>
                 </div>
             </asp:Panel>
@@ -144,6 +137,7 @@
                     <asp:LinkButton ID="btnEmail" runat="server" Text="Send Email" CssClass="btn btn-primary" OnClick="btnEmail_Click" Visible="false" />
                 </div>
             </div>
+
         </asp:Panel>
 
         <asp:Panel ID="pnlResult" runat="server" Visible="false">

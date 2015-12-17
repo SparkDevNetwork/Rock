@@ -387,6 +387,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         protected void lbRegister_Click( object sender, EventArgs e )
         {
             pnHome.Visible = true;
+            lblHome.Visible = true;
             btnEmail.Visible = false;
             btnRegister.Visible = true;
             cbSecondSignup.Visible = true;
@@ -396,11 +397,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 pnlSecondSignup.Visible = true;
             }
 
-            lLastName.Visible = true;
-            lHome.Visible = true;
-            lEmail.Visible = true;
             lSecondSignup.Visible = true;
-            lFirstName.Text = "We treat Life Groups like family, and to us family uses real names.";
             focusOnState = "tbFirstName";
             tbFirstName.Focus();
         }
@@ -413,15 +410,12 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         protected void lbEmail_Click( object sender, EventArgs e )
         {
             pnHome.Visible = false;
+            lblHome.Visible = false;
             btnEmail.Visible = true;
             btnRegister.Visible = false;
             cbSecondSignup.Visible = false;
             pnlSecondSignup.Visible = false;
-            lLastName.Visible = false;
-            lHome.Visible = false;
-            lEmail.Visible = false;
             lSecondSignup.Visible = false;
-            lFirstName.Text = "For more information about this group, please fill out your first name, last name, and email.";
             focusOnState = "tbFirstName";
             tbFirstName.Focus();
         }
@@ -570,10 +564,9 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             {
                 lGroupName.Text = String.Format( "The {0} Life Group", _group.Name );
                 _group.LoadAttributes();
-                string vidTag = GetVideoTag( _group.GetAttributeValue( "MainVideo" ), 350, 200 );
+                string vidTag = GetVideoTag( _group.GetAttributeValue( "MainVideo" ) );
                 if ( !string.IsNullOrWhiteSpace( _group.GetAttributeValue( "MainVideo" ) ) )
                 {
-                    string videoUrl = ResolveRockUrl( String.Format( "~/GetFile.ashx?guid={0}", _group.GetAttributeValue( "MainVideo" ) ) );
                     lMainMedia.Text = vidTag;
                 }
                 else
