@@ -94,6 +94,7 @@ order by YValue desc
             var pageReference = new Rock.Web.PageReference( this.PageCache.Id );
             pageReference.QueryString = new System.Collections.Specialized.NameValueCollection();
             pageReference.QueryString.Add( "GetChartData", "true" );
+            pageReference.QueryString.Add( "GetChartDataBlockId", this.BlockId.ToString() );
             pageReference.QueryString.Add( "TimeStamp", RockDateTime.Now.ToJavascriptMilliseconds().ToString() );
             lcLineChart.DataSourceUrl = pageReference.BuildUrl();
             lcLineChart.ChartHeight = this.GetAttributeValue( "ChartHeight" ).AsIntegerOrNull() ?? 200;
@@ -161,7 +162,7 @@ function labelFormatter(label, series) {
                 nbConfigurationWarning.Visible = false;
             }
 
-            if ( PageParameter( "GetChartData" ).AsBoolean() )
+            if ( PageParameter( "GetChartData" ).AsBoolean() && ( PageParameter( "GetChartDataBlockId" ).AsInteger() == this.BlockId ) )
             {
                 GetChartData();
             }
