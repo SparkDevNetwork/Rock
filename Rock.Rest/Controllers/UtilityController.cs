@@ -16,6 +16,8 @@
 //
 using System;
 using System.Web.Http;
+using System.Collections.Generic;
+using System.Linq;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -64,19 +66,40 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         public int GetCampusContext()
         {
-            var campusCookieCypher = System.Web.HttpContext.Current.Request.Cookies["Rock_Context"].Values["Rock.Model.Campus"];
-            var publicKey = Rock.Security.Encryption.DecryptString( campusCookieCypher ).Split( '|' )[1];
-
-            string[] idParts = publicKey.Split( '>' );
-            if ( idParts.Length == 2 )
+            string campusCookieCypher = null;
+            if ( System.Web.HttpContext.Current.Request.Cookies.AllKeys.Contains( "Rock_Context" ) )
             {
-                int id = idParts[0].AsInteger();
-                Guid guid = idParts[1].AsGuid();
-                var campus = CampusCache.Read( guid );
-                if ( campus != null )
+                var contextCookie = System.Web.HttpContext.Current.Request.Cookies["Rock_Context"];
+                if ( contextCookie.Values.OfType<string>().Contains( "Rock.Model.Campus" ) )
                 {
-                    return campus.Id;
+                    campusCookieCypher = contextCookie.Values["Rock.Model.Campus"];
                 }
+            }
+
+            if ( campusCookieCypher == null )
+            {
+                return 0;
+            }
+
+            try
+            {
+                var publicKey = Rock.Security.Encryption.DecryptString( campusCookieCypher ).Split( '|' )[1];
+
+                string[] idParts = publicKey.Split( '>' );
+                if ( idParts.Length == 2 )
+                {
+                    int id = idParts[0].AsInteger();
+                    Guid guid = idParts[1].AsGuid();
+                    var campus = CampusCache.Read( guid );
+                    if ( campus != null )
+                    {
+                        return campus.Id;
+                    }
+                }
+            }
+            catch
+            {
+                // ignore and return 0
             }
 
             return 0;
