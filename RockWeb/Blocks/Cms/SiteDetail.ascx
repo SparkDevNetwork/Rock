@@ -47,21 +47,37 @@
                             <Rock:PagePicker ID="ppDefaultPage" runat="server" Label="Default Page" PromptForPageRoute="true" Help="The page and route that will be used whenever a specific page or page route is not provided." />
                             <Rock:PagePicker ID="ppLoginPage" runat="server" Label="Login Page" Required="false" PromptForPageRoute="true" Help="The page that user will be redirected to when they request a page that requires them to login." />
                             <Rock:PagePicker ID="ppCommunicationPage" runat="server" Label="Communication Page" Required="false" PromptForPageRoute="true" Help="The page that user will be redirected to when creating a new communication." />
-                            <Rock:PagePicker ID="ppRegistrationPage" runat="server" Label="Registration Page" Required="false" PromptForPageRoute="true" Help="The page that user will be redirected to when they request to register for a group." />
+                            <Rock:PagePicker ID="ppRegistrationPage" runat="server" Label="Group Registration Page" Required="false" PromptForPageRoute="true" Help="The page that user will be redirected to when they request to register for a group." />
                             <Rock:PagePicker ID="ppPageNotFoundPage" runat="server" Label="404 Page" Required="false" PromptForPageRoute="true" Help="Page to use instead of the server's 404 message." />
                         </div>
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbSiteDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="SiteDomains" TextMode="MultiLine" LabelTextFromPropertyName="false" Label="Domain(s)" Help="A comma delimited list of domain values that are associated with this site.  These values are used by Rock to load the correct site whenever a specific page or route is not provided in the url. Rock will determine the site to use by finding the first site with a domain value that is contained by the current request's hostname in the url.  It will then display that site's default page" />
                             <Rock:DataTextBox ID="tbErrorPage" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="ErrorPage" Help="The url that user will be redirected to if an error occurs on site" />
                             <Rock:DataTextBox ID="tbGoogleAnalytics" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="GoogleAnalyticsCode" Help="Optional Google Analytics Code.  If specified, the Google Analytics script with this code will be added to every page rendered for this site." />
-                            <Rock:RockCheckBox ID="cbEnableMobileRedirect" runat="server" Label="Enable Mobile Redirect" AutoPostBack="true" OnCheckedChanged="cbEnableMobileRedirect_CheckedChanged" CausesValidation="false" />
-                            <Rock:PagePicker ID="ppMobilePage" runat="server" Label="Mobile Page" Required="false" PromptForPageRoute="false" Help="The page that user will be redirected to if accessing site from a mobile device." />
-                            <Rock:DataTextBox ID="tbExternalURL" runat="server" SourceTypeName="Rock.Model.Site, Rock" Label="External URL" PropertyName="ExternalUrl" Help="If user should be redirected to an external URL when accessing this site from a mobile device, enter the URL here."  />
-                            <Rock:RockCheckBox ID="cbRedirectTablets" runat="server" Label="Redirect Tablets" />
-                            <Rock:RockCheckBox ID="cbEnablePageViews" runat="server" Label="Log Page Views" AutoPostBack="true" OnCheckedChanged="cbEnablePageViews_CheckedChanged" CausesValidation="false" />
-                            <Rock:NumberBox ID="nbPageViewRetentionPeriodDays" runat="server" Label="Page View Retention Period" Help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
+                            
                         </div>
                     </div>
+
+                    <Rock:PanelWidget ID="wpAdvancedSettings" runat="server" Title="Advanced Settings">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbEnableMobileRedirect" runat="server" Label="Enable Mobile Redirect" AutoPostBack="true" OnCheckedChanged="cbEnableMobileRedirect_CheckedChanged" CausesValidation="false" />
+                                <Rock:PagePicker ID="ppMobilePage" runat="server" Label="Mobile Page" Required="false" PromptForPageRoute="false" Help="The page that user will be redirected to if accessing site from a mobile device." />
+                                <Rock:DataTextBox ID="tbExternalURL" runat="server" SourceTypeName="Rock.Model.Site, Rock" Label="External URL" PropertyName="ExternalUrl" Help="If user should be redirected to an external URL when accessing this site from a mobile device, enter the URL here."  />
+                                <Rock:RockCheckBox ID="cbRedirectTablets" runat="server" Label="Redirect Tablets" />
+                                <Rock:RockCheckBox ID="cbEnablePageViews" runat="server" Label="Log Page Views" AutoPostBack="true" OnCheckedChanged="cbEnablePageViews_CheckedChanged" CausesValidation="false" />
+                                <Rock:NumberBox ID="nbPageViewRetentionPeriodDays" runat="server" Label="Page View Retention Period" Help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbAllowIndexing" runat="server" Label="Allow Indexing" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:CodeEditor ID="cePageHeaderContent" runat="server" EditorMode="Html" EditorTheme="Rock" Height="300" />
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />

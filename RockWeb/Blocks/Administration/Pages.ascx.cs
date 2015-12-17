@@ -264,6 +264,7 @@ namespace RockWeb.Blocks.Administration
                     {
                         page.ParentPageId = _page.Id;
                         page.LayoutId = _page.LayoutId;
+                        page.AllowIndexing = _page.AllowIndexing;
                     }
                     else
                     {
