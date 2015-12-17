@@ -30,11 +30,11 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Core
 {
     /// <summary>
-    /// Block that can be used to set the default group context for the site
+    /// Block that can be used to set the default group context for the site or page
     /// </summary>
     [DisplayName( "Group Context Setter" )]
     [Category( "Core" )]
-    [Description( "Block that can be used to set the default group context for the site." )]
+    [Description( "Block that can be used to set the default group context for the site or page." )]
     [GroupTypeGroupField( "Group Filter", "Select group type and root group to filter groups by root group. Leave root group blank to filter by group type.", "Root Group", order: 0 )]
     [CustomRadioListField( "Context Scope", "The scope of context to set", "Site,Page", true, "Site", order: 1 )]
     [TextField( "No Group Text", "The text to show when there is no group in the context.", true, "Select Group", order: 2 )]
@@ -164,13 +164,13 @@ namespace RockWeb.Blocks.Core
                 // check if the group can be unselected
                 if ( !string.IsNullOrEmpty( GetAttributeValue( "ClearSelectionText" ) ) )
                 {
-                    var blankCampus = new GroupItem
+                    var blankGroup = new GroupItem
                     {
                         Name = GetAttributeValue( "ClearSelectionText" ),
                         Id = Rock.Constants.All.Id
                     };
 
-                    groupList.Insert( 0, blankCampus );
+                    groupList.Insert( 0, blankGroup );
                 }
 
                 rptGroups.DataSource = groupList;
@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Core
             var group = new GroupService( new RockContext() ).Get( groupId );
             if ( group == null )
             {
-                // clear the current campus context
+                // clear the current group context
                 group = new Group()
                 {
                     Name = GetAttributeValue( "NoGroupText" ),
