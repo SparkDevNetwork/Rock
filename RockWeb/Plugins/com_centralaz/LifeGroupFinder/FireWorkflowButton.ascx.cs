@@ -36,7 +36,8 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
     [Category( "com_centralaz > Groups" )]
     [Description( "Allows a user to fire off a workflow" )]
 
-    [WorkflowTypeField( "Workflow Actions", "The workflows to make available as actions.", true, false, "", "", 1 )]
+    [WorkflowTypeField( "Workflow Actions", "The workflows to make available as actions.", false, false, "", "", 1 )]
+    [TextField( "Button Text", "The text the button will have." )]
     public partial class FireWorkflowButton : RockBlock
     {
         #region Base Control Methods
@@ -84,7 +85,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                                             string url = string.Format( "~/WorkflowEntry/{0}?GroupId={1}", workflowType.Id, groupId );
                                             workflowList.Add( new LeaderToolboxWorkflow
                                             {
-                                                Name = workflowType.Name,
+                                                Name = !String.IsNullOrWhiteSpace( GetAttributeValue( "ButtonText" ) ) ? GetAttributeValue( "ButtonText" ) : workflowType.Name,
                                                 Url = ResolveRockUrl( url )
                                             } );
                                         }
