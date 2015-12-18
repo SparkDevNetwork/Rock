@@ -19,14 +19,10 @@ REQUIRED VARIABLES
 
   {{ Group.Name | SetPageTitle }}
 
-  {% for groupLocation in Group.GroupLocations %}
-    {% if groupLocation.Location.GeoPoint != '' %}
-
-    {% assign groupgeo = groupLocation.Location.GeoPoint | Split: ',' %}
 
     <div class="thumbnail">
-      <div id="groupMap" style="height: 200px;">
-      </div>
+      <!-- <div id="groupMap" style="height: 200px;">
+      </div> -->
       <div class="caption">
         <div class="margin-t-md pull-right">
           {% if LinkedPages.CommunicationPage != '' and AllowedActions.Edit == true %}
@@ -71,9 +67,6 @@ REQUIRED VARIABLES
         </div>
       </div>
     </div>
-
-    {% endif %}
-  {% endfor %}
 
   {% if LinkedPages.RosterPage != '' and  (LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False') %}
     <ul class="nav nav-tabs margin-v-lg">
@@ -216,11 +209,14 @@ REQUIRED VARIABLES
       {% if fullRosterPage %}
         <a href="{{ fullRosterPage }}?GroupId={{ Group.Id }}" class="btn btn-default btn-xs"><i class="fa fa-file-text-o"></i> Full Roster</a>
       {% endif %}
-      {% if AllowedActions.Edit == true %}
+      <!-- {% if AllowedActions.Edit == true %}
         <a href="#" onclick="{{ '' | Postback:'AddGroupMember' }}" class="btn btn-default btn-xs">
           <i class="fa fa-plus"></i> Add Member
         </a>
-      {% endif %}
+      {% endif %} -->
+		<a href="/page/996" class="btn btn-default btn-xs">
+			<i class="fa fa-plus"></i> Request More Clients
+		</a>
     </div>
     </p>
   {% endif %}
