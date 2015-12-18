@@ -2342,8 +2342,8 @@ namespace RockWeb.Blocks.Event
                                     ddlCampus.SetValue( fRegistrants.GetUserPreference( "Home Campus" ) );
                                     phRegistrantFormFieldFilters.Controls.Add( ddlCampus );
 
-                                    var templateField = new TemplateField();
-                                    templateField.ItemTemplate = new LiteralFieldTemplate( "lCampus" );
+                                    var templateField = new RockLiteralField();
+                                    templateField.ID = "lCampus";
                                     templateField.HeaderText = "Campus";
                                     gRegistrants.Columns.Add( templateField );
 
@@ -2359,7 +2359,7 @@ namespace RockWeb.Blocks.Event
                                     phRegistrantFormFieldFilters.Controls.Add( tbEmailFilter );
 
                                     string dataFieldExpression = "PersonAlias.Person.Email";
-                                    var emailField = new BoundField();
+                                    var emailField = new RockBoundField();
                                     emailField.DataField = dataFieldExpression;
                                     emailField.HeaderText = "Email";
                                     emailField.SortExpression = dataFieldExpression;
@@ -2415,7 +2415,7 @@ namespace RockWeb.Blocks.Event
                                     phRegistrantFormFieldFilters.Controls.Add( ddlMaritalStatusFilter );
 
                                     string dataFieldExpression = "PersonAlias.Person.MaritalStatusValue.Value";
-                                    var maritalStatusField = new BoundField();
+                                    var maritalStatusField = new RockBoundField();
                                     maritalStatusField.DataField = dataFieldExpression;
                                     maritalStatusField.HeaderText = "MaritalStatus";
                                     maritalStatusField.SortExpression = dataFieldExpression;
@@ -2432,10 +2432,10 @@ namespace RockWeb.Blocks.Event
                                     tbPhoneFilter.Text = fRegistrants.GetUserPreference( "Phone" );
                                     phRegistrantFormFieldFilters.Controls.Add( tbPhoneFilter );
 
-                                    var templateField = new TemplateField();
-                                    templateField.ItemTemplate = new LiteralFieldTemplate( "lPhone" );
-                                    templateField.HeaderText = "Phone(s)";
-                                    gRegistrants.Columns.Add( templateField );
+                                    var literalField = new RockLiteralField( );
+                                    literalField.ID = "lPhone";
+                                    literalField.HeaderText = "Phone(s)";
+                                    gRegistrants.Columns.Add( literalField );
 
                                     break;
                                 }
@@ -2499,9 +2499,9 @@ namespace RockWeb.Blocks.Event
             }
 
             // Add fee column
-            var feeField = new TemplateField();
+            var feeField = new RockLiteralField();
+            feeField.ID = "lFees";
             feeField.HeaderText = "Fees";
-            feeField.ItemTemplate = new LiteralFieldTemplate( "lFees" );
             gRegistrants.Columns.Add( feeField );
 
             var deleteField = new DeleteField();
@@ -2702,30 +2702,6 @@ namespace RockWeb.Blocks.Event
             /// The attribute.
             /// </value>
             public AttributeCache Attribute { get; set; }
-        }
-
-        /// <summary>
-        /// TemplateField template with one literal control
-        /// </summary>
-        public class LiteralFieldTemplate : ITemplate
-        {
-            private string LiteralId { get; set; }
-
-            /// <summary>
-            /// Instantiates the in.
-            /// </summary>
-            /// <param name="container">The container.</param>
-            public void InstantiateIn( Control container )
-            {
-                var literal = new Literal();
-                literal.ID = LiteralId;
-                container.Controls.Add( literal );
-            }
-
-            public LiteralFieldTemplate( string literalId )
-            {
-                LiteralId = literalId;
-            }
         }
 
         #endregion
