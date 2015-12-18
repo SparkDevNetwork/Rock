@@ -1,0 +1,269 @@
+{% comment %}
+
+
+REQUIRED VARIABLES
+==================
+
+{% assign fullRosterPage = "/page/558" %}
+{% assign invitationListPage = "/page/559" %}
+
+{% include '~~/Assets/Lava/GroupDetail.lava' %}
+
+
+{% endcomment %}
+
+
+
+
+{% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
+
+  {{ Group.Name | SetPageTitle }}
+
+  {% for groupLocation in Group.GroupLocations %}
+    {% if groupLocation.Location.GeoPoint != '' %}
+
+    {% assign groupgeo = groupLocation.Location.GeoPoint | Split: ',' %}
+
+    <div class="thumbnail">
+      <div id="groupMap" style="height: 200px;">
+      </div>
+      <div class="caption">
+        <div class="margin-t-md pull-right">
+          {% if LinkedPages.CommunicationPage != '' and AllowedActions.Edit == true %}
+            <a href="#" onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
+              <i class="fa fa-envelope-o"></i> Email Roster
+            </a>
+          {% endif %}
+          {% if AllowedActions.Edit == true %}
+            <a class="btn btn-default btn-xs" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}"><i class="fa fa-pencil"></i> Edit</a>
+          {% endif %}
+        </div>
+        <h1 class="margin-t-sm">{{ Group.Name }}</h1>
+        <div class="row">
+          <div class="col-md-5">
+            {% if Group.Schedule.FriendlyScheduleText %}
+              <h4 class="no-caps margin-t-none">Meets every {{Group.Schedule.FriendlyScheduleText}}</h4>
+            {% endif %}
+            <p>{{ Group.Description }}</p>
+          </div>
+          <div class="col-md-3">
+            <strong>Leaders:</strong>
+            <ul class="unstyled">
+              {% for member in Group.Members %}
+
+              {% if member.GroupRole.IsLeader %}
+              <li>
+              {{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small>
+              </li>
+              {% endif %}
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="col-md-3">
+            <p>
+            {% for attribute in Group.AttributeValues %}
+              {% unless attribute.AttributeName == "Meeting Day" or attribute.AttributeName == "Meeting Time" or attribute.ValueFormatted == empty %}
+              <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+              {% endunless %}
+            {% endfor %}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% endif %}
+  {% endfor %}
+
+  {% if LinkedPages.RosterPage != '' and  (LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False') %}
+    <ul class="nav nav-tabs margin-v-lg">
+      {% if LinkedPages.RosterPage != '' %}
+        {% if LinkedPages.RosterPage == CurrentPage.Path %}
+          <li role="presentation" class="active"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+        {% else %}
+          <li role="presentation"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+        {% endif %}
+      {% endif %}
+
+      {% if LinkedPages.AttendancePage != '' and Group.GroupType.TakesAttendance == 'True' %}
+        {% if LinkedPages.AttendancePage == CurrentPage.Path %}
+          <li role="presentation" class="active"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
+        {% else %}
+          <li role="presentation"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
+        {% endif %}
+      {% endif %}
+    </ul>
+  {% endif %}
+
+  {% if LinkedPages.RosterPage == CurrentPage.Path %}
+
+    {% assign countActive = -1 %}
+    {% assign countInactive = -1 %}
+    {% assign countPending = -1 %}
+    {% for member in Group.Members %}
+      {% case member.GroupMemberStatus %}
+        {% when 'Active' %}
+          {% assign countActive = countActive | Plus: 1 %}
+        {% when 'Inactive' %}
+          {% assign countInactive = countInactive | Plus: 1 %}
+        {% when 'Pending' %}
+          {% assign countPending = countPending | Plus: 1 %}
+        {% else %}
+      {% endcase %}
+    {% endfor %}
+
+
+
+    {% if countPending > -1 %}
+      <div class="well">
+        <h4>Pending Members</h4>
+      {% assign icountPending = 0 %}
+
+
+
+      {% for member in Group.Members %}
+
+        {% if member.GroupMemberStatus == 'Pending' %}
+
+          {% assign loopcycle = icountPending | Modulo:2 %}
+
+          {% if loopcycle == 0 %}
+            <div class="row">
+          {% endif %}
+
+          {% include '~~/Assets/Lava/GroupDetail-person.lava' %}
+
+          {% if loopcycle != 0 or icountPending == countPending %}
+            </div>
+          {% endif %}
+
+          {% assign icountPending = icountPending | Plus: 1 %}
+
+        {% endif %}
+
+      {% endfor %}
+
+      </div>
+
+    {% endif %}
+
+
+
+    {% if countActive > -1 %}
+      {% assign icountActive = 0 %}
+
+      <h4>Active Members</h4>
+
+      {% for member in Group.Members %}
+
+        {% if member.GroupMemberStatus == 'Active' %}
+
+          {% assign loopcycle = icountActive | Modulo:2 %}
+
+          {% if loopcycle == 0 %}
+          <div class="row">
+          {% endif %}
+
+          {% include '~~/Assets/Lava/GroupDetail-person.lava' %}
+
+          {% if loopcycle != 0 or icountActive == countActive %}
+            </div>
+          {% endif %}
+
+          {% assign icountActive = icountActive | Plus: 1 %}
+
+        {% endif %}
+
+      {% endfor %}
+
+    {% endif %}
+
+
+
+    {% if countInactive > -1 %}
+      {% assign icountInactive = 0 %}
+
+      <h4>Inactive Members</h4>
+
+      {% for member in Group.Members %}
+
+        {% if member.GroupMemberStatus == 'Inactive' %}
+
+          {% assign loopcycle = icountInactive | Modulo:2 %}
+
+          {% if loopcycle == 0 %}
+          <div class="row">
+          {% endif %}
+
+          {% include '~~/Assets/Lava/GroupDetail-person.lava' %}
+
+          {% if loopcycle != 0 or icountInactive == countInactive %}
+            </div>
+          {% endif %}
+
+          {% assign icountInactive = icountInactive | Plus: 1 %}
+
+        {% endif %}
+
+      {% endfor %}
+
+    {% endif %}
+
+    <div class="pull-right margin-b-md">
+      {% if invitationListPage %}
+        <a href="{{ invitationListPage }}?GroupId={{ Group.Id }}" class="btn btn-default btn-xs"><i class="fa fa-street-view"></i> Invitation List</a>
+      {% endif %}
+      {% if fullRosterPage %}
+        <a href="{{ fullRosterPage }}?GroupId={{ Group.Id }}" class="btn btn-default btn-xs"><i class="fa fa-file-text-o"></i> Full Roster</a>
+      {% endif %}
+      {% if AllowedActions.Edit == true %}
+        <a href="#" onclick="{{ '' | Postback:'AddGroupMember' }}" class="btn btn-default btn-xs">
+          <i class="fa fa-plus"></i> Add Member
+        </a>
+      {% endif %}
+    </div>
+    </p>
+  {% endif %}
+
+  {% comment %} The ~~ relative path doesn't seem to work with this block {% endcomment %}
+  <script src="/Themes/church_ccv_External_v7/Scripts/_map.js"></script>
+
+  <script>
+    var groupMap;
+    Sys.Application.add_load(function(){
+      var mapHolder = document.getElementById('groupMap')
+      if (mapHolder) {
+        var mapPoint = [{
+          title: "{{ Group.Name }}",
+          lat: {{ groupgeo[0] }},
+          lng: {{ groupgeo[1] }}
+        }]
+        groupMap = new CCV.baseMap(mapHolder, mapPoint)
+        groupMap.useScrollZoom = false
+        groupMap.draw()
+      }
+    })
+
+    $(function () {
+      $('[data-toggle="popover"]').popover({
+        content: function() {
+          return $(this).find('.js-popup-content').html()
+        },
+        html: true
+      })
+    })
+  </script>
+
+  <style>
+    .img-popover {
+      display: block;
+      cursor: pointer;
+    }
+  </style>
+
+{% else %}
+  {% if Group.Id %}
+    <div class='alert alert-warning'>You do not have persmission to view this group.</div>
+  {% endif %}
+{% endif %}
+
