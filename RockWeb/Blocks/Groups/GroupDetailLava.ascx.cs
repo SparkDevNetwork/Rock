@@ -17,20 +17,18 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Data.Entity;
-using Newtonsoft.Json;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using Rock.Security;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -63,6 +61,7 @@ namespace RockWeb.Blocks.Groups
         private const string OTHER_LOCATION_TAB_TITLE = "Other Location";
 
         private readonly List<string> _tabs = new List<string> { MEMBER_LOCATION_TAB_TITLE, OTHER_LOCATION_TAB_TITLE };
+        
         #endregion
 
         #region Properties
@@ -419,6 +418,21 @@ namespace RockWeb.Blocks.Groups
             groupMember.LoadAttributes();
 
             Rock.Attribute.Helper.GetEditValues( phAttributes, groupMember );
+
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            // if the groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
+            // So, make sure a message is displayed in the validation summary
+            cvEditGroupMember.IsValid = groupMember.IsValid;
+
+            if ( !cvEditGroupMember.IsValid )
+            {
+                cvEditGroupMember.ErrorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                return;
+            }
 
             // using WrapTransaction because there are two Saves
             rockContext.WrapTransaction( () =>
