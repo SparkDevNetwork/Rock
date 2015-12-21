@@ -513,7 +513,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Compiled RegEx for detecting if a string as Lava merge fields
+        /// Compiled RegEx for detecting if a string has Lava merge fields
         /// </summary>
         private static Regex hasLavaMergeFields = new Regex( @".*\{.+\}.*", RegexOptions.Compiled );
 
