@@ -30,9 +30,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_centralaz.Widgets
 {
-    /// <summary>
-    /// A simple, easy to use photo gallery widget that stores photos on the filesystem.
-    /// </summary>
+    
     [DisplayName( "Html Passcode Block" )]
     [Category( "com_centralaz > Widgets" )]
     [Description( "Allows a user to enter a password to view security protected content." )]
