@@ -22,14 +22,17 @@ namespace RockWeb.Plugins.com_centralaz.Finance
     [Category( "com_centralaz > Finance" )]
     [Description( "Finance block to import contribution data from a SecureGive XML file (FellowshipONE format)." )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Transaction Source", "The transaction source", true )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "TransactionType", "The means the transaction was submitted by", true )]
-    [IntegerField( "Anonymous Giver PersonAliasID", "PersonAliasId to use in case of anonymous giver", true )]
-    [BooleanField( "Use Negative Foreign Keys", "Indicates whether Rock uses the negative of the SecureGive reference ID for the contribution record's foreign key", false )]
-    [TextField( "Batch Name", "The name that should be used for the batches created", true, "SecureGive Import" )]
-    [TextField( "Tender Mappings", "If you don't want to clutter your tender types, just map them here. Split them with commas or semicolons, and write them in the format 'SecureGive Tender Type=Rock Tender type'." )]
-    [LinkedPage( "Batch Detail Page", "The page used to display the contributions for a specific batch", true, "", "", 0 )]
-    [LinkedPage( "Contribution Detail Page", "The page used to display the contribution details", true, "", "", 1 )]
+    [TextField( "Batch Name", "The name that should be used for the batches created", true, "SecureGive Import", order: 0 )]
+    [IntegerField( "Anonymous Giver PersonAliasID", "PersonAliasId to use in case of anonymous giver", true, order: 1 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "TransactionType", "The means the transaction was submitted by", true, order: 2 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Default Transaction Source", "The default transaction source to use if a match is not found (Website, Kiosk, etc.).", true, order:3 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Default Tender Type Value", "The default tender type if a match is not found (Cash, Credit Card, etc.).", true, order: 4 )]
+    [BooleanField( "Use Negative Foreign Keys", "Indicates whether Rock uses the negative of the SecureGive reference ID for the contribution record's foreign key", false, order: 5 )]
+    [TextField( "Source Mappings", "Held in SecureGive's ContributionSource field, these correspond to Rock's TransactionSource (DefinedType). If you don't want to rename your current transaction source types, just map them here. Delimit them with commas or semicolons, and write them in the format 'SecureGive_value=Rock_value'.", false, "", "Data Mapping", 1 )]
+    [TextField( "Tender Mappings", "Held in the SecureGive's ContributionType field, these correspond to Rock's TenderTypes (DefinedType). If you don't want to clutter your tender types, just map them here. Delimit them with commas or semicolons, and write them in the format 'SecureGive_value=Rock_value'.", false, "", "Data Mapping", 2 )]
+    [TextField( "Fund Code Mapping", "Held in the SecureGive's FundCode field, these correspond to Rock's Account IDs (integer). Each FundCode should be mapped to a matching AccountId otherwise Rock will just use the same value. Delimit them with commas or semicolons, and write them in the format 'SecureGive_value=Rock_value'.", false, "", "Data Mapping", 3 )]    
+    [LinkedPage( "Batch Detail Page", "The page used to display the contributions for a specific batch", true, "", "Linked Pages", 0 )]
+    [LinkedPage( "Contribution Detail Page", "The page used to display the contribution transaction details", true, "", "Linked Pages", 1 )]
     public partial class SecureGiveImport : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -41,6 +44,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
 
         private Dictionary<int, FinancialAccount> _financialAccountCache = new Dictionary<int, FinancialAccount>();
         private Dictionary<string, DefinedValue> _tenderTypeDefinedValueCache = new Dictionary<string, DefinedValue>();
+        private Dictionary<string, DefinedValue> _transactionSourceTypeDefinedValueCache = new Dictionary<string, DefinedValue>();
 
         #endregion
 
@@ -59,6 +63,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             gErrors.RowDataBound += gErrors_RowDataBound;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
@@ -75,11 +80,18 @@ namespace RockWeb.Plugins.com_centralaz.Finance
 
             if ( !Page.IsPostBack )
             {
+                var id = GetAttributeValue( "AnonymousGiverPersonAliasID" ).AsIntegerOrNull();
+
+                if ( id == null || string.IsNullOrEmpty( GetAttributeValue( "ContributionDetailPage" ) )  || string.IsNullOrEmpty( GetAttributeValue( "BatchDetailPage" ) ) )
+                {
+                    nbMessage.Text = "Invalid block settings.";
+                    return;
+                }
+
                 tbBatchName.Text = GetAttributeValue( "BatchName" );
                 BindGrid();
                 BindErrorGrid();
             }
-
         }
 
         #endregion
@@ -95,6 +107,12 @@ namespace RockWeb.Plugins.com_centralaz.Finance
         {
             if ( fuImport.HasFile )
             {
+                // clear any old errors:
+                _errors = new List<string>();
+                _errorElements = new List<XElement>();
+                nbMessage.Text = "";
+                pnlErrors.Visible = false;
+
                 RockContext rockContext = new RockContext();
                 FinancialBatchService financialBatchService = new FinancialBatchService( rockContext );
                 DefinedValueService definedValueService = new DefinedValueService( rockContext );
@@ -129,13 +147,21 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                 var xdoc = XDocument.Load( System.Xml.XmlReader.Create( fuImport.FileContent ) );
                 var elemDonations = xdoc.Element( "Donation" );
 
-                Dictionary<String, String> mappingDictionary = Regex.Matches( GetAttributeValue( "TenderMappings" ), @"\s*(.*?)\s*=\s*(.*?)\s*(;|,|$)" )
+                Dictionary<String, String> tenderMappingDictionary = Regex.Matches( GetAttributeValue( "TenderMappings" ), @"\s*(.*?)\s*=\s*(.*?)\s*(;|,|$)" )
                     .OfType<Match>()
                     .ToDictionary( m => m.Groups[1].Value, m => m.Groups[2].Value );
 
+                Dictionary<String, String> sourceMappingDictionary = Regex.Matches( GetAttributeValue( "SourceMappings" ), @"\s*(.*?)\s*=\s*(.*?)\s*(;|,|$)" )
+                    .OfType<Match>()
+                    .ToDictionary( m => m.Groups[1].Value, m => m.Groups[2].Value );
+
+                Dictionary<int, int> fundCodeMappingDictionary = Regex.Matches( GetAttributeValue( "FundCodeMapping" ), @"\s*(.*?)\s*=\s*(.*?)\s*(;|,|$)" )
+                    .OfType<Match>()
+                    .ToDictionary( m => m.Groups[1].Value.AsInteger(), m => m.Groups[2].Value.AsInteger() );
+
                 foreach ( var elemGift in elemDonations.Elements( "Gift" ) )
                 {
-                    ProcessGift( elemGift, mappingDictionary, rockContext );
+                    ProcessGift( elemGift, tenderMappingDictionary, sourceMappingDictionary, fundCodeMappingDictionary, rockContext );
                 }
 
                 rockContext.SaveChanges();
@@ -288,6 +314,22 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             }
         }
 
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            nbMessage.Text = "";
+            var id = GetAttributeValue( "AnonymousGiverPersonAliasID" ).AsIntegerOrNull();
+            if ( id == null || string.IsNullOrEmpty( GetAttributeValue( "ContributionDetailPage" ) ) || string.IsNullOrEmpty( GetAttributeValue( "BatchDetailPage" ) ) )
+            {
+                nbMessage.Text = "Invalid block settings.";
+                return;
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -296,27 +338,29 @@ namespace RockWeb.Plugins.com_centralaz.Finance
         /// Processes the gift.
         /// </summary>
         /// <param name="elemGift">The elem gift.</param>
-        /// <param name="mappingDictionary">The mapping dictionary.</param>
+        /// <param name="tenderMappingDictionary">The tender type mapping dictionary.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <exception cref="System.Exception">
         /// </exception>
-        private void ProcessGift( XElement elemGift, Dictionary<String, String> mappingDictionary, RockContext rockContext )
+        private void ProcessGift( XElement elemGift, Dictionary<String, String> tenderMappingDictionary, Dictionary<String, String> sourceMappingDictionary, Dictionary<int, int> fundCodeMappingDictionary, RockContext rockContext )
         {
             FinancialAccountService financialAccountService = new FinancialAccountService( rockContext );
             DefinedValueService definedValueService = new DefinedValueService( rockContext );
             PersonAliasService personAliasService = new PersonAliasService( rockContext );
             PersonService personService = new PersonService( rockContext );
 
-            var transactionSource = DefinedValueCache.Read( GetAttributeValue( "TransactionSource" ).AsGuid() );
+            // ie, "Contribution"
             var transactionType = DefinedValueCache.Read( GetAttributeValue( "TransactionType" ).AsGuid() );
-            var tenderType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() );
+            var defaultTransactionSource = DefinedValueCache.Read( GetAttributeValue( "DefaultTransactionSource" ).AsGuid() );
+            var tenderDefinedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() );
+            var sourceTypeDefinedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() );
 
             try
             {
                 FinancialTransaction financialTransaction = new FinancialTransaction()
                 {
                     TransactionTypeValueId = transactionType.Id,
-                    SourceTypeValueId = transactionSource.Id
+                    SourceTypeValueId = defaultTransactionSource.Id
                 };
 
                 if ( elemGift.Element( "ReceivedDate" ) != null )
@@ -325,60 +369,83 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                     financialTransaction.TransactionDateTime = elemGift.Element( "ReceivedDate" ).Value.AsDateTime();
                 }
 
-                if ( elemGift.Element( "ContributionType" ) != null )
+                // Map the Contribution Source to a Rock TransactionSource
+                if ( elemGift.Element( "ContributionSource" ) != null )
                 {
-                    string elemValue = elemGift.Element( "ContributionType" ).Value.ToString();
-                    DefinedValue contributionTenderType;
-                    // fetch the tender type from cache if we've encountered it before.
-                    if ( !_tenderTypeDefinedValueCache.ContainsKey( elemValue ) )
+                    string transactionSourceElemValue = elemGift.Element( "ContributionSource" ).Value.ToString();
+
+                    // Convert to mapped value if one exists...
+                    if ( sourceMappingDictionary.ContainsKey( transactionSourceElemValue ) )
                     {
-                        contributionTenderType = definedValueService.Queryable()
-                            .Where( d => d.DefinedTypeId == tenderType.Id && d.Value == elemValue )
-                            .FirstOrDefault();
-                        if ( contributionTenderType != null )
-                        {
+                        transactionSourceElemValue = sourceMappingDictionary[transactionSourceElemValue];
+                    }
 
-                            _tenderTypeDefinedValueCache.Add( elemValue, contributionTenderType );
-                        }
-                        else
-                        {
-
-                            if ( mappingDictionary[elemValue] != null )
-                            {
-                                String mappedValue = mappingDictionary[elemValue];
-                                if ( !_tenderTypeDefinedValueCache.ContainsKey( mappedValue ) )
-                                {
-                                    contributionTenderType = definedValueService.Queryable()
-                                        .Where( d => d.DefinedTypeId == tenderType.Id && d.Value == mappedValue )
-                                        .FirstOrDefault();
-
-                                    if ( contributionTenderType != null )
-                                    {
-                                        _tenderTypeDefinedValueCache.Add( mappedValue, contributionTenderType );
-                                    }
-                                    else
-                                    {
-                                        throw new Exception( string.Format( "Unable to match contribution type {0}", elemValue ) );
-                                    }
-                                }
-                                else
-                                {
-                                    contributionTenderType = _tenderTypeDefinedValueCache[mappedValue];
-                                }
-                            }
-                        }
+                    // Now find the matching source type...
+                    // Get the source type and put in cache if we've not encountered it before.
+                    if ( _transactionSourceTypeDefinedValueCache.ContainsKey( transactionSourceElemValue ) )
+                    {
+                        var transactionSourceDefinedValue = _transactionSourceTypeDefinedValueCache[transactionSourceElemValue];
+                        financialTransaction.SourceTypeValueId = transactionSourceDefinedValue.Id;
                     }
                     else
                     {
-                        contributionTenderType = _tenderTypeDefinedValueCache[elemValue];
+                        DefinedValue transactionSourceDefinedValue;
+                        int id;
+                        transactionSourceDefinedValue = definedValueService.Queryable()
+                            .Where( d => d.DefinedTypeId == sourceTypeDefinedType.Id && d.Value == transactionSourceElemValue )
+                            .FirstOrDefault();
+                        if ( transactionSourceDefinedValue != null )
+                        {
+                            _transactionSourceTypeDefinedValueCache.Add( transactionSourceElemValue, transactionSourceDefinedValue );
+                            id = transactionSourceDefinedValue.Id;
+                            financialTransaction.SourceTypeValueId = transactionSourceDefinedValue.Id;
+                        }
+                    }
+                }
+
+                // Map the Contribution Type to a Rock TenderType
+                if ( elemGift.Element( "ContributionType" ) != null )
+                {
+                    string contributionTypeElemValue = elemGift.Element( "ContributionType" ).Value.ToString();
+
+                    // Convert to mapped value if one exists...
+                    if ( tenderMappingDictionary.ContainsKey( contributionTypeElemValue ) )
+                    {
+                        contributionTypeElemValue = tenderMappingDictionary[contributionTypeElemValue];
                     }
 
+                    // set up the necessary Financial Payment Detail record
                     if ( financialTransaction.FinancialPaymentDetail == null )
                     {
                         financialTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
                     }
 
-                    financialTransaction.FinancialPaymentDetail.CurrencyTypeValue = contributionTenderType;
+                    // Now find the matching tender type...
+                    // Get the tender type and put in cache if we've not encountered it before.
+                    if ( _tenderTypeDefinedValueCache.ContainsKey( contributionTypeElemValue ) )
+                    {
+                        var tenderTypeDefinedValue = _tenderTypeDefinedValueCache[contributionTypeElemValue];
+                        financialTransaction.FinancialPaymentDetail.CurrencyTypeValueId = tenderTypeDefinedValue.Id;
+                    }
+                    else
+                    {
+                        DefinedValue tenderTypeDefinedValue;
+                        int id;
+                        tenderTypeDefinedValue = definedValueService.Queryable()
+                            .Where( d => d.DefinedTypeId == tenderDefinedType.Id && d.Value == contributionTypeElemValue )
+                            .FirstOrDefault();
+                        if ( tenderTypeDefinedValue != null )
+                        {
+                            _tenderTypeDefinedValueCache.Add( contributionTypeElemValue, tenderTypeDefinedValue );
+                            id = tenderTypeDefinedValue.Id;
+                        }
+                        else
+                        {
+                            // otherwise get and use the tender type default value
+                            id = DefinedValueCache.Read( GetAttributeValue( "DefaultTenderTypeValue" ).AsGuid() ).Id;
+                        }
+                        financialTransaction.FinancialPaymentDetail.CurrencyTypeValueId = id;
+                    }
                 }
 
                 if ( elemGift.Element( "TransactionID" ) != null )
@@ -394,7 +461,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                     var personAlias = personAliasService.GetByAliasId( aliasId );
                     if ( personAlias == null )
                     {
-                        throw new Exception( string.Format( "Invalid person alias Id {0}", aliasId ) );
+                        throw new Exception( string.Format( "Invalid person alias Id {0}", elemGift.Element( "IndividualID" ).Value ) );
                     }
 
                     financialTransaction.AuthorizedPersonAliasId = personAlias.Id;
@@ -416,13 +483,26 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                 {
                     int accountId = elemGift.Element( "FundCode" ).Value.AsInteger();
 
+                    // Convert to mapped value if one exists...
+                    if ( fundCodeMappingDictionary.ContainsKey( accountId ) )
+                    {
+                        accountId = fundCodeMappingDictionary[accountId];
+                    }
+
                     // look in cache to see if we already fetched it
                     if ( !_financialAccountCache.ContainsKey( accountId ) )
                     {
                         account = financialAccountService.Queryable()
                         .Where( fa => fa.Id == accountId )
                         .FirstOrDefault();
-                        _financialAccountCache.Add( accountId, account );
+                        if ( account != null )
+                        {
+                            _financialAccountCache.Add( accountId, account );
+                        }
+                        else
+                        {
+                            throw new Exception( "Fund Code (Rock Account) not found." );
+                        }
                     }
                     account = _financialAccountCache[accountId];
                 }

@@ -10,6 +10,8 @@
             </div>
             <div class="panel-body">
 
+                <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Danger" />
+
                 <Rock:RockTextBox runat="server" ID="tbBatchName" Label="Batch Name" ToolTip="The name you wish to use for this batch import."></Rock:RockTextBox>
 
                 <p>
@@ -17,12 +19,10 @@
                 </p>
 
                 <p>
-                    <asp:LinkButton runat="server" ID="lbImport" CssClass="btn btn-default btn-sm" OnClick="lbImport_Click">
-                                    <i class="fa fa-arrow-up"></i> Import
+                    <asp:LinkButton runat="server" ID="lbImport" CssClass="btn btn-primary" OnClick="lbImport_Click">
+                        <i class="fa fa-arrow-up"></i> Import
                     </asp:LinkButton>
                 </p>
-
-                <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Danger" />
 
                 <asp:Panel ID="pnlErrors" runat="server" Visible="false" CssClass="alert alert-danger block-message error">
                     <Rock:Grid ID="gErrors" runat="server" AllowSorting="false" OnRowDataBound="gErrors_RowDataBound" RowItemText="error" AllowPaging="false" RowStyle-CssClass="danger" AlternatingRowStyle-CssClass="danger" ShowActionRow="false">
