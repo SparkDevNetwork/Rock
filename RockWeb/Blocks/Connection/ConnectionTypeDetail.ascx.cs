@@ -544,7 +544,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void gAttributes_GridReorder( object sender, GridReorderEventArgs e )
         {
-            ReOrderAttributes( AttributesState );
+            SortAttributes( AttributesState, e.OldIndex, e.NewIndex );
             BindAttributesGrid();
         }
 
@@ -625,6 +625,38 @@ namespace RockWeb.Blocks.Connection
                          } )
                          .ToList();
             gAttributes.DataBind();
+        }
+
+        /// <summary>
+        /// Reorders the attribute list.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        private void SortAttributes( List<Attribute> attributeList, int oldIndex, int newIndex )
+        {
+            var movedItem = attributeList.Where( a => a.Order == oldIndex ).FirstOrDefault();
+            if ( movedItem != null )
+            {
+                if ( newIndex < oldIndex )
+                {
+                    // Moved up
+                    foreach ( var otherItem in attributeList.Where( a => a.Order < oldIndex && a.Order >= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order + 1;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherItem in attributeList.Where( a => a.Order > oldIndex && a.Order <= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order - 1;
+                    }
+                }
+
+                movedItem.Order = newIndex;
+            }
         }
 
         /// <summary>
