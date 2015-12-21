@@ -301,7 +301,15 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
             rowValues.Add( String.Format( "{0}, {1},{2} {3}", offender.ResidentialAddress, offender.ResidentialCity, offender.ResidentialState, offender.ResidentialZip ) );
             foreach ( Match match in matchList )
             {
-                rowValues.Add( match.PersonAlias.Person.GetFamilies().FirstOrDefault().GroupLocations.FirstOrDefault().Location.GetFullStreetAddress() );
+                if ( match.PersonAlias.Person.GetHomeLocation() != null )
+                {
+                    rowValues.Add( match.PersonAlias.Person.GetHomeLocation().GetFullStreetAddress() );
+                }
+                else
+                {
+                    rowValues.Add( "N/A" );
+                }
+
             }
             tbl.Rows.Add( rowValues.ToArray() );
 

@@ -253,7 +253,7 @@ CREATE PROCEDURE [dbo].[_com_centralaz_spDpsMatch_Match]
 						,[p].[Gender]
 			            ,[pa].[Id]
                     ) [a]
-                JOIN [_com_centralaz_DpsMatch_Offender] [so] ON CAST([so].[ResidentialZip] AS NVARCHAR(5)) = [a].[PostalCode]
+                JOIN [_com_centralaz_DpsMatch_Offender] [so] ON SUBSTRING(CAST([so].[ResidentialZip] AS NVARCHAR(20)),0,6) = [a].[PostalCode]
 				AND (([a].[Gender]=1 and [so].[Sex]='M') or ([a].[Gender]=2 and [so].[Sex]='F'))
 				and [so].[LastName] = [a].[LastName]
 	            WHERE @compareByPostalCode = 1

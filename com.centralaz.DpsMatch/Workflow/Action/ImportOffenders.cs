@@ -68,7 +68,7 @@ namespace com.centralaz.DpsMatch.Workflow.Action
                             parameters.Add( "ResidentialState", csvReader[csvReader.GetFieldIndex( "Res_State" )] );
                             parameters.Add( "ResidentialZip", csvReader[csvReader.GetFieldIndex( "Res_Zip" )].AsInteger() );
 
-                            if ( !string.IsNullOrWhiteSpace( csvReader[csvReader.GetFieldIndex( "Verification Date" )] ) && csvReader[csvReader.GetFieldIndex( "Verification Date" )].AsDateTime().HasValue )
+                            if ( csvReader.GetFieldIndex( "Verification Date" ) != -1 && !string.IsNullOrWhiteSpace( csvReader[csvReader.GetFieldIndex( "Verification Date" )] ) && csvReader[csvReader.GetFieldIndex( "Verification Date" )].AsDateTime().HasValue )
                             {
                                 parameters.Add( "VerificationDate", csvReader[csvReader.GetFieldIndex( "Verification Date" )].AsDateTime().Value );
                             }
@@ -80,7 +80,7 @@ namespace com.centralaz.DpsMatch.Workflow.Action
                             parameters.Add( "OffenseLevel", csvReader[csvReader.GetFieldIndex( "Level" )].AsInteger() );
                             parameters.Add( "Absconder", csvReader[csvReader.GetFieldIndex( "Absconder" )].AsBoolean() );
                             parameters.Add( "ConvictingJurisdiction", csvReader[csvReader.GetFieldIndex( "Conviction_State" )] );
-                            if ( !string.IsNullOrWhiteSpace( csvReader[csvReader.GetFieldIndex( "Unverified" )] ) )
+                            if ( csvReader.GetFieldIndex( "Verification Date" ) != -1 && !string.IsNullOrWhiteSpace( csvReader[csvReader.GetFieldIndex( "Unverified" )] ) )
                             {
                                 parameters.Add( "Unverified", csvReader[csvReader.GetFieldIndex( "Unverified" )].AsBoolean() );
                             }

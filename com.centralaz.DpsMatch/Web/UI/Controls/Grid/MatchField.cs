@@ -166,7 +166,7 @@ namespace com.centralaz.DpsMatch.Web.UI.Controls.Grid
                     HtmlGenericContainer headerSummary = new HtmlGenericContainer( "div", "merge-header-summary" );
                     headerSummary.Attributes.Add( "data-col", matchField.ColumnIndex.ToString() );
                     double percentage = matchField.MatchPercentage.Value / 100.0;
-                    headerSummary.Controls.Add( new LiteralControl( String.Format( "<div class='col-md-6'><div class='merge-heading-family'><h3>{0:0%}</h3></div></div><div class='col-md-6'>", percentage ) ) );
+                    headerSummary.Controls.Add( new LiteralControl( String.Format( "<div class='row'><div class='col-md-12'><div class='merge-heading-family'><h3>{0:0%}</h3></div></div></div><div class='row'><div class='col-md-12'>", percentage ) ) );
 
                     var rbList = new RadioButtonList();
                     rbList.Items.Add( new ListItem( "Is Match" ) );
@@ -188,7 +188,7 @@ namespace com.centralaz.DpsMatch.Web.UI.Controls.Grid
                     rbList.CausesValidation = false;
                     rbList.AutoPostBack = true;
                     headerSummary.Controls.Add( rbList );
-                    headerSummary.Controls.Add( new LiteralControl( "</div>" ) );
+                    headerSummary.Controls.Add( new LiteralControl( "</div></div>" ) );
 
                     cell.Controls.Add( headerSummary );
 
