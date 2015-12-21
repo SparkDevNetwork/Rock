@@ -54,10 +54,10 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         #region Properties
 
         /// <summary>
-        /// Gets or sets the available attributes.
+        /// Gets or sets the available attribute.
         /// </summary>
         /// <value>
-        /// The available attributes.
+        /// The available attribute.
         /// </value>
         public AttributeCache AvailableAttribute { get; set; }
 
@@ -65,6 +65,10 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         #region Base Control Methods
 
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
@@ -74,6 +78,10 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             AddDynamicControl();
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
 
@@ -103,6 +111,10 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             this.AddConfigurationUpdateTrigger( upnlSearch );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -111,7 +123,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 ShowView();
             }
         }
-
 
         /// <summary>
         /// Saves any user control view-state changes that have occurred since the last page postback.
@@ -130,6 +141,11 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         #region Events
 
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             int? attributeId = GetAttributeValue( "Attribute" ).AsIntegerOrNull();
@@ -146,6 +162,11 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbOk control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbOk_Click( object sender, EventArgs e )
         {
             SetAttributeValue( "Attribute", ddlAttribute.SelectedValue );
@@ -154,11 +175,21 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             ShowView();
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gPeople control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         void gPeople_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gPeople control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         void gPeople_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
@@ -261,6 +292,11 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             }
         }
 
+        /// <summary>
+        /// Handles the RowSelected event of the gPeople control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPeople_RowSelected( object sender, RowEventArgs e )
         {
             NavigateToLinkedPage( "PersonDetailPage", "PersonId", (int)e.RowKeyId );
@@ -273,7 +309,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-
             if ( AvailableAttribute != null )
             {
                 var filterControl = phAttributeFilter.FindControl( "filter_" + AvailableAttribute.Id.ToString() );
@@ -316,17 +351,18 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                         // intentionally ignore
                     }
                 }
-
             }
 
             e.Value = string.Empty;
-
         }
 
         #endregion
 
         #region Methods
 
+        /// <summary>
+        /// Shows the settings.
+        /// </summary>
         protected override void ShowSettings()
         {
             var rockContext = new RockContext();
@@ -355,6 +391,9 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             }
         }
 
+        /// <summary>
+        /// Shows the view.
+        /// </summary>
         protected void ShowView()
         {
             mdEdit.Hide();
@@ -376,6 +415,9 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             AddDynamicControl();
         }
 
+        /// <summary>
+        /// Adds the dynamic control.
+        /// </summary>
         private void AddDynamicControl()
         {
             // Clear the filter controls
@@ -419,9 +461,12 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             }
         }
 
+        /// <summary>
+        /// Binds the attribute.
+        /// </summary>
         private void BindAttribute()
         {
-            // Parse the attribute filters 
+            // Parse the attribute filter
             var attributeId = GetAttributeValue( "Attribute" ).AsIntegerOrNull();
             if ( attributeId != null )
             {
@@ -433,6 +478,9 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             }
         }
 
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
         private void BindGrid()
         {
             var rockContext = new RockContext();
@@ -519,8 +567,12 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         #endregion
     }
-    #region result models
 
+    #region Helper Classes
+
+    /// <summary>
+    /// A Person Search Result
+    /// </summary>
     public class PersonSearchResult
     {
         /// <summary>
