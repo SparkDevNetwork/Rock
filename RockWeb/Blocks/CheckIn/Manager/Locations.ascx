@@ -64,14 +64,13 @@
                             <li id="liNavItem" runat="server" class="list-group-item clickable clearfix" >
                                 <div class="photoframe pull-left margin-r-md"><asp:Literal ID="imgPerson" runat="server" /></div>
                                 <div class="pull-left margin-t-sm">
-                                    <span class="js-checkin-person-name"><%# Eval("Name") %></span> <br /> 
-                                    <asp:Literal ID="lAge" runat="server" />
+                                    <span class="js-checkin-person-name"><%# Eval("Name") %></span><asp:Literal ID="lAge" runat="server" />
+                                    <%# Eval("ScheduleGroupNames") %>
                                 </div>
                                 <span class="pull-right margin-t-sm">
-                                    <%# Eval("ScheduleGroupNames") %>
                                     <asp:Literal ID="lStatus" runat="server" />
-                                    <asp:LinkButton ID="lbRemoveAttendance" runat="server" Text="Cancel Checkin" CssClass="js-cancel-checkin btn btn-xs btn-default" 
-                                        CommandArgument='<%# Eval("Id") %>' CommandName="Delete" Visible='<%# (bool)Eval("ShowCancel") %>' />
+                                    <asp:LinkButton ID="lbRemoveAttendance" runat="server" CssClass="js-cancel-checkin btn btn-xs btn-danger" 
+                                        CommandArgument='<%# Eval("Id") %>' CommandName="Delete" Visible='<%# (bool)Eval("ShowCancel") %>'><i class="fa fa-times"></i></asp:LinkButton>
                                 </span>
                             </li>
                         </ItemTemplate>
