@@ -420,7 +420,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 if ( person.Age != string.Empty )
                 {
                     var lAge = e.Item.FindControl( "lAge" ) as Literal;
-                    lAge.Text = string.Format("<small>(Age: {0})</small>", person.Age);
+                    if ( lAge != null )
+                    {
+                        lAge.Text = string.Format( "{0}<small>(Age: {1})</small>",
+                            string.IsNullOrWhiteSpace( person.ScheduleGroupNames ) ? "<br/>" : " ",
+                            person.Age );
+                    }
                 }
             }
         }
@@ -1224,7 +1229,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         var dayStart = RockDateTime.Today;
                         var now = RockDateTime.Now;
                         var attendees = new AttendanceService( rockContext )
-                            .Queryable( "Group,PersonAlias.Person,Schedule" )
+                            .Queryable( "Group,PersonAlias.Person,Schedule,AttendanceCode" )
                             .AsNoTracking()
                             .Where( a =>
                                 a.StartDateTime > dayStart &&
@@ -1440,11 +1445,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     PhotoId = person.PhotoId;
 
                     ScheduleGroupNames = attendances
-                        .Select( a => a.Group.Name + " <small>(" + a.Schedule.Name + ")</small>" )
+                        .Select( a => string.Format( "<br/><small>{0}{1}{2}</small>",
+                                a.Group.Name,
+                                a.Schedule != null ? " - " + a.Schedule.Name : "",
+                                a.AttendanceCode != null ? " - " + a.AttendanceCode.Code : "" ) )
                         .Distinct()
                         .ToList()
-                        .AsDelimited( "<br/>" ) + "<br/>";
-
+                        .AsDelimited( "\r\n" );
                 }
             }
         }
