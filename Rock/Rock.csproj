@@ -470,6 +470,7 @@
     <Compile Include="PersonProfile\Badge\AlertNote.cs" />
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
+    <Compile Include="PersonProfile\Badge\InGroupWithPurpose.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupMemberAttributeSelect.cs" />
@@ -1125,9 +1126,11 @@
     <Compile Include="Workflow\Action\ActivateActions.cs" />
     <Compile Include="Workflow\Action\RemovePersonFromGroupAttribute.cs" />
     <Compile Include="Workflow\Action\RemovePersonFromGroup.cs" />
+    <Compile Include="Workflow\Action\GetPersonFromFields.cs" />
     <Compile Include="Workflow\Action\UpdateGroupMemberStatus.cs" />
     <Compile Include="Workflow\Action\AddPersonToGroupAttribute.cs" />
     <Compile Include="Workflow\Action\AssignActivityFromAttributeValue.cs" />
+    <Compile Include="Workflow\Action\SendEmailWithEvents.cs" />
     <Compile Include="Workflow\Action\SetInitiatorFromAttribute.cs" />
     <Compile Include="Workflow\Action\AssignActivityToSecurityRole.cs" />
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
