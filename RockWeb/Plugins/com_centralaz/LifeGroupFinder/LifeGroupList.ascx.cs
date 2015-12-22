@@ -120,7 +120,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
         {
             int offset = PageParameter( "Offset" ).AsIntegerOrNull() ?? 0;
             int numberOfResults = PageParameter( "Results" ).AsIntegerOrNull() ?? 20;
-            int newOffset = (offset-numberOfResults) >= 0 ? (offset - numberOfResults) : 0;
+            int newOffset = ( offset - numberOfResults ) >= 0 ? ( offset - numberOfResults ) : 0;
             var qryParams = new Dictionary<string, string>();
             qryParams.Add( "Offset", newOffset.ToString() );
             qryParams.Add( "Results", numberOfResults.ToString() );
@@ -210,8 +210,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 // {{ group.Image }}
                 GroupMember leader = group.Members.FirstOrDefault( m => m.GroupRole.IsLeader == true );
 
-                // Consider changing the query to use the WhereAttributeValue LINQ extension method
-                // instead of loading attributes in a for loop.
                 group.LoadAttributes();
                 lifeGroupSummaries.Add( new LifeGroupSummary
                 {
@@ -221,7 +219,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                     Distance = GetDistance( group, personLocation ),
                     HasKids = group.GetAttributeValues( "HasChildren" ).Any(),
                     Crossroads = group.GetAttributeValue( "Crossroads" ) ?? "",
-                    ListDescription = group.GetAttributeValue( "ListDescription" ) ?? "",
+                    ListDescription = group.GetAttributeValue( "ListDescription" ) != null && group.GetAttributeValue( "ListDescription" ) != "" ? group.GetAttributeValue( "ListDescription" ) : group.Description,
                     Schedule = group.Schedule != null ? group.Schedule.ToString() : "No Schedule"
                 } );
             }
