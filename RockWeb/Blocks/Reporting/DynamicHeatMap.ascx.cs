@@ -86,6 +86,35 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
+        /// Gfs the heat map filter_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gfHeatMapFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            if ( e.Key == "Campuses" )
+            {
+                var campusList =
+                e.Value = e.Value.Split( ',' ).AsIntegerList().Select( a => CampusCache.Read( a ) ).Where( a => a != null ).Select( a => a.ToString() ).OrderBy( a => a ).ToList().AsDelimited( "," );
+
+            }
+            else if ( e.Key == "DataView" )
+            {
+                var dataViewGuid = e.Value.AsGuid();
+                var dataView = new DataViewService( new RockContext() ).Get( dataViewGuid );
+                if ( dataView != null )
+                {
+                    e.Value = dataView.ToString();
+                }
+                else
+                {
+                    e.Value = null;
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the BlockUpdated event of the Block control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -106,15 +135,23 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !this.IsPostBack )
             {
-                var campusIds = this.GetUserPreference( GetUserPreferenceKey( "Campuses" ) ).SplitDelimitedValues().AsIntegerList();
-                var dataViewGuid = this.GetUserPreference( GetUserPreferenceKey( "DataView" ) ).AsGuidOrNull();
+                var campusIds = this.GetBlockUserPreference( "Campuses" ).SplitDelimitedValues().AsIntegerList();
+                var dataViewGuid = this.GetBlockUserPreference( "DataView" ).AsGuidOrNull();
+
+                cbShowCampusLocations.Checked = this.GetBlockUserPreference( "ShowCampusLocations" ).AsBoolean();
+                rsDataPointRadius.SelectedValue = this.GetBlockUserPreference( "DataPointRadius" ).AsIntegerOrNull() ?? 32;
+
                 cpCampuses.SetValues( campusIds );
                 ddlUserDataView.SetValue( dataViewGuid );
+                if ( !dataViewGuid.HasValue && ddlUserDataView.Visible )
+                {
+                    pnlOptions.Style["display"] = "";
+                }
+
                 lMessages.Text = string.Empty;
                 pnlMap.Visible = true;
-                pnlFilter.Visible = this.GetAttributeValue( "ShowFilter" ).AsBooleanOrNull() ?? true;
             }
-            
+
             ShowMap();
         }
 
@@ -224,19 +261,22 @@ namespace RockWeb.Blocks.Reporting
             var campuses = CampusCache.All();
             var locationService = new LocationService( rockContext );
             CampusMarkersData = string.Empty;
-            foreach ( var campus in campuses )
+            if ( cbShowCampusLocations.Checked )
             {
-                if ( campus.LocationId.HasValue )
+                foreach ( var campus in campuses )
                 {
-                    var location = locationService.Get( campus.LocationId.Value );
-                    if ( location != null && location.GeoPoint != null )
+                    if ( campus.LocationId.HasValue )
                     {
-                        CampusMarkersData += string.Format( "{{ location: new google.maps.LatLng({0},{1}), campusName:'{2}' }},", location.GeoPoint.Latitude, location.GeoPoint.Longitude, campus.Name );
+                        var location = locationService.Get( campus.LocationId.Value );
+                        if ( location != null && location.GeoPoint != null )
+                        {
+                            CampusMarkersData += string.Format( "{{ location: new google.maps.LatLng({0},{1}), campusName:'{2}' }},", location.GeoPoint.Latitude, location.GeoPoint.Longitude, campus.Name );
+                        }
                     }
                 }
-            }
 
-            CampusMarkersData.TrimEnd( new char[] { ',' } );
+                CampusMarkersData.TrimEnd( new char[] { ',' } );
+            }
 
             var groupMemberService = new GroupMemberService( rockContext );
             var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
@@ -266,6 +306,8 @@ namespace RockWeb.Blocks.Reporting
             if ( dataViewId.HasValue || dataViewGuid.HasValue )
             {
                 DataView dataView = null;
+
+                // if a DataViewId page parameter was specified, use that, otherwise use the blocksetting or filter selection
                 if ( dataViewId.HasValue )
                 {
                     dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
@@ -289,14 +331,11 @@ namespace RockWeb.Blocks.Reporting
             }
 
             var qryGroupMembers = groupMemberService.Queryable();
-            
-            if ( pnlFilter.Visible )
+
+            var campusIds = cpCampuses.SelectedCampusIds;
+            if ( campusIds.Any() )
             {
-                var campusIds = cpCampuses.SelectedCampusIds;
-                if ( campusIds.Any() )
-                {
-                    qryGroupMembers = qryGroupMembers.Where( a => a.Group.CampusId.HasValue && campusIds.Contains( a.Group.CampusId.Value ) );
-                }
+                qryGroupMembers = qryGroupMembers.Where( a => a.Group.CampusId.HasValue && campusIds.Contains( a.Group.CampusId.Value ) );
             }
 
             var qryLocationGroupMembers = qryGroupMembers
@@ -414,26 +453,19 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// Gets the user preference key.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        private string GetUserPreferenceKey( string key )
-        {
-            return string.Format( "{0}_{1}", this.BlockId, key );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnFilter control.
+        /// Handles the ApplyOptionsClick event of the btn control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnFilter_Click( object sender, EventArgs e )
+        protected void btn_ApplyOptionsClick( object sender, EventArgs e )
         {
             // reload the full page to ensure the updated HeatMapData is rendered correctly
-            this.SetUserPreference( GetUserPreferenceKey( "Campuses" ), cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
-            this.SetUserPreference( GetUserPreferenceKey( "DataView" ), ddlUserDataView.SelectedValue );
+            this.SetBlockUserPreference( "ShowCampusLocations", cbShowCampusLocations.Checked.ToTrueFalse() );
+            this.SetBlockUserPreference( "DataPointRadius", rsDataPointRadius.SelectedValue.ToString() );
+            this.SetBlockUserPreference( "Campuses", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
+            this.SetBlockUserPreference( "DataView", ddlUserDataView.SelectedValue );
+
             NavigateToPage( this.CurrentPageReference );
         }
-}
+    }
 }
