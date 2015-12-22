@@ -1,0 +1,52 @@
+{% for family in Families %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h4 class="panel-title">
+      <i class="fa fa-users"></i> {{ family.Name }}
+      {% if family.CanEdit %}
+      <div class="pull-right">
+        <a href='{{ DetailPage }}?FamilyId={{ family.FamilyId }}&PersonId=0'>Add Family Member</a>
+      </div>
+      {% endif %}
+    </h4>
+  </div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-6">
+        <b>Name</b>
+      </div>
+      <div class="col-md-2">
+        <b>Gender</b>
+      </div>
+      <div class="col-md-2">
+        <b>Age</b>
+      </div>
+      <div class="col-md-2">
+        {% if family.CanEdit %}
+        <b>Edit</b>
+        {% endif %}
+      </div>
+    </div>
+    {% for member in family.FamilyMembers %}
+    <div class="row">
+      <div class="col-md-6">
+        {{ member.Person.FullName }}
+      </div>
+      <div class="col-md-2">
+        {{ member.Person.Gender }}
+      </div>
+      <div class="col-md-2">
+        {{ member.Person.Age }}
+      </div>
+      <div class="col-md-2">
+        {% if family.CanEdit %}
+        <a href='{{ DetailPage }}?FamilyId={{ family.FamilyId }}&PersonId={{ member.Person.Id }}'>
+          <i class='fa fa-pencil'></i>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endfor %}
