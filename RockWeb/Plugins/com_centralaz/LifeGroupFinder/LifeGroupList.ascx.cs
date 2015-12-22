@@ -190,10 +190,9 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             }
 
             Location personLocation = GetPersonLocation( rockContext );
-
-            //TODO Untag these
-            //qry = qry.Where( g => g.GroupLocations.FirstOrDefault() != null && g.GroupLocations.FirstOrDefault().Location.GeoPoint != null );
-            //qry = qry.OrderBy( g => g.GroupLocations.FirstOrDefault().Location.GeoPoint.Distance( personLocation.GeoPoint ) );
+           
+            qry = qry.Where( g => g.GroupLocations.FirstOrDefault() != null && g.GroupLocations.FirstOrDefault().Location.GeoPoint != null );
+            qry = qry.OrderBy( g => g.GroupLocations.FirstOrDefault().Location.GeoPoint.Distance( personLocation.GeoPoint ) );
             qry = qry.OrderBy( g => g.Name );
             int offset = PageParameter( "Offset" ).AsIntegerOrNull() ?? 0;
             int numberOfResults = PageParameter( "Results" ).AsIntegerOrNull() ?? 20;
