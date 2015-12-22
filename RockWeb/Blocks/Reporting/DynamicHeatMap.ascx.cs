@@ -44,8 +44,7 @@ namespace RockWeb.Blocks.Reporting
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 3 )]
     [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "", 4 )]
     [TextField( "Polygon Colors", "Comma-Delimited list of colors to use when displaying multiple polygons (e.g. #f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc).", true, "#f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc", "", 5 )]
-    [DecimalField( "Point Grouping", "The number of miles per to use to group points that are close together. For example, enter 0.25 to group points in 1/4 mile blocks. Increase this if the heatmap has lots of points and is slow", order: 6 )]
-    [BooleanField( "Show Filter", defaultValue: true )]
+    [DecimalField( "Point Grouping", "The number of miles per to use to group points that are close together. For example, enter 0.25 to group points in 1/4 mile blocks. Increase this if the heatmap has lots of points and is slow", required: false, order: 6 )]
     public partial class DynamicHeatMap : RockBlockCustomSettings
     {
         /// <summary>
@@ -139,7 +138,8 @@ namespace RockWeb.Blocks.Reporting
                 var dataViewGuid = this.GetBlockUserPreference( "DataView" ).AsGuidOrNull();
 
                 cbShowCampusLocations.Checked = this.GetBlockUserPreference( "ShowCampusLocations" ).AsBoolean();
-                rsDataPointRadius.SelectedValue = this.GetBlockUserPreference( "DataPointRadius" ).AsIntegerOrNull() ?? 32;
+                this.DataPointRadius = this.GetBlockUserPreference( "DataPointRadius" ).AsIntegerOrNull() ?? 32;
+                rsDataPointRadius.SelectedValue = this.DataPointRadius;
 
                 cpCampuses.SetValues( campusIds );
                 ddlUserDataView.SetValue( dataViewGuid );
@@ -170,6 +170,14 @@ namespace RockWeb.Blocks.Reporting
         /// The campus markers data.
         /// </value>
         public string CampusMarkersData { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data point radius.
+        /// </summary>
+        /// <value>
+        /// The data point radius.
+        /// </value>
+        public int DataPointRadius { get; set; }
 
         /// <summary>
         /// 
