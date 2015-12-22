@@ -11,34 +11,43 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-map-marker"></i>&nbsp;Dynamic Map</h1>
+                <a class="btn btn-xs btn-default pull-right margin-l-sm" onclick="javascript: toggleOptions()"><i title="Options" class="fa fa-gear"></i></a>
             </div>
-
-
-            <div class="panel-body">
+            <asp:Panel ID="pnlOptions" runat="server" Title="Options" CssClass="panel-body js-options" Style="display: none">
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlUserDataView" runat="server" Label="Dataview" Help="Select the dataview to use to filter the reults." Required="true" />
-                        <asp:Panel ID="pnlFilter" runat="server">
-                            <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" Required="false" />
-                        </asp:Panel>
-                        <div class="actions margin-t-md">
-                            <asp:LinkButton ID="btnFilter" runat="server" AccessKey="m" Text="Filter" CssClass="btn btn-primary btn-sm" OnClick="btnFilter_Click" />
-                        </div>
+                        <Rock:RockDropDownList ID="ddlUserDataView" runat="server" Label="Dataview" Help="Select the dataview to use to filter the results." Required="true" />
+                        <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" Help="Select the campuses to narrow the results down to families with that home campus." Required="false" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbShowCampusLocations" runat="server" Label="Show Campus locations on map" Checked="true" />
+                        <Rock:RangeSlider ID="rsDataPointRadius" runat="server" MinValue="0" MaxValue="128" Text="32" Label="Radius" Help="The radius of influence for each data point, in pixels" />
                     </div>
                 </div>
 
+                <div class="actions">
+                    <asp:LinkButton ID="btnApplyOptions" runat="server" Text="Apply" CssClass="btn btn-primary" OnClick="btn_ApplyOptionsClick" />
+                </div>
+            </asp:Panel>
+
+            <div class="margin-all-md">
+                <div class="pull-right">
+                    <div class="btn btn-default btn-xs js-createpieshape "><i class='fa fa-pie-chart' title="Create pie slices from circle"></i></div>
+                    <div class="btn btn-danger btn-xs js-deleteshape"><i class='fa fa-times' title="Delete selected shape"></i></div>
+                </div>
+            </div>
+            <div class="panel-body">
                 <asp:Literal ID="lMapStyling" runat="server" />
 
-
                 <asp:Panel ID="pnlMap" runat="server">
+
                     <div id="map_wrapper">
                         <div id="map_canvas" class="mapping"></div>
                     </div>
                 </asp:Panel>
-                <div class="btn btn-danger btn-xs js-deleteshape">Delete selected shape</div>
+
                 <asp:Literal ID="lMessages" runat="server" />
                 <asp:Literal ID="lDebug" runat="server" />
-
             </div>
         </div>
 
@@ -51,14 +60,29 @@
         <asp:Panel ID="pnlConfigure" runat="server" Visible="false">
             <Rock:ModalDialog ID="mdConfigure" runat="server" ValidationGroup="vgConfigure" OnSaveClick="mdConfigure_SaveClick">
                 <Content>
-                    <Rock:RockDropDownList ID="ddlBlockConfigDataView" runat="server" Label="Dataview" Help="Select the dataview to use to filter the reults." Required="false" ValidationGroup="vgConfigure" />
+                    <Rock:RockDropDownList ID="ddlBlockConfigDataView" runat="server" Label="Dataview" Help="Select the dataview to use to filter the results." Required="false" ValidationGroup="vgConfigure" />
                 </Content>
             </Rock:ModalDialog>
         </asp:Panel>
 
         <script>
+
+            function toggleOptions() {
+                $('.js-options').slideToggle();
+            }
             
             Sys.Application.add_load(function () {
+
+                // hook into rangeslider
+                var rangeSlider = $('#<%=rsDataPointRadius.ClientID%>');
+                rangeSlider.on("change", function(obj) {
+                    var newRadius = parseInt($(this).val());
+                    if (heatmap) {
+                        heatmap.set('radius', newRadius);
+                    }
+                });
+
+                // configure/display heatmap
                 var allShapes = [];
                 var selectedShape;
                 var map;
@@ -86,6 +110,7 @@
                         , styles: mapStyle
                         , center: centerLatLng
                         , zoom: zoom
+                        , streetViewControl: false
                     }
 
                     // Display a map on the page
@@ -129,73 +154,12 @@
                         dissipating: true,
                         data: heatMapData,
                         maxIntensity: 50,
-                        radius: 32
+                        radius: <%=this.DataPointRadius%>,
                     });
 
                     heatmap.setMap(map);
 
-                    var initialColor = GetNextColor();
-
-                    drawingManager = new google.maps.drawing.DrawingManager({
-                        drawingMode: google.maps.drawing.OverlayType.RECTANGLE,
-                        drawingControl: true,
-                        drawingControlOptions: {
-                            position: google.maps.ControlPosition.TOP_CENTER,
-                            drawingModes: [
-                                google.maps.drawing.OverlayType.CIRCLE,
-                                google.maps.drawing.OverlayType.POLYGON,
-                                google.maps.drawing.OverlayType.RECTANGLE
-                            ]
-                        },
-                        circleOptions: {
-                            draggable: true,
-                            editable: true,
-                            fillColor: initialColor,
-                            strokeColor: initialColor
-                        },
-                        polygonOptions: {
-                            draggable: true,
-                            editable: true,
-                            fillColor: initialColor,
-                            strokeColor: initialColor,
-                            strokeWeight: 2
-                        },
-                        polylineOptions: {
-                            draggable: true,
-                            editable: true,
-                            fillColor: initialColor,
-                            strokeColor: initialColor
-                        },
-                        rectangleOptions: {
-                            draggable: true,
-                            editable: true,
-                            fillColor: initialColor,
-                            strokeColor: initialColor
-                        }
-                    });
-
-                    drawingManager.setMap(map);
-
-                    google.maps.event.addListener(drawingManager, 'overlaycomplete', function (event) {
-                        var shape = event.overlay;
-                        shape.overlayType = event.type;
-                        AddUpdateShape(event.overlay, false);
-                    });
-
-                    google.maps.event.addListener(drawingManager, 'polygoncomplete', function (polygon) {
-                        google.maps.event.addListener(polygon, 'dragend', function (a,b,c) {
-                            allShapes.forEach( function(s) {
-                                AddUpdateShape(s, false);
-                            });
-                        });
-                        google.maps.event.addListener(polygon.getPath(), 'insert_at', function (a,b,c) {
-                            allShapes.forEach( function(s) {
-                                AddUpdateShape(s, false);
-                            });
-                        });
-                    });
-
-                    function GetNextColor() {
+                    map.GetNextColor = function GetNextColor() {
                         if (polygonColors && polygonColors.length) {
                             if (polygonColorIndex >= polygonColors.length) {
                                 polygonColorIndex = 0;
@@ -207,7 +171,7 @@
                         return null;
                     }
 
-                    function AddUpdateShape(shape, justUpdate) {
+                    map.AddUpdateShape = function AddUpdateShape(shape, justUpdate) {
                         selectedShape = shape;
                         
                         if (!justUpdate) {
@@ -216,7 +180,7 @@
                             });
 
                             if (polygonColors && polygonColors.length) {
-                                var color = GetNextColor();
+                                var color = map.GetNextColor();
 
                                 drawingManager.polygonOptions.fillColor = color;
                                 drawingManager.polygonOptions.strokeColor = color;
@@ -261,10 +225,76 @@
                         if (!justUpdate) {
                             selectedShape.addListener('bounds_changed', function (event) {
                                 var resizedShape = this;
-                                AddUpdateShape(resizedShape, true);
+                                map.AddUpdateShape(resizedShape, true);
                             });
                         }
                     }
+
+                    var initialColor = map.GetNextColor();
+
+                    drawingManager = new google.maps.drawing.DrawingManager({
+                        drawingMode: null,
+                        drawingControl: true,
+                        drawingControlOptions: {
+                            position: google.maps.ControlPosition.TOP_CENTER,
+                            drawingModes: [
+                                google.maps.drawing.OverlayType.CIRCLE,
+                                google.maps.drawing.OverlayType.POLYGON,
+                                google.maps.drawing.OverlayType.RECTANGLE
+                            ]
+                        },
+                        circleOptions: {
+                            draggable: true,
+                            editable: true,
+                            fillColor: initialColor,
+                            strokeColor: initialColor
+                        },
+                        polygonOptions: {
+                            draggable: true,
+                            editable: true,
+                            fillColor: initialColor,
+                            strokeColor: initialColor,
+                            strokeWeight: 2
+                        },
+                        polylineOptions: {
+                            draggable: true,
+                            editable: true,
+                            fillColor: initialColor,
+                            strokeColor: initialColor
+                        },
+                        rectangleOptions: {
+                            draggable: true,
+                            editable: true,
+                            fillColor: initialColor,
+                            strokeColor: initialColor
+                        }
+                    });
+
+                    drawingManager.setMap(map);
+
+                    google.maps.event.addListener(drawingManager, 'overlaycomplete', function (event) {
+                        var shape = event.overlay;
+                        shape.overlayType = event.type;
+                        map.AddUpdateShape(event.overlay, false);
+                    });
+
+                    google.maps.event.addListener(drawingManager, 'polygoncomplete', function (polygon) {
+                        google.maps.event.addListener(polygon, 'dragend', function (a,b,c) {
+                            allShapes.forEach( function(s) {
+                                map.AddUpdateShape(s, false);
+                            });
+                        });
+                        google.maps.event.addListener(polygon.getPath(), 'insert_at', function (a,b,c) {
+                            allShapes.forEach( function(s) {
+                                map.AddUpdateShape(s, false);
+                            });
+                        });
+                        google.maps.event.addListener(polygon.getPath(), 'set_at', function (a,b,c) {
+                            allShapes.forEach( function(s) {
+                                map.AddUpdateShape(s, false);
+                            });
+                        });
+                    });
                 }
 
                 $('.js-deleteshape').click(function () {
@@ -272,6 +302,38 @@
                         selectedShape.setMap(null);
                         selectedShape.mapCountLabel.setMap(null);
                         selectedShape = null;
+                    }
+                });
+
+                $('.js-createpieshape').click(function () {
+                    if (selectedShape && selectedShape.overlayType == 'circle') {
+                        var centerPt = selectedShape.center;
+                        var radiusMeters = selectedShape.radius;
+                        selectedShape.setMap(null);
+                        selectedShape.mapCountLabel.setMap(null);
+                        selectedShape = null;
+
+                        var i = 0;
+                        for (; i < 6; i++) {
+                            var startDegrees = i*60;
+
+                            var pieSlicePath = Array();
+                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, startDegrees));
+                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, startDegrees+60));
+                            pieSlicePath.unshift(centerPt);
+                            pieSlicePath.push(centerPt);
+                            var pieSlicePoly = new google.maps.Polygon({
+                                path: pieSlicePath,
+                                map: map,
+                                fillColor: map.GetNextColor(),
+                                fillOpacity: 0.6,
+                                draggable: true,
+                                editable: true,
+                            });
+
+                            google.maps.event.trigger(drawingManager, 'polygoncomplete', pieSlicePoly);
+                            map.AddUpdateShape(pieSlicePoly, false);
+                        }
                     }
                 });
             });
@@ -292,6 +354,18 @@
                     return bounds;
                 }
             } 
+
+            // extend polygon to getBounds
+            if (!google.maps.Polyline.prototype.getBounds) {
+                google.maps.Polyline.prototype.getBounds = function() {
+                    var bounds = new google.maps.LatLngBounds();
+                    this.getPath().forEach(function(e) {
+                        bounds.extend(e);
+                    });
+                    return bounds;
+                }
+            };
+
         </script>
 
     </ContentTemplate>
