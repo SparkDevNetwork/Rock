@@ -15,10 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Net.Mail;
-
 using Rock.Attribute;
 using Rock.Model;
 
@@ -71,16 +71,24 @@ namespace Rock.Communication.Transport
         /// Adds any additional headers.
         /// </summary>
         /// <param name="message">The message.</param>
-        /// <param name="recipient"></param>
-        public override void AddAdditionalHeaders( MailMessage message, CommunicationRecipient recipient )
+        /// <param name="headers">The headers.</param>
+        public override void AddAdditionalHeaders( MailMessage message, Dictionary<string, string> headers )
         {
             bool inlineCss = GetAttributeValue( "InlineCSS" ).AsBoolean( true );
 
             // add mandrill headers
             message.Headers.Add( "X-MC-Track", "opens, clicks" );
             message.Headers.Add( "X-MC-InlineCSS", inlineCss.ToString().ToLower() );
-            message.Headers.Add( "X-MC-Metadata", String.Format( @"{{ ""communication_recipient_guid"":""{0}"" }}", recipient.Guid.ToString() ) );
 
+            if ( headers != null )
+            {
+                var metaValues = new List<string>();
+                foreach ( var param in headers )
+                {
+                    metaValues.Add( String.Format( "\"{0}\":\"{1}\"", param.Key, param.Value ) );
+                }
+                message.Headers.Add( "X-MC-Metadata", String.Format( @"{{{0}}}", metaValues.AsDelimited( "," ) ) );
+            }
         }
     }
 }
