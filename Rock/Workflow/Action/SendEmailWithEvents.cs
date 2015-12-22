@@ -399,17 +399,30 @@ namespace Rock.Workflow.Action
             var action = new WorkflowActionService( rockContext ).Get( actionGuid );
             if ( action != null && action.Activity != null )
             {
-                string attrKey = action.ActionType.Guid.ToString() + "_EmailStatus";
-                action.Activity.LoadAttributes( rockContext );
-                action.Activity.SetAttributeValue( attrKey, status );
-                action.Activity.SaveAttributeValues( rockContext );
 
-                if ( !string.IsNullOrWhiteSpace( emailEventType ) && emailEventType != status )
+                string attrKey = action.ActionType.Guid.ToString() + "_EmailStatus";
+
+                action.Activity.LoadAttributes( rockContext );
+                string currentStatus = action.Activity.GetAttributeValue( attrKey );
+
+                // Sometimes Clicked events are reported before opens. If this is the case, do not update the status from clicked to opened.
+                bool updateStatus = true;
+                if ( status == OPENED_STATUS && currentStatus == CLICKED_STATUS )
                 {
-                    action.AddLogEntry( string.Format( "Email Event Type: {0}", emailEventType), true );
+                    updateStatus = false;
                 }
 
-                action.AddLogEntry( string.Format( "Email Status Updated to '{0}'", status ), true );
+                if ( !string.IsNullOrWhiteSpace( emailEventType ) && ( emailEventType != status || !updateStatus ) )
+                {
+                    action.AddLogEntry( string.Format( "Email Event Type: {0}", emailEventType ), true );
+                }
+
+                if ( updateStatus )
+                {
+                    action.Activity.SetAttributeValue( attrKey, status );
+                    action.Activity.SaveAttributeValues( rockContext );
+                    action.AddLogEntry( string.Format( "Email Status Updated to '{0}'", status ), true );
+                }
 
                 Guid? activityGuid = null;
                 switch( status )
