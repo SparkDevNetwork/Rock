@@ -3,7 +3,7 @@
   <div class="panel-heading">
     <h4 class="panel-title">
       <i class="fa fa-users"></i> {{ family.Name }}
-      {% if family.CanEdit %}
+      {% if family.CanEdit and CanEdit %}
       <div class="pull-right">
         <a href='{{ DetailPage }}?FamilyId={{ family.FamilyId }}&PersonId=0'>Add Family Member</a>
       </div>
@@ -22,7 +22,7 @@
         <b>Age</b>
       </div>
       <div class="col-md-2">
-        {% if family.CanEdit %}
+        {% if family.CanEdit and CanEdit %}
         <b>Edit</b>
         {% endif %}
       </div>
@@ -39,7 +39,7 @@
         {{ member.Person.Age }}
       </div>
       <div class="col-md-2">
-        {% if family.CanEdit %}
+        {% if family.CanEdit and CanEdit %}
         <a href='{{ DetailPage }}?FamilyId={{ family.FamilyId }}&PersonId={{ member.Person.Id }}'>
           <i class='fa fa-pencil'></i>
         </a>

@@ -41,6 +41,9 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
     [DisplayName( "Family Members" )]
     [Category( "com_centralaz > Widgets" )]
     [Description( "Displays the family members of a person" )]
+
+    [BooleanField( "Can Display", "Whether the family member panel will be displayed.", true )]
+    [BooleanField( "Can Edit", "Whether a user can edit his family members.", true )]
     [LinkedPage( "Detail Page", "The page to navigate to for details.", false, "", "", 0 )]
     [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Plugins/com_centralaz/Widgets/Lava/FamilyMembers.lava' %}", "", 2, "LavaTemplate" )]
     [BooleanField( "Enable Debug", "Show merge data to help you see what's available to you.", order: 3 )]
@@ -100,58 +103,63 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         {
             if ( CurrentPerson != null )
             {
-                RockContext rockContext = new RockContext();
-                Guid familyGroupGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-                int personId = this.CurrentPersonId.Value;
-
-                var memberService = new GroupMemberService( rockContext );
-                List<Family> families = memberService.Queryable( true )
-                            .Where( m =>
-                                m.PersonId == personId &&
-                                m.Group.GroupType.Guid == familyGroupGuid )
-                            .Select( m => new Family
-                            {
-                                FamilyId = m.Group.Id,
-                                Name = m.Group.Name,
-                                CanEdit = m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) )
-                            } )
-                            .ToList();
-
-                foreach ( Family family in families )
+                if ( GetAttributeValue( "CanDisplay" ).AsBoolean() )
                 {
-                    var members = new GroupMemberService( rockContext ).Queryable( "Person", true )
+                    RockContext rockContext = new RockContext();
+                    Guid familyGroupGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                    int personId = this.CurrentPersonId.Value;
+
+                    var memberService = new GroupMemberService( rockContext );
+                    List<Family> families = memberService.Queryable( true )
                                 .Where( m =>
-                                    m.GroupId == family.FamilyId &&
-                                    m.PersonId != personId )
-                                    .Select( m => new FamilyMember
-                                    {
-                                        MemberId = m.Id,
-                                        Person = m.Person
-                                    } )
-                                .OrderBy( fm => fm.Person.BirthDate )
+                                    m.PersonId == personId &&
+                                    m.Group.GroupType.Guid == familyGroupGuid )
+                                .Select( m => new Family
+                                {
+                                    FamilyId = m.Group.Id,
+                                    Name = m.Group.Name,
+                                    CanEdit = m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) )
+                                } )
                                 .ToList();
 
-                    family.FamilyMembers = members;
+                    foreach ( Family family in families )
+                    {
+                        var members = new GroupMemberService( rockContext ).Queryable( "Person", true )
+                                    .Where( m =>
+                                        m.GroupId == family.FamilyId &&
+                                        m.PersonId != personId )
+                                        .Select( m => new FamilyMember
+                                        {
+                                            MemberId = m.Id,
+                                            Person = m.Person
+                                        } )
+                                    .OrderBy( fm => fm.Person.BirthDate )
+                                    .ToList();
+
+                        family.FamilyMembers = members;
+                    }
+
+                    var mergeFields = new Dictionary<string, object>();
+                    mergeFields.Add( "CurrentPerson", CurrentPerson );
+
+                    var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                    globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
+
+                    mergeFields.Add( "Families", families );
+                    mergeFields.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
+                    mergeFields.Add( "CanEdit", GetAttributeValue( "CanEdit" ).AsBoolean() );
+
+                    string template = GetAttributeValue( "LavaTemplate" );
+                    lContent.Text = template.ResolveMergeFields( mergeFields );
+
+                    // show debug info
+                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+                    {
+                        lDebug.Visible = true;
+                        lDebug.Text = mergeFields.lavaDebugInfo();
+                    }
                 }
 
-                var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
-
-                var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
-
-                mergeFields.Add( "Families", families );
-                mergeFields.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
-
-                string template = GetAttributeValue( "LavaTemplate" );
-                lContent.Text = template.ResolveMergeFields( mergeFields );
-
-                // show debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo();
-                }
             }
         }
 
