@@ -73,6 +73,7 @@ namespace RockWeb.Blocks.Reporting
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
+            // hide the dataview picker from the filter options if there is a Block Attribute or PageParameter that specified the dataview
             ddlUserDataView.Visible = !( this.GetAttributeValue( "DataView" ).AsGuidOrNull().HasValue || this.PageParameter( "DataViewId" ).AsIntegerOrNull().HasValue );
             if ( ddlUserDataView.Visible )
             {
@@ -81,36 +82,10 @@ namespace RockWeb.Blocks.Reporting
 
             cpCampuses.Campuses = CampusCache.All();
 
+            // hide the group picker from the filter options if there is a PageParameter for the GroupId
+            gpGroupToMap.Visible = !this.PageParameter( "GroupId" ).AsIntegerOrNull().HasValue;
+
             this.LoadGoogleMapsApi();
-        }
-
-        /// <summary>
-        /// Gfs the heat map filter_ display filter value.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void gfHeatMapFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
-        {
-            if ( e.Key == "Campuses" )
-            {
-                var campusList =
-                e.Value = e.Value.Split( ',' ).AsIntegerList().Select( a => CampusCache.Read( a ) ).Where( a => a != null ).Select( a => a.ToString() ).OrderBy( a => a ).ToList().AsDelimited( "," );
-
-            }
-            else if ( e.Key == "DataView" )
-            {
-                var dataViewGuid = e.Value.AsGuid();
-                var dataView = new DataViewService( new RockContext() ).Get( dataViewGuid );
-                if ( dataView != null )
-                {
-                    e.Value = dataView.ToString();
-                }
-                else
-                {
-                    e.Value = null;
-                }
-            }
         }
 
         /// <summary>
@@ -142,12 +117,20 @@ namespace RockWeb.Blocks.Reporting
                 rsDataPointRadius.SelectedValue = this.DataPointRadius;
 
                 cpCampuses.SetValues( campusIds );
+                
+                // if there is no dataview specified, force the Filter options panel to be visible so they get a hint that a dataview needs to be picked
                 ddlUserDataView.SetValue( dataViewGuid );
                 if ( !dataViewGuid.HasValue && ddlUserDataView.Visible )
                 {
                     pnlOptions.Style["display"] = "";
                 }
 
+                var groupId = this.GetBlockUserPreference( "GroupId" ).AsIntegerOrNull();
+                gpGroupToMap.SetValue( groupId );
+
+                this.LabelFontSize = this.GetBlockUserPreference( "LabelFontSize" ).AsIntegerOrNull() ?? 24;
+                nbFontSize.Text = this.LabelFontSize.ToString();
+                
                 lMessages.Text = string.Empty;
                 pnlMap.Visible = true;
             }
@@ -178,6 +161,22 @@ namespace RockWeb.Blocks.Reporting
         /// The data point radius.
         /// </value>
         public int DataPointRadius { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group identifier to use to show geofences for the group and child groups
+        /// </summary>
+        /// <value>
+        /// The group identifier.
+        /// </value>
+        public int? GroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the size of the label font.
+        /// </summary>
+        /// <value>
+        /// The size of the label font.
+        /// </value>
+        public int LabelFontSize { get; set; }
 
         /// <summary>
         /// 
@@ -286,6 +285,14 @@ namespace RockWeb.Blocks.Reporting
                 CampusMarkersData.TrimEnd( new char[] { ',' } );
             }
 
+            // show geofences if a group was specified
+            this.GroupId = this.PageParameter( "GroupId" ).AsIntegerOrNull();
+            if ( !this.GroupId.HasValue && gpGroupToMap.Visible )
+            {
+                // if a page parameter wasn't specified, use the selected group from the filter
+                this.GroupId = gpGroupToMap.SelectedValue.AsIntegerOrNull();
+            }
+
             var groupMemberService = new GroupMemberService( rockContext );
             var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
             int groupTypeFamilyId = groupTypeFamily.Id;
@@ -297,6 +304,7 @@ namespace RockWeb.Blocks.Reporting
 
             int recordStatusActiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
 
+            // if there is a DataViewId page parameter, use that instead of the Block or Filter dataview setting (the filter control won't be visible if there is a DataViewId page parameter)
             int? dataViewId = this.PageParameter( "DataViewId" ).AsIntegerOrNull();
             Guid? dataViewGuid = null;
             if ( !dataViewId.HasValue )
@@ -472,6 +480,9 @@ namespace RockWeb.Blocks.Reporting
             this.SetBlockUserPreference( "DataPointRadius", rsDataPointRadius.SelectedValue.ToString() );
             this.SetBlockUserPreference( "Campuses", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
             this.SetBlockUserPreference( "DataView", ddlUserDataView.SelectedValue );
+            this.SetBlockUserPreference( "GroupId", gpGroupToMap.SelectedValue );
+            this.SetBlockUserPreference( "LabelFontSize", nbFontSize.Text );
+            
 
             NavigateToPage( this.CurrentPageReference );
         }
