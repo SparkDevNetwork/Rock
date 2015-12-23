@@ -18,10 +18,12 @@
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlUserDataView" runat="server" Label="Dataview" Help="Select the dataview to use to filter the results." Required="true" />
                         <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" Help="Select the campuses to narrow the results down to families with that home campus." Required="false" />
+                        <Rock:GroupPicker ID="gpGroupToMap" runat="server" Label="Group" Help="Select a Group to show the geofences for that group and it's child groups" />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbShowCampusLocations" runat="server" Label="Show Campus locations on map" Checked="true" />
                         <Rock:RangeSlider ID="rsDataPointRadius" runat="server" MinValue="0" MaxValue="128" Text="32" Label="Radius" Help="The radius of influence for each data point, in pixels" />
+                        <Rock:NumberBox ID="nbFontSize" runat="server" NumberType="Integer" Label="Label Font Size" />
                     </div>
                 </div>
 
@@ -119,6 +121,47 @@
                     map.setTilt(45);
                     map.setCenter(centerLatLng);
 
+                    // if a GroupId was specified, show geofences
+                    function addGroupGeoFence(mapItem){
+                        if (typeof mapItem.PolygonPoints !== 'undefined' && mapItem.PolygonPoints.length > 0) {
+                            var geoFencePath = Array();
+
+                            $.each(mapItem.PolygonPoints, function(j, point) {
+                                geoFencePath.push(new google.maps.LatLng(point.Latitude, point.Longitude));
+                            });
+
+                            var geoFencePoly = new google.maps.Polygon({
+                                path: geoFencePath,
+                                map: map,
+                                fillColor: map.GetNextColor(),
+                                fillOpacity: 0.6,
+                                draggable: false,
+                                editable: false,
+                            });
+
+                            geoFencePoly.Name = mapItem.Name;
+
+                            map.AddUpdateShape(geoFencePoly);
+                        }
+                    }
+
+                    var groupId = <%=this.GroupId ?? 0 %>;
+                    if (groupId) {
+                        $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/' + groupId, function( mapItems ) {
+                            $.each(mapItems, function (i, mapItem) {
+                                addGroupGeoFence(mapItem);
+                            });
+                        });
+
+                        // Get Child Groups
+                        $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/' + groupId + '/Children', function( mapItems ) {
+                            $.each(mapItems, function (i, mapItem) {
+                                addGroupGeoFence(mapItem);
+                            });
+                        });
+                    }
+
+                    //
                     var heatMapData = [
 <%=this.HeatMapData%>]
 
@@ -209,11 +252,15 @@
                         });
 
                         var totalCount = pointCount;
+                        var mapLabel = totalCount.toString();
+                        if (selectedShape.Name){
+                            mapLabel = selectedShape.Name + ': ' + mapLabel;
+                        }
                         var mapCountLabel = new MapLabel({
                             position: selectedBounds.getCenter(),
                             map: map,
-                            fontSize: 24,
-                            text: totalCount.toString()
+                            fontSize: <%=this.LabelFontSize%>,
+                            text: mapLabel
                         });
 
                         if (selectedShape.mapCountLabel) {
