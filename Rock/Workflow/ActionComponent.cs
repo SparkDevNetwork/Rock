@@ -125,6 +125,12 @@ namespace Rock.Workflow
             return GetActionAttributeValue( action, key );
         }
 
+        /// <summary>
+        /// Gets the action attribute value.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
         public static string GetActionAttributeValue( WorkflowAction action, string key )
         {
             var actionType = action.ActionType;
