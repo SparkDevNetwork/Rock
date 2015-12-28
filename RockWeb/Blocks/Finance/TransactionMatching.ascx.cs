@@ -646,6 +646,11 @@ namespace RockWeb.Blocks.Finance
                                 financialPersonBankAccount.AccountNumberMasked = parts[1].Masked();
                             }
 
+                            if ( string.IsNullOrWhiteSpace( financialPersonBankAccount.AccountNumberMasked ))
+                            {
+                                financialPersonBankAccount.AccountNumberMasked = "************????";
+                            }
+
                             financialPersonBankAccountService.Add( financialPersonBankAccount );
                         }
                     }
