@@ -67,9 +67,9 @@ namespace Rock.Model
             // search for an existing value again
             var newLocation = new Location
             {
-                Street1 = street1,
-                Street2 = street2,
-                City = city,
+                Street1 = street1.FixCase(),
+                Street2 = street2.FixCase(),
+                City = city.FixCase(),
                 State = state,
                 PostalCode = postalCode,
                 Country = country
