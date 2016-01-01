@@ -27,6 +27,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Activates all the actions for the current action's activity.
     /// </summary>
+    [ActionCategory( "Workflow Control" )]
     [Description( "Activates all the actions for the current action's activity." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Actions" )]

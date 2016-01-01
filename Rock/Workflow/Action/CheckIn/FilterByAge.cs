@@ -28,6 +28,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Removes (or excludes) the grouptypes from each family member that are not specific to their age
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Removes (or excludes) the grouptypes from each family member that are not specific to their age" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter By Age" )]

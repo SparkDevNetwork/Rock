@@ -28,6 +28,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Removes (or excludes) the groups for each selected family member if the person's ability level does not match the groups.
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Removes (or excludes) the groups for each selected family member if the person's ability level does not match the groups." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Ability Level" )]

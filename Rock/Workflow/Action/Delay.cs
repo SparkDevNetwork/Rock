@@ -29,6 +29,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Delays successful execution of action until a specified number of minutes have passed
     /// </summary>
+    [ActionCategory( "Workflow Control" )]
     [Description( "Delays successful execution of action until a specified number of minutes have passed" )]
     [Export( typeof( Rock.Workflow.ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Delay" )]

@@ -28,6 +28,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets the name of the workflow
     /// </summary>
+    [ActionCategory( "Workflow Control" )]
     [Description( "Sets the name of the workflow" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Set Workflow Name" )]

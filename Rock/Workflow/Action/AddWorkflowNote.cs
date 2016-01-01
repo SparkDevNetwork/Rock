@@ -29,6 +29,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Adds a note to the workflow.
     /// </summary>
+    [ActionCategory( "Workflow Control" )]
     [Description( "Adds a note to the workflow." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Add Workflow Note" )]

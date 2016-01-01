@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets the status of a connection request.
     /// </summary>
+    [ActionCategory( "Connection Request" )]
     [Description( "Sets the status of a connection request." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Set Connection Request Status" )]

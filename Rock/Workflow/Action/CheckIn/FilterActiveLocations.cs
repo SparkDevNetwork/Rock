@@ -28,6 +28,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Removes (or excludes) any locations that are not active
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Removes (or excludes) any locations that are not active" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Active Locations" )]

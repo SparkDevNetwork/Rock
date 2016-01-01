@@ -29,7 +29,7 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Sets an attribute's value to the selected person 
+    /// Adds person to a group using a workflow attribute.
     /// </summary>
     [Description( "Adds person to a group using a workflow attribute." )]
     [Export( typeof( ActionComponent ) )]

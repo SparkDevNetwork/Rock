@@ -28,7 +28,8 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets a workflow status
     /// </summary>
-    [Description( "Set the workflow status" )]
+    [ActionCategory( "Workflow Control" )]
+    [Description( "Sets the workflow status" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Set Status" )]
     [TextField( "Status", "The status to set workflow to. <span class='tip tip-lava'></span>" )]

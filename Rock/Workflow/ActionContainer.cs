@@ -15,10 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-
+using System.Linq;
 using Rock.Extension;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow
 {
@@ -43,6 +45,47 @@ namespace Rock.Workflow
         {
             get { return instance.Value; }
         }
+
+        /// <summary>
+        /// Gets the categories.
+        /// </summary>
+        /// <value>
+        /// The categories.
+        /// </value>
+        public ConcurrentDictionary<int, string> Categories
+        {
+            get 
+            {
+                if ( _categories == null )
+                {
+                    _categories = new ConcurrentDictionary<int, string>();
+                    var categories = new List<string>();
+                    foreach ( var action in Instance.Dictionary.Select( d => d.Value.Value ) )
+                    {
+                        var actionType = action.GetType();
+                        var obj = actionType.GetCustomAttributes( typeof( ActionCategoryAttribute ), true ).FirstOrDefault();
+                        if ( obj != null )
+                        {
+                            var actionCategory = obj as ActionCategoryAttribute;
+                            if ( actionCategory != null )
+                            {
+                                categories.Add( actionCategory.CategoryName );
+                            }
+                        }
+                    }
+
+                    // Get unique and in order
+                    categories = categories.Distinct().OrderBy( c => c ).ToList();
+                    int key = 0 - categories.Count;
+                    foreach ( var category in categories )
+                    {
+                        _categories.TryAdd( key++, category );
+                    }
+                }
+                return _categories;
+            }
+        }
+        private ConcurrentDictionary<int, string> _categories;
 
         /// <summary>
         /// Gets the component with the matching Entity Type Name.
@@ -73,5 +116,13 @@ namespace Rock.Workflow
         [ImportMany( typeof( ActionComponent ) )]
         protected override IEnumerable<Lazy<ActionComponent, IComponentData>> MEFComponents { get; set; }
 
+        /// <summary>
+        /// Refreshes this instance.
+        /// </summary>
+        public override void Refresh()
+        {
+            base.Refresh();
+            _categories = null;
+        }
     }
 }

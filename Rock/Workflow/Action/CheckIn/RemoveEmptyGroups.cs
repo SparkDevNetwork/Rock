@@ -27,6 +27,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Removes any group that does not have any locations.  If group contains locations, but they are all excluded by filter, will also mark the group as excluded by filter.
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Removes any group that does not have any locations.  If group contains locations, but they are all excluded by filter, will also mark the group as excluded by filter." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Remove Empty Groups" )]

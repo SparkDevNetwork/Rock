@@ -29,6 +29,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Assigns the current activity to the selected person.
     /// </summary>
+    [ActionCategory( "Workflow Control" )]
     [Description( "Assigns the current activity to the selected person." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Assign Activity to Person" )]
