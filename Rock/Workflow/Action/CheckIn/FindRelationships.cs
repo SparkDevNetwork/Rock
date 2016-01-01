@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Finds people with a relationship to members of family
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Finds people with a relationship to members of family" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Find Relationships" )]

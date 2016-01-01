@@ -30,6 +30,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Saves the selected check-in data as attendance
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Saves the selected check-in data as attendance" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Save Attendance" )]
