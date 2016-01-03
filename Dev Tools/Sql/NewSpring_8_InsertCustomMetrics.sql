@@ -22,6 +22,8 @@ DECLARE @CampusEntityTypeId AS INT = (SELECT [Id] FROM [EntityType] WHERE [Name]
 DECLARE @InsertedId AS INT;
 DECLARE @NextStepsCategoryId AS INT = (SELECT TOP 1 Id From [Category] WHERE EntityTypeId = @MetricCategoryEntityTypeId AND Name = 'Next Steps');
 DECLARE @AttendanceCategoryId AS INT = (SELECT TOP 1 Id From [Category] WHERE EntityTypeId = @MetricCategoryEntityTypeId AND Name = 'Attendance');
+DECLARE @FuseAttendanceCategoryId AS INT = (SELECT TOP 1 Id From [Category] WHERE EntityTypeId = @MetricCategoryEntityTypeId AND Name = 'Fuse Attendance' AND ParentCategoryId = @AttendanceCategoryId);
+DECLARE @KSAttendanceCategoryId AS INT = (SELECT TOP 1 Id From [Category] WHERE EntityTypeId = @MetricCategoryEntityTypeId AND Name = 'KidSpring Attendance' AND ParentCategoryId = @AttendanceCategoryId);
 
 /* ======================================================
 	TOTAL HOME GROUP MEMBERS 
@@ -350,8 +352,8 @@ INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
 VALUES ( @InsertedId, @NextStepsCategoryId, @Order, NEWID() );
 
 /* ======================================================
-	KidSpring/Fuse 4 Week Percent of Return 
-	The percent of attendances that a KidSpring/Fuse newcomer completes including their initial visit and three weeks thereafter
+	KidSpring 4 Week Percent of Return 
+	The percent of attendances that a KidSpring newcomer completes including their initial visit and three weeks thereafter
    ======================================================*/
 
 SET @SQL = N'
@@ -369,8 +371,7 @@ SET @SQL = N'
 			p.Name IN (
 				''Nursery Attendee'', 
 				''Preschool Attendee'', 
-				''Elementary Attendee'',
-				''Fuse Attendee'')
+				''Elementary Attendee'')
 	),
 	cte_FirstTimePersonIds AS (
 		SELECT
@@ -427,8 +428,8 @@ INSERT [Metric] (
 	, ForeignId)
 VALUES (
 	0
-	, 'KidSpring/Fuse 4 Week Percent of Return'
-	, 'The percent of attendances that a KidSpring/Fuse newcomer completes including their initial visit and three weeks thereafter'
+	, 'KidSpring 4 Week Percent of Return'
+	, 'The percent of attendances that a KidSpring newcomer completes including their initial visit and three weeks thereafter'
 	, @False
 	, @MetricSourceSQLId
 	, @SQL
@@ -442,4 +443,172 @@ VALUES (
 SELECT @InsertedId = SCOPE_IDENTITY();
 
 INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
-VALUES ( @InsertedId, @AttendanceCategoryId, @Order, NEWID() );
+VALUES ( @InsertedId, @KSAttendanceCategoryId, @Order, NEWID() );
+
+/* ======================================================
+	Fuse 4 Week Percent of Return 
+	The percent of attendances that a Fuse newcomer completes including their initial visit and three weeks thereafter
+   ======================================================*/
+
+SET @SQL = N'
+	DECLARE @today AS DATE = GETDATE();
+	DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
+	DECLARE @firstTimeSundayDate AS DATE = DATEADD(WEEK, -3, @recentSundayDate);
+
+	WITH cte_GroupIds AS (
+		SELECT
+			g.Id
+		FROM
+			[Group] g
+			JOIN [Group] p ON g.ParentGroupId = p.Id
+		WHERE
+			p.Name = ''Fuse Attendee''
+	),
+	cte_FirstTimePersonIds AS (
+		SELECT
+			pa.PersonId AS Id
+			, MAX(a.CampusId) AS CampusId
+		FROM
+			[Attendance] a
+			JOIN [PersonAlias] pa ON pa.Id = a.PersonAliasId
+			JOIN [cte_GroupIds] g ON g.Id = a.GroupId
+		WHERE
+			a.DidAttend = 1
+		GROUP BY
+			pa.PersonId
+		HAVING
+			CONVERT(DATE, MIN([StartDateTime])) = @firstTimeSundayDate
+	),
+	cte_4WeekAttendance AS (
+		SELECT
+			ftp.Id
+			, COUNT(DISTINCT CONVERT(DATE, a.StartDateTime)) AS Attendances
+			, ftp.CampusId
+		FROM
+			[cte_FirstTimePersonIds] ftp
+			JOIN [PersonAlias] pa ON pa.PersonId = ftp.Id
+			JOIN [Attendance] a ON a.PersonAliasId = pa.Id
+		WHERE
+			a.StartDateTime BETWEEN @firstTimeSundayDate AND @recentSundayDate
+		GROUP BY
+			ftp.Id
+			, ftp.CampusId
+	)
+	SELECT
+		CONVERT(INT, ROUND(AVG(CONVERT(DECIMAL, Attendances)) / 4 * 100, 0)) AS Value
+		, CampusId AS EntityId
+		, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
+	FROM
+		[cte_4WeekAttendance]
+	GROUP BY
+		CampusId
+';
+
+INSERT [Metric] (
+	IsSystem
+	, Title
+	, [Description]
+	, IsCumulative
+	, SourceValueTypeId
+	, SourceSql
+	, XAxisLabel
+	, YAxisLabel
+	, ScheduleId
+	, EntityTypeId
+	, [Guid]
+	, ForeignId)
+VALUES (
+	0
+	, 'Fuse 4 Week Percent of Return'
+	, 'The percent of attendances that a Fuse newcomer completes including their initial visit and three weeks thereafter'
+	, @False
+	, @MetricSourceSQLId
+	, @SQL
+	, ''
+	, ''
+	, @MetricScheduleId
+	, @CampusEntityTypeId
+	, NEWID()
+	, NULL );
+
+SELECT @InsertedId = SCOPE_IDENTITY();
+
+INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
+VALUES ( @InsertedId, @FuseAttendanceCategoryId, @Order, NEWID() );
+
+
+/* ======================================================
+	Fuse 1st timers
+	The number of attendances that are Fuse newcomers
+   ======================================================*/
+
+SET @SQL = N'
+	DECLARE @today AS DATE = GETDATE();
+	DECLARE @recentSundayDate AS DATE = CONVERT(DATE, DATEADD(DAY, 1 - DATEPART(DW, @today), @today));
+	DECLARE @firstTimeSundayDate AS DATE = DATEADD(WEEK, -3, @recentSundayDate);
+
+	WITH cte_GroupIds AS (
+		SELECT
+			g.Id
+		FROM
+			[Group] g
+			JOIN [Group] p ON g.ParentGroupId = p.Id
+		WHERE
+			p.Name = ''Fuse Attendee''
+	),
+	cte_FirstTimePersonIds AS (
+		SELECT
+			pa.PersonId AS Id
+			, MAX(a.CampusId) AS CampusId
+		FROM
+			[Attendance] a
+			JOIN [PersonAlias] pa ON pa.Id = a.PersonAliasId
+			JOIN [cte_GroupIds] g ON g.Id = a.GroupId
+		WHERE
+			a.DidAttend = 1
+		GROUP BY
+			pa.PersonId
+		HAVING
+			CONVERT(DATE, MIN([StartDateTime])) = @firstTimeSundayDate
+	)
+	SELECT
+		COUNT(Id) AS Value
+		, CampusId AS EntityId
+		, DATEADD(dd, DATEDIFF(dd, 1, GETDATE()), 0) + ''00:00'' AS ScheduleDate
+	FROM
+		[cte_FirstTimePersonIds]
+	GROUP BY
+		CampusId
+';
+
+INSERT [Metric] (
+	IsSystem
+	, Title
+	, [Description]
+	, IsCumulative
+	, SourceValueTypeId
+	, SourceSql
+	, XAxisLabel
+	, YAxisLabel
+	, ScheduleId
+	, EntityTypeId
+	, [Guid]
+	, ForeignId)
+VALUES (
+	0
+	, 'Fuse 1st Time Attendance'
+	, 'The number of attendances that are Fuse newcomers'
+	, @False
+	, @MetricSourceSQLId
+	, @SQL
+	, ''
+	, ''
+	, @MetricScheduleId
+	, @CampusEntityTypeId
+	, NEWID()
+	, NULL );
+
+SELECT @InsertedId = SCOPE_IDENTITY();
+
+INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
+VALUES ( @InsertedId, @FuseAttendanceCategoryId, @Order, NEWID() );
