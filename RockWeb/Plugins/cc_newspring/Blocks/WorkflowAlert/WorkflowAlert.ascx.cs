@@ -37,48 +37,49 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
     /// <summary>
     /// Block to display the workflow types that user is authorized to view, and the activities that are currently assigned to the user.
     /// </summary>
-    [DisplayName( "My Workflows Alerts" )]
+    [DisplayName( "My Workflow Alerts" )]
     [Category( "NewSpring" )]
     [Description( "Block to display the workflow types that user is authorized to view, and the activities that are currently assigned to the user." )]
-    [LinkedPage( "Listing Page", "Page used to view all workflows assigned to the current user." )]
+    [LinkedPage( "Listing Page", "Page used to view all workflows assigned to the current user.", false, "F3FA9EBE-A540-4106-90E5-2DFB2D72BBF0" )]
     public partial class WorkflowAlert : Rock.Web.UI.RockBlock
     {
-        protected override void OnInit( EventArgs e )
+        protected override void OnLoad( EventArgs e )
         {
-            base.OnInit( e );
+            base.OnLoad( e );
 
             // Check for current person
             if ( CurrentPersonAliasId.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
-
                     // Search the DB for what groups the current person belongs to
                     var memberGroups = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                        .Where( a =>
-                            a.PersonId == CurrentPersonId
-                        )
+                        .Where( a => a.PersonId == CurrentPersonId )
                         .Select( a => a.GroupId )
                         .ToList();
 
-                    // Search the DB for active workflows assigned to the current user, and return the count
-                    var count = new WorkflowActivityService( rockContext ).Queryable().AsNoTracking()
-                        .Where( a =>
-                            !a.CompletedDateTime.HasValue
+                    // Return the count of active workflows assigned to the current user (or user's group)
+                    var activeIncompleteWorkflows = new WorkflowActivityService( rockContext ).Queryable().AsNoTracking()
+                        .Where( a => !a.CompletedDateTime.HasValue
                             && !a.Workflow.Status.Equals( "Completed" )
-                            && (
-                                a.AssignedPersonAliasId == CurrentPersonAliasId
-                                || (
+                            && ( a.AssignedPersonAliasId == CurrentPersonAliasId || (
                                     a.AssignedGroupId.HasValue
                                     && memberGroups.Contains( (int)a.AssignedGroupId )
                                     && !a.AssignedPersonAliasId.HasValue
                                 )
-
                             )
                         )
                         .Count();
 
-                    workflowAlertNumber.Value = count.ToString();
+                    // set the default display
+                    var spanLiteral = "<i internal class='fa fa-bell-o'></i>";
+                    if ( activeIncompleteWorkflows > 0 )
+                    {
+                        // add the count of how many workflows need to be assigned/completed
+                        spanLiteral = string.Format( "<i private class='fa fa-bell'> <span class='badge badge-danger'>{0}</span> </i>", activeIncompleteWorkflows );
+                    }
+
+                    lbListingPage.Controls.Add( new LiteralControl( spanLiteral ) );
                 }
             }
         }
