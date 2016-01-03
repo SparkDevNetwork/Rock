@@ -76,7 +76,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
                     if ( activeIncompleteWorkflows > 0 )
                     {
                         // add the count of how many workflows need to be assigned/completed
-                        spanLiteral = string.Format( "<i private class='fa fa-bell'> <span class='badge badge-danger'>{0}</span> </i>", activeIncompleteWorkflows );
+                        spanLiteral = string.Format( "<i class='fa fa-bell'> <span class='badge badge-danger'>{0}</span> </i>", activeIncompleteWorkflows );
                     }
 
                     lbListingPage.Controls.Add( new LiteralControl( spanLiteral ) );
