@@ -735,7 +735,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupAddress.LocationTypeName = ddlLocType.SelectedItem != null ? ddlLocType.SelectedItem.Text : string.Empty;
                 groupAddress.Street1 = acAddress.Street1;
                 groupAddress.Street2 = acAddress.Street2;
-                groupAddress.City = acAddress.City
+                groupAddress.City = acAddress.City;
                 groupAddress.State = acAddress.State;
                 groupAddress.PostalCode = acAddress.PostalCode;
                 groupAddress.Country = acAddress.Country;
