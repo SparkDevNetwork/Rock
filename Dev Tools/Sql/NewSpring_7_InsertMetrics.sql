@@ -111,6 +111,7 @@ VALUES
 ('Finance', 'Financial Coaching'),
 ('Guest Services', 'VIP Room'),
 ('Next Steps', 'Baptism'),
+('Next Steps', 'Ownership Class Attendance'),
 ('Next Steps', 'Care Room'),
 ('Next Steps', 'Salvations'),
 ('Next Steps', 'Fuse Salvations'),
@@ -856,3 +857,78 @@ BEGIN
 	SELECT @scopeIndex = @scopeIndex +1
 END
 -- end groups loop
+
+-- Insert HS attendance to Fuse
+DECLARE @newId AS INT; 
+DECLARE @fuseAttendanceCategoryId AS INT;
+
+SELECT 
+	@fuseAttendanceCategoryId = c.Id
+FROM 
+	Category c
+	JOIN MetricCategory mc ON mc.CategoryId = c.Id
+WHERE
+	c.Name = 'Fuse Attendance'
+GROUP BY
+	c.Id;
+
+INSERT [Metric] (
+	IsSystem, 
+	Title, 
+	[Description], 
+	IsCumulative, 
+	SourceValueTypeId, 
+	SourceSql, 
+	XAxisLabel, 
+	YAxisLabel, 
+	ScheduleId, 
+	EntityTypeId, 
+	[Guid])
+VALUES ( 
+	@IsSystem, 
+	'Fuse HS Attendance', 
+	'Metric to track Fuse HS attendees by campus', 
+	@False, 
+	@MetricSourceSQLId, 
+	@MetricHighSchoolSQL, 
+	'', 
+	'', 
+	@MetricScheduleId, 
+	@CampusEntityTypeId, 
+	NEWID());
+
+SELECT @newId = SCOPE_IDENTITY();
+
+INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
+VALUES ( @newId, @fuseAttendanceCategoryId, @Order, NEWID() );
+
+-- Insert MS
+INSERT [Metric] (
+	IsSystem, 
+	Title, 
+	[Description], 
+	IsCumulative, 
+	SourceValueTypeId, 
+	SourceSql, 
+	XAxisLabel, 
+	YAxisLabel, 
+	ScheduleId, 
+	EntityTypeId, 
+	[Guid])
+VALUES ( 
+	@IsSystem, 
+	'Fuse MS Attendance', 
+	'Metric to track Fuse MS attendees by campus', 
+	@False, 
+	@MetricSourceSQLId, 
+	@MetricMiddleSchoolSQL, 
+	'', 
+	'', 
+	@MetricScheduleId, 
+	@CampusEntityTypeId, 
+	NEWID());
+
+SELECT @newId = SCOPE_IDENTITY();
+
+INSERT [MetricCategory] (MetricId, CategoryId, [Order], [Guid])
+VALUES ( @newId, @fuseAttendanceCategoryId, @Order, NEWID() );
