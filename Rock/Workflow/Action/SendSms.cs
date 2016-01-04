@@ -31,7 +31,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sends email
     /// </summary>
-    [ActionCategory( "Send Communication" )]
+    [ActionCategory( "Communications" )]
     [Description( "Sends an SMS message. The recipient can either be a person or email address determined by the 'To Attribute' value, or an email address entered in the 'To' field." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Send SMS" )]
