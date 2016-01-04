@@ -126,6 +126,12 @@ namespace RockWeb.Blocks.Examples
                 if ( aClass.Methods.Any() )
                 {
                     sb.AppendLine( "<h2>Methods</h2><ul>" );
+
+                    if ( aClass.Methods.Where( m => m.IsInherited == false ).Count() == 0 )
+                    {
+                        sb.AppendLine( "<small class='text-muted'><i>all inherited</i></small>" );
+                    }
+
                     foreach ( var method in aClass.Methods.OrderBy( m => m.Name ) )
                     {
                         //<li data-expanded='false' data-model='Block' data-id='b{0}'><span>{1}{2}:{3}</span></li>{4}
@@ -137,6 +143,7 @@ namespace RockWeb.Blocks.Examples
                             method.IsInherited ? " (inherited)" : "",
                             Environment.NewLine );
                     }
+
                     sb.AppendLine( "</ul>" );
                 }
 
@@ -286,43 +293,46 @@ namespace RockWeb.Blocks.Examples
         /// <returns>an XmlComment object</returns>
         private XmlComment GetComments( MemberInfo p )
         {
-            var prefix = string.Empty;
-
-            if ( p.MemberType == MemberTypes.Property )
-            {
-                prefix = "P:";
-            }
-            else if ( p.MemberType == MemberTypes.Method )
-            {
-                prefix = "M:";
-            }
-            else if ( p.MemberType == MemberTypes.TypeInfo )
-            {
-                prefix = "T:";
-            }
-            else
-            {
-                return null;
-            }
-
             XmlComment xmlComment = new XmlComment();
 
-            string path = string.Format( "{0}{1}.{2}", prefix, ( p.DeclaringType != null ) ? p.DeclaringType.FullName : "Rock.Model", p.Name );
-
-            var name = _docuDocMembers.ContainsKey( path ) ? _docuDocMembers[path] : null;
-            if ( name != null )
+            try
             {
-                // Read the InnerXml contents of the summary Element.
-                var reader = name.Element( "summary" ).CreateReader();
-                reader.MoveToContent();
-                xmlComment.Summary = MakeSummaryHtml( reader.ReadInnerXml() );
+                var prefix = string.Empty;
 
-                xmlComment.Value = name.Element( "value" ).ValueSafe();
-                xmlComment.Remarks = name.Element( "remarks" ).ValueSafe();
-                xmlComment.Returns = name.Element( "returns" ).ValueSafe();
+                if ( p.MemberType == MemberTypes.Property )
+                {
+                    prefix = "P:";
+                }
+                else if ( p.MemberType == MemberTypes.Method )
+                {
+                    prefix = "M:";
+                }
+                else if ( p.MemberType == MemberTypes.TypeInfo )
+                {
+                    prefix = "T:";
+                }
+                else
+                {
+                    return null;
+                }
+
+                string path = string.Format( "{0}{1}.{2}", prefix, ( p.DeclaringType != null ) ? p.DeclaringType.FullName : "Rock.Model", p.Name );
+
+                var name = _docuDocMembers.ContainsKey( path ) ? _docuDocMembers[path] : null;
+                if ( name != null )
+                {
+                    // Read the InnerXml contents of the summary Element.
+                    var reader = name.Element( "summary" ).CreateReader();
+                    reader.MoveToContent();
+                    xmlComment.Summary = MakeSummaryHtml( reader.ReadInnerXml() );
+                    xmlComment.Value = name.Element( "value" ).ValueSafe();
+                    xmlComment.Remarks = name.Element( "remarks" ).ValueSafe();
+                    xmlComment.Returns = name.Element( "returns" ).ValueSafe();
+                }
             }
-
+            catch { }
             return xmlComment;
+
         }
 
         /// <summary>

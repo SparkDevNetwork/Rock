@@ -206,6 +206,7 @@ namespace RockWeb.Blocks.Administration
                 cbRequiresEncryption.Checked = page.RequiresEncryption;
                 cbEnableViewState.Checked = page.EnableViewState;
                 cbIncludeAdminFooter.Checked = page.IncludeAdminFooter;
+                cbAllowIndexing.Checked = page.AllowIndexing;
                 tbCacheDuration.Text = page.OutputCacheDuration.ToString();
                 tbDescription.Text = page.Description;
                 ceHeaderContent.Text = page.HeaderContent;
@@ -397,6 +398,7 @@ namespace RockWeb.Blocks.Administration
                 page.RequiresEncryption = cbRequiresEncryption.Checked;
                 page.EnableViewState = cbEnableViewState.Checked;
                 page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
+                page.AllowIndexing = cbAllowIndexing.Checked;
                 page.OutputCacheDuration = tbCacheDuration.Text.AsIntegerOrNull() ?? 0;
                 page.Description = tbDescription.Text;
                 page.HeaderContent = ceHeaderContent.Text;

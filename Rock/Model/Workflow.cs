@@ -267,38 +267,6 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Processes this Workflow instance.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="errorMessages">The error messages.</param>
-        /// <returns>
-        /// A <see cref="System.Boolean" /> value that is <c>true</c> if the Workflow processed successfully; otherwise <c>false</c>.
-        /// </returns>
-        [Obsolete( "Use the WorkflowService.Process() method instead." )]
-        public virtual bool Process( RockContext rockContext, out List<string> errorMessages )
-        {
-            return ProcessActivities( rockContext, null, out errorMessages );
-        }
-
-        /// <summary>
-        /// Processes this instance.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="entity">The entity that work is being performed against.</param>
-        /// <param name="errorMessages">A
-        /// <see cref="System.Collections.Generic.List{String}"/> that will contain and any error messages that occur
-        /// while the Workflow is being processed.</param>
-        /// <returns>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if the workflow processed sucessfully.
-        /// </returns>
-        [Obsolete("Use the WorkflowService.Process() method instead.")]
-        public virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
-        {
-            return ProcessActivities( rockContext, entity, out errorMessages );
-        }
-
-
-        /// <summary>
         /// Processes the activities.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>

@@ -104,9 +104,11 @@ namespace Rock.Workflow.Action
                 attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ).Id;
 
                 // Need to save the attribute now (using different context) so that an attribute id is returned.
-                var newRockContext = new RockContext();
-                new AttributeService( newRockContext ).Add( attribute );
-                newRockContext.SaveChanges();
+                using ( var newRockContext = new RockContext() )
+                {
+                    new AttributeService( newRockContext ).Add( attribute );
+                    newRockContext.SaveChanges();
+                }
 
                 action.Activity.Attributes.Add( AttrKey, AttributeCache.Read( attribute ) );
                 var attributeValue = new AttributeValueCache();

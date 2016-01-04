@@ -339,51 +339,6 @@ namespace Rock.Rest.Controllers
         #region Search
 
         /// <summary>
-        /// Searches the specified name.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/People/Search" )]
-        [Obsolete( "use api/People/Search?name=... instead" )]
-        public IQueryable<PersonSearchResult> Search( string name )
-        {
-            return Search( name, false, false );
-        }
-
-        /// <summary>
-        /// Searches the specified name.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="includeHtml">if set to <c>true</c> [include HTML].</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/People/Search/{name}/{includeHtml}" )]
-        [Obsolete( "use api/People/Search?name=... instead" )]
-        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml )
-        {
-            return Search( name, includeHtml, false );
-        }
-
-        /// <summary>
-        /// Searches the specified name.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="includeHtml">if set to <c>true</c> [include HTML].</param>
-        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/People/Search/{name}/{includeHtml}/{includeBusinesses}" )]
-        [Obsolete( "use api/People/Search?name=... instead" )]
-        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml, bool includeBusinesses )
-        {
-            return this.Search( name, includeHtml, true, includeBusinesses, false );
-        }
-
-        /// <summary>
         /// Returns results to the Person Picker
         /// </summary>
         /// <param name="name">The name.</param>

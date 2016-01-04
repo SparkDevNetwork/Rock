@@ -1,15 +1,15 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FamilyMembers.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.FamilyMembers" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupMembers.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.GroupMembers" %>
 
-<asp:UpdatePanel ID="upFamilyMembers" runat="server">
+<asp:UpdatePanel ID="upGroupMembers" runat="server">
     <ContentTemplate>
 
-        <asp:Repeater ID="rptrFamilies" runat="server">
+        <asp:Repeater ID="rptrGroups" runat="server">
             <ItemTemplate>
 
-                <div class="persondetails-family rollover-container">
+                <div class="persondetails-group rollover-container">
 
                     <div class="actions rollover-item">
-                        <asp:HyperLink ID="hlEditFamily" runat="server" AccessKey="O" CssClass="edit btn btn-action btn-xs"><i class="fa fa-pencil"></i> Edit Family</asp:HyperLink>
+                        <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" CssClass="edit btn btn-action btn-xs"><i class="fa fa-pencil"></i> <asp:Literal ID="lEditGroup" runat="server" /></asp:HyperLink>
                     </div>
 
                     <div class="row">
@@ -27,7 +27,7 @@
                                                 <div class="person-image" id="divPersonImage" runat="server"></div>
                                                 <div class="person-info">
                                                     <h4><%# FormatPersonName(Eval("Person.NickName").ToString(), Eval("Person.LastName").ToString()) %></h4>
-                                                    <small class="age"><%# Eval("Person.Age")  %></small>
+                                                    <small><%# FormatPersonDetails( Container.DataItem ) %></small>
                                                 </div>
                                             </a>
                                         </li>

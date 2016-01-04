@@ -13,6 +13,8 @@
         </asp:Panel>
 
         <Rock:LineChart ID="lcLineChart" runat="server" />
+        <Rock:PieChart ID="pcPieChart" runat="server" />
+        <Rock:BarChart ID="bcBarChart" runat="server" />
 
     </ContentTemplate>
 </asp:UpdatePanel>

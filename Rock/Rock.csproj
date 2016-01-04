@@ -224,7 +224,6 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
-    <Compile Include="Attribute\EmailTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CustomCheckboxListFieldAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -247,7 +246,6 @@
     <Compile Include="Data\BoundFieldTypeAttribute.cs" />
     <Compile Include="Chart\IChartData.cs" />
     <Compile Include="Data\FieldTypeAttribute.cs" />
-    <Compile Include="Data\IgnoreLiquid.cs" />
     <Compile Include="Data\Interception\QueryHintDbCommandInterceptor.cs" />
     <Compile Include="Data\Interception\QueryHintScope.cs" />
     <Compile Include="Data\IRockEntity.cs" />
@@ -275,6 +273,7 @@
     <Compile Include="Field\Types\NoteTypesFieldType.cs" />
     <Compile Include="Field\Types\NoteTypeFieldType.cs" />
     <Compile Include="Field\Types\EnumFieldType.cs" />
+    <Compile Include="Field\Types\RangeSliderFieldType.cs" />
     <Compile Include="Follow\Event\PersonFirstAttendedGroupType.cs" />
     <Compile Include="Follow\Event\PersonFirstJoinedGroupType.cs" />
     <Compile Include="Follow\Event\PersonBaptized.cs" />
@@ -481,6 +480,7 @@
     <Compile Include="PersonProfile\Badge\AlertNote.cs" />
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
     <Compile Include="PersonProfile\Badge\DISC.cs" />
+    <Compile Include="PersonProfile\Badge\InGroupWithPurpose.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupMemberAttributeSelect.cs" />
@@ -544,6 +544,7 @@
     <Compile Include="Web\InternalContext.cs" />
     <Compile Include="Web\UI\Controls\Grid\GroupPickerField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ConnectionRequestPicker.cs" />
+    <Compile Include="Web\UI\Controls\RangeSlider.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />
     <Compile Include="Security\Authentication\Facebook.cs">
       <SubType>Code</SubType>
@@ -885,7 +886,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Field\Types\KeyValueListFieldType.cs" />
-    <Compile Include="Field\Types\EmailTemplateFieldType.cs" />
     <Compile Include="Field\Types\EntityTypeFieldType.cs" />
     <Compile Include="Field\Types\GroupFieldType.cs" />
     <Compile Include="Field\Types\GroupTypesFieldType.cs" />
@@ -1002,7 +1002,6 @@
     <Compile Include="Web\UI\Controls\NewFamily\ContactInfo.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SchedulePicker.cs" />
     <Compile Include="Web\UI\Controls\RockRadioButton.cs" />
-    <Compile Include="Web\UI\Controls\ToolkitScriptManager.cs" />
     <Compile Include="Web\UI\Controls\UrlLinkBox.cs" />
     <Compile Include="Web\UI\Controls\EmailBox.cs" />
     <Compile Include="Web\UI\Controls\Chart\BarChart.cs" />
@@ -1014,7 +1013,6 @@
     <Compile Include="Web\UI\Controls\Grid\LiquidField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ListDelimitedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonMergeField.cs" />
-    <Compile Include="Web\UI\Controls\Grid\TemplateFieldUnselected.cs" />
     <Compile Include="Web\UI\Controls\Grid\SelectField.cs" />
     <Compile Include="Web\UI\Controls\Grid\RockBoundField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LinkButtonField.cs" />
@@ -1134,11 +1132,15 @@
     </Compile>
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\ISecondaryBlock.cs" />
-    <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Workflow\Action\ActivateActions.cs" />
+    <Compile Include="Workflow\Action\RemovePersonFromGroupAttribute.cs" />
+    <Compile Include="Workflow\Action\RemovePersonFromGroup.cs" />
+    <Compile Include="Workflow\Action\GetPersonFromFields.cs" />
+    <Compile Include="Workflow\Action\UpdateGroupMemberStatus.cs" />
     <Compile Include="Workflow\Action\AddPersonToGroupAttribute.cs" />
     <Compile Include="Workflow\Action\AssignActivityFromAttributeValue.cs" />
+    <Compile Include="Workflow\Action\SendEmailWithEvents.cs" />
     <Compile Include="Workflow\Action\SetInitiatorFromAttribute.cs" />
     <Compile Include="Workflow\Action\AssignActivityToSecurityRole.cs" />
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />

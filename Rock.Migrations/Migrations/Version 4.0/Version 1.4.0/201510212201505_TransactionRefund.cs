@@ -29,6 +29,14 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            Sql( @"
+    UPDATE [BenevolenceRequest] SET
+        [HomePhoneNumber] = LEFT([HomePhoneNumber],20),
+	    [CellPhoneNumber] = LEFT([CellPhoneNumber],20),
+	    [WorkPhoneNumber] = LEFT([WorkPhoneNumber],20),
+	    [GovernmentId] = LEFT([GovernmentId],100)
+" );
+
             AddColumn("dbo.Person", "RecordStatusLastModifiedDateTime", c => c.DateTime());
             AddColumn("dbo.FinancialTransactionRefund", "OriginalTransactionId", c => c.Int());
             AlterColumn("dbo.BenevolenceRequest", "HomePhoneNumber", c => c.String(maxLength: 20));

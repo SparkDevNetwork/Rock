@@ -122,6 +122,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.FinancialAccount"/> that is affected by this detail line item.
         /// </value>
         [LavaInclude]
+        [DataMember]
         public virtual FinancialAccount Account { get; set; }
 
         /// <summary>

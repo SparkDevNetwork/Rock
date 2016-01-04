@@ -17,6 +17,5 @@
 
         <asp:Literal ID="lDebug" Visible="false" runat="server"></asp:Literal>
 
-        </div>
     </ContentTemplate>
 </asp:UpdatePanel>

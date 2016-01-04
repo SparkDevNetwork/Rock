@@ -154,6 +154,7 @@ namespace RockWeb.Blocks.Reporting
             txtFilterTitle.Text = this.GetAttributeValue( "FilterTitle" );
             txtFilterIconCssClass.Text = this.GetAttributeValue( "FilterIconCssClass" );
             BindDataFiltersGrid( false );
+            ddlPersonIdField.SetValue( this.GetAttributeValue( "PersonIdField" ) );
             mdConfigure.Show();
         }
 

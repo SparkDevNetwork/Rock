@@ -334,6 +334,17 @@ namespace RockWeb.Blocks.Store
             
         }
 
+        protected string PersonPhotoUrl( string relativeUrl )
+        {
+            string url = relativeUrl;
+            string localPath = ResolveRockUrl( "~" );
+            if ( relativeUrl.StartsWith( localPath ) )
+            {
+                url = url.Substring( localPath.Length );
+            }
+            return "http://www.rockrms.com/" + url;
+        }
+
         #endregion
 
     }

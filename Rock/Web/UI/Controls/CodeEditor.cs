@@ -555,35 +555,35 @@ namespace Rock.Web.UI.Controls
         Lava = 3,
 
         /// <summary>
-        /// liquid
-        /// </summary>
-        [Obsolete( "Use CodeEditorMode.Lava instead" )]
-        Liquid = 3,
-
-        /// <summary>
         /// java script
         /// </summary>
         JavaScript = 4,
+
         /// <summary>
         /// less
         /// </summary>
         Less = 5,
+
         /// <summary>
         /// powershell
         /// </summary>
         Powershell = 6,
+
         /// <summary>
         /// SQL
         /// </summary>
         Sql = 7,
+
         /// <summary>
         /// type script
         /// </summary>
         TypeScript = 8,
+
         /// <summary>
         /// c sharp
         /// </summary>
         CSharp = 9,
+
         /// <summary>
         /// markdown
         /// </summary>

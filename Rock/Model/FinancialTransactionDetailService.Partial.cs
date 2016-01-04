@@ -127,9 +127,12 @@ namespace Rock.Model
                         ( !maxAmount.HasValue || s.Total <= maxAmount.Value ) )
                     .Select( s => s.Key );
 
+                // put all the givingIds into a List instead of a subquery to prevent a timeout issue
+                var givingIdList = givingIdQry.ToList();
+
                 qry = qry
                     .Where( d =>
-                        givingIdQry.Contains( d.Transaction.AuthorizedPersonAlias.Person.GivingId ) );
+                        givingIdList.Contains( d.Transaction.AuthorizedPersonAlias.Person.GivingId ) );
             }
             
             // Data View Filter

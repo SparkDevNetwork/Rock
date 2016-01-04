@@ -221,14 +221,18 @@
                                         <Rock:RockBoundField DataField="Parent.Email" HeaderText="Parent Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:PersonField DataField="Child" HeaderText="Child" SortExpression="Child.LastName, Child.NickName"/>
                                         <Rock:RockBoundField DataField="Child.Email" HeaderText="Child Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                        <Rock:RockBoundField DataField="Child.Age" HeaderText="Child Age" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:PersonField DataField="Person" HeaderText="Name" SortExpression="Person.LastName, Person.NickName" />
                                         <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                        <Rock:RockBoundField DataField="Person.Age" HeaderText="Age" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockLiteralField HeaderText="First Visit" ID="lFirstVisitDate" SortExpression="FirstVisit.StartDateTime"/>
                                         <Rock:RockLiteralField HeaderText="Second Visit" ID="lSecondVisitDate" />
                                         <Rock:DateField DataField="LastVisit.StartDateTime" HeaderText="Last Visit" SortExpression="LastVisit.StartDateTime" />
                                         <Rock:CampusField DataField="LastVisit.CampusId" HeaderText="Campus" SortExpression="LastVisit.Campus.Name" />
                                         <Rock:RockLiteralField HeaderText="Service Time" ID="lServiceTime" />
                                         <Rock:RockBoundField DataField="LastVisit.GroupName" HeaderText="Check-in Area" SortExpression="LastVisit.GroupName" />
+                                        <Rock:RockBoundField DataField="LastVisit.InGroup" HeaderText="In Group" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                        <Rock:RockLiteralField HeaderText="Group Role" ID="lGroupRoles" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockLiteralField HeaderText="Home Address" ID="lHomeAddress" ItemStyle-Wrap="false" />
                                         <Rock:PhoneNumbersField HeaderText="Phone Numbers" DataField="PhoneNumbers" ItemStyle-Wrap="false" DisplayCountryCode="false" />
                                         <Rock:RockLiteralField HeaderText="Count" ID="lAttendanceCount" SortExpression="AttendanceSummary.Count" />

@@ -62,6 +62,26 @@
     <Compile Include="Migrations\201511231524340_GroupPlacement.Designer.cs">
       <DependentUpon>201511231524340_GroupPlacement.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201511302138156_PrayerRequestLastName.cs" />
+    <Compile Include="Migrations\201511302138156_PrayerRequestLastName.Designer.cs">
+      <DependentUpon>201511302138156_PrayerRequestLastName.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201512011627334_RegistrationIsTemporary.cs" />
+    <Compile Include="Migrations\201512011627334_RegistrationIsTemporary.Designer.cs">
+      <DependentUpon>201512011627334_RegistrationIsTemporary.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201512082010143_ExtendFamilyBlocks.cs" />
+    <Compile Include="Migrations\201512082010143_ExtendFamilyBlocks.Designer.cs">
+      <DependentUpon>201512082010143_ExtendFamilyBlocks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201512111225213_RemoveV4ObsoleteProperties.cs" />
+    <Compile Include="Migrations\201512111225213_RemoveV4ObsoleteProperties.Designer.cs">
+      <DependentUpon>201512111225213_RemoveV4ObsoleteProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201512152341221_SitePageUpdates.cs" />
+    <Compile Include="Migrations\201512152341221_SitePageUpdates.Designer.cs">
+      <DependentUpon>201512152341221_SitePageUpdates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -1952,6 +1972,21 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201511231524340_GroupPlacement.resx">
       <DependentUpon>201511231524340_GroupPlacement.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511302138156_PrayerRequestLastName.resx">
+      <DependentUpon>201511302138156_PrayerRequestLastName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201512011627334_RegistrationIsTemporary.resx">
+      <DependentUpon>201512011627334_RegistrationIsTemporary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201512082010143_ExtendFamilyBlocks.resx">
+      <DependentUpon>201512082010143_ExtendFamilyBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201512111225213_RemoveV4ObsoleteProperties.resx">
+      <DependentUpon>201512111225213_RemoveV4ObsoleteProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201512152341221_SitePageUpdates.resx">
+      <DependentUpon>201512152341221_SitePageUpdates.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>

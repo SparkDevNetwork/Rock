@@ -746,6 +746,14 @@ function (val, axis) {
         public double? radius { get; set; }
 
         /// <summary>
+        /// Sets the radius of the donut hole. If value is between 0 and 1 (inclusive) then it will use that as a percentage of the radius, otherwise it will use the value as a direct pixel length.
+        /// </summary>
+        /// <value>
+        /// The radius.
+        /// </value> 
+        public double? innerRadius { get; set; }
+
+        /// <summary>
         /// Factor of PI used for the starting angle (in radians) It can range between 0 and 2 (where 0 and 2 have the same result).
         /// Default is 1.5
         /// </summary>
