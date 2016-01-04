@@ -33,7 +33,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets a person attribute to be a random person from a group with optional filter on a campus group member attribute 
     /// </summary>
-    [ActionCategory( "Set Attribute" )]
+    [ActionCategory( "Set Workflow Attribute" )]
     [Description( "Sets an attribute to a random person from a group with optional filter on a campus group member attribute. For example this could return a random person from the group with a group member attribute of 'Surprise'." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Set Attribute To Random Group Member" )]
