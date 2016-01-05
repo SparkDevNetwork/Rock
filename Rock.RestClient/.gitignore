@@ -1,0 +1,4 @@
+#specific folders for this project.  Ignore these since this project is not currently built by the Build server
+[Dd]ebug/
+[Rr]elease/
+/bin/
