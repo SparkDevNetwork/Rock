@@ -26,6 +26,7 @@ using Rock.Data;
 using System.Collections.Generic;
 using System.Data;
 using System;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -87,6 +88,57 @@ namespace Rock.Rest.Controllers
                 group.RoleName = member.GroupRole.Name;
 
                 result.GroupList.Add(group);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the attendance summary data for the 24 month attenance badge 
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/PersonBadges/InGroupWithPurpose/{personId}/{definedValueGuid}" )]
+        public GroupWithPurposeResult GetGroupWithPurpose( int personId, Guid definedValueGuid )
+        {
+            GroupWithPurposeResult result = new GroupWithPurposeResult();
+            result.PersonId = personId;
+            result.PersonInGroup = false;
+            result.GroupList = new List<GroupSummary>();
+
+            // get person info
+            Person person = new PersonService( (Rock.Data.RockContext)Service.Context ).Get( personId );
+
+            if ( person != null )
+            {
+                result.NickName = person.NickName;
+                result.LastName = person.LastName;
+            }
+
+            var purposeValue = DefinedValueCache.Read( definedValueGuid );
+            result.Purpose = purposeValue.Value;
+
+            // determine if person is in a group with this purpose
+            GroupMemberService groupMemberService = new GroupMemberService( (Rock.Data.RockContext)Service.Context );
+
+            IQueryable<GroupMember> groupMembershipsQuery = groupMemberService.Queryable( "Person,GroupRole,Group" )
+                                        .Where( t => t.Group.GroupType.GroupTypePurposeValueId == purposeValue.Id
+                                                 && t.PersonId == personId
+                                                 && t.GroupMemberStatus == GroupMemberStatus.Active
+                                                 && t.Group.IsActive )
+                                        .OrderBy( g => g.GroupRole.Order );
+
+            foreach ( GroupMember member in groupMembershipsQuery )
+            {
+                result.PersonInGroup = true;
+                GroupSummary group = new GroupSummary();
+                group.GroupName = member.Group.Name;
+                group.GroupId = member.Group.Id;
+                group.RoleName = member.GroupRole.Name;
+
+                result.GroupList.Add( group );
             }
 
             return result;
@@ -237,6 +289,58 @@ namespace Rock.Rest.Controllers
             /// </value>
             public string GroupTypeIconCss { get; set; }
 
+            /// <summary>
+            /// Gets or sets the person id of the individual.
+            /// </summary>
+            /// <value>
+            /// The person id.
+            /// </value>
+            public int PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person nick name of the individual.
+            /// </summary>
+            /// <value>
+            /// The nick name.
+            /// </value>
+            public string NickName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person last name of the individual.
+            /// </summary>
+            /// <value>
+            /// The last name.
+            /// </value>
+            public string LastName { get; set; }
+
+            /// <summary>
+            /// Gets or sets whether the given person is in a group of this type.
+            /// </summary>
+            /// <value>
+            /// Whether the person is in a group of this type.
+            /// </value>
+            public bool PersonInGroup { get; set; }
+
+            /// <summary>
+            /// Gets or sets a list of groups the person is in.
+            /// </summary>
+            /// <value>List of groups that the person is in.</value>
+            public List<GroupSummary> GroupList { get; set; }
+        }
+
+        /// <summary>
+        /// Result set for group with purpose badge
+        /// </summary>
+        public class GroupWithPurposeResult
+        {
+            /// <summary>
+            /// Gets or sets the purpose.
+            /// </summary>
+            /// <value>
+            /// The purpose.
+            /// </value>
+            public string Purpose { get; set; }
+            
             /// <summary>
             /// Gets or sets the person id of the individual.
             /// </summary>

@@ -32,7 +32,8 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Posts attendance to a group
     /// </summary>
-    [Description( "Set's attendance in a group." )]
+    [ActionCategory( "Group Update" )]
+    [Description( "Sets attendance in a group." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Post Attendance To Group" )]
 

@@ -34,8 +34,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Description( "Allows you to view the other members of a group person belongs to (e.g. Family groups)." )]
 
     [GroupTypeField("Group Type", "The group type to display groups for (default is Family)", false, Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "", 0)]
-    [LinkedPage("Group Edit Page", "Page used to edit the members of the selected group.", true, "", "", 1)]
-    [LinkedPage( "Location Detail Page", "Page used to edit the settings for a particular location.", false, "", "", 2 )]
+    [BooleanField("Auto Create Group", "If person doesn't belong to a group of this type, should one be created for them (default is Yes).", true, "", 1)]
+    [LinkedPage("Group Edit Page", "Page used to edit the members of the selected group.", true, "", "", 2)]
+    [LinkedPage( "Location Detail Page", "Page used to edit the settings for a particular location.", false, "", "", 3 )]
     public partial class GroupMembers : Rock.Web.UI.PersonBlock
     {
         #region Fields
@@ -310,7 +311,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .Select( m => m.Group )
                         .ToList();
 
-                    if ( !groups.Any() )
+                    if ( !groups.Any() && GetAttributeValue("AutoCreateGroup").AsBoolean(true) )
                     {
                         // ensure that the person is in a group
                         var groupMember = new GroupMember();
@@ -322,7 +323,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         group.GroupTypeId = _groupType.Id;
                         group.Members.Add( groupMember );
 
-                        // use the _bindGroupsRockContext that is created/disposed in BindFamilies()
                         var groupService = new GroupService( _bindGroupsRockContext );
                         groupService.Add( group );
                         _bindGroupsRockContext.SaveChanges();

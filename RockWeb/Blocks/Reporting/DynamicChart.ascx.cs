@@ -24,6 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
@@ -229,6 +230,9 @@ function labelFormatter(label, series) {
                 }
                 else
                 {
+                    var mergeFields = GetDynamicDataMergeFields();
+                    sql = sql.ResolveMergeFields( mergeFields );
+                    
                     DataSet dataSet = DbService.GetDataSet( sql, System.Data.CommandType.Text, null );
                     List<DynamicChartData> chartDataList = new List<DynamicChartData>();
                     foreach ( var row in dataSet.Tables[0].Rows.OfType<DataRow>() )
@@ -294,6 +298,45 @@ function labelFormatter(label, series) {
         {
             // reload the full page since controls are dynamically created based on block settings
             NavigateToPage( this.CurrentPageReference );
+        }
+
+        /// <summary>
+        /// Gets the dynamic data merge fields.
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<string, object> GetDynamicDataMergeFields()
+        {
+            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+            if ( CurrentPerson != null )
+            {
+                mergeFields.Add( "CurrentPerson", CurrentPerson );
+            }
+
+            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+            mergeFields.Add( "Campuses", CampusCache.All() );
+            mergeFields.Add( "PageParameter", PageParameters() );
+            mergeFields.Add( "CurrentPage", this.PageCache );
+
+            var contextObjects = new Dictionary<string, object>();
+            foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
+            {
+                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
+                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
+                {
+                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
+                    if ( type != null )
+                    {
+                        contextObjects.Add( type.Name, contextEntity );
+                    }
+                }
+            }
+
+            if ( contextObjects.Any() )
+            {
+                mergeFields.Add( "Context", contextObjects );
+            }
+
+            return mergeFields;
         }
     }
 }

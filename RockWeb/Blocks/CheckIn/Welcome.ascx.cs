@@ -410,12 +410,14 @@ if ($ActiveWhen.text() != '')
             if ( this.CurrentKioskId.HasValue )
             {
                 var groupTypesLocations = this.GetGroupTypesLocations( rockContext );
-                var selectQry = groupTypesLocations.Select( a => new
-                {
-                    LocationId = a.Id,
-                    Name = a.Name,
-                    a.IsActive
-                } );
+                var selectQry = groupTypesLocations
+                    .Select( a => new
+                        {
+                            LocationId = a.Id,
+                            Name = a.Name,
+                            a.IsActive
+                        } )
+                    .OrderBy( a => a.Name );
 
                 rLocations.DataSource = selectQry.ToList();
                 rLocations.DataBind();

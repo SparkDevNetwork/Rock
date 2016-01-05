@@ -31,7 +31,8 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sends email
     /// </summary>
-    [Description( "Send a system email " )]
+    [ActionCategory( "Communications" )]
+    [Description( "Send a system email." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata("ComponentName", "Send System Email")]
 

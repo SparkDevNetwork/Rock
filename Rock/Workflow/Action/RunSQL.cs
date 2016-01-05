@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Runs a SQL query
     /// </summary>
+    [ActionCategory( "Utility" )]
     [Description( "Runs the specified SQL query to perform an action against the database." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Run SQL" )]

@@ -28,6 +28,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Writes a message to Workflow log.
     /// </summary>
+    [ActionCategory( "Workflow Control" )]
     [Description( "Writes a message to Workflow log." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Write To Log" )]

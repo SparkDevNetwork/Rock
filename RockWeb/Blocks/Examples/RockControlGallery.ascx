@@ -345,8 +345,18 @@
                     </div>
 
                     <a id="GroupRolePicker"></a>
-                    <div id="Div1" runat="server" class="r-example">
+                    <div runat="server" class="r-example">
                         <Rock:GroupRolePicker ID="grpExample" runat="server" Label="Rock:GroupRolePicker" />
+                    </div>
+                    
+                    <a id="WorkflowActionPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:WorkflowActionTypePicker ID="wfatpExample" runat="server" Label="Rock:WorkflowActionTypePicker" />
+                    </div>
+
+                    <a id="WorkflowTypePicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:WorkflowTypePicker ID="wftpExample" runat="server" Label="Rock:WorkflowTypePicker" />
                     </div>
 
                     <a id="Other"></a>

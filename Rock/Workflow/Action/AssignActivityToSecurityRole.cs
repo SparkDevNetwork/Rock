@@ -28,6 +28,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Assigns the current activity to the selected security role.
     /// </summary>
+    [ActionCategory( "Workflow Control" )]
     [Description( "Assigns the current activity to the selected security role." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Assign Activity to Security role" )]

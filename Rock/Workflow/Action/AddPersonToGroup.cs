@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sets an attribute's value to the selected person 
     /// </summary>
+    [ActionCategory( "Group Update" )]
     [Description( "Adds person to a specific group." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Add Person to specified Group" )]
