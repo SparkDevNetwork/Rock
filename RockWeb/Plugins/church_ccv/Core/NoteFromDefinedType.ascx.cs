@@ -42,10 +42,12 @@ namespace RockWeb.Plugins.church_ccv.Core
     [ContextAware]
     [DefinedTypeField( "DefinedType", "Defined Type to get the values from. Values can contain Lava fields.", true )]
     [BooleanField( "Show History", "Show list of notes", true )]
-    [TextField( "History Title", "", false, "History")]
+    [TextField( "History Title", "", false, "History" )]
+    [BooleanField( "Enable Debug", "Show lava merge fields.", false, "" )]
     public partial class NoteFromDefinedType : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -81,6 +83,12 @@ namespace RockWeb.Plugins.church_ccv.Core
         /// </summary>
         private void LoadDropDowns()
         {
+            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+            if ( CurrentPerson != null )
+            {
+                mergeFields.Add( "CurrentPerson", CurrentPerson );
+            }
+
             ddlNoteType.Items.Clear();
             var contextEntity = this.ContextEntity();
             if ( contextEntity != null )
@@ -95,6 +103,8 @@ namespace RockWeb.Plugins.church_ccv.Core
                 noteList.EntityId = contextEntity.Id;
 
                 ddlNoteType.Visible = ddlNoteType.Items.Count > 1;
+
+                mergeFields.Add( "Context", contextEntity );
             }
 
             var definedTypeGuid = this.GetAttributeValue( "DefinedType" ).AsGuidOrNull();
@@ -103,13 +113,18 @@ namespace RockWeb.Plugins.church_ccv.Core
                 var definedType = DefinedTypeCache.Read( definedTypeGuid.Value );
                 foreach ( var definedValue in definedType.DefinedValues )
                 {
-                    ddlNoteValueList.Items.Add( new ListItem( definedValue.Value, definedValue.Id.ToString() ) );
+                    ddlNoteValueList.Items.Add( new ListItem( definedValue.Value.ResolveMergeFields( mergeFields ), definedValue.Id.ToString() ) );
                 }
             }
 
             ddlNoteValueList.Items.Add( new ListItem( "Other" ) );
 
             ddlNoteValueList_SelectedIndexChanged( null, null );
+
+            if ( this.GetAttributeValue( "EnableDebug" ).AsBoolean() )
+            {
+                lLavaDebug.Text = mergeFields.lavaDebugInfo();
+            }
         }
 
         #endregion

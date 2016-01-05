@@ -7,6 +7,8 @@
         <Rock:RockDropDownList ID="ddlNoteValueList" runat="server" Label="Select Note" AutoPostBack="true" OnSelectedIndexChanged="ddlNoteValueList_SelectedIndexChanged" />
         <Rock:RockTextBox ID="tbOtherText" runat="server" Label="Other" TextMode="MultiLine" Rows="3" Required="true" />
 
+        <asp:Literal ID="lLavaDebug" runat="server" />
+
         <div class="actions">
             <asp:LinkButton ID="btnAddNote" runat="server" AccessKey="s" Text="Add" CssClass="btn btn-default" OnClick="btnAddNote_Click" />
         </div>
