@@ -23,7 +23,6 @@
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbShowCampusLocations" runat="server" Label="Show Campus Locations On Map" Checked="true" />
                         <Rock:RangeSlider ID="rsDataPointRadius" runat="server" MinValue="0" MaxValue="128" Text="32" Label="Radius" Help="The radius of influence for each data point, in pixels" />
-                        <Rock:NumberBox ID="nbFontSize" runat="server" NumberType="Integer" Label="Label Font Size" />
                     </div>
                 </div>
 
@@ -34,7 +33,9 @@
 
             <div class="margin-all-md">
                 <div class="pull-right">
-                    <div class="btn btn-default btn-xs js-createpieshape "><i class='fa fa-pie-chart' title="Create pie slices from circle"></i></div>
+                    <asp:Panel ID="pnlPieSlicer" runat="server" CssClass="btn btn-default btn-xs js-createpieshape">
+                        <i class='fa fa-pie-chart' title="Create pie slices from selected circle"></i>
+                    </asp:Panel>
                     <div class="btn btn-danger btn-xs js-deleteshape"><i class='fa fa-times' title="Delete selected shape"></i></div>
                 </div>
             </div>
@@ -361,12 +362,14 @@
                         selectedShape = null;
 
                         var i = 0;
-                        for (; i < 6; i++) {
-                            var startDegrees = i*60;
+                        var pieSliceCount = <%=this.PieSliceCount%>;
+                        var degreesInc = 360 / pieSliceCount;
+                        for (; i < pieSliceCount; i++) {
+                            var startDegrees = i*degreesInc;
 
                             var pieSlicePath = Array();
                             pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, startDegrees));
-                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, startDegrees+60));
+                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, startDegrees+degreesInc));
                             pieSlicePath.unshift(centerPt);
                             pieSlicePath.push(centerPt);
                             var pieSlicePoly = new google.maps.Polygon({
