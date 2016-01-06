@@ -1,4 +1,5 @@
 
+
 {% assign communicationPage = "/page/491" %}
 
 <div class="col-xs-12 col-sm-6 margin-b-md rollover-container">
@@ -32,9 +33,10 @@
     <small>({{ member.GroupRole.Name}})</small>
 
     <br />
-    <a href="{{ communicationPage }}?person={{ member.Person.PrimaryAliasId }}">
+	<a href="{{ communicationPage }}?person={{ member.Person.PrimaryAliasId }}">
               {{ member.Person.Email }}
 	</a>
+    
 
     <p>
       {% assign baptismDate = member.Person | Attribute: 'BaptismDate' %}

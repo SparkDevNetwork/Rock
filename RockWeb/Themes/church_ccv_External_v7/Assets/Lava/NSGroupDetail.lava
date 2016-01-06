@@ -124,7 +124,7 @@ REQUIRED VARIABLES
             <div class="row">
           {% endif %}
 
-          {% include '~~/Assets/Lava/GroupDetail-person.lava' %}
+          {% include '~~/Assets/Lava/NSGroupDetail-person.lava' %}
 
           {% if loopcycle != 0 or icountPending == countPending %}
             </div>
@@ -157,7 +157,7 @@ REQUIRED VARIABLES
           <div class="row">
           {% endif %}
 
-          {% include '~~/Assets/Lava/GroupDetail-person.lava' %}
+          {% include '~~/Assets/Lava/NSGroupDetail-person.lava' %}
 
           {% if loopcycle != 0 or icountActive == countActive %}
             </div>
@@ -188,7 +188,7 @@ REQUIRED VARIABLES
           <div class="row">
           {% endif %}
 
-          {% include '~~/Assets/Lava/GroupDetail-person.lava' %}
+          {% include '~~/Assets/Lava/NSGroupDetail-person.lava' %}
 
           {% if loopcycle != 0 or icountInactive == countInactive %}
             </div>
