@@ -45,8 +45,9 @@ REQUIRED VARIABLES
               <h4 class="no-caps margin-t-none">Meets every {{Group.Schedule.FriendlyScheduleText}}</h4>
             {% endif %}
             <p>{{ Group.Description }}</p>
+            <img src="/GetImage.ashx?guid={{ Group | Attribute: 'GroupPicture', 'RawValue'}}&width=600" alt="Group Picture" />
           </div>
-          <div class="col-md-3">
+          <div class="col-md-7">
             <strong>Leaders:</strong>
             <ul class="unstyled">
               {% for member in Group.Members %}
@@ -58,12 +59,12 @@ REQUIRED VARIABLES
               {% endif %}
               {% endfor %}
             </ul>
-          </div>
-          <div class="col-md-3">
             <p>
             {% for attribute in Group.AttributeValues %}
               {% unless attribute.AttributeName == "Meeting Day" or attribute.AttributeName == "Meeting Time" or attribute.ValueFormatted == empty %}
-              <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+                {% unless attribute.AttributeName == "Group Picture" %}
+                  <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+                {% endunless %}
               {% endunless %}
             {% endfor %}
             </p>
@@ -266,4 +267,3 @@ REQUIRED VARIABLES
     <div class='alert alert-warning'>You do not have persmission to view this group.</div>
   {% endif %}
 {% endif %}
-
