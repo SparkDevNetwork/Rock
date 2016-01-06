@@ -1,0 +1,39 @@
+<h4 class='margin-t-none'>{{ Group.Name }}<br><small>{{ Group.Schedule.FriendlyScheduleText }}</small></h4>
+
+{% for member in Group.Members %}
+  {% if member.GroupRole.IsLeader %}
+    {% assign groupLeader = member %}
+  {% endif %}
+{% endfor %}
+
+<div class="clearfix">
+  {% if groupLeader %}
+    <img class="pull-left margin-r-sm margin-b-sm" src="{{ groupLeader.Person.PhotoUrl }}&height=180&width=180&mode=crop&scale=both" height="60" width="60" />
+  {% endif %}
+
+  <div class='margin-b-sm'>
+  {% for attribute in Group.AttributeValues %}
+      {% if attribute.Value != empty %}
+        <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+      {% endif %}
+  {% endfor %}
+  </div>
+
+  <div class='margin-v-sm'>
+  {% if Location.FormattedHtmlAddress && Location.FormattedHtmlAddress != '' %}
+  	{{ Location.FormattedHtmlAddress }}
+  {% endif %}
+  </div>
+</div>
+
+{% if LinkedPages.GroupDetailPage != '' %}
+    <a class='btn btn-xs btn-action margin-r-sm' href='{{ LinkedPages.GroupDetailPage }}?GroupId={{ Group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a>
+{% endif %}
+
+{% if LinkedPages.RegisterPage != '' %}
+    {% if LinkedPages.RegisterPage contains '?' %}
+        <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}&GroupId={{ Group.Id }}'>Register</a>
+    {% else %}
+        <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}?GroupId={{ Group.Id }}'>Register</a>
+    {% endif %}
+{% endif %}
