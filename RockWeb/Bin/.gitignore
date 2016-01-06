@@ -14,3 +14,6 @@
 /Rock.Plugin.dll
 *.PayFlowPro.dll
 /DotLiquid.dll
+
+/YamlDotNet*
+/com.reallifeministries*

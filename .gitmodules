@@ -1,0 +1,9 @@
+[submodule "com.reallifeministries.GroupMatching"]
+	path = com.reallifeministries.GroupMatching
+	url = https://github.com/reallifeministries/rock_lib_GroupMatching.git
+[submodule "com.reallifeministries.RockExtensions"]
+	path = com.reallifeministries.RockExtensions
+	url = https://github.com/reallifeministries/rock_lib_RlmExtensions.git
+[submodule "RockWeb/Plugins/com_reallifeministries"]
+	path = RockWeb/Plugins/com_reallifeministries
+	url = https://github.com/reallifeministries/rock_plugins.git
