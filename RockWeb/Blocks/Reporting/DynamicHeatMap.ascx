@@ -17,11 +17,11 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlUserDataView" runat="server" Label="Dataview" Help="Select the dataview to use to filter the results." Required="true" />
-                        <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" Help="Select the campuses to narrow the results down to families with that home campus." Required="false" />
-                        <Rock:GroupPicker ID="gpGroupToMap" runat="server" Label="Group" Help="Select a Group to show the geofences for that group and it's child groups" />
+                        <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campus Filter" Help="Select the campuses to narrow the results down to families with that home campus." Required="false" />
+                        <Rock:GroupPicker ID="gpGroupToMap" runat="server" Label="Geo-fencing Group" Help="Select a Group to show the geofences for that group and it's child groups" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbShowCampusLocations" runat="server" Label="Show Campus locations on map" Checked="true" />
+                        <Rock:RockCheckBox ID="cbShowCampusLocations" runat="server" Label="Show Campus Locations On Map" Checked="true" />
                         <Rock:RangeSlider ID="rsDataPointRadius" runat="server" MinValue="0" MaxValue="128" Text="32" Label="Radius" Help="The radius of influence for each data point, in pixels" />
                         <Rock:NumberBox ID="nbFontSize" runat="server" NumberType="Integer" Label="Label Font Size" />
                     </div>
