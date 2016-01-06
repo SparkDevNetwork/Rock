@@ -13,9 +13,11 @@
 
   <div class='margin-b-sm'>
   {% for attribute in Group.AttributeValues %}
-      {% if attribute.Value != empty %}
+    {% if attribute.Value != empty %}
+      {% unless attribute.AttributeName == "Group Picture" %}
         <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
-      {% endif %}
+      {% endunless %}
+    {% endif %}
   {% endfor %}
   </div>
 
