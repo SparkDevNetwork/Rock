@@ -24,7 +24,6 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
     [Description( "A list of reports for a certain group member" )]
     public partial class AccountabilityReportList : Rock.Web.UI.RockBlock, Rock.Web.UI.ISecondaryBlock
     {
-
         #region Base Control Methods
 
         //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
@@ -143,12 +142,19 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         private void BindGrid()
         {
             AccountabilityContext accountabilityContext = new AccountabilityContext();
+            var rockContext = new RockContext();
             ResponseSetService responseSetService = new ResponseSetService( accountabilityContext );
-            GroupMember groupMember = new GroupMemberService( new RockContext() ).Get( PageParameter( "GroupMemberId" ).AsInteger() );
+            GroupMember groupMember = new GroupMemberService( rockContext ).Get( PageParameter( "GroupMemberId" ).AsInteger() );
+            // get the group to find the start date
+            Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
+            group.LoadAttributes();
+            var reportStartDate = DateTime.Parse( group.GetAttributeValue( "ReportStartDate" ) );
+
             // sample query to display a few people
             var qry = responseSetService.Queryable()
                         .Where( p => p.PersonId == groupMember.PersonId &&
-                            p.GroupId == groupMember.GroupId )
+                            p.GroupId == groupMember.GroupId &&
+                            reportStartDate <= p.SubmitForDate )
                         .OrderByDescending( p => p.SubmitForDate )
                         .Take( 100 );
 
@@ -190,7 +196,6 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                     if ( response.IsResponseYes )
                     {
                         body.Append( "<div class='col-md-4'>yes" );
-
                     }
                     else
                     {

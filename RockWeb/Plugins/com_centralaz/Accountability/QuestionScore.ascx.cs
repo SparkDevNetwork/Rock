@@ -5,6 +5,7 @@ using System.Web.UI;
 using com.centralaz.Accountability.Data;
 using com.centralaz.Accountability.Model;
 
+using Rock;
 using Rock.Data;
 using Rock.Model;
 
@@ -16,7 +17,6 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
 
     public partial class QuestionScore : Rock.Web.UI.RockBlock, Rock.Web.UI.ISecondaryBlock
     {
-
         #region Control Methods
 
         /// <summary>
@@ -26,7 +26,6 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
         }
 
         /// <summary>
@@ -35,9 +34,8 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( !Page.IsPostBack )
-            {
-            }
+            base.OnLoad( e );
+
             if ( int.Parse( PageParameter( "GroupMemberId" ) ) == 0 )
             {
                 pnlContent.Visible = false;
@@ -46,12 +44,9 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             {
                 LoadScores();
             }
-
-            base.OnLoad( e );
         }
 
         #endregion
-
 
         #region Internal Methods
 
@@ -60,16 +55,20 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         /// </summary>
         protected void LoadScores()
         {
-            GroupMember groupMember = new GroupMemberService( new RockContext() ).Get( int.Parse( PageParameter( "GroupMemberId" ) ) );
+            var rockContext = new RockContext();
+            GroupMember groupMember = new GroupMemberService( rockContext ).Get( int.Parse( PageParameter( "GroupMemberId" ) ) );
             int groupId = groupMember.GroupId;
             int personId = groupMember.PersonId;
             ResponseSetService responseSetService = new ResponseSetService( new AccountabilityContext() );
             QuestionService questionService = new QuestionService( new AccountabilityContext() );
 
-            double overallScore = responseSetService.GetOverallScore( personId, groupId );
-            double[] weakScore = responseSetService.GetWeakScore( personId, groupId );
-            double[] strongScore = responseSetService.GetStrongScore( personId, groupId );
+            Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
+            group.LoadAttributes();
+            var reportStartDate = DateTime.Parse( group.GetAttributeValue( "ReportStartDate" ) );
 
+            double overallScore = responseSetService.GetOverallScore( personId, groupId, reportStartDate );
+            double[] weakScore = responseSetService.GetWeakScore( personId, groupId, reportStartDate );
+            double[] strongScore = responseSetService.GetStrongScore( personId, groupId, reportStartDate );
 
             if ( overallScore == -1 )
             {

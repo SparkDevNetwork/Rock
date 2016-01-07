@@ -387,12 +387,23 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             double score = 0;
             groupMember.LoadAttributes();
             DateTime memberStartDate = DateTime.Parse( groupMember.GetAttributeValue( "MemberStartDate" ) );
+            // but set their start date to be the report start date for the group if it's newer than
+            // their start date.
+            if ( _reportStartDate > memberStartDate )
+            {
+                memberStartDate = _reportStartDate;
+            }
 
             //Iterate through the responseSets
             for ( int i = 0; i < responseSets.Count; i++ )
             {
                 if ( responseSets[i].PersonId == groupMember.PersonId )
                 {
+                    // Skip any responses from previous start periods.
+                    if ( responseSets[i].SubmitForDate <= _reportStartDate )
+                    {
+                        continue;
+                    }
                     reports++;
                     score += responseSets[i].Score;
                     if ( firstReport == defaultDate || firstReport > responseSets[i].SubmitForDate )

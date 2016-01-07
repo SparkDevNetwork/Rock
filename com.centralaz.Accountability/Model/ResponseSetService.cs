@@ -29,6 +29,7 @@ namespace com.centralaz.Accountability.Model
             return qry;
 
         }
+
         public List<ResponseSet> GetResponseSetsForGroup( int groupId )
         {
             List<ResponseSet> responseSets = Queryable()
@@ -43,11 +44,13 @@ namespace com.centralaz.Accountability.Model
             {
                 return false;
             }
+
             var qry = Queryable()
                 .Where( r => r.SubmitForDate == dateTime.Date &&
                     r.PersonId == personId &&
                     r.GroupId == groupId )
                 .ToList();
+
             if ( qry.Count == 1 )
             {
                 return true;
@@ -57,15 +60,25 @@ namespace com.centralaz.Accountability.Model
                 return false;
             }
         }
-        public double GetOverallScore( int PersonId, int GroupId )
+
+        /// <summary>
+        /// Gets the overall score for the person in the group since the given start date.
+        /// </summary>
+        /// <param name="PersonId">The person identifier.</param>
+        /// <param name="GroupId">The group identifier.</param>
+        /// <param name="startDate">The start date to use when determining the score.</param>
+        /// <returns></returns>
+        public double GetOverallScore( int PersonId, int GroupId, DateTime startDate )
         {
             double overallScore = 0;
             var qry = Queryable()
-                .Where( r => ( r.PersonId == PersonId ) && ( r.GroupId == GroupId ) );
+                .Where( r => r.PersonId == PersonId && r.GroupId == GroupId && startDate <= r.SubmitForDate );
+
             foreach ( ResponseSet r in qry )
             {
                 overallScore += r.Score;
             }
+
             if ( qry.Count() == 0 )
             {
                 overallScore = -1;
@@ -77,7 +90,15 @@ namespace com.centralaz.Accountability.Model
 
             return overallScore;
         }
-        public double[] GetWeakScore( int PersonId, int GroupId )
+
+        /// <summary>
+        /// Gets the weak score for the person in the group since the given start date.
+        /// </summary>
+        /// <param name="PersonId">The person identifier.</param>
+        /// <param name="GroupId">The group identifier.</param>
+        /// <param name="startDate">The start date.</param>
+        /// <returns></returns>
+        public double[] GetWeakScore( int PersonId, int GroupId, DateTime startDate )
         {
             double[] weakScore = new double[2];
             weakScore[0] = -1;
@@ -89,13 +110,15 @@ namespace com.centralaz.Accountability.Model
                 .Where( g => g.Id == GroupId )
                 .Select( g => g.GroupTypeId )
                 .FirstOrDefault();
+
             //get questions in responseset
             var questions = questionService.Queryable()
                 .Where( q => q.GroupTypeId == groupTypeId );
+
             //for each question get ResponsePercentage
             foreach ( Question q in questions )
             {
-                double[] score = responseService.ResponsePercentage( PersonId, GroupId, q.Id );
+                double[] score = responseService.ResponsePercentage( PersonId, GroupId, q.Id, startDate );
                 if ( score[1] != 0 )
                 {
                     double scorePercentage = score[0] / score[1];
@@ -108,7 +131,15 @@ namespace com.centralaz.Accountability.Model
             }
             return weakScore;
         }
-        public double[] GetStrongScore( int PersonId, int GroupId )
+
+        /// <summary>
+        /// Gets the strong score for the person in the group since the given start date.
+        /// </summary>
+        /// <param name="PersonId">The person identifier.</param>
+        /// <param name="GroupId">The group identifier.</param>
+        /// <param name="startDate">The start date.</param>
+        /// <returns></returns>
+        public double[] GetStrongScore( int PersonId, int GroupId, DateTime startDate )
         {
             double[] strongScore = new double[2];
             strongScore[0] = -1;
@@ -120,13 +151,15 @@ namespace com.centralaz.Accountability.Model
                 .Where( g => g.Id == GroupId )
                 .Select( g => g.GroupTypeId )
                 .FirstOrDefault();
+
             //get questions in responseset
             var questions = questionService.Queryable()
                 .Where( q => q.GroupTypeId == groupTypeId );
+
             //for each question get ResponsePercentage
             foreach ( Question q in questions )
             {
-                double[] score = responseService.ResponsePercentage( PersonId, GroupId, q.Id );
+                double[] score = responseService.ResponsePercentage( PersonId, GroupId, q.Id, startDate );
                 if ( score[1] != 0 )
                 {
                     double scorePercentage = score[0] / score[1];
@@ -139,6 +172,5 @@ namespace com.centralaz.Accountability.Model
             }
             return strongScore;
         }
-
     }
 }

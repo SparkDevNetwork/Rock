@@ -30,18 +30,25 @@ namespace com.centralaz.Accountability.Model
                 .FirstOrDefault();
 
         }
+
         /// <summary>
         /// Returns a percentage of correct answers
         /// </summary>
-        /// <param name="personId"> The person</param>
+        /// <param name="personId">The person</param>
         /// <param name="groupId">The group</param>
         /// <param name="questionId">The question that we're getting the percentage for</param>
-        /// <returns>percentage[0] is the amount correct, and percentage[1] is the amount total</returns>
-        public double[] ResponsePercentage(int personId, int groupId, int questionId)
+        /// <param name="startDate">The start date to use when determining the percentage.</param>
+        /// <returns>
+        /// percentage[0] is the amount correct, and percentage[1] is the amount total
+        /// </returns>
+        public double[] ResponsePercentage(int personId, int groupId, int questionId, DateTime startDate )
         {
             double[] percentage = new double[2];
             var qry = Queryable("ResponseSet")
-                .Where(r => (r.ResponseSet.PersonId == personId) && (r.ResponseSet.GroupId == groupId) && (r.QuestionId == questionId));
+                .Where(r =>  r.ResponseSet.PersonId == personId
+                    && r.ResponseSet.GroupId == groupId
+                    && r.QuestionId == questionId
+                    && startDate <= r.ResponseSet.SubmitForDate );
             percentage[1] = qry.Count();
             qry = qry.Where(r => r.IsResponseYes == true);
             percentage[0] = qry.Count();
