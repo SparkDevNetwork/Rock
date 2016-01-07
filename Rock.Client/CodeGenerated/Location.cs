@@ -199,7 +199,9 @@ namespace Rock.Client
         /// <summary />
         public ICollection<Location> ChildLocations { get; set; }
 
-        /// <summary />
+        /// <summary>
+        /// If returned from an endpoint that calculates distance, this will be the result distance (in miles)
+        /// </summary>
         public double Distance { get; set; }
 
         /// <summary />

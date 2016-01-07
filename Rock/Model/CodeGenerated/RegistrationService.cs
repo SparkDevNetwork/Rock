@@ -96,6 +96,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
+            target.IsTemporary = source.IsTemporary;
             target.LastName = source.LastName;
             target.PersonAliasId = source.PersonAliasId;
             target.RegistrationInstanceId = source.RegistrationInstanceId;

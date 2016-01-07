@@ -59,6 +59,9 @@ namespace Rock.Client
         public int? GroupId { get; set; }
 
         /// <summary />
+        public bool IsTemporary { get; set; }
+
+        /// <summary />
         public string LastName { get; set; }
 
         /// <summary>
@@ -113,6 +116,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
+            this.IsTemporary = source.IsTemporary;
             this.LastName = source.LastName;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.PersonAliasId = source.PersonAliasId;
