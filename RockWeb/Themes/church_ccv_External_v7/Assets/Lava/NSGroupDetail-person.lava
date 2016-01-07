@@ -1,6 +1,7 @@
 
-{% assign groupMemberDetailPage = "/page/1004" %}
-{% assign communicationPage = "/page/491" %}
+{% assign groupMemberDetailPage = groupMemberDetailPage | Default: "/page/1004" %}
+{% assign communicationPage = communicationPage | Default: "/page/491" %}
+{% assign videoPage = videoPage | Default: "/page/1005" %}
 
 <div class="col-xs-12 col-sm-6 margin-b-md rollover-container">
   {% if LinkedPages.PersonDetailPage != '' %}
@@ -31,12 +32,14 @@
   <div class="pull-left">
     <strong>{{ member.Person.FullName }}</strong>
     <small>({{ member.GroupRole.Name}})</small>
-
+    {% if member.GroupMemberStatus == 'Pending' %}
+      <a class="btn btn-link btn-xs" href="{{ videoPage }}?person={{ member.Person.PrimaryAliasId }}" title="Send T-Up Video"><i class="fa fa-video-camera"></i></a>
+    {% endif %}
     <br />
-	<a href="{{ communicationPage }}?person={{ member.Person.PrimaryAliasId }}">
-              {{ member.Person.Email }}
-	</a>
-    
+    <a href="{{ communicationPage }}?person={{ member.Person.PrimaryAliasId }}">
+      {{ member.Person.Email }}
+    </a>
+
 
     <p>
       {% assign baptismDate = member.Person | Attribute: 'BaptismDate' %}
