@@ -74,7 +74,7 @@
     <a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
     <i class="fa fa-times"></i>
     </a>
-    <a href="{{ groupMemberDetailPage }}?GroupMemberId={{ member.PersonId }}" class="margin-l-sm">
+    <a href="{{ groupMemberDetailPage }}?GroupMemberId={{ member.Id }}" class="margin-l-sm">
     <i class="fa fa-pencil"></i>
     </a>
   </div>
