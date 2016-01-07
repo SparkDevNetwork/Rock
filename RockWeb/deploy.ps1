@@ -23,6 +23,10 @@ If (Test-Path "$webroot\Content"){
 Write-Host "Moving Contents folder back from temp directory"
 Move-Item "$rootfolder\temp\Content" "$webroot\"
 
+# move LEGACY directory back from temp
+Write-Host "Moving LEGACY ARENA folder back from temp directory"
+Move-Item "$rootfolder\temp\arena" "$webroot\"
+
 # move App_Data directory back from temp
 Write-Host "Moving App_Data folder back from temp directory"
 Move-Item "$rootfolder\temp\App_Data" "$webroot\"

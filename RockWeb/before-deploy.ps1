@@ -43,6 +43,10 @@ If (Test-Path "$rootfolder\temp"){
 Write-Host "Moving content folder to temp directory"
 Move-Item "$webroot\Content" "$rootfolder\temp\" -Force
 
+# move LEGACY content folder to temp
+Write-Host "Moving LEGACY ARENA folder to temp directory"
+Move-Item "$webroot\arena" "$rootfolder\temp\" -Force
+
 # move App_Data to temp
 Write-Host "Moving App_Data folder to temp directory"
 Move-Item "$webroot\App_Data" "$rootfolder\temp\" -Force
