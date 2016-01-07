@@ -315,6 +315,7 @@ namespace Rock.Rest.Controllers
         /// <param name="geofenceGroupTypeId">The geofence group type identifier.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <param name="locationId">The location identifier.</param>
+        /// <param name="queryOptions">The query options.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
@@ -329,7 +330,7 @@ namespace Rock.Rest.Controllers
             // If location was valid and address was geocoded successfully
             DbGeography geoPoint = specifiedLocation != null ? specifiedLocation.GeoPoint : null;
 
-            return GetByGeoPoint( groupTypeId, geoPoint, false, geofenceGroupTypeId, queryOptions );
+            return GetByGeoPoint( groupTypeId, geoPoint, false, null, geofenceGroupTypeId, queryOptions );
         }
 
         /// <summary>
@@ -338,13 +339,14 @@ namespace Rock.Rest.Controllers
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="sortByDistance">if set to <c>true</c> [sort by distance].</param>
+        /// <param name="maxDistanceMiles">The maximum distance miles.</param>
         /// <param name="geofenceGroupTypeId">The geofence group type identifier.</param>
         /// <param name="queryOptions">The query options.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/Groups/ByLocation" )]
-        public IQueryable GetByLocation( int groupTypeId, int locationId, bool? sortByDistance = true, int? geofenceGroupTypeId = null, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions = null )
+        public IQueryable GetByLocation( int groupTypeId, int locationId, bool? sortByDistance = true, double? maxDistanceMiles = null, int? geofenceGroupTypeId = null, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions = null )
         {
             // Get the location record
             var rockContext = (RockContext)Service.Context;
@@ -353,7 +355,7 @@ namespace Rock.Rest.Controllers
             // If location was valid and address was geocoded successfully
             DbGeography geoPoint = specifiedLocation != null ? specifiedLocation.GeoPoint : null;
 
-            return GetByGeoPoint( groupTypeId, geoPoint, sortByDistance, geofenceGroupTypeId, queryOptions );
+            return GetByGeoPoint( groupTypeId, geoPoint, sortByDistance, maxDistanceMiles, geofenceGroupTypeId, queryOptions );
         }
 
         /// <summary>
@@ -363,18 +365,19 @@ namespace Rock.Rest.Controllers
         /// <param name="latitude">The latitude.</param>
         /// <param name="longitude">The longitude.</param>
         /// <param name="sortByDistance">The sort by distance.</param>
+        /// <param name="maxDistanceMiles">The maximum distance miles.</param>
         /// <param name="geofenceGroupTypeId">The geofence group type identifier.</param>
         /// <param name="queryOptions">The query options.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/Groups/ByLatLong" )]
-        public IQueryable GetByLatLong( int groupTypeId, double latitude, double longitude, bool? sortByDistance = true, int? geofenceGroupTypeId = null, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions = null )
+        public IQueryable GetByLatLong( int groupTypeId, double latitude, double longitude, bool? sortByDistance = true, double? maxDistanceMiles = null, int? geofenceGroupTypeId = null, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions = null )
         {
             string geoText = string.Format( "POINT({0} {1})", longitude, latitude );
             DbGeography geoPoint = DbGeography.FromText( geoText );
 
-            return GetByGeoPoint( groupTypeId, geoPoint, sortByDistance, geofenceGroupTypeId, queryOptions );
+            return GetByGeoPoint( groupTypeId, geoPoint, sortByDistance, maxDistanceMiles, geofenceGroupTypeId, queryOptions );
         }
 
         /// <summary>
@@ -384,10 +387,11 @@ namespace Rock.Rest.Controllers
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <param name="geoPoint">The geo point.</param>
         /// <param name="sortByDistance">if set to <c>true</c> [sort by distance].</param>
+        /// <param name="maxDistanceMiles">The maximum distance miles.</param>
         /// <param name="geofenceGroupTypeId">The geofence group type identifier.</param>
         /// <param name="queryOptions">The query options.</param>
         /// <returns></returns>
-        private IQueryable GetByGeoPoint( int groupTypeId, DbGeography geoPoint, bool? sortByDistance, int? geofenceGroupTypeId, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions )
+        private IQueryable GetByGeoPoint( int groupTypeId, DbGeography geoPoint, bool? sortByDistance, double? maxDistanceMiles, int? geofenceGroupTypeId, System.Web.Http.OData.Query.ODataQueryOptions<Group> queryOptions )
         {
             var rockContext = (RockContext)Service.Context;
             IEnumerable<Group> resultGroups = new List<Group>();
@@ -463,6 +467,12 @@ namespace Rock.Rest.Controllers
                         gl.Location.SetDistance( meters * Location.MilesPerMeter );
                     }
                 }
+            }
+
+            // remove groups that don't have a location within the specified radius
+            if ( maxDistanceMiles.HasValue )
+            {
+                resultGroups = resultGroups.Where( a => a.GroupLocations.Any( x => x.Location.Distance <= maxDistanceMiles.Value ) );
             }
 
             var querySettings = new System.Web.Http.OData.Query.ODataQuerySettings();
