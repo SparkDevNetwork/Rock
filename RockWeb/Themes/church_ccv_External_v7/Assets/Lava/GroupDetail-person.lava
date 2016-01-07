@@ -36,24 +36,62 @@
       {{ member.Person.Email }}
     </a>
 
+    {% comment %}
+      Reset Variables
+    {% endcomment %}
+    {% assign baptism = false %}
+    {% assign sp = false %}
+    {% assign serving = false %}
+
     <p>
       {% assign baptismDate = member.Person | Attribute: 'BaptismDate' %}
       {% if baptismDate != '' %}
-        <i class="fa fa-tint text-info" data-toggle="tooltip" data-placement="bottom" title="Baptized on {{ baptismDate }}"></i>
+        <span class="fa-stack fa-fw small" data-toggle="tooltip" data-placement="bottom" title="Baptized on {{ baptismDate }}">
+          <i class="fa fa-square-o fa-stack-2x text-info"></i>
+          <i class="fa fa-tint fa-stack-1x text-info"></i>
+        </span>
+        {% assign baptism = true %}
       {% endif %}
+
       {% assign pendingBaptism = member.Person | Attribute: 'PendingBaptism' %}
       {% if pendingBaptism != '' and pendingBaptism != 'No' %}
-        <i class="fa fa-tint text-muted" data-toggle="tooltip" data-placement="bottom" title="Pending Baptism"></i>
+        <span class="fa-stack fa-fw small" data-toggle="tooltip" data-placement="bottom" title="Pending Baptism">
+          <i class="fa fa-square fa-stack-2x text-muted"></i>
+          <i class="fa fa-tint fa-stack-1x fa-inverse"></i>
+        </span>
+        {% assign baptism = true %}
       {% endif %}
+
+      {% unless baptism %}
+        <span class="fa-stack fa-fw small" data-toggle="tooltip" data-placement="bottom" title="Not Baptized">
+          <i class="fa fa-tint fa-stack-1x text-muted"></i>
+        </span>
+      {% endunless %}
 
       {% assign startingPointDates = member.Person | GroupsAttended: '57' | Size %}
       {% if startingPointDates > 0 %}
-        <i class="fa fa-map-marker text-primary" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point"></i>
+        <span class="fa-stack fa-fw small" data-toggle="tooltip" data-placement="bottom" title="Completed Starting Point">
+          <i class="fa fa-square-o fa-stack-2x text-primary"></i>
+          <i class="fa fa-map-marker fa-stack-1x text-primary"></i>
+        </span>
+        {% assign sp = true %}
       {% endif %}
+
       {% assign pendingStartingPoint = member.Person | Attribute: 'PendingStartingPoint' %}
       {% if pendingStartingPoint != '' %}
-        <i class="fa fa-map-marker text-muted" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending"></i>
+        <span class="fa-stack fa-fw small" data-toggle="tooltip" data-placement="bottom" title="Starting Point Pending">
+          <i class="fa fa-square fa-stack-2x text-muted"></i>
+          <i class="fa fa-map-marker fa-stack-1x fa-inverse"></i>
+        </span>
+        {% assign sp = true %}
       {% endif %}
+
+      {% unless sp %}
+        <span class="fa-stack fa-fw small" data-toggle="tooltip" data-placement="bottom" title="Has not completed or registered for Starting Point">
+          <i class="fa fa-map-marker fa-stack-1x text-muted"></i>
+        </span>
+      {% endunless %}
+
       {% assign groupMembers = member.Person | Groups: "23",'All' %}
       {% assign activeCount = 0 %}
       {% for groupMember in groupMembers %}
@@ -62,7 +100,15 @@
         {% endif %}
       {% endfor %}
       {% unless activeCount == 0 %}
-        <i class="fa fa-gear text-muted" data-toggle="tooltip" data-placement="bottom" title="Currently Serving"></i>
+        <span class="fa-stack fa-fw small" data-toggle="tooltip" data-placement="bottom" title="Currently Serving">
+          <i class="fa fa-square-o fa-stack-2x text-warning"></i>
+          <i class="fa fa-gear fa-stack-1x text-warning"></i>
+        </span>
+        {% assign serving = true %}
+      {% else %}
+        <span class="fa-stack fa-fw small" data-toggle="tooltip" data-placement="bottom" title="Not Serving">
+          <i class="fa fa-gear fa-stack-1x text-muted"></i>
+        </span>
       {% endunless %}
     </p>
   </div>
