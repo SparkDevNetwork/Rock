@@ -90,16 +90,22 @@ namespace RockWeb.Blocks.Event
             EditAllowed = ViewState["EditAllowed"] as bool? ?? false;
             PercentageDiscountExists = ViewState["PercentageDiscountExists"] as bool? ?? false;
 
+            // there is a Dictionary of Objects in RegistrantsState that we need to get deserialized into its original type, so they were serialized with typeinfo 
+            var jsonSetting = new JsonSerializerSettings
+            {
+                TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Objects,
+            };
+
             string json = ViewState["RegistrationTemplate"] as string;
             if ( !string.IsNullOrWhiteSpace( json ) )
             {
-                RegistrationTemplateState = JsonConvert.DeserializeObject<RegistrationTemplate>( json );
+                RegistrationTemplateState = JsonConvert.DeserializeObject<RegistrationTemplate>( json, jsonSetting );
             }
 
             json = ViewState["Registrants"] as string;
             if ( !string.IsNullOrWhiteSpace( json ) )
             {
-                RegistrantsState = JsonConvert.DeserializeObject<List<RegistrantInfo>>( json );
+                RegistrantsState = JsonConvert.DeserializeObject<List<RegistrantInfo>>( json, jsonSetting );
             }
 
             Registration = GetRegistration( RegistrationId );
@@ -180,6 +186,10 @@ namespace RockWeb.Blocks.Event
             var jsonSetting = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                
+                // there is a Dictionary of Objects in RegistrantsState that we need to get deserialized into its original type
+                TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Objects,
+                
                 ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
             };
 
