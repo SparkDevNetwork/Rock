@@ -172,7 +172,7 @@ REQUIRED VARIABLES
     {% endif %}
 
 
-
+{% comment %}
     {% if countInactive > -1 %}
       {% assign icountInactive = 0 %}
 
@@ -201,6 +201,7 @@ REQUIRED VARIABLES
       {% endfor %}
 
     {% endif %}
+{% endcomment %}
 
     <div class="pull-right margin-b-md">
       {% if invitationListPage %}

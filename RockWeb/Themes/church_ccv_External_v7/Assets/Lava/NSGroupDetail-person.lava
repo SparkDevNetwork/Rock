@@ -30,7 +30,7 @@
     </div>
   </a>
   <div class="pull-left">
-    <a href="{{ communicationPage }}?person={{member.Person.PrimaryAliasId}}">
+    <a href="{{ groupMemberDetailPage }}?person={{member.Person.PrimaryAliasId}}">
 		<strong>{{ member.Person.FullName }}</strong>
 	</a>
 	
