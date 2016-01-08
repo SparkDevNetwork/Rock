@@ -226,20 +226,20 @@ REQUIRED VARIABLES
   <script src="/Themes/church_ccv_External_v7/Scripts/_map.js"></script>
 
   <script>
-    var groupMap;
-    Sys.Application.add_load(function(){
-      var mapHolder = document.getElementById('groupMap')
-      if (mapHolder) {
-        var mapPoint = [{
-          title: "{{ Group.Name }}",
-          lat: {{ groupgeo[0] }},
-          lng: {{ groupgeo[1] }}
-        }]
-        groupMap = new CCV.baseMap(mapHolder, mapPoint)
-        groupMap.useScrollZoom = false
-        groupMap.draw()
-      }
-    })
+    // var groupMap;
+    // Sys.Application.add_load(function(){
+    //   var mapHolder = document.getElementById('groupMap')
+    //   if (mapHolder) {
+    //     var mapPoint = [{
+    //       title: "{{ Group.Name }}",
+    //       lat: {{ groupgeo[0] }},
+    //       lng: {{ groupgeo[1] }}
+    //     }]
+    //     groupMap = new CCV.baseMap(mapHolder, mapPoint)
+    //     groupMap.useScrollZoom = false
+    //     groupMap.draw()
+    //   }
+    // })
 
     $(function () {
       $('[data-toggle="popover"]').popover({
@@ -263,4 +263,3 @@ REQUIRED VARIABLES
     <div class='alert alert-warning'>You do not have persmission to view this group.</div>
   {% endif %}
 {% endif %}
-
