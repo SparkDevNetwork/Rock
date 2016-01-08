@@ -5,6 +5,9 @@
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-body">
+
+                <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error:" NotificationBoxType="Danger" Visible="false" Text="Please select a campus" />
+
                 <div class="text-center">
                     <h2>
                         <Rock:RockLiteral ID="lTitle" runat="server" Text="Finding a Life Group" />
@@ -18,9 +21,9 @@
                         Please select primary campus
                     </div>
                     <div class="col-md-4">
-                        <Rock:RockDropDownList ID="ddlCampus" runat="server" />
+                        <Rock:RockDropDownList ID="ddlCampus" runat="server"/>
                     </div>
-                    <div class="col-md-4">
+                    <div id="divMap" class="col-md-4" runat="server">
                         View a 
                             <asp:LinkButton ID="lbGroupMap" runat="server" Text="Map" OnClick="lbGroupMap_Click" CausesValidation="false" />
                            of all groups from this campus.

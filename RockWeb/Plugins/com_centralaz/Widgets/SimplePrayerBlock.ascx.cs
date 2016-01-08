@@ -22,7 +22,7 @@ using Rock.Web;
 namespace RockWeb.Plugins.com_centralaz.Widgets
 {
     [DisplayName("Simple Prayer Block")]
-    [Category("Prayer")]
+    [Category("com_centralaz > Widgets")]
     [Description("Adds simple prayer input box to page.")]
     [LinkedPage("Target Page", "Target page containing Prayer Request Entry Block.")]
 

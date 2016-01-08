@@ -41,7 +41,7 @@
                         <asp:LinkButton ID="lbRegister" runat="server" Text="Sign up!" CssClass="btn btn-primary" OnClick="lbRegister_Click" CausesValidation="false" />
                     </div>
                     <div class="lifegroupdetail-emailleaderdiv row text-center">
-                        <asp:LinkButton ID="lbEmail" runat="server" Text="Email" OnClick="lbEmail_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="lbEmail" runat="server" Text="Email" OnClick="lbEmail_Click" CausesValidation="false" Visible="false" />
                     </div>
                 </div>
                 <div class="lifegroupdetail-mapdiv col-md-5 location-maps text-center">

@@ -36,6 +36,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
     [LinkedPage( "Life Group List Page", "The page to navigate to for the group list.", false, "", "", 0 )]
     [LinkedPage( "Life Group Map Page", "The page to navigate to for the group list.", false, "", "", 0 )]
     [LinkedPage( "Information Security Page", "The page describing why your information is safe with us.", false, "", "", 0 )]
+    [BooleanField( "Show Map Link", "Whether to show the map link" )]
 
     public partial class LifeGroupSearch : Rock.Web.UI.RockBlock
     {
@@ -133,6 +134,8 @@ $('.groupsearch-filter > .panel-body').on('validation-error', function() {
         {
             base.OnLoad( e );
 
+            divMap.Visible = GetAttributeValue( "ShowMapLink" ).AsBoolean();
+
             if ( !Page.IsPostBack )
             {
                 if ( CurrentPerson != null )
@@ -156,16 +159,24 @@ $('.groupsearch-filter > .panel-body').on('validation-error', function() {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSearch_Click( object sender, EventArgs e )
         {
-            ParameterState.AddOrReplace( "Children", cblChildren.SelectedValues.AsDelimited( ";" ) );
-            ParameterState.AddOrReplace( "Days", cblDays.SelectedValues.AsDelimited( ";" ) );
-            ParameterState.AddOrReplace( "Campus", ddlCampus.SelectedValue );
-            ParameterState.AddOrReplace( "StreetAddress1", acAddress.Street1 );
-            ParameterState.AddOrReplace( "StreetAddress2", acAddress.Street2 );
-            ParameterState.AddOrReplace( "City", acAddress.City );
-            ParameterState.AddOrReplace( "State", acAddress.State );
-            ParameterState.AddOrReplace( "PostalCode", acAddress.PostalCode );
-            ParameterState.AddOrReplace( "Country", acAddress.Country );
-            NavigateToLinkedPage( "LifeGroupListPage" );
+            if ( !String.IsNullOrWhiteSpace( ddlCampus.SelectedValue ) )
+            {
+                ParameterState.AddOrReplace( "Children", cblChildren.SelectedValues.AsDelimited( ";" ) );
+                ParameterState.AddOrReplace( "Days", cblDays.SelectedValues.AsDelimited( ";" ) );
+                ParameterState.AddOrReplace( "Campus", ddlCampus.SelectedValue );
+                ParameterState.AddOrReplace( "StreetAddress1", acAddress.Street1 );
+                ParameterState.AddOrReplace( "StreetAddress2", acAddress.Street2 );
+                ParameterState.AddOrReplace( "City", acAddress.City );
+                ParameterState.AddOrReplace( "State", acAddress.State );
+                ParameterState.AddOrReplace( "PostalCode", acAddress.PostalCode );
+                ParameterState.AddOrReplace( "Country", acAddress.Country );
+                NavigateToLinkedPage( "LifeGroupListPage" );
+            }
+            else
+            {
+                nbMessage.Visible = true;
+            }
+
         }
 
         /// <summary>
@@ -226,6 +237,7 @@ $('.groupsearch-filter > .panel-body').on('validation-error', function() {
             }
 
             ddlCampus.Items.Clear();
+            ddlCampus.Items.Add( new ListItem( "", "" ) );
             foreach ( var campus in CampusCache.All() )
             {
                 ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString().ToUpper() ) );
@@ -233,5 +245,5 @@ $('.groupsearch-filter > .panel-body').on('validation-error', function() {
         }
 
         #endregion
-}
+    }
 }
