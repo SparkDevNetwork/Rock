@@ -25,6 +25,7 @@ using church.ccv.Datamart.Model;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.church_ccv.Era
@@ -90,7 +91,7 @@ namespace RockWeb.Plugins.church_ccv.Era
                         var sendEmail = (bool)rowData.GetPropertyValue( "SendEmail" );
                         var selectedProcessed = sfProcessed.SelectedKeys.OfType<int>().Contains( eraLossId );
                         var selectedSendEmail = sfSendEmail.SelectedKeys.OfType<int>().Contains( eraLossId );
-                        
+
                         // only save ones that have changed
                         if ( selectedProcessed != processed || selectedSendEmail != sendEmail )
                         {
@@ -122,6 +123,25 @@ namespace RockWeb.Plugins.church_ccv.Era
                     e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
                     break;
 
+                case "CampusGuid":
+                    var campusGuid = e.Value.AsGuidOrNull();
+                    CampusCache campus = null;
+                    if ( campusGuid.HasValue )
+                    {
+                        campus = CampusCache.Read( campusGuid.Value );
+                    }
+
+                    if ( campus != null )
+                    {
+                        e.Value = campus.Name;
+                    }
+                    else
+                    {
+                        e.Value = null;
+                    }
+
+                    break;
+
                 case "PastorPersonId":
                     var personId = e.Value.AsIntegerOrNull();
                     if ( personId.HasValue )
@@ -140,6 +160,10 @@ namespace RockWeb.Plugins.church_ccv.Era
         private void BindFilter()
         {
             drpDates.DelimitedValues = gfList.GetUserPreference( "DateRange" );
+            cpCampus.Campuses = CampusCache.All();
+            var campusGuid = gfList.GetUserPreference( "CampusGuid" ).AsGuidOrNull();
+            cpCampus.SetValue( campusGuid );
+
             var personId = gfList.GetUserPreference( "PastorPersonId" ).AsIntegerOrNull();
             if ( personId.HasValue )
             {
@@ -169,6 +193,22 @@ namespace RockWeb.Plugins.church_ccv.Era
         protected void gfList_ApplyFilterClick( object sender, EventArgs e )
         {
             gfList.SaveUserPreference( "DateRange", "Date Range", drpDates.DelimitedValues );
+
+            CampusCache campus = null;
+            if ( cpCampus.SelectedCampusId.HasValue )
+            {
+                campus = CampusCache.Read( cpCampus.SelectedCampusId.Value );
+            }
+
+            if ( campus != null )
+            {
+                gfList.SaveUserPreference( "CampusGuid", "Campus", campus.Guid.ToString() );
+            }
+            else
+            {
+                gfList.SaveUserPreference( "CampusGuid", "Campus", string.Empty );
+            }
+
             gfList.SaveUserPreference( "PastorPersonId", "Pastor", ppPastor.PersonId.ToString() );
             gfList.SaveUserPreference( "ShowProcessed", "Show Processed", cbShowProcessed.Checked.ToTrueFalse() );
             BindGrid();
@@ -184,6 +224,8 @@ namespace RockWeb.Plugins.church_ccv.Era
 
             if ( !Page.IsPostBack )
             {
+
+                BindFilter();
                 BindGrid();
             }
         }
@@ -253,7 +295,7 @@ namespace RockWeb.Plugins.church_ccv.Era
                     f.AdultNames,
                     f.ChildNames,
                     n.NeighborhoodPastorId,
-                    n.NeighborhoodPastorName
+                    n.NeighborhoodPastorName,
                 };
 
             joinFamilyNeighboorHood = joinFamilyNeighboorHood.Where( a => a.NeighborhoodPastorId.HasValue );
@@ -296,6 +338,8 @@ namespace RockWeb.Plugins.church_ccv.Era
                         Id = ef.Family.NeighborhoodPastorId,
                         FullName = ef.Family.NeighborhoodPastorName
                     },
+                    p.CampusId,
+                    p.CampusName,
                     p.InNeighborhoodGroup
                 } );
 
@@ -305,6 +349,18 @@ namespace RockWeb.Plugins.church_ccv.Era
             if ( drp.LowerValue.HasValue )
             {
                 joinQry = joinQry.Where( a => a.LossDate >= drp.LowerValue );
+            }
+
+            var campusGuid = gfList.GetUserPreference( "CampusGuid" ).AsGuidOrNull();
+            CampusCache campus = null;
+            if ( campusGuid.HasValue )
+            {
+                campus = CampusCache.Read( campusGuid.Value );
+            }
+
+            if ( campus != null )
+            {
+                joinQry = joinQry.Where( a => a.CampusId == campus.Id );
             }
 
             if ( drp.UpperValue.HasValue )

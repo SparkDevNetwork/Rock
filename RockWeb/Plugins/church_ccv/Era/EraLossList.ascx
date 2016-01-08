@@ -13,6 +13,7 @@
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="gfList" runat="server">
                         <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
+                        <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                         <Rock:PersonPicker ID="ppPastor" runat="server" Label="Pastor"/>
                         <Rock:RockCheckBox ID="cbShowProcessed" runat="server" Text="Show Processed" />
                     </Rock:GridFilter>
@@ -33,6 +34,7 @@
                             <Rock:RockBoundField DataField="TimesGaveLastYear" HeaderText="Times Gave Last Year" SortExpression="TimesGaveLastYear" />
                             <Rock:DateField DataField="StartingPointDate" HeaderText="Starting Point Date" SortExpression="StartingPointDate" />
                             <Rock:DateField DataField="BaptismDate" HeaderText="Baptism Date" SortExpression="BaptismDate" />
+                            <Rock:CampusField DataField="CampusId" HeaderText="Campus" SortExpression="CampusName" />
                             <Rock:CallbackField DataField="NeighborhoodPastor" HeaderText="Neighborhood Pastor" SortExpression="NeighborhoodPastor.FullName" OnOnFormatDataValue="NeighborhoodPastor_OnFormatDataValue" />
                             <Rock:BoolField DataField="InNeighborhoodGroup" HeaderText="In Neighborhood Group" SortExpression="InNeighborhoodGroup" />
                         </Columns>
