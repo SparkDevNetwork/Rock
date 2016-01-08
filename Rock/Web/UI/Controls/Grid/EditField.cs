@@ -52,6 +52,30 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the button CSS class.
+        /// </summary>
+        /// <value>
+        /// The button CSS class.
+        /// </value>
+        public string ButtonCssClass
+        {
+            get
+            {
+                string buttonCssClass = ViewState["ButtonCssClass"] as string;
+                if ( string.IsNullOrWhiteSpace( buttonCssClass ) )
+                {
+                    buttonCssClass = "btn btn-default btn-sm";
+                    ViewState["ButtonCssClass"] = buttonCssClass;
+                }
+                return buttonCssClass;
+            }
+            set
+            {
+                ViewState["ButtonCssClass"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the tool tip.
         /// </summary>
         /// <value>
@@ -173,7 +197,7 @@ namespace Rock.Web.UI.Controls
 
                 LinkButton lbEdit = new LinkButton();
                 lbEdit.CausesValidation = false;
-                lbEdit.CssClass = "btn btn-default btn-sm";
+                lbEdit.CssClass = editField.ButtonCssClass;
                 lbEdit.ToolTip = editField.ToolTip;
                 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
