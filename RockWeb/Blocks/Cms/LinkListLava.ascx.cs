@@ -48,27 +48,17 @@ namespace RockWeb.Blocks.Cms
             <span class=""pull-right""><a href=""#"" onclick=""{{ '' | Postback:'EditList' }}""><i class='fa fa-gear'></i></a></span>
         {% endif %}
     </div>
-    <div class=""panel-body"">
-
+    <div class=""block-content"">
+        <ul class='list-group list-group-panel'>
         {% for definedValue in DefinedValues %}
             {% assign IsLink = definedValue | Attribute:'IsLink','RawValue' %}
             {% if IsLink == 'True' %}
-                {% if forloop.first == true %}
-        <ul class='list-unstyled'>
-                {% endif %}                
-            <li><a href='{{ definedValue.Description }}'>{{ definedValue.Value }}</a></li>
+                <li class='list-group-item'><a href='{{ definedValue.Description }}'>{{ definedValue.Value }}</a></li>
             {% else %}
-                {% if forloop.first == false %}
-        </ul>
-                {% endif %}
-        <strong>{{ definedValue.Value }}</strong>
-        <ul class='list-unstyled'>
-            {% endif %}
-            {% if forloop.last == true %}
-        </ul>
+                <li class='list-group-item'><h4 class='list-group-item-heading'>{{ definedValue.Value }}</h4></li>
             {% endif %}
         {% endfor %}
-
+        </ul>
     </div>
 </div>
 ", "", 1 )]
