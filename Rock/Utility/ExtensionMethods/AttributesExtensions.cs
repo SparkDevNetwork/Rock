@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Data;
 
 namespace Rock
@@ -62,6 +63,53 @@ namespace Rock
         public static void CopyAttributesFrom( this Rock.Attribute.IHasAttributes entity, Rock.Attribute.IHasAttributes source )
         {
             Rock.Attribute.Helper.CopyAttributes( source, entity );
+        }
+
+        /// <summary>
+        /// Sets the value of an attribute key in memory.  Note, this will not persist value to database
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public static void SetAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, int? value )
+        {
+            entity.SetAttributeValue( key, value.ToString() );
+        }
+
+        /// <summary>
+        /// Sets the value of an attribute key in memory.  Note, this will not persist value to database
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public static void SetAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, decimal? value )
+        {
+            entity.SetAttributeValue( key, value.ToString() );
+        }
+
+        /// <summary>
+        /// Sets the value of an attribute key in memory.  Note, this will not persist value to database
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public static void SetAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, Guid? value )
+        {
+            entity.SetAttributeValue( key, value.ToString() );
+        }
+
+        /// <summary>
+        /// Sets the value of an attribute key in memory.  Note, this will not persist value to database
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public static void SetAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, DateTime? value )
+        {
+            if ( value.HasValue )
+            {
+                entity.SetAttributeValue( key, value.Value.ToString( "o" ) );
+            }
+            else
+            {
+                entity.SetAttributeValue( key, string.Empty );
+            }
         }
 
         #endregion IHasAttributes extensions
