@@ -30,7 +30,10 @@
     </div>
   </a>
   <div class="pull-left">
-    <strong>{{ member.Person.FullName }}</strong>
+    <a href="{{ communicationPage }}?person={{member.Person.PrimaryAliasId}}">
+		<strong>{{ member.Person.FullName }}</strong>
+	</a>
+	
     <small>({{ member.GroupRole.Name}})</small>
     {% if member.GroupMemberStatus == 'Pending' %}
       <a class="btn btn-link btn-xs" href="{{ videoPage }}?person={{ member.Person.PrimaryAliasId }}" title="Send T-Up Video"><i class="fa fa-video-camera"></i></a>
@@ -117,17 +120,6 @@
       {% endunless %}
     </p>
   </div>
-
-  {% if AllowedActions.Edit == true %}
-  <div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
-    <a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
-    <i class="fa fa-times"></i>
-    </a>
-    <a href="{{ groupMemberDetailPage }}?GroupMemberId={{ member.Id }}" class="margin-l-sm">
-    <i class="fa fa-pencil"></i>
-    </a>
-  </div>
-  {% endif %}
 
   {% if LinkedPages.PersonDetailPage != '' %}
     </a>
