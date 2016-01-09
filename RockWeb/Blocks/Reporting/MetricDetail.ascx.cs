@@ -558,9 +558,23 @@ namespace RockWeb.Blocks.Reporting
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Metric.FriendlyTypeName );
             }
 
-            btnSecurity.Visible = metric.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
-            btnSecurity.Title = metric.Title;
-            btnSecurity.EntityId = metric.Id;
+            if ( !UserCanEdit && !metric.IsAuthorized(Authorization.EDIT, CurrentPerson))
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( Metric.FriendlyTypeName );
+            }
+
+            bool canAdministrate = UserCanAdministrate || metric.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            if ( canAdministrate )
+            {
+                btnSecurity.Visible = true;
+                btnSecurity.Title = metric.Title;
+                btnSecurity.EntityId = metric.Id;
+            }
+            else
+            {
+                btnSecurity.Visible = false;
+            }
 
             if ( readOnly )
             {
