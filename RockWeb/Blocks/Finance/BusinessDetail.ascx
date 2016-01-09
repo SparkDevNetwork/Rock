@@ -104,9 +104,7 @@
                 <Content>
                     <asp:HiddenField ID="hfModalOpen" runat="server" />
                     <asp:ValidationSummary ID="valSummaryAddContact" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AddContact"/>
-                    <div class="row col-md-12">
-                        <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" Required="true" ValidationGroup="AddContact" />
-                    </div>
+                    <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" Required="true" ValidationGroup="AddContact" />
                 </Content>
             </Rock:ModalDialog>
         </asp:Panel>

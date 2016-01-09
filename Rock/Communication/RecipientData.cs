@@ -51,10 +51,20 @@ namespace Rock.Communication
         /// Initializes a new instance of the <see cref="RecipientData"/> class.
         /// </summary>
         /// <param name="to">To.</param>
-        /// <param name="mergeFields">The merge fields.</param>
-        public RecipientData(string to, Dictionary<string, object> mergeFields)
+        public RecipientData( string to )
+            : this()
         {
             To = to;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RecipientData"/> class.
+        /// </summary>
+        /// <param name="to">To.</param>
+        /// <param name="mergeFields">The merge fields.</param>
+        public RecipientData( string to, Dictionary<string, object> mergeFields )
+            : this( to )
+        {
             MergeFields = mergeFields;
         }
     }
