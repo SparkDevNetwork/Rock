@@ -101,11 +101,7 @@ namespace RockWeb.Blocks.Connection
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this connection request? All of the activities for this request will also be deleted, and any existing workflow associations will be lost!', function (result) {
             if (result) {
-                Rock.dialogs.confirm('Are you really sure?', function (result) {
-                    if (result) {
-                        window.location = e.target.href ? e.target.href : e.target.parentElement.href;
-                    }
-                });
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href; 
             }
         });
     });
