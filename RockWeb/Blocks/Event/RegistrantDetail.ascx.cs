@@ -749,7 +749,7 @@ namespace RockWeb.Blocks.Event
 
                                 if ( value != null )
                                 {
-                                    RegistrantState.FieldValues.AddOrReplace( field.Id, value );
+                                    RegistrantState.FieldValues.AddOrReplace( field.Id, new FieldValueObject( field, value ) );
                                 }
                                 else
                                 {

@@ -1631,7 +1631,7 @@ namespace RockWeb.Blocks.Event
                     // Find the registrant's value
                     var fieldValue = registrantInfo.FieldValues
                         .Where( f => f.Key == field.Id )
-                        .Select( f => f.Value )
+                        .Select( f => f.Value.FieldValue )
                         .FirstOrDefault();
 
 
@@ -3189,7 +3189,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( value != null )
                     {
-                        registrant.FieldValues.AddOrReplace( field.Id, value );
+                        registrant.FieldValues.AddOrReplace( field.Id, new FieldValueObject( field, value ) );
                     }
                     else
                     {
