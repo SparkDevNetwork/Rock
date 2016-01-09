@@ -37,7 +37,7 @@ namespace Rock.Workflow.Action
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "From", "The phone number to send message from", true, false, "", "", 0 )]
     [WorkflowTextOrAttribute( "Recipient", "Attribute Value", "The phone number or an attribute that contains the person or phone number that message should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType" } )]
+        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
     [WorkflowTextOrAttribute( "Message", "Attribute Value", "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>", true, "", "", 2, "Message",
         new string[] { "Rock.Field.Types.TextFieldType" } )]
     public class SendSms : ActionComponent
@@ -58,16 +58,17 @@ namespace Rock.Workflow.Action
 
             int? fromId = null;
             Guid? fromGuid = GetAttributeValue( action, "From" ).AsGuidOrNull();
-            if (fromGuid.HasValue)
+            if ( fromGuid.HasValue )
             {
-                var fromValue = DefinedValueCache.Read(fromGuid.Value, rockContext);
-                if (fromValue != null)
+                var fromValue = DefinedValueCache.Read( fromGuid.Value, rockContext );
+                if ( fromValue != null )
                 {
                     fromId = fromValue.Id;
                 }
             }
 
-            var recipients = new List<string>();
+            var recipients = new List<RecipientData>();
+
             string toValue = GetAttributeValue( action, "To" );
             Guid guid = toValue.AsGuid();
             if ( !guid.IsEmpty() )
@@ -82,7 +83,7 @@ namespace Rock.Workflow.Action
                         {
                             case "Rock.Field.Types.TextFieldType":
                                 {
-                                    recipients.Add( toAttributeValue );
+                                    recipients.Add( new RecipientData( toAttributeValue ) );
                                     break;
                                 }
                             case "Rock.Field.Types.PersonFieldType":
@@ -93,12 +94,12 @@ namespace Rock.Workflow.Action
                                         var phoneNumber = new PersonAliasService( rockContext ).Queryable()
                                             .Where( a => a.Guid.Equals( personAliasGuid ) )
                                             .SelectMany( a => a.Person.PhoneNumbers )
-                                            .Where( p => p.IsMessagingEnabled)
+                                            .Where( p => p.IsMessagingEnabled )
                                             .FirstOrDefault();
 
                                         if ( phoneNumber == null )
                                         {
-                                            action.AddLogEntry("Invalid Recipient: Person or valid SMS phone number not found", true );
+                                            action.AddLogEntry( "Invalid Recipient: Person or valid SMS phone number not found", true );
                                         }
                                         else
                                         {
@@ -107,19 +108,46 @@ namespace Rock.Workflow.Action
                                             {
                                                 smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                             }
-                                            recipients.Add( smsNumber );
+
+                                            var recipient = new RecipientData( smsNumber );
+                                            recipients.Add( recipient );
+
+                                            var person = new PersonAliasService( rockContext ).GetPerson( personAliasGuid );
+                                            if ( person != null )
+                                            {
+                                                recipient.MergeFields.Add( "Person", person );
+                                            }
                                         }
                                     }
                                     break;
                                 }
 
                             case "Rock.Field.Types.GroupFieldType":
+                            case "Rock.Field.Types.SecurityRoleFieldType":
                                 {
-                                    int? groupId = toValue.AsIntegerOrNull();
-                                    if ( !groupId.HasValue )
+                                    int? groupId = toAttributeValue.AsIntegerOrNull();
+                                    Guid? groupGuid = toAttributeValue.AsGuidOrNull();
+                                    IQueryable<GroupMember> qry = null;
+
+                                    // Handle situations where the attribute value is the ID
+                                    if ( groupId.HasValue )
                                     {
-                                        foreach ( var person in new GroupMemberService( rockContext )
-                                            .GetByGroupId( groupId.Value )
+                                        qry = new GroupMemberService( rockContext ).GetByGroupId( groupId.Value );
+                                    }
+
+                                    // Handle situations where the attribute value stored is the Guid
+                                    else if ( groupGuid.HasValue )
+                                    {
+                                        qry = new GroupMemberService( rockContext ).GetByGroupGuid( groupGuid.Value );
+                                    }
+                                    else
+                                    {
+                                        action.AddLogEntry( "Invalid Recipient: No valid group id or Guid", true );
+                                    }
+
+                                    if ( qry != null )
+                                    {
+                                        foreach ( var person in qry
                                             .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                                             .Select( m => m.Person ) )
                                         {
@@ -133,7 +161,10 @@ namespace Rock.Workflow.Action
                                                 {
                                                     smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                                 }
-                                                recipients.Add( smsNumber );
+
+                                                var recipient = new RecipientData( smsNumber );
+                                                recipients.Add( recipient );
+                                                recipient.MergeFields.Add( "Person", person );
                                             }
                                         }
                                     }
@@ -147,7 +178,7 @@ namespace Rock.Workflow.Action
             {
                 if ( !string.IsNullOrWhiteSpace( toValue ) )
                 {
-                    recipients.Add( toValue.ResolveMergeFields( mergeFields ) );
+                    recipients.Add( new RecipientData( toValue.ResolveMergeFields( mergeFields ) ) );
                 }
             }
 
@@ -169,12 +200,8 @@ namespace Rock.Workflow.Action
                 }
             }
 
-            if ( recipients.Any() && fromId.HasValue && !string.IsNullOrWhiteSpace(message) )
+            if ( recipients.Any() && !string.IsNullOrWhiteSpace( message ) )
             {
-                var mediumData = new Dictionary<string, string>();
-                mediumData.Add( "FromValue", fromId.Value.ToString());
-                mediumData.Add( "Message", message.ResolveMergeFields( mergeFields ) );
-
                 var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid(), rockContext );
                 if ( mediumEntity != null )
                 {
@@ -185,7 +212,22 @@ namespace Rock.Workflow.Action
                         if ( transport != null && transport.IsActive )
                         {
                             var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-                            transport.Send( mediumData, recipients, appRoot, string.Empty );
+
+                            foreach ( var recipient in recipients )
+                            {
+                                var recipientMergeFields = new Dictionary<string, object>( mergeFields );
+                                foreach ( var mergeField in recipient.MergeFields )
+                                {
+                                    recipientMergeFields.Add( mergeField.Key, mergeField.Value );
+                                }
+                                var mediumData = new Dictionary<string, string>();
+                                mediumData.Add( "FromValue", fromId.Value.ToString() );
+                                mediumData.Add( "Message", message.ResolveMergeFields( recipientMergeFields ) );
+
+                                var number = new List<string> { recipient.To };
+
+                                transport.Send( mediumData, number, appRoot, string.Empty );
+                            }
                         }
                     }
                 }
