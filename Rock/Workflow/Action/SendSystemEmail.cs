@@ -37,7 +37,7 @@ namespace Rock.Workflow.Action
 
     [SystemEmailField( "System Email", "A system email to send.", true, "", "", 0 )]
     [WorkflowTextOrAttribute( "Send To Email Addresses", "Attribute Value", "The email addresses or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "Recipient",
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType" } )]
+        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
     [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 2 )]
     public class SendSystemEmail : ActionComponent
     {
@@ -113,12 +113,31 @@ namespace Rock.Workflow.Action
                                     break;
                                 }
                             case "Rock.Field.Types.GroupFieldType":
+                            case "Rock.Field.Types.SecurityRoleFieldType":
                                 {
                                     int? groupId = toValue.AsIntegerOrNull();
-                                    if ( !groupId.HasValue )
+                                    Guid? groupGuid = toValue.AsGuidOrNull();
+                                    IQueryable<GroupMember> qry = null;
+
+                                    // Handle situations where the attribute value is the ID
+                                    if ( groupId.HasValue )
                                     {
-                                        foreach ( var person in new GroupMemberService( rockContext )
-                                            .GetByGroupId( groupId.Value )
+                                        qry = new GroupMemberService( rockContext ).GetByGroupId( groupId.Value );
+                                    }
+
+                                    // Handle situations where the attribute value stored is the Guid
+                                    else if ( groupGuid.HasValue )
+                                    {
+                                        qry = new GroupMemberService( rockContext ).GetByGroupGuid( groupGuid.Value );
+                                    }
+                                    else
+                                    {
+                                        action.AddLogEntry( "Invalid Recipient: No valid group id or Guid", true );
+                                    }
+
+                                    if ( qry != null )
+                                    {
+                                        foreach ( var person in qry
                                             .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                                             .Select( m => m.Person ) )
                                         {
