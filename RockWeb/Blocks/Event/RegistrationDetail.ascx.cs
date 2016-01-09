@@ -90,22 +90,16 @@ namespace RockWeb.Blocks.Event
             EditAllowed = ViewState["EditAllowed"] as bool? ?? false;
             PercentageDiscountExists = ViewState["PercentageDiscountExists"] as bool? ?? false;
 
-            // there is a Dictionary of Objects in RegistrantsState that we need to get deserialized into its original type, so they were serialized with typeinfo 
-            var jsonSetting = new JsonSerializerSettings
-            {
-                TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Objects,
-            };
-
             string json = ViewState["RegistrationTemplate"] as string;
             if ( !string.IsNullOrWhiteSpace( json ) )
             {
-                RegistrationTemplateState = JsonConvert.DeserializeObject<RegistrationTemplate>( json, jsonSetting );
+                RegistrationTemplateState = JsonConvert.DeserializeObject<RegistrationTemplate>( json );
             }
 
             json = ViewState["Registrants"] as string;
             if ( !string.IsNullOrWhiteSpace( json ) )
             {
-                RegistrantsState = JsonConvert.DeserializeObject<List<RegistrantInfo>>( json, jsonSetting );
+                RegistrantsState = JsonConvert.DeserializeObject<List<RegistrantInfo>>( json );
             }
 
             Registration = GetRegistration( RegistrationId );
@@ -186,10 +180,6 @@ namespace RockWeb.Blocks.Event
             var jsonSetting = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                
-                // there is a Dictionary of Objects in RegistrantsState that we need to get deserialized into its original type
-                TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Objects,
-                
                 ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
             };
 
@@ -1222,6 +1212,10 @@ namespace RockWeb.Blocks.Event
 
             PercentageDiscountExists = registration.DiscountPercentage > 0.0m;
             BuildFeeTable( registration );
+
+            pnlPaymentDetails.Visible = false;
+            pnlPaymentInfo.Visible = false;
+            
             BuildRegistrationControls( true );
 
             bool anyPayments = registration.Payments.Any();
@@ -1945,7 +1939,7 @@ namespace RockWeb.Blocks.Event
             object fieldValue = null;
             if ( registrant != null && registrant.FieldValues != null && registrant.FieldValues.ContainsKey( field.Id ) )
             {
-                fieldValue = registrant.FieldValues[field.Id];
+                fieldValue = registrant.FieldValues[field.Id].FieldValue;
             }
 
             if ( fieldValue != null )
