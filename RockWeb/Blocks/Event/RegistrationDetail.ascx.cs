@@ -1212,6 +1212,10 @@ namespace RockWeb.Blocks.Event
 
             PercentageDiscountExists = registration.DiscountPercentage > 0.0m;
             BuildFeeTable( registration );
+
+            pnlPaymentDetails.Visible = false;
+            pnlPaymentInfo.Visible = false;
+            
             BuildRegistrationControls( true );
 
             bool anyPayments = registration.Payments.Any();
