@@ -204,7 +204,7 @@ namespace RockWeb.Blocks.Event
                 foreach ( var dbFee in registrant.Fees.ToList() )
                 {
                     if ( !RegistrantState.FeeValues.Keys.Contains( dbFee.RegistrationTemplateFeeId ) ||
-                        RegistrantState.FeeValues[dbFee.RegistrationTemplateFeeId] != null ||
+                        RegistrantState.FeeValues[dbFee.RegistrationTemplateFeeId] == null ||
                         !RegistrantState.FeeValues[dbFee.RegistrationTemplateFeeId]
                             .Any( f =>
                                 f.Option == dbFee.Option &&
