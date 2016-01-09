@@ -78,19 +78,19 @@ namespace Rock.Migrations
             RockMigrationHelper.AddAttributeQualifier( "2D3317AE-00CE-47E9-92A2-D28DDE72DBB2", "truetext", "Yes", "D56ECD08-DB47-47D3-ABF8-5A7A1229A80E" );
             RockMigrationHelper.AddAttributeQualifier( "2D3317AE-00CE-47E9-92A2-D28DDE72DBB2", "falsetext", "No", "94148AD8-0234-4C0D-BF55-EC7133A954F2" );
 
-            RockMigrationHelper.AddDefinedValue( "7E7969BD-945C-4472-8A80-889EF5833776", "Rock", "", "69B8FE33-F2FA-4619-9C9B-CC4ABB81D6FC" );
+            RockMigrationHelper.AddDefinedValue( "7E7969BD-945C-4472-8A80-889EF5833776", "Rock", "", "69B8FE33-F2FA-4619-9C9B-CC4ABB81D6FC", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "69B8FE33-F2FA-4619-9C9B-CC4ABB81D6FC", "2D3317AE-00CE-47E9-92A2-D28DDE72DBB2", "False" );
 
-            RockMigrationHelper.AddDefinedValue( "7E7969BD-945C-4472-8A80-889EF5833776", "Website", "http://www.rockrms.com", "FD1FBDFF-691C-4A7F-A1BC-E5B91206520B" );
+            RockMigrationHelper.AddDefinedValue( "7E7969BD-945C-4472-8A80-889EF5833776", "Website", "http://www.rockrms.com", "FD1FBDFF-691C-4A7F-A1BC-E5B91206520B", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FD1FBDFF-691C-4A7F-A1BC-E5B91206520B", "2D3317AE-00CE-47E9-92A2-D28DDE72DBB2", "True" );
 
-            RockMigrationHelper.AddDefinedValue( "7E7969BD-945C-4472-8A80-889EF5833776", "Documentation", "http://www.rockrms.com/Learn/Documentation", "FE0B4254-46F5-4FE6-87D9-0482A1BB4E84" );
+            RockMigrationHelper.AddDefinedValue( "7E7969BD-945C-4472-8A80-889EF5833776", "Documentation", "http://www.rockrms.com/Learn/Documentation", "FE0B4254-46F5-4FE6-87D9-0482A1BB4E84", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "FE0B4254-46F5-4FE6-87D9-0482A1BB4E84", "2D3317AE-00CE-47E9-92A2-D28DDE72DBB2", "True" );
 
-            RockMigrationHelper.AddDefinedValue( "7E7969BD-945C-4472-8A80-889EF5833776", "Questions", "http://www.rockrms.com/Rock/Ask", "1A40715B-7B4D-42CE-8CBC-C76DDE67BED1" );
+            RockMigrationHelper.AddDefinedValue( "7E7969BD-945C-4472-8A80-889EF5833776", "Questions", "http://www.rockrms.com/Rock/Ask", "1A40715B-7B4D-42CE-8CBC-C76DDE67BED1", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "1A40715B-7B4D-42CE-8CBC-C76DDE67BED1", "2D3317AE-00CE-47E9-92A2-D28DDE72DBB2", "True" );
 
-            RockMigrationHelper.AddDefinedValue( "7E7969BD-945C-4472-8A80-889EF5833776", "Community", "http://www.rockrms.com/slack", "755D4091-253E-499B-AB15-A7E86BF423F1" );
+            RockMigrationHelper.AddDefinedValue( "7E7969BD-945C-4472-8A80-889EF5833776", "Community", "http://www.rockrms.com/slack", "755D4091-253E-499B-AB15-A7E86BF423F1", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "755D4091-253E-499B-AB15-A7E86BF423F1", "2D3317AE-00CE-47E9-92A2-D28DDE72DBB2", "True" );
         }
         
