@@ -244,6 +244,34 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        /// <summary>
+        /// Formats the name.
+        /// </summary>
+        /// <param name="lastname">The lastname.</param>
+        /// <param name="nickname">The nickname.</param>
+        /// <returns></returns>
+        protected string FormatName( object lastname, object nickname )
+        {
+            string result = string.Empty;
+
+            if ( nickname != null )
+            {
+                result = nickname.ToString();
+            }
+
+            if ( lastname != null )
+            {
+                if ( !string.IsNullOrWhiteSpace( result ) )
+                {
+                    result += " ";
+                }
+
+                result += lastname;
+            }
+
+            return result;
+        }
+
         #endregion
 
 
