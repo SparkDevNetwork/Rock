@@ -1341,6 +1341,7 @@ namespace RockWeb.Blocks.Event
 
             var registrationService = new RegistrationService( rockContext );
             var registrantService = new RegistrationRegistrantService( rockContext );
+            var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
             var personService = new PersonService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
             var groupService = new GroupService( rockContext );
@@ -1516,7 +1517,7 @@ namespace RockWeb.Blocks.Event
                     typeof( Registration ),
                     Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
                     registration.Id,
-                    registrationChanges )
+                    registrationChanges, true, CurrentPersonAliasId )
             );
 
 
@@ -1650,7 +1651,7 @@ namespace RockWeb.Blocks.Event
 
                             case RegistrationPersonFieldType.Address:
                                 {
-                                    location = fieldValue.ToString().FromJsonOrNull<Location>();
+                                    location = fieldValue as Location;
                                     break;
                                 }
 
@@ -1856,29 +1857,67 @@ namespace RockWeb.Blocks.Event
                 registrant.Cost = registrantInfo.Cost;
                 registrant.GroupMemberId = groupMember != null ? groupMember.Id : (int?)null;
 
-                // Add or Update fees
-                foreach ( var feeValue in registrantInfo.FeeValues.Where( f => f.Value != null ) )
+                // Remove fees
+                // Remove/delete any registrant fees that are no longer in UI with quantity 
+                foreach ( var dbFee in registrant.Fees.ToList() )
                 {
-                    foreach ( var uiFee in feeValue.Value )
+                    if ( !registrantInfo.FeeValues.Keys.Contains( dbFee.RegistrationTemplateFeeId ) ||
+                        registrantInfo.FeeValues[dbFee.RegistrationTemplateFeeId] == null ||
+                        !registrantInfo.FeeValues[dbFee.RegistrationTemplateFeeId]
+                            .Any( f =>
+                                f.Option == dbFee.Option &&
+                                f.Quantity > 0 ) )
                     {
-                        var templateFee = RegistrationTemplate.Fees.Where( f => f.Id == feeValue.Key ).FirstOrDefault();
-                        string feeName = templateFee != null ? templateFee.Name : "Fee";
-                        if ( !string.IsNullOrWhiteSpace( uiFee.Option ) )
+                        registrantChanges.Add( string.Format( "Removed '{0}' Fee (Quantity:{1:N0}, Cost:{2:C2}, Option:{3}",
+                            dbFee.RegistrationTemplateFee.Name, dbFee.Quantity, dbFee.Cost, dbFee.Option ) );
+
+                        registrant.Fees.Remove( dbFee );
+                        registrantFeeService.Delete( dbFee );
+                    }
+                }
+
+
+                // Add or Update fees
+                foreach ( var uiFee in registrantInfo.FeeValues.Where( f => f.Value != null ) )
+                {
+                    foreach ( var uiFeeOption in uiFee.Value )
+                    {
+                        var dbFee = registrant.Fees
+                            .Where( f =>
+                                f.RegistrationTemplateFeeId == uiFee.Key &&
+                                f.Option == uiFeeOption.Option )
+                            .FirstOrDefault();
+
+                        if ( dbFee == null )
                         {
-                            feeName = string.Format( "{0} ({1})", feeName, uiFee.Option );
+                            dbFee = new RegistrationRegistrantFee();
+                            dbFee.RegistrationTemplateFeeId = uiFee.Key;
+                            dbFee.Option = uiFeeOption.Option;
+                            registrant.Fees.Add( dbFee );
                         }
-                        registrantChanges.Add( feeName + " Fee Added" );
 
-                        var fee = new RegistrationRegistrantFee();
-                        registrant.Fees.Add( fee );
-                        fee.RegistrationTemplateFeeId = feeValue.Key;
-                        fee.Option = uiFee.Option;
+                        var templateFee = dbFee.RegistrationTemplateFee;
+                        if ( templateFee == null )
+                        {
+                            templateFee = RegistrationTemplate.Fees.Where( f => f.Id == uiFee.Key ).FirstOrDefault();
+                        }
 
-                        History.EvaluateChange( registrantChanges, feeName + " Quantity", 0.0M, uiFee.Quantity );
-                        fee.Quantity = uiFee.Quantity;
+                        string feeName = templateFee != null ? templateFee.Name : "Fee";
+                        if ( !string.IsNullOrWhiteSpace( uiFeeOption.Option ) )
+                        {
+                            feeName = string.Format( "{0} ({1})", feeName, uiFeeOption.Option );
+                        }
 
-                        History.EvaluateChange( registrantChanges, feeName + " Cost", 0.0M, uiFee.Cost );
-                        fee.Cost = uiFee.Cost;
+                        if ( dbFee.Id <= 0 )
+                        {
+                            registrantChanges.Add( feeName + " Fee Added" );
+                        }
+
+                        History.EvaluateChange( registrantChanges, feeName + " Quantity", dbFee.Quantity, uiFeeOption.Quantity );
+                        dbFee.Quantity = uiFeeOption.Quantity;
+
+                        History.EvaluateChange( registrantChanges, feeName + " Cost", dbFee.Cost, uiFeeOption.Cost );
+                        dbFee.Cost = uiFeeOption.Cost;
                     }
                 }
 
@@ -1960,7 +1999,7 @@ namespace RockWeb.Blocks.Event
                         registration.Id,
                         registrantChanges,
                         "Registrant: " + person.FullName,
-                        null, null )
+                        null, null, true, CurrentPersonAliasId )
                 );
 
                 // Clear this registran't family guid so it's not updated again
@@ -2112,7 +2151,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="changes">The changes.</param>
         private void SavePhone( object fieldValue, Person person, Guid phoneTypeGuid, List<string> changes )
         {
-            var phoneNumber = fieldValue.ToString().FromJsonOrNull<PhoneNumber>();
+            var phoneNumber = fieldValue as PhoneNumber;
             if ( phoneNumber != null )
             {
                 var numberType = DefinedValueCache.Read( phoneTypeGuid );
@@ -2280,7 +2319,7 @@ namespace RockWeb.Blocks.Event
                             typeof( FinancialBatch ),
                             Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
                             transaction.BatchId.Value,
-                            batchChanges )
+                            batchChanges, true, CurrentPersonAliasId )
                     );
 
                     Task.Run( () =>
@@ -2292,9 +2331,20 @@ namespace RockWeb.Blocks.Event
                             txnChanges,
                             CurrentPerson != null ? CurrentPerson.FullName : string.Empty,
                             typeof( FinancialTransaction ),
-                            transaction.Id )
+                            transaction.Id, true, CurrentPersonAliasId )
                     );
                 }
+
+                List<string> registrationChanges = new List<string>();
+                registrationChanges.Add( string.Format( "Made {0} payment", transaction.TotalAmount.FormatAsCurrency() ) );
+                Task.Run( () =>
+                    HistoryService.SaveChanges(
+                        new RockContext(),
+                        typeof( Registration ),
+                        Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                        registration.Id,
+                        registrationChanges, true, CurrentPersonAliasId )
+                );
 
                 TransactionCode = transaction.TransactionCode;
 
@@ -2718,12 +2768,12 @@ namespace RockWeb.Blocks.Event
                     object value = null;
                     if ( registrant != null && registrant.FieldValues.ContainsKey( field.Id ) )
                     {
-                        value = registrant.FieldValues[field.Id];
+                        value = registrant.FieldValues[field.Id].FieldValue;
                     }
 
                     if ( value == null && field.IsSharedValue && previousRegistrant != null && previousRegistrant.FieldValues.ContainsKey( field.Id ) )
                     {
-                        value = previousRegistrant.FieldValues[field.Id];
+                        value = previousRegistrant.FieldValues[field.Id].FieldValue;
                     } 
                     
                     if ( !string.IsNullOrWhiteSpace( field.PreText ) )
@@ -2843,7 +2893,7 @@ namespace RockWeb.Blocks.Event
 
                         if ( setValue && fieldValue != null )
                         {
-                            var value = fieldValue.ToString().FromJsonOrNull<Location>();
+                            var value = fieldValue as Location;
                             acAddress.SetValues( value );
                         }
 
@@ -2998,7 +3048,7 @@ namespace RockWeb.Blocks.Event
 
                             if ( setValue && fieldValue != null )
                             {
-                                var value = fieldValue.ToString().FromJsonOrNull<PhoneNumber>();
+                                var value = fieldValue as PhoneNumber;
                                 if ( value != null )
                                 {
                                     ppWork.CountryCode = value.CountryCode;
@@ -3252,7 +3302,7 @@ namespace RockWeb.Blocks.Event
                         if ( acAddress != null )
                         {
                             acAddress.GetValues( location );
-                            return string.IsNullOrWhiteSpace( location.ToString() ) ? null : location.ToJson();
+                            return location;
                         }
                         break;
                     }
@@ -3290,7 +3340,7 @@ namespace RockWeb.Blocks.Event
                         {
                             phoneNumber.CountryCode = PhoneNumber.CleanNumber( ppMobile.CountryCode );
                             phoneNumber.Number = PhoneNumber.CleanNumber( ppMobile.Number );
-                            return string.IsNullOrWhiteSpace( phoneNumber.Number ) ? null : phoneNumber.ToJson();
+                            return phoneNumber;
                         }
                         break;
                     }
@@ -3303,7 +3353,7 @@ namespace RockWeb.Blocks.Event
                         {
                             phoneNumber.CountryCode = PhoneNumber.CleanNumber( ppHome.CountryCode );
                             phoneNumber.Number = PhoneNumber.CleanNumber( ppHome.Number );
-                            return string.IsNullOrWhiteSpace( phoneNumber.Number ) ? null : phoneNumber.ToJson();
+                            return phoneNumber;
                         }
                         break;
                     }
@@ -3316,7 +3366,7 @@ namespace RockWeb.Blocks.Event
                         {
                             phoneNumber.CountryCode = PhoneNumber.CleanNumber( ppWork.CountryCode );
                             phoneNumber.Number = PhoneNumber.CleanNumber( ppWork.Number );
-                            return string.IsNullOrWhiteSpace( phoneNumber.Number ) ? null : phoneNumber.ToJson();
+                            return phoneNumber;
                         }
                         break;
                     }
