@@ -30,14 +30,15 @@ namespace Rock.Migrations.HotFixMigrations
         /// </summary>
         public override void Up()
         {
-            Sql( @"DECLARE @AttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '01C9BA59-D8D4-4137-90A6-B3C06C70BBC3')
+            Sql( @"
+DECLARE @AttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '01C9BA59-D8D4-4137-90A6-B3C06C70BBC3')
 DECLARE @EntityId int = (SELECT TOP 1 [Id] FROM [PersonBadge] WHERE [Guid] = '66972BFF-42CD-49AB-9A7A-E1B9DECA4EBE')
 
 IF @AttributeId IS NOT NULL AND @EntityId IS NOT NULL
 BEGIN
 	UPDATE [AttributeValue]
 		SET [Value] = '{% if Person.BaptismDate != empty -%}
-    <div class=""badge badge - baptism"" data-toggle=""tooltip"" data-original-title=""{{ Person.NickName }}
+    <div class=""badge badge-baptism"" data-toggle=""tooltip"" data-original-title=""{{ Person.NickName }}
             was baptized on {{ Person.BaptismDate }}."">
 <i class=""badge-icon fa fa-tint""></i>
     </div>
@@ -46,8 +47,8 @@ BEGIN
         <i class=""badge-icon badge-disabled fa fa-tint""></i>
     </div>
 {% endif -%}'
-		WHERE[AttributeId] = @AttributeId AND[EntityId] = @EntityId
-        AND[CreatedDateTime] = [ModifiedDateTime]
+		WHERE [AttributeId] = @AttributeId AND[EntityId] = @EntityId
+        AND [CreatedDateTime] = [ModifiedDateTime]
 END" );
         }
 
@@ -56,11 +57,6 @@ END" );
         /// </summary>
         public override void Down()
         {
-            RockMigrationHelper.DeleteAttribute( "66B13C02-CBA0-4427-9D60-8B331A51CC96" );
-
-            Sql( @"
-    DROP INDEX [IX_LocationId_ScheduleId_GroupId_StartDateTime] ON [dbo].[Attendance]
-" );
         }
     }
 }
