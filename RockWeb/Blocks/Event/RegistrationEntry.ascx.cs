@@ -358,7 +358,7 @@ namespace RockWeb.Blocks.Event
                     if ( RegistrationTemplate != null )
                     {
                         bool instanceFull = false;
-                        if ( RegistrationInstanceState.MaxAttendees > 0 )
+                        if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState.MaxAttendees > 0 )
                         {
                             int registrants = RegistrationInstanceState.Registrations.Sum( r => r.Registrants.Count() );
                             instanceFull = registrants >= RegistrationInstanceState.MaxAttendees;
@@ -957,14 +957,19 @@ namespace RockWeb.Blocks.Event
                     .Where( r => r.Id == registrationId.Value )
                     .FirstOrDefault();
 
-                if ( registration != null  && CurrentPersonAliasId.HasValue )
+                if ( registration != null  && CurrentPersonId.HasValue )
                 {
-                    if ( ( registration.PersonAliasId.HasValue && registration.PersonAliasId.Value == CurrentPersonAliasId.Value ) ||
-                        ( registration.CreatedByPersonAliasId.HasValue && registration.CreatedByPersonAliasId.Value == CurrentPersonAliasId.Value ) )
+                    if ( ( registration.PersonAlias != null && registration.PersonAlias.PersonId == CurrentPersonId.Value ) ||
+                        ( registration.CreatedByPersonAlias != null && registration.CreatedByPersonAlias.PersonId == CurrentPersonId.Value ) )
                     {
                         RegistrationInstanceState = registration.RegistrationInstance;
                         RegistrationState = new RegistrationInfo( registration, rockContext );
                         RegistrationState.PreviousPaymentTotal = registrationService.GetTotalPayments( registration.Id );
+                    }
+                    else
+                    {
+                        ShowError( "Sorry", "You are not allowed to view or edit the selected registration since you are not the one who created the registration." );
+                        return false;
                     }
 
                     // set the max number of steps in the progress bar
