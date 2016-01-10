@@ -1,4 +1,5 @@
-﻿// <copyright>
+﻿using System;
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +19,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -62,6 +62,7 @@ namespace Rock.Model
         ///   <c>true</c> if non-cash; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
+        [Obsolete("Field is not used. Non Cash transactions can be designated by the currency (tender) type.")]
         public bool IsNonCash { get; set; }
 
         /// <summary>

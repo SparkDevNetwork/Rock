@@ -85,6 +85,10 @@
     <Compile Include="Migrations\201601081201492_LinkList.Designer.cs">
       <DependentUpon>201601081201492_LinkList.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201601100030367_IncreaseDefinedValueSize.cs" />
+    <Compile Include="Migrations\201601100030367_IncreaseDefinedValueSize.Designer.cs">
+      <DependentUpon>201601100030367_IncreaseDefinedValueSize.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.cs" />
     <Compile Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.Designer.cs">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
@@ -1993,6 +1997,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201601081201492_LinkList.resx">
       <DependentUpon>201601081201492_LinkList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201601100030367_IncreaseDefinedValueSize.resx">
+      <DependentUpon>201601100030367_IncreaseDefinedValueSize.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 4.0\Version 1.4.0\201511231212549_ClearPreviousMigrations4.resx">
       <DependentUpon>201511231212549_ClearPreviousMigrations4.cs</DependentUpon>
