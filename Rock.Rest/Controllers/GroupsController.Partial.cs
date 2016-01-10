@@ -122,6 +122,26 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Gets the groups within a given distance of a geopoint.
+        /// </summary>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [EnableQuery( MaxExpansionDepth = 4 )]
+        [HttpGet]
+        [System.Web.Http.Route( "api/Groups/FindInRange/{latitude}/{longitude}/{range}" )]
+        public IQueryable<Group> FindInRange( double latitude, double longitude, double range )
+        {
+            var searchOrigin = new Location();
+            searchOrigin.SetLocationPointFromLatLong( latitude, longitude );
+            var groupService = (GroupService)Service;
+            
+            return groupService.Queryable().Where(g => 
+                g.GroupLocations.Any(gl => 
+                    !gl.Location.GeoPoint.IsEmpty 
+                    && gl.Location.GeoPoint.Distance(searchOrigin.GeoPoint) <= range));
+        }
+
+        /// <summary>
         /// Gets the families.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
